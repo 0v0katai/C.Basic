@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _CharacterSelectDialog
+
+	.SECTION P,CODE,ALIGN=4
+_CharacterSelectDialog:
+	BIOS_JUMP #h'07A2
+
+	.END

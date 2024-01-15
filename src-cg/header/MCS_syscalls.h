@@ -1,0 +1,11 @@
+int MCS_DeleteDirectory( unsigned char*dir );
+int MCS_WriteItem( unsigned char*dir, unsigned char*item, short itemtype, int data_length, int buffer );
+int MCS_GetCapa( int*current_bottom );
+int MCS_GetMainMemoryStart( void );
+int MCS_CreateDirectory( unsigned char*dir );
+int MCSPutVar2( unsigned char*dir, unsigned char*item, int data_len, void*buffer );
+int MCSOvwDat2( unsigned char*dir, unsigned char*item, int bytes_to_write, void*buffer, int write_offset );
+int MCSDelVar2( unsigned char*dir, unsigned char*item );
+int MCSGetDlen2( unsigned char*dir, unsigned char*item, int*data_len );
+int MCSGetData1( int offset, int len_to_copy, void*buffer );
+int MCSGetOpenItem( unsigned char*item );

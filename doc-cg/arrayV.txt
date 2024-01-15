@@ -1,0 +1,258 @@
+------------------------------------------------------------	+Vct
+ 0:	Mat A							 0:	Mat A
+ 1:	Mat B                                                    1:	Mat B
+ 2:	Mat C                                                    2:	Mat C
+ 3:	Mat D                                                    3:	Mat D
+ 4:	Mat E                                                    4:	Mat E
+ 5:	Mat F                                                    5:	Mat F
+ 6:	Mat G                                                    6:	Mat G
+ 7:	Mat H                                                    7:	Mat H
+ 8:	Mat I                                                    8:	Mat I
+ 9:	Mat J                                                    9:	Mat J
+10:	Mat K                                                   10:	Mat K
+11:	Mat L                                                   11:	Mat L
+12:	Mat M                                                   12:	Mat M
+13:	Mat N                                                   13:	Mat N
+14:	Mat O                                                   14:	Mat O
+15:	Mat P                                                   15:	Mat P
+16:	Mat Q                                                   16:	Mat Q
+17:	Mat R                                                   17:	Mat R
+18:	Mat S                                                   18:	Mat S
+19:	Mat T                                                   19:	Mat T
+20:	Mat U                                                   20:	Mat U
+21:	Mat V                                                   21:	Mat V
+22:	Mat W                                                   22:	Mat W
+23:	Mat X                                                   23:	Mat X
+24:	Mat Y                                                   24:	Mat Y
+25:	Mat Z                                                   25:	Mat Z
+
+26:	Mat <r>		List <r>                                26:	Mat <r>		List <r>
+27:	Mat <theta>	List <theta>                            27:	Mat <theta>	List <theta>
+28:	Mat Ans		List Ans                                28:	Mat Ans		List Ans
+29:                                                             29:
+30:                                                             30:
+31:                                                             31:
+
+32:	Mat a		List 27                                 32:	Mat a		List 27
+33:	Mat b           List 28                                 33:	Mat b           List 28
+34:	Mat c           List 29                                 34:	Mat c           List 29
+35:	Mat d           List 30                                 35:	Mat d           List 30
+36:	Mat e           List 31                                 36:	Mat e           List 31
+37:	Mat f		List 32                                 37:	Mat f		List 32
+38:	Mat g		List 33                                 38:	Mat g		List 33
+39:	Mat h		List 34                                 39:	Mat h		List 34
+40:	Mat i		List 35                                 40:	Mat i		List 35
+41:	Mat j		List 36                                 41:	Mat j		List 36
+42:	Mat k		List 37                                 42:	Mat k		List 37
+43:	Mat l		List 38                                 43:	Mat l		List 38
+44:	Mat m		List 39                                 44:	Mat m		List 39
+45:	Mat n		List 40                                 45:	Mat n		List 40
+46:	Mat o		List 41                                 46:	Mat o		List 41
+47:	Mat p		List 42                                 47:	Mat p		List 42
+48:	Mat q		List 43                                 48:	Mat q		List 43
+49:	Mat r		List 44                                 49:	Mat r		List 44
+50:	Mat s		List 45                                 50:	Mat s		List 45
+51:	Mat t		List 46                                 51:	Mat t		List 46
+52:	Mat u		List 47                                 52:	Mat u		List 47
+53:	Mat v		List 48                                 53:	Mat v		List 48
+54:	Mat w		List 49                                 54:	Mat w		List 49
+55:	Mat x		List 50                                 55:	Mat x		List 50
+56:	Mat y		List 51                                 56:	Mat y		List 51
+57:	Mat z		List 52                                 57:	Mat z		List 52
+
+58:			List  1                                 58:			List  1
+59:			List  2                                 59:			List  2
+60:			List  3                                 60:			List  3
+61:			List  4                                 61:			List  4
+62:			List  5                                 62:			List  5
+63:			List  6                                 63:			List  6
+64:			List  7                                 64:			List  7
+65:			List  8                                 65:			List  8
+66:			List  9                                 66:			List  9
+67:			List 10                                 67:			List 10
+68:			List 11                                 68:			List 11
+69:			List 12                                 69:			List 12
+70:			List 13                                 70:			List 13
+71:			List 14                                 71:			List 14
+72:			List 15                                 72:			List 15
+73:			List 16                                 73:			List 16
+74:			List 17                                 74:			List 17
+75:			List 18                                 75:			List 18
+76:			List 19                                 76:			List 19
+77:			List 20                                 77:			List 20
+78:			List 21                                 78:			List 21
+79:			List 22                                 79:			List 22
+80:			List 23                                 80:			List 23
+81:			List 24                                 81:			List 24
+82:			List 25                                 82:			List 25
+83:			List 26                                 83:			List 26
+
+84:				                                 84:	Vct A
+85:	        			                         85:	Vct B
+86:	                        			         86:	Vct C
+87:	                        			         87:	Vct D
+88:	                        			         88:	Vct E
+89:	                        			         89:	Vct F
+90:	                        			         90:	Vct G
+91:	                        			         91:	Vct H
+92:                                                             92:     Vct I
+93:                                                             93:     Vct J
+94:                                                             94:     Vct K
+95:                                                             95:     Vct L
+96:                                                             96:     Vct M
+97:                                                             97:     Vct N
+98:                                                             98:     Vct O
+99:                                                             99:     Vct P
+100:								100:    Vct Q
+101:                                                            101:    Vct R
+102:								102:    Vct S
+103:								103:    Vct T
+104:								104:    Vct U
+105:                                                            105:    Vct V
+106:                                                            106:    Vct W
+107:                                                            107:    Vct X
+108:                                                            108:    Vct Y
+109:                                                            109:    Vct Z
+
+110:                                                            110:	Mat 53		List 53
+111:                                                            111:    Mat 54		List 54
+112:                                                            112:    Mat 55		List 55
+113:                                                            113:    Mat 56		List 56
+114:                                                            114:    Mat 57		List 57
+115:                                                            115:    Mat 58		List 58
+116:                                                            116:    Mat 59		List 59
+117:                                                            117:    Mat 60		List 60
+118:                                                            118:    Mat 61		List 61
+119:                                                            119:    Mat 62		List 62
+120:                                                            120:    Mat 63		List 63
+121:                                                            121:    Mat 64		List 64
+122:                                                            122:    Mat 65		List 65
+123:                                                            123:    Mat 66		List 66
+124:                                                            124:    Mat 67		List 67
+125:                                                            125:    Mat 68		List 68
+
+
+
+
+---------------------------------------- Mat list
+select
+ 0:	Mat A			58:	List  1 		87:	Vct A
+ 1:	Mat B                   59:	List  2                 88:     Vct B
+ 2:	Mat C                   60:	List  3                 89:	Vct C
+ 3:	Mat D                   61:	List  4                 90:	Vct D
+ 4:	Mat E                   62:	List  5                 91:     Vct E
+ 5:	Mat F                   63:	List  6                 92:     Vct F
+ 6:	Mat G                   64:	List  7                 93:     Vct G
+ 7:	Mat H                   65:	List  8                 94:     Vct H
+ 8:	Mat I                   66:	List  9                 95:     Vct I
+ 9:	Mat J                   67:	List 10                 96:     Vct J
+10:	Mat K                   68:	List 11                 97:     Vct K
+11:	Mat L                   69:	List 12                 98:     Vct L
+12:	Mat M                   70:	List 13                 99:     Vct M
+13:	Mat N                   71:	List 14                 100:    Vct N
+14:	Mat O                   72:	List 15                 101:    Vct O
+15:	Mat P                   73:	List 16                 102:    Vct P
+16:	Mat Q                   74:	List 17                 103:    Vct Q
+17:	Mat R                   75:	List 18                 104:    Vct R
+18:	Mat S                   76:	List 19                 105:    Vct S
+19:	Mat T                   77:	List 20                 106:    Vct T
+20:	Mat U                   78:	List 21                 107:    Vct U
+21:	Mat V                   79:	List 22                 108:    Vct V
+22:	Mat W                   80:	List 23                 109:    Vct W
+23:	Mat X                   81:	List 24                 110:    Vct X
+24:	Mat Y                   82:	List 25                 111:    Vct Y
+25:	Mat Z                   83:	List 26                 112:    Vct Z
+26:	Mat <r                  84:	Mat <r>                 113:    Mat <r>
+27:	Mat <theta              85:	Mat <Theta>             114:    Mat <Theta>
+28:	Mat Ans                 86:	Mat Ans                 115:    Mat Ans
+
+29:	Mat a	27		List 27
+30:	Mat b                   List 28
+31:	Mat c                   List 29
+32:	Mat d                   List 30
+33:	Mat e                   List 31
+34:	Mat f                   List 32
+35:	Mat g                   List 33
+36:	Mat h                   List 34
+37:	Mat i                   List 35
+38:	Mat j                   List 36
+39:	Mat k                   List 37
+40:	Mat l                   List 38
+41:	Mat m                   List 39
+42:	Mat n                   List 40
+43:	Mat o                   List 41
+44:	Mat p                   List 42
+45:	Mat q                   List 43
+46:	Mat r                   List 44
+47:	Mat s                   List 45
+48:	Mat t                   List 46
+49:	Mat u                   List 47
+50:	Mat v                   List 48
+51:	Mat w                   List 49
+52:	Mat x                   List 50
+53:	Mat y                   List 51
+54:	Mat z	52              List 52
+55:	Mat <r>
+56:	Mat <Theta>
+57:	Mat Ans
+
+
+
+58:     Mat 53	 		29*2		reg:110
+59:     Mat 54
+60:	Mat 55
+61:	Mat 56
+62:	Mat 57
+63:	Mat 58
+64:	Mat 59
+65:	Mat 60
+66:	Mat 61
+67:	Mat 62
+68:	Mat 63
+69:	Mat 64
+70:	Mat 65
+71:	Mat 66
+72:	Mat 67
+73:	Mat 68
+74:	Mat 69
+75:	Mat 70
+76:	Mat 71
+77:	Mat 72
+78:	Mat 73
+79:	Mat 74
+80:	Mat 75
+81:	Mat 76
+82:	Mat 77
+83:	Mat 78
+84:	Mat    <r>
+85:	Mat    <Theta>
+86:	Mat    Ans
+
+
+87:	Mat 79	a		29*3		reg:136
+88:	Mat 80	b
+112:	Mat 104   z
+113:	Mat    <r>
+114:	Mat    <Theta>
+115:	Mat    Ans
+
+116:	Mat 105			29*4		reg:162
+
+145:	Mat 131			29*5
+
+174:	Mat 157			29*6
+
+203:	Mat 183			29*7
+
+232:	Mat 209			29*8
+
+261:	Mat 235			29*9
+
+290:	Mat 261			29*10
+
+319:	Mat 287			29*11
+
+348:	Mat 312			29*12		reg:394
+
+377:	Mat 338			29*13
+

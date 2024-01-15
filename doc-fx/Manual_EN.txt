@@ -1,0 +1,2488 @@
+﻿Please look at this site
+http://egadget2.web.fc2.com/CBasic/Interpreter/CBasic_interpreter.html
+This site & following text is translated by Krtyski.
+
+Some following text translated by sentaro21 (borrow the power of the automatic translation)
+Sorry that translation is not good...
+(Thanks to Emex for correcting the misspellings)
+
+===============================================================================
+
+Add-in Version Casio Basic Interpreter (& Compiler) ver 2.x Beta Manual
+
+Copyright (c) 2015-2020 by sentaro21
+Contact: (E-mail) sentaro21@pm.matrix.jp
+
+Last update by CalcLoverHK/sentaro21  10 Feb 2020
+
+===============================================================================
+What is C.Basic?
+===============================================================================
+C.Basic is designed for fast, compatible with genuine Casio Basic and also bringing in some of good features of fx-5800P.
+
+C.Basic uses program file (*.g1m) stored in storage memory. Genuine Casio Basic also uses g1m file stored in main memory. A program source using only compatible commands can run in both of C.Basic and genuine Casio Basic.
+
+===============================================================================
+Available Memory
+===============================================================================
+There are 64KB of RAM that can be freely used as add-in, 16KB for the stack area.
+Since 8KB is used as the global variable area of add-in, the remaining 40KB is an area that can be used freely.
+In C.Basic, the remaining 36KB which secured several KB as various buffer areas is a free area (an area that can be used for programs and matrices).
+There is free RAM of 256KB in GII model for user when C.Basic is installed.
+
+(*Later ver.1.75)
+In the case of setting to use maximum memory by the setting without the outside font by setup, a space area of up to 40KB (at the hidden RAM use 233KB) is usable.
+When user uses external font, it decreases by approximately 4KB. And When do not use maximum memory, user memory is limited by the number of the files.
+
+===============================================================================
+Editable size in built-in editor
+===============================================================================
+C.Basic has built-in editor aiming for usability similar to standard editor.
+Copy and paste can be used, but 2KB is the maximum size C.Basic can be copied at once. Undo is not implemented yet.
+
+The initial editable size of the new file is 4KB.
+If you exceed this size when creating the program, you cannot edit it. Please save it once and re-edit.
+The program editable maximum size at the time of re-editing is program size + 2KB.
+
+When executing a program, the main program is executed with securing an editable area of main program size + 2KB and subprogram + 256B.
+It becomes re-editable size in debug mode.
+
+The program editable maximum size is about 20 to 30KB in standard setting not using hidden RAM. (The editable size will change depending on the number of files on storage.)
+When using hidden RAM, it is possible to edit and execute files up to about 62 KB.
+
+
+===============================================================================
+Built-in Debug mode
+===============================================================================
+As a function that is not genuine, resumption of the program interrupted by [AC] and debug mode are equipped.
+Debug mode can also be started in debug mode from the first run.
+Trace execution, 1 step execution, step over, step out are supported.
+
+
+===============================================================================
+Operation Modes
+===============================================================================
+C.Basic supports three different operation modes,  "Real (Number) Mode" and  "Complex Mode" as same as genuine Casio Basic does, and C.Basic-exclusive "Integer Mode" only allows handling integer. The Integer Mode was implemented to C.Basic for faster operation.
+
+In order to set either of those operation modes, to set "Real Mode" declare one of followings;
+
+'#CBasic
+'#CBASIC
+'#CBdbl
+'#CBDBL
+
+To set "Integer Mode" declare one of followings;
+
+'#CBint
+'#CBINT
+
+To set "Complex Mode" declare one of followings;
+
+'#CBcplx
+'#CBCPLX
+
+In C.Basic, real number is implemented in double-precision real type, so real and double-precision is the same.
+
+You can set default settings in Setup page.
+
+In order to set default operation modes, set "Execute mode" as Dbl# or "Int%".
+
+The declared running mode in source file has priority to setting in the Setup page.
+
+In "Integer Mode", result value of calculation have to be given in integer, but the operation speed is faster than in "Real Number Mode" by factor of 1.5.
+
+If you set "Integer Mode" but want to evaluate a specific expression in real number (double-precision), simply add prefix # before the expression you want. The expression after # is evaluated in double-precision without error. But, please note the evaluation result in double-precision is converted to integer, so the expression after # returns integer value is rounded to integer to fit the "Integer Mode".
+
+(Example)
+ "100*Frac 1.23+5
+
+In "Integer Mode", Frac 1.23 is in error and the following codes cannot run, but the prefix # enable evaluation in double-precision of expression after # to end of line or ":" (multi-statement command).
+#(Frac 1.23*100+5)
+
+So, result of this line is 28. If this code runs in "Real More", it also results in 28.
+
+If # is in middle of expression, a part of the expression after # to end of line or multi-statement command.
+
+(Example)
+100*#Frac 1.23+5
+
+Interpretation of this expression is
+100*#(Frac 1.23 + 5)
+So it results in 523 in "Real Mode" and 500 in "Integer Mode".
+
+===============================================================================
+About Running Wait
+===============================================================================
+You can adjust the overall execution speed.
+If it is set in setup, all programs will be affected.
+
+Use the Wait command if you want to adjust with individual programs.
+ (Example) Wait 100
+ Set the Wait value to 100.
+
+
+===============================================================================
+Type of Numbers
+===============================================================================
+Genuine Casio Basic use decimal number with internally 15 digits and 2 digits of exponent notation. On the other hand, C.Basic uses a double precision real number type (8 Bytes) and 4 Bytes integer type, since C language of Casio SDK has the same specification.
+A range of number that the double precision real number can handle is
++-9.88131291682493e-323 to +-1.7976931348623151e+308
+This range is wider than genuine Casio Basic, but operation is carried out in binary, so we have to keep in mind that handling of number after decimal point may cause possible calculation error.
+
+We can put prefix 0X or 0B like C language to value of constant and then we can use hexadecimal or binary number within 32 bits.
+(Example) 0XFF, 0B10100110
+(Example) 0xAB, 0b10100110
+
+
+===============================================================================
+Type of Variables
+===============================================================================
+As well as genuine Casio Basic, C.Basic uses single letter variables, 26 capital letters A to Z and also small letters a to z.
+
+String variable with more than 2 letters is not supported by C.Basic as well as genuine Casio Basic.
+
+C.Basic provides independently real number type of variables (A - Z, a - z) and integer type of variables (A - Z, a - z). Real number variables are used in real number running mode and also integer variables in integer running mode. Internally the different type of variable still use same letter, so we should put % suffix for integer variables (A% - Z%, a% - z%), put # suffix for real number variables (A# - Z#, a# - z#).
+
+When an integer variable with % suffix is used in real number mode, it will not be a problem. But on the other hand, if a real number variable is used in integer mode we have to understand that read-out value from the real number variable is rounded to integer.
+When real number value does not fit in the range of integer number, the value is changed to 0 (zero).
+
+(Example) #CBINT //set to integer mode
+          1.2345->A#  //1.2345 is rounded to 1, then 1 is substituted.
+
+(Example)   A%->A#
+Copy integer variable A to double-precision variable A.
+Copying integer value to double-precision variable is no problem. But double-precision value is going to be contained into integer variable, this may have a problem, in case the value does not fit into a range of integer (32 bits) the value is changed to 0.
+
+At initialization of variable, we can use a Format 0->A ~ Z (genuine Casio Basic can do this) and also we van set type of variable.
+0->A#~Z#   // initialize double-precision variable
+0->A%~Z%   // initialize integer variable
+
+
+===============================================================================
+Extended Variable                                                        1.70 -
+===============================================================================
+The variable by an alphanumeric character’s name beginning with under bar (to 8 characters) is usable.
+It is always initialized at the time of program starts with the variable of the area independent of the conventional one character variable.
+The usable variable becomes to 32. The real number variable and the integer variable can maintain a different value, but are found by the same name.
+[SHIFT]+[F1] the capital letter variable, the small letter variable, the indication of the under bar variable are replaced whenever to push [F1].
+(Example) 123.456->_ABC
+(Example) 456->_ABC%
+(Example) _ABC+_ABC%->_Result
+ _Result is 579.456
+
+===============================================================================
+About the constant number use of the variable                            1.70 -
+===============================================================================
+To use Const command with a variable as constant number use-limited.   [OPTN] - [F3] (extd) - [F3] (Const)
+Since then cannot substitute it when to use Const command at the time of variable substitution.
+(Example) 123->Const A
+(Example) 123->Const _ABC
+(Example) 456->A
+If you are going to change the value of the variable by the same program, it becomes the error.
+
+
+===============================================================================
+About VRAM
+===============================================================================
+Text screen and graphics screen are independently implemented in C.Basic as well as genuine Casio Basic. Actually only one VRAM, called Display-VRAM is used to display to LCD by commands.
+
+There are 3 VRAMs;
+- Display-VRAM is used to output to LCD
+- Text-VRAM is an RAM area to save data for text screen
+- Graphics-VRAM is an RAM area to save data for graphics screen
+
+Those 3 VRAMS with same size are implemented.
+
+When a text display command runs in "text display mode", the process sends data to Display-VRAM. When a text display command runs in "graphics display mode", the process retract Display-VRAM to Graphics-VRAM at first then transfer Text-VRAM to DisplayVRAM, and then display text output in Display-VRAM.
+
+When a text display command runs repeatedly, skipping retraction to Graphics-VRAM and transferring to Text-VRAM, then only drawing text on -Display-VRAM is continued (still in "text display mode").
+
+Still in this "text display mode" when a graphics command runs, retract Display-VRAM to Text-VRAM, then resume Graphics-VRAM to Display-VRAM, and then draw graphics in Display-VRAM (switch to "graphics display mode").
+
+As you see above, memory area such as Text-VRAM and Graphics-VRAM are NOT directly used for output to LCD, but merely data storage area. So once Text mode and Graphics mode are switched, at every time of this VRAM transferring is carried out among VRAM, Text-VRAM and Graphics-VRAM.
+
+
+===============================================================================
+Drawing on LCD
+===============================================================================
+In order to draw text or graphics on screen in fx-9860G / fx-9860GII, data in VRAM is transferred to LCD.
+
+Transferring to LCD includes quite a few overhead, so it takes totally long time (it is inefficient) to transfer data to LCD (refresh) at every single time when a draw command runs.
+
+To get rid of the inefficiency C.Basic provides Refresh Control function. You can set to suppress the refresh at every single time when a draw command runs, and can set to carry out refresh in regular intervals (this setting is available in Setup page and also by command).
+
+With the setting for refresh in regular intervals, the last command in repeating drawing operation may lose a chance to refresh, then before refreshing to reflect the last drawing command the next command possibly runs.
+
+In order to avoid this problem, we want to force the refresh then use PutDispDD to refresh screen.
+
+===============================================================================
+Extended Matrix
+===============================================================================
+Specification and Usage of Matrix in C.Basic is different from genuine Casio Basic as follows.
+C.Basic covers genuine Casio Basic's Usage of matrix, real number can be used in Real Number Mode and integer can be used in Integer Mode.
+Matrix in C.Basic can handle Bit (1 bit), BYTE (1 byte) and WORD (2 byte) as well as real number (8 byte) and integer (4 byte) as type of matrix.
+
+Add suffix to matrix name at matrix allocation to declare type of the matrix;
+- [.P] or [.p]: 1 bit Integer Matrix, handling number is 0 to 1.
+- [.N] or [.n]: 4 bit Integer Nibble Matrix, handling number is 0 to 15.
+- [.B] or [.b]: 8 bit Integer BYTE Matrix, handling number is -128 to 127.
+- [.W] or [.w]: 16 bit Integer WORD Matrix, handling number is -32,768 to 32,767.
+- [.L] or [.l]: 32 bit Integer Long WORD Matrix, handling number is -2,147,483,648 to 2,147,483,647.
+- [.F] or [.f]: 64 bit Double-Precision Real Number Matrix, handling number is 9.88131291682493e-323 to 1.7976931348623151e+308.
+- [.C] or [.c] : 64x2 bit Double-Precision Real and Imaginary Number Matrix, handling number is 9.88131291682493e-323 to 1.7976931348623151e+308.
+
+As with genuine, the matrix is {m, n} type and is implemented as {row, column}.
+As an exception, 1 bit type is an implementation of {column, row} with {X,Y} type implementation.
+
+Since the 1 bit matrix has the same data structure as the VRAM of the screen,
+When [.V] or [.v] is specified, VRAM can be read and written by assigning it to a matrix of 128 rows x 64 columns.
+Furthermore, you can assign graphic VRAM with [.VG], text VRAM with [.VT] to matrix.
+The index base starts at 0 and the matrix size is fixed at {128,64}.
+
+ (Example) {128,64}->Dim Mat G.V
+  By accessing Mat G, you can directly read and write VRAM at that point, but since it is not a display system command,
+  When displaying the screen, it must be forcibly displayed after executing the command.
+
+ (Example) {128,64}->Dim Mat G.V
+  Screen.G // Graphic screen selection (other graphic commands are acceptable)
+  1 -> Mat G [63,31]
+  PutDispDD // screen transfer command
+  You can put a dot in the middle of the graphic screen.
+  It is the same as PxlOn 31,63.
+
+ (Example) {128,64}->Dim Mat G.V
+  Screen.T // Text screen selection (Other text based commands are acceptable)
+  1 -> Mat G [63, 31]
+  PutDispDD // screen transfer command
+  You can put a dot in the middle of the text screen.
+
+
+===============================================================================
+Initialization of Matrix
+===============================================================================
+As with genuine,
+{M, n} -> Dim Mat A Format,
+[[1,2,3][4,5,6]] -> Supports Mat A Format initialization.
+
+In addition, at fx-5800P
+100->Dim A
+It supports Format.
+0->Dim A
+Delete matrix A
+
+In Mat matrix initialization command [[]], it is possible to insert newline and space.
+ (Example)
+ [[0B11001100,
+   0B00110011,
+   0B11001100,
+   0B00110011
+ ]]->Mat A.B
+
+Added Dim Dim option.
+ (Usage) {m,n}->Dim Dim Mat A (real address of the Mat)
+ (Example) {128,1}->Dim Mat A.B
+ (Example) {64,1}->Dim Dim Mat B.W(VarPtr(Mat A))
+ Mat A and Mat B access in the same domain, but are different in byte access or the word access.
+
+===============================================================================
+Access to matrix
+===============================================================================
+In addition to the usual Mat A[1,1] Format,
+Mat was omitted
+A[1,1]
+With only the first row of access
+A[1]
+Notation is also possible.
+
+Furthermore, only when the subscript is the numerical value 0 to 9,
+A0
+A5
+You can write it.
+
+The variable of this notation is automatically reserved for the matrix if the matrix which becomes the entity is not reserved in advance.
+(Example) A1+123->B5
+If Mat A and Mat B are not secured, at the time the variable is 1st accessed
+9->Dim A
+9->Dim B
+The same initialization as in 1 is executed automatically, and A1 to A9 and B1 to B9 can be used.
+
+(Example) '#Mat 0
+A1+123->B5
+In the case that Mat A and Mat B are not secured,
+ 10->Dim A
+ 10->Dim B
+The same initialization as in A0 to A9 and B0 to B9 can be used automatically.
+
+(Example) '#Mat 0
+2->Dim B
+A1+123->B5
+ In the case of,
+ 10->Dim A
+Since only Mat A is initialized and Mat B is not reacquired, an error will occur at the time of accessing B5.
+In this case you can use A0 ~ A9 and B0 ~ B1.
+
+===============================================================================
+Matrix Type Conversion
+===============================================================================
+The matrix type (1 bit, byte, word, long word, real number) can be arbitrarily changed even after matrix reservation.
+(Example) [[1,2,3,4] [5,6,7,8]] -> Mat A.B
+Mat A->Dim Mat A.W
+You can change the Mat A matrix of byte type to word type.
+The number of elements will change according to the type size after change.
+[[0x0102,0x0304][0x0506,0x0708]]->Mat A.W
+The result is the same.
+
+(Note) Changes from a 1-bit matrix and changes to 1-bit type matrix are reversed in rows and columns.
+This is because the 1-bit type matrix is implemented in X and Y type, so it is a transposed matrix relation with ordinary m, n type matrix.
+{127,63}->Dim Mat A.P
+It secures it as a buffer that can be used as the virtual memory of the full screen bitmap data of the LCD screen.
+Mat A->Dim Mat A.B
+By changing to a byte type matrix,
+The element size is {63,16}.
+
+
+===============================================================================
+1st Index of Matrix
+===============================================================================
+In genuine Casio Basic, the index of a matrix starts with 1, but in C.Basic it can start with 0.
+You can select the beginning of a matrix by describing it in setup or comment field.
+(Example) #Mat 1
+It starts from 1 as before.
+(Example) #Mat 0
+{3,2}->Dim Mat A
+ The matrix to be allocated is A[0,0] to A[2, 1].
+
+At the same time, screen coordinates are also valid up to 0. This makes the whole screen the drawing target area
+(Example) Pxlon 0,0
+
+
+===============================================================================
+Matrix Review
+===============================================================================
+You can display binary and hexadecimal numbers in Mat matrix editor.
+Pressing [F5] in matrix editing mode will display binary numbers, [F6] will display hexadecimal numbers.
+To return to the decimal number display, press [F5] [F6] again.
+However, the binary notation is up to the matrix of byte (1 byte) and word type (2 bytes).
+
+Press the [OPTN] key to change to the list name display.
+Press the [VARS] key to change to the character string display.
+
+===============================================================================
+Supported list function
+===============================================================================
+List functions are implemented by assigning one dimension of Mat.
+List 1~26 is independent List.
+Mat a ~ z of lower case Mat matrix to List 27 ~ 52.
+List 27[5] = Mat a[5, 1]
+List 28[5] = Mat b[5, 1]
+List 29[5] = Mat c[5, 1]
+List 100[5] = Mat 100[5, 1]
+List 1000[5] = Mat 1000[5, 1]
+It has the same meaning.
+
+The following command of genuine function is supported.
+
+List Ans
+10->Dim List 1
+{1,2,3,4,5}->List 1
+Seq(X^2,X,1,10,2)->List 2
+Augment(List 1,List 2)->List 3
+Mat>List(Mat A,2)->List 1
+List>Mat(List 1,List 2,...)->List 9
+Fill(3, List 1)
+Min(List 1)
+Max(List 1)
+Mean(List 1)
+Sort A(List 1)
+Sort B(List 1)
+Sum List 1
+Prod List 1
+
+Arithmetic and functional arithmetic including List.
+
+
+===============================================================================
+Supported vector function
+===============================================================================
+ Vct
+ DotP(
+ CrossP(
+ Angle(
+ UnitV(
+ Norm(
+ ClrVct
+(*)The area of Vct A~Z becomes independent.
+To change [VARS] key for Vct display of Mat/List/Vct screen.
+
+
+===============================================================================
+Strings in C.Basic
+===============================================================================
+Like the original Casio Basic, you can use Str character variables and string functions, but the substance of the string is implemented as a matrix.
+
+By attaching $ as the prefix, the Mat matrix is recognized as a string.
+(Example) ["ABCDEF"] -> Mat A
+Locate 3,3,$Mat A
+"ABCDEF" is displayed on the screen coordinates (3, 3).
+
+ at first
+{7,1}->Dim Mat A.B
+  The same initialization as that is done automatically.
+And the string is stored as byte type data in the matrix.
+
+
+-Character string functions compatible with Casio Basic
+ + (Concatenation of character strings)
+ StrJoin(
+ StrLen(
+ StrCmp(
+ StrSrc(
+ StrLeft(
+ StrRight(
+ StrMid(
+ Exp>Str(
+ Exp(
+ StrUpr(
+ StrDwr(
+ StrInv(
+ StrShift(
+ StrRotate(
+
+(Example) "ABCDEF"->Str 1
+Locate 3,3,StrRight(Str 1,3)
+"DEF" is displayed on the screen coordinates (3, 3).
+
+
+The characters used in fx-9860GII include single - byte characters (alphanumeric characters, some commands) and double - byte characters (almost all commands, special characters and kana)
+Internally, 1 byte and 2 byte characters are mixed, but handling with character functions is handled as one character as well as genuine.
+Please pay attention to the position of the character when accessing the matrix element where the character string is stored directly.
+
+
+===============================================================================
+Initialization of String
+===============================================================================
+The same character variable Str 1-20 as genuine implicitly uses <r> of Mat matrix by default.
+By default, the number of characters is limited to 255 characters.
+The Str character variable is automatically secured as a Mat matrix and can be used with genuine compatibility in the next character string command, so it is not necessary to be conscious of the matrix.
+If initialization of Str string is not specified, initialization of Mat matrix is automatically performed as follows.
+{20, 65} -> Dim Mat r
+
+The Mat matrix which is the substance of the Str character variable can be arbitrarily specified, and it is specified in the comment field before using the Str variable.
+(Example) '#Str A
+We secure the Str variable as Mat A.
+{20,65}->Dim Mat A.B
+It is the same as.
+(Example) '#Str B,30,256
+Secure the Str variable as Mat B as a possible variable up to 30 and 255 characters.
+
+The following Format can be used for assigning a character string.
+(Example) "ABCDEEF"->Str 1
+(Example) ["ABC","TEST","1+3+5"]->Mat A
+We automatically allocate Mat A [3,6] matrices of byte type and place character strings on each element.
+ Mat A[1,1] = "ABC"
+ Mat A[2,1] = "TEST"
+ Mat A[3,1] = "1+3+5"
+.
+To access "ABC" with a character string correspondence command, it is $Mat A, or $Mat A[1], or $Mat A[1,1].
+To access "1+3+5" it will be $Mat A[3], or $Mat A[3,1].
+(Example) Locate 1,1,$Mat A
+Locate 1, 1, same as "ABC".
+(Example) Locate 1,1,$Mat A[3,3]
+It is the same as Locate 1,1,"3+5".
+
+This command corresponds to a character string in the current version. It is used in $ Mat Format instead of "".
+- ""
+(Example) $Mat A[1]
+It is the same as "ABC".
+-?
+(Example)?->$Mat A
+Enter a string in matrix Mat A. The number of characters is limited by the number of secured elements.
+Locate
+- Text
+- LocateYX
+- Exp(
+(Example) Exp("1+2+3")->6
+(Example) Exp($Mat A[3,3])->8
+ Evaluates the string as a mathematical expression and returns the value.
+
+
+===============================================================================
+Sprintf - an Extended Command
+===============================================================================
+As genuine there is no conversion function from number to character string, Sprintf (C language compatible specification of SDK was added as additional character string function.
+(Specification) Sprintf ("Format specifier", argument 1 [, argument 2 [, argument 3]]))
+(Example) Sprintf ("A=%4dB=%3.2f",%A,#B) -> Str 1
+When A=1234 and B=45.678,
+The character string assigned to Str 1 is
+A=1234 B=45.68.
+Since Format specification is compatible with sprintf in C language, the numerical expression such as exponential notation etc. is somewhat different.
+  Up to three arguments can be specified, and integer / real number / character string can be specified.
+The% prefix specifies an integer, and the prefix specifies a real number.
+  If prefix is left out, it becomes the execution mode (real / integer) at that point.
+  There is no error check for Format specification and argument correspondence, so please be careful because there is a possibility of reset or restart if an error occurs with Sprintf (command).
+
+(Attention) The subtraction character "-" is necessary to input from [F4](CHAR)
+
+
+===============================================================================
+Command Reference
+===============================================================================
+Compatible Commands with Casio Basic
+===============================================================================
+?
+(Disps)
+->
+If ~ Then ~ Else ~ IfEnd
+Lbl ~ Goto
+=! => <> = <=
+
+Dsz / Isz
+=>
+Locate
+Menu
+
+For ~ To ~ Step ~ Next
+While ~ WhileEnd
+Do ~ LpWhile
+Break
+Return
+Stop
+Getkey
+Prog
+
+ClrMat
+ClrList
+Mat (Matrix Calculations is supported.)
+List (Operation including List is supported.)
+Dim
+Fill(
+Seq(
+Augment(
+Mat>List(
+List>Mat(
+Min(
+Max(
+Mean(
+Sort A(
+Sort B(
+Sum
+Prod
+Swap / *Row / *Row+ / Row+
+Trn
+Identity
+DotP(
+CrossP(
+Angle(
+UnitV(
+Norm(
+
+i / Arg / Conjg / ReP / ImP / >r/_theta / a+bi
+Real / a+bi / r/_theta
+
+Cls ClrText ClrGraph
+ViewWindow
+Plot / PlotOn / PlotOff / PlotChg
+Circle
+Line / F-Line
+Vertical / Horizontal
+
+PxlOn / PxlOff / PxlChg
+PxlTest(
+Text
+
+
+SketchNormal / SketchThick / SketchBroken / SketchDot
+S-L-Normal / S-L-Thick / S-L-Broken / S-L-Dot
+
+G-Connect / G-Plot
+CoordOn / CoordOff
+GridOn / GridOff
+AxesOn / AxesOff
+LabelOn / LabelOff
+BG-None / BG-Pict
+
+DrawGraph (partially supported)
+Graph Y= (partially supported)
+GraphY (partially supported)
+
+Graph(X,Y)= (Partially supported)
+DrawStat (partially supported)
+S-Gph1, S-Gph2, S-Gph3, DrawOn, DrawOff, Scatter, xyLine, Square, Cross, Dot
+
+Xmin Ymin Xmax Ymax Xscl Yscl Xfct Yfct Xdot
+T [theta] Min T [theta] Max T [theta] Ptch
+
+Deg Rad Grad
+
+And Or Not Xor
+
+Abs Int Frac Intg
+
+MOD
+Rmdr Int/
+Log ln logab(
+10 ^ x e ^ x
+X ^ -1
+Sqr x ^ 2
+Sqr ^ -3
+Sin cos tan
+Sin^-1 cos^-1 tan^-1
+Sinh cosh tanh
+Sinh^-1 cosh^-1 tanh^-1
+
+Femto pico nano micro milli Kiro Mega Giga Tera Peta Exa
+
+(deg) r (rad) g (gra)
+> DMS
+
+Str
+StrJoin(
+StrLen
+StrCmp(
+StrSrc(
+StrLeft(
+StrRight(
+StrMid(
+Str>Exp(
+Exp(
+StrUpr(
+StrDwr(
+StrInv(
+StrShift(
+StrRotate(
+
+StoPict / RclPict
+RclCapt
+
+Ran#  RanInt#(  RanNorm#(  RanBin#(  RanList#(
+Rnd  RndFix(
+Norm / Fix / Sci
+Eng / EngOn / EngOff
+
+
+
+===============================================================================
+Command reference extended command
+===============================================================================
+-------------------------------------------------------------------------------
+?			[SHIFT]+[VARS](PRGM)-[F4](?)
+-------------------------------------------------------------------------------
+You can use more options in input command.
+(Usage) ?([x][,y][,width][,"SpaceChar"][,limit][,R])
+(Example) "A="?()->A
+ Display "A=" then wait for input A value.
+(Example) "A="?(,,,,,R)->A
+ Display "A=" then wait for input A value in reversed display.
+(Example) "A="?(,,8,,,R)->A
+ Display "A=" then wait for input A value within only 8 digits in reversed display.
+(Example) "A="?(3,4,5,">",5)A
+ Display "A=" and the value of A then wait for input A value at(X=3,Y=4) within 5 digits or 5 characters and the blank is made up in ">".
+(Example) "A="?(3,4,5,,5,R)A
+ Display "A=" and the value of A then wait for input A value at(X=3,Y=4) within 5 digits and 5 characters in reversed display.
+-------------------------------------------------------------------------------
+Fix			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F1](Fix)
+Sci			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F2](Sci)
+Norm			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F3](Norm)
+Eng			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F4](ENG)-[F3](Eng)
+-------------------------------------------------------------------------------
+Eng, Norm, Fix, Sci return current state (On or Off).
+
+Eng returns current state;
+- Value 0: state of EngOff
+- Value 1: state of EngOn
+Norm, Fix, Sci
+To return current status, set negative value as parameter*;
+(Note*) To add the parameter, ( ) is not necessarily required.
+If current state is Norm1, return values are;
+- Norm (-1) gives 1
+- Fix (-1) gives -1
+- Sci (-1) gives -1
+
+If current state is Fix 8, return values are;
+- Norm (-1) gives -1
+- Fix (-1) gives 8
+- Sci (-1) gives -1
+
+-------------------------------------------------------------------------------
+EngOn			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F4](ENG)-[F1](EngOn)
+-------------------------------------------------------------------------------
+3-digit separator can be displayed.
+
+(Example) EngOn 3
+ After this commend, number is displayed with 3-digit separator ",".
+ EngOff to cancel 3-digit operator.
+
+-------------------------------------------------------------------------------
+RndFix(			[OPTN]-[F6]-[F4](NUMERIC)-[F6]-[F1](RndFix)
+-------------------------------------------------------------------------------
+Added option of RndFix( that the maximum number of significant digits.
+(Format) RndFix(value, Sci digits)
+(Example) RndFix(1.23456789e-123,Sci 5)
+ Return value of 1.2346e-123.
+
+-------------------------------------------------------------------------------
+StoPict			[OPTN]-[F6]-[F6]-[F2](PICTURE)-[F1](Store)
+RclPict			[OPTN]-[F6]-[F6]-[F2](PICTURE)-[F2](Recall)
+-------------------------------------------------------------------------------
+These commands can be used in 2 different modes, a mode storing in storage memory and a mode storing in heap memory secured in main memory.
+
+To set the mode, open "Setup" page by [SHIFT][MENU](Setup), select to item "Pict", then set [F1](MEM) or [F2](Heap).
+When "Heap" is set, we lose compatibility of Pict file with genuine Casio Basic, but access speed to Pict file will be faster.
+The program source itself keep compatibility, so source in genuine Casio Basic can run in C.Basic.
+
+-------------------------------------------------------------------------------
+ElseIf			[SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F5](ElseIf)
+-------------------------------------------------------------------------------
+Format: If ~ Then ~ ElseIf ~ IfEnd
+Usage:
+
+(Casio Basic)
+ If A
+  Then Locate 1,1,"A"
+  Else If B
+   Then Locate 1,2,"B"
+  IfEnd
+ IfEnd
+
+(C.Basic)
+ If A
+  Then Locate 1,1,"A"
+  ElseIf B
+  Then Locate 1,2,"B"
+ IfEnd
+
+ElseIf is similar to Else If. But it makes the program need one nesting only. Use only one IfEnd in the end.
+
+The number of IfEnd corresponding to If is not strictly checked in genuine Casio Basic. But in C.Basic you can set if you want the strict check or not at item "IfEnd Check" in "Setup" page.
+Set "On" at "IfEnd Check", an error message may pop up in run time, and cursor locates at If command which does not have any corresponding IfEnd.
+
+-------------------------------------------------------------------------------
+Locate			[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F1](Locate)
+-------------------------------------------------------------------------------
+(Format) Locate [@][!]X,Y,<"string" or expression>,[,N/R]
+ [@] The drawing of the command becomes current VRAM.
+ [!] Even if the extended font is introduced, drawing in the original font forcibly.
+ [.N] Normal
+ [.R] Reverse
+
+Add [,R] at the end of parameters, the display is reversed.
+ (Example) Locate 1,2,"Test",R
+  Reversed "Test" is displayed at location (1,2).
+
+-With prefix # to expression (parameter) in Locate as well as Sprintf, Text and Disp commands makes evaluation of the expression in real number.
+ In "Integer Mode", the expression with prefix # allows displaying string of "real number" which reflects the evaluation in real number. Prefix # helps display in "Integer Mode" to handle "real number" by Locate, Sprintf, Text and Disp commands.
+(Example)
+ '#CBINT
+ 10->A
+ Locate 1,2,log 123+A
+ In Integer Mode, "log 123+A" is rounded to 12, but
+(Example)
+ '#CBINT
+ 10->A
+  Locate 1,2,#log 123+A
+With the prefix #, it is not rounded and display 12.089905111.
+An expression after prefix # is handled as real number, but variable (for Example A above) is still used as integer variable, so prefix % should not be added.
+
+-------------------------------------------------------------------------------
+Switch			[SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F1](Switch)
+Case			[SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F2](Case)
+Default			[SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F3](Default)
+Break			[SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F4](Break)
+SwitchEnd		[SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F5](SwitchEnd)
+-------------------------------------------------------------------------------
+C.Basic supports Switch statement from C Language.
+(Format)
+ Switch <value or expression>
+  Case <value or expression>
+   [<expressions>]
+   [Break]
+　Default
+　 [<expressions>]
+   [Break]
+ SwitchEnd
+
+You can set multiple cases as you want.
+Without "Break", program control goes through to the next "Case".
+Note, "Default" should be placed in the last, otherwise unexpected result may occur.
+
+(Example)
+ Switch A:
+  Case 1:Locate 1,1,"A"
+   Break
+  Case 2:Locate 1,2,"B"
+  Case 3:Locate 1,3,"C"
+   Break
+  Default
+   Break
+ SwitchEnd
+
+-------------------------------------------------------------------------------
+ACBreak			[SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F6]-[F2](ACBreak)
+-------------------------------------------------------------------------------
+"ACBreak" command gives exactly the same result as to press [AC] key during program runs.
+
+Availability of "ACBreak", enable or disable can be set at item "ACBreak" in "Setup" page. When "ACBreak" is Off (disable), the command "ACBreak" is ignored and is not breaking the program.
+
+(Example) ACBreak
+
+Input command "ACBreak" and "Stop" right after ACBreak, then "ACBreakStop" command cancel all the ACBreak after this command. This gives exactly the same result as to set "Off" for ACBreak in "Setup" page.
+
+(Example) ACBreakStop
+
+-------------------------------------------------------------------------------
+Local			[SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F5](Local)
+-------------------------------------------------------------------------------
+In C.Basic all the variables including small letter variables are "global variable" as default. But some small letter variables can be used as "local variable" with "Local" command.
+
+Set small letter variables to "Local" command in a program, then those variables can be local, the scope is only within the single program.
+
+(Example) Local x,y,z
+  - Parameters x, y and z are now local variables.
+  - Maximum 10 small letters can be set as local variable.
+  - In the same order of the parameters can be passed to sub-routine with Prog command.
+
+(Example)
+In sub-routine "TEST", use Local with 3 small letters for local variables;
+
+  Local x,y,z
+  (Describe this in the sub-routine, the position can be where ever you like...)
+
+Then in main routine describe use Prog command with 3 extra parameters;
+
+  Prog "TEST",123,456,N
+  (At calling sub-routine "TEST", pass 123, 456 and N to "TEST" in the same order,
+  That means 123->x, 456->y, N->z in the sub-routine, other variables are still global.)
+
+Using local variables, a recurrence algorithm is available in C.Basic, but at this moment maximum nesting is about 16 levels.
+
+-------------------------------------------------------------------------------
+Prog			[SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F1](Prog)
+-------------------------------------------------------------------------------
+Use with "Local" command, "Prog" can handle arguments and returns with sub program.
+
+(Example)
+  "MAIN" Program
+  10->X
+  20->Y
+  X+1->a
+  Y*2->b
+  Prog "SUB",X,Y
+  Disp Ans
+  Disp a
+  Disp b
+
+  "SUB" Program
+  Local a,b
+  Dips a
+  Disp b
+  Return a+b
+
+Result Output
+ 10
+ 20
+ 30
+ 11
+ 40
+
+"MAIN" program calls "SUB" program calculating sum of 2 numbers and display the result.
+  In the sub program, variables a and b is secured as local variables, so cannot access to global variables a and b.
+  In the main program, a and b are global variables, so the variables are free of the influence of global variables a and b in the sub program.
+
+-------------------------------------------------------------------------------
+Return			[SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F2](Return)
+-------------------------------------------------------------------------------
+"Return" command returns from sub-routine, in C.Basic a return value can be sent back to main routine.
+
+(Example) Return
+  The return value, a value of is substituted in "Ans".
+
+-------------------------------------------------------------------------------
+Gosub			[SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F6]-[F1](Gosub)
+-------------------------------------------------------------------------------
+"Gosub" command allows to use sub-routine within single program.
+
+(Format 1) Gosub A
+  Jump to "Lbl A", proceed codes until "Return", then resume back.
+
+(Format 2) Gosub A,123,456
+  With Local command, arguments can be used as similar to Prog command, but all the codes are in single program, so the variables are global.
+
+(Example)
+  10->X
+  20->Y
+  X+1->a
+  Y*2->b
+  Gosub A,X,Y
+  Disp Ans
+  Disp a
+  Disp b
+  Stop
+
+  Lbl A
+  Local a,b
+  Dips a
+  Disp b
+  Return a+b
+
+Result Output
+ 10
+ 20
+ 30
+ 10
+ 20
+
+This sample program is similar to (Example) program of Prog command. Variables a and b are secured as local variable, so cannot access to global variables a and b in this program.
+
+-------------------------------------------------------------------------------
+ElemSize(		[OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F2](Elem)
+RowSize(		[OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F3](Row)
+ColSize(		[OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F4](Col)
+-------------------------------------------------------------------------------
+Functions to obtain size of a matrix.
+
+ElemSize(
+  Return size (in bit) of element.
+  (Example) ElemSize(Mat A)
+RowSize(
+  Return m of {m,n}, row size of a matrix.
+ColSize(
+  Return m of {m,n}, column size of a matrix.
+
+-------------------------------------------------------------------------------
+MatBase(		[OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F1](Base)
+-------------------------------------------------------------------------------
+Functions to obtain start index value of matrix
+(Example) MatBase(Mat A)
+
+-------------------------------------------------------------------------------
+Getkey			[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F2](Getkey)
+-------------------------------------------------------------------------------
+There are following features for Getkey in addition to genuine Casio Basic;
+  - Getkey: compatible with genuine Casio Basic.
+  - Getkey1: pause until any key is pressed (same as SDK's Getkey).
+  - Getkey2: clear key buffer then accept input. (Recommend use in SH3 version.)
+  - Getkey3: pause for a certain period before accept input.
+  - GetkeyM: puts multiple pressed keys into a list.
+* The number right after Getkey should be input by ten key.
+
+Keycode is fully compatible with genuine Casio Basic, but not compatible with SDK.
+
+In fx-9860GII (SH4A version), back light control by [SHIFT]+[OPTN] is available.
+
+Power Off by [SHIFT]+[AC] as well as [AC] is not supported yet to obtain keycode.
+
+(Example) Getkey3(128)
+  Set 128 Ticks count (1 sec) for pause. This does not return keycode during the pause, but returns keycode of last key press after the key wait period.
+
+(Example) Getkey3(128,A)
+  Pause until 128 Ticks count of current timer with initial timer as set by A (in Ticks count).
+
+* In case Getkey1 does not properly work in SH3 version, use Getkey2 instead of Getkey1.
+
+ (Example) GetkeyM->List 1
+  Press EXE and F1 will result in {79,31}
+
+* When validate Exec TimeDsp,
+the time measurement stops during GetKey1/2, but can make reset & restart by setting.
+ I can set it by setup or the following control commands.
+(Format) '#GetKeyC
+ It is the stop of the timer of the default, a continuation mode.
+(Format) '#GetKeyR
+ Timer restarts reset & after GetKey1/2.
+
+-------------------------------------------------------------------------------
+Try~Except~TryEnd		[SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F6]-[F3](Try)
+								(Later Ver.2.00)
+-------------------------------------------------------------------------------
+Exception handling can be performed according to the error.
+ (Format)
+ Try <expression>
+　Except [<error code>]
+   <expressions>
+ TryEnd
+
+You can have more than one Except for different error codes.
+If there is no error in <program>, processing will move after TryEnd.
+If error occurs and the corresponding error code matches the value after Except, processing will move to <expressions> and executes, then goes after TryEnd.
+When error that does not match the error code occurs, an error pop-up appears because there is no corresponding Except <error code>.
+Except with no argument corresponds to all errors. If any error occurs, processing will move to <expressions> and executes.
+
+ (Example)
+ Try 3*4+
+  Except 1
+   "Syntax Error"
+ TryEnd
+
+"Syntax Error" is executed instead of showing error message, since "Syntax Error" error code is 1.
+
+ (Example)
+ Try 3*4/0
+  Except 1
+   "Syntax Error"
+  Except 40
+   "Divide by Zero"
+ TryEnd
+
+"Divide by Zero" is executed instead of showing error message, since "Division by Zero" error code is 40.
+
+ (Example)
+ Try 3*4/0
+  Except 1
+   "Syntax Error"
+  Except
+   "Error"
+ TryEnd
+
+If there is no Except corresponding to an error, "Error" is executed because Except with no argument corresponds to all errors.
+
+The sample program is in CBasic_sample/Try_Except.
+Refer to ErrorCode_List.txt for the error code in the ZIP package.
+
+-------------------------------------------------------------------------------
+Version			[SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F6]-[F5](Version)
+								(Later Ver.1.74)
+-------------------------------------------------------------------------------
+Returns the version number.
+(Example) Version           [SHIFT]+[MENU](SETUP)-[F6]-[F6]-[F6]-[F6]-[F5](Version)
+ When ver.0.45, return value is 45
+
+-------------------------------------------------------------------------------
+System(			[SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F6]-[F4](System)
+                                                                (Later Ver.1.75)
+-------------------------------------------------------------------------------
+Returns to some system value.
+
+ System(0): return to version of C.Basic (same as Version)
+ System(1): return to address of VRAM. (1KB)
+ System(2): return to address of text VRAM. (1KB)
+ System(3): return to address of graphic VRAM. (1KB)
+ System(10): return to address of clip buffer. (32KB)
+ System(-2): return to OS version. (Example 311)
+ System(-1): return to model name.
+     9860G:0  9860G Slim:1  9860GII(SH3):2   9860GII(SH4A):3   Graph35+EII:4
+
+
+===============================================================================
+Extended Graphics Commands
+===============================================================================
+===============================================================================
+When [:] is added just after a command, current VRAM is targeted for drawing regardless of text mode and a graphic mode.
+-------------------------------------------------------------------------------
+  (Example) Locate 2,2,"String":
+            Text 16,1,"TextString":
+
+The end after the command [:], no screen update.
+Please use transfer commands such as PutoDispDD to let you display LCD by a drawing result.
+
+-------------------------------------------------------------------------------
+When add [@] just after a command, current VRAM is targeted for drawing.
+
+(Example)
+Text 1,1,"Graphic"
+Locate 1,2,"Text"
+
+(Example)
+Locate 1,1,"Text"
+Text 24,10,"Graphic"
+
+-------------------------------------------------------------------------------
+Those below commands support clear and reverse function by adding new parameters C or X at the end;
+
+Line
+F-Line
+Circle
+Rect(
+FillRect(
+Add [,C] to clear and [,X] to reverse the drawn patterns.
+  (Example) F-Line 1,1,30,20,X
+
+-------------------------------------------------------------------------------
+Text			[SHIFT]-[F4](SKTCH)-[F6]-[F6]-[F2](Text)
+-------------------------------------------------------------------------------
+(Format) Text [@][!]y,x,<"string" or Expression>,[,N/O/R/V]
+ [@] The drawing of the command becomes current VRAM.
+ [!] Even if the extended font is introduced, drawing in the original font forcibly.
+ [.N] Normal
+ [.R] Reverse
+ [,O] Or
+ [,V] reVerse or
+
+(Example) Text 20,80,"Test",R
+  "Test" is displayed by reversing display by graphic coordinate (80,20).
+
+-------------------------------------------------------------------------------
+LocateYX		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F3](LocateYX)
+-------------------------------------------------------------------------------
+Letter indication of the size same as Locate is possible to a graphic screen.
+    Y coordinate becomes the coordinate definition as well as Text command earlier.
+    It becomes the reversing display in [,R] in the last of the command.
+(Format) LocateYX [@][!]y,x,<"string" or Expression>,[,N/R]
+
+(Example) LocateYX 20,80,"Test",R
+  "Test" is displayed by reversing display by graphic coordinate (80,20).
+
+-------------------------------------------------------------------------------
+Rect			[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F1](Rect)
+-------------------------------------------------------------------------------
+Display a rectangle. The coordinate becomes the true coordinate definition.
+(Example) Rect 1,1,127,63
+-------------------------------------------------------------------------------
+FillRect		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F2](FillRect)
+-------------------------------------------------------------------------------
+Display the filled rectangle.
+(Example) FillRect 1,1,127,63
+
+-------------------------------------------------------------------------------
+ReadGraph(		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F3](ReadGraph)
+-------------------------------------------------------------------------------
+Read the Bitmap data of the graphic screen by a bit unit.
+(Format) ReadGraph(px1,py1,px2,py2) -> Mat A
+ (px1,py1)-(px2,py2) to  Mat A .
+ It is not necessary to secure the Mat array beforehand. At appropriate array size automatically.
+ When there is not the type definition of the Mat array, it becomes the 1 bit type.
+
+-------------------------------------------------------------------------------
+WriteGraph		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F4](WriteGraph)
+-------------------------------------------------------------------------------
+Display Bitmap data.
+(Format 1) WriteGraph x,y,dx,dy,Mat A ,P1[,P2]
+  Draw data of Mat A in width dx, the range of height dy from coordinate (x,y) of the graphic screen.
+  P1 parameter
+   [,N] normal
+   [,R] reverse
+   [,M] mesh
+  P2 parameter
+  [omit] over
+  [,X] xor
+  [,O] or
+  [,A] and
+(Example) [[1,2,4,8,16,32,64,128]] -> Mat A
+  WriteGraph 80,20, 8,8, Mat A, N
+
+(Format 2) WriteGraph x,y,dx,dy,Mat A[m,n] ,P1[,P2]
+  Draw data from [m,n] of Mat A in width dx, the range of height dy from coordinate (x,y) of the graphic screen.
+(Example) [[16,32,64,128][128,64,32,16]] -> Mat A
+  WriteGraph 80,20, 4,4, Mat A[1,1], N
+  WriteGraph 80,24, 4,4, Mat A[2,1], N
+  A figure of [<] is drawn from coordinate (80,20) of the graphic screen.
+
+  WriteGraph 80,20, 4,8, Mat A, N
+  But it becomes the same result.
+
+ The Bitmap data are 8 bits width, and leaning to the left becomes the standard.
+
+-------------------------------------------------------------------------------
+DotGet(			[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F1](DotGet)
+-------------------------------------------------------------------------------
+ (Example) DotGet(px1,py1, px2,py2)->Mat A[x,y]
+  Fetches the range of (px1, py1) - (px2, py2) on the screen starting from Mat A [x, y].
+  If the number of matrices is less than the specified range, the matrix size is imported.
+
+-------------------------------------------------------------------------------
+DotPut(			[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F2](DotPut)
+-------------------------------------------------------------------------------
+ (Example) DotPut (Mat A,x,y,px1,py1,px2,py2)
+  Mat A Start with the (x,y) element of the matrix as a starting point, and draw a point in the range (px1,py1)-(px2,py2).
+
+ (Example) DotPut(Mat A[x,y],px1,py1,px2,py2)->Mat B
+  Mat A Copies to the range of [x1,y1]-[x2,y2] of Mat B starting from [x,y] of matrix.
+  If Mat B does not secure the extent that the copy range fits, copy it within the range that fits in Mat B.
+  It does not transfer to the graphic screen.
+
+ (Example)DotPut (Mat A[x,y],px1,py1,px2,py2)
+  Mat A Start with the (x,y) element of the matrix as a starting point, and draw a point in the range (px1,py1)-(px2,py2).
+
+-------------------------------------------------------------------------------
+DotTrim(		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F3](DotTrim)
+-------------------------------------------------------------------------------
+ (Example)DotTrim(Mat A,x1,y1,x2,y2)->Mat B
+  This is a trimming input from Matt,
+  Trim the rectangular area of nonzero data in the [X1,y1]-[x2,y2] range in the Mat matrix and copy it to the Mat B matrix.
+  If the matrix to be copied is not secured, it is newly allocated.
+
+ (Example)DotTrim(px1,py1,px2,py2)->Mat A
+  This is a trimming input from the graphics screen,
+  Trim the rectangular area in which the dots in the range of (px1,py1)-(px2,py2) of the graphic are copied to Mat A matrix.
+  In both cases, the rectangular area size (secured size of Mat matrix) is automatically entered in X and Y variables.
+  The upper right X,Y coordinates of the rectangular area of non-zero data are automatically entered in the lower case variable x,y.
+
+-------------------------------------------------------------------------------
+CellSum(		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F5](CellSum)
+-------------------------------------------------------------------------------
+ (Example)CellSum(Mat B[X,Y])->C
+  Calculate the total value of 8 dots around Mat B[X,Y].
+
+-------------------------------------------------------------------------------
+DotLife(		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F4](DotLife)
+-------------------------------------------------------------------------------
+ (Example)DotLife(Mat A,x1,y1,x2,y2)->Mat B
+
+
+===============================================================================
+Other Extended Commands
+===============================================================================
+-------------------------------------------------------------------------------
+KeyRow(			[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F5](KeyRow)
+-------------------------------------------------------------------------------
+Return the key matrix.
+
+       Returning bits (in binary)
+         bit6 bit5 bit4 bit3 bit2 bit1
+   Row--------------------------------------Row
+    09    F1    F2   F3   F4   F5   F6       09
+    08    SHIFT OPTN VARS MENU <-  (up)      08
+    07    ALPHA ^2   ^    EXIT (DW) ->       07
+    06    XTT   log  ln   sin  cos  tan      06
+    05    ab/c  F<>D  (    )    ,   ->       05
+    04    7     8    9    DEL                04
+    03    4     5    6    x    div           03
+    02    1     2    3    +    -             02
+    01    0     .    EXP  (-)  EXE           01
+   Row--------------------------------------Row
+
+  (Example)  KeyRow(9)
+   When press [F4] and [F6] keys at the same time, bit3 and bit1 come to 1, then return value is 2^3 + 2^1 = 10.
+
+-------------------------------------------------------------------------------
+Ticks			[VARS]-[F3](Extend)-[F1](Ticks)
+-------------------------------------------------------------------------------
+128 ticks/s timer.
+ (Example) 0 -> Ticks
+  Initialize the internal timer.
+  At the 32 bits counter which the internal timer counts it at 128 ticks/s, and restored in 24 hours.
+  The maximum value 24*60*60*128 -1 = 11059199.
+
+-------------------------------------------------------------------------------
+Ticks%
+-------------------------------------------------------------------------------
+32768 ticks/s timer.
+ (Example) 0 -> Ticks%
+  Initialize the internal timer.
+  At the 32 bits counter which the internal timer counts it in a speed of 32768 ticks/s, and restored at 4294967296 (=2^32).
+  The maximum value is 4294967295=(2^32-1)=-1
+
+-------------------------------------------------------------------------------
+TicksWait
+-------------------------------------------------------------------------------
+Waits a period of time at a ratio of 128 ticks/second.
+(Format) Combine "Ticks" and "Wait" to get this command.
+ (Example) TicksWait 128
+  Waits for 1 second.
+ (Example) TicksWait -128
+  Waits for 1 second from the last TicksWait command run.
+  When it has been already over 1 second, to the next processing without waiting.
+ (Example) TicksWait -4
+  Wait for 4/128 second from the last TicksWait command run.
+  You can make 32fps of loops just to use one this command in the loop.
+
+-------------------------------------------------------------------------------
+Ticks%Wait
+-------------------------------------------------------------------------------
+Waits a period of time at a ratio of 32768 ticks/second.
+-------------------------------------------------------------------------------
+DATE			[VARS]-[F3](Extend)-[F3](DATE)
+TIME			[VARS]-[F3](Extend)-[F4](TIME)
+-------------------------------------------------------------------------------
+Shows the current date and time according to RTC. It is stored as the string variable.
+ (Example) "2017/01/17"->DATE
+ (Example) DATE
+  2017/01/17 TUE
+  It is calculated automatically on a day.
+
+ (Example) "23:59:59"->TIME
+ (Example) TIME
+  23:59:59
+
+-------------------------------------------------------------------------------
+Disp			[SHIFT]+[VARS](PRGM)-[F6]-[F2](DISPLAY)-[F6](Disp)
+-------------------------------------------------------------------------------
+This is a result indication command not to suspend unlike stop command (Disps).
+A party scrolls every result indication.
+ (Example) Disp A+B
+
+-------------------------------------------------------------------------------
+BackLight		[VARS]-[F3](Extend)-[F5](BackLight)
+-------------------------------------------------------------------------------
+Set the current backlight status.
+ (Format) Backlight n
+  n=0 Backlight lights out
+  n=1 Backlight lights on
+  n=2 Backlight invert
+ (Format) +Backlight
+  Read the state of the current backlight.
+  (*An error will occur if command comes to the beginning of the expression.)
+
+-------------------------------------------------------------------------------
+RefrshCtrl		[SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F1](RefrshCtrl)
+RefrshTime		[SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F2](RefrshTime)
+-------------------------------------------------------------------------------
+RefrshCtrl and the RefrshTime command that could set the refreshment of the screen by a command.
+ (Example) RefrshCtrl 0
+  No refresh control.
+ (Example) RefrshCtrl 1
+  Refresh control is provided. Set to Grp (only graphics) mode.
+ (Example) RefrshCtrl 2
+  All refresh control is provided. Set to All (graphics+text) mode.
+ (Example) RefrshTime 5
+  Set the refresh control setting time to 5.
+  The screen update intervals is 5/128s.
+
+ (Format) +RefrshCtrl
+ (Format) +RefrshTime
+  Read the state of the current RefrshCtrl/RefrshTime.
+  (*An error will occur if command comes to the beginning of the expression.)
+
+-------------------------------------------------------------------------------
+Screen			[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F1](Screen)
+-------------------------------------------------------------------------------
+Choose target VRAM and change a screen mode.
+(Format 1) Screen
+ Change the text / graphic.
+(Format 2) Screen.T or Screen.t
+ Change to text VRAM and change the screen mode to the text mode,
+(Format 3) Screen.G or Screen.g
+ Change to graphic VRAM.
+(Format 4) Screen 0 or Screen 1
+ 0: Text VRAM
+ 1: Graphic VRAM
+
+To convert from Screen Coordinates to Graph Coordinates.
+(Usage) Screen#X,Y[,Xmin][,Xmax][,Ymin][,Ymax]
+ Return value to List Ans{x,y}
+(Example) Screen#1,1,-6.3,6.3,-3.1,3.1
+ Result {74,22}
+
+To convert from Graph Coordinates to Screen Coordinates.
+(Usage) Screen%X,Y[,Xmin][,Xmax][,Ymin][,Ymax]
+ Return value to List Ans{x,y}
+(Example) Screen%74,22,-6.3,6.3,-3.1,3.1
+ Result {1,1}
+
+-------------------------------------------------------------------------------
+PutDispDD		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F2](PutDispDD)
+-------------------------------------------------------------------------------
+Update screen.
+
+-------------------------------------------------------------------------------
+PopUpWin(		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F5](PopUpWin)
+-------------------------------------------------------------------------------
+Draw the pop-up window frame in current.
+ (Usage) PopUpWin(n)  (1 <= n <= 6)
+ (Example) PopUpWin(5)
+
+ Message popup
+ (Example) PopUpWin(11,"Message1"[,"Message1"])->A
+ Return values are always 1. A screen returns the command end.
+
+ Yes/No popup
+ (Example) PopUpWin(10,"Message1"[,"Message1"])->A
+ Return value Yes: 1
+               No: 0
+
+ (Example) PopUpWin(0)
+  Push screen.
+
+ (Example) PopUpWin(9)
+  Return screen.
+
+-------------------------------------------------------------------------------
+FKeyMenu(		[SHIFT]-[F4](SKTCH)-[F2](Extend)-[F4](FKeyMenu)
+-------------------------------------------------------------------------------
+Display the function menu to a current VRAM.
+
+（Format）FKeyMenu( n[~m], "string"/Icon # [,C/M/m/N/R/I/S/L] )
+  - 3rd or later arguments can be omitted.
+  - "," are required even if the argument is omitted.
+  - Default color of FKey icon is black and FKey back color is white.
+
+ The order of the 3rd argument is arbitrary.
+　　C: clear icon.
+　　M: masked icon.
+　　m: masked only frame icon .
+　　N: normal white icon.(default)
+　　R: black icon with notch at the bottom right.
+　　I: black icon with no notch at the bottom right.
+　　S: white box icon with no notch at the lower right indicating the selected.
+　　L: expand the "string" display area by 2 dots left.
+
+ (Example) FKeyMenu( 1,42)
+  Draw EDIT icon at [F1] position.
+ (Example) FKeyMenu (2, "ABCDE", R)
+  "ABCDE" is displayed in the black icon in the second function menu area.
+ (Example) FKeyMenu (3-4, "longtest")
+  "longtest" is displayed the white icon in the third to fourth function menu areas.
+ (Example) FKeyMenu (4, "Mask", M)
+  The masked icon is displayed in the fourth function menu area.
+ (Example) FKeyMenu (2, "", C)
+  Clear the second function menu
+ (Example) FKeyMenu (1-6, "", C)
+  ClearD the first to sixth function menus.
+
+-------------------------------------------------------------------------------
+Save			[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F2](Save)
+Load(			[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F3](Load)
+-------------------------------------------------------------------------------
+Read and write the data of the Mat array.
+ (Example) Save "TEST",Mat A
+ (Example) Load("TEST")->Mat A
+  Save the content of the Mat array and read it.
+  When extension is left out, the file name becomes [.bin] to eight characters.
+
+ (Example) Save "TEST",Mat A[5,1]
+  Save till the last from Mat A[5,1].
+ (Example) Load("TEST",16) -> Mat A[10,1]
+  Read from data of the 16th byte of saved data in Mat A[10,1]
+
+-------------------------------------------------------------------------------
+IsExist(		[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F1](IsExist)
+-------------------------------------------------------------------------------
+When the file does not exist, 0 becomes the return value.
+When the file exists, file size becomes the return value.
+ (Example) IsExist("/ABC/TEST")
+  If "/ABC/TEST.g1m" does not exist, it becomes 0.
+  When the extension is left out, the file name becomes [.bin] to eight characters.
+
+List of files
+(Format) IsExist("*.extension")->the number of the files
+(Example) IsExist("*.bmp") ->N
+$Mat Ans[3]
+Display the 3rd file on the list.
+N: The number of the files returns.
+-------------------------------------------------------------------------------
+Delete			[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F4](Delete)
+-------------------------------------------------------------------------------
+Delete the appointed file.
+ (Example) Delete "TEST.dat"
+  If "TEST.dat" exists, delete it.
+ (Example) Delete "TEST.dat",1
+  Confirm it before deletion. If "TEST.dat" exists, I delete it.
+  When no extension is given, the file name becomes [.bin] to eight characters.
+
+-------------------------------------------------------------------------------
+Alias			[OPTN]-[F5](Extend)-[F1](Alias)
+-------------------------------------------------------------------------------
+Alias variables by adding AliasVar command. Any character can be used as alias of actual variable character.
+As for 32 variables, Mat and label can use 16 aliases.
+
+(Example) Alias A=(alpha)
+  (Alpha)+100->(alpha)
+  After setting the alias (alpha), (alpha) is available as variable instead of variable A. Real entity of (alpha) is A, so the above expression is identical with A+100->A
+  It is the same as A+100->A.
+
+(Example) Alias Mat A=(alpha)
+   Mat(alpha)[1]+100->Mat(alpha)[1]
+  After Alias command practice, I can use Mat variable A as (alpha).
+  Because substance of (alpha) is A
+  It is the same as Mat A[1]+100 and Mat A[1].
+
+(Example) Alias Lbl A=(alpha)
+  Lbl (alpha)
+  Goto (alpha)
+  Gosub (alpha)
+
+
+(Example) Alias a=_abc_de
+(Example) Alias Mat a=_abcXY
+(Example) _abc_de+1->_abc_de
+(Example) Mat _abcXY[1,2]+1->Mat _abcXY[1,2]
+ You can use small letter variable a by _abc_de notation.
+ You can use small letter line a by _abcXY notation.
+
+(Example) Alias Lbl A=_Sub1
+  Lbl _Sub1
+  Goto _Sub1
+  Gosub _Sub1
+
+-------------------------------------------------------------------------------
+Wait			[VARS]-[F3](Extend)-[F2](Wait)
+-------------------------------------------------------------------------------
+Slow the overall execution speed. Set it by setup and [Wait] command.
+When set it by setup, all the programs are affected.
+ (Example) Wait 100
+  Even SH3 is SH4A, but becomes the speed drop of the same.
+
+  Wait 10 is about 1/2 speed.
+  Wait 100 is about 1/10 speed.
+
+-------------------------------------------------------------------------------
+ListCmp(		[OPTN]-[F1](LIST)-[F6]-[F6]-[F5](Cmp)
+-------------------------------------------------------------------------------
+Compare List to List or List to value.
+ (Example) ListCmp({1,2,3},{1,2,3})
+  Return value 1
+ (Example) ListCmp({1,2,3},{1,3})
+  Return value 0
+ (Example) ListCmp({1,2,3},{1,3,2})
+  Return value 0
+ (Example) ListCmp({1,2,3},2)
+  Return value 1
+ (Example) ListCmp({1,2,3},4)
+  Return value 0
+
+===============================================================================
+String extended command
+===============================================================================
+-------------------------------------------------------------------------------
+StrLen(@		[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F1](STR)-[F2](Len)
+-------------------------------------------------------------------------------
+Added "@" option that return real byte count.
+(Format) StrLen(@"ABCDE")
+(Example) StrLen(@Str 1)
+
+-------------------------------------------------------------------------------
+StrRepl(		[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F1](STR)-[F5](StrRepl)
+-------------------------------------------------------------------------------
+ (Usage) StrRepl(String1,Find,ReplaceWith,StartAtCharPos)
+ (Example) StrRepl("Hello World","World","Earth") -> "Hello Earth"
+ (Example) StrRepl("abcabc","ab","ff",3) = "abcffc"
+ (Example) StrRepl("abcabc","ab","ff") = "ffcffc"
+
+-------------------------------------------------------------------------------
+StrChar(		[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F1](Char)
+-------------------------------------------------------------------------------
+(Example) StrChar("ABC",5)
+  Results in "ABCABCABCABCABC"
+
+(Example) StrChar(0x41,5)
+  Results in "AAAAA"
+
+-------------------------------------------------------------------------------
+StrCenter(		[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F2](Center)
+-------------------------------------------------------------------------------
+(Usage) StrCenter("Strings",length[,"SpacingStrings"])
+(Example) StrCenter("Test",8)
+ Results in "Test ")
+(Example) StrCenter("Test",8,"*")
+ Results in "**Test**"
+
+-------------------------------------------------------------------------------
+Hex(			[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F4](Hex)
+-------------------------------------------------------------------------------
+(Example) Hex(12345)->Str 1
+ Result in "3039"
+(Example) Exp("0X"+Str 1)->A
+ Result in 12345
+
+-------------------------------------------------------------------------------
+Bin(			[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F5](Bin)
+-------------------------------------------------------------------------------
+(Example) Bin(12345)->Str 1
+ Result in "11000000111001"
+(Example) Exp("0B"+Str 1)->A
+ Result in 12345
+
+-------------------------------------------------------------------------------
+StrBase(		[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F3](Base)
+-----------------------------------------------------------------------
+(Usage) StrBase(Number string, Current base, Expected base)
+          Current base, Expected base: 2~64
+	  Use character {0-9 A-Z a-z <theta><pi>}
+(Example) StrBase("579",15,12) -> "873"
+	  StrBase("100",13,10) -> "169"
+	  StrBase("123",16,3) -> "101210"
+	  StrBase("43981",10,16) -> "ABCD"
+	  StrBase("12A345AFZ",36,10) -> "2999794422815"
+	  StrBase("AZaz",62,10) -> "2520113"
+
+
+-------------------------------------------------------------------------------
+StrSplit(		[SHIFT]+[VARS](PRGM)-[F6][F6]-[F3](ExStr)-[F6]F6]-[F1](StrSplit)
+-------------------------------------------------------------------------------
+Divide character string by a designated letter and put it return to MatAns.
+(Format) StrSplit("string","delimiter"[,start position])
+ The result returns to MatAns as character string.
+(Example) StrSplit("123,4567,89",",")
+  The result of MatAns becomes ["123","4567","89"] and can access it as follows if it retrieves individual factors.
+ $Mat Ans[1]="123"
+ $Mat Ans[2]="4567"
+ $Mat Ans[3]="89"
+
+-------------------------------------------------------------------------------
+StrAsc(		[Shift]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F6]-[F2](StrAsc)
+-------------------------------------------------------------------------------
+Converts a character (in a string) into the corresponding ASCII code number.
+(Example) StrAsc("Ascii")
+Return value is 65(0x41).
+
+-------------------------------------------------------------------------------
+StoCapt [OPTN] - [F6] - [F6] - [F5] (CAPTURE) - [F1] (Store)
+RclCapt [OPTN] - [F6] - [F6] - [F5] (CAPTURE) - [F2] (Recall)
+-------------------------------------------------------------------------------
+Read/write the Capt file on the storage memory. Up to 99 files can be used.
+(Example) StoCapt 20
+(Example) RclCapt 20
+
+In relation to this, the file size of Pict file has been reduced by 1KB from 2KB.
+
+
+===============================================================================
+Other Extended Command Reference
+===============================================================================
+Carry it out as the command not comment after "'/".
+Can describe the command to execute only C.Basic running.
+
+(Example) '/Ticks->S
+(Example) '/Ticks-S->T
+ Measure time.
+
+-------------------------------------------------------------------------------
+'# Command
+-------------------------------------------------------------------------------
+The setting for C.Basic in comment code.
+
+'#CBasic
+'#CBASIC
+'#CBDBL
+'#CBdbl
+'#CBINT
+'#CBint
+�@to change running mode. This is all alphabet character.
+
+'#Break0	//�@disable [AC]
+'#Break1	//�@enable [AC] (default)
+
+'#Mat 0		//�@start of Mat index is 0.
+'#Mat 1		//�@start of Mat index is 1. (Default)
+
+'#GetKeyC	//�@after GetKey1/2, stop of the timer and restart. (Default)
+'#GetKeyR	//�@after GetKey1/2, reset of the timer and restart.
+
+===============================================================================
+
+
+===============================================================================
+Hardware Extended Commands
+===============================================================================
+C.Basic can execute a machine language program of SH3/SH4A on the memory.
+It can access freely become only the Mat array.
+The top address of the Mat array is found in VarPtr() or address operator &.
+Indirect operator * are usable like C language, too.
+
+-------------------------------------------------------------------------------
+SysCall(		[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F1](SysCall)
+-------------------------------------------------------------------------------
+Call a syscall prepared for by the OS. Four arguments can be given, but also can be left out if not needed.
+(Format) SysCall( syscall number [,arg1][,arg2][,arg3][,arg4][,arg5][,arg6][,arg7][,arg8][,arg9][,arg10][,arg11][,arg12] )
+
+(Example) Screen.G
+   SysCall(0x763,1,8,127,63)->R
+
+ System call 0x763 is a system routine to draw a quadrangle to a screen.
+ The Syscall 0x763 draws a rectangle on the screen. The four parameters R4 to R7 are equal to 1,8,127,63 respectively. R receives the return value of the syscall.
+
+-------------------------------------------------------------------------------
+Call(			[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F2](Call)
+-------------------------------------------------------------------------------
+Execute the machine language program of any address. Four arguments can be given, but also can be left out if not needed.
+ (Format) Call(machine language address [argument 1] [argument 2] [argument 3] [argument 4])
+ (Example) Call(0x8802F000,A,B,C,D) -> R
+  The routine at the address 0x8802f000 is called with parameters R4=A, R5=B, R6=C, R7=D. Its return value is stored in R.
+
+-------------------------------------------------------------------------------
+Peek(			[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F4](Peek)
+-------------------------------------------------------------------------------
+Read data from the memory. When there is not type definition [.B][.W][.L][.F], it is byte reading.
+Can rearrange it in indirect operator *.
+ (Format) Peek(address) [.B][.W][.L][.F]
+ (Format) *(address) [.B][.W][.L][.F])
+
+ (Example) Peek(0x8802E000).B -> A%
+ (Example) *(0x8802E000).B -> A%
+  Read data of the 0x8802E000 address at A byte (1 byte) and substitute it for integer variable A%.
+
+ (Example) Peek(0x8802E000).W -> A%
+ (Example) *(0x8802E000).W -> A%
+  Read data of the 0x8802E000 address in a word (2 bytes) and substitute it for integer variable A%.
+
+ (Example) Peek(0x8802E000).L -> A%
+ (Example) *(0x8802E000).L -> A%
+  Read data of the 0x8802E000 address in A long word (4 bytes) and substitute it for integer variable A%.
+
+ (Example) Peek(0x8802E000).F -> A
+ (Example) *(0x8802E000).F -> A
+  Read data of the 0x8802E000 address in A double precision real number (8 bytes) and substitute it for integer variable A.
+
+-------------------------------------------------------------------------------
+Poke(			[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F3](Poke)
+-------------------------------------------------------------------------------
+Write in data at memory. When there is not type definition [.B][.W][.L][.F], it is a byte.
+Can rearrange it in indirect operator *.
+ (Format 1) Poke(address) [.B][.W][.L][.F], data
+ (Format 1) *(address) [.B][.W][.L][.F], data)
+ (Format 2) Data->Poke(address) [.B][.W][.L][.F]
+ (Format 2) Data->*(address) [.B][.W][.L][.F])
+
+ (Example) Poke(0x8802E000).B,A%
+ (Example) A%->Poke(0x8802E000).B
+ (Example) A%->*(0x8802E000).B
+
+ (Example) Poke(0x8802E000).W,A%
+ (Example) A%->Poke(0x8802E000).W
+ (Example) A%->*(0x8802E000).W
+
+ (Example) Poke(0x8802E000).L,A%
+ (Example) A%->Poke(0x8802E000).L
+ (Example) A%->*(0x8802E000).L
+
+ (Example) Poke(0x8802E000).F,A
+ (Example) A->Poke(0x8802E000).F
+ (Example) A->*(0x8802E000).F
+
+-------------------------------------------------------------------------------
+VarPtr(			[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F6]-[F1](VarPtr)
+-------------------------------------------------------------------------------
+Read form the address of the variable.
+Can rearrange it in address operator &.
+ (Format 1) VarPtr( variable)
+ (Format 2) &( variable)
+
+ (Example) VarPtr(A%)
+ (Example) &A%
+  The address of the variable of integer variable A% returns.
+
+ (Example) VarPtr(Mat A)
+ (Example) &Mat A
+  Top address of Mat A returns.
+
+ (Example) VarPtr(Mat A[20,10])
+ (Example) &Mat A[20,10]
+  The address that a value of Mat A[20,10] returns.
+
+-------------------------------------------------------------------------------
+ProgPtr(		[SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F6]-[F2](ProgPtr)
+-------------------------------------------------------------------------------
+Read form the top of address of the source program area.
+ (Example) ProgPtr()
+
+
+===============================================================================
+Extended Graphics Commands  - MonochromeLib
+===============================================================================
+It is a command based MonochromeLib (by PierrotLL).
+These commands act on current VRAM and do not do the processing except it at all.
+The coordinate system is (0,0) -(127,63) is fixed.
+It is necessary to transfer LCD using PutDispDD and _DispVRAM to display it.
+-------------------------------------------------------------------------------
+MonochromeLib by PierrotLL
+https://wiki.planet-casio.com/fr/MonochromeLib
+Implemented in C.Basic.
+Refer to MonochromeLib’s manual.
+-------------------------------------------------------------------------------
+Color: -1 transparent
+Color: 0  white
+Color: 1  black
+Color: 2  xor
+Color: 3  check Color
+Color: 4  random Color
+
+Added new Color (2x2 dot matrix) in MonochromeLib command.
+Color value: 10    11    12    13     14 (2x2 dot matrix by 1dot width)
+Color value: 20    21    22    23     24 (2x2 dot matrix)
+             oo    *o    *o    **     **
+             oo    oo    o*    *o     **
+(Example) _FillCircle 64,32,30,21
+
+-Added random Color in MonochromeLib command.
+ (Usage) <command> x,y,,,Color,chance
+(Example) _Rectangle 0,0,127,63,0,0,4,0.5
+(Example) _Rectangle 0,0,127,63,0,0,4,%50
+ Fill the whole screen with random pixels, pixels have a 50% chance of being on (0.5) or %50
+(Example) _FillCircle #0,0,3,4,0.5
+ Makes a circle with the radius 3, the circle is filled with random pixels (on/off) pixels have a 50% chance of being on (0.5)
+ If the Color is 4, you can set the chance
+(Example) _Rectangle 0,0,127,63,0,0,4,%10
+ Fills the screen with pixels, the pixels have a 10% chance of being on
+
+-------------------------------------------------------------------------------
+Drawing objects in Graph Coordinates instead of Screen Coordinates.
+  Add to '#' character option to ViewWindow Coordinates.
+  Support ML command,
+	_Point
+	_Pixel
+	_PixelTest(
+	_Line
+	_Rect
+	_Horizontal
+	_Vertical
+	_Circle
+	_FillCircle
+	_Elips
+	_FillElips
+	_ElipsInRct
+	_FElipsInRct
+(Example) ViewWindow -6.3,6.3,0,-3.1,3.1,0
+ Screen.G
+ _Circle #0.5,1.2,1.2,1
+
+-------------------------------------------------------------------------------
+_ClrVram		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F1](_ClrVram)
+-------------------------------------------------------------------------------
+ Clears the VRAM.
+
+-------------------------------------------------------------------------------
+_ClrScreen		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F2](_ClrScreen)
+-------------------------------------------------------------------------------
+ Clears the screen.
+
+-------------------------------------------------------------------------------
+_DispVram		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F3](_DispVram)
+-------------------------------------------------------------------------------
+ Copies VRAM content to screen.
+
+-------------------------------------------------------------------------------
+_Pixel			[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F1](_Pixel)
+-------------------------------------------------------------------------------
+_Pixel x,y,Color
+ Set the Color of a dot in VRAM.
+ Color:-1 transparent
+ Color: 0 White
+ Color: 1 Black
+ Color: 2 Xor
+ Color: 3 Checker
+
+-------------------------------------------------------------------------------
+_Point			[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F2](_Point)
+-------------------------------------------------------------------------------
+_Point x,y,width,Color
+Draws a point (square) in VRAM, centered at (x, y), with sides length (in pixel) are defined by parameter width.
+(Example) _Point 10, 10, 3, 1
+ Will draw a black rectangle from (9, 9) to (11, 11)
+
+-------------------------------------------------------------------------------
+_PixelTest(		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F4](_PixelTest)
+-------------------------------------------------------------------------------
+_PixelTest(
+ Returns the Color of the pixel in coordinates (x, y)
+ -1: out of screen
+  0: White
+  1: black
+
+-------------------------------------------------------------------------------
+_Line			[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F3](_Line)
+-------------------------------------------------------------------------------
+_Line X1,Y1,X2,Y2,Color[,chance][,Width]
+ Draws a line between points in coordinates (x1, y1) and (x2, y2) using Bresenham algorithm.
+(Example) _Line 0,0,127,63,1,,10
+
+-------------------------------------------------------------------------------
+_Horizontal		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F4](_Horizontal)
+-------------------------------------------------------------------------------
+_Horizontal y,x1,x2,Color
+ Draws a horizontal line.
+ This function is faster than _line with y1=y2.
+
+-------------------------------------------------------------------------------
+_Vertical		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F5](_Vertical)
+-------------------------------------------------------------------------------
+_Vertical x,y1,y2,Color
+ Draws a vertical line.
+ This function is faster than a call to _line with x1==x2.
+
+-------------------------------------------------------------------------------
+_Rectangle		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F1](_Rectangle)
+-------------------------------------------------------------------------------
+_Rectangle x1,y1,x2,y2, border_width, border_Color, fill_Color[,chance][,angle][,center_X][,center_Y][,zoom%]
+ Draws a rectangle with or without border.
+ You can define the border Color, and the fill Color.
+ If you want no border, set border_width to 0.
+ If [center_X][center_Y] are omitted, The center of the drawn image is specified.
+
+-------------------------------------------------------------------------------
+_Polygon		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F2](_Polygon)
+-------------------------------------------------------------------------------
+_Polygon *ary_x, *ary_y, vertices, Color[,chance][,angle][,center_X][,center_Y][,zoom%]
+ Draws a polygon.
+ This function needs as parameters 2 arrays, containing abscissa and ordinates of the polygon vertices.
+ Parameter nb_vertices should be the number of data to read in arrays.
+ This function draws a line between each vertices of the polygon.
+(Example)
+ [[60, 75, 70, 50, 45]]->Mat X.L	// require int
+ [[20, 30, 45, 45, 30]]->Mat Y.L	// require int
+ Screen.G
+ _ClrVRAM
+ _Polygon VarPtr(Mat X), VarPtr(Mat Y), 5, 1);  (or  _Polygon &Mat X, &Mat Y, 5, 1);
+ _DispVRAM (or PutDispDD)
+
+-------------------------------------------------------------------------------
+_FillPolygon		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F3](_FillPolygon)
+-------------------------------------------------------------------------------
+_FillPolygon *ary_x, *ary_y, vertices, Color[,chance][,angle][,center_X][,center_Y][,zoom%]
+ Similar to _Polygon, but draws filled polygon.
+
+-------------------------------------------------------------------------------
+_Circle			[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F4](_Circle)
+-------------------------------------------------------------------------------
+_Circle x, y, radius, Color
+ Draws a circle centered on (x, y) using Bresenham algorithm.
+
+-Added _Circle option.
+ (Usage) _Circle x,y,radius,Color[,chance][,width][,start_angle][,end_angle][,vertex]
+ (Example) _Circle 64,32,20,4,0.5,3
+  3x3dot 50% circle
+ (Example) _Circle 64,32,20,1,,3,0,90
+  To draw 3x3dot 1/4 circle
+ (Example) _Circle 64,32,20,1,,,0,360,5
+  To draw pentagon (to have an effect on setting of Draw Type)
+ (Example) _Circle 64,32,20,1,,,20,380,5
+  To draw shifted pentagon
+
+-------------------------------------------------------------------------------
+_FillCircle		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F5](_FillCircle)
+-------------------------------------------------------------------------------
+_FillCircle x, y, radius, Color
+ Similar to _Circle, but draws filled circle..
+
+-------------------------------------------------------------------------------
+_Elips			[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F1](_Elips)
+-------------------------------------------------------------------------------
+_Elips x, y, radius1, radius2, Color[,angle]
+ Draws an ellipse centered on (x, y) with radiuses radius1 et radius2.
+ radius1 is distance between center and lefmost point of ellipse,
+ radius2 is distance between center and upper point of ellipse. Use the Bresenham algorithm.
+
+-------------------------------------------------------------------------------
+_FillElips		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F2](_FillElips)
+-------------------------------------------------------------------------------
+_FillElips x, y, radius1, radius2, Color[,angle]
+ Similar to _Elips, but draws a filled ellipse.
+
+-------------------------------------------------------------------------------
+_ElipsInRct		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F3](_ElipsInRct)
+-------------------------------------------------------------------------------
+_ElipsInRct x1, y1, x2, y2, Color[,angle]
+ This function calls _Elips. It expect rectangle coordinates, and draw an ellipse in this rectangle.
+
+-------------------------------------------------------------------------------
+_FElipsInRct		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F4](_FElipsInRct)
+-------------------------------------------------------------------------------
+_FElipsInRct x1, y1, x2, y2, Color[,angle]
+ Similar to _ElipsInRct, but draws a filled ellipse.
+
+-------------------------------------------------------------------------------
+_Hscroll		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F6]-[F1](_Hscroll)
+-------------------------------------------------------------------------------
+_Hscroll n[,x1,y1,x2,y2]
+ Shifts all pixels in VRAM to left or right. For Example, if scroll=5, then a pixel on (2,3) will be moved on (7,3).
+ If scroll is a negative value, pixels will be shift to left. When pixels reach screen boundaries, they reappear on the other side.
+ You can specify the scroll area.
+ (Example) _Hscroll 1,32,16,47,95
+  Left scroll only (32,16)-(47,95).
+
+-------------------------------------------------------------------------------
+_Vscroll		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F6]-[F2](_Vscroll)
+-------------------------------------------------------------------------------
+_Vscroll n[,x1,y1,x2,y2]
+ Similar to _Horizontal_scroll, but scroll vertically.
+
+-------------------------------------------------------------------------------
+_Bmp			[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F1](_Bmp)
+-------------------------------------------------------------------------------
+_Bmp *bmp, x, y, width, height [,O/A/X] [,C]
+ These functions are made to draw images in monochrome bitmap Format. They are very useful to draw tiles and sprites in games.
+ [.O] Or
+ [.A] And
+ [,X] Xor
+ [,C] with clipping
+(Example)
+ [[60, 126, 251, 253, 253, 255, 126, 60]]->Mat B.B	//  byte Matrix
+ _Bmp VarPtr(Mat B), 8, 16, 4, 8, O, C
+
+-------------------------------------------------------------------------------
+_Bmp8			[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F2](_Bmp8)
+-------------------------------------------------------------------------------
+_Bmp8 *bmp, x, y [,O/A/X] [,C]
+ Draw 8*8 sized bitmap.
+(Example)
+ [[60, 126, 251, 253, 253, 255, 126, 60]]->Mat B.B	//  byte Matrix
+ _Bmp &Mat B, 8, 16, A
+
+-------------------------------------------------------------------------------
+_Bmp16			[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F3](_Bmp16)
+-------------------------------------------------------------------------------
+_Bmp16 *bmp, x, y [,O/A/X] [,C]
+ Draw 16*16 sized bitmap.
+
+
+-------------------------------------------------------------------------------
+Additional option for MonochromeLib command.
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+BmpLoad(		[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F1](BmpLoad)
+BmpSave			[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F2](BmpSave)
+-------------------------------------------------------------------------------
+Bmp file load/save support.(only 1 bit mono type)
+(Example) BmpLoad("TEST"),20,10
+ Load TEST.bmp at coordinate (20,10).
+
+(Example) BmpSave "TEST",10,20,100,50
+ Save TEST.bmp at coordinate (10,20)-(100,50)
+
+ (Example) BmpSave "TEST",Mat A
+  Save "TEST.bmp" at current folder.
+ (Example) BmpLoad("TEST")->Mat A
+  Load bmp data to Mat A
+
+-------------------------------------------------------------------------------
+DrawMat			[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F3](DrawMat)
+-------------------------------------------------------------------------------
+Drawing Mat data.
+ (Usage) DrawMat Mat A[px,py], x, y, width, height [,zoomwidth][,zoomheight][,Color][,chance]
+ (Example)  DrawMat Mat A, 0, 0, 128, 64
+ (Example)  DrawMat Mat A[10,5], 0, 0, 40, 30, %150, %250 , 4, %50
+
+-------------------------------------------------------------------------------
+_BmpZoom		[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F4](_BmpZoom)
+_BmpRotate		[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F5](_BmpRotate)
+_BmpZmRotate		[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F4](_BmpZmRotate)
+-------------------------------------------------------------------------------
+Zoom & Rotate & ZoomRotate in ML command. ( based on Planet-Casio Ninestars expansion )
+ (Usage) _BmpZoom &Mat , x, y, width, height [,zoomwidth][,zoomheight][,Color][,chance]
+ (Usage) _BmpRotate &Mat , x, y, width, height [,angle(degree)][,Color][,chance]
+ (Example) _BmpZoom &Mat A, 0, 0, 20, 10, 1.5, 2.5
+ (Example) _BmpZoom &Mat A, 0, 0, 20, 10, %150, %250 , 4, %50
+ (Example) _BmpRotate &Mat A, 0, 0, 20, 10, 45
+
+ (Usage) _BmpZoomRotate &Mat , x, y, width, height [,zoomwidth][,zoomheight][,angle(degree)][,Color][,chance]
+ (Example) _BmpZoomRotate &Mat A, 0, 0, 20, 10, 1.5, 2.5, 90
+ (Example) _BmpZoomRotate &Mat A, 0, 0, 20, 10, %150, %250 , 15, 4, %50
+
+-------------------------------------------------------------------------------
+_Test			[SHIFT]-[F4](SKTCH)-[F3](ML)-[F5](_Test)
+-------------------------------------------------------------------------------
+ (Supported command) _Point _Line _Rectangle _Circle _Polygon
+  To use function to put "_Test" before support command.
+ (Example) _Test_Rectangle 0,0,127,63
+  To return the amount of pixels that are on in that area (0,0)-(127,63)
+ (Example) _Test_Circle 62,32,20
+ (Example) _Test_Point 10,10,5
+ (Example) _Test_Line 10,10,100,30
+
+
+
+===============================================================================
+About external font                                                     (1.70-)
+===============================================================================
+An external font is usable by ASCII characters (0x20~0x7E) and gaiji/kana characters (0xFF80~0xFFDF).
+
+When font files exist in current folder or Font folder, auto read the following font files at the time of file list update, and a font is replaced.
+If there are not these files, it becomes the built-in font of the default.
+  FONTA8L.bmp (external ASCII standard font)
+  FONTA6M.bmp (external ASCII mini-font)
+  FONTG8L.bmp (external gaiji character standard font)
+  FONTG6M.bmp (external gaiji character mini-font)
+  FONTK8L.bmp (external kana standard font)
+  FONTK6M.bmp (external kana mini-font)
+
+The bundled default external fonts are as follows.
+  FONTK8L0.bmp external katakana font (standard)
+  FONTK6M0.bmp external katakana font (mini)
+  FONTK8L1.bmp external hiragana font (standard)
+  FONTK6M1.bmp external hiragana font (mini)
+  FONTG8L0.bmp external gaiji character sample font (standard)
+  FONTG6M0.bmp external gaiji character sample font (mini)
+
+Put these fonts in the current folder,
+BmpLoad (@K1)
+To replace by exhiragana letter
+BmpLoad (@K0)
+It becomes the kana font.
+
+-------------------------------------------------------------------------------
+GetFont(		[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F1](GetFont)
+GetFontMini(		[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F3](GetFontMini)
+-------------------------------------------------------------------------------
+To read font data.
+(Format 1) GetFont( font code) ->Mat A
+(Format 1) GetFontMini( font code) ->Mat A
+(Example) GetFont(0x41) ->Mat A
+ BitMap data (6x8) of font "A" is input into 1 bit Mat A[6,8]
+(Example) GetFontMini(0xFF80) ->Mat A
+ The first BitMap data (6x6) of the external (0xFF80) mini-font  is input into 1 bit Mat A[6,6].
+
+(Format 2) GetFont( "font character") ->Mat A
+(Format 2) GetFontMini( "font character") ->Mat A
+(Example) GetFont("A") ->Mat A
+ BitMap data (6x8) of font "A" is input into 1 bit Mat A[6,8].
+(Example) GetFontMini("A") ->Mat B
+ BitMap data (4x6) of mini font "A" is input into 1 bit Mat B[4,6].
+
+(Format 3) GetFont(@ font code) ->Mat A
+(Format 3) GetFontMini(@ font code) ->Mat A
+(Format 4) GetFont(@ "font character") ->Mat A
+(Format 4) GetFontMini(@ "font character") ->Mat A
+(Example) GetFont(@0x41) ->Mat A
+(Example) GetFont(@"A") ->Mat A
+ BitMap data (6x8) of built-in font "A" is input into 1 bit line Mat A[6,8].
+
+To read external font status.
+(Format 5) GetFont()
+(Format 5) GetMiniFont()
+ Return value is (bit0:Ascii) (bit1:Gaiji) (bit2:Kana)
+(Example) When only the external kana font of the standard size is introduced,
+ GetFont() return to 4
+ GetMiniFont() return to 0
+(Example) When the external ascii mini font and gaiji mini font are introduced,
+ GetFont() return to 0
+ GetMiniFont() return to 3
+
+-------------------------------------------------------------------------------
+SetFont			[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F2](SetFont)
+SetFontMini		[SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F4](SetFontMini)
+-------------------------------------------------------------------------------
+To set font data.
+(Format 1) SetFont font code ,Mat A
+(Format 1) SetFontMini font code ,Mat A
+(Example) SetFont 0xFF80,Mat A
+ Font data of Mat A are set as data of the first one of the external font.
+(Example) SetFontMini 0xFF80,Mat A
+ Font data of Mat A are set as the first data of the external mini-font.
+
+(Format 2) SetFont "font character" ,Mat A
+(Format 2) SetFontMini "font character" ,Mat A
+(Example) SetFont "@",Mat A
+ Font data of Mat A are set as data of font "@".
+(Example) SetFontMini "@",Mat B
+ Font data of Mat B are set as data of mini-font "@".
+
+-------------------------------------------------------------------------------
+BmpLoad(@A
+BmpLoad(@AL
+BmpLoad(@AM
+BmpLoad(@G
+BmpLoad(@GL
+BmpLoad(@GM
+BmpLoad(@K
+BmpLoad(@KL
+BmpLoad(@KM
+-------------------------------------------------------------------------------
+Read font data from bitmap file.
+(Format) BmpLoad(@G[ font file number])
+(Format) BmpLoad(@K[ font file number])
+(Format) BmpLoad(@A[ font file number])
+ The font file number can 0-9.
+(Example) BmpLoad(@A1)
+ A font file of FONTA8L1.bmp (ASCII standard font) FONTA6M1.bmp (ASCII mini-font) is read as external ASCII font.
+
+(Format) BmpLoad(@GM[ font file number])
+(Format) BmpLoad(@GL[ font file number])
+(Format) BmpLoad(@KL[ font file number])
+(Format) BmpLoad(@KM[ font file number])
+(Format) BmpLoad(@AL[ font file number])
+(Format) BmpLoad(@AM[ font file number])
+(Example) BmpLoad(@AL2)
+ A font file of FONTA8L2.bmp (ASCII standard font) is read as external ASCII standard font.
+(Example) BmpLoad(@AM2)
+ A font file of FONTA6M1.bmp (ASCII mini-font) is read as external ASCII mini-font.
+
+(Format) BmpLoad(@GL" file name ")
+(Format) BmpLoad(@GM" file name ")
+(Format) BmpLoad(@KL" file name ")
+(Format) BmpLoad(@KM" file name ")
+(Format) BmpLoad(@AL" file name ")
+(Format) BmpLoad(@AM" file name ")
+(Example) BmpLoad(@GL"MYFONTL")
+ MYFONTL.bmp is read as an external gaiji standard font.
+(Example) BmpLoad(@GM"MYFONTM")
+ MYFONTM.bmp is read as an external gaiji mini-font.
+
+-------------------------------------------------------------------------------
+BmpSave A
+BmpSave AL
+BmpSave AM
+BmpSave G
+BmpSave GL
+BmpSave GM
+BmpSave K
+BmpSave KL
+BmpSave KM
+-------------------------------------------------------------------------------
+Output font data to bitmap file.
+(Format) BmpSave G[ font file number]
+ Save an external character font (standard&mini) in a current folder.
+ The file name FONTG8L.bmp (standard)
+ The file name FONTG6M.bmp (mini)
+(Format) BmpSave K[ font file number]
+ Save a kana font (standard&mini) in a current folder.
+ The file name the FONTK8L.bmp (standard) file name FONTK6M.bmp (mini)
+(Format) BmpSave A[ font file number]
+ Save ASCII font (standard&mini) in a current folder.
+ The file name the FONTA8L.bmp (standard) file name FONTA6M.bmp (mini)
+(Format) BmpSave @K
+ Save in "/Font" folder.
+
+(Format) BmpSave GL[ font file number]
+(Format) BmpSave GM[ font file number]
+(Format) BmpSave KL[ font file number]
+(Format) BmpSave KM[ font file number]
+(Format) BmpSave AL[ font file number]
+(Format) BmpSave AM[ font file number]
+(Example) BmpSave GL2
+ Save an external character standard font file as of FONTG8L2.bmp (external gaiji standard font) for external font file 2.
+(Example) BmpSave GM3
+ Save an external character mini-font file as of FONTG6M3.bmp (external gaiji mini-font) for external font file 3.
+
+(Format) BmpSave GL"<file name>"
+(Format) BmpSave GM"<file name>"
+(Format) BmpSave KL"<file name>"
+(Format) BmpSave KM"<file name>"
+(Format) BmpSave AL"<file name>"
+(Format) BmpSave AM"<file name>"
+(Example) BmpSave GL"MYFONTL"
+ Save a current external gaiji standard font as "MYFONTL.bmp".
+(Example) BmpSave GM"MYFONTM"
+ Save a current external gaiji mini-font as "MYFONTM.bmp".
+
+
+
+===============================================================================
+Serial communication commands (not compatible with genuine Casio Basic.)
+===============================================================================
+ (Format) Send( data [,baudrate][,enable_exit])
+ (Format) Recv( data [,baudrate][,enable_exit])
+ (Format) Send38K data [,bytecount]
+ (Format) Receive38k data [,bytecount]
+ (Format) OpenComport38K[,baudrate][,transfermode][,enable_exit]
+ (Format) CloseComport38K
+ [Data]: Variable,Matrices,List
+   Data is necessary to match data type of a transfer source to a transfer destination.
+ [baudrate]: 0=300, 1=600, 2=1200, 3=2400, 4=4800, 5=9600, 6=19200, 7=38400, 8=57600, 9=115200 baud
+   Default baudrate is 38400
+ [transfermode]: 0:binary data transfer mode     1:necessary to match data type (default)
+   When OpenComport38K with [transfermode:0]option, Send38K/Receive38k is binary data transfer.
+ [enable_exit]: 0:not interrupt   1:interrupt
+
+ Send(/Recv( use alone.
+ Send38K/Receive38k is necessary for OpenComport38K/CloseComport38K.
+
+ (Example) Send(A)
+ (Example) Recv(A)
+ (Example) Send(Mat A)
+ (Example) Recv(Mat A)
+
+ (Example) OpenComport38K,9,0
+           Send38K List 1
+           CloseComport38K
+ (Example) OpenComport38K,9,0
+           Receive38k List 1
+           CloseComport38K
+
+-------------------------------------------------------------------------------
+Beep (SH4A-exclusive)         [SHIFT]+[VARS](PRGN) -[F6] -[F4](I/O) -[F6] -[F5](Beep)
+-------------------------------------------------------------------------------
+(Format) Beep [frequency][,duration (ms)]
+Output square wave of the frequency designated than the 3Pin output.
+(Example) Beep
+Output square wave of 1KHz from 3Pin for 0.5 seconds.
+(Example) Beep 440,1000
+Output square wave of 440Hz from 3Pin for one second.
+
+
+
+
+===============================================================================
+Setup Page
+===============================================================================
+Setup items - compatible with genuine Casio Basic
+
+Angle:       Rad / Deg / Grad
+Draw Type:   on / off
+Coord:       on / off
+Grid:        on / off
+Axes:        on / off
+Label:       on / off
+Derivative:  on / off
+Sketch Line: Normal / Thick / Broken / Dot
+
+
+Setup items - newly provided by C.Basic
+-------------------------------------------------------------------------------
+Display: Fix / Sci / Nrm / Eng
+
+Fix, Sci, Norm can take integer parameter in range of 0 to 15.
+Fix: Setting is almost same as genuine Casio Basic, except x is in exponent notation when |x| ≧ 10^17.
+
+Sci：Setting is almost same as genuine Casio Basic, except Sci 0 sets 16 significant figures.
+
+Norm：Norm 1 and Norm 2 set 10 significant figures same as genuine Casio Basic. Norm 0 sets 16 significant figures.
+Norm n sets n significant figures. Condition of exponent notation depends on following range of x;
+- Norm 1 …… 0.01 ＞ |x|, |x| ≧ 10^10
+- Norm 2 …… 0.000000001 ＞ |x|, |x| ≧ 10^10
+- Norm n (3≦n≦15) …… 0.01 > |x|, |x| ≧ 10^n
+- Norm 0 …… 0.01 > |x|, |x| ≧ 10^15
+
+
+Eng, Norm, Fix, Sci return current state (On or Off).
+
+Eng returns the current state of 3-digit seperator:
+- Return value 0: state of EngOff
+- Return value 1: state of EngOn
+Norm, Fix, Sci
+To return current status, set negative value as parameter*;
+(Note*) To add the parameter, ( ) is not necessarily required.
+If current state is Norm1, return values are:
+- Norm (-1) gives 1
+- Fix (-1) gives -1
+- Sci (-1) gives -1
+
+If current state is Fix 8, return values are:
+- Norm (-1) gives -1
+- Fix (-1) gives 8
+- Sci (-1) gives -1
+
+-------------------------------------------------------------------------------
+Syntax Help: On/Off
+ The help dispyay at the command input of editor.
+-------------------------------------------------------------------------------
+SetupRecover: On/Off
+  set it whether you return setting compatible with genuine Casio Basic after a program in SetupRecover.
+-------------------------------------------------------------------------------
+Command Input: C.Basic/Standard
+  Select Standard (fx-9860G) method or C.Basic (fx-5800P) method.
+  You can change the mode of "" output specifications compatible with fx-5800P and FX/CG.
+ - Related command: '#58
+                    '#98
+-------------------------------------------------------------------------------
+Max Mem Mode: on/off
+ Set to use the available maximum memory.
+-------------------------------------------------------------------------------
+EnableExFont: on/off
+ Set to use external font.
+-------------------------------------------------------------------------------
+Edit ExtFont: On/Off
+ enable external font in editor.
+-------------------------------------------------------------------------------
+EditFontSize: Standard/Mini/Mini_rev/Mini UnderCursor/Mini_rev_UnderCSR
+  Set to Editor font size.
+-------------------------------------------------------------------------------
+HideStatLine  :On/Off
+  On :Hide the status line and use for editing.
+  Off:Display the status line.
+-------------------------------------------------------------------------------
+Edit Indent+: Off/1/2/4 Save-
+ Enable auto indent in editor.
+   Off: Disable auto indent.
+   1: Set indent width to 1.
+   2: Set indent width to 1.
+   4: Set indent width to 1.
+ Save-: delete blank spaces including indents when saving program. (=to compatible with Casio Basic)
+-------------------------------------------------------------------------------
+Edit LineNum: on/off
+  Set to line number display.
+-------------------------------------------------------------------------------
+EditListChar: List / reverseL / Thick L
+  Select List display character.
+-------------------------------------------------------------------------------
+Use Hidden RAM: on / off
+  Set if C.Basic uses hidden RAM or not.
+-------------------------------------------------------------------------------
+HiddenRAM Init: on / off
+  When use the hidden RAM, Mat&List at the time of C.Basic start, to initialize or not.
+-------------------------------------------------------------------------------
+Max Pict No: 20~99
+  When use the hidden RAM, you can use more pict file.
+  (*)When you change a value, Pict&Mat&List is reset.
+-------------------------------------------------------------------------------
+Max List No: 52~1040
+  When use the hidden RAM, you can use more List.
+  (*)When you change a value, Pict&Mat&List is reset.
+-------------------------------------------------------------------------------
+AT DebugMode: on / off
+  When [AC] break, debug mode on/off.
+-------------------------------------------------------------------------------
+ExitDM Popup: on / off
+  Set to popup of exit Debug Mode.
+-------------------------------------------------------------------------------
+Break Stop: on / off
+  Set if [AC] key break is accepted or not.
+  When it's off, you cannot break program by [AC] key.
+- Related command: '#Break 0	'#Break 1
+-------------------------------------------------------------------------------
+Exec TimeDsp: on / off / reset / %HR
+  Set if program running time is displayed or not after the program quits.
+  Timer starts at first line of program. ? or Disps command reset the timer.
+  In the case of GetKey1/2, the timer is suspended and starts after command again.
+  on reset: The timer is reset and starts again after GetKey1/2.
+  %HR: use 1/32768s timer (only SH4A)
+  - Related command: '#GetKeyC  '#GetKeyR
+-------------------------------------------------------------------------------
+IfEnd Check: on / off
+  Set if one-to-one correspondence of "If" and "IfEnd" statement is checked or not.
+-------------------------------------------------------------------------------
+ACBreak: on / off
+  Set ACBreak command to be enable or disable.
+  - Related command: ACBreak
+-------------------------------------------------------------------------------
+Force Return: None/ F1/ EXE/ F1&EXE
+  Force return to file mode at [AC]break.
+  (Example) Force Return set to [F1]key
+  -File list→[F1](EXE)→[AC]→[EXIT]… Returns to the file list.
+  -File list→[EXE]→[AC]→[EXIT] …… Returns to the editor.
+  -File list→[F1](EXE]→[AC]→[EXE](restart)→[AC]→[EXIT] …… Returns to the file list.
+  (The operation depends on which key is pressed first.)
+-------------------------------------------------------------------------------
+Key 1st time: 25 ms - 1000 ms (default value is 500 ms)
+  Set time before key repeat starts (in 25 ms interval)
+-------------------------------------------------------------------------------
+Key Rep time: 25 ms - 500 ms (default value is 125 ms)
+  Set key repeat duration time (in 25 ms interval)
+-------------------------------------------------------------------------------
+SkipUp/Down: 1 - 9999
+  Set number of skipping page for SkipUp ([SHIFT][Up]) or SkipDown ([SHIFT][Down]).
+-------------------------------------------------------------------------------
+Mat Dsp mode: [m,n] / [X,Y]
+  Set matrix display Format in Matrix Editor page.
+  Format [m,n] and [X,Y] are in transposed matrix each other, but just only the appearance on screen is different. The internal matrix data is still same, won't be changed.
+-------------------------------------------------------------------------------
+Matrix base: 0 / 1
+  Set index of matrix starts with 0 or 1.
+  When the start index is set to 0, left-top pixel comes to be available to use and left-top coordinate of device coordinates can be (0, 0).
+  - Related command: '#Mat 0, '#Mat 1
+-------------------------------------------------------------------------------
+DATE: 2017/01/17 TUE
+  Set date of internal RTC. A day of the week is automatically set.
+-------------------------------------------------------------------------------
+TIME: 23:59:59
+  Set time of internal RTC
+  - Related command: DATE, TIME
+-------------------------------------------------------------------------------
+Root Folder:			(* Only Graph 35+E II is valid.)
+  [F1]: To set the root folder.
+  [F2]: To set the current folder.
+  - Related command:
+   '#R/		// to set the root folder.
+   '#R.		// to set the current folder.
+-------------------------------------------------------------------------------
+Auto file Save: on/off
+  Set to auto save without a popup.
+-------------------------------------------------------------------------------
+Force g1m save: on / off
+  Set "save automatically" or "not save" g1m file, after run or edit of text file.
+-------------------------------------------------------------------------------
+Pict mode: S.Mem / Heap / Both / MainMem
+  - S.Mem: Pict file is created in storage memory/SD and it takes a bit longer.
+  - Heap: Pict file is not actually created, but compatible file is allocated in main memory.
+  - Both: Stored always in storage memory/SD.
+  - Main: Pict file is compatible with genuine Casio Basic.
+-------------------------------------------------------------------------------
+Storage mode: S.Mem / SD / MainMem
+  S.Mem: Files in storage memory is used for run and edit.
+  SD: Files in SD is used for run and edit (available oonly for SD verison of fx-9860G series
+  Main mem: Files in Main Memory is used for run and edit.
+-------------------------------------------------------------------------------
+RefrshCtl DD: off / Grp / All
+  Set how to refresh screen at running of display and draw command.
+  Off: No extra refresh control is carried out, which is compatible with genuine Casio Basic.
+  Grp: Only graphics draw commands make screen refreshed, excepting ClrText, Locate, Text, LocateYX, " " (this exception is compatible with former version of C.basic).
+  All: All the display and draw commands male screen refreshed. PutDispDD should be used as may be necessary.
+  Time: Set refresh control tme in interval of 1/128 sec. Defalt value is 3 then refresh control is every 1/42 sec.
+	It is not refreshed when 0 is set.
+  - Related command: RefrshCtrl, RefrshTime
+-------------------------------------------------------------------------------
+Wait count: 0~9999
+ Set to wait for slow down execution speed.
+  - Related command: Wait
+-------------------------------------------------------------------------------
+Execute mode: Dbl# / Int% / CPLX
+  Set running mode as default.
+  - Related command: '#CBasic, '#CBASIC, '#CBINT, '#CBint '#CBCPLX '#CBcplx
+-------------------------------------------------------------------------------

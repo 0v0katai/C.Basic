@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _BatteryIcon
+
+	.SECTION P,CODE,ALIGN=4
+_BatteryIcon:
+	BIOS_JUMP #h'1D89
+
+	.END

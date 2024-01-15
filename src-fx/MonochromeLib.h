@@ -1,0 +1,184 @@
+/*************************************************************/
+/** MonochromeLib - monochrome graphic library for fx-9860G **/
+/** MonochromeLib is free software                          **/
+/**                                                         **/
+/** @author Pierre "PierrotLL" Le Gall                      **/
+/** @contact legallpierre89@gmail.com                       **/
+/**                                                         **/
+/** @file MonochromeLib.h                                   **/
+/** Include header for MonochromeLib                        **/
+/**                                                         **/
+/** @date 11-22-2011                                        **/
+/*************************************************************/
+
+#ifndef MONOCHROMELIB
+#define MONOCHROMELIB
+
+/****************************************************/
+/** uncomment #define of functions you want to use **/
+/****************************************************/
+
+#define ML_ALL //Auto define all functions
+
+// #define ML_CLEAR_VRAM
+// #define ML_CLEAR_SCREEN
+// #define ML_DISPLAY_VRAM
+
+// #define ML_SET_CONTRAST
+// #define ML_GET_CONTRAST
+
+// #define ML_PIXEL
+// #define ML_POINT
+// #define ML_PIXEL_TEST
+
+// #define ML_LINE
+// #define ML_HORIZONTAL_LINE
+// #define ML_VERTICAL_LINE
+
+// #define ML_RECTANGLE
+
+// #define ML_POLYGON
+// #define ML_FILLED_POLYGON
+
+// #define ML_CIRCLE
+// #define ML_FILLED_CIRCLE
+
+// #define ML_ELLIPSE
+// #define ML_ELLIPSE_IN_RECT
+// #define ML_FILLED_ELLIPSE
+// #define ML_FILLED_ELLIPSE_IN_RECT
+
+// #define ML_HORIZONTAL_SCROLL
+// #define ML_VERTICAL_SCROLL
+
+// #define ML_BMP_OR
+// #define ML_BMP_AND
+// #define ML_BMP_XOR
+// #define ML_BMP_OR_CL
+// #define ML_BMP_AND_CL
+// #define ML_BMP_XOR_CL
+
+// #define ML_BMP_8_OR
+// #define ML_BMP_8_AND
+// #define ML_BMP_8_XOR
+// #define ML_BMP_8_OR_CL
+// #define ML_BMP_8_AND_CL
+// #define ML_BMP_8_XOR_CL
+
+// #define ML_BMP_16_OR
+// #define ML_BMP_16_AND
+// #define ML_BMP_16_XOR
+// #define ML_BMP_16_OR_CL
+// #define ML_BMP_16_AND_CL
+// #define ML_BMP_16_XOR_CL
+
+// #define ML_BMP_ZOOM
+
+// #define ML_BMP_ROTATE
+
+/**************************/
+/** Functions prototypes **/
+/**************************/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define ML_SCREEN_WIDTH     128
+#define ML_SCREEN_HEIGHT    64
+
+#define ML_CONTRAST_MIN     130
+#define ML_CONTRAST_NORMAL  168
+#define ML_CONTRAST_MAX     190
+
+extern int MLV_rand;	// randam pixel 0~RAND_MAX
+extern int MLV_width;	// ML_line width option
+
+//                                 0          1           2           3           4           5           6           7           8           9
+typedef enum {ML_TRANSPARENT=-1, ML_WHITE,  ML_BLACK,   ML_XOR,     ML_CHECKER, ML_RANDPX,  ML_22DOT0X, ML_22DOT1X, ML_22DOT2X, ML_22DOT3X, ML_22DOT4X,
+							 	ML_22DOT10, ML_22DOT11, ML_22DOT12, ML_22DOT13, ML_22DOT14, ML_22DOT15, ML_22DOT16, ML_22DOT17, ML_22DOT18, ML_22DOT19,
+							 	ML_22DOT20, ML_22DOT21, ML_22DOT22, ML_22DOT23, ML_22DOT24
+			 } ML_Color;
+
+char* ML_vram_adress();
+
+void ML_clear_vram();
+void ML_clear_screen();
+void ML_display_vram();
+
+void ML_set_contrast(unsigned char contrast);
+unsigned char ML_get_contrast();
+
+void ML_pixel(int x, int y, ML_Color color);
+void ML_point(int x, int y, int width, ML_Color color);
+ML_Color ML_pixel_test(int x, int y);
+ML_Color ML_pixel_test_TVRAM(int x, int y);
+ML_Color ML_pixel_test_GVRAM(int x, int y);
+
+void ML_line(int x1, int y1, int x2, int y2, ML_Color color);
+void ML_horizontal_line(int y, int x1, int x2, ML_Color color);
+void ML_vertical_line(int x, int y1, int y2, ML_Color color);
+
+void ML_rectangle(int x1, int y1, int x2, int y2, int border_width, ML_Color border_color, ML_Color fill_color);
+
+void ML_polygon_Rotate( int *x, int *y, int nb_vertices, ML_Color color, int angle , int center_x, int center_y, int percent, int fill ) ;	// flag 1:fill
+void ML_rectangle_Rotate(int x1, int y1, int x2, int y2, int border_width, ML_Color border_color, ML_Color fill_color, int angle, int center_x, int center_y, int percent ) ;
+
+void ML_polygon(const int *x, const int *y, int nb_vertices, ML_Color color);
+void ML_filled_polygon(const int *x, const int *y, int nb_vertices, ML_Color color);
+
+void ML_circle(int x, int y, int radius, ML_Color color);
+void ML_filled_circle(int x, int y, int radius, ML_Color color);
+
+void ML_ellipse(int x, int y, int radius1, int radius2, ML_Color color, int angle);
+void ML_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color, int angle);
+void ML_filled_ellipse(int x, int y, int radius1, int radius2, ML_Color color, int angle);
+void ML_filled_ellipse_in_rect(int x, int y, int radius1, int radius2, ML_Color color, int angle);
+
+void ML_horizontal_scroll(int scroll);
+void ML_horizontal_scroll2(int scroll, int x1, int y1, int x2, int y2);
+void ML_vertical_scroll(int scroll);
+void ML_vertical_scroll2(int scroll, int x1, int y1, int x2, int y2);
+
+void ML_bmp_or(const unsigned char *bmp, int x, int y, int width, int height);
+void ML_bmp_and(const unsigned char *bmp, int x, int y, int width, int height);
+void ML_bmp_xor(const unsigned char *bmp, int x, int y, int width, int height);
+void ML_bmp_or_cl(const unsigned char *bmp, int x, int y, int width, int height);
+void ML_bmp_and_cl(const unsigned char *bmp, int x, int y, int width, int height);
+void ML_bmp_xor_cl(const unsigned char *bmp, int x, int y, int width, int height);
+
+void ML_bmp_8_or(const unsigned char *bmp, int x, int y);
+void ML_bmp_8_and(const unsigned char *bmp, int x, int y);
+void ML_bmp_8_xor(const unsigned char *bmp, int x, int y);
+void ML_bmp_8_or_cl(const unsigned char *bmp, int x, int y);
+void ML_bmp_8_and_cl(const unsigned char *bmp, int x, int y);
+void ML_bmp_8_xor_cl(const unsigned char *bmp, int x, int y);
+
+void ML_bmp_16_or(const unsigned short *bmp, int x, int y);
+void ML_bmp_16_and(const unsigned short *bmp, int x, int y);
+void ML_bmp_16_xor(const unsigned short *bmp, int x, int y);
+void ML_bmp_16_or_cl(const unsigned short *bmp, int x, int y);
+void ML_bmp_16_and_cl(const unsigned short *bmp, int x, int y);
+void ML_bmp_16_xor_cl(const unsigned short *bmp, int x, int y);
+
+void ML_bmp_zoom(const unsigned char *bmp, int x, int y, int width, int height, float zoom_w, float zoom_h, ML_Color color);
+void ML_bmp_rotate(const unsigned char *bmp, int x, int y, int width, int height, int angle, ML_Color color);
+
+void ML_circle2(int x, int y, int radius, ML_Color color, int start, int end, int n ) ;	// start:end  0~360
+void ML_DrawMat( int x, int y, int width, int height, unsigned char *Mat, int mx1, int my1, int mx2, int my2, ML_Color color ) ;
+
+int MLTest_point(int x, int y, int width );
+int MLTest_line(int x1, int y1, int x2, int y2);
+int MLTest_horizontal_line(int y, int x1, int x2 );
+int MLTest_rectangle(int x1, int y1, int x2, int y2 );
+int MLTest_filled_polygon(const int *x, const int *y, int nb_vertices );
+int MLTest_filled_circle(int x, int y, int radius);
+int MLTest_filled_ellipse(int x, int y, int radius1, int radius2 );
+int MLTest_filled_ellipse_in_rect(int x1, int y1, int x2, int y2);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif //MONOCHROMELIB

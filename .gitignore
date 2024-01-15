@@ -1,0 +1,27 @@
+# File
+*.dlw
+*.dlr
+*.G1A
+*.bat
+*.CGI
+*.log
+*.LIB
+*.lst
+*.lbk
+*.LIB
+*.SH3
+*.G3A
+*.BAK
+*.PRJ
+
+# Directory
+.vscode
+src-fx/Debug
+src-fx/INIT
+src-fx/SDCard
+src-cg/debug
+src-cg/workspace
+src-cg/bitmaps
+src-cg/objects
+src-cg/tools
+src-cg/LIB

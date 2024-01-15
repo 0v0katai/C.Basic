@@ -1,0 +1,207 @@
+=======================================
+Special Thanks
+=======================================
+---------------------------------------
+Contributors involved in C.Basic development
+---------------------------------------
+FX version ; SDK 1.00 (by CASIO)
+CG version : miniSDK 1.09 (by SimonLothar)
+
+Reference material for internal specifications,
+SuperH-based fx calculators (version 20) (by SimonLothar)
+WikiPrizm (by Cemetech)
+Analysis hardware information (by TeamFX)
+BIOS analysis information (by Colon)
+
+As the first reference program for file access in C.Basic development,
+https://community.casiocalc.org/topic/6836-wsc-fvm-v12-casio-fx-9860-series-on-calc-c-compiler/
+Wsc & Fvm V1.2 - Casio Fx-9860 Series On-calc C Compiler　(by Wudy)
+
+Programs imported into C.Basic,
+MonochromeLib (by PierrotLL, Ninestars)
+sprintf (by Patrick Powell)
+
+
+---------------------------------------
+English and French translation and proofreading
+---------------------------------------
+creating the English site. (by Krtyski)
+proofreading japanese documents. (by Colon)
+French manual translation. (by Lephenixnoir)
+proofreading english documents and creating the English user's guide. (by CalcLoverHK)
+
+
+---------------------------------------
+Many thanks to the people who published the C.Basic application.
+---------------------------------------
+--------------------------------------- https://egadget.blog.fc2.com/
+Krtyski
+  https://egadget.blog.fc2.com/blog-entry-148.html
+
+  https://egadget.blog.fc2.com/blog-category-28.html
+  Game application - LifeGame
+
+
+Ganohr
+  Game application - 3D Maze
+  https://egadget.blog.fc2.com/blog-entry-499.html
+
+  Game application - DRAGON
+  https://egadget.blog.fc2.com/blog-entry-501.html
+
+
+Tsuru
+  Utility application - Font Editor (included with C.Basic ZIP)
+
+  Game application - Master Mind game
+  https://egadget.blog.fc2.com/blog-entry-612.html
+
+
+iron2
+  Utility application - X'mas tree
+  https://egadget.blog.fc2.com/blog-entry-633.html
+
+  Utility application - Mandelbrot draw
+  https://pm.matrix.jp/upload/upload.cgi?get=00002
+
+
+Colon
+  Utility application - Japanease language add-in
+  https://pm.matrix.jp/upload/upload.cgi?get=00038
+
+  Utility application - Font File Manager (FFM)
+  http://egadget.bbs.fc2.com/?act=reply&tid=12811589
+  https://pm.matrix.jp/CB/FFM0122.g3m
+
+  Utility application - System Manager
+  https://pm.matrix.jp/upload/upload.cgi?get=00017
+
+  Square root calculation program
+  https://pm.matrix.jp/upload/upload.cgi?get=00013
+
+  Game application - Nervous weakness (with AI fluttering)
+  https://pm.matrix.jp/upload/upload.cgi?get=00014
+
+  Game application - Ulam spiral drawing
+  https://pm.matrix.jp/upload/upload.cgi?get=00033
+
+
+--------------------------------------- https://community.casiocalc.org/
+Emex
+  C.Basic DEMO
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-2#entry61220
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-2#entry61229
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-2#entry61260
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-2#entry61265
+
+
+piu58
+  Game application - Conway
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-2#entry61471
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-3#entry61503
+
+  Simulation application - experiments with map projections
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-3#entry61517
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-3#entry61527
+
+  Simulation application - solar magnetic field
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-3#entry61538
+
+  Simulation application - photon in bended space
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-6#entry62186
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-6#entry62200
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-6#entry62205
+
+  Game application - bifurcation diagram
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-6#entry62262
+
+  Simulation application - Field of dipol
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-7#entry62461
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-7#entry62467
+
+  Simulation application - Field earth and moon
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-8#entry62488
+
+  Simulation application - map sketching
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-11#entry62767
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-11#entry62771
+
+
+tsiozos
+  Utility application - RTCOUNT
+  https://community.casiocalc.org/topic/7637-cbasic-international-release/page-7#entry62431
+
+
+CalcLoverHK
+  Game application - Guess Number
+  https://community.casiocalc.org/topic/7877-guess-number-updates-bug-reports-thread/
+
+
+--------------------------------------- https://www.planet-casio.com
+Lightmare
+  Game application - Pokémon Obsidienne
+  https://www.planet-casio.com/Fr/forums/topic15555-1-Pokemon-Obsidienne---C.Basic-.html
+
+
+Shadow15510
+  Game application - Mini RpG 
+  https://www.planet-casio.com/Fr/programmes/programme3762-1-Mini-RpG-shadow15510-jeu-role_rpg.html
+
+  Game application - Aero cie 
+  https://www.planet-casio.com/Fr/programmes/programme3785-1-Aero-cie-Shadow15510-jeu-reflexion.html
+
+
+Manolo
+  Utility application - C.Basic Library 
+  https://www.planet-casio.com/Fr/forums/topic15572-1-blibiotheque-de-fonctions-en-C.Basic.html
+  https://www.planet-casio.com/Fr/programmes/programme3730-1-C.Basic-Library-manolo-programme-graphisme.html
+
+
+Disperseur
+  Game application - Circuit 
+  https://www.planet-casio.com/Fr/programmes/programme3719-1-Circuit-disperseur-jeu.html
+
+
+Captainluigi
+  Utility application - Micro Gimp 
+  https://www.planet-casio.com/Fr/forums/topic15668-1-C.Basic--Micro-Gimp.html
+  https://www.planet-casio.com/Fr/programmes/programme3786-1-Micro-Gimp-captainluigi-programme-graphisme.html
+
+  Game application - Mario Galaxy : Run !
+  https://www.planet-casio.com/Fr/forums/topic15809-1-Mario-Galaxy--Run-!.html
+  https://www.planet-casio.com/Fr/programmes/voir_un_programme_casio.php?showid=3892
+
+  Calbian : un terminal Linux sur Casio
+  https://www.planet-casio.com/Fr/forums/topic15880-1-Calbian--un-terminal-Linux-sur-Casio.html
+
+
+Mactul
+  try/execpt ou un equivalent malin
+  https://www.planet-casio.com/Fr/forums/topic15743-1-try-execpt-ou-un-equivalent-malin.html
+
+  Utility application - HtmlInterpreter 
+  https://www.planet-casio.com/Fr/programmes/programme3777-1-HtmlInterpreter-mactul-programme.html
+
+
+Redcmd
+  Game application - Démineur 
+  https://www.planet-casio.com/Fr/programmes/programme3901-1-D%C3%A9mineur-RedCMD-jeu-strategie.html
+
+  Game application - Playable Sudoku with Generator and Sovler
+  https://www.planet-casio.com/Fr/forums/topic15833-1-Playable-Sudoku-with-Generator-and-Sovler.html
+
+
+Critor
+  some comprehensive benchmarks with and without C.Basic and/or Ftune/Ptune.
+  https://www.planet-casio.com/Fr/forums/topic14738-15-c-basic-projets.html#168725
+
+  Concours de rentrée 2019 - défi langage historique
+  https://www.planet-casio.com/Fr/forums/lecture_sujet.php?id=15905
+  https://tiplanet.org/forum/viewtopic.php?p=246627#p246627
+
+---------------------------------------
+And,
+Many thanks to all the people who use C.Basic and contributed bug reports, advice and new suggestions via forums and emails.
+
+Many thanks to CASIO Co.Ltd. for developing and selling this very interesting calculator.
+---------------------------------------

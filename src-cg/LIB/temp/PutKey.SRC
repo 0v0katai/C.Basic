@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _PutKey
+
+	.SECTION P,CODE,ALIGN=4
+_PutKey:
+	BIOS_JUMP #h'0EA9
+
+	.END

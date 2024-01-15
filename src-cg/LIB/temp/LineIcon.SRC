@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _LineIcon
+
+	.SECTION P,CODE,ALIGN=4
+_LineIcon:
+	BIOS_JUMP #h'1D8F
+
+	.END

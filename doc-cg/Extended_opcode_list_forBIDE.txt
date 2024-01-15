@@ -1,0 +1,127 @@
+---------------------------------------------------------------------------------
+C.Basic for CG Ver 1.28beta   Extended Opcode List
+
+Last edited by sentaro21/Colon, 12 Sep 2019(UTC)
+
+---------------------------------------------------------------------------------
+ 0x00FA  "Gosub "
+
+ 0x7F58  "ElemSize("
+ 0x7F59  "ColSize("
+ 0x7F5A  "RowSize("
+ 0x7F5B  "MatBase("
+ 0x7F5C  "ListCmp("
+ 0x7F5D  "GetRGB("              // for CG
+ 0x7F5E  "RGB("                 // for CG
+ 0x7F5F  "Ticks"
+ 0x7F70  "GetHSV("		// for CG
+ 0x7F71  "HSV("			// for CG
+ 0x7F72  "GetHSL("		// for CG
+ 0x7F73  "HSL("			// for CG
+ 0x7F9F  "KeyRow("
+ 0x7FCF  "System("
+ 0x7FDF  "Version"
+ 0x7FF5  "IsExist("
+ 0x7FF6  "Peek("
+ 0x7FF8  "VarPtr("
+ 0x7FFA  "ProgPtr("
+
+ 0xF70C  "Return "              // add space
+ 0xF70F  "ElseIf "
+ 0xF717  "ACBreak"
+ 0xF737  "Try "
+ 0xF738  "Except "
+ 0xF739  "TryEnd"
+ 0xF73B  "DotPut("
+ 0xF73D  "DotTrim("
+ 0xF73E  "DotGet("
+ 0xF79D  "StoCapt"
+ 0xF7DD  "Beep "
+ 0xF7DE  "BatteryStatus"
+ 0xF7DF  "Delete "
+ 0xF7E0  "DotLife("
+ 0xF7E1  "Rect "
+ 0xF7E2  "FillRect "
+ 0xF7E3  "LocateYX "
+ 0xF7E4  "Disp "
+ 0xF7E8  "ReadGraph("
+ 0xF7E9  "WriteGraph "
+ 0xF7EA  "Switch "
+ 0xF7EB  "Case "
+ 0xF7EC  "Default "
+ 0xF7ED  "SwitchEnd"
+ 0xF7EE  "Save "
+ 0xF7EF  "Load("
+ 0xF7F0  "DotShape("
+ 0xF7F1  "Local "
+ 0xF7F2  "PopUpWin("
+ 0xF7F4  "SysCall("
+ 0xF7F5  "Call("
+ 0xF7F6  "Poke("
+ 0xF7F8  "RefrshCtrl "
+ 0xF7FA  "RefrshTime "
+ 0xF7FB  "Screen"
+ 0xF7FC  "PutDispDD"
+ 0xF7FD  "FKeyMenu("
+ 0xF7FE  "BackLight "
+
+ 0xF90E  "Const "
+ 0xF90F  "Alias "
+ 0xF940  "ToStr("
+ 0xF941  "DATE"
+ 0xF942  "TIME"
+ 0xF943  "Sprintf("
+ 0xF944  "StrChar("
+ 0xF945  "StrCenter("
+ 0xF946  "Hex("
+ 0xF947  "Bin("
+ 0xF948  "StrBase("
+ 0xF949  "StrRepl("
+ 0xF94D  "StrSplit("
+ 0xF94F  "Wait "
+ 0xF950  "StrAsc("
+ 0xF960  "GetFont("  
+ 0xF961  "SetFont "  
+ 0xF962  "GetFontMini("  
+ 0xF963  "SetFontMini "  
+ 0xF999  "Plot/Line-Color "     // for CG
+ 0xF99B  "Black "               // for CG
+ 0xF99C  "White "               // for CG
+ 0xF99D  "Magenta "             // for CG
+ 0xF99E  "Cyan "                // for CG
+ 0xF99F  "Yellow "              // for CG
+ 0xF9BE  "Back-Color "          // for CG
+ 0xF9BF  "Transp-Color "        // for CG
+ 0xF9C0  "_ClrVram"
+ 0xF9C1  "_ClrScreen"
+ 0xF9C2  "_DispVram"
+ 0xF9C3  "_Contrast"
+ 0xF9C4  "_Pixel "
+ 0xF9C5  "_Point "
+ 0xF9C6  "_PixelTest("
+ 0xF9C7  "_Line "
+ 0xF9C8  "_Horizontal "
+ 0xF9C9  "_Vertical "
+ 0xF9CA  "_Rectangle "
+ 0xF9CB  "_Polygon "
+ 0xF9CC  "_FillPolygon "
+ 0xF9CD  "_Circle "
+ 0xF9CE  "_FillCircle "
+ 0xF9CF  "_Elips "
+ 0xF9D0  "_FillElips "
+ 0xF9D1  "_ElipsInRct "
+ 0xF9D2  "_FElipsInRct "
+ 0xF9D3  "_Hscroll "
+ 0xF9D4  "_Vscroll "
+ 0xF9D5  "_Bmp "
+ 0xF9D6  "_Bmp8 "
+ 0xF9D7  "_Bmp16 "
+ 0xF9D8  "_Test"
+ 0xF9D9  "_BmpZoom "
+ 0xF9DA  "_BmpRotate "
+ 0xF9DB  "BmpSave "
+ 0xF9DC  "BmpLoad("
+ 0xF9DD  "DrawMat "
+ 0xF9DE  "_BmpZmRotate "
+ 0xF9DF  "_Paint "              // for CG
+

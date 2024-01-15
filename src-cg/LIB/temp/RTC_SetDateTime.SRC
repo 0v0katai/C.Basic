@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _RTC_SetDateTime
+
+	.SECTION P,CODE,ALIGN=4
+_RTC_SetDateTime:
+	BIOS_JUMP #h'11DE
+
+	.END

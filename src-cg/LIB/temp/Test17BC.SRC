@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _Test17BC
+
+	.SECTION P,CODE,ALIGN=4
+_Test17BC:
+	BIOS_JUMP #h'17BC
+
+	.END

@@ -1,0 +1,2813 @@
+﻿Voyez aussi ce site:
+http://egadget2.web.fc2.com/CBasic/Interpreter/CBasic_interpreter.html
+Le site est traduit par Krtyski, et ce fichier par Lephenixnoir.
+
+===============================================================================
+
+Manuel de l'interpréteur (et compilateur) Basic Casio, pour CG/90+E series ver 1.x beta
+
+Copyright (c) 2015-2017-2020 Sentaro21
+Email: sentaro21@pm.matrix.jp
+
+Dernière mise à jour du texte d'origine par Sentaro21, le 9/02/2020
+
+===============================================================================
+Qu'est-ce que C.Basic pour CG/90+E ?
+===============================================================================
+C.Basic est un interpréteur Basic Casio rapide et compatible avec le Basic Casio standard. Il implémente certains bons aspects de la fx-5800P.
+
+C.Basic lit des programmes dans les fichiers *.g1m stockés dans la mémoire de sotckage, contrairement au Basic Casio standard qui lit les contenus des fichiers *.g1m dans la mémoire principale. Un programme utilisant uniquement des commandes compatibles peut être exécuté à la fois dans C.Basic et l'interpréteur standard.
+
+=============================================================================== ( étendu pour CG )
+Exécuter le mode de g1m ou g3m
+===============================================================================
+Il existe le mode g1m compatible avec la version FX et le mode g3m correspondant à la série CG.
+Lorsque vous utilisez le programme g1m avec le mode g3m, il est compatible avec le programme de la commande de texte, mais avec une partie non compatible avec les graphiques.
+
+=============================================================================== ( étendu pour CG )
+Mémoire disponible
+===============================================================================
+Il y a 128 ko de RAM à l'usage libre de l'add-in.
+Il y a de la RAM libre de 6 Mo dans CG50. C.Basic peut l'utiliser.
+(utiliser la mémoire cache par configuration)
+
+===============================================================================
+Editeur de programme intégré, avec taille variable de texte
+===============================================================================
+C.Basic a un éditeur de texte intégré, similaire à celui pr défaut.
+Le copier-coller est supporté, mais il n'est possible de copier que 16 ko à la fois. Il n'y a pas encore d'annulation.
+
+La taille initiale des nouveaux fichiers est 32 ko.
+Vous ne pouvez pas dépasser cette taille lorsque vous éditez un programme juste après sa création. Si vous atteignez 4 ko, veuillez enregistrer puis rouvrir le programme.
+La zone de mémoire disponible sera alors augmentée de 8 ko.
+
+Lorsque le programme est exécuté, de la mémoire est réservée pour charger son code, avec un buffer supplémentaire de 8 ko (512 octets pour les sous-programmes).
+Au moment de debugger le programme, ce buffer peut être exploité pour modifier le code.
+
+La taille maximale modifiable du programme est d'environ 62 Ko.
+
+===============================================================================
+Debugger intégré
+===============================================================================
+Une fonctionnalité qui distingue C.Basic de l'interpréteur standard est la capacité de debugger et reprendre un programme après avoir appuyé sur [AC].
+Il est également possible de démarrer directement le programme en mode debug.
+Ce mode permet de tracer l'exécution, exécuter pas-à-pas, exécuter ligne-à-ligne, et exécuter jusqu'en fin de fonction.
+
+
+===============================================================================
+Modes d'exécutions - "Entier" et "Réel" et "Complexe"
+===============================================================================
+C.Basic supporte trois modes d'exécutions en termes de variables numériques. Les modes "Réel" et "Complexe" sont identiques au Basic Casio standard ; le mode "Entier" permet de travailler avec des entiers uniquement. Le mode "Entier" permet d'accélerer le programme quand les valeurs réelles ne sont pas nécessaires.
+
+Ces modes peuvent être sélectionnées par le biais de commandes cachées dans des commentaires. Pour activer le mode réel, utilisez l'une des commandes équivalentes suivantes :
+
+'#CBasic
+'#CBASIC
+'#CBdbl
+'#CBDBL
+
+Pour activer le mode entier, utilisez l'une des commandes suivantes :
+
+'#CBint
+'#CBINT
+
+Pour activer le mode complexe, utilisez l'une des commandes suivantes :
+
+'#CBcplx
+'#CBCPLX
+
+Les nombres réels de C.Basic sont implémentés par des nombre flottants en double-précision.
+
+Les paramètres par défauts peuvent être modifiés dans la page Configuration (Setup), à l'entrée "Mode d'exécution" ("Execute mode") ; les valeurs disponibles sont "Dbl#" et "Int%".
+
+Tout mode d'exécution dans un programme est prioritaire sur le paramètre par défaut de la page Configuration.
+
+En mode Entier, toutes les valeurs calculées doivent être des entiers, mais la vitesse de calcul est environ 1.5 plus élevée que celle du mode Réel.
+
+Si vous voulez évaluer une expression spécifique en Réel alors que le mode Entier est activé, préfixez l'expression d'un #. Les calculs intermédiaires seront faits en double précision, et seul le résultat final sera converti en entier. Le résultat final est toujours converti en entier.
+
+(Exemple)
+"100*Frac 1.23+5"
+
+En mode Entier, Frac 1.23 est invalide et le code précédent donne une erreur. Cependant le préfixe # permet à l'expression d'être évaluée en double précision; l'évaluation entière reprend à la fin de la ligne ou au premier :. Ainsi :
+
+#(Frac 1.23*100+5)
+
+donnera 28. En mode Réel, le résultat est également 28.
+
+Si # est au milieu de l'expression, son effect continue jusqu'à la fin de la ligne ou le premier :. Par exemple :
+
+(Exemple)
+100*#Frac 1.23+5
+
+est interprété comme :
+100*#(Frac 1.23+5)
+donc le résultat vaut 523 en mode Réel et 500 en mode Entier.
+
+
+===============================================================================
+Au sujet de la fonction Wait
+===============================================================================
+Il est possible d'ajuster la vitesse d'exécution globale.
+Lorsque cet ajustement est fait dans le menu Configuration (Setup), tous les programmes seront affectés.
+
+Utilisez la commande Wait pour le faire à l'intérieur d'un programme.
+(Exemple) Wait 100
+Paramètre à 100 le délai d'exécution.
+
+
+===============================================================================
+Types de nombres
+===============================================================================
+Le Basic Casio standard représente les nombres en décimal avec une précision de 15 digits en interne, et 2 digits d'exposant. C.Basic, à l'inverse, utilise un nombre réel en double précision (8 octets) et des entiers de 4 octets, puisque ce sont les types natifs du C dans le SDK de Casio.
+La plage de nombres que les réels en double précision peuvent représenter est de
++-9.88131291682493e-323 à +-1.7976931348623151e+308
+Cette plage est plus grande que celle du Basic, mais les calculs sont faits en binaire, donc n'oubliez pas que la valeur exacte des décimales est sujette à erreur d'arrondi.
+
+Les préfixes OX et OB similaires au langage C permettent d'écrires les constantes en hexadécimal et en binaire, rrespectivement.
+(Exemple) 0XFF, 0B10100110
+(Exemple) 0xAB, 0b10100110
+
+
+===============================================================================
+Types de variables
+===============================================================================
+Comme le Basic Casio, C.Basic nomme ses variables par une seule lettres; 26 majuscules de A à Z et 26 minuscules de a à z.
+
+Les noms de variables à partir de 2 lettres ne sont pas supportés par C.Basic, tout comme ils ne sont pas supportés par le Basic Casio.
+
+Les variables A-Z et a-z existent en deux versions : réelles et entières. Lorsque le mode Réel est activé, les lettres A-Z et a-z font références aux versions réelles ; lorsque le mode Entier est activé, elles font référence aux versions entières. Pour accéder aux versions opposées au mode activé, utilisez le suffixe % pour les entiers (A%-Z% et a%-z%) et le suffixe # pour les réels (A#-Z# et a#-z#).
+
+Utiliser une variable entière à l'aide du suffixe % en mode Réel ne pose pas de difficulté. Cependant, toute variable réelle utilisée avec le suffixe # en mode Entier sera arrondie en entier avant d'être employée dans son calcul.
+Si la valeur réelle est trop grande pour être représentée par un entier, elle est remplacée par 0.
+
+(Exemple) #CBINT       // Passe en mode entier
+          #1.2345->A#   // 1.2345 est évalué à 1 (car le mode entier est activé) et 1 est stocké dans A#
+
+(Exemple) A%->A#
+Copie la valeur de la variable entière A% dans la variable en double précision A#.
+Copier d'un entier vers une donnée en double précision ne pose aucun problème. Mais à l'inverse, toute valeur en double précision copiée dans un entier sera arrondie, voire mise à 0 si elle ne rentre pas dans la plage représentable des entiers.
+
+===============================================================================
+Variables étendues                                                       0.35 -
+===============================================================================
+On peut nommer les variables avec plusieurs lettres si le nom commence par un underscore _ ; jusqu'à 8 caractères sont autorisés.
+Ces variables sont initialisées au début du programme et indépendantes des variables usuelles à une lettre.
+
+Commes les autres variables, elles sont deux versions : une entière (suffixe %) et une réelle (suffixe #).
+
+Dans l'éditeur, [SHIFT][F1] permet de passer consécutivement de variable majuscule à variable minuscule à variable étendue.
+
+(Exemple) 123.456->_ABC
+(Exemple) 456->_ABC%
+(Exemple) _ABC+_ABC%->_Result
+_Result vaut 579.456.
+
+===============================================================================
+Variables constantes                                                     0.35 -
+===============================================================================
+La commande Const ([OPTN]-[F3](extd)-[F3](Const)) permet de limiter les utilisations d'une variable.
+Uune variable devient une constante lorsq'une valeur est affectée avec Const.
+(Exemple) 123->Const A
+(Exemple) 123->Const _ABC
+(Exemple) 456->A
+Changer la valeur d'une variable constante est une erreur.
+
+
+===============================================================================
+A propos de la taille de l'écran
+===============================================================================
+La plage pouvant être utilisée est normalement de 384x216 points dans la série CG.
+La plage permettant de peindre des images dans un véritable CasioBasic est de 384 x 192, à l'exception de la ligne d'état supérieure.
+mais prend en charge tous les 384x216 avec le C.Basic pour CG en tant que plage de dessin.
+La plage 384x192 s'applique par la commande compatible avec les véritables CasioBasic,
+mais, comme pour certaines commandes, la ligne d'état devient également ciblée pour le dessin.
+
+(exemple) Locate 1,0, "LIGNE DE STATUT"
+(exemple) Text -24,1, "LIGNE DE STATUT"
+ affichez "STATUS LINE" sur la ligne d'état.
+
+===============================================================================
+À propos de la couleur
+===============================================================================
+Il est coloré 16 bits par 1 point et peut afficher l'écran du point 384x216 de la série CG.
+La structure de couleur de 16bits.
+R: 5 bits
+G: 6 bits
+B: 5 bits
+supporte la couleur 16 bits par défaut en C.Basic.
+
+La méthode de désignation de couleur désigne une couleur avant une commande ainsi que la couleur d'origine de CasioBasic.
+(exemple) Bleu Localiser 1,1, "Bleu"
+
+les commandes suivantes sont étendues.
+Back-Color
+RGB(
+GetRGB(
+HSV(
+GetHSV(
+HSL(
+GetHSL(
+Transp-Couleur
+
+(exemple) Back-Color Red
+(exemple) RGB(255,0,128) Bleu Localiser 1,1, "Bleu"
+(exemple) GetRGB(12345)
+
+(format 1) couleur de fond
+(exemple) Back-Color Vert
+ définir une couleur de fond en vert.
+(format 2) Back-Color @ couleur
+(exemple) Back-Color @ Vert
+ définir un cadre de dessin sur le domaine en vert.
+
+(format) RGB(R, G, B)
+ Je peux définir n'importe quelle couleur de 16 bits.
+ La plage de valeur passe de 0 à 255 avec un niveau de 8 bits chacun
+ R: 5 bits (0-248)
+ G: 6 bits (0-252)
+ B: 5 bits (0-248)
+ utilisable à des endroits tels que le rouge, le vert et le bleu.
+(exemple) Il s'agit de Jaune, qui est légèrement plus foncé que Plot / LineColor RGB(160, 160, 0) Plot / LineColor Yellow.
+
+(format) RGB({R, G, B})
+(exemple) RGB({255,255,0})
+(exemple) {255,255,0} -> Liste 1
+          RGB(liste 1)
+
+(format) RGB(#valeur de couleur 16 bits)
+Ajout de l 'option # de RGB(, HSV(, HSL(qui définit directement la couleur 16 bits).
+(exemple) RGB(# 12345)
+(exemple) HSV(# 12345)
+(exemple) HSL(# 12345)
+
+(format) GetRGB(valeur de couleur 16 bits)
+(exemple) GetRGB(65535)
+ retourner à ListAns = {248,252,248}
+  R = ListAns [1]
+  G = ListAns [2]
+  B = ListAns [3]
+
+(format) HSV(H, S, V)
+(format) HSL(H, S, L)
+  H: 0~359
+  S: 0~255
+  V: 0~252
+  L: 0~250
+
+(* 4 couleurs qui ne peuvent pas être fixées par HSV() et HSL().)
+  #0x003F: RGB(  0,   4, 248)
+  #0x041F: RGB(  0, 128, 248)
+  #0xF820: RGB(248,   4,   0)
+  #0xFC00: RGB(248, 128,   0)
+
+(*Note) Lorsque les valeurs ci-dessus sont utilisées comme arguments dans GetHSV() et GetHSL() une erreur pop-up se produit.
+(Format) GetHSV (valeur couleur 16 bits [,N])
+(Format) GetHSL (valeur couleur 16 bits [,N])
+[,N] Ignorer les erreurs.
+
+-------------------------------------------------- -----------------------------
+Couleur de transition [SHIFT] - [F4] (SKETCH) - [F6] - [F6] - [F1] (COULEUR) - [F6] - [F5] (Couleur de transition)
+-------------------------------------------------- -----------------------------
+En tant que commande pour nommer la couleur transparente dans le dessin BitMap de la couleur 16 bits
+(format) Transp-Color
+ effacer la couleur transparente.
+(format) Transp-Color couleur
+(exemple) Transp-Color Green
+ définissez la couleur transparente sur le vert.
+(format2) Valeur de couleur Transp-Color # 16bits
+(exemple) Transp-Color # 12345
+ définir la couleur transparente sur 12345
+
+===============================================================================
+VRAM
+===============================================================================
+L'écran graphique et l'écran texte sont implémentés différent en C.Basic et en Basic Casio. Une seule VRAM, appelée VRAM d'affichage, est envoyée à l'écran LCD.
+
+Il y a cependant 3 VRAMs internes:
+- La VRAM d'affichage, dont les contenus sont envoyés à l'écran
+- La VRAM texte, utilisée pour sauvergarder les contenus de l'écran texte
+- La VRAM graphique, utilisée pour sauvegarder les données de l'écran graphique
+
+Lorsqu'une commande texte est lancée en mode d'affichage texte, C.Basic dessine directement dans la VRAM d'affichage car le bon mode est actif. Si une commande du mode texte est utilisé alors que le mode graphique est actif, C.Basic sauvegarde la VRAM d'affichage (qui contient des données du mode graphique) dans la VRAM graphique, recharge la VRAM texte dans la VRAM d'affichage, puis dessine dans la VRAM d'affichage.
+
+Si plusieurs commandes texte sont envoyées en séquence, la sauvegarde de la VRAM graphique ne se produit qu'une fois et tout le texte est envoyé à la VRAM d'affichage.
+
+Dès qu'une commande graphique est utilisée en mode texte, la VRAM d'affichage est sauvegardée dans la VRAM texte, puis les contenus de la VRAM graphique sont rechargés dans la VRAM d'affichage. Le dessin est, comme toujours, exécuté sur la VRAM d'affichage.
+
+Comme vous pouvez le voir, les VRAMs texte et graphique ne sont pas utilisées pour dessiner, uniquement pour sauvegarder les deux écrans. Donc, dès que vous changez de mode, ces VRAMs sont copiées depuis et vers la VRAM d'affichage.
+
+
+===============================================================================
+Contrôle du rafraîchissement de l'écran
+===============================================================================
+L'affichage à l'écran d'une Graph 35+/Graph 75 se produit lorsque la VRAM est transférée vers l'écran.
+
+Ce transfert a quand même un coût, donc rafraîchir l'écran chaque fois qu'une commande de dessin est exécutée (comme en Basic Casio) ne serait pas efficace.
+
+Pour contourner cette inefficacité, C.Basic fournit des commandes de contrôle du rafraîchissement. Vous pouvez demander de rafraîchir l'écran à chaque fois qu'une commande graphique est utilisée, ou de le rafraîchir à intervalles réguliers. Ce paramètre est disponible à la fois dans le menu Configuration (Setup) et par le biais de commandes.
+
+Lorsque le rafraîchissement est réuglier, la dernière commande d'une séquence risque de ne pas être affichée au bon moment.
+
+Pour éviter ce problème, la commande PutDispDD permet de forcer ponctuellement le rafraîchissement de l'écran.
+
+
+===============================================================================
+Matrices étendues
+===============================================================================
+Les matrices de C.Basic se comportent différemment des matrices du Basic Casio.
+C.Basic implémente les fonctionnalités de base à la façon du Basic Casio; des nombres réels peuvent être utilisés en mode Réel, et des complexes en mode Complexe.
+Les matrices de C.Basic peuvent contenir des éléments de types plus variés : Bits ("Bit", 1 bit), Nibbles ("Nibble", 4 bit), Octets ("BYTE", 1 octet) et Mots ("WORD", 2 octets) en plus des nombres réels (8 octets) et entiers (4 octets) usuels.
+
+Ajoutez l'un des suffixes suivants au nom de la matrice lorsqu'elle est déclarée pour indiquer son type :
+- [.P] ou [.p] : Matrice d'entiers de 1 bits, les valeurs autorisées sont 0 et 1.
+- [.N] ou [.n] : Matrice d'nibbles de 4 bits, les valeurs autorisées sont de 0 à 15.
+- [.B] ou [.b] : Matrice d'octets de 8 bits, les valeurs autorisées sont de -128 à 127.
+- [.W] ou [.w] : Matrice de mots de 16 bits, les valeurs autorisées sont de -32'768 à 32'767.
+- [.L] ou [.l] : Matrice d'entiers de 32 bits, les valeurs autorisées sont de -2'147'483'648 à 2'147'483'647.
+- [.F] ou [.f] : Matrices de flottants en double précisions, les valeurs autorisées sont de 9.88131291682493e-323 à 1.7976931348623151e+308.
+- [.C] ou [.c] : Matrices de paires de flottants en double précision pour les complexes ; les valeurs autorisées pour chaque composante sont de 9.88131291682493e-323 à 1.7976931348623151e+308.
+
+Comme en Basic Casio, la taille {m,n} de la matrice représente le nombre de {lignes,colonnes}.
+Il y a une exception : les matrices d'entiers de 1 bit sont implémentées dans l'ordre {colonnes,lignes} avec un accès en coordonnées {X,Y}.
+
+Comme la matrice d'entiers de 1 bits a la même structure que la VRAM, en indiquant le type [.V] ou [.v], vous pouvez accéder directement à la VRAM si la matrice fait 128 lignes et 64 colonnes.
+De plus, les types [.VG] et [.VT] permettent d'accéder, respectivement, aux VRAMs graphique et texte.
+Les indices commencent à 0 et la taille de ces matrices est fixée à {216,384}.
+
+(Exemple) {216,384}->Dim Mat G.V
+La matrice G permet d'accéder à la VRAM ; toutefois, comme les modifications de la matrice ne seront pas effectuées par des commandes de dessin usuelles, il faudra raraichir l'écran manuellement ou périodiquement.
+
+(Exemple) {216,384}->Dim Mat G.V
+          Screen.G               // Sélectionne l'écran graphique (une commande de dessin aurait marché aussi)
+          1->Mat G[108,192]        // Dessine un point au milieu de l'écran
+          PutDispDD              // Demande le rafraîchissement de l'écran
+Cet exemple produit le même effet que PxlOn 108,192.
+
+(Exemple) {216,384}->Dim Mat G.V
+          Screen.T               // Sélectionne l'écran texte (une commande de texte aurait marché aussi)
+          1->Mat G[108,192]        // Dessine un point, au milieu de l'écran texte !
+          PutDispDD              // Demande le rafraîchissement de l'écran
+Cet exemple affiche un point au milieu de l'écran texte.
+
+
+===============================================================================
+Initialisation de matrices
+===============================================================================
+Le format habituel du Basic Casio est supporté.
+{M,n}->Dim Mat A
+[[1,2,3][4,5,6]]->Mat A
+
+Les fonctions de la fx-5800P sont aussi supportées:
+100->Dim A
+0->Dim A    // Supprime la matrice A
+
+Il est possible d'ajouter des espaces et des retours à la ligne dans une initialisation à base de crochets.
+
+(Exemple) [[0B11001100,
+            0B00110011,
+            0B11001100,
+            0B00110011
+          ]]->Mat A.B
+
+La fonction Dim Dim permet d'initialiser une matrice à partir de son adresse mémoire.
+
+(Usage)   {m,n}->Dim Dim A(x)
+(Exemple) {128,1}->Dim Mat A.B
+          {64,1}->Dim Mat B.W(VarPtr(Mat A))
+Ici, les matrices A et B accèdent aux mêmes données, mais avec des tailles différentes (octet et mot). Notez que la taille (128*1 contre 64*1*2) est la même dans les deux cas.
+
+===============================================================================
+Accès aux matrices
+===============================================================================
+En plus du format traditionnel Mat A[1,1], deux notations supplémentaires sont possibles.
+* Omettre le Mat :
+  A[1,1]
+* Accéder à une ligne entière :
+  A[1]
+* Si, de plus, l'indice s'écrit avec un seul chiffre (0..9), les crochets sont facultatifs :
+  A1
+
+Les variables de cette forme (lettre suivie d'un chiffre) sont automatiquement réservées pour être des matrices. Si elles sont utilisées alors que la matrice n'a pas été créée, la matrice est créée sur le coup.
+
+(Exemple) A1+123->B5
+Si les matrices A et B n'ont pas été créées, elles le sont automatiquement par les commandes suivantes :
+9->Dim A
+9->Dim B
+Et les variables A1..A9 et B1..B9 deviennent disponibles.
+
+(Exemple) '#Mat 0   // Active le mode d'indexation à partir de 0
+          A1+123?B5
+Si les matrices A et B n'ont pas été créées, elles sont initialisées automatiquement par les commandes :
+10->Dim A
+10->Dim B
+Et les variables A0..A9 et B0..B9 deviennent disponibles.
+
+(Exemple) '#Mat 0
+          10->Dim A
+          2->Dim B
+          A1+123?B5
+Dans le cas où Mat A et Mat B sont inialisées mais l'accès est en-dehors des bornes, une erreur se produit.
+
+===============================================================================
+Conversion de matrices
+===============================================================================
+Le type d'une matrice (bit, octet, mot, entier, réel) peut être modifié librement même après que la matrice a été créée.
+(Exemple) [[1,2,3,4] [5,6,7,8]] -> Mat A.B
+          Mat A -> Dim Mat A.W
+modifie le type de la matrice A d'octet à mot.
+Le nombre d'éléments est modifié pour correspondre à la taille de la mémoire allouée.
+[[0x0102,0x0304][0x0506,0x0708]]->Mat A.W
+Produirait le même résultat.
+
+(Note) Les conversions depuis et vers le format 1-bit/4-bit inversent les lignes et les colonnes car les matrices 1-bit/4-bit utilisent le mode {X,Y} par compatibilité avec les buffers de VRAM.
+
+(Exemple) {127,63}->Dim Mat A.B    // Crée une matrice pour accéder à la VRAM
+          Mat A->Dim Mat A.B       // La nouvelle taille est {63,16}
+
+
+===============================================================================
+Indice de départ des matrices
+===============================================================================
+En Basic Casio, les indices de matrices commencent à 1. C.Basic autorise de commencer à 0.
+Ce paramètre peut être modifié dans le menu Configuration (Setup) ou à l'aide d'une commande en commentaire.
+
+(Exemple) '#Mat 1           // Active le démarrage à l'indice 1
+(Exemple) '#Mat 0           // Active le démarrage à l'indice 0
+          {3,2}->Dim Mat A  // La matrice allouée va de A[0,0] à A[2,1]
+
+Les commandes de dessin acceptent également des paramètres de valeur 0, permettant de dessiner sur la totalité de l'écran.
+
+(Exemple) PxlOn 0,à
+
+
+===============================================================================
+Visualisation des matrices
+===============================================================================
+Il est possible de consulter les matrices au format binaire ou hexadécimal dans l'éditeur de matrices.
+Appuyer sur [F5] dans l'éditeur de matrices affiche les nombres en binaire, et [F6] les affiche en hexadécimal.
+Pour revenir au format décimal, appuyez de nouveau sur [F5] [F6].
+La notation binaire n'est pas disponible au-delà de 2 octets par entrée.
+
+Appuyez sur [OPTN] pour afficher ou masquer les noms de listes.
+Appuyez sur [VARS] pour changer l'affichage des chaînes de caractères.
+
+===============================================================================
+Fonctions sur les listes
+===============================================================================
+Les listes sont implémentées comme des matrices à une dimensions.
+Les listes List 1~26 sont indépendantes.
+Les matrices Mat a~z (avec les noms en minuscules) correspondent aux listes 27~52. Par exemple, les expressions suivantes ont (deux-à-deux) le même sens :
+
+List 27[5] = Mat a[5,1]
+List 28[5] = Mat b[5,1]
+List 29[5] = Mat c[5,1]
+List 100[5] = Mat 100[5,1]
+List 1000[5] = Mat 1000[5,1]
+
+Les fonctions de listes suivantes du Basic Casio sont supportées.
+
+List Ans
+10->Dim List 1
+{1,2,3,4,5}->List 1
+Seq(X^2,X,1,10,2)->List 2
+Augment(List 1,List 2)->List 3
+Mat>List(Mat A,2)->List 1
+List>Mat(List 1, List 2, ...)->List 9
+Fill(3, List 1)
+Min(List 1)
+Max(List 1)
+Mean(List 1)
+Sort A(List 1)
+Sort B(List 1)
+Sum List 1
+Prod List 1
+
+L'arithmétique et les appels de fonctions sur les listes sont aussi supportrées.
+
+
+===============================================================================
+fonction vectorielle supportée
+===============================================================================
+Vct
+DotP(
+CrossP(
+Angle(
+UnitV(
+Norme(
+ClrVct
+(*) La zone de Vct A ~ Z devient indépendante.
+Pour changer la touche [VARS] pour l'affichage Vct de l'écran Mat / List / Vct.
+
+
+===============================================================================
+Chaînes de caractères
+===============================================================================
+Comme en Basic Casio, les variables Str contiennent des chaînes de caractères et peuvent être manipulées par des fonctions ; mais en interne, elles sont implémentées comme des matrices.
+
+Une matrice peut être vue comme une chaîne de caractères si son nom est précédé d'un $.
+
+(Exemple) ["ABCDEF"] -> Mat A
+          Locate 3,3,$Mat A
+"ABCDEF" est affiché à la position (3,3) de l'écran.
+
+Initaliser avec {7,1}->Dim Mat A.B est équivalent car les chaînes de caractères sont des matrices d'octets.
+
+Liste des fonctions Basic Casio sur les chaînes de caractères supportées :
+
+ + (Concaténation des chaînes de caractères)
+ StrJoin(
+ StrLen
+ StrCmp(
+ StrSrc(
+ StrLeft(
+ StrRight(
+ StrMid(
+ Exp>Str(
+ Exp(
+ StrUpr(
+ StrDwr(
+ StrInv(
+ StrShift(
+ StrRotate(
+
+(Exemple) "ABCDEF"->Str 1
+          Locate 3,3,StrRight(Str1,3)
+"DEF" est affiché à la position (3,3).
+
+Les caractères utilisées sur les Graph 35+ et Graph 75 comprennent des caractères d'un octet (lettres, chiffres et quelques commandes) et des caractères étendus sur deux octets (quasiment toutes les commandes, les caractères spéciaux et les kana).
+En interne, les caractères d'un octet et deux octets sont mélangés, mais cette gestion est transparente dans les fonctions, comme en Basic Casio.
+Soyez attentifs à la position des caractères quand vous accédez à une chaîne de caractères par une matrice.
+
+
+===============================================================================
+Initialisation des chaînes de caractères
+===============================================================================
+Les variables Str 1-20 du Basic Casio utilisent la matrice Mat r par défaut, et la taille des chaînes est limitée à 255 caractères.
+Les Str sont automatiquement allouées dans la Mat r et peuvent être utilisées dans les fonctions appropriées du Basic Casio (indépendamment du fait qu'elles sont dans une matrice).
+Si les Str ne sont pas initialisées explicitement,
+Lorsqu'un ou plusieurs Str sont utilisés dans un programme, si le nombre maximum de Str est M, la matrice est automatiquement créée comme suit:
+{M, 256} -> Dim Mat <r>
+(note) <r> signifie r gras. La pression de la touche r en gras est [ALPHA]+[x^2].
+
+
+La matrice utilisée pour stocker les chaînes de caractères peut être choisie à la main :
+(Exemple) '#Str A
+Réserve la matrice A pour stocker les Str.
+
+(Exemple) {20,65}->Dim Mat A.B
+Alloue de la même façon que:
+(Exemple) '#Str B,30,256
+Réservant jusqu'à 30 Str de 255 caractères.
+
+La synatxe suivant permet d'assigner une chaîne de caractères.
+(Exemple) "ABCDEF"->Str 1
+(Exemple) ["ABC","TEST","1+3+5"]->Mat A
+La deuxième ligne alloue Mat A de taille [3,6], de type octet et affecte les caractères comme ceci :
+ Mat A[1,1] = "ABC"
+ Mat A[2,1] = "TEST"
+ Mat A[3,1] = "1+3+5"
+
+Pour accéder à la chaîne de caractères "ABC" ainsi stockée dans la Mat A, plusieurs choix sont possibles : $Mat A, $Mat A[1], or $Mat A[1,1].
+(Exemple) Locate 1,1,$Mat A
+est identique à Locate 1,1,"ABC".
+(Exemple) Locate 1,1,$Mat A[1]
+est identique à Locate 1,1,"ABC".
+(Exemple) Locate 1,1,$Mat A[3,3]
+est identique à Locate 1,1,"3+5".
+
+Récupération de chaînes de caractères :
+(Exemple) ?->$Mat A
+Demande à l'utilisateur une chaîne de caractères et la stocke dans Mat A. On ne peut pas mettre plus d'éléments qu'il n'y a de mémoire allouée dans la matrice.
+
+Les chaînes de caractères peuvent aussi être utilisées dans les fonctions suivantes :
+- Locate
+- Text
+- LocateYX
+- Exp(
+
+(Exemple) Exp("1+2+3")      // Donne 6
+(Exemple) Exp($Mat A[3,3)]  // Donne 8
+Exp( évalue la chaîne de caractères comme une expression mathématique et renvoie le résultat.
+
+
+===============================================================================
+Sprintf - une commande étendue
+===============================================================================
+Comme il n'y a en Basic Casio pas de commande pour convertir un nombre en chaîne de caractères, la fonction Sprintf du C a tté ajoutée.
+
+(Spécification) Sprintf ("Format", argument 1 [, argument 2 [, argument 3]]))
+(Exemple) Sprintf ("A=%4dB=%3.2f",%A,#B) -> Str 1
+Quand A=1234 et B=45.678, le résultat assigné à Str 1 est "A=1234 B=45.68 "
+
+Le format est compatible avec le sprintf() du C, donc la représentation en notation exponentielle (et affiliées) diffère un peu de celle du Basic.
+Jusqu'à trois arguments entiers, réels ou chaînes de caractères peuvent être donnés.
+Le préfixe % indique an entier et # indique un nomnbre réel. Si le préfixe n'est pas spécifié, le mode d'exécution (Entier ou Réel) décide du type de conversion.
+Il n'y a pas de vérification que le format annoncé et le type des arguments correspondent, donc faites attention : un crash est possible si une erreur se produit dans Sprintf.
+
+
+===============================================================================
+Liste des commandes
+===============================================================================
+Commandes compatibles avec le Basic Casio
+===============================================================================
+
+Is it?
+(Disps)
+->
+If ~ Then ~ Else ~ IfEnd
+Lbl ~ Goto
+=! => <> = <=
+
+Dsz / Isz
+=>
+Locate
+Menu
+
+For ~ To ~ Step ~ Next
+While ~ WhileEnd
+Do ~ LpWhile
+Break
+Return
+Stop
+Getkey
+Prog
+
+ClrMat
+ClrList
+Mat (Les opérations matricielles sont pas supportées.)
+List (Les opérations sur les listes sont supportées.)
+Dim
+Fill(
+Seq(
+Augment(
+Mat>List(
+List>Mat(
+Min(
+Max(
+Mean(
+Sort A(
+Sort B(
+Sum
+Prod
+Swap / *Row / *Row+ / Row+
+Trn
+Identity
+DotP(
+CrossP(
+Angle(
+UnitV(
+Norm(
+nPr
+nCr
+
+i / Arg / Conjg / ReP / ImP / >r/_theta / a+bi
+Real / a+bi / r/_theta
+
+Cls ClrText ClrGraph
+ViewWindow
+Plot / PlotOn / PlotOff / PlotChg
+Circle
+Line / F-Line
+Vertical / Horizontal
+
+PxlOn / PxlOff / PxlChg
+PxlTest(
+Text
+
+
+SketchNormal / SketchThick / SketchBroken / SketchDot / SketchThin
+S-L-Normal   / S-L-Thick   / S-L-Broken   / S-L-Dot / S-L-Thin
+
+G-Connect / G-Plot
+CoordOn / CoordOff
+GridOn / GridOff / GridLine
+AxesOn / AxesOff / AxesScale
+LabelOn / LabelOff
+DerivOn / DerivOff
+BG-None / BG-Pict
+FuncOn / FuncOff
+S-WindAuto / S-WindMan
+
+
+DrawGraph (partiellement pris en charge)
+Graph Y= (partiellement pris en charge)
+GraphY (partiellement pris en charge)
+
+Graph(X,Y)= (Partially supported)
+DrawStat (partiellement pris en charge)
+S-Gph1, S-Gph2, S-Gph3, DrawOn, DrawOff, Scatter, xyLine, Square, Cross, Dot
+
+Xmin Ymin Xmax Ymax Xscl Yscl Xfct Yfct Xdot
+T [theta] Min T [theta] Max T [theta] Ptch
+
+Deg Rad Grad
+
+And Or Not Xor
+
+Abs Int frac Intg
+It is!
+MOD
+Rmdr Int/
+Log ln logab(
+10 ^ x e ^ x
+X ^ -1
+Sqr x ^ 2
+Sqr ^ -3
+Sin cos tan
+Sin^-1 cos^-1 tan^-1
+Sinh cosh tanh
+Sinh^-1 cosh^-1 tanh^-1
+
+Femto pico nano micro milli Kiro Mega Giga Tera Peta Exa
+
+(deg) r(rad) g(gra)
+> DMS
+
+Str
+StrJoin(
+StrLen
+StrCmp(
+StrSrc(
+StrLeft(
+StrRight(
+StrMid(
+Str>Exp(
+Exp(
+StrUpr(
+StrDwr(
+StrInv(
+StrShift(
+StrRotate(
+
+StoPict / RclPict
+RclCapt
+
+Ran#  RanInt#(  RanNorm#(  RanBin#(  RanList#(
+Rnd  RndFix(
+Norm / Fix / Sci
+Eng / EngOn / EngOff
+
+Black Blue Red Magenta Green Yellow Cyan
+Plot/Line-Color
+
+
+===============================================================================
+Référence des commandes étendues
+===============================================================================
+-------------------------------------------------------------------------------
+?			[SHIFT]+[VARS](PRGM)-[F4](?)
+-------------------------------------------------------------------------------
+La commande d'entrée supporte des options.
+(Référence) ?[##/%%]([@][x][,y][,width][,"SpaceChar"][,limit][,R])
+[##]: accepte les caractères GB.
+[%%]: interdit de force la saisie de caractères GB.
+(Exemple) "A="?()->A
+Affiche "A=" puis attend que l'utilisateur entre la valeur de A.
+
+(Exemple) "A="?(,,,,R)->A
+Affiche "A=" et attend une valeur en inversant l'affichage.
+
+(Exemple) "A="?(,,8,,R)->A
+Affiche "A=" et attend une valeur d'au plus 8 chiffres en inversant l'affichage.
+
+(Exemple) "A="?(3,4,5,">",5)->A
+Affiche "A=" et attend une entrée à la position (X=3,Y=4) de 5 digits et 5 caractères, où les espaces sont mis en valeur avec ">".
+
+(Exemple) "A="?(3,4,5,,5,R)->A
+Affiche "A=" puis attend une entrée à la position (X=3,Y=4) de 5 digits et 5 caractères, en inversant l'affichage.
+
+
+[@]: Le dessin de la commande devient la VRAM en cours.
+(exemple) "A="?(@ 30,40,5,">",5)A
+Affiche "A=" sur cuurent VRAM puis attendez que l'entrée A valeur à (px=30, py=40) ne comporte que 5 chiffres et 5 caractères, le blanc est composé de ">".
+
+(exemple) "A="?(@ 30,40,5,">",5,,M)A
+Affiche mini font "A=" sur la mémoire vive virtuelle, puis attendez que la valeur entrée (px=30, py=40) ne contienne que 5 chiffres et 5 caractères. Le blanc est composé de ">".
+
+-------------------------------------------------- -----------------------------
+Menu [SHIFT] + [VARS] (PRGM) - [F3] (JUMP) - [F6] (Menu)
+-------------------------------------------------- -----------------------------
+La couleur du titre est valide juste avant la commande Menu.
+La couleur de l'élément de menu est la couleur de tracé / couleur de trait valide.
+La couleur de fond du menu est la couleur de fond valide.
+(exemple)
+  Couleur de tracé / couleur de trait bleu
+  Back-Color noir
+  Menu rouge "MENU TITRE", "1er élément", 1, "2ème élément", 2
+
+Lorsque vous attachez "@" juste après une commande; la version FX compatible.
+
+-------------------------------------------------------------------------------
+Fix			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F1](Fix)
+Sci			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F2](Sci)
+Norm			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F3](Norm)
+Eng			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F4](ENG)-[F3](Eng)
+-------------------------------------------------------------------------------
+Eng, Norm, Fix et Sci renvoient les paramètres d'affichage numérique associés (On ou Off).
+
+Eng renvoie directement son paramètre :
+- renvoie 0 si l'état est EngOff
+- renvoie 1 si l'état est EngOn
+
+Pour Norm, Fix et Sci, ajouter un entier (par exemple "Fix 2") modifie le paramètre. Pour connaître la valeur, passez un paramètre négatif.
+
+Par exemple, en mode Norm1, les valeurs de retour sont...
+- Norm (-1) donne 1
+- Fix (-1) donne -1
+- Sci (-1) donne -1
+
+En mode Fix 8, les valeurs de retour sont les suivantes :
+- Norm (-1) donne -1
+- Fix (-1) donne 8
+- Sci (-1) donne -1
+
+-------------------------------------------------------------------------------
+EngOn			[SHIFT]+[MENU](SET UP)-[F6]-[F1](DISPLAY)-[F4](ENG)-[F1](EngOn)
+-------------------------------------------------------------------------------
+Le séparateur de milliers peut être affiché.
+
+(Exemple) EngOn 3
+Après cette commande, les nombres sont affichés avec le séparateur de milliers ",". EngOff désactive le séparateur.
+
+-------------------------------------------------------------------------------
+StoPict			[OPTN]-[F6]-[F6]-[F2](PICTURE)-[F1](Store)
+RclPict			[OPTN]-[F6]-[F6]-[F2](PICTURE)-[F2](Recall)
+-------------------------------------------------------------------------------
+Ces commandes ont deux modes, un qui stocke en mémoire de stockage et qui stocke dans le tas alloué dans la mémoire principale.
+Pour changer le mode, ouvrez le menu Configuration (Setup) en tapant [SHIFT][MENU](SET UP), naviguez jusqu'à l'entrée "Pict", et choisissez [F1](MEM) ou [F2](Heap).
+Quand "Heap" est choisi, les Pictures manipulées ne sont plus celles du Basic Casio, mais les accès sont plus rapides. Le programme reste compatible car sa source n'a pas changé.
+
+-------------------------------------------------------------------------------
+ElseIf			[SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F5](ElseIf)
+-------------------------------------------------------------------------------
+(Référence) If ~ Then ~ ElseIf ~ IfEnd
+(Exemple)
+ If A:Then
+ Locate 1,1,"A"
+ ElseIf B:Then
+ Locate 1,2,"B"
+ EndIf
+
+Le nombre d'IfEnd pour un If n'est pas vérifié rigoureusement en Basic Casio. En C.Basic vous pouvez l'activer en modifiant l'entrée "IfEnd Check" dans le menu de Configuration (Setup). Lorsqu'il est activé, un message d'erreur se produira à l'exécution si un If frauduleux est détecté. Le curseur indiquera quel If n'a pas de IfEnd correspondant.
+
+
+-------------------------------------------------------------------------------
+Locate			[SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F1](Locate)
+-------------------------------------------------------------------------------
+(Référence) Locate [@][!]y,x,[##/%%]"string"orExpression,[,N/O/R/V][,F][,height]
+ [@] Affiche dans la VRAM courante même si c'est la VRAM graphique
+ [!] Utilise la police standard même si une police externe a été chargée
+ [##] accepte les caractères GB.
+ [%%] interdit de force la saisie de caractères GB.
+ [N] Normal
+ [R] Inversé (Reverse)
+ [O] Ou
+ [V] réversion ou
+ [F] Correction d'un pas de 18 pixels.
+
+Ajouter [R] en paramètre de fin inverse le rendu de texte (blanc sur noir).
+(Exemple) Locate 1,2,"Test",R
+"Test" est affiché à la position (1,2) en blanc sur noir.
+
+Ajouter le préfixe # au paramètre de Locate, Sprintf, Text ou Disp force son évaluationen tant que nombre réel. En mode Entier, cela permet d'afficher des résultats réels sans passer en mode réel.
+
+(Exemple) '#CBINT
+          10->A
+          Locate 1,2,log 123+A
+
+En mode entier, "log 123+A" est arrondi à 12. Cependant :
+
+(Exemple) '#CBINT
+          10->A
+          Locate 1,2,#log 123+A
+
+Indiquer le mode réel annule l'arrondi et le résultat 12.089905111 est affiché. Notez que l'expression précédée par un # est évaluée avec des réels, mais les variables sont toujours entières car le mode de calcul est Entier. Aucun préfixe % n'est nécessaire pour les variables.
+
+
+-------------------------------------------------------------------------------
+Switch                  [SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F1](Switch)
+Case                    [SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F2](Case)
+Default                 [SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F3](Default)
+Break                   [SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F4](Break)
+SwitchEnd               [SHIFT]+[VARS](PRGM)-[F1](COMMAND)-[F6]-[F6]-[F6]-[F5](SwitchEnd)
+-------------------------------------------------------------------------------
+C.Basic supporte la structure Switch-Case, qui passe d'un Case à l'autre comme en C (s'il n'y a pas de Break à la fin du Case, alors l'exécution continue par le Case suivant).
+
+"Default" doit absolument être placé en dernier.
+
+Les nouvelles commandes sont "Switch", "Case", "Default" et "SwitchEnd" ; "Break" existe déjà.
+
+(Exemple)
+ Switch A:
+  Case 1:Locate 1,1,"A"
+   Break
+  Case 2:Locate 1,2,"B"
+  Case 3:Locate 1,3,"C"
+   Break
+  Default
+   Break
+ SwitchEnd
+
+
+-------------------------------------------------------------------------------
+ACBreak                 [SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F6]-[F2](ACBreak)
+-------------------------------------------------------------------------------
+La commande ACBreak produit le même effet qu'appuyer sur [AC/ON] pendant que le programme s'exécute.
+
+Cette commande peut être désactivée via le menu Configuration (entrée "ACBreak") ; quand elle est Off, elle est ignorée et ne produit aucun effet.
+
+(Exemple) ACBreak
+
+Ajouter "Stop" juste après "ACBreak" désactive la commande "ACBreak" jusqu'à la fin du programme, comme si elle avait été coupée dans le menu Configuration.
+
+(Exemple) ACBreakStop
+
+
+-------------------------------------------------------------------------------
+Local                   [SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F5](Local)
+-------------------------------------------------------------------------------
+En C.Basic, toutes les variables (y compris celles dont le nom est en minuscules) sont globales par défaut. Toutefois certaines variables d'une lettre minuscule peuvent être utilisées comme des variables locales avec la commande "Local".
+
+(Exemple) Local x,y,z
+
+- Les variables x, y et z sont maintenant locales.
+- Jusqu'à 10 variables de ce type peuvent être choisies.
+- Ces variables sont utilisées pour passer des paramètres à "Prog".
+
+(Exemple)
+Dans le sous-programme "TEST", il y a 3 variables locales:
+
+  Local x,y,z
+  ...
+
+Dans le programme principal, on peut utiliser "Prog" avec 3 paramètres supplémentaires :
+
+  Prog "TEST",123,456,N
+
+Dans cette situation, "TEST" est appelé et "x" y vaut 123, "y" y vaut 456, "z" y vaut la valeur de N au moment de l'appel.
+
+L'usage de variables locales permet d'implémenter de la récursion dans C.Basic, toutefois la limite de récursion est pour l'instant de 128 appels.
+
+-------------------------------------------------------------------------------
+Prog                    [SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F1](Prog)
+-------------------------------------------------------------------------------
+En conjonction avec la commande "Local", "Prog" permet de passer des arguments et des valeurs de retour au sous-programme.
+
+(Exemple)
+  Programme "Main"
+  ----------------
+  10->X
+  20->Y
+  X+1->a
+  Y*2->b
+  Prog "SUB",X,Y
+  Disp Ans
+  Disp a
+  Disp b
+
+  Programme "SUB"
+  ---------------
+  Local a,b
+  Disp a
+  Disp b
+  Return a+b
+
+Affichage en sortie :
+ 10
+ 20
+ 30
+ 11
+ 40
+
+Le programme "MAIN" appelle le programme "SUB" qui calcule la somme de 2 nombres et affiche le résultat. Dans le sous-programme, les variables a et b sont Locales, donc différentes des variables globales a et b du programme principal.
+
+-------------------------------------------------------------------------------
+Return                  [SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F2](Return)
+-------------------------------------------------------------------------------
+La commande "Return" quitte un sous-programme. En C.Basic il est possible de renvoyer une valeur au programme appellant.
+
+(Exemple) Return
+
+La valeur de retour est stockée dans la variable "Ans" pour le programme appelant.
+
+-------------------------------------------------------------------------------
+Gosub                   [SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F6]-[F1](Gosub)
+-------------------------------------------------------------------------------
+La fonction Gosub permet d'avoir un sous-programme dans le même fichier.
+
+(Exemple) Gosub A
+Saute au label A comme s'il s'agissait d'un sous-programme. L'exécution continuera jusqu'au premier "Return", puis le code reprendra après le Gosub.
+
+(Exemple) Gosub A,123,456
+Si la zone après le saut contient des variables locales, des paramètres peuvent être passés à Gosub à la façon de Prog. Mais comme les variables locales sont partagées dans tous le fichier, elle sont en un sens globales.
+
+(Exemple)
+  10->X
+  20->Y
+  X+1->a
+  Y*2->b
+  Gosub A,X,Y
+  Disp Ans
+  Disp a
+  Disp b
+  Stop
+
+  Lbl A
+  Local a,b
+  Disp a
+  Disp b
+  Return a+b
+
+Affichage en sortie :
+ 10
+ 20
+ 30
+ 10
+ 20
+
+Ce programme similaire à l'exemple d'illustration de "Prog" se comporte différemment car les variables "a" et "b" sont entièrement locales au programme. Les variables globales "a" et "b" ne sont pas utilisées.
+
+-------------------------------------------------------------------------------
+ElemSize(               [OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F2](Elem)
+RowSize(                [OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F3](Row)
+ColSize(                [OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F4](Col)
+-------------------------------------------------------------------------------
+Calcule la taille d'une matrice.
+
+ElemSize(
+  Renvoie l'espace occupé (en bits) par un élément de la matrice.
+  (Exemple) ElemSize(Mat A)
+RowSize(
+  Renvoie le nombre de lignes ; le m de la dimension {m,n}.
+ColSize(
+  Renvoie le nombre de colonnes ; le n de la dimension {m,n}.
+
+-------------------------------------------------------------------------------
+MatBase(                [OPTN]-[F2]-(MAT)-[F6]-[F5](SIZE)-[F1](Base)
+-------------------------------------------------------------------------------
+Renvoie le premier indice d'accès à la matrice (0 ou 1).
+
+(Exemple) MatBase(Mat A)
+
+-------------------------------------------------------------------------------
+Getkey                  [SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F2](Getkey)
+-------------------------------------------------------------------------------
+La fonction Getkey du Basic est étendue avec les options suivantes :
+  - Getkey: compatible avec le Basic Casio
+  - Getkey1: arrête le programme jusqu'à ce qu'une touche soit pressée (comme le GetKey() du SDK)
+  - Getkey2: vide le key buffer avant d'attendre une entrée (recommandée en SH3)
+  - Getkey3: attend pendant un délai défini avant d'accepter les pressions de touches
+  - GetkeyM: accepte plusieurs touches pressées simultanément et les stocke dans une liste
+La lettre suivant "Getkey" doit être écrite à la main.
+
+Les numéros de touches sont ceux du Basic et pas ceux du SDK.
+
+Sur la version SH4, il est possible de contôler le rétroéclairage avec [SHIFT]+[OPTN].
+
+L'extinction avec [SHIFT]+[AC] est pour l'instant impossible, tout comme obtenir le code de la touche [AC].
+
+(Exemple) Getkey3(128)
+Attend 128 ticks (1 seconde) pendant laquelle toutes les pressions sont ignorées. Renvoie le numéro de la première touche pressées une fois ce délai écoulé.
+
+* Si Getkey1 ne fonctionne pas bien sur SH3, utilisez Getkey2 à la place.
+
+(Exemple) GetkeyM->List 1
+Appuyer simultanément sur [EXE] et [F1] donnera la liste {79,31}.
+
+Lorsque Exec TimeDsp est activé pour mesurer le temps d'exécution du programme, Getkey peut mettre en pause le compteur. Il s'agit d'un paramètre de C.Basic :
+
+(Format) '#GetKeyC
+Continue à mesurer le temps pendant Getkey.
+(Format) '#GetKeyR
+Met le timer en pause pendant que Getkey attend.
+
+-------------------------------------------------------------------------------
+Try~Except~TryEnd		[SHIFT]+[VARS](PRGM)-[F2](CONTROL)-[F6]-[F3](Try)
+								(lator Ver.1.00)
+-------------------------------------------------------------------------------
+Le traitement des exceptions peut être effectué en fonction de l'erreur.
+ (Format) <program> Essayez
+          Sauf le code d'erreur 1
+           Processus en cas d'erreur1
+          Sauf le code d'erreur 2
+           Processus en cas d'erreur2
+          TryEnd TryEnd
+ S'il n'y a pas d'erreur dans le <program> site de l'A, le traitement se déplace après TryEnd.
+ Si l'erreur1 se produit, le traitement se déplacera après TryEnd après l'exécution du processus d'erreur1.
+ Si l'erreur2 se produit, le traitement se déplacera après TryEnd après l'exécution du processus d'erreur2.
+ Lorsque L'erreur3 se produit, une erreur apparaît parce qu'il n'y a pas d'exception correspondante.
+
+(Format) sauf
+ S'il n'y a pas d'exception à une erreur, «Erreur» est exécuté parce que sauf sans argument correspond à toutes les erreurs.
+
+(Exemple) Essayez 3*4
+           Sauf 1
+            "Erreur syntaxe"
+           TryEnd TryEnd
+ "Erreur Syntaxique" est exécuté, puisque le code d'erreur SyntaxError est 1.
+
+(Exemple) Essayez 3/4/0
+           Sauf 1
+            "Erreur syntaxe"
+           Sauf 40
+            "Diviser par zéro"
+           TryEnd TryEnd
+ "Divide by Zero« est exécuté, puisque la division par zéro code d'erreur est 40.
+
+(Exemple) Essayez 3/4/0
+           Sauf 1
+            "Erreur syntaxe"
+           sauf
+            "Erreur"
+           TryEnd TryEnd
+ S'il n'y a pas d'exception à une erreur, «Erreur» est exécuté parce que sauf sans argument correspond à toutes les erreurs.
+
+Le programme de l'échantillon se trouve dans l'échantillon de CBasic/Try-Excepté.
+ Pour le code d'erreur, consultez le site ErrorCode.List.txt.
+(*powerd by google translation)
+
+-------------------------------------------------------------------------------
+Version                 [SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F6]-[F5](Version)
+                                                                (lator Ver.0.45)
+-------------------------------------------------------------------------------
+Donne le numéro de versiond de C.Basic.
+
+(Exemple) Version
+Pour la version ver.0.45, renvoie 45.
+
+-------------------------------------------------------------------------------
+System(                 [SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F6]-[F4](System)
+                                                                (lator Ver.0.49)
+-------------------------------------------------------------------------------
+Une commande générale pour obtenir des paramètres internes.
+
+ System(0)  donne la version de C.Basic (identique à "Version")
+ System(1)  donne l'adresse de la VRAM (1 ko)
+ System(2)  donne l'adresse de la VRAM texte (1 ko)
+ System(3)  donne l'adresse de la VRAM graphique (1 ko)
+ System(4)  donne l'adresse du buffer de travaille (256 ko)
+ System(10) renvoie l'adresse du buffer de copier/coller (32 ko)
+ System(-4) retourne au reste de la taille du segment de mémoire. (Ko)
+ Systèm(-3) retourne à la taille de la zone de mémoire. (Ko)
+ System(-2) renvoie la version de l'OS (par exemple 311)
+ System(-1) renvoie le nom du modèle.(par exemple 50 )
+
+
+===============================================================================
+Commandes graphiques étendues
+===============================================================================
+La coordonnée réelle de l'écran de la série CG10/20/50/90+E est efficace (0,0)-(383,215),
+mais l'utilise avec un niveau de coordonnées de (0,-24)-(383,191) en C.Basic.
+
+===============================================================================
+Quand [:] est ajouté à la fin de la commande, le dessin est fait sur la VRAM actuelle indépendamment du mode de VRAM actif (texte ou graphique).
+-------------------------------------------------------------------------------
+(Exemple) Locate 2,2,"String":
+          Text 16,1,"TextString":
+
+Dans ce cas, l'écran n'est pas rafraîchi automatiquement. Utilisez une commande de transfert comme PutDispDD pour envoyer le résultat du dessin à l'écran.
+
+-------------------------------------------------------------------------------
+Lorsque [@] est ajouté à la fin du nom de commande, la VRAM courante est utilisée pour dessiner.
+
+(exemple) Text 1,1,"Graphic"
+          Locate @1,2,"Text"
+
+(Exemple) Locate 1,,"Text"
+          Locate @24,10,"Graphic"
+
+-------------------------------------------------------------------------------
+Lescommandes suivantes supportent l'effacement (dessin blanc) et l'inversion des pixels si le paramètre [C] ou [X] est ajouté à la fin :
+
+Line
+F-Line
+Circle
+Rect(
+FillRect(
+Ajoutez [C] pour effacer ou [X] pour inverser.
+(Exemple) F-Line 1,1,30,20,X
+
+-------------------------------------------------------------------------------
+Text                    [SHIFT]-[F4](SKTCH)-[F6]-[F6]-[F2](Text)
+-------------------------------------------------------------------------------
+(Format) Text [@][!]y,x,[##]"string"orExpression,[,N/O/R/V][,F/FM/FMB/M/MB/FX/X][,height]
+ [@] Le dessin est fait sur la VRAM courante
+ [!] Force l'utilisation de la police par défaut, même si une police externe est chargée
+ [##] accepte les caractères GB.
+ [%%] interdit de force la saisie de caractères GB.
+ [N] Normal
+ [R] Inversé (blanc sur noir)
+ [O] Or (noir sur fond transparent)
+ [V] Or inversé
+ [F] Pas fixe (fixation de l'espace 12 dots)
+
+(Exemple) Text 20,80,"Test",R
+Affiche "Test" à la position (80,20) en blanc sur noir.
+
+(Exemple) Text 20,80, "Test" ,, F
+   "Test" affiche une mini-police à pas fixe (fixation d'espace de 12 dots).
+(Exemple) Text 20,80, "Test" ,, M
+   "Test" est affiché avec une police minimini.
+(Exemple) Text 20,80, "Test", MB
+   "Test" est affiché avec une police minimini-bold.
+(Exemple) Text 20,80, "Test", FM
+   "Test" affiche une police de caractères minimini à pas fixe.
+(Exemple) Text 20,80, "Test", FMB
+   "Test" affiche une police de caractères de taille fixe, minimini et gras.
+(Exemple) Text 20,80, "Test" ,, X
+(Exemple) Text 20,80, "Test" ,, FX
+   "Test" affiche une police de style minimini-fx 6x8.
+
+(Exemple) Text 20,80, "Test" ,,, 16
+affiché 16 dots par l'extrémité supérieure.
+2 dots inférieurs ne sont pas affichés.
+
+-------------------------------------------------------------------------------
+LocateYX                [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F3](LocateYX)
+-------------------------------------------------------------------------------
+Affiche du texte sur l'écran graphique avec la même police que Locate. Les coordonnées sont identiques à Text, seule la police change. Le dernier paramètre optionnel [R] permet d'inverser la couleur.
+
+(Format) LocateYX [@][!]y,x,[##]"string"orExpression,[,N/O/R/V][,F][,height]
+ [@] Le dessin est fait sur la VRAM courante
+ [!] Force l'utilisation de la police par défaut, même si une police externe est chargée
+ [##] accepte les caractères GB.
+ [N] Normal
+ [R] Inversé (blanc sur noir)
+ [O] Or (noir sur fond transparent)
+ [V] Or inversé
+ [F] Pas fixe (fixation de l'espace 18 dots)
+
+(Exemple) LocateYX 20,80,"Test",R
+Comme l'exemple précédent mais écrit en grand avec la police de Locate.
+
+-------------------------------------------------------------------------------
+Rect                    [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F1](Rect)
+-------------------------------------------------------------------------------
+Affiche un rectangle. Les coordonnées sont en pixels.
+
+(Exemple) Rect 1,1,127,63
+Dessine le contour de l'écran.
+
+-------------------------------------------------------------------------------
+FillRect                [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F2](FillRect)
+-------------------------------------------------------------------------------
+Affiche un rectangle plein. Les coordonnées sont en pixels.
+
+(Exemple) FillRect 1,1,127,63
+Remplit l'écran.
+
+-------------------------------------------------------------------------------
+ReadGraph(              [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F3](ReadGraph)
+-------------------------------------------------------------------------------
+Sauvegarde une partie de l'écran graphique dans une matrice.
+
+(Format) ReadGraph(px1,py1,px2,py2) -> Mat A
+
+Il n'est pas nécessaire de créer la matrice avant, la taille appropriée est allouée automatiquement. Si aucun type n'est indiqué dans le membre de droite pour l'assignmenent, la matrice est par défaut en 1-bit.
+
+
+-------------------------------------------------------------------------------
+WriteGraph              [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F4](WriteGraph)
+-------------------------------------------------------------------------------
+Affiche une imagee.
+
+(Format 1) WriteGraph x,y,dx,dy,mat,N|R|M[,|X|O|A]
+  Affiche les contenus de la matrice de largeur dx et de hauteur dy à la position (x,y) sur l'écran graphique.
+  Avant-dernier paramètre :
+    [N] Normal
+    [R] Inversé
+    [M] Mesh
+  Dernier paramètre :
+     -  Écraser ce qui est en-dessous
+    [X] Les pixels noirs inversent la couleur
+    [O] Les pixels blancs sont transparents
+    [A] Les pixels noirs sont transparents
+
+(Exemple) [[1,2,3,4,16,32,64,128]] -> Mat A
+          WriteGraph 80,20,8,8,Mat A,N
+
+(Format 2) WriteGraph x,y,dx,dy,mat[m,n],N|R|M[,|X|O|A]
+  Prend les données à partir de la cellule [m,n] de la matrice.
+
+(Exemple) [[16,32,64,128][128,64,32,16]] -> Mat A
+          WriteGraph 80,20,4,4,Mat A[1,1],N
+          WriteGraph 80,24,4,4,Mat A[2,1],N
+
+Dessine un symbole "<" en deux parties. La ligne suivante aurait le même effet :
+
+(Exempl) WriteGraph 80,20,4,8,Mat A,N
+
+Les bitmaps ont une largeur multiple de 8 bits, les bits de droite sont remplis avec des 0.
+(mode g1m ci-dessus)
+
+(mode g3m)
+*Seulement dans le cas d'un Mat / List 1 bit, cela devient le dessin monochromatique.
+  Il devient le dessin couleur 16 bits autre que celui-ci.
+
+si vous avez besoin d'une couleur transparente, utilisez la commande Transp-Color.
+
+-------------------------------------------------------------------------------
+DotGet(                 [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F1](DotGet)
+-------------------------------------------------------------------------------
+ (Exemple) DotGet( px1,py1, px2,py2)->Mat A[x,y]
+  Récupère la plage de (px1,py1)-(px2,py2) à l'écran à partir de Mat A [x,y].
+  Si le nombre de matrices est inférieur à la plage spécifiée, la taille de la matrice est importée.
+
+-------------------------------------------------------------------------------
+DotPut(                 [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F2](DotPut)
+-------------------------------------------------------------------------------
+ (Exemple) DotPut( Mat A, x,y, px1,py1, px2,py2)
+  Mat A Commencez par l'élément (x, y) de la matrice et tracez un point dans l'intervalle (px1,py1)-(px2,py2).
+
+ (Exemple) DotPut( Mat A[x,y], px1,py1, px2,py2)->Mat B
+  Mat A Copies dans la plage [x1,y1]-[x2,y2] de Mat B à partir de [x,y] de la matrice.
+  Si Mat B ne sécurise pas l'étendue de la plage de copie, copiez-le dans la plage correspondant à Mat B.
+  Il ne transfère pas à l'écran graphique.
+
+ (Exemple) DotPut( Mat A[x,y], px1,py1, px2,py2)
+  Mat A Commencez par l'élément (x,y) de la matrice et tracez un point dans l'intervalle (px1,py1)-(px2,py2).
+
+-------------------------------------------------------------------------------
+DotTrim(                [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F3](DotTrim)
+-------------------------------------------------------------------------------
+ (Exemple) DotTrim(Mat A, x1,y1,x2,y2)->Mat B
+  Ceci est une entrée de coupe de Matt,
+  Coupez la zone rectangulaire des données non nulles dans la plage [X1,y1]-[x2,y2] de la matrice Mat et copiez-la dans la matrice Mat B.
+  Si la matrice à copier n'est pas sécurisée, elle est récemment allouée.
+
+ (Exemple) DotTrim(px1,py1,px2,py2)->Mat A
+  Ceci est une entrée de découpe de l'écran graphique,
+  Découpez la zone rectangulaire dans laquelle les points du graphique (px1,py1)-(px2,py2) sont copiés dans la matrice Mat A
+  Dans les deux cas, la taille de la zone rectangulaire (taille sécurisée de la matrice Mat) est automatiquement entrée dans les variables X et Y.
+  Les coordonnées X,Y en haut à droite de la zone rectangulaire des données non nulles sont automatiquement entrées dans la variable minuscule x,y.
+
+-------------------------------------------------------------------------------
+CellSum(                [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F5](CellSum)
+-------------------------------------------------------------------------------
+ (Exemple) CellSum(Mat B[X,Y])->C
+  Calculez la valeur totale de 8 points autour de Mat B[X,Y].
+
+-------------------------------------------------------------------------------
+DotLife(                [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F6]-[F6]-[F4](DotLife)
+-------------------------------------------------------------------------------
+ (Exemple) DotLife( Mat A, x1,y1,x2,y2)->Mat B
+
+
+===============================================================================
+Autres commandes étendues
+===============================================================================
+-------------------------------------------------------------------------------
+KeyRow(                 [SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F5](KeyRow)
+-------------------------------------------------------------------------------
+Renvoie l'état du clavier. Bits renvoyés (en binaire) :
+
+         bit6  bit5 bit4 bit3 bit2 bit1
+   Row--------------------------------------Row
+    09    F1    F2   F3   F4   F5   F6       09
+    08    SHIFT OPTN VARS MENU <-  (up)      08
+    07    ALPHA ^2   ^    EXIT (dw) ->       07
+    06    XTT   log  ln   sin  cos  tan      06
+    05    ab/c  F<>D  (    )    ,   ->       05
+    04    7     8    9    DEL                04
+    03    4     5    6    x    div           03
+    02    1     2    3    +    -             02
+    01    0     .    EXP  (-)  EXE           01
+   Row--------------------------------------Row
+
+(Exemple) KeyRow(9)
+Quand [F4] et [F6] sont pressées au même moment, les bits 1 et 3 sont à 1, donc la valeur renvoyée est 10.
+
+-------------------------------------------------------------------------------
+Ticks                   [VARS]-[F3](Extend)-[F1](Ticks)
+-------------------------------------------------------------------------------
+Timer à 1/128s.
+
+(Exemple) 0 -> Ticks
+Initialise le timer interne, qui commence à compter. Le timer compte 128 fois par secondes et fait 32 bits. De plus, il est restoré à chaque passage de 24 heures.
+
+La valeur maximale est 24*60*60*128 -1 = 11059199.
+
+-------------------------------------------------------------------------------
+Ticks%
+-------------------------------------------------------------------------------
+Timer à 1/32768s.
+
+(Exemple) 0 -> Ticks%
+Initialise le timer interne.  La valeur maximale est de 2^32-1 = 4294967295 et augmente 32768 fois par seconde.
+
+-------------------------------------------------------------------------------
+TicksWait
+-------------------------------------------------------------------------------
+Attente en ticks (1/128s). Cette commande unifie "Ticks" et "Wait".
+
+(Exemple) TicksWait 128
+Attend une seconde.
+
+(Exemple) TicksWait -128
+Attend qu'une seconde se soit écoulée depuis le dernier appel à TicksWait. S'il s'est déjà écoulé plus d'une seconde, ne fait rien.
+
+(Exemple) TicksWait -4
+Attend que 4/128 seconde se soit écoulée depuis le dernier appel à TicksWait. Ajouter cette commande dans un boucle limite le programme à 32 FPS s'il est rapide mais ne le handicape pas s'il est lent.
+
+-------------------------------------------------------------------------------
+Ticks%Wait
+-------------------------------------------------------------------------------
+Attente en 1/32768s.
+
+-------------------------------------------------------------------------------
+DATE                    [VARS]-[F3](Extend)-[F3](DATE)
+TIME                    [VARS]-[F3](Extend)-[F4](TIME)
+-------------------------------------------------------------------------------
+Lit ou écrit la date dans la RTC (horloge interne), le paramètre est une chaîne de caractères.
+
+(Exemple) "2017/01/17"->DATE
+(Exemple) DATE                  // 2017/01/17 TUE
+
+(Exemple) "23:59:59"->TIME
+(Exemple) TIME                  // 23:59:59
+
+-------------------------------------------------------------------------------
+Disp                    [SHIFT]+[VARS](PRGM)-[F6]-[F2](DISPLAY)-[F6](Disp)
+-------------------------------------------------------------------------------
+Affiche le résultat sans attendre un EXE (contrairement au Disp usuel). Scrolle automatiquement.
+
+(Exemple) Disp A+B
+
+-------------------------------------------------------------------------------
+BackLight               [VARS]-[F3](Extend)-[F5](BackLight)
+-------------------------------------------------------------------------------
+Réglage ou lecture du niveau de rétroéclairage.
+(format) Niveau de rétroéclairage
+ niveau: 0 ~ 511 (0 ~ 255: sous-niveau +256: niveau principal)
+(format) + rétro-éclairage
+ Lire le niveau du rétro-éclairage actuel.
+
+-------------------------------------------------------------------------------
+RefrshCtrl              [SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F1](RefrshCtrl)
+RefrshTime              [SHIFT]+[MENU](SET UP)-[F6]-[F6]-[F6]-[F2](RefrshTime)
+-------------------------------------------------------------------------------
+Ces commandes contrôlent le rafraîchissement périodique de l'écran.
+
+(Exemple) RefreshCtrl 0
+Aucun rafraîchissement périodique.
+
+(Exemple) RefreshCtrl 1
+Le rafraîchissement est automatique ; seul l'écran graphique est affiché.
+
+(Exemple) RefreshCtrl 2
+Le rafraîchissement est automatique pour les deux écrans (texte et graphique).
+
+(Exemple) RefreshTime 5
+Configure l'intervalle de rafraîchissement à 5/128s.
+
+(Format) +RefreshCtrl
+(Format) +RefreshTime
+Renvoie la valeur de ces deux paramètres. (Une erreur se produit si ces commandes sont situées en tout début d'expression.)
+
+-------------------------------------------------------------------------------
+Screen                  [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F1](Screen)
+-------------------------------------------------------------------------------
+Sélectionne un mode d'affichage et une VRAM cible.
+
+(Format 1) Screen
+Échange écrans texte et graphique.
+
+(Format 2) Screen.T ou Screen.t
+Passe à l'écran texte.
+
+(Format 3) Screen.G ou Screen.g
+Passe à l'écran graphique.
+
+(Format 4) Screen 0 ou Screen 1
+0: VRAM texte
+1: VRAM graphique
+
+Pour convertir les coordonnées à l'écran et sur le graphe :
+
+(Usage) Screen#X,Y[,Xmin][,Xmax][,Ymin][,Ymax]
+Renvoie une valeur dans List Ans (deux éléments).
+
+(Exemple) Screen#1,1,-6.3,6.3,-3.1,3.1
+Le résultat est List Ans={74,22}. (g1m)
+Le résultat est List Ans={220,64}. (g3m)
+
+Pour convertir des coordonnées du graphe à celle de l'écran :
+
+(Usage) Screen%X,Y[,Xmin][,Xmax][,Ymin][,Ymax]
+Renvoie une valeur dans List Ans (deux éléments).
+
+(Exemple) Screen%74,22,-6.3,6.3,-3.1,3.1
+Le résultat est List Ans={1,1}.(g1m)
+
+Option Screen.OT ajoutée.
+
+composer du texte VRAM et des graphiques VRAM display LCD.
+(format) Screen.O
+La VRAM texte devient l'écran synthétique avec la VRAM graphique au moment du transfert de l'écran LCD.
+(format) Screen.OT
+VRAM ne vient pas à changer après le transfert d'écran LCD.
+(format) Screen.N
+mode normal
+
+-------------------------------------------------------------------------------
+PutDispDD               [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F2](PutDispDD)
+_DispVram		[SHIFT]-[F4](SKTCH)-[F3](ML)-[F3](_DispVram)
+-------------------------------------------------------------------------------
+Rafraîchit l'écran.
+(format 1) PutDispDD
+(format 1) _DispVram
+(*)Attention
+  Une zone de transfert est différente de PutDispDD dans la commande _DispVram.
+  PutDispDD: plage de transfert (0,0) - (383,191) Ce sont des spécifications compatibles avec genuine.
+  _DispVram: la plage de transfert (0, -24) - (383, 191) inclut une ligne d'état supérieure.
+
+(format 2) PutDispDD @ début, fin
+(format 2) _DispVram @ ligne de début, ligne de fin
+  La plage de la ligne va du haut (-24) au bas (191).
+  Les deux font le même mouvement.
+(exemple) PutDispDD @ 0,23
+  ne transfère que la première ligne de Locate.
+
+-------------------------------------------------------------------------------
+PopUpWin(               [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F5](PopUpWin)
+-------------------------------------------------------------------------------
+Affiche une popup sur la VRAM courante.
+
+(Usage) PopUpWin(n)           // 1 <= n <= 6
+(Exemple) PopUpWin(5)
+
+Pour afficher un message sur la popup :
+
+(Exemple) PopUpWin(11,"Message1"[,"Message2"])->A
+Renvoie toujours 1.
+
+Pour afficher une popup de sélection Oui/Non :
+(Exemple) PopUpWin(10,"Message1"[,"Message2"])->A
+Renvoie 1 pour Oui et 0 pour Non.
+
+PopUpWin(0) se comporte comme SaveDisp() et sauvegarde l'écran dans un mémoire temporaire. PopUpWin(9) restaure l'écran sauvegardé par PopUpWin(0), comme le ferait RestoreDisp().
+
+-------------------------------------------------------------------------------
+FKeyMenu(               [SHIFT]-[F4](SKTCH)-[F2](Extend)-[F4](FKeyMenu)
+-------------------------------------------------------------------------------
+Affiche un menu à onglets sur la VRAM courante.
+"chaîne" effectue un centrage automatique. (0.45-)
+
+(Format)FKeyMenu( n[~m], "string"/Icon [,C/M/N/R/I/S/U/L [,FKey icon color [,Fkey back color]]]] )
+  - Les arguments 3ème ou plus tard peuvent être omis.
+  - "," sont nécessaires même si l'argument est omis.
+  - La couleur par défaut de l'icône FKey est noire et la couleur arrière FKey est blanche.
+
+L'ordre du 3e argument est arbitraire.
+　　C: icône claire.
+　　M: icône masqué.
+　　N: icône blanche normale. (par défaut)
+　　R: icône noire avec encoche en bas à droite.
+　　I: icône noire sans encoche en bas à droite.
+　　S: icône noire sans encoche en bas à droite indiquant la sélection.
+　　U: afficher 1 point supérieur.
+　　L: étendre la zone d'affichage « chaîne » de 2 points à gauche.
+
+(Exemple) FKeyMenu (1,42)
+ Dessiner l'icône EDIT à la position [F1].
+(Exemple) FKeyMenu (1,42,,Bleu )
+ L'icône EDIT bleue est dessinée dans la zone de menu de la première fonction.
+(Exemple) FKeyMenu (1,42,,Red ,Blue )
+ L'icône EDIT bleue avec fond rouge est dessinée dans la zone de menu de première fonction.
+(Exemple) FKeyMenu (2,"ABCDE",RUL)
+ "ABCDE" est affiché dans l'icône noire dans la zone de menu de la deuxième fonction.
+(Exemple) FKeyMenu (3~4,"longstrings",RGB(255,0,0))
+ Le "longstrings" est affiché en rouge avec l'icône blanche dans les zones de menu de la troisième à la quatrième fonction.
+(Exemple) FKeyMenu (4,"Mask",M)
+ L'icône masquée s'affiche dans la zone de menu de la quatrième fonction.
+(Exemple) FKeyMenu (2,"",C)
+ Effacer le menu de la deuxième fonction
+(Exemple) FKeyMenu (1~6,"",C)
+ Effacer les menus de première à sixième fonction.
+
+-------------------------------------------------------------------------------
+Save                    [SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F2](Save)
+Load(                   [SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F3](Load)
+-------------------------------------------------------------------------------
+Sauvegarde et recharge des données de matrices.
+
+(Exemple) Save "TEST",Mat A
+(Exemple) Load("TEST")->Mat A
+Sauvegarde les contenus de la matrice A et les relit. Si l'extension n'est pas spécifiée, [.bin] est utilisé par défaut.
+
+(Exemple) Save "TEST", Mat A[5,1]
+Sauvegarde toute la matrice à partir de la cellule 5,1.
+
+(Exemple) Load("TEST", 16) -> Mat A[10,1]
+Charge 16 octets de données dans la matrice en partant de la cellule 10,1.
+
+-------------------------------------------------------------------------------
+IsExist(                [SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F1](IsExist)
+-------------------------------------------------------------------------------
+Teste si un fichier existe. Renvoie sa taille s'il existe, 0 sinon.
+
+(Exemple) IsExist("/ABC/TEST")
+Renvoie la taille de "/ABC/TEST.bin" s'il existe, 0 sinon.
+
+Quand l'extension n'est pas spécifiée, ".bin" est ajouté automatiquement. L'exemple précédent teste donc l'existence de "/ABC/TEST.bin" et non "/ABC/TEST".
+
+On peut également faire une recherche de fichiers par wildcard.
+
+(Format)  IsExist(wildcard) -> nombre de fichiers trouvés
+(Exemple) IsExist("*.bmp") -> N
+          $Mat Ans[3]
+Affiche le nom du 3ème fichier bitmap trouvé. La valeur de retour (ici N) est le nomre de fichiers trouvés.
+
+-------------------------------------------------------------------------------
+Delete                  [SHIFT]+[VARS](PRGM)-[F6]-[F4](I/O)-[F6]-[F6]-[F4](Delete)
+-------------------------------------------------------------------------------
+Supprime un fichier. Si l'extension n'est pas spécifiée, ".bin" est ajouté automatiquement.
+
+(Exemple) Delete "TEST.dat"
+
+(Exemple) Delete "TEST.dat",1
+Demande confirmation avant de supprimer.
+
+-------------------------------------------------------------------------------
+Alias                   [OPTN]-[F5](Extend)-[F1](Alias)
+-------------------------------------------------------------------------------
+Définit des alias entre noms de variables. N'importe quel caractère peut être utilisé comme alias d'une variable.
+
+(Exemple) Alias A=α
+          α+100->α
+Après avoir déclaré l'alias, le nom "α" est devenu un alias pour la variable A ; il y a désormais deux noms mais toujours une seule variable. L'expression ci-dessus est équivalente à A+100->A.
+
+(Exemple) Alias Mat A=α
+          Mat α[1]+100->Mat α[1]
+De même, cette commande est équivalente à Mat A[1]+100->Mat A[1]
+
+(Exemple) Alias Lbl A=α
+          Lbl α
+          Goto α
+          Gosub α
+
+(Exemple) Alias a=_abc_de
+          Alias Mat a=_abcXY
+          _abc_de+1->_abc_de
+          Mat _abcXY[1,2]+1->Mat _abcXY[1,2]
+
+(Exemple) ALias Lbl A=_Sub1
+          Lbl _Sub1
+          Goto _Sub1
+          Gosub _Sub1
+
+-------------------------------------------------------------------------------
+Wait                    [VARS]-[F3](Extend)-[F2](Wait)
+-------------------------------------------------------------------------------
+Réduit la vitesse d'exécution globale. Ce paramètre peut également être configuré par le menu Configuration (Setup), auquel cas il affecte tous les programmes.
+
+(Exemple) Wait 100
+L'effet est sensiblement indépendant de la distinction SH3/SH4.
+
+Wait 10  divise environ la vitesse par 2.
+Wait 100 divise environ la vitesse par 10.
+
+
+-------------------------------------------------------------------------------
+ListCmp(                [OPTN]-[F1](LIST)-[F6]-[F6]-[F5](Cmp)
+-------------------------------------------------------------------------------
+Compare deux listes ou une liste et une valeur.
+
+(Exemple) ListCmp({1,2,3},{1,2,3})    // 1
+(Exemple) ListCmp({1,2,3},{1,3})      // 0
+(Exemple) ListCmp({1,2,3},{1,3,2})    // 0
+(Exemple) ListCmp({1,2,3},2)          // 1
+(Exemple) ListCmp({1,2,3},4)          // 0
+
+
+===============================================================================
+Manipulation étendue de chaînes de caractères
+===============================================================================
+-------------------------------------------------------------------------------
+StrLen(@                [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F1](STR)-[F2](Len)
+-------------------------------------------------------------------------------
+L'option "@" permet de calculer la longueur en octets et non en symboles.
+
+(Exemple) StrLen(@"ABCDE")
+(Exemple) StrLen(@Str 1)
+
+-------------------------------------------------------------------------------
+StrRepl(                [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F1](STR)-[F5](StrRepl)
+-------------------------------------------------------------------------------
+Rechercer et remplacer.
+
+(Format) StrRepl(source, recherche, remplacement, position de début)
+(Exemple) StrRepl("Hello World","World","Earth") -> "Hello Earth"
+(Exemple) StrRepl("abcabc","ab","ff",3) = "abcffc"
+(Exemple) StrRepl("abcabc","ab","ff") = "ffcffc"
+
+-------------------------------------------------------------------------------
+StrChar(                [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F1](Char)
+-------------------------------------------------------------------------------
+Génère ou répète des caractères.
+
+(Exemple) StrChar("ABC",5)    // "ABCABCABCABCABC"
+(Exemple) StrChar(0x41,5)     // "AAAAA"
+
+-------------------------------------------------------------------------------
+StrCenter(              [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F2](Center)
+-------------------------------------------------------------------------------
+(Format) StrCenter(source, longueur, caractère de remplissage)
+
+(Exemple) StrCenter("Test",8)      // "  Test  "
+(Exemple) StrCenter("Test",8,"*")  // "**Test**"
+
+-------------------------------------------------------------------------------
+Hex(                    [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F4](Hex)
+-------------------------------------------------------------------------------
+Conversion en chaîne de caractères au format hexadécimale.
+
+(Exemple) Hex(12345)->Str 1    // "3039"
+          Exp("0x"+Str 1)->A   // 12345
+
+-------------------------------------------------------------------------------
+Bin(                    [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F5](Bin)
+-------------------------------------------------------------------------------
+Conversion en chaîne de caractères au format binaire.
+
+(Exemple) Bin(12345)->Str 1    // "11000000111001"
+          Exp("0b"+Str 1)->A   // 12345
+
+-------------------------------------------------------------------------------
+StrBase(                [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F3](Base)
+-----------------------------------------------------------------------
+Conversion de base pour des chaînes de caractères.
+
+(Format) StrBase(chaîne de caratères, base d'entrée, base de sortie)
+Les bases autorisées sontentre 2 et 64. Les caractères utilisés sont :
+
+  0-9 A-Z a-z θ π
+
+(Exemple) StrBase("579",15,12) -> "873"
+          StrBase("100",13,10) -> "169"
+          StrBase("123",16,3) -> "101210"
+          StrBase("43981",10,16) -> "ABCD"
+          StrBase("12A345AFZ",36,10) -> "2999794422815"
+          StrBase("AZaz",62,10) -> "2520113"
+
+
+-------------------------------------------------------------------------------
+StrSplit(               [SHIFT]+[VARS](PRGM)-[F6][F6]-[F3](ExStr)-[F6]F6]-[F1](StrSplit)
+-------------------------------------------------------------------------------
+Sépare une chaîne de caractères à chaque occurrence d'un séparateur, et stocke le résultat dans la matrice Ans.4
+
+(Format) StrSplit(source, délimiteur[, position de départ])
+
+(Exemple) StrSplit("123,4567,89",",")
+La matrice Ans devient ["123", "4567", "89"]. Les mots individuels peuvent être lus de la façon suivante :
+ $Mat Ans[1]="123"
+ $Mat Ans[2]="4567"
+ $Mat Ans[3]="89"
+
+-------------------------------------------------------------------------------
+StrAsc(         [Shift]+[VARS](PRGM)-[F6]-[F6]-[F3](ExStr)-[F6]-[F6]-[F2](StrAsc)
+-------------------------------------------------------------------------------
+Renvoie la valeur (ASCII) du première caractère d'une chaîne.
+
+(Exemple) StrAsc("Ascii")  // 65 (0x41), la valeur de 'A'
+
+-------------------------------------------------------------------------------
+StoCapt [OPTN] - [F6] - [F6] - [F5] (CAPTURE) - [F1] (Store) (ne fonctionne pas en mode g3m)
+RclCapt [OPTN] - [F6] - [F6] - [F5] (CAPTURE) - [F2] (Recall)
+-------------------------------------------------------------------------------
+Écrit ou charge des Pictures dans la mémoire de stockage. Jusqu'à 99 Picture peuvent être utilisées.
+
+(Exemple) StoCapt 20
+(Exemple) RclCapt 20
+
+La taille des fichiers est désormais de 1 ko au lieu de 2 ko.(g1m mode)
+
+
+===============================================================================
+Autres commendes étendues
+===============================================================================
+La notation '/ permet de mettre des commandes C.Basic dans des commentaires (en Basic, tout ce qui commence par ' est un commentaire). L'interpréteur Basic Casio n'exécutera pas les commandes, mais C.Basic les exécutera.
+
+(Exemple) '/Ticks->S
+          '/Ticks-S->T
+Mesure un délai de temps quand le programme est lancé dans C.Basic, mais ne fait rien dans l'interpréteur Basic Casio.
+
+-------------------------------------------------------------------------------
+Commentaire étendu '#
+-------------------------------------------------------------------------------
+Cette syntaxe permet de modifier les paramètres de C.Basic à l'aide de commenaires.
+
+'#CBasic
+'#CBASIC
+'#CBDBL
+'#CBdbl
+'#CBINT
+'#CBint
+'#G1M
+'#g1m
+'#G3M
+'#g3m
+Ces commandes permettent de changer le mode d'exécution (traité au début de ce manuel).
+
+'#Break0        // Désactive l'interruption par [AC/ON]
+'#Break1        // Active l'interruption par [AC/ON] (comportement par défaut)
+
+'#Mat 0         // Les indices de matrices commencent à 0
+'#Mat 1         // Les indices de matrices commencent à 1 (comportement par défaut)
+
+'#GetKeyC       // Ne pas réinitialiser le timer à chaque appel de GetKey1/2 (comportement par défaut)
+'#GetKeyR       // Réinitialiser le timer à chaque appel de Getkey1/2
+
+'#exp 0         // affichage précédent de l'exponet.
+'#exp 1         // Affichage des exposants OS3.00 par la police standard uniquement.
+'#exp 2         // OS3.00 affiche les exposants pour toutes les tailles de police. (défaut)
+
+'# GB0          // n'utilise pas de code GB. (défaut)
+'# GB1          // utilise le code GB sauf les codes F7xx, F9xx, E5xx, E6xx, E7xx qui se chevauchent avec une commande / un caractère spécial.
+'# GB2          // utilise tout le code GB.
+
+'# 58           // sortie compatible fx-5800P.
+'# 98           // Sortie compatible série fx-9860G / CG. (défaut)
+
+===============================================================================
+Commandes matérielles supplémentaires
+===============================================================================
+C.Basic peut exécuter un programe SH3/SH4A natif dans la mémoire. Ces programmes ne doivent pas corrompre C.Basic, toutefois le tableau de matrices peut être utilisé librement. Les adresses peuvent être obtenues par VarPtr() ou l'opérateur d'adressage &. L'opérateur * du C existe aussi dans C.Basic.
+
+-------------------------------------------------------------------------------
+SysCall(                [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F1](SysCall)
+-------------------------------------------------------------------------------
+Appelle un syscall. Jusqu'à 4 arguments peuvent être spécifiés ; c'est optionnel.
+
+(Format) SysCall(numéro [,arg1][,arg2][,arg3][,arg4][,arg5][,arg6][,arg7][,arg8][,arg9][,arg10][,arg11][,arg12])
+
+(Exemple) Screen.G
+          SysCall(0x1D0,1,8,127,63)->R
+
+Le syscall 0x1D0 dessine un rectangle sur l'écran. Les quatre paramètres r4..r7 sont égaux à 1,8,127,63 respectivement. R reçoit la valeur de retour du syscall.
+
+-------------------------------------------------------------------------------
+Call(                   [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F2](Call)
+-------------------------------------------------------------------------------
+Exécute un programme natif à n'importe quelle adresse. Jusqu'à 4 arguments (optionnels peuvent être spécifiés).
+
+(Format)  Call(adressse [,arg1][,arg2][,arg3][,arg4])
+(Exemple) Call(0x8802f0000,A,B,C,D)->R
+
+La routine à l'adresse 0x8802f000 est appelée avec pour paramètres r4=A, r5=B, r6=C, r7=D. Sa valeur de retour est stockée dans R.
+
+-------------------------------------------------------------------------------
+Peek(                   [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F4](Peek)
+-------------------------------------------------------------------------------
+Lit des données en mémoire. Quand la taille n'est pas spécifiée par l'utilisation de [.B], [.W], [.L] ou [.F], le comportement par défaut est de lire 1 octet.
+
+(Format) Peek(adresse)[.B|.W|.L|.F]
+(Format) *(addresse)[.B|.W|.L|.F]
+
+(Exemple) Peek(0x8802E000).B -> A%
+(Exemple) *(0x8802E000).B -> A%
+Charge dans A% 1 octet de données (byte) lu à l'adresse 0x8802E000.
+
+(Exemple) Peek(0x8802E000).W -> A%
+(Exemple) *(0x8802E000).W -> A%
+Charge dans A% 2 octets de données (word) lus à l'adresse 0x8802E000.
+
+(Exemple) Peek(0x8802E000).L -> A%
+(Exemple) *(0x8802E000).L -> A%
+Charge dans A% 4 octets de données (longword) lus à l'adresse 0x8802E000.
+
+(Exemple) Peek(0x8802E000).F -> A
+(Exemple) *(0x8802E000).F -> A
+Charge dans A% 8 octets de données (flottant double précision) lus à l'adresse 0x8802E000.
+
+-------------------------------------------------------------------------------
+Poke(                   [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F3](Poke)
+-------------------------------------------------------------------------------
+Écrit des données dans la mémoire. QUand la taille n'est pas spécifiée au moyen de [.B], [.W], [.L] ou [.F], le comportement par défaut est d'écrire 1 octet.
+
+(Format 1) Poke(adresse)[.B|.W|.L|.F], valeur
+(Format 1) *(adresse)[.B|.W|.L|.F], valeur)
+(Format 2) Data->Poke(adresse)[.B|.W|.L|.F]
+(Format 2) Data->*(adresse)[.B|.W|.L|.F])
+
+(Exemple) Poke(0x8802E000).B,A%
+(Exemple) A%->Poke(0x8802E000).B
+(Exemple) A%->*(0x8802E000).B
+
+(Exemple) Poke(0x8802E000).W,A%
+(Exemple) A%->Poke(0x8802E000).W
+(Exemple) A%->*(0x8802E000).W
+
+(Exemple) Poke(0x8802E000).L,A%
+(Exemple) A%->Poke(0x8802E000).L
+(Exemple) A%->*(0x8802E000).L
+
+(Exemple) Poke(0x8802E000).F,A
+(Exemple) A->Poke(0x8802E000).F
+(Exemple) A->*(0x8802E000).F
+
+-------------------------------------------------------------------------------
+VarPtr(                 [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F6]-[F1](VarPtr)
+-------------------------------------------------------------------------------
+Renvoie l'adresse d'une variable.
+
+(Format 1) VarPtr(variable)
+(Format 2) &(variable)
+
+(Exemple) VarPtr(A%)
+(Exemple) &A%
+Renvoie l'adresse de la version entière de A.
+
+(Exemple) VarPtr(Mat A)
+(Exemple) &Mat A
+Renvoie l'adresse de début de la matrice A.
+
+(Exemple) VarPtr(Mat A[20,10])
+(Exemple) &Mat A[20,10]
+Renvoie l'adresse de la cellule Mat A[20,10] de la matrice A.
+
+-------------------------------------------------------------------------------
+ProgPtr(                [SHIFT]+[VARS](PRGM)-[F6]-[F6]-[F5](EXEC)-[F6]-[F2](ProgPtr)
+-------------------------------------------------------------------------------
+Renvoie l'adresse de début du code du programme.
+
+(Exemple) ProgPtr()
+
+
+===============================================================================
+Fonctions graphiques étendues : MonochromeLib
+===============================================================================
+Les fonctions graphiques de MonochromeLib (par PierrotLL) sont disponibles. Elles agissent toujours sur la VRAM courante et utilisent le système de coordonnées (0,0) -- (127,63). Il est nécessaire d'appeler PutDispDD ou _DispVRAM pour afficher le résultat de ces fonctions.
+-------------------------------------------------------------------------------
+MonochromeLib de PierrotLL:
+https://wiki.planet-casio.com/fr/MonochromeLib
+Référez-vous au manuel de MonochromeLib pour de plus amples détails.
+-------------------------------------------------------------------------------
+Codes couleurs :
+  -1   transparent
+   0   blanc
+   1   noir
+   2   xor (inverseur)
+   3   damier
+   4   aléatoire
+   5   mélanges entre la couleur de dessin et la couleur de l'écran. (Voir ci-dessous)
+
+Des nouvelles couleurs permettant de contrôler la densité de pixels ont été ajoutées. Le principe des couleurs 11, 12, 13 et 14 est qu'elles restreignent quels pixels peuvent être allumés.
+
+Couleur : 10    11    12    13     14 (2x2 dot matrix by 1dot width)
+Couleur : 20    21    22    23     24 (2x2 dot matrix)
+          oo    *o    *o    **     **
+          oo    oo    o*    *o     **
+
+Par exemple, la couleur 13 est définie par le schéma suivant :
+
+  **   < ligne impaire
+  *o   < ligne paire
+
+Cela signifie que sur les lignes impaires, tous les pixels seront dessinés, mais sur les lignes paires, seul un pixel sur deux sera dessiné. La couleur 14 est donc équivalente au noir.
+
+Le principe des couleurs 21, 22, 23, 24 est que le petit schéma sert de brosse. Prenons la couleur 22 qui possède le même schéma que la couleur 12 :
+
+  *o   < ligne impaire
+  o*   < ligne paire
+
+Si on tente d'afficher un pixel en (10,10), le schéma de taille 2*2 sera dessiné à l'écran, ce qui allumera les pixels (10,10) ET (11,11). Si on dessine un (11,11), cela allume exactement les mêmes pixels car la brosse s'aligne toujours sur la grille.
+
+Les couleurs 10 et 20 ne dessinent rien.
+
+Démonstration de ces couleurs ici :
+https://www.planet-casio.com/Fr/forums/lecture_sujet.php?id=14738&page=last#163470
+
+(Exemple) _FillCircle 64,32,30,21
+
+Une couleur aléatoire a été ajoutée.
+(Usage) <commande> x, y... couleur, probabilité
+
+(Exemple) _Rectangle 0,0,127,63,0,0,4,0,5
+(Exemple) _Rectangle 0,0,127,63,0,0,4,%50
+Remplit l'écran de pixels aléatoires indépendants. La couleur est noire avec probabilité 50%.
+
+(Exemple) _FillCircle #0,0,3,4,0.5
+Dessine un disque de rayon 3; chaque pixel du disque est aléatoire avec 50% de probabilité d'être noir.
+
+(Exemple) _Rectangle 0,0,127,63,0,0,4,%10
+Cette fois seul un pixel sur 10 en moyenne est noir.
+
+
+(* Couleur: 5 mélanges)
+La transparence a été ajoutée dans la spécification des Couleurs des paramètres de la commande ML. (v0,32-)
+Il composite et affiche la Couleur de dessin de la commande et de l'écran.
+(Format) _Pixel x, y, taux (taux 0,0 à 1,0)
+(Format) _Pixel x, y, %taux (%taux 0 à 100)
+(Exemple) Red _Pixel x, y, 5, %50
+(Exemple) Red _Pixel x, y, 5, 0,5
+Dessinez en combinant la couleur de l'écran et 50% rouge.
+
+-------------------------------------------------------------------------------
+Pour dessiner à l'aide des coordonnées ViewWindow et non les coordonnées de l'écran, ajoutez '#' devant les coordonnées.
+
+Fonctions de MonochromeLib supportant ce mode de coordonnées :
+        _Point
+        _Pixel
+        _PixelTest(
+        _Line
+        _Rect
+        _Horizontal
+        _Vertical
+        _Circle
+        _FillCircle
+        _Elips
+        _FillElips
+        _ElipsInRct
+        _FElipsInRct
+
+(Exemple) ViewWindow -6.3,6.3,0,-3.1,3.1,0
+          Screen.G
+          _Circle #0.5,1.2,1.2,1
+
+-------------------------------------------------------------------------------
+_ClrVram                [SHIFT]-[F4](SKTCH)-[F3](ML)-[F1](_ClrVram)
+-------------------------------------------------------------------------------
+Efface la VRAM.
+
+-------------------------------------------------------------------------------
+_ClrScreen              [SHIFT]-[F4](SKTCH)-[F3](ML)-[F2](_ClrScreen)
+-------------------------------------------------------------------------------
+Efface l'écran.
+
+-------------------------------------------------------------------------------
+_DispVram               [SHIFT]-[F4](SKTCH)-[F3](ML)-[F3](_DispVram)
+-------------------------------------------------------------------------------
+Affiche les contenus de la VRAM à l'écran.
+
+-------------------------------------------------------------------------------
+_Pixel                  [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F1](_Pixel)
+-------------------------------------------------------------------------------
+(Format) _Pixel x,y,couleur[,probabilité]
+Change la couleur du pixel dans la VRAM.
+
+-------------------------------------------------------------------------------
+_Point                  [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F2](_Point)
+-------------------------------------------------------------------------------
+(Format) _Point x,y,taille,couleur[,probabilité]
+Affiche un point carré dans la VRAM, de côté <taille>, centrée en (x,y).
+
+(Example) _Point 10, 10, 3, 1
+Affiche un rectangle de (9,9) à (11,11) inclus.
+
+-------------------------------------------------------------------------------
+_PixelTest(             [SHIFT]-[F4](SKTCH)-[F3](ML)-[F4](_PixelTest)
+-------------------------------------------------------------------------------
+(Format) _PixelTest(x,y)
+
+Renvoie la couleur du pixel aux coordonnées (x,y) dans la VRAM.
+  -1  Hors de l'écran
+   0  Blanc
+   1  Noir
+
+-------------------------------------------------------------------------------
+_Line                   [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F3](_Line)
+-------------------------------------------------------------------------------
+(Format) _Line X1,Y1,X2,Y2,couleur[,probabilité][,largeur]
+
+Dessine une ligne de (x1,y1) à (x2,y2) en utilisant l'algorithme de Bresenham.
+
+(Exemple) _Line 0,0,127,63,1,,10
+
+-------------------------------------------------------------------------------
+_Horizontal             [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F4](_Horizontal)
+-------------------------------------------------------------------------------
+(Format) _Horizontal y,x1,x2,couleur[,probabilité]
+
+Dessine une ligne horizontale. Beaucoup plus rapide que _Line avec y1=y2.
+
+-------------------------------------------------------------------------------
+_Vertical               [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F5](_Vertical)
+-------------------------------------------------------------------------------
+(Format) _Vertical x,y1,y2,couleur[,probabilité]
+
+Dessine une ligne verticale. Plus rapide que _Line avec x1=x2.
+
+-------------------------------------------------------------------------------
+_Rectangle              [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F1](_Rectangle)
+-------------------------------------------------------------------------------
+(Format) _Rectangle x1,y1,x2,y2,largeur de la bordure, couleur de la bordure, couleur de remplissage[,probabilité][,angle en degrés][,centre_X][,centre_Y][,zoom]
+
+Dessine un rectangle avec ou sans bordure (pour éliminer la bordure, indiquez une largeur de 0). La couleur de la bordure et du rectangle peuvent être différentes.
+Si [centre_X][centre_Y] sont omis, le centre de l'image dessinée est spécifié.
+
+-------------------------------------------------------------------------------
+_Polygon                [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F2](_Polygon)
+-------------------------------------------------------------------------------
+(Format) _Polygon *sommets_x, *sommets_y, nombre de sommets, couleur[,probabilité][,angle en degrés][,centre_X][,centre_Y][,zoom]
+
+Dessine le contour d'un polygone. Cette fonction prend deux tableaux en paramètre, un contenant les abscisses des sommets, et l'autre les ordonnées. Le troisième paramètre indique le nombre de sommets, le quatrième donne la couleur du tracé.
+
+Cette fonction dessine une ligne entre chaque paire consécutive de sommets.
+
+(Exemple) [[60, 75, 70, 50, 45]]->Mat X.L
+          [[20, 30, 45, 45, 30]]->Mat Y.L
+          Screen.G
+          _ClrVRAM
+          _Polygon VarPtr(Mat X), VarPtr(Mat Y), 5, 1);
+          _DispVRAM
+
+Notes que l'on aurait pu utiliser l'opérateur d'adressage :
+
+_Polygon &Mat X, &Mat Y, 5, 1
+
+-------------------------------------------------------------------------------
+_FillPolygon            [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F3](_FillPolygon)
+-------------------------------------------------------------------------------
+(Format) _FillPolygon *sommets_x, *sommets_y, nombre de sommets, couleur[,probabilité][,angle en degrés][,centre_X][,centre_Y][,zoom]
+
+Comme _Polygon, mais remplit le polygone au lieu d'en tracer les countours.
+
+-------------------------------------------------------------------------------
+_Circle                 [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F4](_Circle)
+-------------------------------------------------------------------------------
+(Format) _Circle x, y, rayon, couleur[,probabilité]
+Dessine un cercle centré en (x,y) en utilisant l'algorithme de Bresenham.
+
+C.Basic permet de tracer des arcs de cercles avec _Circle :
+
+(Format) _Circle x,y,rayon,couleur[,probabilité][,largeur][,angle de début][,angle de fin][,sommets]
+
+(Exemple) _Circle 64,32,20,4,0.5,3
+  Cercle de largeur 3, chaque pixel est noir avec probabilité 50%.
+(Exemple) _Circle 64,32,20,1,,3,0,90
+  Dessine un quart de cercle d'épaisseur 3 pixels.
+(Exemple) _Circle 64,32,20,1,,,0,360,5
+  Dessine un cercle approximé par 5 points, c'est-à-dire un pentagone.
+(Exemple) _Circle 64,32,20,1,,,20,380,5
+  Dessine aussi un pentagone, mais tourné de 20°.
+
+-------------------------------------------------------------------------------
+_FillCircle             [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F5](_FillCircle)
+-------------------------------------------------------------------------------
+(Format) _FillCircle x, y, rayon, couleur[,probabilité]
+
+Comme _Circle, mais remplit le cercle.
+
+-------------------------------------------------------------------------------
+_Elips                  [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F1](_Elips)
+-------------------------------------------------------------------------------
+(Format) _Elips x, y, rayon1, rayon2, couleur[,probabilité][,angle en degrés]
+
+Dessine une ellipse centrée en (x,y) de rayon horizontal <rayon1> et de rayon vertical <rayon2> :
+* <rayon1> est la distance entre le centre et le point extrême gauche de l'ellipse.
+* <rayon2> est la distance entre le centre et le point extrême haut de l'ellipse.
+Utilise l'algorithme de Bresenham.
+
+-------------------------------------------------------------------------------
+_FillElips              [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F2](_FillElips)
+-------------------------------------------------------------------------------
+(Format) _FillElips x, y, rayon1, rayon2, couleur[,probabilité][,angle en degrés]
+
+Comme _Elips, mais remplit l'ellipse au lieu d'en dessiner le contour.
+
+-------------------------------------------------------------------------------
+_ElipsInRct             [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F3](_ElipsInRct)
+-------------------------------------------------------------------------------
+(Format) _ElipsInRct x1, y1, x2, y2, couleur[,probabilité][,angle en degrés]
+
+Cette fonction dessine une ellipse inscrite dans le rectangle indiqué.
+
+-------------------------------------------------------------------------------
+_FElipsInRct            [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F4](_FElipsInRct)
+-------------------------------------------------------------------------------
+(Format) _FElipsInRct x1, y1, x2, y2, couleur[,probabilité][,angle en degrés]
+
+Comme _ElipsInRct, mais remplit l'ellipse inscrite au lieu d'en dessiner le contour.
+
+-------------------------------------------------------------------------------
+_Hscroll                [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F6]-[F1](_Hscroll)
+-------------------------------------------------------------------------------
+(Format) _Hscroll n[,x1,y1,x2,y2]
+
+Décale tous les pixels de la VRAM vers la gauche (n<0) ou vers la droite (n>0). Par exemple, lorsque scroll=5, le pixel en (2,3) se trouve déplacé en (7,3).
+
+Naturellement, un n négatif déplace l'écran vers la gauche. Les oixels qui sortent par un côté de l'écran réapparaissent de l'autre côté.
+
+Vous pouvez spécifier la zone de défilement.
+(Exemple) _Hscroll 1,32,16,47,95
+
+-------------------------------------------------------------------------------
+_Vscroll                [SHIFT]-[F4](SKTCH)-[F3](ML)-[F6]-[F6]-[F6]-[F6]-[F2](_Vscroll)
+-------------------------------------------------------------------------------
+(Format) _Vscroll n[,x1,y1,x2,y2]
+
+Comme _Hscroll, mais verticalement.
+
+-------------------------------------------------------------------------------
+_Bmp                    [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F1](_Bmp)
+-------------------------------------------------------------------------------
+(Format) _Bmp *bmp, x, y, largeur, hauteur [,O|A|X][,C]
+
+Affiche une image bitmap à l'écran. Très utile pour dessiner tiles et sprites dans les jeux. Le cinquième paramètre (optionnel) indique le mode de dessin.
+ [O] Or: noir opaque, blanc transparent
+ [A] And: blanc opaque, noir transparent
+ [X] Xor: blanc transparent, noir inverse
+ [C] Active le clipping (autorise l'image à dépasser de l'écran) (avec clair (g3m)
+
+(Exemple)
+[[0,0,1,1,1,1,0,0]
+ [0,1,1,1,1,1,1,0]
+ [1,1,1,1,1,1,1,1]
+ [1,1,1,1,1,1,1,1]
+ [1,1,1,1,1,1,1,1]
+ [1,1,0,1,1,1,1,0]
+ [0,1,1,0,0,1,1,0]
+ [0,0,1,1,1,1,0,0]]->MatB.P	//
+　_Bmp VarPtr(Mat B), 8, 16, 8, 8, O
+
+(*)Seulement dans le cas d'un Mat / List 1 bit, cela devient le dessin monochromatique.
+  Il devient le dessin couleur 16 bits autre que celui-ci.
+
+-------------------------------------------------------------------------------
+_Bmp8                   [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F2](_Bmp8)
+-------------------------------------------------------------------------------
+(Format) _Bmp8 *bmp, x, y [,O|A|X][,C]
+
+Cas particulier de _Bmp optimisé pour les bitmaps de taille 8*8.
+
+(Exemple)
+ [[60, 126, 251, 253, 253, 255, 126, 60]]->Mat B.B
+ _Bmp &Mat B, 8, 16, A
+
+-------------------------------------------------------------------------------
+_Bmp16                  [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F3](_Bmp16)
+-------------------------------------------------------------------------------
+(Format) _Bmp16 *bmp, x, y [,O|A|X][,C]
+
+Cas particulier de _Bmp optimisé pour les bitmaps de taille 16*16.
+
+-------------------------------------------------------------------------------
+Fonctions supplémentaires pour MonochromeLib
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+BmpLoad(                [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F1](BmpLoad)
+BmpSave                 [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F2](BmpSave)
+-------------------------------------------------------------------------------
+Affiche directement des fichiers .bmp depuis la mémoire (seul le format noir et blanc 1-bit est supporté).
+
+(Exemple) BmpLoad("TEST"),20,10
+  Affiche "TEST.bmp" à la position (20,10).
+
+(Exemple) BmpSave "TEST",10,20,100,50
+  Sauvegarde le rectangle (10,20) -- (100,50) de la VRAM dans "TEST.bmp".
+
+(Exemple) BmpSave "TEST",Mat A
+  Sauvegarde la matrice A dans "TEST.bmp" dans le dossier courant.
+
+(Exemple) BmpLoad("TEST")->Mat A
+  Charge le bitmap "Test.bmp" dans la matrice A.
+
+-------------------------------------------------------------------------------
+DrawMat                 [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F3](DrawMat)
+-------------------------------------------------------------------------------
+Dessine un bitmap stocké dans une matrice.
+
+(Format) DrawMat Mat A[m,n], px, py, largeur, hauteur [,largeur après zoom][,hauteur après zoom][,couleur][,probabilité]
+
+(Exemple) DrawMat Mat A, 0, 0, 128, 64
+(Exemple) DrawMat Mat A[10,5], 0, 0, 40, 30, %150, %250 , 4, %50
+
+La matrice lue par BmpLoad peut être utilisée.
+
+-------------------------------------------------------------------------------
+_BmpZoom                [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F4](_BmpZoom)
+_BmpRotate              [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F5](_BmpRotate)
+_BmpZmRotate            [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F4](_BmpZmRotate)
+-------------------------------------------------------------------------------
+Zoom et rotations sur des bitmaps, utilisant l'extension de Ninestars sur Planète Casio.
+
+(Format) _BmpZoom &Mat A, x, y, largeur, hauteur [,largeur après zoom][,hauteur après zoom][,couleur][,probabilité]
+(Format) _BmpRotate &Mat A, x, y, largeur, hauteur [,angle en degrés][,couleur][,probabilité]
+(Exemple) _BmpZoom &Mat A, 0, 0, 20, 10, 1.5, 2.5
+(Exemple) _BmpZoom &Mat A, 0, 0, 20, 10, %150, %250 , 4, %50
+(Exemple) _BmpRotate &Mat A, 0, 0, 20, 10, 45
+
+(Format) _BmpZoomRotate &Mat A, x, y, largeur, hauteur [,angle en degrés][,couleur][,probabilité]
+(Exemple) _BmpZoomRotate &Mat A, 0, 0, 20, 10, 1.5, 2.5, 90
+(Exemple) _BmpZoomRotate &Mat A, 0, 0, 20, 10, %150, %250 , 15, 4, %50
+
+-------------------------------------------------------------------------------
+_Test                   [SHIFT]-[F4](SKTCH)-[F3](ML)-[F5](_Test)
+-------------------------------------------------------------------------------
+_Test rétend les commandes _Point, _Line, _Rectangle, _Circle et _Polygon
+
+Ajoutez _Test devant le nom de la commande pour connaîtr le nombre de pixels dans la région que cette commande dessine.
+
+(Exemple) _Test_Rectangle 0,0,127,63
+Renvoie le nombre de pixels noirs dans la zone (0,0) -- (127,63) (écran entier).
+
+(Exemple) _Test_Circle 62,32,20
+(Exemple) _Test_Point 10,10,5
+(Exemple) _Test_Line 10,10,100,30
+
+
+
+===============================================================================
+Utilisation de la police externe                                        (0.44-)
+===============================================================================
+Une police externe peut être choisie pour les rendus de caractères ASCII (0x20-0x7e) et les gaiji/kana (0xff80-0xffdf).
+
+C.Basic cherche automatiquement les fichiers suivants pour redéfinir la police. Chaque fichier correspond à une plage de caractères. Si le fichier est présent, il est utilisé pour dessiner tous les caractères de sa plage. S'il n'est pas présent, la police par défaut est utilisée.
+
+  @LFONTA.bmp (ASCII standard)
+  @MFONTA.bmp (ASCII mini)
+  @LFONTG.bmp (Gaiji standard)
+  @MFONTG.bmp (Gaiji mini)
+  @LFONTK.bmp (Kana standard)
+  @MFONTK.bmp (Kana mini)
+
+Les polices par défaut de C.Basic sont ainsi :
+
+  @LFONTK0.bmp (Katakana standard)
+  @MFONTK0.bmp (Katakana mini)
+  @LFONTK1.bmp (Hiragana standard)
+  @MFONTK1.bmp (Hiragana mini)
+  @LFONTG0.bmp (Gaiji standard)
+  @MFONTG0.bmp (Gaiji mini)
+
+Pour les utiliser, placez-les dans le répertoire de travail plus appelez
+  BmpLoad(@K1)
+pour remplacer les hiragana, ou
+  BmpLoad(@K0)
+pour remplacer les kana.
+
+-------------------------------------------------------------------------------
+GetFont(                [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F1](GetFont)
+GetFontMini(            [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F3](GetFontMini)
+-------------------------------------------------------------------------------
+Lit des données de polices.
+
+(Format 1) GetFont(code de caractère) -> Mat A
+(Format 1) GetFontMini(code de caractère) -> Mat A
+
+(Exemple) GetFont(0x41) -> Mat A
+L'image de la lattre 0x41 (A) (18x24) est chargée dans la matrice A au format 1-bit.
+(Exemple) GetFontMini(0xff80) -> Mat A
+Le premier bitmap (0xff80) de la mini police externe (13x18) est chargé dans la matrice A.
+
+(Format 2) GetFont(chaîne de caractères) -> Mat A
+(Format 2) GetFontMini(chaîne de caractères) -> Mat A
+
+(Exemple) GetFont("A") -> Mat A
+(Exemple) GeFontMini("A") -> Mat B
+
+(Format 3) GetFont(@ code de caractère) -> Mat A
+(Format 3) GetFontMini(@ code de caractère) -> Mat A
+
+(Format 4) GetFont(@ chaîne de caractères) -> Mat A
+(Format 4) GetFont(@ chaîne de caractères) -> Mat A
+
+(Exemple) GetFont(@0x41) -> Mat A
+(Exemple) GetFont(@"A") -> Mat A
+
+Pour savoir si une police externe a été chargée :
+
+(Format 5) GetFont()
+(Format 5) GetFontMini()
+
+La valeur de retour contient 3 bits indiquant si chaque plage de caractères a été remplacée par la police externe :
+  Bit 0  Ascii
+  Bit 1  Gaiji
+  Bit 2  Kana
+
+(Exemple) Si seule les kana standards ont été remplacés :
+          GetFont()      // 4
+          GetFontMini()  // 0
+(Exemple) Si l'ASCII mini et les gaiji minis ont été remplacés :
+          GetFont()      // 0
+          GetFontMini()  // 3
+
+-------------------------------------------------------------------------------
+SetFont                 [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F2](SetFont)
+SetFontMini             [SHIFT]-[F4](SKTCH)-[F4](BMP)-[F6]-[F6]-[F4](SetFontMini)
+-------------------------------------------------------------------------------
+Permet de changer les polices.
+
+(Format 1) SetFont <code de caractère>, <matrice>
+(Format 1) SetFontMini <code de caractère>, <matrice>
+
+(Exemple) SetFont 0xff80,Mat A
+Les données de la matrice A sont chargées comme premier caractère externe.
+
+(Exemple) SetFontMini 0xff80,Mat A
+Les contenus de la matrice A sont utilisés comme premier caractère externe pour la mini police.
+
+(Format 2) SetFont <chaîne de caractères>, <matrice>
+(Format 2) SetFontMini <chaîne de caractères>, <matrice>
+
+(Exemple) SetFont "@",Mat A
+Les données de la matrice A sont chargées pour le caractère "@".
+
+(Exemple) SetFontMini "@",Mat A
+Les contenus de la matrice A sont utilisés pour le mini caractère "@".
+
+-------------------------------------------------------------------------------
+BmpLoad(@A
+BmpLoad(@AL
+BmpLoad(@AM
+BmpLoad(@G
+BmpLoad(@GL
+BmpLoad(@GM
+BmpLoad(@K
+BmpLoad(@KL
+BmpLoad(@KM
+-------------------------------------------------------------------------------
+Charge une police depuis des fichiers bitmaps dans la mémoire.
+
+(Format) BmpLoad(@G[numéro de fichier de police])
+(Format) BmpLoad(@K[numéro de fichier de police])
+(Format) BmpLoad(@A[numéro de fichier de police])
+Le numéro peut être 0..9.
+
+(Exemple) BmpLoad(@A1)
+Charge "@LFONTA1.bmp" (ASCII standard) et "@MFONTA1.bmp" (ASCII mini) depuis le système de fichiers.
+
+(Format) BmpLoad(@GM[numéro de fichier de police])
+(Format) BmpLoad(@GL[numéro de fichier de police])
+(Format) BmpLoad(@KL[numéro de fichier de police])
+(Format) BmpLoad(@KM[numéro de fichier de police])
+(Format) BmpLoad(@AL[numéro de fichier de police])
+(Format) BmpLoad(@AM[numéro de fichier de police])
+
+Permet de ne charger que la police standard (L) ou mini (M).
+
+(Exemple) BmpLoad(@AL2)
+Charge "@LFONTA2.bmp" pour l'ASCII standard.
+(Exemple) BmpLoad(@AM2)
+Charge "@MFONTA2.bmp" pour l'ASCII mini.
+
+(Format) BmpLoad(@GL"nom de fichier")
+(Format) BmpLoad(@GM"nom de fichier")
+(Format) BmpLoad(@KL"nom de fichier")
+(Format) BmpLoad(@KM"nom de fichier")
+(Format) BmpLoad(@AL"nom de fichier")
+(Format) BmpLoad(@AM"nom de fichier")
+
+(Exemple) BmpLoad(@GL"MYFONTL")
+Charge "MYFONTL.bmp" pour servir de Gaiji en taille standard.
+(Exemple) BmpLoad(@GM"MYFONTM")
+Charge "MYFONTM.bmp" pour servir de Gaiji mini.
+
+-------------------------------------------------------------------------------
+BmpSave @A
+BmpSave @AL
+BmpSave @AM
+BmpSave @G
+BmpSave @GL
+BmpSave @GM
+BmpSave @K
+BmpSave @KL
+BmpSave @KM
+-------------------------------------------------------------------------------
+Sauvegarde une police dans un fichier bitmap.
+
+(Format) BmpSave @A[numéro de fichier de police]
+(Format) BmpSave @G[numéro de fichier de police]
+(Format) BmpSave @GKnuméro de fichier de police]
+Sauvegarde une plage de caractères (A: ASCII), (G; Gaiji), (K: Kana) dans le système de fichiers ; la police standard et la police mini sont sauvegardées.
+
+Si un deuxième @ est ajouté (BmpSave @@K, par exemple), les fichiers sont stockés dans "/@Font".
+
+(Format) BmpSave @GL[numéro de fichier de police]
+(Format) BmpSave @GM[numéro de fichier de police]
+(Format) BmpSave @KL[numéro de fichier de police]
+(Format) BmpSave @KM[numéro de fichier de police]
+(Format) BmpSave @AL[numéro de fichier de police]
+(Format) BmpSave @AM[numéro de fichier de police]
+
+(Exemple) BmpSave @GL2
+Sauvegarde la police gaiji standard dans "@LFONTG2.bmp".
+(example) BmpSave @GM3
+Sauvegarde la police gaiji mini dans "@MFONTG3.bmp".
+
+(Format) BmpSave @GL" file name "
+(Format) BmpSave @GM" file name "
+(Format) BmpSave @KL" file name "
+(Format) BmpSave @KM" file name "
+(Format) BmpSave @AL" file name "
+(Format) BmpSave @AM" file name "
+
+(Exemple) BmpSave @GL"MYFONTL"
+Sauvegarde la police gaiji standard dans "MYFONTL.bmp".
+(Exemple) BmpSave @GM"MYFONTM"
+Sauvegarde la police gaiji mini dans "MYFONTM.bmp".
+
+
+===============================================================================
+Commandes de communication série (incompatible avec le Basic Casio)
+===============================================================================
+
+(Format) Send(données [fréquence en baud][,interruption])
+(Format) Recv(données [fréquence en baud][,interruption])
+(Format) Send38K données [,nombre d'octets]
+(Format) Receive38k données [,nombre d'octets]
+(Format) OpenComport38K[fréquence en baud][,mode de transfert][,interruption]
+(Format) CloseComport38K
+
+<données>: variables, matrices ou listes
+  Il est nécessaire que le type de données indiqué à l'envoi et à la réception soient le même.
+<fréquence en baud>:
+  Valeur   Fréquence
+       0         300
+       1         600
+       2        1200
+       3        2400
+       4        4800
+       5        9600
+       6       19200
+       7       38400
+       8       57600
+       9      115200
+  La valeur par défaut est 7 pour 38400 bauds.
+<mode de transfert>:
+  0: transfert binaire sans vérification des types
+  1: transfert avec vérification des types (comportement par défaut)
+  Lorsque OpenComport38k est invoqué avec mode de transfert 0, les transmissions faites avec Send38k et Receive38k sont uniquement des copies de données binaires.
+<interruption>:
+  0: interdit d'interromptre le transfert
+  1: autorise l'interruption du transfert
+
+Send() et Recv() peuvent être utilisés sans préparataion préalable.
+Send38k et Receive38k ne peuvent être utilisés que si le canal a été ouvert avec OpenComport38k. Il faudra alors le fermer avec CloseComport38k.
+
+(Exemple) Send(A)
+(Exemple) Recv(A)
+(Exemple) Send(Mat A)
+(Exemple) Recv(Mat A)
+
+(Exemple) OpenComport38K,9,0
+          Send38K List 1
+          CloseComport38K
+(Exemple) OpenComport38K,9,0
+          Receive38k List 1
+          CloseComport38K
+
+-------------------------------------------------------------------------------
+Beep  (SH4A uniquement) [SHIFT]+[VARS](PRGN) -[F6] -[F4](I/O) -[F6] -[F5](Beep)
+-------------------------------------------------------------------------------
+(Format) Beep [fréquence][, durée (ms)]
+
+Produit un signal carré de la fréquence désignée sur le 3-pin.
+
+(Exemple) Beep
+Produit un signal carré de 1 kHz pendant 0.5 s.
+
+(Exemple) Beep 440,1000
+Produit un signal carré de 440 Hz pendant 1 s.
+
+
+
+===============================================================================
+Menu de Configuration
+===============================================================================
+Options compatibles avec le Basic Casio :
+
+Angle       :Deg/Rad/Gra
+Complex Mode:Real/a+bi/r∠θ
+Draw Type   :Connect/Plot
+Coord       :on/off
+Grid        :on/off/Line
+Axes        :on/off/Scale
+Label       :on/off
+Derivative  :on/off
+Background  :None / Pict1-20
+Plot/LineCol:Black etc.
+Sketch Line :Normal/Thick/Broken/Dot/Thin
+
+
+Nouvelles options fournies par C.Basic :
+-------------------------------------------------------------------------------
+Display: Fix / Sci / Nrm / Eng
+  Le nombre maximal de chiffres possibles est augmenté à 15. Indiquer 0 le pousse à 16.
+  Nrm1 et Nrm2 sont identiques au Basic Casio et affichent jusqu'à 10 chiffres.
+    Nrm1: -0.01<x<0.01
+    Nrm2: -0.000000001<x<0.000000001
+    Indiquer un autre paramètre (0 ou 3..15) modifie le nombre maximum de chiffres.
+    Other number (0 or 3 - 15) is to set max number of digit.
+  Eng peut être configuré à Eng Off, Eng On (/E) et séparateur de milliers (/3)
+  Commandes liées : Eng, Norm, Fix, Sci
+-------------------------------------------------------------------------------
+Exp Display  : E / Stdx10 / Allx10
+	　　　sélectionnez le caractère de l'exposant.
+	　　　E:      -1.23e99　   caractère précédent.
+	      Stdx10: -1.23(x10)99 nouveau caractère uniquement taille de police standard.
+	      Allx10: -1.23(x10)99 nouveau caractère de toute la taille de la police.
+
+- Commandes lieés : '#exp 0	//　caractère précédent.
+		    '#exp 1	//　nouveau caractère uniquement taille de police standard.
+		    '#exp 2	//　new character all font size.
+-------------------------------------------------------------------------------
+Syntax Help   : On/Off
+  Aide à la commande dans l'éditeur
+-------------------------------------------------------------------------------
+SetupRecover  : On/Off
+  Activer cette option restaure automatiquement, après la sortie d'un programme, tous les paramètres du Basic Casio à leur valeur d'avant l'exécution.
+-------------------------------------------------------------------------------
+Command Input : C.Basic/Standard/>5800/>9800
+  Choisit le mode d'entrée de commandes : Standard (fx-9860G) ou C.Basic (fx-5800P).
+  Vous pouvez choisir le fonctionnement de "" : soit fx-5800P, soit fx-CG.
+ - Commandes lieés : '#58
+                     '#98
+-------------------------------------------------------------------------------
+[X]character : [0x90]/[X]
+  Pour sélectionner le caractère de la touche [X/Theta/T].
+-------------------------------------------------------------------------------
+Max Mem Mode : on/off
+  Utiliser toute la mémoire disponible.
+-------------------------------------------------------------------------------
+EnableExFont : on/off
+  Activer l'utilisation de la police externe.
+-------------------------------------------------------------------------------
+Edit ExtFont : On/Off
+  Activer l'éditeur de polices externes.
+-------------------------------------------------------------------------------
+Edit GB Font  : On/Off/Full
+  Pour sélectionner la police GB affichée sur l'éditeur.
+  Off : normal. pas afficher la police GB.
+  On  : affichage de la police de caractères sans F7xx, F9xx, E5xx, E6xx, E7xx
+  Full: affiche toutes les polices GB.
+-------------------------------------------------------------------------------
+EditFontSize  : Standard/Mini/MiniMini/MiniMiniFX /+Fixed pitch/+Gap
+  Sélectionne la taille de police de l'éditeur.
+-------------------------------------------------------------------------------
+EditFontSize : Standard/Mini/Mini_rev/Mini UnderCursor/Mini_rev_UnderCSR
+  Sélectionne la taille de police de l'éditeur.
+-------------------------------------------------------------------------------
+Edit Indent+  : Off/1/2/4 Save-
+activer l'indent automatique dans l'éditeur.
+ Off: diable auto indent.
+  1 : Définir la largeur de l'endent eden à 1.
+  2 : Définir la largeur de l'endente à 1.
+  4 : Définir la largeur de l'endent eden à 1.
+ Enregistrer : supprimez les espaces vides, y compris les indents lors de l'enregistrement du programme. (à compatible avec Basic Casio)
+-------------------------------------------------------------------------------
+Edit LineNum :on/off
+  Configure l'affichage des numéros de ligne.
+-------------------------------------------------------------------------------
+EditListChar : List / reverseL / Thick L
+  Sélectionne le mode d'affichage des listes.
+-------------------------------------------------------------------------------
+Edit-backCol  : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White
+  Sélectionne le couleur de fond de l'éditeur.
+-------------------------------------------------------------------------------
+Edit-baseCol  : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White
+  Sélectionne le couleur de base de l'éditeur.
+-------------------------------------------------------------------------------
+E-NumericCol  : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White
+  Sélectionne le couleur numérique de l'éditeur.
+-------------------------------------------------------------------------------
+E-CommandCol  : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White
+ select command color of editor.
+  Sélectionne le couleur de commande de l'éditeur.
+-------------------------------------------------------------------------------
+Ed-QuotColor  : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White
+  Sélectionne le couleur des chaînes de l'éditeur.
+-------------------------------------------------------------------------------
+E-CommentCol  : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White
+  Sélectionne le couleur des commentaires de l'éditeur.
+-------------------------------------------------------------------------------
+E-LineNumCol  : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White
+ select line number color of editor.
+  Sélectionne le couleur du numéro de ligne de l'éditeur.
+-------------------------------------------------------------------------------
+Auto OverClk  : on/off
+  Régler l'overclockage automatique pour CG10/20.
+-------------------------------------------------------------------------------
+Heap RAM Size : 96KB/117KB/127KB/SIZE
+  Définissez la taille de segment maximale de l'utilisation C.Basic.
+  (* Vous ne pouvez pas le changer au moment de l'édition du programme.)
+-------------------------------------------------------------------------------
+Use Hidden RAM : on / off
+  Utiliser la mémoire supplémentaire cachée.
+-------------------------------------------------------------------------------
+HiddenRAM Init : on / off
+  Initialiser la mémoire supplémentaire cachée avant l'exécution.
+-------------------------------------------------------------------------------
+Max Pict No : 20~99
+  Lorsque la mémoire cachée est utilisée, le nombre de Picture peut être augmenté.
+  (*) Changer cette valeur réinitialise les Picture, matrices et listes !
+  (*) Ce paramètre n'est pas valide.
+-------------------------------------------------------------------------------
+Max List No : 52~1040
+  Lorsque la mémoire cachée est utilisée, le nombre de listes peut être augmenté.
+  (*) Changer cette valeur réinitialise les Picture, matrices et listes !
+-------------------------------------------------------------------------------
+AT DebugMode : on / off
+  Active le debugger lorsque [AC/ON] est utilisé pour interrompre le programme.
+-------------------------------------------------------------------------------
+ExitDM Popup : on / off
+  Afficher une popup quand le debugger se ferme.
+-------------------------------------------------------------------------------
+Break Stop : on / off
+  Accepte ou refuse les interruptions par la touche [AC/ON].
+  Quand cette option est à off, vous ne pouvez pas quitter un programme en appuyant sur [AC/ON].
+  - Commandes liées : '#Break 0    '#Break 1
+-------------------------------------------------------------------------------
+Exec TimeDsp : on / off  /reset  /%HR
+  Affiche le temps d'exécution du programme une fois le programme terminé.
+  Le timer est lancé à la première ligne du programme. Les commandes ? et Disps le réinitialisent.
+  Les fonctions Getkey1/2 mettent le timer en pause et le redémarrent ensuite.
+  En cas de reset, le timer est réinitialisé est reprend au premier appel de Getkey1/2.
+  %HR: Utilise le timer à 1/32768s (SH4A uniquement)
+  - Commandes liées : '#GetKeyC  '#GetKeyR
+-------------------------------------------------------------------------------
+IfEnd Check : on / off
+  Vérifie strictement la correspondance entre chaque "If" et chaque "IfEnd".
+-------------------------------------------------------------------------------
+ACBreak : on / off
+  Active ou désactive la commande ACBreak.
+  - Commandes liées : ACBreak
+-------------------------------------------------------------------------------
+Force Return : None/ F1/ EXE/ F1&EXE
+  Force le retour à l'éditeur lors d'une interruption avec [AC/ON].
+  (Exemple) Retour de force réglé à [F1]key
+  -Liste de fichiers→[F1](EXE)→[AC]→[EXIT]... Retourne à la liste de fichiers.
+  -Liste de fichiers→[EXE][AC]→[EXIT] ...... Retourne à l'éditeur.
+  -Liste de fichiers→[F1](EXE]→[AC]→[EXE](restart)→[AC]→[EXIT] ...... Retourne à la liste de fichiers.
+  (L'opération dépend de la clé qui est pressée en premier.)
+-------------------------------------------------------------------------------
+Key 1st time : 25 ms - 1000 ms (valeur par défaut : 500 ms)
+  Durée avant qu'une touche soit répétée pour la première fois (multiple de 25 ms)
+-------------------------------------------------------------------------------
+Key Rep time : 25 ms - 500 ms (valeur par défaut : 125 ms)
+  Durée avant qu'une touche qui a déjà été répétée soit répétée de nouveau (multiple de 25 ms)
+-------------------------------------------------------------------------------
+SkipUp/Down : 1 - 9999
+  Nombre d'écrans parcourus pour chaque pression de SkipUp ([SHIFT][UP]) ou SkipDown ([SHIFT][DOWN]) dans l'éditeur.
+-------------------------------------------------------------------------------
+Mat Dsp mode : [m,n] / [X,Y]
+  Sélectionne le format d'affichage de matrices dans l'éditeur de matrices.
+  Les formats [m,n] et [X,Y] sont transposés l'un de l'autre. Ce n'est qu'un paramètre d'affichage, les données de la matrice restent stockées dans l'ordre original.
+-------------------------------------------------------------------------------
+Matrix base : 0 / 1
+  Indice de début pour la numérotation des éléments de matrices. Il faut être en mode 0 pour utiliser la première ligne et la première colonne de la VRAM.
+  - Commandes liées : '#Mat 0, '#Mat 1
+-------------------------------------------------------------------------------
+DATE : 2017/01/17 TUE
+  Change la date de la RTC (horloge du système). Le jour de la semaine est calculé automatiquement.
+-------------------------------------------------------------------------------
+TIME : 23:59:59
+  Change l'heure de la RTC.
+  - Commandes liées : DATE, TIME
+-------------------------------------------------------------------------------
+Root folder:/
+  [F1]: pour définir le dossier racine.
+  [F2]: pour définir le dossier actuel.
+  - Commandes liées :
+   '#R/ 	// pour définir le dossier racine.
+   '#R.		// pour définir le dossier actuel.
+-------------------------------------------------------------------------------
+Favorite Col : Black/Blue/Red/Magenta/Green/Cyan/Yellow/White/16bit Color
+  Sélectionne le couleur de fichier préférée de l'éditeur.
+-------------------------------------------------------------------------------
+Auto file Save : on/off
+  Désactive la popup de confirmation à la sauvegarde dans l'éditeur.
+-------------------------------------------------------------------------------
+Force g1m save : on / off
+  Permet de sauvegarder automatiquement les fichiers g1m quand les programmes textes sont édités.
+-------------------------------------------------------------------------------
+Direct GB cnvt : on/off
+  Définir le code GB sans conversion de texte.
+  (* conversion supporte le mode GB de l'éditeur.)
+-------------------------------------------------------------------------------
+Pict mode: S.Mem / Heap / Both
+  - S.Mem : Les Picture sont créées dans la mémoire de stockage (petit surcoût temporel)
+  - Heap  : Les Picture ne sont pas vraiment créées, juste stockée temporairement dans la RAM
+  - Both  : Les deux.
+  - Clear : Supprime le fichier compatible Pict créé dans la mémoire de tas au démarrage du programme à chaque fois.
+-------------------------------------------------------------------------------
+Storage mode: S.Mem / SD / MainMem
+  Sélectionne le stockage temporaire pour le code pendant l'édition et l'exécution.
+  S.Mem    : Mémoire de stockage
+  SD       : Carte SD (Graph 95 SD uniquement)
+  Main mem : Mémoire principale
+-------------------------------------------------------------------------------
+RefrshCtl DD: off / Grp / All
+  Sélectionne le niveau de restriction du rafraîchissement automatique de l'écran.
+  Off  : Aucune restriction particulière (comme en Basic Casio).
+  Grp  : Seules les commandes graphiques et ClrText, Locate, Text, LocateYX et "" provoquent le rafraîchissement de l'écran (ces exceptions sont en rétro-compatibilité avec les précédentes versions de C.Basic).
+  All  : Aucune commande ne rafraîchit l'écran automatiquement. PutDispDD doit être utilisé.
+  Time : Sélectionne la durée de rafraîchissement automatiquement en unités de 1/128 s. La valeur par défaut est 3, ce qui donne environ 1/42 s de fréquence de rafraîchissement.
+  Par défaut, la valeur est 0.
+  - Commandes liées : RefrshCtrl, RefrshTime
+-------------------------------------------------------------------------------
+Wait count : 0~9999
+  Délai contrôlant la vitesse d'exécution globale.
+  - Commandes liées : Wait
+-------------------------------------------------------------------------------
+G1M/G3M mode : auto/g3m/g1m
+ Définir pour exécuter le mode par défaut.
+ - Commandes liées : '#G1M, '#g1m, '#G3M, '#g3m
+-------------------------------------------------------------------------------
+Execute mode: Dbl# / Int% / CPLX
+  Définit le mode de variables numériques par défaut.
+  - Commandes liées: '#CBasic, '#CBASIC, '#CBINT, '#CBint '#CBCPLX '#CBcplx
+-------------------------------------------------------------------------------
+
