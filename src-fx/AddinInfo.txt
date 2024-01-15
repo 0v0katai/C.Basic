@@ -1,0 +1,12 @@
+//------------------------------------------------------------------
+// Addin-Application header control file, created with the CASIO SDK
+//------------------------------------------------------------------
+[OUTPUT]     : "CBASIC.G1A"
+[BINDATA]    : "FXADDINror.bin"
+[DISPNAME]   : "CBASIC"
+[APPNAME]    : "@CBASIC"
+[VERSION]    : "02.47.2000"
+[APL_ICON]   : "MainIcon.bmp"
+[MODULE_NUM] : 0
+[MOD1_TITLE] : "CBASIC"
+[MOD1_ICON]  : "eActivityIcon.bmp"

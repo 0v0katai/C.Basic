@@ -1,0 +1,57 @@
+Error Code List
+------------------------------
+1:	Syntax ERROR
+2:	Ma ERROR
+3:	Go ERROR
+4:	Nesting ERROR
+5:	Stack ERROR
+6:	Memory ERROR
+7:	Argument ERROR
+8:	Dimension ERROR
+9:	Range ERROR
+
+11:	Non-Real ERROR
+
+20:	Com ERROR
+21:	Transmit ERROR
+22:	Receive ERROR
+
+28:	Too Much Data
+
+33:	For without Next
+34:	Next without For
+35:	While w/o W.End
+36:	W.End w/o While
+37:	Do w/o LpWhile
+38:	LpWhile w/o Do
+39:	Not Loop ERROR
+40:	Division By Zero
+41:	Undefined Label
+42:	Not enough Memory
+43:	String Too Long
+44:	No Matrix array
+45:	Illegal Ary size
+46:	No Prog found
+47:	Too many SubProg
+48:	If without IfEnd
+49:	Then without If
+50:	Case w/o Switch
+51:	Default w/o Swtch
+52:	Switch w/o S.End
+53:	S.End w/o Switch
+54:	Can't find file
+55:	Illegal Element
+56:	Already Opened
+57:	Com Not Opened
+58:	Type Mismatched
+59:	Out of Domain
+60:	Undefined Var.
+61:	Undefined Func.
+62:	Not Supported
+63:	Exceed Var. limit
+64:	Duplicated Def.
+65:	Address Align ERR
+66:	Not met Accuracy
+70:	Try w/o Except
+71:	Except w/o Try
+72:	TryEnd w/o Try 

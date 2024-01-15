@@ -1,0 +1,787 @@
+'ProgramMode:GB1
+'     _#E593__X__(-)_FX       
+'Font Editor _#E6B2_FEINT_#E6B2_
+'1712 V3.5  by Tsuru , sentaro & Colon
+'port to FX by sentaro & Colon
+'-------------------
+'Normal Font:[6*8]
+'mini Font:19[6*6]
+'-------------------
+'X,Y(EDIT WINDOW 
+'    START POINT)
+'x,y(REAL WINDOW 
+'    START POINT)
+'S(FONT W) T(FONT H)
+'W H(FONT W*H)
+'h (CENTER LINE
+'   _Horizontal _)
+'v (CENTER LINE
+'   _Vertical _)
+'E D (all+-)
+'M Edit mode(0//OFF  
+'   1//ON     3//pass)
+'N ForNext
+'F Font mode 
+' (1//NORMAL  2//MINI)
+
+
+'Change Setup
+'#CBINT
+'#_Mat _1
+'#G1M
+CoordOff:GridOff:AxesOff:LabelOff
+RefrshCtrl 2:RefrshTime 0
+Norm 0:EngOff
+SetFont 1
+
+'Check C.Basic Version
+If System((-)1)>=10 And Version<55:Then 
+_ClrVram
+"Your C.Basic for CG"
+"Version does not"
+"support this program."
+"Upgrade C.Basic to"
+"  Ver 0.55_#E640_ or later."
+Locate 10,7,"Press [EXIT]"
+Do
+_DispVram
+LpWhile Getkey2<>47
+ClrText
+Stop
+
+ElseIf System((-)1)<10 And Version<181:Then 
+_ClrVram
+"Your C.Basic for FX"
+"Version does not"
+"support this program."
+"Upgrade C.Basic to"
+"  Ver 1.81_#E641_ or later."
+Locate 10,7,"Press [EXIT]"
+Do
+_DispVram
+LpWhile Getkey2<>47
+ClrText
+Stop
+
+IfEnd
+
+
+ClrMat 
+
+'FKeyMenu
+{0x7FFFF3FF,0xFF9FFFFC,0xFFFFE7FF,0xFF3FFFF9,0x621072F7,0x67900000,0x80000400,0x00200000,0x5EFDF2EA,0xAB933328,0xB88CC40F,0x80207C01,0x663DF2EA,0xAB944AA8,0xA551040F,0x80204400,0x7AFDF2EA,0x2B944B10,0xB9C8840F,0x80204401,0x7AFDE2EA,0xAB144A10,0xA144440F,0x80204401,0x461DC236,0xA6133210,0xA159840F,0x80207C02,0x7FFF83FF,0xFC100000,0x80000400,0x00200001,0x755D5574,0x5D45775D,0x556046D4,0xC07FFF80,0x7FFFF466,0xD4755D55,0xF56D5474,0x7455F775,0x55E04D6C,0x407FFF80}->List 3.L
+
+{0x7FFFF000,0x00000000,0x00000000,0x003FFFF9,0x66D47000,0x00000000,0x00000000,0x0032B678,0x5D55F000,0x00000000,0x00000000,0x002EAAB9,0x6D547000,0x00000000,0x00000000,0x002E2AB8,0x7455F000,0x00000000,0x00000000,0x002EA279,0x7555E000,0x00000000,0x00000000,0x002EAAB1,0x4D6C4000,0x00000000,0x00000000,0x0032AAA2,0x7FFF8000,0x00000000,0x00000000,0x003FFFC1,0x755D5574,0x5D45775D,0x556046D4,0xC07FFF80,0x7FFFF466,0xD4755D55,0xF56D5474,0x7455F775,0x55E04D6C,0x407FFF80}->List 4.L
+
+{0x7FFFF3FF,0xFF800000,0x00000000,0x003FFFF9,0x40000200,0x00000000,0x00000000,0x00200000,0x477A0232,0x10000000,0x00000000,0x002E7A21,0x4842024A,0x10000000,0x00000000,0x00294220,0x4672027A,0x10000000,0x00000000,0x002E7221,0x4142024A,0x10000000,0x00000000,0x002A4141,0x4E7BC24B,0xDE000000,0x00000000,0x00297882,0x40000200,0x00000000,0x00000000,0x00200001,0x755D5574,0x5D45775D,0x556046D4,0xC07FFF80,0x7FFFF466,0xD4755D55,0xF56D5474,0x7455F775,0x55E04D6C,0x407FFF80}->List 5.L
+
+
+'const
+38->Const _KeyLEFT
+27->Const _KeyRIGHT
+28->Const _KeyUP
+37->Const _KeyDOWN
+78->Const _KeySHIFT
+77->Const _KeyALPHA
+31->Const _KeyEXE
+64->Const _Key_8
+73->Const _Key_4
+53->Const _Key_6
+62->Const _Key_2
+71->Const _Key_0
+72->Const _Key_1
+52->Const _Key_3
+61->Const _KeyDP
+55->Const _KeyLPAR
+45->Const _KeyRPAR
+42->Const _KeyPLUS
+32->Const _KeyMINUS
+79->Const _KeyF1
+69->Const _KeyF2
+59->Const _KeyF3
+49->Const _KeyF4
+39->Const _KeyF5
+29->Const _KeyF6
+68->Const _KeyOPTN
+47->Const _KeyEXIT
+
+'default
+{6,8}->Dim Mat A.P'1:A
+{6,6}->Dim Mat B.P'2:A mini
+{6,8}->Dim Mat C.P'3:B
+{6,6}->Dim Mat D.P'4:B mini
+'{6,8}_->__Dim __Mat _E.P'
+2->Dim W
+2->Dim H
+2->Dim S
+2->Dim T
+2->Dim x
+2->Dim y
+
+'Restartpoint
+Lbl 0
+44->X:3->Y
+1->S1:1->T1
+1->S2:1->T2
+3->M:1->F
+'REAL WINDOW x,y SET
+32->x\1:12->y\1
+32->x\2:1->y\2
+'WH SET
+6->W1:W2=0=>6->W2
+8->H1:6->H2
+
+Screen.G
+_ClrVram
+'caption------------
+'Text -24,22,"_#E6B2_FEINT_#E6B2_":
+'Text -6,0,"FONT EDITOR":
+Text 0,0,"MINI "
+Text 6,7," 6*6"
+Text 12,0,"NORMAL "
+Text 18,7," 6*8"
+Text 24,0,"EDIT_#E690__#E695__#E691_F"
+Text 30,0,"Save   Load"
+Text 36,0,"_#E69C_       _#E69D_"
+Text 42,0,"A _#E690_COPY- B"
+Text 49,0,"v3.5  tsuru"
+Text 6,7,StrRight("  "+ToStr(W2),2)+"*6  "
+'-------------------
+'FKeyMenu
+'SAVE LOAD COPY PASS _#E6A6_ _#E6A5_
+_Bmp &List 3,0,56,126,8
+
+'-------------------
+'MINI_#E6D6_NORMAL SELECT
+Text 20,45,"MINI_#E6D6_NORMAL SELECT_=>_ _#E695_"
+Text 30,63,"SELECT OK_=>_ _#E691_"
+
+Do:Getkey2->K
+K=_KeyEXIT=>Screen.TClrTextClrMat Locate 9,4,"Bye!"Stop
+K=_KeyDOWN=>1->F:K=_KeyUP=>2->F
+'-------------------
+'_#E69B_select disp
+F=1=>Text 18,0,"_#E69B_"
+F=1=>Text 6,0,"  "
+K=_KeyDOWN=>1->F
+K=_KeyUP=>2->F
+F=2=>Text 6,0,"_#E69B_"
+F=2=>Text 18,0,"  "
+
+K=_KeyDOWN=>1->F
+K=_KeyUP=>2->F
+'red circle
+For 25->N To 1 Step -1
+ _ElipsInRct (250+N)/3,0,(250-N)/3,50/3,0:_DispVram
+ K=_KeyDOWN=>1->F
+ K=_KeyUP=>2->F
+ TicksWait -1
+Next
+'Text -8,7,"_#E6B2_JAPAN_#E6B2_"
+For 0->N To 25
+ Text 20,45,"MINI_#E6D6_NORMAL SELECT_=>_ _#E695_"
+ _FElipsInRct (250-N)/3,0,(250+N)/3,50/3,1
+ 0<=N And N<=7=>_FElipsInRct (250-N)/3,0,(250+N)/3,50/3,0
+ 8<=N And N<=16=>_FElipsInRct (250-N)/3,0,(250+N)/3,50/3,1
+ _DispVram
+ K=_KeyDOWN=>1->F
+ K=_KeyUP=>2->F
+ TicksWait -1
+Next
+'_#E691_ escape
+LpWhile K<>_KeyRIGHT
+'Redisp
+'Text -8,7,"_#E6B2_FEINT_#E6B2_ "
+Text 20,45,"                                   "
+Text 30,63,"                     "
+_FElipsInRct 225/3,0,275/3,50/3,1
+'Text 49,83,"SELECT_=>_ EXE"
+_Rectangle X,0,127,55,0,0,0
+
+'EDIT WINDOW(E//W)A
+'EDIT WINDOW(E//W)B
+'REAL WINDOW(R//W)A
+Gosub A,1
+
+'MAIN LOOP----------
+'DOT POINT SETTINGS
+Do:Lbl 1:Getkey2->K
+K=_KeyF6=>0->M
+K=_KeyF5=>1->M
+K=_KeyF4=>3->M
+K=_KeyF1=>Gosub E
+K=_KeyF2=>Gosub B
+K=_KeyF3=>Gosub D
+K=_KeyOPTN=>Gosub Z
+
+'change mode (SHIFT,ALPHA)
+'K=KeyEXE_=>_3-F_->_F_Gosub _A,1
+K=_KeyALPHA And F=2=>1->FGosub A,1
+K=_KeySHIFT And F=1=>2->FGosub A,1
+
+'change width()
+If F=2 And (K=_KeyLPAR Or K=_KeyRPAR):Then 
+ K=_KeyRPAR=>W[F]+(W[F]<6)->W[F]
+ K=_KeyLPAR=>W[F]-(W[F]>2)->W[F]
+ {W[F],H[F]}->Dim Dim Mat @F.P
+ Gosub A,1
+IfEnd
+
+F=1=>{6,8}->Dim Mat E.P
+F=2=>Dim Mat B->Dim Mat E.P
+
+'scroll(2,4,6,8)
+If K=_Key_8:Then '8
+ For 1->E To H[F]-1
+  For 1->D To W[F]
+   Mat @F[D,E+1]->Mat E[D,E]
+ Next:Next
+ For 1->D To W[F]
+  Mat @F[D,1]->Mat E[D,H[F]]
+ Next
+ Mat E->Mat @F
+ Gosub A,1
+IfEnd
+If K=_Key_2:Then '2
+ For 2->E To H[F]
+  For 1->D To W[F]
+   Mat @F[D,E-1]->Mat E[D,E]
+ Next:Next
+ For 1->D To W[F]
+  Mat @F[D,H[F]]->Mat E[D,1]
+ Next
+ Mat E->Mat @F
+ Gosub A,1
+IfEnd
+If K=_Key_4:Then '4
+ For 1->E To H[F]
+  For 1->D To W[F]-1
+   Mat @F[D+1,E]->Mat E[D,E]
+ Next:Next
+ For 1->E To H[F]
+  Mat @F[1,E]->Mat E[W[F],E]
+ Next
+ Mat E->Mat @F
+ Gosub A,1
+IfEnd
+If K=_Key_6:Then '6
+ For 1->E To H[F]
+  For 2->D To W[F]
+   Mat @F[D-1,E]->Mat E[D,E]
+ Next:Next
+ For 1->E To H[F]
+  Mat @F[W[F],E]->Mat E[1,E]
+ Next
+ Mat E->Mat @F
+ Gosub A,1
+IfEnd
+'red cursor frame (DEL)
+_Rectangle X+6S[F]-3,Y+6T[F]-3,X+6S[F]+3,Y+6T[F]+3,1,0,(-)1
+'_#E690__#E695__#E691_
+K=_KeyRIGHT=>S[F]+1->S[F]
+K=_KeyLEFT=>S[F]-1->S[F]
+K=_KeyUP=>T[F]-1->T[F]
+K=_KeyDOWN=>T[F]+1->T[F]
+'LIMIT
+F=1 And S1=7=>1->S1
+F=1 And S1=0=>6->S1
+F=1 And T1=9=>1->T1
+F=1 And T1=0=>8->T1
+F=2 And S2>W2=>1->S2
+F=2 And S2=0=>W2->S2
+F=2 And T2=7=>1->T2
+F=2 And T2=0=>6->T2
+'P MODE _#E6AA_ DOT
+M=3 And K=_KeyDP=>_Point X+6S[F],Y+6T[F],5
+M=3 And K=_Key_0=>_Point X+6S[F],Y+6T[F],5,0_Point X+6S[F],Y+6T[F],1
+'red cursor frame (DRAW)
+_Rectangle X+6S[F]-3,Y+6T[F]-3,X+6S[F]+3,Y+6T[F]+3,1,1,(-)1'timing adjust
+TicksWait (-)10
+
+'OFF sky_(-)_blue point
+M=0=>_Point X+6S[F],Y+6T[F],5,0_Point X+6S[F],Y+6T[F],1
+'ON black point
+M=1=>_Point X+6S[F],Y+6T[F],5
+'ALL set(+)
+If K=_KeyPLUS:Then 
+ PopUpWin(10,"ALL set(+) OK?")=0=>Goto 1
+ 3->M
+ For 1->D To H[F]
+ For 1->E To W[F]
+  1->Mat @F[E,D]
+ Next:Next
+ Gosub A,1
+IfEnd
+'ALL del(-)
+If K=_KeyMINUS:Then 
+ PopUpWin(10,"ALL del(-) OK?")=0=>Goto 1
+ 3->M
+ For 1->D To H[F]
+ For 1->E To W[F]
+  0->Mat @F[E,D]
+ Next:Next
+ Gosub A,1
+IfEnd
+'PICTO
+M=0=>Text 0,77,"_#E6A5_"
+M=1=>Text 0,77,"_#E6A6_"
+M=3=>Text 0,77,"P"
+M=3=>Text 0,82,"_=>__#E6AA_"
+M<>3=>Text 0,82,"   "
+'REAL WINDOW frame
+'(DRAW)Normal_(-)_Mini_(-)_font
+FillRect x[F]+W[F]+1,y[F],x[F]+7,y[F]+H[F]+1,C
+_Rectangle x[F],y[F],x[F]+W[F]+1,y[F]+H[F]+1,1,1,(-)1
+'REAL DOT SET(2FONT)
+M=0=>_Pixel x[F]+S[F],y[F]+T[F],0
+M=1=>_Pixel x[F]+S[F],y[F]+T[F],1
+M=0=>0->Mat @F[S[F],T[F]]
+M=1=>1->Mat @F[S[F],T[F]]
+M=3 And K=_KeyDP=>_Pixel x[F]+S[F],y[F]+T[F],1
+M=3 And K=_Key_0=>_Pixel x[F]+S[F],y[F]+T[F],0
+M=3 And K=_KeyDP=>1->Mat @F[S[F],T[F]]
+M=3 And K=_Key_0=>0->Mat @F[S[F],T[F]]
+
+LpWhile K<>_KeyEXE
+Goto 0
+'END otsukare~
+
+
+'-------------------
+' support sub routine 1
+' Main screen redraw
+Lbl A
+Local a
+Screen.G
+F=1=>Text 18,0,"_#E69B_"
+F=1=>Text 6,0,"  "
+F=2=>Text 6,0,"_#E69B_"
+F=2=>Text 18,0,"  "
+F=2=>Text 6,7,StrRight("  "+ToStr(W[F]),2)+"*6  "
+
+a=2=>Goto 2
+'EDIT WINDOW(E//W)A
+Text 0,X+20,"A"
+For 1->h To 8
+ For 1->w To 6
+  _Point X+6w,Y+6h,7,0
+  If w<=W[F] And h<=H[F]:Then 
+   _Point X+6w,Y+6h,1,1
+   If w<=RowSize(@F) And h<=ColSize(@F):Then 
+    If Mat @F[w,h]:Then 
+    _Point X+6w,Y+6h,5,1
+    IfEnd
+   IfEnd
+  IfEnd
+Next:Next
+
+Lbl 2
+'EDIT WINDOW(E//W)B
+Text 0,X+64,"B"
+For 1->h To 8
+ For 1->w To 6
+  _Point 2X+6w,Y+6h,6,0
+  If w<=W[F] And h<=H[F]:Then 
+   _Point 2X+6w,Y+6h,1,1
+   If w<=RowSize(@(F+2)) And h<=ColSize(@(F+2)):Then 
+    If Mat @(F+2)[w,h]:Then 
+    _Point 2X+6w,Y+6h,5,1
+    IfEnd
+   IfEnd
+  IfEnd
+Next:Next
+
+'red cursor frame (DRAW)
+_Rectangle X+6S[F]-3,Y+6T[F]-3,X+6S[F]+3,Y+6T[F]+3,1,1,(-)1
+'PICTO
+M=0=>Text 0,77,"_#E6A5_"
+M=1=>Text 0,77,"_#E6A6_"
+M=3=>Text 0,77,"P"
+M=3=>Text 0,82,"_=>__#E6AA_"
+M<>3=>Text 0,82,"   "
+'REAL WINDOW(R//W)A
+FillRect x[F],y[F],x[F]+W[F],y[F]+H[F],C
+F=2=>FillRect x[F],y[F],x[F]+6,y[F]+6,C
+DotPut(Mat @F,x[F]+1,y[F]+1,x[F]+W[F],y[F]+H[F])
+'REAL WINDOW frame
+'(DRAW)Normal_(-)_Mini_(-)_font
+_Rectangle x[F],y[F],x[F]+W[F]+1,y[F]+H[F]+1,1,1,(-)1
+
+Return 
+
+
+'-------------------
+' support sub routine 2
+' Character FONT load
+'
+Lbl B
+F=1=>"Get Character"?Str 1
+F=2=>"Get Mini Character"?Str 1
+
+F=1=>GetFont(StrAsc(Str 1)->Mat @(F+2)
+F=2=>GetFontMini(StrAsc(Str 1)->Mat @(F+2)
+Screen.G
+Gosub A,2
+Return 
+
+
+'-------------------
+' support sub routine 1
+' Character FONT save
+Lbl C
+Local a
+
+
+'_PopUpWin(_10,"FONT SAVE OK?")=0=>Return 
+
+6->Dim List 1.P
+ClrText
+Locate Char!1,1,"Save Font Data"
+" ASCII Normal : @AL  "->Str 3
+" ASCII Mini   : @AM  "->Str 4
+" Gaiji Normal : @GL  "->Str 5
+" Gaiji Mini   : @GM  "->Str 6
+" Kana  Normal : @KL  "->Str 7
+" Kana  Mini   : @KM  "->Str 8
+"FONTA8L"->Str 11
+"FONTA6M"->Str 12
+"FONTG8L"->Str 13
+"FONTG6M"->Str 14
+"FONTK8L"->Str 15
+"FONTK6M"->Str 16
+
+Locate Char!1,2,Str 3
+Locate Char!1,3,Str 4
+Locate Char!1,4,Str 5
+Locate Char!1,5,Str 6
+Locate Char!1,6,Str 7
+Locate Char!1,7,Str 8
+
+
+_Bmp &List 5,0,56,126,8,,C
+
+Do
+Locate Char!1,a+1,Str (a+2),R
+List 1[a]=>Locate 1,a+1,"_#E69B_",R
+Getkey2->k
+
+Switch k
+Case _KeyUP
+Locate Char!1,a+1,Str (a+2)
+List 1[a]=>Locate 1,a+1,"_#E69B_"
+a-1->a:a=0=>6->a
+Break
+
+Case _KeyDOWN
+Locate Char!1,a+1,Str (a+2)
+List 1[a]=>Locate 1,a+1,"_#E69B_"
+a+1->a:a=7=>1->a
+Break
+
+Case _KeyF1
+1-List 1[a]->List 1[a]
+Break
+
+Case _KeyF2
+1->List 1
+For 1->b To 6
+Locate 1,b+1,"_#E69B_"
+Next
+Break
+
+Case _KeyF6
+For 1->b To 6
+1-List 1[b]->List 1[b]
+Locate 1,b+1," "
+List 1[b]=>Locate 1,b+1,"_#E69B_"
+Next
+Break
+
+Case _KeyEXE
+If Sum List 1:Then 
+
+1->s
+For 1->a To 6
+ 
+ If List 1[a]:Then 
+  _KeyF1->K
+  If IsExist(Str (a+10)+".bmp"):Then 
+   PopUpWin(0)
+   PopUpWin(5)
+   Locate Char!3,2,"["+Str (a+10)+".bmp]"
+   Locate Char!3,3,"Already Exists"
+   Locate Char!3,4,"Overwright OK?"
+   Locate Char!3,5,"   Yes:[F1]"
+   Locate Char!3,6,"   No :[F6]"
+    Do:Getkey2->K
+    LpWhile K<>_KeyF1 And K<>_KeyF6
+   PopUpWin(9)
+  IfEnd
+
+  If K=_KeyF1:Then 
+   PopUpWin(3)
+   Locate Char!3,3,"["+Str (a+10)+".bmp]"
+   Locate Char!3,4,"Saving..."
+   "("+ToStr(s)+"//"+ToStr(Sum List 1)+")"->Str 19
+   Locate Char!15,4,Str 19
+   PutDispDD
+   a=1 And List 1[1]=>BmpSave @AL
+   a=2 And List 1[2]=>BmpSave @AM
+   a=3 And List 1[3]=>BmpSave @GL
+   a=4 And List 1[4]=>BmpSave @GM
+   a=5 And List 1[5]=>BmpSave @KL
+   a=6 And List 1[6]=>BmpSave @KM
+  IfEnd
+ Isz s
+ IfEnd
+Next
+
+Else 
+PopUpWin(0
+PopUpWin(4
+Locate Char!4,2,"No item"
+Locate Char!4,3,"is selected"
+Locate Char!3,5,"   Press:[EXIT]"
+Do:LpWhile Getkey2<>_KeyEXIT
+0->k
+PopUpWin(9
+IfEnd
+Break
+SwitchEnd
+
+
+LpWhile k<>_KeyEXIT And k<>_KeyEXE
+ClrText
+
+Screen.G
+
+ClrList 1
+ClrMat <r>
+47->k
+Return 
+
+
+'-------------------
+' support sub routine 3
+' Character FONT Copy
+'
+Lbl D
+'_PopUpWin(_10,"FONT Copy OK?")=0=>Return 
+Mat @(F+2)->Mat @F
+RowSize(Mat @(F+2))->W[F]
+ColSize(Mat @(F+2))->H[F]
+Screen.G
+Gosub A,1
+Return 
+
+' support sub routine 1
+' Character FONT set
+Lbl E
+
+'_PopUpWin(_10,"FONT SET OK?")=0=>Return 
+F=1=>"Set Character"?Str 2
+F=2=>"Set Mini Character"?Str 2
+
+
+StrAsc(Str 2)->a
+If 0X20<=a And a<=0X7E:Then 
+F=1=>SetFont a,Mat A
+F=2=>SetFontMini a,Mat B
+
+ElseIf 0XFF80<=a And a<=0XFF9F:Then 
+F=1=>SetFont a,Mat A
+F=2=>SetFontMini a,Mat B
+
+ElseIf 0XFFA0<=a And a<=0XFFEF:Then 
+F=1=>SetFont a,Mat A
+F=2=>SetFontMini a,Mat B
+
+Else 
+StrLen(Str 2)=>PopUpWin(11,"Out of Domain ERR"
+IfEnd
+Screen.G
+Return 
+
+
+
+
+' support sub routine 1
+' FONT FILE MANAGER
+'
+Lbl Z
+'-------------------
+FillRect 0,56,126,64,C
+_Bmp &List 4,0,56,126,8,,C
+
+
+Do:Getkey2->k
+k=_KeyF1=>Gosub C,1
+k=_KeyF6=>Gosub F
+LpWhile k<>_KeyEXIT
+
+
+'-------------------
+FillRect 0,56,126,64,C
+_Bmp &List 3,0,56,126,8
+
+'-------------------
+Return 
+
+' support sub routine 1
+' SHOWING CURRENT FONT
+'
+Lbl F
+Screen.T
+_ClrVram
+Locate Char!1,1,"Showing current font"
+Locate Char!1,3,"[1]:ASCII Normal"
+Locate Char!1,4,"[2]:Gaiji//Kana Normal"
+Locate Char!1,5,"[3]:ASCII Mini"
+Locate Char!1,6,"[4]:Gaiji//Kana Mini"
+{2,1}->Dim Mat f.N
+GetFont()->f\1
+GetFontMini()->f\2
+
+Switch f\1
+Case 0:"Is not Extended."->Str 19
+Break
+Case 1:"ASCII"->Str 19
+Break
+Case 2:"Gaiji"->Str 19
+Break
+Case 3:"ASCII//Gaiji"->Str 19
+Break
+Case 4:"Kana"->Str 19
+Break
+Case 5:"ASCII//Kana"->Str 19
+Break
+Case 6:"Gaiji//Kana"->Str 19
+Break
+Case 7:"ASCII//Gaiji//Kana"->Str 19
+Break
+SwitchEnd
+
+Switch f\2
+Case 0:"Is not Extended."->Str 20
+Break
+Case 1:"ASCII"->Str 20
+Break
+Case 2:"Gaiji"->Str 20
+Break
+Case 3:"ASCII//Gaiji"->Str 20
+Break
+Case 4:"Kana"->Str 20
+Break
+Case 5:"ASCII//Kana"->Str 20
+Break
+Case 6:"Gaiji//Kana"->Str 20
+Break
+Case 7:"ASCII//Gaiji//Kana"->Str 20
+Break
+SwitchEnd
+
+Text @Char!50,0,"Normal Extd"
+Text @Char!56,0,"Mini Extd"
+Text @Char!50,49," : "+Str 19
+Text @Char!56,49," : "+Str 20
+
+0->k
+Do
+Getkey2->k
+LpWhile k<>_Key_1 And k<>_Key_2 And k<>_Key_3 And k<>_Key_4 And k<>_KeyEXIT
+k=_Key_1=>Goto a
+k=_Key_2=>Goto b
+k=_Key_3=>Goto c
+k=_Key_4=>Goto d
+ClrText
+Screen.G
+
+ClrMat f
+ClrMat <r>
+Return 
+
+Lbl a
+ClrText
+Locate Char!1,1,"ASCII Normal"
+Locate 2,2," Char!\"#$%&'()**++,Char-.//"
+Locate 2,3,"0123456789:;<=>?"
+Locate 2,4,"@ABCDEFGHIJKLMNO"
+Locate 2,5,"PQRSTUVWXYZ[\\]^_"
+Locate 2,6,"`abcdefghijklmno"
+Locate 2,7,"pqrstuvwxyz{|}~"
+Locate 21,1,"_#E6AC_"
+LocateYX @Char!20,120,"1",O
+LocateYX @Char!28,120,"//",O
+LocateYX @Char!36,120,"4",O
+Locate 21,8,"_#E69D_"
+Do
+Getkey2->k
+LpWhile k<>_KeyEXIT And k<>_KeyUP And k<>_KeyDOWN
+k=_KeyUP=>Goto d
+k=_KeyDOWN=>Goto b
+Goto F
+
+Lbl b
+ClrText
+Locate Char!1,1,"Gaiji//Kana Normal"
+Locate 2,2,"_#FF80__#FF81__#FF82__#FF83__#FF84__#FF85__#FF86__#FF87__#FF88__#FF89__#FF8A__#FF8B__#FF8C__#FF8D__#FF8E__#FF8F_"
+Locate 2,3,"_#FF90__#FF91__#FF92__#FF93__#FF94__#FF95__#FF96__#FF97__#FF98__#FF99__#FF9A__#FF9B__#FF9C__#FF9D__#FF9E__#FF9F_"
+Locate 2,4,"_#FFA0_¡¢£¤¥¦§¨©ª«¬­®¯"
+Locate 2,5,"°±²³´µ¶·¸¹º»¼½¾¿"
+Locate 2,6,"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"
+Locate 2,7,"ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"
+Locate 2,8,"_#FFE0__#FFE1__#FFE2__#FFE3__#FFE4__#FFE5__#FFE6__#FFE7__#FFE8__#FFE9__#FFEA__#FFEB__#FFEC__#FFEE__#FFEF_"
+Locate 21,1,"_#E69C_"
+LocateYX @Char!20,120,"2",O
+LocateYX @Char!28,120,"//",O
+LocateYX @Char!36,120,"4",O
+Locate 21,8,"_#E69D_"
+Do
+Getkey2->k
+LpWhile k<>_KeyEXIT And k<>_KeyUP And k<>_KeyDOWN
+k=_KeyUP=>Goto a
+k=_KeyDOWN=>Goto c
+Goto F
+
+Lbl c
+ClrText
+Locate Char!1,1,"ASCII Mini"
+Text @10+8*0,7," Char!\"#$%&'()**++,Char-.//"
+Text @10+8*1,7,"0123456789:;<=>?"
+Text @10+8*2,7,"@ABCDEFGHIJKLMNO"
+Text @10+8*3,7,"PQRSTUVWXYZ[\\]^_"
+Text @10+8*4,7,"`abcdefghijklmno"
+Text @10+8*5,7,"pqrstuvwxyz{|}~"
+Locate 21,1,"_#E69C_"
+LocateYX @Char!20,120,"3",O
+LocateYX @Char!28,120,"//",O
+LocateYX @Char!36,120,"4",O
+Locate 21,8,"_#E69D_"
+Do
+Getkey2->k
+LpWhile k<>_KeyEXIT And k<>_KeyUP And k<>_KeyDOWN
+k=_KeyUP=>Goto b
+k=_KeyDOWN=>Goto d
+Goto F
+
+Lbl d
+ClrText
+Locate Char!1,1,"Gaiji//Kana Mini"
+Text @10+8*0,7,"_#FF80__#FF81__#FF82__#FF83__#FF84__#FF85__#FF86__#FF87__#FF88__#FF89__#FF8A__#FF8B__#FF8C__#FF8D__#FF8E__#FF8F_"
+Text @10+8*1,7,"_#FF90__#FF91__#FF92__#FF93__#FF94__#FF95__#FF96__#FF97__#FF98__#FF99__#FF9A__#FF9B__#FF9C__#FF9D__#FF9E__#FF9F_"
+Text @10+8*2,7,"_#FFA0_¡¢£¤¥¦§¨©ª«¬­®¯"
+Text @10+8*3,7,"°±²³´µ¶·¸¹º»¼½¾¿"
+Text @10+8*4,7,"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"
+Text @10+8*5,7,"ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"
+Text @10+8*6,7,"_#FFE0__#FFE1__#FFE2__#FFE3__#FFE4__#FFE5__#FFE6__#FFE7__#FFE8__#FFE9__#FFEA__#FFEB__#FFEC__#FFEE__#FFEF_"
+Locate 21,1,"_#E69C_"
+LocateYX @Char!20,120,"4",O
+LocateYX @Char!28,120,"//",O
+LocateYX @Char!36,120,"4",O
+Locate 21,8,"_#E6AD_"
+Do
+Getkey2->k
+LpWhile k<>_KeyEXIT And k<>_KeyUP And k<>_KeyDOWN
+k=_KeyUP=>Goto c
+k=_KeyDOWN=>Goto a
+Goto F
