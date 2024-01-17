@@ -18,11 +18,12 @@ C.Basic is only an interpreter at the current stage. In the future, C.Basic will
 
 ## Things to know
 
-* If you are an fx-CG10 or fx-CG20 user, C.Basic will ask whether you want it to overclock your calculator to increase the performance on the screen transfer.
-    * The mechanic is based on [Ptune2](https://pm.matrix.jp/ftune2e.html), an overclocking add-in made by the same author of C.Basic. This prompt will increase your processor core clock (IFC) from 58.98 MHz to 117.96 MHz.
-    * Since overclocking could be potentially dangerous, use it at your own risk. You can disable this prompt in the settings at anytime.
+* If you are an fx-CG10 or fx-CG20 user, C.Basic will ask whether you want it to overclock your calculator to match the performance of an fx-CG50.
+    * The mechanic is based on [Ptune2](https://pm.matrix.jp/ftune2e.html), an overclocking add-in made by the same author of C.Basic. Upon agreement, C.Basic will increase your processor core clock (IFC) from 58.98 MHz to 117.96 MHz.
+    * While this overclocking preset is proven to be stable in our test cases, please keep in mind that damage caused by overclocking (and using this add-in) will not be covered by Casio's warranty.
+    * You can disable this prompt in the settings at anytime.
 * As C.Basic is written in C/C++, it uses floating point to express numbers instead of binary-coded decimal that Casio Basic uses. As such, handling non-integers may cause numerical errors. You are advised not to use C.Basic for applications involving serious calculations.
-* It has come to our attention that the flash memory in fx-9750GIII, fx-9860GIII and Graph 35+E II could be faulty in file I/O.
+* It has come to our attention that the file I/O of the flash memory in fx-9750GIII, fx-9860GIII and Graph 35+E II is not working well with C.Basic. 
 
 ### Bug report
 
