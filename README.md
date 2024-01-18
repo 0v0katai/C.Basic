@@ -1,6 +1,6 @@
 # C.Basic - Casio Basic IDE add-in for fx-9860 and fx-CG graphing calculators
 
-[Français](README_fr.md) | [日本語](README_ja.md) | [中文(简体)](README_zh-Hans.md)
+[English](README.md) | [Français](README_fr.md) | [日本語](README_ja.md) | [中文(简体)](README_zh.md)
 
 C.Basic (pronounce "c-dot-basic") is the reference implementation of Casio Basic, written in Casio SDK for fx-9860 and miniSDK for fx-CG calculators.
 
