@@ -27,15 +27,15 @@ C.Basic is only an interpreter at the current stage. In the future, C.Basic will
 
 ## Guidelines
 
-Find a bug during use? Feel like there are rooms for improvement? Please provide these feedbacks by opening an issue ticket or pull request. We will credit your work in our version release if they are approved!
+Find a bug during use? Feel like there are rooms for improvement? Please provide these feedbacks by opening an issue ticket or pull request. We will consider any feedback and credit your work in our version release.
 
 ### Bug report
 
-Describe how the bug behaves and provide the steps to reproduce it in your report. Screenshots of the bug are welcomed. If capable, please indicate which parts of code that need to be changed to fix the bug in your pull request.
+Describe how the bug behaves and provide the steps to reproduce it in your report. If capable, please indicate which parts of code that need to be changed as well to fix it in your pull request.
 
 ### Feature request
 
-List the reasons to support your proposal. **Once your proposal is approved**, you can provide your codes for our references.
+List the reasons to support your proposal, working principles and usages of the new feature.
 
 ### Documentation
 
