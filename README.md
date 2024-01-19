@@ -1,7 +1,5 @@
 # C.Basic - Casio Basic IDE add-in for fx-9860 and fx-CG graphing calculators
 
-[English](README.md) | [Français](README_fr.md) | [日本語](README_ja.md) | [中文(简体)](README_zh.md)
-
 C.Basic (pronounce "c-dot-basic") is the reference implementation of Casio Basic, written in Casio SDK for fx-9860 and miniSDK for fx-CG calculators.
 
 The add-in is designed for programmers who want to incorporate SDK-exclusive features to their Casio Basic programs within their calculator, and without having to worry about the error-prone debugging environment of C/C++.
@@ -31,7 +29,7 @@ Find a bug during use? Feel like there are rooms for improvement? Please provide
 
 ### Bug report
 
-Describe how the bug behaves and provide the steps to reproduce it in your report. If capable, please indicate which parts of code that need to be changed as well to fix it in your pull request.
+Describe how the bug behaves and provide the steps to reproduce it in your report. If capable, please indicate the part of code that need to be changed as well to fix it in your pull request.
 
 ### Feature request
 
@@ -50,6 +48,4 @@ C.Basic is licensed under the GNU General Public License, version 2. See [LICENS
 See [CREDIT.md](CREDIT.md) for the credit list.
 
 ## Wiki
-Check out the official C.Basic Wiki by clicking the `Wiki` tab in the navigation bar.
-
-Currently the Wiki is hosted on Fandom. However, we have decided to move from it to Casio Universal Wiki once the majority contents of the Wiki are ready.
+Check out the official C.Basic Wiki by clicking the `Wiki` tab in the navigation bar. The Wiki is hosted on Fandom, but we have decided to move from it to Casio Universal Wiki once the majority contents of the Wiki are ready.

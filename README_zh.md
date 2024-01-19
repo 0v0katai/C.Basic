@@ -1,7 +1,5 @@
 # C.Basic - 针对fx-9860及fx-CG系列图形计算器开发的Casio Basic集成开发环境插件
 
-[English](README.md) | [Français](README_fr.md) | [日本語](README_ja.md) | [中文(简体)](README_zh.md)
-
 C.Basic是以C/C++语言实现的Casio Basic解释器。*FX版*以卡西欧官方SDK编写，而*CG版*以社区miniSDK编写。
 
 C.Basic能让你随时随地在计算器上的程序添加SDK专属功能，而不用面对繁琐的C/C++调试环境。
@@ -31,7 +29,7 @@ C.Basic在当前阶段只是一个解释器。未来C.Basic将包含编译器，
 
 ### 漏洞报告
 
-描述此漏洞并提供重现步骤。如果可以的话，也请在合并请求中指出需要更改代码的哪些部分以修复该漏洞。
+描述此漏洞并提供重现步骤。如果可以的话，也请在合并请求中指出需要更改的部分代码以修复该漏洞。
 
 ### 功能提议
 
@@ -41,7 +39,7 @@ C.Basic在当前阶段只是一个解释器。未来C.Basic将包含编译器，
 
 打开合并请求以提交你的文档更改。
 
-### 许可证
+## 许可证
 
 C.Basic采用GNU通用公共许可证第2版（GPLv2）。请参阅[LICENSE.md](LICENSE.md)，以查看完整的许可证文本。
 
@@ -49,8 +47,6 @@ C.Basic采用GNU通用公共许可证第2版（GPLv2）。请参阅[LICENSE.md](
 
 参阅[CREDIT.md](CREDIT.md)，以查看鸣谢名单。
 
-### 维基
+## 维基
 
-点击上方导航栏中的"Wiki"标签，以进入C.Basic百科全书。
-
-目前C.Basic百科全书托管在Fandom上。不过我们已决定在百科全书的大部分内容准备就绪后，将其转移到Casio Universal Wiki。
+点击上方导航栏中的"Wiki"标签，以进入C.Basic百科全书。目前它托管在Fandom上，不过我们已决定在其大部分内容准备就绪后，将其转移到Casio Universal Wiki。
