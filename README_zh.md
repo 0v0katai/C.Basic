@@ -1,29 +1,60 @@
-# C.Basic - 针对fx-9860及fx-CG系列图形计算器开发的卡西欧BASIC集成开发环境插件
+# C.Basic - 针对fx-9860及fx-CG系列图形计算器开发的Casio Basic集成开发环境插件
 
 [English](README.md) | [Français](README_fr.md) | [日本語](README_ja.md) | [中文(简体)](README_zh.md)
 
-C.Basic（读音 "c-点-basic"）是以C/C++语言实现的卡西欧BASIC解释器。*FX版*以卡西欧官方SDK编写，而*CG版*以社区miniSDK编写。
+C.Basic是以C/C++语言实现的Casio Basic解释器。*FX版*以卡西欧官方SDK编写，而*CG版*以社区miniSDK编写。
 
-如果你想随时随地为计算器上的BASIC程序添加SDK专属功能，而又不想面对易错的C/C++调试环境，那C.Basic这个插件非常适合你。
+C.Basic能让你随时随地在计算器上的程序添加SDK专属功能，而不用面对繁琐的C/C++调试环境。
 
-C.Basic在目前阶段只是一个解释器。未来C.Basic将会拥有编译器，从而进化为C:Basic（"c-冒号-basic"）。
+C.Basic在当前阶段只是一个解释器。未来C.Basic将包含编译器，并改名为C:Basic。
 
-## Features
+## 功能
 
-* Achieve add-in like performance with little to no modifications to existing Casio Basic programs
-* Access and edit programs directly in SMEM and SD card
-* Robust editor with features from modern IDE — syntax highlighting, indentation, variable/matrix lookup and debugging
-* Extended commands with Casio Basic style syntax
-* Emulate G1M runtime environment in fx-CG calculators
+* 几乎无需任何修改，即可实现类似插件的性能
+* 可直接存取和编辑在SMEM和SD卡里的程序
+* 具有主流集成开发环境特性的编辑器 — 语法高亮、缩进、变量/矩阵查找和调试
+* Casio Basic语法风格的扩展指令
+* 在fx-CG系列计算器上模拟G1M运行环境
 
-## Things to know
+## 注意事项
 
-* If you are an fx-CG10 or fx-CG20 user, C.Basic will ask whether you want it to overclock your calculator to match the performance of an fx-CG50.
-    * The mechanic is based on [Ptune2](https://pm.matrix.jp/ftune2e.html), an overclocking add-in made by the same author of C.Basic. Upon agreement, C.Basic will increase your processor core clock (IFC) from 58.98 MHz to 117.96 MHz.
-    * While this overclocking preset is proven to be stable in our test cases, please keep in mind that damage caused by overclocking (and using this add-in) will not be covered by Casio's warranty.
-    * You can disable this prompt in the settings at anytime.
-* As C.Basic is written in C/C++, it uses floating point to express numbers instead of binary-coded decimal that Casio Basic uses. As such, handling non-integers may cause numerical errors. You are advised not to use C.Basic for applications involving serious calculations.
-* Please note that the file manager of C.Basic is not yet optimized with calculators featuring Fugue filesystem. See [#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1) for more details.
+* 如果您是fx-CG10或fx-CG20用户，C.Basic会询问你是否同意让它超频，使你的计算器达到 fx-CG50的性能。
+    * 超频原理基于[Ptune2](https://pm.matrix.jp/ftune2e.html)插件，由C.Basic的同一作者制作。一经同意，C.Basic将会把处理器核心时钟（IFC）从58.98 MHz提高到117.96 MHz。
+    * 在我们的测试案例中，该超频预设值被证明是稳定的。但请注意，超频（以及使用该插件）所造成的损坏不在卡西欧的保修范围之内。
+    * 您可以随时在设置中禁用此提示。
+* 由于C.Basic以C/C++编写，它使用浮点表示数字，而不是Casio Basic使用的二进制编码的十进制（binary-coded decimal）。因此，处理非整数计算可能会导致误差。我们建议不要将C.Basic用于涉及严谨计算的用途上。
+* 请注意，C.Basic的文件管理器尚未针对采用Fugue文件系统的计算器进行优化。详情请参见 [#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1)。
+
+## 指引
+
+在使用过程中发现了漏洞？觉得有需要改进的地方？请开启工单或合并请求。我们会考虑每一个反馈。
+
+### 错误报告
+
+描述错误并提供重现错误的步骤。欢迎提供错误的截图。如果可以，请在您的拉取请求中指出需要更改代码的哪些部分以修复该错误。
+
+### 功能请求
+
+列出支持您提议的理由。**一旦您的建议获得批准**，您可以提供代码供我们参考。
+
+### 文档
+
+打开一个拉取请求，提交您的文档更改。
+
+### 许可证
+
+C.Basic 采用 GNU 通用公共许可证第 2 版。请参阅 [LICENSE.md](LICENSE.md)，了解完整的许可证文本。
+
+## Credit
+
+参见 [CREDIT.md](CREDIT.md)，查看授权列表。
+
+### 维基
+点击导航栏中的 "Wiki "标签，查看官方 C.Basic 维基。
+
+目前维基托管在 Fandom 上。不过，我们已决定在维基的大部分内容准备就绪后，将其转移到卡西欧通用维基。
+
+通过www.DeepL.com/Translator（免费版）翻译
 
 ## Guidelines
 
