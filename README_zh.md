@@ -1,10 +1,21 @@
-# C.Basic - 针对fx-9860及fx-CG系列图形计算器开发的Casio Basic集成开发环境插件
+# C.Basic - fx-9860及fx-CG系列图形计算器的Casio Basic集成开发环境插件
 
 C.Basic是以C/C++语言实现的Casio Basic解释器。*FX版*以卡西欧官方SDK编写，而*CG版*以社区miniSDK编写。
 
-C.Basic能让你随时随地在计算器上的程序添加SDK专属功能，而不用面对繁琐的C/C++调试环境。
+该插件能让你随时随地在计算器上将SDK专属功能整合到你的Casio Basic程序，而不用面对繁琐的C/C++调试环境。
 
-C.Basic在当前阶段只是一个解释器。未来C.Basic将包含编译器，并改名为C:Basic。
+C.Basic在当前阶段只实现了解释器部分。未来C.Basic将包含编译器，并改名为C:Basic。
+
+## 适用机型
+
+* *FX版*
+    * fx-9860所有机型
+    * fx-9750GIII
+    * Graph 75/85/95所有机型
+    * Graph 35+E II
+* *CG版*
+    * fx-CG所有机型
+    * Graph 90+E
 
 ## 特色
 
@@ -47,6 +58,6 @@ C.Basic采用GNU通用公共许可证第2版（GPLv2）。请参阅[LICENSE.md](
 
 参阅[CREDIT.md](CREDIT.md)，以查看鸣谢名单。
 
-## 维基
+## 百科
 
-点击上方导航栏中的"Wiki"标签，以进入C.Basic百科全书。目前它托管在Fandom上，不过我们已决定在其大部分内容准备就绪后，将其转移到Casio Universal Wiki。
+点击上方导航栏中的"Wiki"标签，以进入C.Basic百科。目前它托管在Fandom上，不过我们已决定在其大部分内容准备就绪后，将其转移到Casio Universal Wiki。
