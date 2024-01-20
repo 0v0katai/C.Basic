@@ -29,9 +29,9 @@ C.Basic has only implemented the interpreter part in the current phase. In the f
 
 * If you are an fx-CG10 or fx-CG20 user, C.Basic will ask whether you want it to overclock your calculator to match the performance of an fx-CG50.
     * The mechanic is based on [Ptune2](https://pm.matrix.jp/ftune2e.html), an overclocking add-in made by the same author of C.Basic. Upon agreement, C.Basic will increase your processor core clock (IFC) from 58.98 MHz to 117.96 MHz.
-    * While this overclocking preset is proven to be stable in our test cases, please keep in mind that damage caused by overclocking (and using this add-in) will not be covered by Casio's warranty.
+    * Please keep in mind that damage caused by overclocking (and using this add-in) will not be covered by Casio's warranty.
     * You can disable this prompt in the settings at anytime.
-* As C.Basic is written in C/C++, it uses floating point to express numbers instead of binary-coded decimal that Casio Basic uses. As such, handling non-integers may cause numerical errors. You are advised not to use C.Basic for applications involving serious calculations.
+* As C.Basic uses floating point to express numbers instead of binary-coded decimal that Casio Basic uses, handling non-integers calculations may cause approximation errors. You are advised not to use C.Basic for applications involving serious calculations.
 * Please note that the file manager of C.Basic is not yet optimized with calculators featuring Fugue filesystem. See [#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1) for more details.
 
 ## Guidelines
