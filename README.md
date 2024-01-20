@@ -2,9 +2,20 @@
 
 C.Basic (pronounce "c-dot-basic") is the reference implementation of Casio Basic, written in Casio SDK for fx-9860 and miniSDK for fx-CG calculators.
 
-The add-in is designed for programmers who want to incorporate SDK-exclusive features to their Casio Basic programs within their calculator, and without having to worry about the error-prone debugging environment of C/C++.
+The add-in lets you incorporate SDK-exclusive features to your Casio Basic programs in calculator, without having to worry about the cumbersome debugging environment of C/C++.
 
-C.Basic is only an interpreter at the current stage. In the future, C.Basic will evolve into C:Basic ("c-colon-basic") which includes a compiler.
+C.Basic has only implemented the interpreter part in the current phase. In the future, C.Basic will evolve into C:Basic ("c-colon-basic") which includes a compiler.
+
+## Supported calculators
+
+* *FX Edition*
+    * fx-9860 series
+    * fx-9750GIII
+    * Graph 75/85/95 series
+    * Graph 35+E II
+* *CG Edition*
+    * fx-CG series
+    * Graph 90+E
 
 ## Features
 
