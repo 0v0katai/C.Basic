@@ -1,0 +1,10 @@
+# File
+dispbios.h
+endian.h
+filebios.h
+fxlib.h
+keybios.h
+timer.h
+
+# Directory
+.vscode/
