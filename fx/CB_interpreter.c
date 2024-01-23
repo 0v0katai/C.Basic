@@ -418,6 +418,7 @@ int GetQuotOpcode(unsigned char *SRC, unsigned char *buffer ) {
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+			case 0xFF:	// 
 				buffer[ptr++]=SRC[ExecPtr++];
 				break;
 			default:
@@ -438,11 +439,11 @@ void GetQuotStr(unsigned char *SRC, unsigned char *buffer ) {
 		if ( c==0x5C ) { // Backslash
 			c = SRC[ExecPtr++] ;
 		} else {
-			if ( ( c==0x7F ) || ( c==0xF7 ) ||( c==0xF9 ) ||( c==0xE5 ) ||( c==0xE6 ) ||( c==0xE7 ) ) {
+			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) {
 					c = ( c<<8 ) + SRC[ExecPtr++];
 			}
 		}
-		OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
+		CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
 		len = strlen( (char*)tmpbuf ) ;
 		i=0;
 		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
@@ -463,11 +464,11 @@ void GetLocateStr(unsigned char *SRC, unsigned char *buffer ) {
 		if ( c==0x5C ) { // Backslash
 			c = SRC[ExecPtr++] ;
 		} else {
-			if ( ( c==0x7F ) || ( c==0xF7 ) ||( c==0xF9 ) ||( c==0xE5 ) ||( c==0xE6 ) ||( c==0xE7 ) ) {
+			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) {
 					c = ( c<<8 ) + SRC[ExecPtr++];
 			}
 		}
-		OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
+		CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
 		len = strlen( (char*)tmpbuf ) ;
 		i=0;
 		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
@@ -512,11 +513,11 @@ void CB_Quot( unsigned char *SRC ){		// "" ""
 		CB_SelectTextVRAM();	// Select Text Screen
 		if ( CursorX >1 ) Scrl_Y();
 		while ( buffer[i] ) {
-			locate(CursorX,CursorY); CursorX++; if (CursorX > 21) Scrl_Y();
-			PrintC( (unsigned char*)buffer+i );
+			CB_PrintC( CursorX,CursorY, (unsigned char*)buffer+i );
+			CursorX++; if (CursorX > 21) Scrl_Y();
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
-			if ( ( c==0x7F ) || ( c==0xF9 ) || ( c==0xE5 ) || ( c==0xE6 ) ) i++;
+			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) i++;
 			i++;
 		}
 		if ( buffer[0]=='\0' ) CursorX=22;
@@ -773,13 +774,11 @@ void CB_Locate( unsigned char *SRC ){
 	if ( c == 0x22 ) {	// String
 		ExecPtr++;
 		GetLocateStr(SRC, buffer);
-		locate(lx,ly);
-		Print( (unsigned char*)buffer );
+		CB_Print( lx,ly, (unsigned char*)buffer );
 	} else {			// expression
 		value = CB_Eval( SRC );
 		sprintGR(buffer, value, 22-lx,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
-		locate(lx,ly);
-		Print( (unsigned char*)buffer );
+		CB_Print( lx,ly, (unsigned char*)buffer );
 	}
 	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
 }
@@ -837,6 +836,7 @@ void Skip_quot( unsigned char *SRC ){ // skip "..."
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -863,6 +863,7 @@ void Skip_block( unsigned char *SRC ){
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -909,6 +910,7 @@ int Search_Lbl( unsigned char *SRC, unsigned int lc ){
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -964,6 +966,7 @@ int Search_IfEnd( unsigned char *SRC ){
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -998,6 +1001,7 @@ int Search_ElseIfend( unsigned char *SRC ){
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1107,6 +1111,7 @@ int Search_Next( unsigned char *SRC ){
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1136,6 +1141,7 @@ int Search_WhileEnd( unsigned char *SRC ){
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1165,6 +1171,7 @@ int Search_LpWhile( unsigned char *SRC ){
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+//			case 0xFF:	// 
 				ExecPtr++;
 				break;
 		}

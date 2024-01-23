@@ -65,6 +65,7 @@ void CB_PreProcess(unsigned char *SRC) {
 			case 0xE5:	// 
 			case 0xE6:	// 
 			case 0xE7:	// 
+			case 0xFF:	// 
 				ofst++;
 				break;
 			default:
@@ -205,7 +206,7 @@ void EditCut( unsigned char *filebase, int *ptr, int startp, int endp ){
 //---------------------------------------------------------------------------------------------
 
 void OpcodeLineN(unsigned char *buffer, int *ofst, int *x, int *y) {
-	char tmpbuf[18];
+	unsigned char tmpbuf[18];
 	int i,len,xmax=21,cont=1;
 	unsigned short opcode;
 	(*x)=1;
@@ -214,8 +215,8 @@ void OpcodeLineN(unsigned char *buffer, int *ofst, int *x, int *y) {
 		if ( opcode=='\0' ) break;
 		if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) break ;
 		(*ofst) += OpcodeLen( opcode );
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
+		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
+		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
 		while ( i < len ) {
 			(*x)++;
@@ -227,7 +228,7 @@ void OpcodeLineN(unsigned char *buffer, int *ofst, int *x, int *y) {
 }
 
 int OpcodeLineYptr(int n, unsigned char *buffer, int ofst, int *x) {
-	char tmpbuf[18];
+	unsigned char tmpbuf[18];
 	int i,len,y=0,xmax=21,cont=1;
 	unsigned short opcode;
 	(*x)=1;
@@ -237,8 +238,8 @@ int OpcodeLineYptr(int n, unsigned char *buffer, int ofst, int *x) {
 		if ( opcode=='\0' ) break;
 		if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) break ;
 		(ofst) += OpcodeLen( opcode );
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
+		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
+		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
 		while ( i < len ) {
 			(*x)++;
@@ -251,7 +252,7 @@ int OpcodeLineYptr(int n, unsigned char *buffer, int ofst, int *x) {
 }
 
 int OpcodeLineSrcXendpos(int n, unsigned char *buffer, int ofst) {
-	char tmpbuf[18];
+	unsigned char tmpbuf[18];
 	int i,len,x0,x=1,y=0,xmax=21,cont=1;
 	unsigned short opcode;
 	while ( cont ) {
@@ -259,8 +260,8 @@ int OpcodeLineSrcXendpos(int n, unsigned char *buffer, int ofst) {
 		if ( opcode=='\0' ) break;
 		if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) break ;
 		(ofst) += OpcodeLen( opcode );
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
+		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
+		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0; x0=x;
 		while ( i < len ) {
 			(x)++;
@@ -272,7 +273,7 @@ int OpcodeLineSrcXendpos(int n, unsigned char *buffer, int ofst) {
 	return x0;
 }
 int OpcodeLineSrcYpos(unsigned char *buffer, int ofst, int csrptr ) {
-	char tmpbuf[18];
+	unsigned char tmpbuf[18];
 	int i,len=0,x=1,y=0,xmax=21,cont=1;
 	unsigned short opcode;
 	if ( ofst==csrptr ) return y;
@@ -281,8 +282,8 @@ int OpcodeLineSrcYpos(unsigned char *buffer, int ofst, int csrptr ) {
 		if ( opcode=='\0' ) break;
 		if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) break ;
 		(ofst) += OpcodeLen( opcode );
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
+		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
+		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
 		while ( i < len ) {
 			(x)++;
@@ -337,7 +338,7 @@ void PrevLinePhy( unsigned char *buffer, int *ofst, int *ofst_y ) {
 }
 
 int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
-	char tmpbuf[18];
+	unsigned char tmpbuf[18];
 	int i,len,x=1,y=0,xmax=21,cont=1,rev;
 	unsigned short opcode;
 	unsigned char  c=1;
@@ -348,15 +349,14 @@ int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPt
 		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
 		ofst += OpcodeLen( opcode );
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
+		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
+		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
 		while ( i < len ) {
 			if ( y == n ) {
-				locate(x,csry);
 				if ( rev )
-						PrintRevC( (unsigned char*)(tmpbuf+i) ) ;
-				else	PrintC(    (unsigned char*)(tmpbuf+i) ) ;
+						CB_PrintRevC(x,csry, (unsigned char*)(tmpbuf+i) ) ;
+				else	CB_PrintC(   x,csry, (unsigned char*)(tmpbuf+i) ) ;
 //				Bdisp_PutDisp_DD();
 			}
 			x++;
@@ -442,7 +442,7 @@ void DumpMix(unsigned char *SrcBase, int offset){
 				Hex2PrintXY( i*3+6, j+2, "", SrcBase[offset+i+j*4]&0xFF);
 		}
 		for (i=0; i<4 ; i++){
-				locate(18+i,j+2); PrintC((unsigned char*)SrcBase+offset+i+j*4);
+				CB_PrintC(18+i,j+2,(unsigned char*)SrcBase+offset+i+j*4);
 		}
 	}
 }
@@ -453,7 +453,7 @@ void DumpAsc(unsigned char *SrcBase, int offset){
 		Hex4PrintXY( 1, j+2, "", ((int)offset+j*16)&0xFFFF);
 		locate( 5,j+2); Print((unsigned char*)"/                ");
 		for (i=0; i<16 ; i++){
-				locate(6+i,j+2); PrintC((unsigned char*)SrcBase+offset+i+j*16);
+				CB_PrintC(6+i,j+2,(unsigned char*)SrcBase+offset+i+j*16);
 		}
 	}
 }
@@ -672,7 +672,7 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 			n=oplist[(*select)+i];
 			tmpbuf[0]='\0'; 
 			if ( n == 0xFFFF ) n=' ';
-			else OpcodeToStr( n, (unsigned char*)tmpbuf ) ; // SYSCALL
+			else CB_OpcodeToStr( n, (unsigned char*)tmpbuf ) ; // SYSCALL
 			tmpbuf[8]='\0'; 
 			n=i+1; if (n>9) n=0;
 			j=0; if ( tmpbuf[0]==' ' ) j++;
@@ -1197,6 +1197,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F5:
+					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectChar();
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
@@ -1520,6 +1521,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				case 0xE5:		// 
 				case 0xE6:		// 
 				case 0xE7:		// 
+				case 0xFF:	// 
 					if (ClipStartPtr>=0) { 
 						ClipStartPtr = -1 ;		// ClipMode cancel			
 						break;
