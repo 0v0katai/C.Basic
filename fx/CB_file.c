@@ -228,7 +228,7 @@ unsigned int Explorer( int size, char *folder )
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.35" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.36" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -432,12 +432,12 @@ int ExistFile( const char *name )
 
 //----------------------------------------------------------------------------------------------
 
-unsigned int InputStrFilename(int x, int y, int width, char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
+unsigned int InputStrFilename(int x, int y, int width, unsigned char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
 
 	buffer[width]='\0';
-	csrX=strlen(buffer);
+	csrX=strlen((char*)buffer);
 	key=InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_OFF);
 	return ( key );
 }
@@ -448,7 +448,7 @@ unsigned int InputFilename( char * buffer, char* msg) {		//
 	PopUpWin(3);
 	locate(3,3); Print((unsigned char *)msg);
 	locate(3,4); Print((unsigned char *)" [        ]");
-	key=InputStrFilename( 5, 4, 8, buffer, ' ', REV_OFF ) ;
+	key=InputStrFilename( 5, 4, 8, (unsigned char *)buffer, ' ', REV_OFF ) ;
 	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;

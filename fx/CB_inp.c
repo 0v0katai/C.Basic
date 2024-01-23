@@ -95,7 +95,7 @@ unsigned int SelectChar() {
 		Fkey_dispN( 0, "MATH");
 		Fkey_dispN( 1, "SYBL");
 		Fkey_dispN( 2, "AB\xCD");
-		Fkey_dispN( 3, "abr");
+		Fkey_DISPN( 3, "\xE6\x40\xE6\x41\xE6\x42");
 		Fkey_dispN( 4, "ABC");
 		
 		cx=(CharPtr%19)+2;
@@ -428,7 +428,7 @@ int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx
 }
 */
 //----------------------------------------------------------------------------------------------
-int PrintOpcode(int x, int y, char *buffer, int width, int rev_mode, char SPC) {
+int PrintOpcode(int x, int y, unsigned char *buffer, int width, int rev_mode, char SPC) {
 	char tmpbuf[18];
 	char spcbuf[2];
 	int i,j=0,len,xmax=x+width;
@@ -458,8 +458,8 @@ int PrintOpcode(int x, int y, char *buffer, int width, int rev_mode, char SPC) {
 	return x;
 }
 
-void OpStrToStr(char *buffer, char *buffer2) {
-	char tmpbuf[18];
+void OpStrToStr(unsigned char *buffer, unsigned char *buffer2) {
+	unsigned char tmpbuf[18];
 	int i,j,len;
 	unsigned short opcode;
 	unsigned char  c;
@@ -468,12 +468,12 @@ void OpStrToStr(char *buffer, char *buffer2) {
 	while ( c != '\0' ) {
 		c = buffer[j++] ;
 		opcode = c & 0x00FF ;
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
-		strcat(buffer2,tmpbuf);
+		OpcodeToStr( opcode, tmpbuf ) ;	// SYSCALL
+		strcat((char*)buffer2,(char*)tmpbuf);
 	}
 }
 
-int OpStrLastoffset(char *buffer, int ptrX, int csrwidth, int *csrX) {
+int OpStrLastoffset(unsigned char *buffer, int ptrX, int csrwidth, int *csrX) {
 	int i,j,len,csX,ofstX;
 	unsigned char  c;
 	csX=0;
@@ -489,7 +489,7 @@ int OpStrLastoffset(char *buffer, int ptrX, int csrwidth, int *csrX) {
 	return  ofstX;
 }
 
-int csrX_to_dspX(int csrX, char *buffer, int width) {
+int csrX_to_dspX(int csrX, unsigned char *buffer, int width) {
 	int i,j,len;
 	unsigned char  c=1;
 	i=0; j=0;
@@ -502,7 +502,7 @@ int csrX_to_dspX(int csrX, char *buffer, int width) {
 	return i;
 }
 
-int OpcodeOffsetCount(char *buffer, int length, int *csrX) {
+int OpcodeOffsetCount(unsigned char *buffer, int length, int *csrX) {
 	int i,j,len;
 	unsigned char  c;
 	i=0; j=0;
@@ -517,9 +517,9 @@ int OpcodeOffsetCount(char *buffer, int length, int *csrX) {
 
 //----------------------------------------------------------------------------------------------
 
-int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
-	char buffer2[64];
-	char buf[22];
+int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
+	unsigned char buffer2[64];
+	unsigned char buf[22];
 	unsigned int key=0;
 	int cont=1;
 	int i,j,k;
@@ -535,7 +535,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
 	
-	length=strlen(buffer);
+	length=strlen((char*)buffer);
 	for(i=0; i<=MaxStrlen; i++) buffer2[i]=buffer[i]; // backup
 
 	offsetX=OpStrLastoffset(buffer, ptrX, csrwidth ,&csrX);
@@ -949,12 +949,13 @@ double Round( double num, int round_mode, int digit){
 	return num;
 }
 
-void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
+void sprintGRS(unsigned char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
 	int i,j,w,adj,minus=0,p,digit=round_digit;
 	char buffer2[32],fstr[16],tmp[16];
 	double fabsnum,pw;
 	unsigned char c;
-	char *dptr,*eptr,*nptr;
+	unsigned char *nptr;
+	char *dptr,*eptr;
 	double dpoint=0.01;
 
 	switch ( round_mode ) {
@@ -1006,7 +1007,7 @@ void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mo
 	fstr[p++]='0'+i%10;
 	fstr[p++]=c;
 	fstr[p++]='\0';
-	sprintf(buffer, fstr, num);
+	sprintf((char*)buffer, fstr, num);
 
 /*
 	if ( round_mode != Fix ) {
@@ -1018,10 +1019,10 @@ void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mo
 	}
 */	
 	if ( round_mode == Norm ) {
-		dptr=strchr(buffer,'.');
+		dptr=strchr((char*)buffer,'.');
 		if ( dptr ) {
-			eptr=strchr(buffer,'e');
-			i=strlen(buffer); 
+			eptr=strchr((char*)buffer,'e');
+			i=strlen((char*)buffer); 
 			nptr=buffer+i;
 			if (  eptr != '\0' ) {	// 1.234500000e123  zero cut
 				eptr--; i=0;
@@ -1040,7 +1041,7 @@ void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mo
 
 	if ( align_mode == RIGHT_ALIGN ) {
 		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
-		w=strlen(buffer2);
+		w=strlen((char*)buffer2);
 		if ( w < width ) {
 			for ( i=1; i<=w; i++)
 			 buffer2[width-i]=buffer2[w-i];
@@ -1070,7 +1071,7 @@ void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mo
 	return ;
 }
 
-void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
+void sprintGR(unsigned char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
 	unsigned char c,d=0;
 	if (ENG) { 
 		if ( ( 1e-15 <= num  ) && ( num < 1e21 ) ) {
@@ -1088,7 +1089,7 @@ void sprintGR(char* buffer, double num, int width, int align_mode, int round_mod
 			else if ( num >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
 			else if ( num >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
 			sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
-			width=strlen(buffer);
+			width=strlen((char*)buffer);
 			buffer[width++]=c;
 			buffer[width++]=d;
 			buffer[width]='\0';
@@ -1098,32 +1099,32 @@ void sprintGR(char* buffer, double num, int width, int align_mode, int round_mod
 	sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
 }
 
-void sprintG(char* buffer, double num, int width, int align_mode) {
+void sprintG(unsigned char* buffer, double num, int width, int align_mode) {
 	sprintGRS(buffer, num, width, align_mode, Norm, 15); // + round
 }
 
 //----------------------------------------------------------------------------------------------
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
-	char buffer[32];
+	unsigned char buffer[32];
 	int csrX=0;
 	unsigned int key;
 
 	buffer[csrX]='\0';
 	if ( defaultNum != 0 ) {
 		sprintG(buffer, defaultNum, width, LEFT_ALIGN);
-		csrX=strlen(buffer);
+		csrX=strlen((char*)buffer);
 	}
 	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);  // exit
-	return atof( buffer );
+	return atof( (char*)buffer );
 }
 
-unsigned int InputStr(int x, int y, int width, char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
+unsigned int InputStr(int x, int y, int width, unsigned char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
 
 	buffer[width]='\0';
-	csrX=strlen(buffer);
+	csrX=strlen((char*)buffer);
 	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	return ( key );
 }

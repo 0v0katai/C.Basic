@@ -34,7 +34,7 @@
 //		Interpreter
 //----------------------------------------------------------------------------------------------
 int ScreenMode;	//  0:Text  1:Graphic
-int UseGraphic;		// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
+int UseGraphic=0;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
 
 double CursorX=1;	// text cursor X
 double CursorY=1;	// text cursor X
@@ -170,7 +170,7 @@ double CB_Eval( unsigned char *expbuf ) {		// Eval Basic
 	unsigned int key;
 	double result;
     ExpPtr= 0;
-    result = EvalsubTop( (char*)expbuf );
+    result = EvalsubTop( expbuf );
     if ( ErrorNo  ) {
 	    ExecPtr += ErrorPtr;
 	    ErrorPtr=ExecPtr;
@@ -316,7 +316,7 @@ int  CB_Input( unsigned char *SRC ){
 	double DefaultValue=0;
 	int flag=0;
 	int reg,bptr,mptr;
-	char buffer[32];
+	unsigned char buffer[32];
 	
 	KeyRecover();
 	CB_SelectTextDD();	// Select Text Screen
@@ -395,8 +395,8 @@ int  CB_Input( unsigned char *SRC ){
 //-----------------------------------------------------------------------------
 
 
-void QuotStrOpcode(unsigned char *SRC, char *buffer ) {
-	char tmpbuf[18];
+void QuotStrOpcode(unsigned char *SRC, unsigned char *buffer ) {
+	unsigned char tmpbuf[18];
 	int i,j=0,len,ptr=0;
 	unsigned short opcode;
 	unsigned char  c=1;
@@ -408,8 +408,8 @@ void QuotStrOpcode(unsigned char *SRC, char *buffer ) {
 		if ( ( c==0x7F ) || ( c==0xF7 ) ||( c==0xF9 ) ||( c==0xE5 ) ||( c==0xE6 ) ||( c==0xE7 ) ) {
 				opcode = ( ( c & 0x00FF )<<8 )  + ( SRC[ExecPtr++] & 0x00FF );
 		}
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
-		len = strlen( tmpbuf ) ;
+		OpcodeToStr( opcode, tmpbuf ) ;	// SYSCALL
+		len = strlen( (char*)tmpbuf ) ;
 		i=0;
 		while ( i < len ) {
 			buffer[ptr++]=tmpbuf[i++] ;
@@ -417,7 +417,7 @@ void QuotStrOpcode(unsigned char *SRC, char *buffer ) {
 	}
 	buffer[ptr]='\0' ;
 }
-void GetQuotStr(unsigned char *SRC, char *buffer ) {
+void GetQuotStr(unsigned char *SRC, unsigned char *buffer ) {
 	unsigned int c;
 	int ptr=0;
 	while (1){
@@ -447,7 +447,7 @@ void GetQuotStr(unsigned char *SRC, char *buffer ) {
 }
 
 void CB_Quot( unsigned char *SRC ){		// "" ""
-	char buffer[128];
+	unsigned char buffer[128];
 	unsigned int c,d;
 	int ptr,len,i=0;
 	ptr=ExecPtr;
@@ -632,7 +632,7 @@ unsigned int GWait( int exit_cancel ) {
 }
 
 int CB_Disps( unsigned char *SRC ,int dspflag){
-	char buffer[32];
+	unsigned char buffer[32];
 	unsigned int c;
 	unsigned int key=0;
 	int scrmode;
@@ -674,7 +674,7 @@ int CB_Disps( unsigned char *SRC ,int dspflag){
 }
 
 void CB_end( unsigned char *SRC, int dspflag ){
-	char buffer[32];
+	unsigned char buffer[32];
 	unsigned int c,t;
 	unsigned int key=0;
 	int scrmode=ScreenMode;
@@ -722,7 +722,7 @@ void CB_end( unsigned char *SRC, int dspflag ){
 
 
 void CB_Locate( unsigned char *SRC ){
-	char buffer[32];
+	unsigned char buffer[32];
 	unsigned int c;
 	int lx,ly;
 	double value;
@@ -753,7 +753,7 @@ void CB_Locate( unsigned char *SRC ){
 
 void CB_Text( unsigned char *SRC, int *dspflag ) { //	Text
 	unsigned int key;
-	char buffer[32];
+	unsigned char buffer[32];
 	unsigned int c;
 	int px,py,d;
 	double value;
@@ -849,7 +849,7 @@ void CB_Lbl( unsigned char *SRC, int *StackGotoAdrs ){
 		ExecPtr++;
 		label = c-'A'+10;
 	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// goto error
-	if ( StackGotoAdrs[label] == 0 ) StackGotoAdrs[label]=ExecPtr;
+	if ( StackGotoAdrs[label] == 0 ) StackGotoAdrs[label]=ExecPtr+1;
 }
 
 int Search_Lbl( unsigned char *SRC, unsigned int lc ){
@@ -900,6 +900,7 @@ void CB_Goto( unsigned char *SRC, int *StackGotoAdrs){
 	ptr = StackGotoAdrs[label] ;
 	if ( ptr == 0 ) {
 		if ( Search_Lbl(SRC, c) == 0 ) { ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }	// undefined label error
+		ExecPtr++;
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
 }
@@ -918,11 +919,13 @@ int Search_IfEnd( unsigned char *SRC ){
 				Skip_block(SRC);
 				break;
 			case 0xF7:	// 
-				if ( SRC[ExecPtr] == 0x00 ) { ExecPtr++;				// If
+				c=SRC[ExecPtr++];
+				if ( c == 0x00 ) { 			// If
 					Search_IfEnd(SRC);
 					break;
-				}
-				if ( SRC[ExecPtr] == 0x03 ) { ExecPtr++; return 1; }	// IfEnd
+				} else
+				if ( c == 0x03 ) return 1;	// IfEnd
+				break ;
 			case 0x7F:	// 
 			case 0xF9:	// 
 			case 0xE5:	// 
@@ -935,25 +938,28 @@ int Search_IfEnd( unsigned char *SRC ){
 	return 0;
 }
 
-int Search_Else( unsigned char *SRC ){
+int Search_ElseIfend( unsigned char *SRC ){
 	unsigned int c;
-	int sPtr=ExecPtr;	// save Ptr
 	while (1){
 		c=SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
-				ExecPtr=sPtr;	// restore Ptr
+				ExecPtr--;
 				return 0 ;
 				break;
 			case 0x27:	// ' rem
 				Skip_block(SRC);
 				break;
 			case 0xF7:	// 
-				if ( SRC[ExecPtr] == 0x00 ) { ExecPtr++;				// If
+				c=SRC[ExecPtr++];
+				if ( c == 0x00 ) {			// If
 					Search_IfEnd(SRC);
 					break;
-				}
-				if ( SRC[ExecPtr] == 0x02 ) { ExecPtr++; return 1; }	// Else
+				} else
+				if ( c == 0x02 ) return 1; 	// Else
+				else
+				if ( c == 0x03 ) return 1; 	// IfEnd
+				break;
 			case 0x7F:	// 
 			case 0xF9:	// 
 			case 0xE5:	// 
@@ -963,7 +969,6 @@ int Search_Else( unsigned char *SRC ){
 				break;
 		}
 	}
-	ExecPtr=sPtr;	// restore Ptr
 	return 0;
 }
 
@@ -971,15 +976,17 @@ int Search_Else( unsigned char *SRC ){
 void CB_If( unsigned char *SRC ){
 	unsigned int c,c2;
 	double value;
+	int ptr;
 	value = CB_Eval(SRC+ExecPtr);
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { ExecPtr++;  c=SRC[ExecPtr]; }
 	c2=SRC[ExecPtr+1];
 	if ( ( c != 0xF7 ) || ( c2 != 0x01 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; } // not Then error 
 	ExecPtr+=2 ;
-	if ( value==0 ) {		// false
-		if ( Search_Else(SRC) ) return ;	// Else
-		if ( Search_IfEnd(SRC) ) return;	// IfEnd
+	if ( value == 0 ) {		// false
+		if ( Search_ElseIfend(SRC) ) {	// Else or IfEnd
+			return ;
+		}
 	}
 }
 
@@ -1702,7 +1709,7 @@ void CB_RclPict( unsigned char *SRC ) { //	RclPict
 }
 
 //----------------------------------------------------------------------------------------------
-int CB_SearchProg( char *name ) { //	Prog search
+int CB_SearchProg( unsigned char *name ) { //	Prog search
 	int j,i=1;
 	unsigned char *ptr;
 	
@@ -1717,7 +1724,7 @@ int CB_SearchProg( char *name ) { //	Prog search
 
 void CB_Prog( unsigned char *SRC ) { //	Prog "..."
 	unsigned int c;
-	char buffer[32]="";
+	unsigned char buffer[32]="";
 	unsigned char *src;
 	unsigned char *StackProgSRC;
 	int StackProgExecPtr;
@@ -1785,7 +1792,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 	CurrentStructCNT=0;
 	tmp_Style = -1;
 	dspflag=0;
-	UseGraphic=0;
+//	UseGraphic=0;
 
 	while (cont) {
 		if ( ErrorNo  ) return ErrorPtr;
@@ -1814,10 +1821,12 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 			case 0xE9:	// Isz
 				CB_Isz(SRC) ;
 				break;
-			case 0x13:	// =>
-				CB_Cond(SRC);
-				dspflag=0;
-				break;
+//			case 0x13:	// =>
+//				CB_Cond(SRC);
+//				dspflag=0;
+//				if ( CB_CurrentValue == 0 ) Skip_block(SRC);		// false
+//				break;
+				
 			case 0xF7:	// F7
 				c=SRC[ExecPtr++];
 				switch ( c ) {
@@ -1825,10 +1834,11 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						CB_If(SRC);
 						break;
 					case 0x02:	// Else
-						CB_Else(SRC);
+//						CB_Else(SRC);
+						Search_IfEnd(SRC);
 						break;
 					case 0x03:	// IfEnd
-						CB_IfEnd(SRC);
+//						CB_IfEnd(SRC);
 						break;
 					case 0x04:	// For
 						CB_For(SRC, &StackForPtr, StackForAdrs, StackForVar, StackForEnd, StackForStep, &CurrentStructCNT, CurrentStructloop );
@@ -2013,9 +2023,15 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						ExecPtr-=2;
 						CB_CurrentValue = CB_Eval(SRC+ExecPtr);
 						dspflag=2;
+						if ( SRC[ExecPtr] == 0x13 ) {	// =>
+							ExecPtr++;
+							dspflag=0;
+							if ( CB_CurrentValue == 0 ) Skip_block(SRC);		// false
+						}
 						break;
 				}
 				break;
+				
 			case 0xF9:	// F9
 				c=SRC[ExecPtr++];
 				switch ( c ) {
@@ -2035,8 +2051,18 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						ExecPtr-=2;
 						CB_CurrentValue = CB_Eval(SRC+ExecPtr);
 						dspflag=2;
+						if ( SRC[ExecPtr] == 0x13 ) {	// =>
+							ExecPtr++;
+							dspflag=0;
+							if ( CB_CurrentValue == 0 ) Skip_block(SRC);		// false
+						}
 						break;
 				}
+				break;
+				
+			case 0x27:	// ' rem
+				Skip_block(SRC);
+				dspflag=0;
 				break;
 			case 0x22:	// " "
 				CB_Quot(SRC) ;
@@ -2081,23 +2107,9 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				dspflag=0;
 				UseGraphic=99;
 				break;
-			case 0xEB:	// ViewWindow
-				CB_ViewWindow(SRC);
-				dspflag=0;
-				UseGraphic=0;
-				break;
-			case 0xEE:	// Graph Y=
-				CB_GraphY(SRC);
-				dspflag=0;
-				UseGraphic=2;
-				break;
 			case 0xED:	// Prog "..."
 				CB_Prog(SRC);
 				if ( BreakPtr ) return BreakPtr;
-				dspflag=0;
-				break;
-			case 0x27:	// ' rem
-				Skip_block(SRC);
 				dspflag=0;
 				break;
 				
@@ -2121,11 +2133,26 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				CB_Sci(SRC);
 				dspflag=0;
 				break;
+			case 0xEB:	// ViewWindow
+				CB_ViewWindow(SRC);
+				dspflag=0;
+				UseGraphic=0;
+				break;
+			case 0xEE:	// Graph Y=
+				CB_GraphY(SRC);
+				dspflag=0;
+				UseGraphic=2;
+				break;
 		
 			default:
 				ExecPtr--;
 				CB_CurrentValue = CB_Eval(SRC+ExecPtr);
 				dspflag=2;
+				if ( SRC[ExecPtr] == 0x13 ) {	// =>
+					ExecPtr++;
+					dspflag=0;
+					if ( CB_CurrentValue == 0 ) Skip_block(SRC);		// false
+				}
 				break;
 		}
 	}
@@ -2140,7 +2167,7 @@ int CB_interpreter( unsigned char *SRC ) {
 	int stat;
 
 	CB_TicksStart=RTC_GetTicks();	// 
-	random( CB_TicksStart ) ;	// rand seed
+	srand( CB_TicksStart ) ;	// rand seed
 	CB_ClrText(SRC);
 	ProgEntryN=0;	// subroutin clear
 	ErrorPtr=0;
@@ -2190,7 +2217,7 @@ double asctt4(){
 
 void CB_test() {
 	int i, s, t, result;
-	char	buffer[32];
+	unsigned char	buffer[32];
 	unsigned int key=0;
 
 	Bdisp_AllClr_DDVRAM();
@@ -2205,8 +2232,8 @@ void CB_test() {
 
 	locate(1,2);
 	sprintG(buffer, regS, 21, RIGHT_ALIGN);
-		Print((unsigned char*)buffer);
-	locate(1,3);sprintf(buffer,"time=%5.3fs",(float)t/1000); Print((unsigned char*)buffer);
+		Print(buffer);
+	locate(1,3);sprintf((char*)buffer,"time=%5.3fs",(float)t/1000); Print(buffer);
 	Bdisp_PutDisp_DD();
 
 	
@@ -2221,8 +2248,8 @@ void CB_test() {
 
 	locate(1,6);
 	sprintG(buffer, regS, 21, RIGHT_ALIGN);
-		Print((unsigned char*)buffer);
-	locate(1,7);sprintf(buffer,"time=%5.3fs",(float)t/1000); Print((unsigned char*)buffer);
+		Print(buffer);
+	locate(1,7);sprintf((char*)buffer,"time=%5.3fs",(float)t/1000); Print(buffer);
 
 	Bdisp_PutDisp_DD();
 	GetKey(&key);

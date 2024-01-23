@@ -57,10 +57,10 @@ double	Yfct     =  2;					//
 
 double	traceAry[130];		// Graph array X
 
-char *GraphY;
-char GraphY1[32];
-char GraphY2[32];
-char GraphY3[32];
+unsigned char *GraphY;
+unsigned char GraphY1[32];
+unsigned char GraphY2[32];
+unsigned char GraphY3[32];
 
 int	MatArySizeA[26];		// Matrix array status
 int	MatArySizeB[26];		// Matrix array status
@@ -115,8 +115,8 @@ double MOD(double numer, double denom) {
 }
 //------------------------------------------------------------------------------
 
-void Text(int y, int x, char*str) {
-	PrintMini(  x, y, (unsigned char*)str,MINI_OVER);
+void Text(int y, int x, unsigned char*str) {
+	PrintMini(  x, y, str,MINI_OVER);
 }
 
 //----------------------------------------------------------------------------------------------
@@ -811,7 +811,7 @@ void DrawGCSR( int x, int y )
 //--------------------------------------------------------------
 
 int PictSelectNum2( char*msg ) {		// 
-	char buffer[32];
+	unsigned char buffer[32];
 	unsigned int key;
 	int n;
 
@@ -824,7 +824,7 @@ int PictSelectNum2( char*msg ) {		//
 	while (1) {
 		key= InputStrSub( 17, 5, 2, 0, buffer, 2, ' ', REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return -1;  // exit
-		n=atof( buffer );
+		n=atof( (char*)buffer );
  		if ( (1<=n)&&(n<=20) ) break;
  		n=0;
  	}
@@ -893,7 +893,7 @@ unsigned int Pict() {
 unsigned int Plot()
 {
 	int cont=1;
-	char buffer[21];
+	unsigned char buffer[21];
 	unsigned int key;
 	int retcode=0;
 	int px1,py1;
@@ -935,6 +935,7 @@ unsigned int Plot()
 				cont=0;
 				break;
 			case KEY_CTRL_F3:	// setViewWindow
+				GCursorSetFlashMode(0);	// graphic cursor flashing off
 				if ( SetViewWindow() ) cont=0;
 				break;
 			case KEY_CTRL_LEFT:
@@ -968,7 +969,7 @@ unsigned int Plot()
 						break;
 					case KEY_CTRL_F3:
 						GCursorSetFlashMode(0);	// graphic cursor flashing off
-						SetViewWindow();
+						if ( SetViewWindow() ) cont=0;
 						break;
 					case KEY_CTRL_F6:
 						cont=0;
@@ -1009,7 +1010,7 @@ void FkeyGraph(){
 //--------------------------------------------------------------
 unsigned int ZoomXY() {
 	int cont=1;
-	char buffer[21];
+	unsigned char buffer[21];
 	unsigned int key;
 	int retcode=0;
 	
@@ -1072,7 +1073,6 @@ unsigned int ZoomXY() {
 }
 //--------------------------------------------------------------
 unsigned int Zoom_sub(unsigned int key){
-	char buffer[32];
 	double x,y;
 
 	FkeyZoom();
@@ -1107,10 +1107,9 @@ unsigned int Zoom_sub(unsigned int key){
 }
 
 //----------------------------------------------------------------------------------------------
-unsigned int Trace(int *index )
-{
+unsigned int Trace(int *index ) {
 	int cont=1;
-	char buffer[21];
+	unsigned char buffer[21];
 	unsigned int key;
 	double dydx;
 	
@@ -1133,8 +1132,8 @@ unsigned int Trace(int *index )
 		PXYtoVW(GCursorX, 0, &regX, &regY);	// graphic cursor X  to  VW(X,dummy)
 		VWtoPXY( regX, traceAry[GCursorX], &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
 		if ( Coord ) {
-			sprintf(buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
-			sprintf(buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
+			sprintf((char*)buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
+			sprintf((char*)buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
 			sprintGRS(buffer, regX,             13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
@@ -1216,7 +1215,7 @@ double Graph_Eval( unsigned char *expbuf) {		// Eval Graph
 	double result;
     ExpPtr= 0;
     ErrorPtr= 0;
-    result = EvalsubTop( (char*)expbuf );
+    result = EvalsubTop( expbuf );
 	return result;
 }
 
@@ -1593,7 +1592,7 @@ unsigned int MathKey( unsigned int  key) {
 
 
 int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no change  -1 : change
-	char buffer[22];
+	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int select=0;
@@ -1618,43 +1617,43 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 
 		if ( scrl <=0 ) {
 			locate( 1, 2-scrl); Print((unsigned char*)"Xmin  :");
-			sprintG(buffer,Xmin,  10,LEFT_ALIGN); locate( 8, 2-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,Xmin,  10,LEFT_ALIGN); locate( 8, 2-scrl); Print(buffer);
 		}
 		if ( scrl <=1 ) {
 			locate( 1, 3-scrl); Print((unsigned char*)" max  :");
-			sprintG(buffer,Xmax,  10,LEFT_ALIGN); locate( 8, 3-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,Xmax,  10,LEFT_ALIGN); locate( 8, 3-scrl); Print(buffer);
 		}
 		if ( scrl <=2 ) {
 			locate( 1, 4-scrl); Print((unsigned char*)" scale:");
-			sprintG(buffer,Xscl,10,LEFT_ALIGN); locate( 8, 4-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,Xscl,10,LEFT_ALIGN); locate( 8, 4-scrl); Print(buffer);
 		}
 		if ( scrl <=3 ) {
 			locate( 1, 5-scrl); Print((unsigned char*)" dot  :");
-			sprintG(buffer,Xdot,  10,LEFT_ALIGN); locate( 8, 5-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,Xdot,  10,LEFT_ALIGN); locate( 8, 5-scrl); Print(buffer);
 		}
 		if ( scrl <=4 ) {
 			locate( 1, 6-scrl); Print((unsigned char*)"Ymin  :");
-			sprintG(buffer,Ymin,  10,LEFT_ALIGN); locate( 8, 6-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,Ymin,  10,LEFT_ALIGN); locate( 8, 6-scrl); Print(buffer);
 		}
 		if ( scrl <=5 ) {
 			locate( 1, 7-scrl); Print((unsigned char*)" max  :");
-			sprintG(buffer,Ymax,  10,LEFT_ALIGN); locate( 8, 7-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,Ymax,  10,LEFT_ALIGN); locate( 8, 7-scrl); Print(buffer);
 		}
 		if ( scrl >=1 ) {
 			locate( 1, 8-scrl); Print((unsigned char*)" scale:");
-			sprintG(buffer,Yscl,10,LEFT_ALIGN); locate( 8, 8-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,Yscl,10,LEFT_ALIGN); locate( 8, 8-scrl); Print(buffer);
 		}
 		if ( scrl >=2 ) {
 			locate( 1, 9-scrl); Print((unsigned char*)"Temin :");
-			sprintG(buffer,TThetamin,  10,LEFT_ALIGN); locate( 8, 9-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,TThetamin,  10,LEFT_ALIGN); locate( 8, 9-scrl); Print(buffer);
 		}
 		if ( scrl >=3 ) {
 			locate( 1, 10-scrl); Print((unsigned char*)"  max :");
-			sprintG(buffer,TThetamax,  10,LEFT_ALIGN); locate( 8, 10-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,TThetamax,  10,LEFT_ALIGN); locate( 8, 10-scrl); Print(buffer);
 		}
 		if ( scrl >=4 ) {
 			locate( 1, 11-scrl); Print((unsigned char*)"  ptch:");
-			sprintG(buffer,TThetaptch,  10,LEFT_ALIGN); locate( 8, 11-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer,TThetaptch,  10,LEFT_ALIGN); locate( 8, 11-scrl); Print(buffer);
 		}
 
 		y = select-scrl+1;
@@ -1669,7 +1668,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 		GetKey( &key );
 		switch (key) {
 			case KEY_CTRL_EXIT:
-				return;
+				return 0;	// no change
 				break;
 			case KEY_CTRL_EXE:
 				cont=0;
@@ -1805,7 +1804,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 
 //-----------------------------------------------------------------------------
 void SetFactor(){
-	char buffer[22];
+	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int select=0;
@@ -1816,9 +1815,9 @@ void SetFactor(){
 	while (cont) {
 		locate(3,3); Print((unsigned char *)"Factor");
 		locate(3,4); Print((unsigned char *) "Xfact:           ");
-		sprintG(buffer,Xfct,  10,LEFT_ALIGN); locate( 9, 4); Print((unsigned char*)buffer);
+		sprintG(buffer,Xfct,  10,LEFT_ALIGN); locate( 9, 4); Print(buffer);
 		locate(3,5); Print((unsigned char *) "Yfact:           ");
-		sprintG(buffer,Yfct,  10,LEFT_ALIGN); locate( 9, 5); Print((unsigned char*)buffer);
+		sprintG(buffer,Yfct,  10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
 
 		y = select + 3 ;
 		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
@@ -1881,7 +1880,7 @@ void SetFactor(){
 //-----------------------------------------------------------------------------
 
 void SetVar(int select){		// ----------- Set Variable
-	char buffer[22];
+	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int scrl=0;
@@ -1896,107 +1895,107 @@ void SetVar(int select){		// ----------- Set Variable
 
 		if ( scrl <=0 ) {
 			locate( 1, 1-scrl); Print((unsigned char*)"A=");
-			sprintG(buffer, regA, 19,LEFT_ALIGN); locate( 3, 1-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regA, 19,LEFT_ALIGN); locate( 3, 1-scrl); Print(buffer);
 		}
 		if ( scrl <=1 ) {
 			locate( 1, 2-scrl); Print((unsigned char*)"B=");
-			sprintG(buffer, regB, 19,LEFT_ALIGN); locate( 3, 2-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regB, 19,LEFT_ALIGN); locate( 3, 2-scrl); Print(buffer);
 		}
 		if ( scrl <=2 ) {
 			locate( 1, 3-scrl); Print((unsigned char*)"C=");
-			sprintG(buffer, regC, 19,LEFT_ALIGN); locate( 3, 3-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regC, 19,LEFT_ALIGN); locate( 3, 3-scrl); Print(buffer);
 		}
 		if ( scrl <=3 ) {
 			locate( 1, 4-scrl); Print((unsigned char*)"D=");
-			sprintG(buffer, regD, 19,LEFT_ALIGN); locate( 3, 4-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regD, 19,LEFT_ALIGN); locate( 3, 4-scrl); Print(buffer);
 		}
 		if ( scrl <=4 ) {
 			locate( 1, 5-scrl); Print((unsigned char*)"E=");
-			sprintG(buffer, regE, 19,LEFT_ALIGN); locate( 3, 5-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regE, 19,LEFT_ALIGN); locate( 3, 5-scrl); Print(buffer);
 		}
 		if ( scrl <=5 ) {
 			locate( 1, 6-scrl); Print((unsigned char*)"F=");
-			sprintG(buffer, regF, 19,LEFT_ALIGN); locate( 3, 6-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regF, 19,LEFT_ALIGN); locate( 3, 6-scrl); Print(buffer);
 		}
 		if ( scrl <=6 ) {
 			locate( 1, 7-scrl); Print((unsigned char*)"G=");
-			sprintG(buffer, regG, 19,LEFT_ALIGN); locate( 3, 7-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regG, 19,LEFT_ALIGN); locate( 3, 7-scrl); Print(buffer);
 		}
 		if ( ( scrl >=1 ) && ( 8-scrl > 0 ) ){
 			locate( 1, 8-scrl); Print((unsigned char*)"H=");
-			sprintG(buffer, regH, 19,LEFT_ALIGN); locate( 3, 8-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regH, 19,LEFT_ALIGN); locate( 3, 8-scrl); Print(buffer);
 		}
 		if ( ( scrl >=2 ) && ( 9-scrl > 0 ) ) {
 			locate( 1, 9-scrl); Print((unsigned char*)"I=");
-			sprintG(buffer, regI, 19,LEFT_ALIGN); locate( 3, 9-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regI, 19,LEFT_ALIGN); locate( 3, 9-scrl); Print(buffer);
 		}
 		if ( ( scrl >=3 ) && ( 10-scrl > 0 ) ) {
 			locate( 1, 10-scrl); Print((unsigned char*)"J=");
-			sprintG(buffer, regJ, 19,LEFT_ALIGN); locate( 3, 10-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regJ, 19,LEFT_ALIGN); locate( 3, 10-scrl); Print(buffer);
 		}
 		if ( ( scrl >=4 ) && ( 11-scrl > 0 ) ) {
 			locate( 1, 11-scrl); Print((unsigned char*)"K=");
-			sprintG(buffer, regK, 19,LEFT_ALIGN); locate( 3, 11-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regK, 19,LEFT_ALIGN); locate( 3, 11-scrl); Print(buffer);
 		}
 		if ( ( scrl >=5 ) && ( 12-scrl > 0 ) ) {
 			locate( 1, 12-scrl); Print((unsigned char*)"L=");
-			sprintG(buffer, regL, 19,LEFT_ALIGN); locate( 3, 12-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regL, 19,LEFT_ALIGN); locate( 3, 12-scrl); Print(buffer);
 		}
 		if ( ( scrl >=6 )  && ( 13-scrl > 0 ) ) {
 			locate( 1, 13-scrl); Print((unsigned char*)"M=");
-			sprintG(buffer, regM, 19,LEFT_ALIGN); locate( 3, 13-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regM, 19,LEFT_ALIGN); locate( 3, 13-scrl); Print(buffer);
 		}
 		if ( ( scrl >=7 ) && ( 14-scrl > 0 ) ) {
 			locate( 1, 14-scrl); Print((unsigned char*)"N=");
-			sprintG(buffer, regN, 19,LEFT_ALIGN); locate( 3, 14-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regN, 19,LEFT_ALIGN); locate( 3, 14-scrl); Print(buffer);
 		}
 		if ( ( scrl >=8 ) && ( 15-scrl > 0 ) ) {
 			locate( 1, 15-scrl); Print((unsigned char*)"O=");
-			sprintG(buffer, regO, 19,LEFT_ALIGN); locate( 3, 15-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regO, 19,LEFT_ALIGN); locate( 3, 15-scrl); Print(buffer);
 		}
 		if ( ( scrl >=9 )  && ( 16-scrl > 0 ) ) {
 			locate( 1, 16-scrl); Print((unsigned char*)"P=");
-			sprintG(buffer, regP, 19,LEFT_ALIGN); locate( 3, 16-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regP, 19,LEFT_ALIGN); locate( 3, 16-scrl); Print(buffer);
 		}
 		if ( ( scrl >=10 ) && ( 17-scrl > 0 ) ) {
 			locate( 1, 17-scrl); Print((unsigned char*)"Q=");
-			sprintG(buffer, regQ, 19,LEFT_ALIGN); locate( 3, 17-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regQ, 19,LEFT_ALIGN); locate( 3, 17-scrl); Print(buffer);
 		}
 		if ( ( scrl >=11 ) && ( 18-scrl > 0 ) ) {
 			locate( 1, 18-scrl); Print((unsigned char*)"R=");
-			sprintG(buffer, regR, 19,LEFT_ALIGN); locate( 3, 18-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regR, 19,LEFT_ALIGN); locate( 3, 18-scrl); Print(buffer);
 		}
 		if ( ( scrl >=12 ) && ( 19-scrl > 0 ) ) {
 			locate( 1, 19-scrl); Print((unsigned char*)"S=");
-			sprintG(buffer, regS, 19,LEFT_ALIGN); locate( 3, 19-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regS, 19,LEFT_ALIGN); locate( 3, 19-scrl); Print(buffer);
 		}
 		if ( ( scrl >=13 ) && ( 20-scrl > 0 ) ) {
 			locate( 1, 20-scrl); Print((unsigned char*)"T=");
-			sprintG(buffer, regT, 19,LEFT_ALIGN); locate( 3, 20-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regT, 19,LEFT_ALIGN); locate( 3, 20-scrl); Print(buffer);
 		}
 		if ( ( scrl >=14 ) && ( 21-scrl > 0 ) ) {
 			locate( 1, 21-scrl); Print((unsigned char*)"U=");
-			sprintG(buffer, regU, 19,LEFT_ALIGN); locate( 3, 21-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regU, 19,LEFT_ALIGN); locate( 3, 21-scrl); Print(buffer);
 		}
 		if ( ( scrl >=15 ) && ( 22-scrl > 0 ) ) {
 			locate( 1, 22-scrl); Print((unsigned char*)"V=");
-			sprintG(buffer, regV, 19,LEFT_ALIGN); locate( 3, 22-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regV, 19,LEFT_ALIGN); locate( 3, 22-scrl); Print(buffer);
 		}
 		if ( ( scrl >=16 ) && ( 23-scrl > 0 ) ) {
 			locate( 1, 23-scrl); Print((unsigned char*)"W=");
-			sprintG(buffer, regW, 19,LEFT_ALIGN); locate( 3, 23-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regW, 19,LEFT_ALIGN); locate( 3, 23-scrl); Print(buffer);
 		}
 		if ( ( scrl >=17 ) && ( 24-scrl > 0 ) ) {
 			locate( 1, 24-scrl); Print((unsigned char*)"X=");
-			sprintG(buffer, regX, 19,LEFT_ALIGN); locate( 3, 24-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regX, 19,LEFT_ALIGN); locate( 3, 24-scrl); Print(buffer);
 		}
 		if ( ( scrl >=18 ) && ( 25-scrl > 0 ) ) {
 			locate( 1, 25-scrl); Print((unsigned char*)"Y=");
-			sprintG(buffer, regY, 19,LEFT_ALIGN); locate( 3, 25-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regY, 19,LEFT_ALIGN); locate( 3, 25-scrl); Print(buffer);
 		}
 		if ( ( scrl >=19 ) && ( 26-scrl > 0 ) ) {
 			locate( 1, 26-scrl); Print((unsigned char*)"Z=");
-			sprintG(buffer, regZ, 19,LEFT_ALIGN); locate( 3, 26-scrl); Print((unsigned char*)buffer);
+			sprintG(buffer, regZ, 19,LEFT_ALIGN); locate( 3, 26-scrl); Print(buffer);
 		}
 
 		y = select-scrl;
@@ -2096,7 +2095,7 @@ void SetupG(){		// ----------- Setup
     char *style[]  ={"Normal","Thick","Broken","Dot"};
     char *degrad[]  ={"Deg","Rad","Grad"};
     char *display[]  ={"Nrm","Fix","Sci"};
-	char buffer[22];
+	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int select=0;
@@ -2141,8 +2140,8 @@ void SetupG(){		// ----------- Setup
 			locate( 1, 9-scrl); Print((unsigned char*)"Display     :");
 			locate(14, 9-scrl); Print((unsigned char*)display[CB_Round.MODE]);
 			buffer[0]='\0';
-			sprintf(buffer,"%d",CB_Round.DIGIT);
-			locate(17, 9-scrl); Print((unsigned char*)buffer);
+			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
+			locate(17, 9-scrl); Print(buffer);
 			locate(19, 9-scrl); 
 			if (ENG) Print((unsigned char*)"/E");
 		}
