@@ -1170,6 +1170,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				switch ( dumpflg ) {
 					case 2: 		// Opcode
 							PrevOpcode( SrcBase, &csrPtr );
+							if ( (cx==1)&&(cy==2) ) PrevLine( SrcBase, &offset );
 							break;
 					case 4: 		// hex dump
 							cx--;
@@ -1227,6 +1228,10 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 								if ( ( c==0x0C ) || ( c==0x0D ) ) break;
 							}
 							if ( x > cx ) PrevOpcode( SrcBase, &csrPtr );
+							if ( offset > csrPtr ) { 
+								offset=csrPtr;
+								if ( x > 1 ) PrevLine( SrcBase, &offset );
+							}
 							break;
 					case 4: 		// hex dump
 							cy--;
@@ -1350,9 +1355,9 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 								case 4: 		// hex dump
 									dumpflg=2;
-								case 16:		// Ascii dump
-									dumpflg=2;
-									break;
+//								case 16:		// Ascii dump
+//									dumpflg=16;
+//									break;
 								default:
 									break;
 							}

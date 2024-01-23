@@ -316,10 +316,12 @@ int NextOpcode( unsigned char *SRC, int *offset ){
 
 int NextLine( unsigned char *SRC, int *offset ){
 	unsigned int c;
-	int ofst=*offset;
+	int ofst=*offset,ofst2;
 	while (1) {
 		 if ( NextOpcode( SRC, &(*offset) ) ==0 ) return (*offset)-ofst ;
-		c=SRC[(*offset)-1];
+		ofst2=*offset;
+		PrevOpcode( SRC, &ofst2 );
+		c=SRC[ofst2];
 		switch ( c ) {
 			case 0x0C:		// dsps
 			case 0x0D:		// <CR>
@@ -351,12 +353,14 @@ int PrevOpcode( unsigned char *SRC, int *offset ){
 
 int PrevLine( unsigned char *SRC, int *offset ){
 	unsigned int c,d;
-	int ofst=*offset;
+	int ofst=*offset,ofst2;
 	while (1) {
 		PrevOpcode( SRC, &(*offset) );
 		if ( *offset <= 0 ) { *offset=0; return ofst-(*offset) ; }
 		c=SRC[*offset];
-		d=SRC[*offset-1];
+		ofst2=*offset;
+		PrevOpcode( SRC, &ofst2 );
+		d=SRC[ofst2];
 		switch ( c ) {
 			case 0x0C:		// dsps
 			case 0x0D:		// <CR>
@@ -369,8 +373,8 @@ int PrevLine( unsigned char *SRC, int *offset ){
 						break;
 				}
 				break;
-				default:
-					break;
+			default:
+				break;
 		}
 		switch ( d ) {
 			case 0x0C:		// dsps
