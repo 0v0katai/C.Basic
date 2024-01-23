@@ -5,7 +5,7 @@ extern int ErrorNo;
 
 //------------------------------------------------------------------------------
 #define SyntaxERR  1
-#define MaERR      2
+#define MathERR     2
 #define GoERR      3
 #define NestingERR 4
 #define StackERR   5
@@ -36,8 +36,22 @@ extern int ErrorNo;
 #define InvalidType 30
 #define StorageMemoryFull 31
 
+#define OutOfRangeERR 32
+#define ForWithoutNextERR 33
+#define NextWithoutForERR 34
+#define WhileWithoutWhileEndERR 35
+#define WhileEndWithoutWhileERR 36
+#define DoWithoutLpWhileERR 37
+#define LpWhileWithoutDoERR 38
+#define NotLoopERR 39
+#define DivisionByZeroERR 40
+#define UndefinedLabelERR 41
+#define NotEnoughMemoryERR 42
+
 //------------------------------------------------------------------------------
-void CB_ERROR(char *buffer) ;
-void CB_ErrNo(int ErrorNo) ;
+void ERROR(char *buffer) ;
+void CB_ErrMsg(int ErrNo) ;
+void CB_Error(int ErrNo) ;
+
 void CB_BreakStop() ;
 

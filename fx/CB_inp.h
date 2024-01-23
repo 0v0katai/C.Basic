@@ -24,6 +24,9 @@
 #define  LEFT_ALIGN   0
 #define  RIGHT_ALIGN  1
 
+void Fkey_dispN_Aa(int n) ;	
+void Fkey_dispN_aA(int n) ;
+
 unsigned int SelectChar() ;
 int SelectOpcode(unsigned short *oplist, int *select) ;
 

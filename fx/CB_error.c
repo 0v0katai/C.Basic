@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "KeyScan.h"
-#include "CB_lib.h"
 #include "CB_io.h"
+#include "CB_error.h"
+#include "CB_interpreter.h"
 
 //-----------------------------------------------------------------------------
 // Casio Basic inside
@@ -15,7 +16,7 @@ int ErrorPtr=0;		// Error ptr
 int ErrorNo;		// Error No
 //----------------------------------------------------------------------------------------------
 
-void CB_ERROR(char *buffer) {
+void ERROR(char *buffer) {
 	unsigned int key;
 	char buf[22];
 
@@ -42,38 +43,76 @@ void CB_ERROR(char *buffer) {
 	Bdisp_PutDisp_DD();
 }
 
-void CB_ErrNo(int ErrorNo) {
-	switch (ErrorNo) {
-		case 1:
-			CB_ERROR("Syntax ERROR");
+void CB_ErrMsg(int ErrNo) {
+	switch (ErrNo) {
+		case SyntaxERR:
+			ERROR("Syntax ERROR");
 			break;
-		case 2:
-			CB_ERROR("Math ERROR");
+		case MathERR:
+			ERROR("Math ERROR");
 			break;
-		case 3:
-			CB_ERROR("Go ERROR");
+		case GoERR:
+			ERROR("Go ERROR");
 			break;
-		case 4:
-			CB_ERROR("Nesting ERROR");
+		case NestingERR:
+			ERROR("Nesting ERROR");
 			break;
-		case 5:
-			CB_ERROR("Stack ERROR");
+		case StackERR:
+			ERROR("Stack ERROR");
 			break;
-		case 6:
-			CB_ERROR("Memory ERROR");
+		case MemoryERR:
+			ERROR("Memory ERROR");
 			break;
-		case 7:
-			CB_ERROR("Argument ERROR");
+		case ArgumentERR:
+			ERROR("Argument ERROR");
 			break;
-		case 8:
-			CB_ERROR("Dimension ERROR");
+		case DimensionERR:
+			ERROR("Dimension ERROR");
 			break;
-		case 9:
-			CB_ERROR("Range ERROR");
+		case RangeERR:
+			ERROR("Range ERROR");
+			break;
+		case NextWithoutForERR:
+			ERROR("Next without For");
+			break;
+		case ForWithoutNextERR:
+			ERROR("For without Next");
+			break;
+		case WhileWithoutWhileEndERR:
+			ERROR("While withot WEnd");
+			break;
+		case WhileEndWithoutWhileERR:
+			ERROR("WEnd withot While");
+			break;
+		case LpWhileWithoutDoERR:
+			ERROR("LpWhile withot Do");
+			break;
+		case DoWithoutLpWhileERR:
+			ERROR("Do withot LpWhile");
+			break;
+		case NotLoopERR:
+			ERROR("Not Loop ERROR");
+			break;
+		case DivisionByZeroERR:
+			ERROR("Division By Zero");
+			break;
+		case UndefinedLabelERR:
+			ERROR("Undefined Label");
+			break;
+		case NotEnoughMemoryERR:
+			ERROR("Not enough Memory");
 			break;
 		default:
 			break;
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CB_Error(int ErrNo) { // error
+	if ( ErrorNo ) return ;
+	ErrorNo=ErrNo;
+	ErrorPtr=ExecPtr;
+	if ( ErrNo==MathERR ) ErrorPtr--;
 }
 
 //----------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.01                                       */
+/*   inp Library  ver 1.02                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -14,6 +14,25 @@
 #include "CB_inp.h"
 #include "CB_io.h"
 #include "CB_Kana.h"
+
+//----------------------------------------------------------------------------------------------
+void Fkey_KDISPN(int n,char *buffer) {
+	Fkey_Clear(n);
+	CB_PrintXY(n*21+3,7*8+1,(unsigned char *)buffer);
+	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
+	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
+	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
+	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
+}
+
+void Fkey_dispN_Aa(int n) {
+	Fkey_dispN(n,"A<>a");
+	Bdisp_AreaReverseVRAM( n*21+3, 7*8+1, n*21+7, 7*8+7);	// reverse
+}
+void Fkey_dispN_aA(int n) {
+	Fkey_dispN(n,"A<>a");
+	Bdisp_AreaReverseVRAM( n*21+15, 7*8+1, n*21+20, 7*8+7);	// reverse
+}
 
 //----------------------------------------------------------------------------------------------
 unsigned short CharMATH[]= {
@@ -63,14 +82,6 @@ unsigned short *oplist=CharMATH;
 int CharPtr=0;
 
 
-void Fkey_KDISPN(int n,char *buffer) {
-	Fkey_Clear(n);
-	CB_PrintXY(n*21+3,7*8+1,(unsigned char *)buffer);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
-	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
-	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
-}
 
 unsigned int SelectChar() {
 
@@ -658,6 +669,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 	int dspX;
 	int oplen,oplenL,oplenR;
 	int selectOPTN=0;
+	int alphalock = 0 ;
 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
@@ -686,7 +698,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				else				PrevOpcode( buffer, &offsetX);
 		}
 		
-		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN(4,"a<>A"); else Fkey_dispN(4,"A<>a");
+		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(4); else Fkey_dispN_Aa(4);
 		if ( ( pallet_mode ) && ( alpha_mode ) ) Fkey_dispR(5,"CHAR");
 
 		CursorStyle=Cursor_GetFlashStyle();
@@ -704,6 +716,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				if ( length==0 ) cont=0;
 				ptrX=0; offsetX=0;
 				buffer[0]='\0';
+				alphalock = 0 ;
 				break;
 			case KEY_CTRL_EXIT:
 			 	if ( exit_cancel == 0 ) {
@@ -736,23 +749,38 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 					offsetX=OpStrLastoffset(buffer, ptrX, csrwidth ,&csrX);
 				break;
 			case KEY_CTRL_F5:
-				if ( ( pallet_mode ) && ( alpha_mode ) ) lowercase=1-lowercase;
+				if ( ( pallet_mode ) && ( alpha_mode ) ) {
+					lowercase=1-lowercase;
+					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
+				}
 				break;
 			case KEY_CTRL_F6:
 				Cursor_SetFlashMode(0); 		// cursor flashing off
-				if ( ( pallet_mode ) && ( alpha_mode ) ) key=SelectChar();
+				if ( ( pallet_mode ) && ( alpha_mode ) ) {
+					key=SelectChar();
+					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
+				}
+				break;
+			case KEY_CTRL_SHIFT:
+				alphalock = 0 ;
+				GetKey(&key);
+				switch (key) {
+					case KEY_CTRL_ALPHA:
+						if ( ( pallet_mode ) && ( alpha_mode ) ) alphalock = 1 ;
+						break;
+					default:
+						break;
+				}
 				break;
 			default:
 				break;
 		}
 
-
 		if ( key == KEY_CTRL_OPTN ) {
 				Cursor_SetFlashMode(0); 		// cursor flashing off
 				key=SelectOpcode(oplistInp,&selectOPTN);
+				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 		}
-		if ( key == KEY_CTRL_XTT  )   key='X'; // 
-
 		if ( alpha_mode || exp_mode ) {
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
@@ -772,6 +800,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 					}
 					if ( i==0 ) NextOpcode( buffer, &ptrX );
 					key=0;
+					alphalock = 0 ;
 					break;
 				default:
 					break;
@@ -828,18 +857,17 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 			if ( hex_mode && ( KEY_CHAR_SIN == key ) ) key=KEY_CHAR_D;
 			if ( hex_mode && ( KEY_CHAR_COS == key ) ) key=KEY_CHAR_E;
 			if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
-			if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
+//			if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
+			if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 			if ( ( key == KEY_CTRL_XTT ) )   key='X'; // ^
-
-				if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
-				if ( CursorStyle < 0x6 ) {		// insert mode
-						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
-				} else {					// overwrite mode
-						DeleteOpcode1( buffer, MaxStrlen, &ptrX);
-						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
-				}
-				if ( i==0 ) NextOpcode( buffer, &ptrX );
-				key=0;
+			if ( CursorStyle < 0x6 ) {		// insert mode
+					i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+			} else {					// overwrite mode
+					DeleteOpcode1( buffer, MaxStrlen, &ptrX);
+					i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+			}
+			if ( i==0 ) NextOpcode( buffer, &ptrX );
+			key=0;
 		}
 
 	}

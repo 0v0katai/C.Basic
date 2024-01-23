@@ -1,0 +1,702 @@
+/*
+===============================================================================
+
+ Casio Basic RUNTIME library for fx-9860G series     v0.42
+
+ copyright(c)2015 by sentaro21
+ e-mail sentaro21@pm.matrix.jp
+
+===============================================================================
+*/
+#include <ctype.h>
+#include <fxlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <timer.h>
+#include "fx_syscall.h"
+#include "KeyScan.h"
+#include "CB_io.h"
+#include "CB_inp.h"
+#include "CB_glib.h"
+#include "CB_glib2.h"
+#include "CB_Eval.h"
+#include "CB_interpreter.h"
+#include "CB_error.h"
+
+//------------------------------------------------------------------------------
+/*
+void DrawBusy()		// BusyInd=0: running indicator off,  BusyInd=1: on
+{
+	unsigned char BusyDATA[]={ 0xff,0xff,0xff,0xff };
+	DISPGRAPH Gbsy;
+
+    if ( BusyInd == 0 ) return;
+    Gbsy.x = 124; 
+    Gbsy.y =   0; 
+    Gbsy.GraphData.width =  4;
+    Gbsy.GraphData.height = 4;
+    
+    Gbsy.GraphData.pBitmap = BusyDATA; 	// Busy pattern
+    Gbsy.WriteModify = IMB_WRITEMODIFY_NORMAL; 
+    Gbsy.WriteKind = IMB_WRITEKIND_OR;
+    Bdisp_WriteGraph_DD(&Gbsy); 		// drawing only display driver
+}
+*/
+//-----------------------------------------------------------------------------
+int skip_count=0;
+
+void Bdisp_PutDisp_DD_DrawBusy() {
+	Bdisp_PutDisp_DD();
+	HourGlass();
+//	DrawBusy();
+}
+void Bdisp_PutDisp_DD_DrawBusy_skip() {
+	int t=RTC_GetTicks();
+	if ( t > skip_count ) { skip_count=t+2;
+		Bdisp_PutDisp_DD_DrawBusy();
+	}
+}
+void Bdisp_PutDisp_DD_DrawBusy_through( unsigned char * SRC ) {
+	unsigned char c;
+	if ( SRC[ExecPtr++] == ':' ) return ;
+	ExecPtr--;
+	Bdisp_PutDisp_DD_DrawBusy();
+}
+void Bdisp_PutDisp_DD_DrawBusy_skip_through( unsigned char * SRC ) {
+	unsigned char c;
+	if ( SRC[ExecPtr++] == ':' ) return ;
+	ExecPtr--;
+	Bdisp_PutDisp_DD_DrawBusy_skip();
+}
+//------------------------------------------------------------------------------
+double MOD(double numer, double denom) {
+	return ( fmod( numer, denom ) );
+}
+//------------------------------------------------------------------------------
+
+void Text(int y, int x, unsigned char*str) {
+	PrintMini(  x, y, str,MINI_OVER);
+}
+
+//----------------------------------------------------------------------------------------------
+int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(x,y)
+	if ( ( Xdot == 0 ) || ( Ydot == 0 ) || ( Xmax == Xmin ) || ( Ymax == Ymin ) ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return ErrorNo ; }	// Range error
+	*px =   1 + ( (x-Xmin)/Xdot + 0.5 ) ;
+//	if ( Xmax >  Xmin )		*px =       (x-Xmin)/Xdot  +1.5 ;
+//	if ( Xmax <  Xmin )		*px = 126 - (x-Xmax)/-Xdot +1.49999999999999 ;
+	*py =  63 - ( (y-Ymin)/Ydot - 0.49999999999999 ) ;
+//	if ( Ymax >  Ymin )		*py =  62 - (y-Ymin)/Ydot  +1.49999999999999 ;
+//	if ( Ymax <  Ymin )		*py =       (y-Ymax)/-Ydot +1.5 ;
+	if ( (*px<1) || (*px>127) || (*py<1) || (*py> 63) ) { return -1; }	// 
+	return 0;
+}
+void PXYtoVW(int px, int py, double *x, double *y){	// pixel(x,y) -> ViewWwindow(x,y)
+//	if ( Xmax == Xmin )		*x = Xmin ;
+	*x = (    px-1)*Xdot  + Xmin ;
+//	if ( Xmax >  Xmin )		*x = (    (double)px-1)*Xdot  + Xmin ;
+//	if ( Xmax <  Xmin )		*x = (126-(double)px+1)*-Xdot + Xmax ;
+//	if ( Ymax == Ymin )		*y = Ymin ;
+	*y = ( 62-py+1)*Ydot  + Ymin ;
+//	if ( Ymax >  Ymin )		*y = ( 62-(double)py+1)*Ydot  + Ymin ;
+//	if ( Ymax <  Ymin )		*y = (    (double)py-1)*-Ydot + Ymax ;
+//	if ( fabs(*x)*1e10 < xdot ) *x=0;	// zero adjust
+//	if ( fabs(*y)*1e10 < ydot ) *y=0;	// zero adjust
+}
+
+void PlotGrid(double x, double y){
+	int px,py;
+	if ( ( x==0 ) && ( y==0 ) ) return;
+	if ( VWtoPXY( x,y, &px, &py) ) return;
+	if ( (px<1) || (px>127) ) return ;
+	if ( (py<1) || (py> 63) ) return ;
+	Bdisp_SetPoint_VRAM( px, py, 1);
+}
+
+void GraphAxesGrid(){
+	double x,y;
+
+	if ( Axes ) {
+		Horizontal(0, S_L_Normal);
+		Vertical(0, S_L_Normal);
+			if ( Yscl > 0 ) {
+				if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(Xdot,y);
+				if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(Xdot,y);
+				if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(Xdot,y);
+				if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(Xdot,y);
+			}
+			if ( Xscl > 0 ) {
+				if ( Xmin <= 0 ) for ( x=0; x>=Xmin; x-=Xscl )	PlotGrid(x,Ydot);
+				if ( Xmin >  0 ) for ( x=0; x<=Xmin; x+=Xscl )	PlotGrid(x,Ydot);
+				if ( Xmax <= 0 ) for ( x=0; x>=Xmax; x-=Xscl )	PlotGrid(x,Ydot);
+				if ( Xmax >  0 ) for ( x=0; x<=Xmax; x+=Xscl )	PlotGrid(x,Ydot);
+			}
+	}
+
+	if ( Grid ) {
+		if ( ( Xscl > 0 ) && ( Yscl > 0 ) ) {
+			if ( Xmin < 0 ) { 
+					for ( x=0; x>=Xmin; x-=Xscl ) {
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+					}
+			}
+			if ( Xmin >= 0 ) {
+					for ( x=0; x<=Xmin; x+=Xscl) {
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+					}
+			}
+			if ( Xmax < 0 ) {
+					for ( x=0; x>=Xmax; x-=Xscl) {
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+					}
+			}
+			if ( Xmax >= 0 ) {
+					for ( x=0; x<=Xmax; x+=Xscl) {
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+					}
+			}
+		}
+	}
+
+	if ( Label ) {
+		PrintMini(  1,17,(unsigned char*)" ",MINI_OVER);
+		PrintMini(  1,17,(unsigned char*)"Y",MINI_OVER);
+		PrintMini(124,43,(unsigned char*)" ",MINI_OVER);
+		PrintMini(124,43,(unsigned char*)"X",MINI_OVER);
+	}
+//	Bdisp_PutDisp_DD();
+}
+
+void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax, double yscl){
+		
+	Xmin  =xmin;
+	Xmax  =xmax;
+	Xscl  =xscl;
+	Xdot  =(Xmax-Xmin)/126.0;
+	Ymin  =ymin;
+	Ymax  =ymax;
+	Yscl  =yscl;
+	Ydot  =(Ymax-Ymin)/ 62.0;
+
+	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
+	
+	GraphAxesGrid();
+
+	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
+//	regX =fabs(Xmin+Xmax)/2; regY =fabs(Ymin+Ymax)/2;	// ViewWindow Current  XY
+}
+
+
+void ZoomIn(){
+	double c,y,dx,dy,cx,cy;
+
+	dx   = (Xmax+Xmin)/2-regX;
+	Xmin = Xmin-dx;	// move center
+	Xmax = Xmax-dx;
+	
+	cx   = (Xmax+Xmin)/2;	//
+	dx   = (Xmax-Xmin)/Xfct/2;	// zoom in dx
+	Xmin = cx-dx;
+	Xmax = cx+dx;
+	Xdot = (Xmax-Xmin)/126.0;
+	
+	dy   = (Ymax+Ymin)/2-regY;	// move center
+	Ymin = Ymin-dy;
+	Ymax = Ymax-dy;
+	
+	cy   = (Ymax+Ymin)/2;	// 
+	dy   = (Ymax-Ymin)/Yfct/2;	// zoom in dy
+	Ymin = cy-dy;
+	Ymax = cy+dy;
+	Ydot = (Ymax-Ymin)/ 62.0;
+	
+	regX = (Xmax+Xmin)/2; // center
+	regY = (Ymax+Ymin)/2; // center
+}
+
+void ZoomOut(){
+	double dx,dy,cx,cy;
+	
+	dx   = (Xmax+Xmin)/2-regX;
+	Xmin = Xmin-dx;	// move center
+	Xmax = Xmax-dx;
+	
+	cx   = (Xmax+Xmin)/2;	//
+	dx   = (Xmax-Xmin)*Xfct/2;	// zoom out dx
+	Xmin = cx-dx;
+	Xmax = cx+dx;
+	Xdot = (Xmax-Xmin)/126.0;
+	
+	dy   = (Ymax+Ymin)/2-regY;	// move center
+	Ymin = Ymin-dy;
+	Ymax = Ymax-dy;
+	
+	cy   = (Ymax+Ymin)/2;	// 
+	dy   = (Ymax-Ymin)*Yfct/2;	// zoom out dy
+	Ymin = cy-dy;
+	Ymax = cy+dy;
+	Ydot = (Ymax-Ymin)/ 62.0;
+	
+	regX = (Xmax+Xmin)/2; // center
+	regY = (Ymax+Ymin)/2; // center
+}
+
+//------------------------------------------------------------------------------ PLOT
+void Plotsub(double x, double y, int kind, int mode){
+	int px,py;
+	if ( VWtoPXY( x,y, &px, &py) == 0) {;
+		switch (mode) {
+			case 1:
+				Bdisp_SetPoint_VRAM( px, py, kind);
+				break;
+			case 2:
+				Bdisp_SetPoint_DD( px, py, kind);
+				break;
+			case 3:
+				Bdisp_SetPoint_DDVRAM( px, py , kind);
+				break;
+		}		
+	}
+	regX=x; regY=y;
+}
+
+void PlotOn_VRAM(double x, double y){
+	Plotsub( x, y, 1, 1);		// VRAM
+}
+void PlotOn_DD(double x, double y){
+	Plotsub( x, y, 1, 2);		// DD
+}
+void PlotOn_DDVRAM(double x, double y){
+	Plotsub( x, y, 1, 3);		// DDVRAM
+}
+void PlotOff_VRAM(double x, double y){
+	Plotsub( x, y, 0, 1);		// VRAM
+}
+void PlotOff_DD(double x, double y){
+	Plotsub( x, y, 0, 2);		// DD
+}
+void PlotOff_DDVRAM(double x, double y){
+	Plotsub( x, y, 0, 3);		// DDVRAM
+}
+void PlotChg_VRAM(double x,  double y){
+	int px,py;
+	if ( VWtoPXY( x,y, &px, &py) ) return;
+	if ( Bdisp_GetPoint_VRAM(px, py) )
+		 Bdisp_SetPoint_VRAM(px, py, 0);
+	else Bdisp_SetPoint_VRAM(px, py, 1);
+	regX=x; regY=y;
+}
+
+void PlotChg_DDVRAM(double x, double y){
+	PlotChg_VRAM(x, y);
+	Bdisp_PutDisp_DD();
+}
+void PxlOn_VRAM(int py, int px){
+	Bdisp_SetPoint_VRAM(px, py, 1);
+	PXYtoVW(px, py, &regX, &regY);
+}
+void PxlOn_DD(int py, int px){
+	Bdisp_SetPoint_DD(px, py, 1);
+	PXYtoVW(px, py, &regX, &regY);
+}
+void PxlOn_DDVRAM(int py, int px){
+	Bdisp_SetPoint_DDVRAM(px, py, 1);
+	PXYtoVW(px, py, &regX, &regY);
+}
+void PxlOff_VRAM(int py, int px){
+	Bdisp_SetPoint_VRAM(px, py, 0);
+	PXYtoVW(px, py, &regX, &regY);
+}
+void PxlOff_DD(int py, int px){
+	Bdisp_SetPoint_DD(px, py, 0);
+	PXYtoVW(px, py, &regX, &regY);
+}
+void PxlOff_DDVRAM(int py, int px){
+	Bdisp_SetPoint_DDVRAM(px, py, 0);
+	PXYtoVW(px, py, &regX, &regY);
+}
+int PxlTest(int py, int px) {
+	return	Bdisp_GetPoint_VRAM(px, py);
+}
+void PxlChg_VRAM(int py, int px){
+	if (PxlTest(py,px)) 
+		Bdisp_SetPoint_VRAM(px, py, 0);
+	else
+		Bdisp_SetPoint_VRAM(px, py, 1);
+	PXYtoVW(px, py, &regX, &regY);
+}
+
+//------------------------------------------------------------------------------ LINE
+void LinesubSetPoint(int px, int py) {
+	if ( ( px <   1 ) || ( px > 127 ) || ( py <   1 ) || ( py >  63 ) ) return;
+	Bdisp_SetPoint_VRAM(px, py, 1);
+}
+void LinesubSetPointThick(int px, int py) {
+		LinesubSetPoint(px  , py  );
+		LinesubSetPoint(px  , py-1);
+		LinesubSetPoint(px-1, py  );
+		LinesubSetPoint(px-1, py-1);
+}
+
+void Linesub(int px1, int py1, int px2, int py2, int style) {
+	int i, j;
+	int x, y;
+	int dx, dy; // delta x,y
+	int wx, wy; // width x,y
+	int Styleflag=1;
+	int tmp;
+
+	if (px1==px2) { dx= 0; wx=0; }
+	if (px1< px2) { dx= 1; wx=px2-px1; }
+	if (px1> px2) { dx=-1; wx=px1-px2;}
+	if (py1==py2) { dy= 0; wy=0; }
+	if (py1< py2) { dy= 1; wy=py2-py1; }
+	if (py1> py2) { dy=-1; wy=py1-py2; }
+
+	tmp=S_L_Style;
+	if ( style >=0 ) S_L_Style=style;
+
+	switch (S_L_Style) {
+		case S_L_Normal:	// ---------- Normal
+			if (wx==0) {	// vertical line
+					x=px1; y=py1;
+					while( wy>=0 ) {
+						LinesubSetPoint(x, y);
+						wy--; y+=dy;
+					}
+			}
+			if (wy==0) { // horizontal line
+					x=px1; y=py1;
+					while( wx>=0 ) {
+						LinesubSetPoint(x, y);
+						wx--; x+=dx;
+					}
+			}
+			
+			if (wx>=wy) {
+				if (dy>0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						LinesubSetPoint(x, y);
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y++; }
+					}
+				}
+				if (dy<0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						LinesubSetPoint(x, y);
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y--; }
+					}
+				}
+				
+			} else {
+				if (dx>0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						LinesubSetPoint(x, y);
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x++; }
+					}
+				}
+				if (dx<0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						LinesubSetPoint(x, y);
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x--; }
+					}
+				}
+				
+			}
+			break;
+		case S_L_Dot:		// ---------- Dot
+			if (wx==0) {	// vertical line
+					x=px1; y=py1;
+					while( wy>=0 ) {
+						if (Styleflag)
+						LinesubSetPoint(x, y);
+						wy--; y+=dy;
+						Styleflag = 1-Styleflag;
+					}
+			}
+			if (wy==0) { // horizontal line
+					x=px1; y=py1;
+					while( wx>=0 ) {
+						if (Styleflag)
+						LinesubSetPoint(x, y);
+						wx--; x+=dx;
+						Styleflag = 1-Styleflag;
+					}
+			}
+			
+			if (wx>wy) {
+				if (dy>0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						if (Styleflag)
+						LinesubSetPoint(x, y);
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y++; }
+						Styleflag = 1-Styleflag;
+					}
+				}
+				if (dy<0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						if (Styleflag)
+						LinesubSetPoint(x, y);
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y--; }
+						Styleflag = 1-Styleflag;
+					}
+				}
+				
+			} else {
+				if (dx>0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						if (Styleflag)
+						LinesubSetPoint(x, y);
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x++; }
+						Styleflag = 1-Styleflag;
+					}
+				}
+				if (dx<0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						if (Styleflag)
+						LinesubSetPoint(x, y);
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x--; }
+						Styleflag = 1-Styleflag;
+					}
+				}
+				
+			}
+			break;
+		case S_L_Thick:	// ---------- Thick
+			if (wx==0) {	// vertical line
+					x=px1; y=py1;
+					while( wy>=0 ) {
+						LinesubSetPointThick(x  , y  );
+						wy--; y+=dy;
+					}
+			}
+			if (wy==0) { // horizontal line
+					x=px1; y=py1;
+					while( wx>=0 ) {
+						LinesubSetPointThick(x  , y  );
+						wx--; x+=dx;
+					}
+			}
+			
+			if (wx>=wy) {
+				if (dy>0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						LinesubSetPointThick(x  , y  );
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y++; }
+					}
+				}
+				if (dy<0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						LinesubSetPointThick(x  , y  );
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y--; }
+					}
+				}
+				
+			} else {
+				if (dx>0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						LinesubSetPointThick(x  , y  );
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x++; }
+					}
+				}
+				if (dx<0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						LinesubSetPointThick(x  , y  );
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x--; }
+					}
+				}
+				
+			}
+			break;
+		case S_L_Broken:	// ---------- Broken
+			if (wx==0) {	// vertical line
+					x=px1; y=py1;
+					while( wy>=0 ) {
+						if (Styleflag==1) {
+							LinesubSetPointThick(x  , y  );
+						}
+						wy--; y+=dy;
+						Styleflag++; if (Styleflag>2) Styleflag=0;
+					}
+			}
+			if (wy==0) { // horizontal line
+					x=px1; y=py1;
+					while( wx>=0 ) {
+						if (Styleflag==1) {
+							LinesubSetPointThick(x  , y  );
+						}
+						wx--; x+=dx;
+						Styleflag++; if (Styleflag>2) Styleflag=0;
+					}
+			}
+			
+			if (wx>=wy) {
+				if (dy>0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						if (Styleflag==1) {
+							LinesubSetPointThick(x  , y  );
+						}
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y++; }
+						Styleflag++; if (Styleflag>2) Styleflag=0;
+					}
+				}
+				if (dy<0) {
+					x=px1; y=py1; j=wx/2; i=wx;
+					while( wx>=0 ) {
+						if (Styleflag==1) {
+							LinesubSetPointThick(x  , y  );
+						}
+						wx--; x+=dx;
+						j-=wy; if (j<0) { j+=i; y--; }
+						Styleflag++; if (Styleflag>2) Styleflag=0;
+					}
+				}
+				
+			} else {
+				if (dx>0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						if (Styleflag==1) {
+							LinesubSetPointThick(x  , y  );
+						}
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x++; }
+						Styleflag++; if (Styleflag>2) Styleflag=0;
+					}
+				}
+				if (dx<0) {
+					x=px1; y=py1; j=wy/2; i=wy;
+					while( wy>=0 ) {
+						if (Styleflag==1) {
+							LinesubSetPointThick(x  , y  );
+						}
+						wy--; y+=dy;
+						j-=wx; if (j<0) { j+=i; x--; }
+						Styleflag++; if (Styleflag>2) Styleflag=0;
+					}
+				}
+				
+			}
+			break;
+		default:
+			break;
+		}
+	S_L_Style=tmp;
+}
+
+
+void Line(int style) {
+	int px1,px2,py1,py2;
+	int i,j;
+	if ( Previous_X > 1e307 ) { 
+		 Previous_X = Plot_X;
+		 Previous_Y = Plot_Y;
+		return;
+	}
+	i = VWtoPXY( Previous_X, Previous_Y, &px1, &py1) ;
+	j = VWtoPXY(     Plot_X,     Plot_Y, &px2, &py2) ;
+	Previous_X = Plot_X;
+	Previous_Y = Plot_Y;
+	Previous_PX = px2;
+	Previous_PY = py2;
+	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
+	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
+	Linesub( px1, py1, px2, py2, style);
+}
+
+void F_Line(double x1, double y1, double x2, double y2, int style) {
+	int px1,px2,py1,py2;
+	int i,j;
+	i = VWtoPXY( x1, y1, &px1, &py1) ;
+	j = VWtoPXY( x2, y2, &px2, &py2) ;
+	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
+	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
+	Linesub( px2, py2, px1, py1 ,style);
+}
+
+void Vertical(double x, int style) {
+	int px,py;
+	VWtoPXY( x, 0, &px, &py);
+	if ( px<  0 ) return;
+	if ( px>127 ) return;
+	Linesub( px, 1, px, 63, style);
+}
+void Horizontal(double y, int style) {
+	int px,py;
+	VWtoPXY( 0, y, &px, &py);
+	if ( py<  0 ) return;
+	if ( py> 63 ) return;
+	Linesub( 1, py, 127, py, style);
+}
+
+void Circle(double x, double y, double r, int style, int drawflag ) {
+	double	angle, k, x0,y0,x1,y1;
+	int px,py;
+	int	i,n;
+	if (style==S_L_Normal) { k=8; if ( ( r/Xdot )  > 20 ) k=6; }
+	if (style==S_L_Dot )   { k=4; if ( ( r/Xdot )  > 6  ) k=3; }
+	if (style==S_L_Thick)  k=4;
+	if (style==S_L_Broken) k=2;
+	n=fabs(floor(r*k/Xdot));
+	Plot_X = r+x;
+	Plot_Y = 0+y;
+	for(i=1;i<=n;i++){
+		angle=PI*2*i/n;
+		Plot_X=cos(angle)*r+x;
+		Plot_Y=sin(angle)*r+y;
+		if ( VWtoPXY( Plot_X, Plot_Y, &px, &py) ==0 ) {
+			switch ( style ) {
+				case S_L_Normal:
+				case S_L_Dot:
+					LinesubSetPoint(px, py);
+					break;
+				case S_L_Thick:
+				case S_L_Broken:
+					LinesubSetPointThick(px, py);
+					break;
+			}
+		}
+		if ( drawflag )	Bdisp_PutDisp_DD_DrawBusy_skip();
+	}
+	regX=Plot_X;
+	regY=Plot_Y;
+}
+
