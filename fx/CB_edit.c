@@ -10,7 +10,6 @@
 #include "CB_file.h"
 #include "CB_edit.h"
 
-#include "CB_lib.h"
 #include "CB_interpreter.h"
 #include "CB_error.h"
 
@@ -82,8 +81,8 @@ void InsertOpcode( unsigned char *filebase, int ptr, unsigned short opcode ){
 	unsigned char *srcbase;
 	len=OpcodeLen( opcode );
 	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
-		ErrorPtr=ptr; ErrorNo=6;		// Memory error
-		CB_ErrNo(ErrorNo);
+		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
+		CB_ErrMsg(ErrorNo);
 		return ;
 	}
 	j=ptr+len+0x56;
@@ -146,8 +145,8 @@ void EditPaste( unsigned char *filebase, int *ptr ){
 		
 	len=strlenOp(ClipBuffer);
 	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
-		ErrorPtr=(*ptr); ErrorNo=MemoryERR;		// Memory error
-		CB_ErrNo(ErrorNo);
+		ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
+		CB_ErrMsg(ErrorNo);
 		return ;
 	}
 	j=(*ptr)+len+0x56;
@@ -169,8 +168,8 @@ void EditCopy( unsigned char *filebase, int ptr, int startp, int endp ){
 	i=OpcodeLen( GetOpcode(filebase+0x56, ptr) );
 	len=(endp)-(startp)+i;
 	if ( len > ClipMax ) {
-		ErrorPtr=ptr; ErrorNo=MemoryERR;		// Memory error
-		CB_ErrNo(ErrorNo);
+		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
+		CB_ErrMsg(ErrorNo);
 		return ;
 	}
 	
@@ -186,8 +185,8 @@ void EditCut( unsigned char *filebase, int *ptr, int startp, int endp ){
 	i=OpcodeLen( GetOpcode(filebase+0x56, *ptr) );
 	len=(endp)-(startp)+i;
 	if ( len > ClipMax ) {
-		ErrorPtr=(*ptr); ErrorNo=MemoryERR;		// Memory error
-		CB_ErrNo(ErrorNo);
+		ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
+		CB_ErrMsg(ErrorNo);
 		return ;
 	}
 	
@@ -491,6 +490,7 @@ unsigned short oplistOPTN[]={
 
 		0x7F3A,	// MOD(
 		0x7F46,	// Dim
+		0x7F40,	// Mat	
 
 		0x7FB0,	// And
 		0x7FB1,	// Or
@@ -866,8 +866,8 @@ unsigned short oplistCMD[]={
 		0xF70B,	// LpWhile		8
 		0xFFFF,	// 				-
 		0xFFFF,	// 				-
-		0x7F46,	// Dim		
-		0xFFFF,	// 				-
+		0x7F46,	// Dim	
+		0x7F40,	// Mat	
 
 		
 		0xF70D,	// Break		1
@@ -1014,6 +1014,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 	int lowercase=0, CursorStyle;
 	int ClipStartPtr = -1 ;
 	int ClipEndPtr   = -1 ;
+	int alphalock = 0 ;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -1058,7 +1059,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 			Fkey_dispN( 0, "TOP ");
 			Fkey_dispN( 1, "BTM");
 			Fkey_dispR( 2, "CMD");
-			if ( lowercase  ) Fkey_dispN(3,"a<>A");   else Fkey_dispN(3,"A<>a");
+			if ( lowercase  ) Fkey_dispN_aA(3); else Fkey_dispN_Aa(3);
 			Fkey_dispR( 4, "CHAR");
 			Fkey_dispN( 5, "EXE");
 		}
@@ -1137,7 +1138,12 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 		switch (key) {
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel
+					alphalock = 0 ;
 					break;
+//			case KEY_CTRL_ALPHA:
+//					if ( alphalock ) alphalock = 0 ;
+//					ClipStartPtr = -1 ;		// ClipMode cancel
+//					break;
 			case KEY_CTRL_EXIT:
 					cont=0;
 					break;
@@ -1161,6 +1167,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 						}
 					}
 					key=0;
+					alphalock = 0 ;
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F2:
@@ -1189,16 +1196,19 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 						}
 					}
 					key=0;
+					alphalock = 0 ;
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F4:
 					lowercase=1-lowercase;
 					key=0;
+					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F5:
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectChar();
+					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F6:
@@ -1210,6 +1220,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					if ( stat == -1 ) offset = ExecPtr-1;
 					csrPtr = offset;
 					key=0;
+					alphalock = 0 ;
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					run=2; // edit mode
 					if ( dumpflg == 2 ) {
@@ -1365,6 +1376,8 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				break;
 				
 			case KEY_CTRL_SHIFT:
+				alphalock = 0 ;
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				Fkey_dispR( 0, "Var");
 				Fkey_Clear( 1 );
 				Fkey_dispR( 2, "V-W");
@@ -1375,7 +1388,6 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				switch (key) {
 					case KEY_CTRL_EXIT:
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_PAGEUP:
 							offset=0;
@@ -1391,7 +1403,6 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 							}
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_PAGEDOWN:
 							offset=EndOfSrc( SrcBase, offset );
@@ -1413,25 +1424,20 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 							}
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_SETUP:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetupG();
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel
-							break;
-					case KEY_CTRL_F1:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetVar(0);		// A - 
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F3:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetViewWindow();
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F5:
 							switch (dumpflg) {
@@ -1449,12 +1455,10 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							offset=csrPtr;
 							cx=6; cy=2;
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F6:
 							CB_test();
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 							
 					case KEY_CTRL_CLIP:
@@ -1464,19 +1468,16 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_PASTE:
 							EditPaste( FileBase, &csrPtr);
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 							
-					case KEY_CTRL_CATALOG:
+//					case KEY_CTRL_CATALOG:
 //							key=CatalogDialog();
-							tmpkey=key;
-							ClipStartPtr = -1 ;		// ClipMode cancel
-							break;
-					case KEY_CTRL_PRGM:
-							ClipStartPtr = -1 ;		// ClipMode cancel
+//							tmpkey=key;
+//							break;
+					case KEY_CTRL_ALPHA:
+							alphalock = 1 ;
 							break;
 					default:
-							ClipStartPtr = -1 ;		// ClipMode cancel
 						break;
 				}
 				break;
@@ -1498,20 +1499,23 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 			if ( key == KEY_CTRL_F3 ) {
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectOpcode5800P(oplistCMD,&selectCMD);
+				if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 			}
 			if ( key == KEY_CTRL_OPTN ) {
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectOpcode(oplistOPTN,&selectOPTN);
+				if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 			}
 			if ( key == KEY_CTRL_VARS ) {
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectOpcode(oplistVARS,&selectVARS);
+				if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 			}
 			if ( key == KEY_CTRL_PRGM ) {
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectOpcode(oplistPRGM,&selectPRGM);
+				if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 			}
-			if ( key == KEY_CTRL_XTT  )   key='X'; // 
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
 			switch ( keyH ) {		// ----- 2byte code -----
@@ -1534,17 +1538,19 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					}
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
 					key=0;
+					alphalock = 0 ;
 					break;
 				default:
 					break;
 			}
 			if ( key == KEY_CTRL_EXE )   key=0x0D; // <CR>
-			if ( ( 0x00 < key ) && ( key < 0xFF ) ) {		// ----- 1 byte code -----
+			if ( ( 0x00 < key ) && ( key < 0xFF ) || ( key == KEY_CTRL_XTT ) ) {		// ----- 1 byte code -----
 				if ( ClipStartPtr >= 0 ) { 
 						ClipStartPtr = -1 ;		// ClipMode cancel			
 				} else {
 					if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 //					if ( key == KEY_CHAR_POW )   key='^';
+					if ( key == KEY_CTRL_XTT  )   key='X'; // 
 					if ( CursorStyle < 0x6 ) {		// insert mode
 							InsertOpcode( FileBase, csrPtr, key );
 					} else {					// overwrite mode

@@ -1,6 +1,6 @@
 [DLSimProject]
 Name=CBASIC
-Version=00.41.0000
+Version=00.42.0000
 Model=:fx-9860G.dlm
 SourcePath=.
 MemoryPath=INIT
@@ -14,7 +14,6 @@ LoadAddress=80000000:90100000
 [Files]
 SourceFile=:fx_syscall.src
 SourceFile=:CB_interpreter.c
-SourceFile=:CB_lib.c
 SourceFile=:CB_Eval.c
 SourceFile=:CB_sample.c
 SourceFile=:KeyScan.c
@@ -25,9 +24,10 @@ SourceFile=:CB_inp.c
 SourceFile=:CB_io.c
 SourceFile=:CB_main.c
 SourceFile=:CB_Kana.c
+SourceFile=:CB_glib.c
+SourceFile=:CB_glib2.c
 HeaderFile=:fx_syscall.h
 HeaderFile=:CB_interpreter.h
-HeaderFile=:CB_lib.h
 HeaderFile=:CB_Eval.h
 HeaderFile=:KeyScan.h
 HeaderFile=:CB_edit.h
@@ -37,3 +37,5 @@ HeaderFile=:CB_io.h
 HeaderFile=:CB_sample.h
 HeaderFile=:TIMER_FX2.H
 HeaderFile=:CB_inp.h
+HeaderFile=:CB_glib.h
+HeaderFile=:CB_glib2.h

@@ -18,7 +18,8 @@
 #include "KeyScan.h"
 #include "CB_io.h"
 #include "CB_inp.h"
-#include "CB_lib.h"
+#include "CB_glib.h"
+#include "CB_glib2.h"
 #include "CB_Eval.h"
 #include "CB_file.h"
 #include "CB_edit.h"
@@ -30,6 +31,47 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
+//int BusyInd     = 1;	// BusyInd=0: running indicator off,  BusyInd=1: on
+
+int	DrawType    = 0;	// 0:connect  1:Plot
+int	Coord       = 1;	// 0:off 1:on
+int	Grid        = 1;	// 0:off 1:on
+int	Axes        = 1;	// 0:off 1:on
+int	Label       = 1;	// 0:off 1:on
+int	Derivative  = 1;	// 0:off 1:on
+int S_L_Style   = S_L_Normal;
+int tmp_Style   = S_L_Normal;
+int Angle       = 1;	// 0:deg   1:rad  2:grad
+
+double Previous_X=1e308 ;	// Plot Previous X
+double Previous_Y=1e308 ;	// Plot Previous Y
+int    Previous_PX=-1   ;	// Plot Previous PX
+int    Previous_PY=-1   ;	// Plot Previous PY
+double Plot_X    =1e308 ;	// Plot Current X
+double Plot_Y    =1e308 ;	// Plot Current Y
+
+int TimeDsp=0;		// Execution Time Display  0:off 1:on
+//-----------------------------------------------------------------------------
+// Casio Basic Gloval variable
+//-----------------------------------------------------------------------------
+double  REG[59];
+double  REGv[11];
+
+double	Xfct     =  2;					// 
+double	Yfct     =  2;					// 
+
+double	traceAry[130];		// Graph array X
+
+unsigned char *GraphY;
+unsigned char GraphY1[32];
+unsigned char GraphY2[32];
+unsigned char GraphY3[32];
+
+short	MatArySizeA[26];		// Matrix array status
+short	MatArySizeB[26];		// Matrix array status
+char	MatAryElementSize[26];		// Matrix array Element size
+double *MatAry[26];		// Matrix array ptr*
+
 //----------------------------------------------------------------------------------------------
 //		Interpreter
 //----------------------------------------------------------------------------------------------
@@ -189,21 +231,21 @@ int RangeErrorCK( unsigned char *SRC ) {
 void CB_Fix( unsigned char *SRC ){
 	int tmp;
 	tmp=CB_Eval( SRC );
-	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	CB_Round.MODE = Fix ;
 	CB_Round.DIGIT= tmp ;
 }
 void CB_Sci( unsigned char *SRC ){
 	int tmp;
 	tmp=CB_Eval( SRC );
-	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	CB_Round.MODE = Sci ;
 	CB_Round.DIGIT= tmp ;
 }
 void CB_Norm( unsigned char *SRC ){
 	int tmp;
 	tmp=CB_Eval( SRC );
-	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	CB_Round.MODE = Norm ;
 	CB_Round.DIGIT= tmp ;
 }
@@ -218,7 +260,7 @@ int MatOprand( unsigned char *SRC, int *reg){
 	if ( ( 'A'<=c )&&( c<='Z' ) ) {
 		(*reg)=c-'A';
 		ExecPtr++ ;
-		if ( SRC[ExecPtr] != '[' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return -1; }	// Syntax error
+		if ( SRC[ExecPtr] != '[' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
 		c=SRC[++ExecPtr];
 		if ( SRC[ExecPtr+1] == ',' ) {
 			ExecPtr++ ;
@@ -226,9 +268,9 @@ int MatOprand( unsigned char *SRC, int *reg){
 			else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REG[c-'A'];
 		} else {
 			dimA=(CB_Eval( SRC ));
-			if ( SRC[ExecPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return -1; }	// Syntax error
+			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
 		}
-		if ( MatArySizeA[(*reg)] < dimA ) { ErrorNo=DimensionERR; ErrorPtr=ExecPtr; return -1; }	// Dimension error
+		if ( MatArySizeA[(*reg)] < dimA ) { CB_Error(DimensionERR); return -1; }	// Dimension error
 		c=SRC[++ExecPtr];
 		if ( SRC[ExecPtr+1] == ']' ) {
 			ExecPtr++ ;
@@ -236,21 +278,129 @@ int MatOprand( unsigned char *SRC, int *reg){
 			else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REG[c-'A'];
 		} else {
 			dimB=(CB_Eval( SRC ));
-			if ( SRC[ExecPtr] != ']' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return -1; }	// Syntax error
+			if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
 		}
-		if ( MatArySizeB[(*reg)] < dimB ) { ErrorNo=DimensionERR; ErrorPtr=ExecPtr; return -1; }	// Dimension error
+		if ( MatArySizeB[(*reg)] < dimB ) { CB_Error(DimensionERR); return -1; }	// Dimension error
 		ExecPtr++ ;
 		return (dimA-1)*MatArySizeB[(*reg)]+dimB-1;
 	} else
-	{ ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return -1; }	// Syntax error
+	{ CB_Error(SyntaxERR); return -1; }	// Syntax error
 	return -1; //
 }
+//----------------------------------------------------------------------------------------------
+void CB_MatrixInit( unsigned char *SRC ) { //	{n,m}->Dim Mat A
+	unsigned int c,d;
+	int dimA,dimB,i;
+	int reg;
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	
+	dimA=(CB_Eval( SRC ));
+	c=SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	dimB=(CB_Eval( SRC ));
+	c=SRC[ExecPtr];
+	if ( c != '}' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	c=SRC[ExecPtr];
+	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	c =SRC[ExecPtr];
+	d =SRC[ExecPtr+1];
+	if ( ( c != 0x7F ) || ( d !=0x46 ) ) { CB_Error(SyntaxERR); return; }  // no Dim  Syntax error
+	ExecPtr+=2;
+	c =SRC[ExecPtr];
+	d =SRC[ExecPtr+1];
+	if ( ( c != 0x7F ) || ( d !=0x40 ) ) { CB_Error(SyntaxERR); return; }  // no Mat  Syntax error
+	ExecPtr+=2;
+	c =SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+		ExecPtr++;
+		reg=c-'A';
+		if ( ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
+			dptr = MatAry[reg] ;							// Matrix array ptr*
+		} else {
+			if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
+			MatArySizeA[reg]=dimA;						// Matrix array size
+			MatArySizeB[reg]=dimB;						// Matrix array size
+			if ( ( c=='B' ) || ( c=='C' ) ) {
+				MatAryElementSize[reg]=1;
+				dptr = malloc( dimA*dimB*sizeof(char) );
+			} else 
+			if ( ( c=='D' ) || ( c=='W' ) ) {
+				MatAryElementSize[reg]=2;
+				dptr = malloc( dimA*dimB*sizeof(short) );
+			} else
+			if ( ( c=='L' ) || ( c=='I' ) ) {
+				MatAryElementSize[reg]=4;
+				dptr = malloc( dimA*dimB*sizeof(int) );
+			} else {
+				MatAryElementSize[reg]=8;
+				dptr = malloc( dimA*dimB*sizeof(double) );
+			}
+	   		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return; }	// Not enough memory error
+			MatAry[reg] = dptr ;							// Matrix array ptr*
+		}
+	} else { CB_Error(SyntaxERR); return; }  // Syntax error
+
+	switch ( MatAryElementSize[reg] ) {
+		case 1:
+			cptr=(char*)dptr;
+			for (i=0; i< dimA*dimB; i++) cptr[i]=0;	// initialize double
+			break;
+		case 2:
+			wptr=(short*)dptr;
+			for (i=0; i< dimA*dimB; i++) wptr[i]=0;	// initialize char
+			break;
+		case 4:
+			iptr=(int*)dptr;
+			for (i=0; i< dimA*dimB; i++) iptr[i]=0;	// initialize word
+			break;
+		case 8:
+			for (i=0; i< dimA*dimB; i++) dptr[i]=0;	// initialize int
+			break;
+	}
+
+}
+void CB_ClrMat( unsigned char *SRC ) { //	ClrMat A
+	unsigned int c,c2;
+	int dimA,dimB;
+	int reg;
+	double *ptr;
+
+	c =SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+		ExecPtr++;
+		reg=c-'A';
+			ptr = MatAry[reg] ;							// Matrix array ptr*
+			if (ptr != NULL ) free(ptr);		
+			MatArySizeA[reg]=0;							// Matrix array size
+			MatArySizeB[reg]=0;							// Matrix array size
+			MatAry[reg]=NULL ;							// Matrix array ptr*
+	} else {
+		for ( reg=0; reg<26; reg++){
+			ptr = MatAry[reg] ;							// Matrix array ptr*
+			if (ptr != NULL ) free(ptr);		
+			MatArySizeA[reg]=0;							// Matrix array size
+			MatArySizeB[reg]=0;							// Matrix array size
+			MatAry[reg]=NULL ;							// Matrix array ptr*		
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 
 void CB_Store( unsigned char *SRC ){	// ->
 	int	st,en,i;
 	int dimA,dimB,reg;
 	int mptr;
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	
 	unsigned int c=SRC[ExecPtr];
 	if ( ( 'A' <= c ) && ( c <='z' ) ) {
 		st=c-'A';
@@ -260,7 +410,7 @@ void CB_Store( unsigned char *SRC ){	// ->
 			c=SRC[ExecPtr];
 			if ( ( 'A' <= c ) && ( c <='z' ) ) {
 				en=c-'A';
-				if ( en<st ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+				if ( en<st ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				ExecPtr++;	
 				for ( i=st; i<=en; i++) REG[ i ] = CB_CurrentValue;
 			}
@@ -274,7 +424,23 @@ void CB_Store( unsigned char *SRC ){	// ->
 			ExecPtr+=2;
 			mptr=MatOprand( SRC, &reg);
 			if ( ErrorNo ) return ; // error
-			MatAry[reg][mptr] =  CB_CurrentValue;			// Matrix array
+			switch ( MatAryElementSize[reg] ) {
+				case 8:
+					MatAry[reg][mptr] = CB_CurrentValue;		// Matrix array double
+					break;
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					MatAryC[mptr] = CB_CurrentValue;			// Matrix array char
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					MatAryW[mptr] =  CB_CurrentValue;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					MatAryI[mptr] = CB_CurrentValue;			// Matrix array int
+					break;
+			}
 		} else if ( c == 0x00 ) {	// Xmin
 				ExecPtr+=2;
 				Xmin = CB_CurrentValue ;
@@ -313,7 +479,7 @@ void CB_Store( unsigned char *SRC ){	// ->
 				Xdot = CB_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
 int  CB_Input( unsigned char *SRC ){
@@ -322,6 +488,9 @@ int  CB_Input( unsigned char *SRC ){
 	int flag=0;
 	int reg,bptr,mptr;
 	unsigned char buffer[32];
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
 	
 	KeyRecover();
 	CB_SelectTextDD();	// Select Text Screen
@@ -344,7 +513,23 @@ int  CB_Input( unsigned char *SRC ){
 			ExecPtr+=2;
 			mptr=MatOprand( SRC, &reg);
 			if ( ErrorNo ) return ; // error
-			DefaultValue = MatAry[reg][mptr];			// Matrix array
+			switch ( MatAryElementSize[reg] ) {
+				case 8:
+					DefaultValue = MatAry[reg][mptr];			// Matrix array double
+					break;
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					DefaultValue = MatAryC[mptr]   ;			// Matrix array char
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					DefaultValue = MatAryW[mptr]   ;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					DefaultValue = MatAryI[mptr]   ;			// Matrix array int
+					break;
+			}
 			flag=1;
 			ExecPtr=bptr;
 		} else if ( c == 0x00 ) {	// Xmin
@@ -371,15 +556,15 @@ int  CB_Input( unsigned char *SRC ){
 		} else if ( c == 0x0C ) {	// Yfct
 				DefaultValue = Yfct ;
 				flag=1;
-		} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error	} else
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error	} else
 	} else
 	if ( c==0xF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
 				DefaultValue = Xdot ;
 				flag=1;
-		} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
 //	if ( flag ) {
 //			CB_CurrentValue = InputNumD_CB2( 1, CursorY, 21, DefaultValue );
@@ -502,10 +687,11 @@ void CB_Quot( unsigned char *SRC ){		// "" ""
 					GraphY=GraphY3;
 					break;
 				default:
-					{ ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }	// Argument error
+					{ CB_Error(ArgumentERR); return; }	// Argument error
 					break;
 			}
 			strncpy( (char *)GraphY, (const char *)buffer, len);
+			GraphY[len]='\0';
 		}
 	} else {			// display str
 		ExecPtr=ptr;
@@ -726,7 +912,7 @@ void CB_end( unsigned char *SRC, int dspflag ){
 	}
 	if ( dspflag == 0 ) CB_Done();
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
-	if ( UseGraphic ) if ( ( UseGraphic != 1 ) && ( UseGraphic != 99 ) ) { UseGraphic=UseGraphic&0xFF; CB_SelectTextVRAM(); }
+	if ( UseGraphic ) if ( ( UseGraphic != 1 ) &&( UseGraphic != 2 ) && ( UseGraphic != 99 ) ) { UseGraphic=UseGraphic&0xFF; CB_SelectTextVRAM(); }
 	Bdisp_PutDisp_DD();
 
 	while ( 1 ) {
@@ -764,11 +950,11 @@ void CB_Locate( unsigned char *SRC ){
 	CB_SelectTextVRAM();	// Select Text Screen
 	lx = CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 	ly = CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 	c=SRC[ExecPtr];
 	if ( c == 0x22 ) {	// String
@@ -794,11 +980,11 @@ void CB_Text( unsigned char *SRC, int *dspflag ) { //	Text
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	py=CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 	px=CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 	c=SRC[ExecPtr];
 	if ( c == 0x22 ) {	// String
@@ -882,7 +1068,7 @@ void CB_Lbl( unsigned char *SRC, int *StackGotoAdrs ){
 	} else if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		ExecPtr++;
 		label = c-'A'+10;
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// goto error
+	} else { CB_Error(SyntaxERR); return; }	// syntax error
 	if ( StackGotoAdrs[label] == 0 ) StackGotoAdrs[label]=ExecPtr+1;
 }
 
@@ -930,11 +1116,11 @@ void CB_Goto( unsigned char *SRC, int *StackGotoAdrs){
 	} else if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		label = c-'A'+10;
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// goto error
+	} else { CB_Error(SyntaxERR); return; }	// goto error
 	
 	ptr = StackGotoAdrs[label] ;
 	if ( ptr == 0 ) {
-		if ( Search_Lbl(SRC, c) == 0 ) { ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }	// undefined label error
+		if ( Search_Lbl(SRC, c) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
 		ExecPtr++;
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
@@ -1018,7 +1204,7 @@ void CB_If( unsigned char *SRC ){
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { ExecPtr++;  c=SRC[ExecPtr]; }
 	c2=SRC[ExecPtr+1];
-	if ( ( c != 0xF7 ) || ( c2 != 0x01 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; } // not Then error 
+	if ( ( c != 0xF7 ) || ( c2 != 0x01 ) ) { CB_Error(SyntaxERR); return; } // not Then error 
 	ExecPtr+=2 ;
 	if ( value == 0 ) {		// false
 		if ( Search_ElseIfend(SRC) ) {	// Else or IfEnd
@@ -1045,11 +1231,11 @@ void CB_For( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *Stack
 		if ( ( 'A' <= c ) && ( c <='z' ) ) {
 		StackForVar[*StackForPtr]=c-'A';
 		CB_Store(SRC);
-		} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
 	}
-	if ( *StackForPtr >= StackForMax-1 ) { ErrorNo=NestingERR; ErrorPtr=ExecPtr; return; } //  nesting error
+	if ( *StackForPtr >= StackForMax-1 ) { CB_Error(NestingERR); return; } //  nesting error
 	c=SRC[ExecPtr];
-	if ( ( c != 0xF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	if ( ( c != 0xF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr+=2;
 	StackForEnd[*StackForPtr] = CB_Eval( SRC );
 	c=SRC[ExecPtr];
@@ -1067,7 +1253,7 @@ void CB_For( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *Stack
 
 void CB_Next( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *StackForVar, double *StackForEnd, double *StackForStep, int *CurrentStructCNT, int *CurrentStructloop ){
 	double step,end;
-	if ( *StackForPtr <= 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; } // Next without for error
+	if ( *StackForPtr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
 	(*StackForPtr)--;
 	(*CurrentStructCNT)--;
 	step = StackForStep[*StackForPtr];
@@ -1182,10 +1368,10 @@ int Search_LpWhile( unsigned char *SRC ){
 void CB_While( unsigned char *SRC, int *StackWhilePtr, int *StackWhileAdrs, int *CurrentStructCNT, int *CurrentStructloop  ) {
 	int wPtr=ExecPtr;
 	if ( CB_Eval( SRC ) == 0 ) {		// false
-		if ( Search_WhileEnd(SRC) == 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // While without WhileEnd error
+		if ( Search_WhileEnd(SRC) == 0 ) { CB_Error(WhileWithoutWhileEndERR); return; }  // While without WhileEnd error
 		return ; // exit
 	}
-	if ( *StackWhilePtr >= StackWhileMax-1 ) { ErrorNo=NestingERR; ErrorPtr=ExecPtr; return; }  //  nesting error
+	if ( *StackWhilePtr >= StackWhileMax-1 ) { CB_Error(NestingERR); return; }  //  nesting error
 	StackWhileAdrs[*StackWhilePtr] = wPtr;
 	(*StackWhilePtr)++;
 	CurrentStructloop[*CurrentStructCNT]=2;
@@ -1194,7 +1380,7 @@ void CB_While( unsigned char *SRC, int *StackWhilePtr, int *StackWhileAdrs, int 
 
 void CB_WhileEnd( unsigned char *SRC, int *StackWhilePtr, int *StackWhileAdrs, int *CurrentStructCNT, int *CurrentStructloop  ) {
 	int exitPtr=ExecPtr;
-	if ( *StackWhilePtr <= 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // WhileEnd without While error
+	if ( *StackWhilePtr <= 0 ) { CB_Error(WhileEndWithoutWhileERR); return; }  // WhileEnd without While error
 	(*StackWhilePtr)--;
 	(*CurrentStructCNT)--;
 	ExecPtr = StackWhileAdrs[*StackWhilePtr] ;
@@ -1208,7 +1394,7 @@ void CB_WhileEnd( unsigned char *SRC, int *StackWhilePtr, int *StackWhileAdrs, i
 }
 
 void CB_Do( unsigned char *SRC, int *StackDoPtr, int *StackDoAdrs, int *CurrentStructCNT, int *CurrentStructloop ) {
-	if ( *StackDoPtr >= StackDoMax-1 ) { ErrorNo=NestingERR; ErrorPtr=ExecPtr; return; }  //  nesting error
+	if ( *StackDoPtr >= StackDoMax-1 ) { CB_Error(NestingERR); return; }  //  nesting error
 	StackDoAdrs[*StackDoPtr] = ExecPtr;
 	(*StackDoPtr)++;
 	CurrentStructloop[*CurrentStructCNT]=3;
@@ -1216,7 +1402,7 @@ void CB_Do( unsigned char *SRC, int *StackDoPtr, int *StackDoAdrs, int *CurrentS
 }
 
 void CB_LpWhile( unsigned char *SRC, int *StackDoPtr, int *StackDoAdrs, int *CurrentStructCNT, int *CurrentStructloop ) {
-	if ( *StackDoPtr <= 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // LpWhile without Do error
+	if ( *StackDoPtr <= 0 ) { CB_Error(LpWhileWithoutDoERR); return; }  // LpWhile without Do error
 	(*StackDoPtr)--;
 	(*CurrentStructCNT)--;
 	if ( CB_Eval( SRC ) == 0  ) return ; // exit
@@ -1228,21 +1414,21 @@ void CB_LpWhile( unsigned char *SRC, int *StackDoPtr, int *StackDoAdrs, int *Cur
 
 void CB_Break( unsigned char *SRC, int *StackForPtr, int *StackWhilePtr, int *StackDoPtr, int *CurrentStructCNT, int *CurrentStructloop ) {
 	
-	if ( *CurrentStructCNT <=0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // For without Next error
+	if ( *CurrentStructCNT <=0 ) { CB_Error(NotLoopERR); return; }  // Not Loop error
 	(*CurrentStructCNT)--;
 	switch ( CurrentStructloop[*CurrentStructCNT] ) {
 		case 1:	// For Next
-			if ( Search_Next(SRC) == 0 )     { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // For without Next error
+			if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
 			(*StackForPtr)--;
 			return ;
 			break;
 		case 2:	// While WhileEnd
-			if ( Search_WhileEnd(SRC) == 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // While without WhileEnd error
+			if ( Search_WhileEnd(SRC) == 0 ) { CB_Error(WhileWithoutWhileEndERR); return; }  // While without WhileEnd error
 			(*StackWhilePtr)--;
 			return ;
 			break;
 		case 3:	// DO LpWhile
-			if ( Search_LpWhile(SRC) == 0 )  { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Do without LpWhile error
+			if ( Search_LpWhile(SRC) == 0 )  { CB_Error(DoWithoutLpWhileERR); return; }  // Do without LpWhile error
 			(*StackDoPtr)--;
 			return ;
 			break;
@@ -1281,7 +1467,7 @@ void CB_Dsz( unsigned char *SRC ) { //	Dsz
 			MatAry[reg][mptr] --;
 			CB_CurrentValue = MatAry[reg][mptr];			// Matrix array
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
 	c=SRC[ExecPtr++];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
@@ -1317,7 +1503,7 @@ void CB_Isz( unsigned char *SRC ) { //	Isz
 			MatAry[reg][mptr] ++;
 			CB_CurrentValue = MatAry[reg][mptr];			// Matrix array
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
 	c=SRC[ExecPtr++];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
@@ -1335,77 +1521,6 @@ void CB_Isz( unsigned char *SRC ) { //	Isz
 }
 
 //----------------------------------------------------------------------------------------------
-void CB_MatrixInit( unsigned char *SRC ) { //	{n,m}->Dim Mat A
-	unsigned int c,d;
-	int dimA,dimB,i;
-	int reg;
-	double *ptr;
-	
-	dimA=(CB_Eval( SRC ));
-	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-	ExecPtr++;
-	dimB=(CB_Eval( SRC ));
-	c=SRC[ExecPtr];
-	if ( c != '}' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-	ExecPtr++;
-	c=SRC[ExecPtr];
-	if ( c != 0x0E ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-	ExecPtr++;
-	c =SRC[ExecPtr];
-	d =SRC[ExecPtr+1];
-	if ( ( c != 0x7F ) || ( d !=0x46 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // no Dim  Syntax error
-	ExecPtr+=2;
-	c =SRC[ExecPtr];
-	d =SRC[ExecPtr+1];
-	if ( ( c != 0x7F ) || ( d !=0x40 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // no Mat  Syntax error
-	ExecPtr+=2;
-	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		if ( ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
-			ptr = MatAry[reg] ;							// Matrix array ptr*
-		} else {
-			if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
-			MatArySizeA[reg]=dimA;						// Matrix array size
-			MatArySizeB[reg]=dimB;						// Matrix array size
-			ptr = (double *)malloc( dimA*dimB*sizeof(double) );
-	   		if( ptr == NULL ) { ErrorNo=MemoryERR; ErrorPtr=ExecPtr; return; }	// memory error
-			MatAry[reg] = ptr ;							// Matrix array ptr*
-		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-
-	for (i=0; i< dimA*dimB; i++) ptr[i]=0;	// initialize
-
-}
-void CB_ClrMat( unsigned char *SRC ) { //	ClrMat A
-	unsigned int c,c2;
-	int dimA,dimB;
-	int reg;
-	double *ptr;
-
-	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-			ptr = MatAry[reg] ;							// Matrix array ptr*
-			if (ptr != NULL ) free(ptr);		
-			MatArySizeA[reg]=0;							// Matrix array size
-			MatArySizeB[reg]=0;							// Matrix array size
-			MatAry[reg]=NULL ;							// Matrix array ptr*
-	} else {
-		for ( reg=0; reg<26; reg++){
-			ptr = MatAry[reg] ;							// Matrix array ptr*
-			if (ptr != NULL ) free(ptr);		
-			MatArySizeA[reg]=0;							// Matrix array size
-			MatArySizeB[reg]=0;							// Matrix array size
-			MatAry[reg]=NULL ;							// Matrix array ptr*		
-		}
-	}
-}
-
-//----------------------------------------------------------------------------------------------
 
 void CB_ViewWindow( unsigned char *SRC ) { //	ViewWindow
 	unsigned int c;
@@ -1416,7 +1531,7 @@ void CB_ViewWindow( unsigned char *SRC ) { //	ViewWindow
 		REGv[reg]=CB_Eval( SRC );
 		c=SRC[ExecPtr];
 		if ( (c==':') || (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
-		if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		reg++;
 	}
@@ -1484,15 +1599,15 @@ void CB_FLine( unsigned char *SRC) { //	F-Line
 	if ( RangeErrorCK(SRC) ) return;
 	x1=CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	y1=CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	x2=CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	y2=CB_Eval( SRC );
 
@@ -1550,7 +1665,7 @@ void CB_Plot( unsigned char *SRC ) { //	Plot
 	} else {
 		x=CB_Eval( SRC );
 		c=SRC[ExecPtr];
-		if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		y=CB_Eval( SRC );
 	}
@@ -1564,7 +1679,7 @@ void CB_Plot( unsigned char *SRC ) { //	Plot
 
 void CB_PlotOprand( unsigned char *SRC, double  *x, double *y) {
 	*x=CB_Eval( SRC );
-	if ( SRC[ExecPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	*y=CB_Eval( SRC );
 	CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -1596,12 +1711,12 @@ void CB_PxlOprand( unsigned char *SRC, int *py, int *px) {
 	double x,y;
 	y = (CB_Eval( SRC ));
 	*py=y;
-	if ( ( y-floor(y) ) || ( (*py)<1 ) || ( (*py)>63 ) ) { ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }  // Argument error
-	if ( SRC[ExecPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+	if ( ( y-floor(y) ) || ( (*py)<1 ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	x = (CB_Eval( SRC ));
 	*px=x;
-	if ( ( x-floor(x) ) || ( (*px)<1 ) || ( (*px)>127 ) ) { ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }  // Argument error}
+	if ( ( x-floor(x) ) || ( (*px)<1 ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 }
 void CB_PxlOn( unsigned char *SRC ) { //	PxlOn
@@ -1636,11 +1751,11 @@ void CB_Circle( unsigned char *SRC ) { //	Circle
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	x=CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	y=CB_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	r=CB_Eval( SRC );
 	c=SRC[ExecPtr];
@@ -1672,7 +1787,7 @@ void GetGraphStr(  unsigned char *SRC ) {
 				GraphY=GraphY3;
 				break;
 			default:
-				{ ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }	// Argument error
+				{ CB_Error(ArgumentERR); return; }	// Argument error
 				break;
 		}
 	} else {
@@ -1685,16 +1800,16 @@ void GetGraphStr(  unsigned char *SRC ) {
 }
 
 void CB_DrawGraph(  unsigned char *SRC ){
-	unsigned int key;
-	unsigned int c;
 	if ( RangeErrorCK(SRC) ) return;
 	CB_SelectGraphVRAM();	// Select Graphic Screen
-	key=Graph_main();
+	Graph_Draw();
 }
 
 void CB_GraphY( unsigned char *SRC ){
+	if ( RangeErrorCK(SRC) ) return;
 	GetGraphStr(SRC);
-	CB_DrawGraph(SRC);
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	Graph_Draw();
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1720,7 +1835,7 @@ int StoPict( int pictNo){
 	ReadVram(pict+0x4C);
 	for(i=1024+0x4c; i<2048+0x4c+2; i++) pict[i]=0;
 	stat=SavePicture( pict, pictNo );
-	if ( stat != 0 ) { ErrorNo=MemoryERR; ErrorPtr=ExecPtr; return; }	// Memory error
+	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
 	return stat;
 }
 
@@ -1728,7 +1843,7 @@ void RclPict( int pictNo){
 	unsigned char *pict;
 	int i;
 	pict=LoadPicture( pictNo );
-	if ( pict == NULL ) { ErrorNo=MemoryERR; ErrorPtr=ExecPtr; return; }	// Memory error
+	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
 	WriteVram( pict+0x4C );
 	free(pict);
 }
@@ -1738,14 +1853,14 @@ void CB_StoPict( unsigned char *SRC ) { //	StoPict
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	Bdisp_PutDisp_DD_DrawBusy();
 	n=CB_Eval( SRC );
-	if ( (n<1) || (20<n) ){ ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }	// Argument error
+	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	StoPict(n);
 }
 void CB_RclPict( unsigned char *SRC ) { //	RclPict
 	int n;
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	n=CB_Eval( SRC );
-	if ( (n<1) || (20<n) ){ ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }	// Argument error
+	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	RclPict(n);
 	Bdisp_PutDisp_DD_DrawBusy();
 }
@@ -1848,7 +1963,7 @@ double CB_BinaryEval( unsigned char *SRC ) {
 			case 0xA9 :		// ~
 				return src * dst;
 			case 0xB9 :		// €
-				if ( dst == 0 ) { ErrorNo=MaERR; ErrorPtr=opPtr+1; return; }  // Math error
+				if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 				return src / dst;
 			case '=' :	// =
 				return src == dst;
@@ -1997,7 +2112,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						break;
 					case 0x0C:	// Return
 						if ( ProgEntryN ) return -1 ; //	in sub Prog
-						dspflag=0;
+//						dspflag=0;
 						cont=0;
 						break;
 					case 0x0D:	// Break
@@ -2007,7 +2122,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 					case 0x0E:	// Stop
 						BreakPtr=ExecPtr;
 						cont=0; 
-						dspflag=0;
+//						dspflag=0;
 						break;
 					case 0x10:	// Locate
 						CB_Locate(SRC);
@@ -2319,7 +2434,7 @@ int CB_interpreter( unsigned char *SRC ) {
 	Bdisp_PutDisp_DD_DrawBusy();
 	stat = CB_interpreter_sub( SRC );
 	KeyRecover(); 
-    if ( ErrorNo ) { CB_ErrNo( ErrorNo ); }
+    if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
 	return stat;
 }
 

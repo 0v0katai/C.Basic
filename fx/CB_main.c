@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.41.00 
+ Casio Basic Interpreter (& Compiler) ver 0.42.00 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -18,7 +18,6 @@
 #include "CB_file.h"
 #include "CB_edit.h"
 
-#include "CB_lib.h"
 #include "CB_interpreter.h"
 #include "CB_error.h"
 #include "CB_sample.h"
@@ -33,7 +32,7 @@ int LoadFileSDK( unsigned char *src ) {
 	locate( 1, 1);
 	buffer = (unsigned char *)malloc( size*sizeof(char)+EditMaxfree +4 );
 	memset( buffer, 0x00,             size*sizeof(char)+EditMaxfree +4 );
-	if ( buffer == NULL )  { CB_ErrNo(MemoryERR); return 1 ; }
+	if ( buffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
 	for (i=0;i<size;i++) buffer[i]=src[i];
 

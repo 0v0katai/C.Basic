@@ -228,7 +228,7 @@ unsigned int Explorer( int size, char *folder )
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.41" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.42" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -289,9 +289,9 @@ static int FileCmp( const void *p1, const void *p2 )
 	if( f1->filesize == -1 && f2->filesize == -1 )
 		return strcmp( f1->filename + 1, f2->filename + 1);
 	else if( f1->filesize == -1 )
-		return -1;
-	else if( f2->filesize == -1 )
 		return 1;
+	else if( f2->filesize == -1 )
+		return -1;
 	else
 		return strcmp( f1->filename, f2->filename );
 }
@@ -346,7 +346,7 @@ unsigned char * loadFile( const char *name , int editMax)
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 )
 	{
-		ErrorMSG( "Can't open", handle);
+		ErrorMSG( "Can't open file", handle);
 		return NULL;
 	}
 
