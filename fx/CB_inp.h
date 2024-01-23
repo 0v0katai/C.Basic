@@ -33,7 +33,7 @@ int NextOpcode( unsigned char *SRC, int *offset );
 int NextLine( unsigned char *SRC, int *offset );
 int PrevOpcode( unsigned char *SRC, int *offset );
 int PrevLine( unsigned char *SRC, int *offset );
-int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy) ;
+int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) ;
 void OpStrToStr(char *buffer, char *buffer2);
 
 int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );

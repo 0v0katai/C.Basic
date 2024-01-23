@@ -15,6 +15,9 @@
 #include "CB_error.h"
 
 //----------------------------------------------------------------------------------------------
+unsigned char ClipBuffer[ClipMax+1];
+
+//----------------------------------------------------------------------------------------------
 
 int SrcSize( unsigned char *src ) {
 	int size ;
@@ -132,9 +135,78 @@ int EndOfSrc( unsigned char *SRC, int ptr ) {
 	}
 	return ptr;
 }
+
+//---------------------------------------------------------------------------------------------
+void EditPaste( unsigned char *filebase, int *ptr ){
+	int len,i,j;
+	unsigned char *srcbase;
+
+	if ( ClipBuffer[0]=='\0' ) return ;	// no clip data
+		
+	len=strlen((char*)ClipBuffer);
+	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
+		ErrorPtr=(*ptr); ErrorNo=MemoryERR;		// Memory error
+		CB_ErrNo(ErrorNo);
+		return ;
+	}
+	j=(*ptr)+len+0x56;
+	for ( i=ProgfileMax[ProgNo]; i>=j; i-- ) filebase[i]=filebase[i-len];
+		 
+	srcbase=filebase+0x56+(*ptr);
+	for ( i=0; i<len; i++ ) srcbase[i]=ClipBuffer[i];
+			
+	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
+	ProgfileEdit[ProgNo]=1;	// edit program
+	
+	(*ptr)=(*ptr)+len;
+}
+
+void EditCopy( unsigned char *filebase, int ptr, int startp, int endp ){
+	int len,i,j;
+	unsigned char *srcbase;
+
+	i=OpcodeLen( GetOpcode(filebase+0x56, ptr) );
+	len=(endp)-(startp)+i;
+	if ( len > ClipMax ) {
+		ErrorPtr=ptr; ErrorNo=MemoryERR;		// Memory error
+		CB_ErrNo(ErrorNo);
+		return ;
+	}
+	
+	srcbase=filebase+0x56+(startp);
+	for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];
+	ClipBuffer[i]='\0';
+}
+
+void EditCut( unsigned char *filebase, int *ptr, int startp, int endp ){
+	int len,i;
+	unsigned char *srcbase;
+
+	i=OpcodeLen( GetOpcode(filebase+0x56, *ptr) );
+	len=(endp)-(startp)+i;
+	if ( len > ClipMax ) {
+		ErrorPtr=(*ptr); ErrorNo=MemoryERR;		// Memory error
+		CB_ErrNo(ErrorNo);
+		return ;
+	}
+	
+	srcbase=filebase+0x56+(startp);
+	for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];
+	ClipBuffer[i]='\0';
+
+	for ( i=(startp)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
+
+	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
+	ProgfileEdit[ProgNo]=1;	// edit program
+
+	(*ptr)=(startp);
+}
+
+
+
 //---------------------------------------------------------------------------------------------
 
-void DumpOpcode(unsigned char *SrcBase, int *offset, int csrPtr, int *cx, int *cy){
+void DumpOpcode(unsigned char *SrcBase, int *offset, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr){
 	int y;
 	int ofst;
 
@@ -148,7 +220,7 @@ void DumpOpcode(unsigned char *SrcBase, int *offset, int csrPtr, int *cx, int *c
 		locate(1,7); PrintLine((unsigned char*)" ",21);
 		y=2; ofst=(*offset);
 		while ( y<8 ) {
-				ofst = PrintlineOpcode( &y, SrcBase, ofst, csrPtr, &(*cx), &(*cy));
+				ofst = PrintlineOpcode( &y, SrcBase, *offset, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
 				if ( SrcBase[ofst]==0x00 ) break ;
 				y++;
 		}
@@ -160,6 +232,7 @@ void DumpOpcode(unsigned char *SrcBase, int *offset, int csrPtr, int *cx, int *c
 //		if ( SrcBase[ofst]==0x00 ) break ;
 	}
 }
+
 
 //---------------------------------------------------------------------------------------------
 
@@ -216,8 +289,8 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 			tmpbuf[12]='\0'; 
 			sprintf(buffer,"%04X:%-12s",oplist[seltop+i],tmpbuf ) ;
 			locate(3,2+i); Print((unsigned char *)buffer);
-			Bdisp_PutDisp_DD();	
 		}
+		Bdisp_PutDisp_DD();	
 		
 		y = ((*select)-seltop) + 1 ;
 		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
@@ -508,8 +581,8 @@ unsigned short oplistVARS[]={
 		0xF7AD,	// PxlChg
 		0xF7AF,	// PxlTest(
 
-		0xF797,	// StoV-Win
-		0xF798,	// RclV-Win
+//		0xF797,	// StoV-Win
+//		0xF798,	// RclV-Win
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
@@ -559,6 +632,308 @@ unsigned short oplistVARS[]={
 		0};
 
 //---------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+int SelectOpcode5800P(unsigned short *oplist, int *select) {
+	int opNum=0 ;
+	char buffer[22];
+	char tmpbuf[18];
+	unsigned int key;
+	int	cont=1;
+	int i,j,y,n;
+	int seltop=*select;
+
+	while ( oplist[opNum++] ) ;
+	opNum-=2;
+
+	SaveDisp(SAVEDISP_PAGE1);
+	Bdisp_AllClr_DDVRAM();
+	
+//	PopUpWin(6);
+
+	while (cont) {
+		Bdisp_AllClr_VRAM();
+		locate(1,1); Print((unsigned char *)"== Command Select ==");
+		(*select)=(*select)/12*12;
+		for ( i=0; i<12; i++ ) {
+			n=oplist[(*select)+i];
+			tmpbuf[0]='\0'; 
+			if ( n == 0xFFFF ) n=' ';
+			else OpcodeToStr( n, (unsigned char*)tmpbuf ) ; // SYSCALL
+			tmpbuf[8]='\0'; 
+			n=i+1; if (n>9) n=0;
+			j=0; if ( tmpbuf[0]==' ' ) j++;
+			if ( i< 10 ) sprintf(buffer,"%d:%-9s",n,tmpbuf+j ) ;
+			if ( i==10 ) sprintf(buffer,".:%-9s",tmpbuf+j ) ;
+			if ( i==11 ) sprintf(buffer,"\x0F:%-9s",tmpbuf+j ) ;
+			locate(0+(i%2)*12,2+i/2); 
+			Print((unsigned char *)buffer);
+			if ( i==11 ) { locate(0+(i%2)*12,2+i/2); Print((unsigned char *)"\x0F"); }
+		}
+		Bdisp_PutDisp_DD();	
+		
+		y = ((*select)-seltop) + 1 ;
+//		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
+		switch (key) {
+			case KEY_CTRL_EXIT:
+				return 0;
+			case KEY_CTRL_EXE:
+				cont=0;
+				break;
+		
+			case KEY_CTRL_LEFT:
+				*select = 0;
+				break;
+			case KEY_CTRL_RIGHT:
+				*select = opNum;
+				break;
+			case KEY_CTRL_UP:
+				(*select)-=12;
+				if ( *select < 0 ) *select = opNum;
+				break;
+			case KEY_CTRL_DOWN:
+				(*select)+=12;
+				if ( *select >= opNum ) *select =0;
+				break;
+			case KEY_CHAR_1:
+				n=0;
+				cont=0;
+				break;
+			case KEY_CHAR_2:
+				n=1;
+				cont=0;
+				break;
+			case KEY_CHAR_3:
+				n=2;
+				cont=0;
+				break;
+			case KEY_CHAR_4:
+				n=3;
+				cont=0;
+				break;
+			case KEY_CHAR_5:
+				n=4;
+				cont=0;
+				break;
+			case KEY_CHAR_6:
+				n=5;
+				cont=0;
+				break;
+			case KEY_CHAR_7:
+				n=6;
+				cont=0;
+				break;
+			case KEY_CHAR_8:
+				n=7;
+				cont=0;
+				break;
+			case KEY_CHAR_9:
+				n=8;
+				cont=0;
+				break;
+			case KEY_CHAR_0:
+				n=9;
+				cont=0;
+				break;
+			case KEY_CHAR_DP:
+				n=10;
+				cont=0;
+				break;
+			case KEY_CHAR_EXP:
+				n=11;
+				cont=0;
+				break;
+			default:
+				break;
+		}
+	}
+
+	RestoreDisp(SAVEDISP_PAGE1);
+	Bdisp_PutDisp_DD();
+
+	i=oplist[(*select)+n]; if (i==0xFFFF ) i=0;
+	return i;
+}
+
+							
+unsigned short oplistCMD[]={	
+		0x3F,	// ?			1
+		0x0E,	// ->			2
+		0xF700,	// If			3
+		0xF701,	// Then			4
+		0xF702,	// Else			5
+		0xF703,	// IfEnd		6
+		0xE2,	// Lbl			7
+		0xEC,	// Goto			8
+		0x27,	// '
+		0xFFFF,	// 				-
+		0x0C,	// dsps	
+		0x3A,	// :	
+
+		0x3D,	// =			1
+		0x11,	// !=			2
+		0x3E,	// >			3
+		0x3C,	// <			4
+		0x12,	// >=			5
+		0x10,	// <=			6
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xF718,	// ClrText	
+		0xF719,	// ClrGraph	
+		0xF71A,	// ClrList	
+		0xF91E,	// ClrMat	
+		
+		0xE8,	// Dsz			1
+		0xE9,	// Isz			2
+		0x13,	// =>			3
+		0xF710,	// Locate		4
+		0xD1,	// Cls			5
+		0x7FB0,	// And			6
+		0x7FB1,	// Or			7
+		0x7FB3,	// Not			8
+		0x7FB4,	// Xor			9
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		
+		0xF704,	// For			1
+		0xF705,	// To			2
+		0xF706,	// Step			3
+		0XF707,	// Next			4
+		0xF708,	// While		5
+		0xF709,	// WhileEnd		6
+		0xF70A,	// Do			7
+		0xF70B,	// LpWhile		8
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0x7F46,	// Dim		
+		0xFFFF,	// 				-
+
+		
+		0xF70D,	// Break		1
+		0xF70C,	// Return		2
+		0xF70E,	// Stop			3
+		0x7F8F,	// Getkey		4
+		0xED,	// Prog			5
+		0xFFFF,	// 				-
+		0xD9,	// Norm
+		0xE3,	// Fix
+		0xE4,	// Sci
+		0xFFFF,	// 				-
+		0xD3,	// Rnd
+		0x7F86,	// RanFix(
+
+		0xD1,	// Cls
+		0xF719,	// ClrGraph
+		0xEB,	// ViewWindow
+		0xE0,	// Plot
+		0xF7A8,	// PlotOn
+		0xF7A9,	// PlotOff
+		0xF7AA,	// PlotChg
+		0xF7A6,	// Circle
+		0xE1,	// Line
+		0xF7A7,	// F-Line
+		0xF7A3,	// Vertical
+		0xF7A4,	// Horizontal
+		
+		0xF7AB,	// PxlOn
+		0xF7AC,	// PxlOff
+		0xF7AD,	// PxlChg
+		0xF7AF,	// PxlTest(
+		0xF7A5,	// Text
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xFFFF,	// 				-
+		
+		0xF7C3,	// CoordOn
+		0xF7D3,	// CoordOff
+		0xF77D,	// GridOn
+		0xF77A,	// GridOff
+		0xF7C2,	// AxesOn
+		0xF7D2,	// AxesOff
+		0xF7C4,	// LabelOn
+		0xF7D4,	// LabelOff
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xF770,	// G-Connect
+		0xF771,	// G-Plot
+		
+		0xF71C,	// S-L-Normal
+		0xF71D,	// S-L-Thick
+		0xF71E,	// S-L-Broken
+		0xF71F,	// S-L-Dot
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xF78C,	// SketchNormal
+		0xF78D,	// SketchThick
+		0xF78E,	// SketchBroken
+		0xF78F,	// SketchDot
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		
+		0x7F00,	// Xmin
+		0x7F01,	// Xmax
+		0x7F02,	// Xscl
+		0x7F0B,	// Xfct
+		0XF921,	// Xdot
+		0xFFFF,	// 				-
+		0x7F04,	// Ymin
+		0x7F05,	// Ymax
+		0x7F06,	// Yscl
+		0x7F0C,	// Yfct
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+
+		0x97,	// Abs
+		0xA6,	// Int
+		0xB6,	// frac
+		0xAB,	// !
+		0x7F3A,	// MOD(
+		0xFFFF,	// 				-
+		0x7F46,	// Dim
+		0xFFFF,	// 				-
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xFFFF,	// 				-
+		
+		0xA1,	// sinh
+		0xA2,	// cosh
+		0xA3,	// tanh
+		0xB1,	// arcsinh
+		0xB2,	// arccosh
+		0xB3,	// arctanh
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xC1,	// Ran#
+		0x7F87,	// RanInt#(
+
+		0xF720,	// DrawGraph
+		0xEE,	// Graph Y=
+		0x7FF0,	// GraphY
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+//		0xF797,	// StoV-Win
+//		0xF798,	// RclV-Win
+		0xF793,	// StoPict
+		0xF794,	// RclPict
+//		0xF79F,	// RclCapt
+		0xFFFF,	// 				-
+
+		0};
+
+//---------------------------------------------------------------------------------------------
 
 void EditRun(int run){		// run:1 exec      run:2 edit
 	unsigned char *FileBase,*SrcBase;
@@ -572,10 +947,13 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 	int 	csrPtr=0;
 	int 	dumpflg=2;
 	unsigned short opcode;
+	int selectCMD=0;
 	int selectOPTN=0;
 	int selectVARS=0;
 	int selectPRGM=0;
 	int lowercase=0, CursorStyle;
+	int ClipStartPtr = -1 ;
+	int ClipEndPtr   = -1 ;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -607,18 +985,23 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 		buffer2[8]='\0';
 		sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
 		locate (1,1); Print( (unsigned char*)buffer );
+		if ( ClipStartPtr>=0 ) {
+			Fkey_dispN( 0, "COPY ");
+			Fkey_dispN( 1, "CUT ");
+		} else {
+			ClipEndPtr   = -1 ;		// ClipMode cancel
 			Fkey_dispN( 0, "TOP ");
 			Fkey_dispN( 1, "BTM");
-			if ( lowercase ) Fkey_dispN(3,"a<>A"); else Fkey_dispN(3,"A<>a");
+			Fkey_dispR( 2, "CMD");
+			if ( lowercase  ) Fkey_dispN(3,"a<>A");   else Fkey_dispN(3,"A<>a");
 			Fkey_dispR( 4, "CHAR");
 			Fkey_dispN( 5, "EXE");
+		}
 		switch (dumpflg) {
 			case 2: 		// Opcode
-					Fkey_dispR( 2, "Dump");
-					DumpOpcode( SrcBase, &offset, csrPtr, &cx, &cy);
+					DumpOpcode( SrcBase, &offset, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr);
 					break;
 			case 4: 		// hex dump
-					Fkey_dispR( 2, "List");
 					DumpMix( SrcBase, offset );
 					break;
 			case 16:		// Ascii dump
@@ -638,12 +1021,17 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 		locate(cx,cy);
 		if ( (dumpflg==2) || (dumpflg==4) ) {
 			Cursor_SetFlashMode(1);			// cursor flashing on
-			if (Cursor_GetFlashStyle()<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
-				else 						Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
+			if (Cursor_GetFlashStyle()<0x6) {
+				if ( ClipStartPtr>=0 ) 	Cursor_SetFlashOn(0x05);	// ClipMode cursor
+				else					Cursor_SetFlashOn(0x0);		// insert mode cursor 
+			} else { 
+				if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
+				else 					Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
+			}
 			if (key < 0x7F00)	if (run!=1) GetKey(&key);
 		} else
 								if (run!=1) GetKey(&key);
-
+								
 		switch (dumpflg) {
 			case 4: 		// hex dump
 				if ( ( ( KEY_CHAR_0 <= key ) && ( key <= KEY_CHAR_9 ) ) ||
@@ -684,6 +1072,9 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 		}
 
 		switch (key) {
+			case KEY_CTRL_NOP:
+					ClipStartPtr = -1 ;		// ClipMode cancel
+					break;
 			case KEY_CTRL_EXIT:
 					cont=0;
 					break;
@@ -701,6 +1092,15 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					}
 					key=0;
+					ClipStartPtr = -1 ;		// ClipMode cancel
+					break;
+			case 0x7553:		// ClipMode F1
+					if ( ClipEndPtr >= 0 ) {
+						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+						EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+					}
+					key=0;
+					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F2:
 					offset=EndOfSrc( SrcBase, offset );
@@ -722,33 +1122,24 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					}
 					key=0;
+					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
-			case KEY_CTRL_F3:
-					switch (dumpflg) {
-						case 2: 		// Opcode
-							dumpflg=4;
-							break;
-						case 4: 		// hex dump
-							dumpflg=2;
-						case 16:		// Ascii dump
-							dumpflg=2;
-							break;
-						default:
-							break;
+			case 0x7563:		// ClipMode F2
+					if ( ClipEndPtr >= 0 ) {
+						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+						EditCut( FileBase, &csrPtr, ClipStartPtr, ClipEndPtr );
 					}
-					offset=csrPtr;
-					cx=6; cy=2;
-//					n  =(csrPtr)-(offset);
-//					if ( n > 24) n=0;
-//					cx = (n%4)*3+6;
-//					cy = (n/4)+2;
 					key=0;
+					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F4:
 					lowercase=1-lowercase;
+					key=0;
+					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F5:
 					key=SelectChar();
+					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F6:
 					Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -760,6 +1151,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					if ( stat == -1 ) offset = ExecPtr-1;
 					csrPtr = offset;
 					key=0;
+					ClipStartPtr = -1 ;		// ClipMode cancel
 					run=2; // edit mode
 					if ( dumpflg == 2 ) {
 						PrevLine( SrcBase, &offset );
@@ -772,6 +1164,8 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					if ( stat == -1 ) cont=0;	// 
 					}
 					break;
+					
+			case 0x755A:		// ClipMode LEFT
 			case KEY_CTRL_LEFT:
 				switch ( dumpflg ) {
 					case 2: 		// Opcode
@@ -791,7 +1185,10 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 				}
 				key=0;
+				if ( ClipStartPtr>=0 ) ClipEndPtr=csrPtr;
 				break;
+				
+			case 0x755B:		// ClipMode RIGHT
 			case KEY_CTRL_RIGHT:
 				switch ( dumpflg ) {
 					case 2: 		// Opcode
@@ -811,7 +1208,10 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 				}
 				key=0;
+				if ( ClipStartPtr>=0 ) ClipEndPtr=csrPtr;
 				break;
+				
+			case 0x7559:		// ClipMode UP
 			case KEY_CTRL_UP:
 				switch ( dumpflg ) {
 					case 2: 		// Opcode
@@ -840,7 +1240,10 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 				}
 				key=0;
+				if ( ClipStartPtr>=0 ) ClipEndPtr=csrPtr;
 				break;
+				
+			case 0x755C:		// ClipMode DOWN
 			case KEY_CTRL_DOWN:
 				switch ( dumpflg ) {
 					case 2: 		// Opcode
@@ -868,6 +1271,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 				}
 				key=0;
+				if ( ClipStartPtr>=0 ) ClipEndPtr=csrPtr;
 				break;
 				
 			case KEY_CTRL_SHIFT:
@@ -875,12 +1279,13 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_Clear( 1 );
 				Fkey_dispR( 2, "V-W");
 				Fkey_Clear( 3 );
-				Fkey_Clear( 4 );
+				if ( dumpflg==2 ) Fkey_dispR( 4, "Dump"); else Fkey_dispR( 4, "List");
 				Fkey_Clear( 5 );
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_PAGEUP:
 							offset=0;
@@ -896,6 +1301,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 							}
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_PAGEDOWN:
 							offset=EndOfSrc( SrcBase, offset );
@@ -917,30 +1323,69 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 							}
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_SETUP:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetupG();
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F1:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetVar(0);		// A - 
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F3:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetViewWindow();
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
+							break;
+					case KEY_CTRL_F5:
+							switch (dumpflg) {
+								case 2: 		// Opcode
+									dumpflg=4;
+									break;
+								case 4: 		// hex dump
+									dumpflg=2;
+								case 16:		// Ascii dump
+									dumpflg=2;
+									break;
+								default:
+									break;
+							}
+							offset=csrPtr;
+							cx=6; cy=2;
+							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F6:
 							CB_test();
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
+							
+					case KEY_CTRL_CLIP:
+							ClipStartPtr=csrPtr;
+							key=0;
+							break;
+					case KEY_CTRL_PASTE:
+							EditPaste( FileBase, &csrPtr);
+							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
+							break;
+							
 //					case KEY_CTRL_CATALOG:
 //							key=CatalogDialog();
 //							break;
+					case KEY_CTRL_PRGM:
+							ClipStartPtr = -1 ;		// ClipMode cancel
+							break;
 					default:
+							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 						break;
 				}
 				break;
@@ -951,13 +1396,18 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				}
 				DeleteOpcode( FileBase, &csrPtr);
 				key=0;
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
 			default:
 				break;
 		}
-		
+
+
 		if ( dumpflg==2 ) {
-			if ( key == KEY_CTRL_XTT  )   key='X'; // 
+			if ( key == KEY_CTRL_F3 ) {
+					Cursor_SetFlashMode(0); 		// cursor flashing off
+					key=SelectOpcode5800P(oplistCMD,&selectCMD);
+			}
 			if ( key == KEY_CTRL_OPTN ) {
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectOpcode(oplistOPTN,&selectOPTN);
@@ -970,6 +1420,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectOpcode(oplistPRGM,&selectPRGM);
 			}
+			if ( key == KEY_CTRL_XTT  )   key='X'; // 
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
 			switch ( keyH ) {		// ----- 2byte code -----
@@ -979,6 +1430,10 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				case 0xE5:		// 
 				case 0xE6:		// 
 				case 0xE7:		// 
+					if (ClipStartPtr>=0) { 
+						ClipStartPtr = -1 ;		// ClipMode cancel			
+						break;
+					}
 					if ( CursorStyle < 0x6 ) {		// insert mode
 						InsertOpcode( FileBase, csrPtr, key );
 					} else {					// overwrite mode
@@ -993,16 +1448,20 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 			}
 			if ( key == KEY_CTRL_EXE )   key=0x0D; // <CR>
 			if ( ( 0x00 < key ) && ( key < 0xFF ) ) {		// ----- 1 byte code -----
-			if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
-				if ( key == KEY_CHAR_POW )   key='^';
-				if ( CursorStyle < 0x6 ) {		// insert mode
-						InsertOpcode( FileBase, csrPtr, key );
-				} else {					// overwrite mode
-						DeleteOpcode( FileBase, &csrPtr);
-						InsertOpcode( FileBase, csrPtr, key );
+				if ( ClipStartPtr >= 0 ) { 
+						ClipStartPtr = -1 ;		// ClipMode cancel			
+				} else {
+					if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
+					if ( key == KEY_CHAR_POW )   key='^';
+					if ( CursorStyle < 0x6 ) {		// insert mode
+							InsertOpcode( FileBase, csrPtr, key );
+					} else {					// overwrite mode
+							DeleteOpcode( FileBase, &csrPtr);
+							InsertOpcode( FileBase, csrPtr, key );
+					}
+					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
+					key=0;
 				}
-				if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
-				key=0;
 			}
 		}
 	}

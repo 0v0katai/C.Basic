@@ -137,7 +137,8 @@ unsigned int Explorer( int size, char *folder )
 		Fkey_dispN( 0,"EXE ");
 		Fkey_dispR( 1,"EDIT");
 		Fkey_dispR( 2,"NEW");
-		Fkey_dispR( 3,"DEL");
+		Fkey_dispR( 3,"REN");
+		Fkey_dispR( 4,"DEL");
 		Fkey_dispN( 5,"ver.");
 		locate(1, 1);Print((unsigned char*)"Prog List  [        ]");
 		locate(13, 1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"Root");
@@ -219,14 +220,15 @@ unsigned int Explorer( int size, char *folder )
 			case KEY_CTRL_F1:	// run
 			case KEY_CTRL_F2:	// edit
 			case KEY_CTRL_F3:	// New file
-			case KEY_CTRL_F4:	// delete file
+			case KEY_CTRL_F4:	// rename file
+			case KEY_CTRL_F5:	// delete file
 				cont =0 ;
 				break;
 			case KEY_CTRL_F6:
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.21" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.30" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -476,7 +478,7 @@ void BasTofilename8( unsigned char *filebase, char *name) {
 	i=0;
 	while (i<8) {
 		c = nameptr[i];
-		if ((c==' ')||(c=='.')) c='~';
+		if ((c==' ')) c='~';
 		name[i]=c;
 		if ( c=='\0' ) break;
 		i++;
@@ -531,7 +533,7 @@ int LoadProgfile( char *name ) {
 	fsize=0xFFFF-(filebase[0x12]*256+filebase[0x13]);
 	size=SrcSize( filebase ) ;
 	if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize );
-//		 return 1;
+		 return 1;
 	}
 	
 	CB_PreProcess( filebase  + 0x56 );
@@ -559,7 +561,7 @@ int SaveG1M( unsigned char * filebase ){
 	filebase[size+3]=0x00;
 	G1M_header( filebase, &size );		// G1M header set
 	
-	return storeFile( fname, filebase, size );
+	return storeFile( fname, filebase, size );	// 0:ok
 }
 
 int SaveProgfile( int progNo ){
@@ -666,16 +668,39 @@ unsigned char * LoadPicture( int pictNo ){
 }
 
 //----------------------------------------------------------------------------------------------
-void DeleteFile(char *name) {
+void DeleteFile(char *name, int yesno) {
 	FONTCHARACTER filename[50];
 	int r;
 
 	CharToFont( name, filename );
 
-	if ( YesNo( "Delete file?" ) == 0 ) return ;
+	if ( yesno ) if ( YesNo( "Delete file?" ) == 0 ) return ;
 	
 	r = Bfile_DeleteFile( filename );
 	if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return ; }
+}
+//----------------------------------------------------------------------------------------------
+int RenameFile( char *name ) {
+	unsigned char *filebase;
+	char fname[32],basname[16],msg[32];
+	int size,i;
+
+	if ( LoadProgfile( name ) ) return 1 ;
+	
+	filebase=ProgfileAdrs[0] ;
+	BasTofilename8( filebase, basname);
+
+	if ( InputFilename( basname, "Rename File Name?" ) ) return 1 ;
+	SetFullfilenameG1M( fname, basname );
+	if ( strcmp(name,fname)==0 ) return 0; // no rename
+	
+	filenameToBas( filebase, basname);
+
+	if ( ExistFile( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ;
+	
+	if ( SaveG1M( filebase ) == 0 ) DeleteFile( name , 0 ) ;
+	else return 1;
+	return 0;
 }
 
 //----------------------------------------------------------------------------------------------

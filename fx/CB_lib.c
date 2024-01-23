@@ -1994,7 +1994,6 @@ void SetVar(int select){		// ----------- Set Variable
 //-----------------------------------------------------------------------------
 int SelectNum2( char*msg, int n ) {		// 
 	unsigned int key;
-//	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 6,5); Print((unsigned char *)msg);
@@ -2005,7 +2004,6 @@ int SelectNum2( char*msg, int n ) {		//
  		n=0;
  	}
 
-//	RestoreDisp(SAVEDISP_PAGE1);
 	return n ; // ok
 }
 
