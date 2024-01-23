@@ -195,7 +195,7 @@ void CB_Sci( unsigned char *SRC ){
 	CB_Round.MODE = Sci ;
 	CB_Round.DIGIT= tmp ;
 }
-void CB_Nomal( unsigned char *SRC ){
+void CB_Norm( unsigned char *SRC ){
 	int tmp;
 	tmp=CB_Eval( SRC+ExecPtr );
 	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
@@ -303,6 +303,7 @@ int  CB_Input( unsigned char *SRC ){
 	double DefaultValue=0;
 	int flag=0;
 	int reg,bptr,mptr;
+	char buffer[32];
 	
 	KeyRecover();
 	CB_SelectTextDD();	// Select Text Screen
@@ -361,11 +362,18 @@ int  CB_Input( unsigned char *SRC ){
 		} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 
+//	if ( flag ) {
+//			CB_CurrentValue = InputNumD_CB2( 1, CursorY, 21, DefaultValue );
+//			CB_Store( SRC );
+//	} else	CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
+
 	if ( flag ) {
-			CB_CurrentValue = InputNumD_CB2( 1, CursorY, 21, DefaultValue );
+			sprintGR(buffer, DefaultValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+			locate( CursorX, CursorY); Print((unsigned char*)buffer);
+			Scrl_Y();
+			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
 			CB_Store( SRC );
 	} else	CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
-	
 	Scrl_Y();
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0 ;
@@ -609,11 +617,11 @@ int CB_Disps( unsigned char *SRC ,int dspflag){
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
 		CursorX=21;
 		scrmode=ScreenMode;
-	} else {
-		if (scrmode) CB_SelectTextVRAM();	// Select Text Screen
+	}
+	if (scrmode) {
+		CB_SelectTextVRAM();	// Select Text Screen
 		PrintDone();
 	}
-	if (scrmode) CB_SelectTextVRAM();	// Select Text Screen
 	if ( CursorX >1 ) Scrl_Y();
 	locate( CursorX, CursorY); Print((unsigned char*)"             - Disp -");
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -680,9 +688,7 @@ void CB_end( unsigned char *SRC, int dspflag ){
 		}
 	}
 	if ( (UseGraphic&0xFF) == 1 ) {	// Plot 
-		CB_SelectGraphVRAM();	// Select Graphic Screen
-		PlotPreviousPXY();
-		CB_SelectTextVRAM();	// Select Text Screen
+		PlotXYtoPrevPXY();
 	}
 }
 
@@ -1446,6 +1452,7 @@ void CB_Plot( unsigned char *SRC ) { //	Plot
 	regX = x;
 	regY = y;
 	PlotPreviousPXY();
+	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 
 void CB_PlotOprand( unsigned char *SRC, double  *x, double *y) {
@@ -1717,17 +1724,15 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 
 	while (cont) {
 		if ( ErrorNo  ) return ErrorPtr;
-		if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr; KeyRecover(); }	// [AC] break?
 		if ( BreakPtr ) { CB_BreakStop(); return BreakPtr; }
-		c=SRC[ExecPtr];
-		if ( c==0x00 ) if ( ProgEntryPtr ) return -1;  else  break;
-		if ( c==':'  ) c=SRC[++ExecPtr];
-		if ( c==0x0D ) c=SRC[++ExecPtr];
-		ExecPtr++;
+		c=SRC[ExecPtr++];
+		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryPtr )  return -1;  else  break; }
+		if ( c==':'  )   c=SRC[ExecPtr++]; 
 		switch (c) {
 //			case 0x3A:	// <:>
 //				break;
 			case 0x0D:	// <CR>
+				if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); }	// [AC] break?
 				break;
 			case 0x0E:	// ->
 				CB_Store(SRC);
@@ -1746,7 +1751,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				break;
 			case 0x13:	// =>
 				CB_Cond(SRC);
-				dspflag=2;
+				dspflag=0;
 				break;
 			case 0xF7:	// F7
 				c=SRC[ExecPtr++];
@@ -2033,6 +2038,9 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 			case 0xD3:	// Rnd
 				CB_Rnd();
 				break;
+			case 0xD9:	// Norm
+				CB_Norm(SRC);
+				break;
 			case 0xE3:	// Fix
 				CB_Fix(SRC);
 				break;
@@ -2064,8 +2072,6 @@ int CB_interpreter( unsigned char *SRC ) {
 	ErrorPtr=0;
 	ErrorNo= 0;
 	BreakPtr=0;
-	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
-	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
 	Bdisp_PutDisp_DD_DrawBusy();
 	stat = CB_interpreter_sub( SRC );
 	KeyRecover(); 

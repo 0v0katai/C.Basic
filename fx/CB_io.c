@@ -4,7 +4,7 @@
 
 #include "CB_io.h"
 
-struct st_round CB_Round = { Norm , 10} ; // Round
+struct st_round CB_Round = { Norm , 1} ; // Round
 
 //---------------------------------------------------------------------------------------------
 int CPU_check(void) {					// SH3:3 SH4A:4

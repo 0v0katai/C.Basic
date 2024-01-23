@@ -33,36 +33,45 @@ int ExpPtr;	// Expression buffer ptr
 //-----------------------------------------------------------------------------
 
 double InputNumD_full(int x, int y, int width, double defaultNum) {		// full number display
+	unsigned int key;
 	double result;
 	sprintG(ExpBuffer, defaultNum, 30, LEFT_ALIGN);
-	if ( InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ) return (defaultNum);
+	key= InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 	result = Eval( ExpBuffer );
 	while ( ErrorNo ) {	// error loop
-		if ( InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ) return (defaultNum);
+		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok
 }
 
 double InputNumD_Char(int x, int y, int width, double defaultNum, char code) {		//  1st char key in
+	unsigned int key;
 	double result;
 	ExpBuffer[0]=code;
 	ExpBuffer[1]='\0';
-	if ( InputStrSub( x, y, width, 1, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ) return (defaultNum);
+	key= InputStrSub( x, y, width, 1, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 	result = Eval( ExpBuffer );
 	while ( ErrorNo ) {	// error loop
-		if ( InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ) return (defaultNum);
+		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok
 }
 
 double InputNumD_replay(int x, int y, int width, double defaultNum) {		//  replay expression
+	unsigned int key;
 	double result;
-	if ( InputStrSub( x, y, width, strlen(ExpBuffer), ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ) return (defaultNum);
+	key= InputStrSub( x, y, width, strlen(ExpBuffer), ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 	result = Eval( ExpBuffer );
 	while ( ErrorNo ) {	// error loop
-		if ( InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ) return (defaultNum);
+		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok
@@ -78,6 +87,22 @@ double InputNumD_CB(int x, int y, int width, double defaultNum) {		//  Basic Inp
 	while ( ErrorNo || (strlen(ExpBuffer)==0) ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 		if ( key==KEY_CTRL_AC  ) return 0;
+		result = Eval( ExpBuffer );
+	}
+	return result; // value ok
+}
+double InputNumD_CB1(int x, int y, int width, double defaultNum) {		//  Basic Input 1
+	unsigned int key;
+	double result;
+	ExpBuffer[0]='\0';
+	key=InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+	if ( key==KEY_CTRL_AC  ) return 0;
+	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) return (defaultNum);
+	result = Eval( ExpBuffer );
+	while ( ErrorNo || (strlen(ExpBuffer)==0) ) {	// error loop
+		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+		if ( key==KEY_CTRL_AC  ) return 0;
+		if ( strlen(ExpBuffer)==0 ) if ( key==KEY_CTRL_EXE  ) return (defaultNum);
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok
@@ -211,6 +236,9 @@ double Eval_atof(char *expbuf) {
 	if ( c == '.'  )   {
 			ExpPtr++;
 			c=Eval_atofNumDiv(expbuf, &mantissa);	// .123456
+	} else if ( c == 0x0F  ) {  // exp
+			mantissa = 1.0;
+			goto lblexp;
 	} else { 
 			c=Eval_atofNumMult(expbuf, &mantissa);	// 123456
 			if ( c == '.'  ) {
@@ -218,6 +246,7 @@ double Eval_atof(char *expbuf) {
 				c=Eval_atofNumDiv(expbuf, &mantissa);	// 123456.789
 			}
 	}
+	lblexp:
 	if ( c == 0x0F  ) { // exp
 			c=expbuf[++ExpPtr];
 			if ( ( c == '+' ) || ( c == 0x89 ) ) c=expbuf[++ExpPtr];
@@ -248,7 +277,7 @@ double EvalGetNum(char *expbuf){
 			ExpPtr++ ;
 			return REG[c-'A'] ;
 	}
-	if ( ( c=='.' ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
+	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
 			result = Eval_atof( expbuf );
 			return result ;
 	}
