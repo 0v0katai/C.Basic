@@ -33,14 +33,6 @@ void Fkey_dispN(int n,char *buffer) {
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
 }
-void Fkey_DISPN(int n,char *buffer) {
-	Fkey_Clear(n);
-	PrintXY(n*21+2,7*8+1,(unsigned char *)buffer,0);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
-	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
-	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
-}
 void Fkey_dispR(int n,char *buffer) {
 	Fkey_Clear(n);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
@@ -58,6 +50,19 @@ void Fkey_dispR(int n,char *buffer) {
 	Bdisp_ClearLineVRAM(n*21+20,7*8+5,n*21+20,7*8+5);
 	Bdisp_ClearLineVRAM(n*21+19,7*8+6,n*21+20,7*8+6);
 	Bdisp_ClearLineVRAM(n*21+18,7*8+7,n*21+20,7*8+7);
+}
+void Fkey_DISPN(int n,char *buffer) {
+	Fkey_Clear(n);
+	PrintXY(n*21+2,7*8+1,(unsigned char *)buffer,0);
+	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
+	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
+	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
+	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
+}
+void Fkey_DISPR(int n,char *buffer) {
+	Fkey_Clear(n);
+	PrintXY(n*21+2,7*8+1,(unsigned char *)buffer,0);
+	Bdisp_AreaReverseVRAM( n*21+2, 7*8+0, n*21+20, 7*8+7);	// reverse Fkey
 }
 
 void Hex8PrintXY(int x, int y, char *str, unsigned int hex){

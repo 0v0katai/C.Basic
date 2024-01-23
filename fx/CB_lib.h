@@ -134,7 +134,7 @@ void Line(int style);
 void F_Line(double x1, double y1, double x2, double y2, int style);
 void Vertical(double x ,int style);
 void Horizontal(double y, int style);
-void Circle(double x, double y, double r, int style);
+void Circle(double x, double y, double r, int style, int drawflag);
 
 unsigned int Plot();
 unsigned int Zoom_sub(unsigned int key);
