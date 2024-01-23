@@ -5,6 +5,7 @@ struct st_round {
 };
 
 extern struct st_round CB_Round;	// struct Round
+extern int ENG;	// ENG flag
 
 #define Norm 0
 #define Fix  1

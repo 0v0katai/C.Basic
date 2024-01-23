@@ -23,6 +23,9 @@ extern int ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 //------------------------------------------------------------------------------
 void Skip_block( unsigned char *SRC );
 
+int StoPict( int pictNo );
+void RclPict( int pictNo );
+
 void CB_ProgEntry( unsigned char *SRC ) ; //	Prog "..." into memory
 
 int CB_interpreter( unsigned char *SRC) ;

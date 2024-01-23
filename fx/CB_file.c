@@ -228,7 +228,7 @@ unsigned int Explorer( int size, char *folder )
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.32" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.33" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -572,10 +572,10 @@ int SaveProgfile( int progNo ){
 	filebase=ProgfileAdrs[progNo];
 	BasTofilename8( filebase, basname);
 
+  loop:
 	if ( InputFilename( basname, "Save File Name?" ) ) return 1 ;
 	filenameToBas( filebase, basname);
-
-	if ( ExistFile( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ;
+	if ( ExistFile( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) goto loop;
 
 	return SaveG1M( filebase );
 }
@@ -635,7 +635,9 @@ int SavePicture( unsigned char *filebase, int pictNo ){
 	s = Bfile_FindClose( handle );
 	if( r != 0 ) {
 		handle = Bfile_CreateDirectory( filename );
-		if( handle < 0 ) { ErrorMSG( "Can't create Dir", handle ); return 1 ; }
+		if( handle < 0 ) { 
+//			ErrorMSG( "Can't create Dir", handle );
+			return handle ; }
 		r = Bfile_CloseFile( handle );
 	}
 	
