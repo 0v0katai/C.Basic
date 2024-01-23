@@ -5,6 +5,7 @@
 #include "CB_io.h"
 
 struct st_round CB_Round = { Norm , 1} ; // Round
+int ENG=0;	// ENG flag
 
 //---------------------------------------------------------------------------------------------
 int CPU_check(void) {					// SH3:3 SH4A:4

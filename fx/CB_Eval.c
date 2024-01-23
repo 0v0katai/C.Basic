@@ -261,17 +261,23 @@ double Eval_atof(char *expbuf) {
 
 //-----------------------------------------------------------------------------
 
-double EvalGetNum(char *expbuf){
+double Evalsub1(char *expbuf) {	// 1th Priority
 	double result,tmp,tmp2;
 	unsigned char c,d;
 	unsigned char *pt;
 	int dimA,dimB,reg,x,y;
-	int ptr,mptr;
+	int i,ptr,mptr;
 	c = expbuf[ExpPtr];
+	if ( c == '(') {
+		ExpPtr++;
+		result = EvalsubTop( expbuf );
+		if ( expbuf[ExpPtr] == ')' ) ExpPtr++;
+		return result;
+	}
 	if ( ( c == '+' ) || ( c == 0x89 ) ) while ( ( c == '+' ) || ( c == 0x89 ) ) c=expbuf[++ExpPtr];
 	if ( ( c == '-' ) || ( c == 0x87 ) || ( c == 0x99 ) ) {	//  -
 		ExpPtr++;
-		return - EvalGetNum( expbuf );
+		return - Evalsub1( expbuf );
 	}
 	if ( ( 'A'<=c )&&( c<='Z' ) ) {
 			ExpPtr++ ;
@@ -453,36 +459,58 @@ double EvalGetNum(char *expbuf){
 					reg=c-'A';
 					ExpPtr++ ;
 					if ( expbuf[ExpPtr] != '[' ) EvalError(SyntaxERR) ; // Syntax error 
+					c = expbuf[++ExpPtr];
+					if ( expbuf[ExpPtr+1] == ',' ) {
+						ExpPtr++;
+						if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
+							else if  ( ( 'A'<= c ) && ( c<='Z' ) ) dimA=REG[c-'A'];
+					} else {
+						dimA=(EvalsubTop( expbuf ));
+						if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
+					}
+					if ( MatArySizeA[(reg)] < dimA ) EvalError(DimensionERR) ; // Dimension error 
+					c = expbuf[++ExpPtr];
+					if ( expbuf[ExpPtr+1] == ']' ) {
+						ExpPtr++;
+						if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
+						else if  ( ( 'A'<= c ) && ( c<='Z' ) ) dimB=REG[c-'A'];
+					} else {
+						dimB=(EvalsubTop( expbuf ));
+						if ( expbuf[ExpPtr] != ']' ) EvalError(SyntaxERR) ; // Syntax error 
+					}
+					if ( MatArySizeB[(reg)] < dimB ) EvalError(DimensionERR) ; // Dimension error 
 					ExpPtr++ ;
-					dimA=(EvalsubTop( expbuf ));
-					if ( MatArySizeA[reg] < dimA ) EvalError(DimensionERR) ; // Dimension error 
-					if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
-					ExpPtr++ ;
-					dimB=(EvalsubTop( expbuf ));
-					if ( MatArySizeB[reg] < dimB ) EvalError(DimensionERR) ; // Dimension error 
-					if ( expbuf[ExpPtr] != ']' ) EvalError(SyntaxERR) ; // Syntax error 
-					ExpPtr++ ;
+					if ( ErrorNo ) return 0 ;
 					result = MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB-1]   ;			// Matrix array ptr*
 					return result ;
 				}
 			} else if ( c == 0x3A ) {	// MOD(a,b)
 				ExpPtr+=2;
-				tmp = EvalsubTop( expbuf );
+				tmp = floor(EvalsubTop( expbuf ) +.5);
 				if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
 				ExpPtr++;
-				tmp2 = EvalsubTop( expbuf );
+				tmp2 = floor( EvalsubTop( expbuf ) +.5);
 				if ( tmp2 == 0 ) { ErrorNo=MaERR; ErrorPtr=ExpPtr; } // Ma error 
-				result= fmod( tmp, tmp2 ) ;
+				result= floor(fabs(fmod( tmp, tmp2 ))+.5);
+				if ( result == tmp2  ) result--;
+				if ( tmp < 0 ) {
+					result=fabs(tmp2)-result;
+					if ( result == tmp2  ) result=0;
+				}
 				if ( expbuf[ExpPtr] == ')' ) ExpPtr++;
 				return result ;
 			} else if ( c == 0x8F ) {	// Getkey
 					ExpPtr+=2;
 					result = CB_Getkey() ;
 					return result ;
-			} else if ( c == 0x86 ) {	// RanFix(n)
+			} else if ( c == 0x86 ) {	// RndFix(n,digit)
 					ExpPtr+=2;
 					tmp=(EvalsubTop( expbuf ));
-					result=Round( tmp, CB_Round.MODE, CB_Round.DIGIT) ;
+					if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
+					ExpPtr++ ;	// ',' skip
+					i = EvalsubTop( expbuf ) +.5;
+					if ( expbuf[ExpPtr] == ')' ) ExpPtr++;
+					result=Round( tmp, Fix, i) ;
 					return result ;
 			} else if ( c == 0x87 ) {	// RanInt#(st,en)
 					ExpPtr+=2;
@@ -490,8 +518,7 @@ double EvalGetNum(char *expbuf){
 					if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;	// ',' skip
 					y=(EvalsubTop( expbuf ));
-					if ( expbuf[ExpPtr] != ')' ) EvalError(SyntaxERR) ; // Syntax error 
-					ExpPtr++ ;
+					if ( expbuf[ExpPtr] == ')' ) ExpPtr++;
 					result=floor( ((double)random(0)/65536.)*(x-y+1) ) +y ;
 					return result ;
 			} else if ( c == 0xF0 ) {	// GraphY
@@ -570,73 +597,90 @@ double EvalGetNum(char *expbuf){
 	return 0 ;
 }
 
-
-double Evalsub1(char *expbuf) {	// 1th Priority
-	double result;
-	unsigned char c;
-	c = expbuf[ExpPtr];
-	if ( c == '(') {
-		ExpPtr++;
-		result = EvalsubTop( expbuf );
-		if ( expbuf[ExpPtr] == ')' ) ExpPtr++;
-		return result;
-	 } else 
-	 	return EvalGetNum( expbuf );
-}
-
 double Evalsub2(char *expbuf) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
 	double result,tmp;
 	unsigned char c;
 	result = Evalsub1( expbuf );
-	while ( cont ) {
-		c = expbuf[ExpPtr];
+	while ( 1 ) {
+		c = expbuf[ExpPtr++];
 		switch ( c ) {
+			case  0x8B  :	// ^2
+				result *= result ;
+				break;
+			case  0x9B  :	// ^(-1) RECIP
+				if ( result == 0 ) EvalError(MaERR) ; // Math error
+				result = 1 / result ;
+				break;
 			case  0xAB  :	//  !
 			case  '!'  :	//  !
-				ExpPtr++;
 				tmp = floor( result );
 				result = 1;
 				while ( tmp > 0 ) { result *= tmp; tmp--; }
 				break;
-			case  0x8B  :	// ^2
-				ExpPtr++;
-				result *= result ;
+				
+			case  0x01  :	//  femto
+				result *= 1e-15 ;
 				break;
-			case  0x9B  :	// ^(-1) RECIP
-				ExpPtr++;
-				result = 1 / result ;
+			case  0x02  :	//  pico
+				result *= 1e-12 ;
 				break;
+			case  0x03  :	//  nano
+				result *= 1e-9 ;
+				break;
+			case  0x04  :	//  micro
+				result *= 1e-6 ;
+				break;
+			case  0x05  :	//  milli
+				result *= 1e-3 ;
+				break;
+			case  0x06  :	//  Kiro
+				result *= 1e3 ;
+				break;
+			case  0x07  :	//  Mega
+				result *= 1e6 ;
+				break;
+			case  0x08  :	//  Giga
+				result *= 1e9 ;
+				break;
+			case  0x09  :	//  Tera
+				result *= 1e12 ;
+				break;
+			case  0x0A  :	//  Peta
+				result *= 1e15 ;
+				break;
+			case  0x01B  :	//  Exa
+				result *= 1e18 ;
+				break;
+				
 			default:
-				cont=0;
+				ExpPtr--;
+				return result;
 				break;
 		}
 	 }
 	return result;
 }
 double Evalsub3(char *expbuf) {	//  3rd Priority  ( ^ ...)
-	int cont=1;
 	double result,tmp;
 	unsigned char c;
 	unsigned char *pt;
 	result = Evalsub2( expbuf );
-	while ( cont ) {
-		c = expbuf[ExpPtr];
+	while ( 1 ) {
+		c = expbuf[ExpPtr++];
 		switch ( c ) {
 			case  0xA8  :	// a ^ b
 			case  '^'  :
-				ExpPtr++;
 				result = pow( result, Evalsub2( expbuf ) );
 				pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 				break;
 			case  0xB8  :	// powroot
-				ExpPtr++;
-				if ( result == 0 ) EvalError(MaERR) ; // Math error
 				result = pow( Evalsub2( expbuf ), 1/result );
 				pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 				break;
 			default:
-				cont=0;
+				ExpPtr--;
+				return result;
 				break;
 		}
 	 }
@@ -665,12 +709,11 @@ double Evalsub4(char *expbuf) {	//  4th Priority  (Fraction) a/b/c
 	return result;
 }
 double Evalsub5(char *expbuf) {	//  5th Priority
-	int cont=1;
 	double result,tmp;
 	unsigned char c;
 	int dimA,dimB,reg,x,y;
 	result = Evalsub4( expbuf );
-	while ( cont ) {
+	while ( 1 ) {
 		c = expbuf[ExpPtr];
 		if ((( 'A' <= c ) && ( c <= 'Z' )) ||
 			 ( c == 0xD0 ) || // PI
@@ -683,7 +726,9 @@ double Evalsub5(char *expbuf) {	//  5th Priority
 				case 0x40:	// Mat A[a,b]
 				case 0x3A:	// MOD(a,b)
 				case 0x8F:	// Getkey
+				case 0x86:	// RndFix(n,digit)
 				case 0x87:	// RanInt#(st,en)
+				case 0xF0:	// GraphY
 				case 0x00:	// Xmin
 				case 0x01:	// Xmax
 				case 0x02:	// Xscl
@@ -693,7 +738,7 @@ double Evalsub5(char *expbuf) {	//  5th Priority
 					result *= Evalsub4( expbuf ) ;
 					break;
 				default:
-					cont=0;
+					return result;
 					break;
 			}
 		} else if ( c == 0xF7 ) { // F7..
@@ -703,7 +748,7 @@ double Evalsub5(char *expbuf) {	//  5th Priority
 					result *= Evalsub4( expbuf ) ;
 					break;
 				default:
-					cont=0;
+					return result;
 					break;
 			}
 		} else if ( c == 0xF9 ) { // F9..
@@ -713,17 +758,17 @@ double Evalsub5(char *expbuf) {	//  5th Priority
 					result *= Evalsub4( expbuf ) ;
 					break;
 				default:
-					cont=0;
+					return result;
 					break;
 			}
 		} else if ( c == 0xE7 ) { // E7..
 			c = expbuf[ExpPtr+1];
 			switch ( c ) {
 				default:
-					cont=0;
+					return result;
 					break;
 			}
-		} else cont=0;
+		} else return result;
 	 }
 	return result;
 }
@@ -737,11 +782,10 @@ double Evalsub6(char *expbuf) {	//  6th Priority  ( type C function )  sin cos t
 }
 */
 double Evalsub7(char *expbuf) {	//  7th Priority
-	int cont=1;
 	double result,tmp;
 	unsigned char c;
 	result = Evalsub5( expbuf );
-	while ( cont ) {
+	while ( 1 ) {
 		c = expbuf[ExpPtr];
 		switch ( c ) {
 			case '(' :
@@ -774,7 +818,7 @@ double Evalsub7(char *expbuf) {	//  7th Priority
 				result *= Evalsub5( expbuf );
 				break;
 			default:
-				cont=0;
+				return result;
 				break;
 		}
 	 }
@@ -795,25 +839,23 @@ double Evalsub9(char *expbuf) {	//  9th Priority
 }
 */
 double Evalsub10(char *expbuf) {	//  10th Priority  ( *,/, int.,Rmdr )
-	int cont=1;
 	double result,tmp;
 	unsigned char c;
 	result = Evalsub7( expbuf );
-	while ( cont ) {
-		c = expbuf[ExpPtr];
+	while ( 1 ) {
+		c = expbuf[ExpPtr++];
 		switch ( c ) {
 			case  0xA9 :	// ~
-				ExpPtr++;
 				result *= Evalsub7( expbuf );
 				break;
 			case 0xB9 :		// €
-				ExpPtr++;
 				tmp = Evalsub7( expbuf );
 				if ( tmp == 0 ) EvalError(MaERR) ; // Math error
 				result /= tmp ;
 				break;
 			default:
-				cont=0;
+				ExpPtr--;
+				return result;
 				break;
 		}
 	 }
@@ -821,25 +863,23 @@ double Evalsub10(char *expbuf) {	//  10th Priority  ( *,/, int.,Rmdr )
 }
  
 double Evalsub11(char *expbuf) {	//  11th Priority  ( +,- )
-	int cont=1;
 	double result;
 	unsigned char c;
 	result = Evalsub10( expbuf );
-	while ( cont ) {
-		c = expbuf[ExpPtr];
+	while ( 1 ) {
+		c = expbuf[ExpPtr++];
 		switch ( c ) {
 			case 0x89:
 			case '+' :
-				ExpPtr++;
 				result += Evalsub10( expbuf );
 				break;
 			case 0x99 :
 			case '-' :
-				ExpPtr++;
 				result -= Evalsub10( expbuf );
 				break;
 			default:
-				cont=0;
+				ExpPtr--;
+				return result;
 				break;
 		}
 	 }
@@ -847,39 +887,33 @@ double Evalsub11(char *expbuf) {	//  11th Priority  ( +,- )
 }
 
 double Evalsub12(char *expbuf) {	//  12th Priority ( =,!=,><,>=,<= )
-	int cont=1;
 	double result;
 	unsigned char c;
 	result = Evalsub11( expbuf );
-	while ( cont ) {
-		c = expbuf[ExpPtr];
+	while ( 1 ) {
+		c = expbuf[ExpPtr++];
 		switch ( c ) {
 			case '=' :	// =
-				ExpPtr++;
 				result = ( result == Evalsub11( expbuf ) );
 				break;
 			case '>' :	// >
-				ExpPtr++;
 				result = ( result >  Evalsub11( expbuf ) );
 				break;
 			case '<' :	// <
-				ExpPtr++;
 				result = ( result <  Evalsub11( expbuf ) );
 				break;
 			case 0x11 :	// !=
-				ExpPtr++;
 				result = ( result != Evalsub11( expbuf ) );
 				break;
 			case 0x12 :	// >=
-				ExpPtr++;
 				result = ( result >= Evalsub11( expbuf ) );
 				break;
 			case 0x10 :	// <=
-				ExpPtr++;
 				result = ( result <= Evalsub11( expbuf ) );
 				break;
 			default:
-				cont=0;
+				ExpPtr--;
+				return result;
 				break;
 		}
 	 }
@@ -887,11 +921,10 @@ double Evalsub12(char *expbuf) {	//  12th Priority ( =,!=,><,>=,<= )
 }
 
 double Evalsub13(char *expbuf) {	//  13th Priority  ( And,and)
-	int cont=1;
 	double result;
 	unsigned char c;
 	result = Evalsub12( expbuf );
-	while ( cont ) {
+	while ( 1 ) {
 		c = expbuf[ExpPtr];
 		if ( c == 0x7F ) {
 			c = expbuf[ExpPtr+1];
@@ -901,7 +934,7 @@ double Evalsub13(char *expbuf) {	//  13th Priority  ( And,and)
 					result = ( (int)result & (int)Evalsub13( expbuf ) );
 					break;
 				default:
-					cont=0;
+					return result;
 					break;
 			}
 		} else break;
@@ -910,11 +943,10 @@ double Evalsub13(char *expbuf) {	//  13th Priority  ( And,and)
 }
 
 double EvalsubTop(char *expbuf) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
-	int cont=1;
 	double result;
 	unsigned char c;
 	result = Evalsub13( expbuf );
-	while ( cont ) {
+	while ( 1 ) {
 		c = expbuf[ExpPtr];
 		if ( c == 0x7F ) {
 			c = expbuf[ExpPtr+1];
@@ -928,7 +960,7 @@ double EvalsubTop(char *expbuf) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 					result = ( (int)result ^ (int)Evalsub13( expbuf ) );
 					break;
 				default:
-					cont=0;
+					return result;
 					break;
 			}
 		} else break;

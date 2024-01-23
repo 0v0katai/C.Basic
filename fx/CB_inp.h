@@ -41,7 +41,8 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 void sprintG(char* buffer, double num, int width, int align_mode);
 double Round( double num, int round_mode, int digit);
-void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int digit) ;
+void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ; 
+void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode 
 
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode);
 unsigned int InputStr( int x, int y, int width, char* buffer,      char SPC, int rev_mode);

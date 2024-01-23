@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series     v0.20
+ Casio Basic RUNTIME library for fx-9860G series     v0.32
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -132,12 +132,12 @@ int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(
 	return 0;
 }
 void PXYtoVW(int px, int py, double *x, double *y){	// pixel(x,y) -> ViewWwindow(x,y)
-	if ( Xmax == Xmin )		*x = Xmin ;
-	*x = (    (double)px-1)*Xdot  + Xmin ;
+//	if ( Xmax == Xmin )		*x = Xmin ;
+	*x = (    px-1)*Xdot  + Xmin ;
 //	if ( Xmax >  Xmin )		*x = (    (double)px-1)*Xdot  + Xmin ;
 //	if ( Xmax <  Xmin )		*x = (126-(double)px+1)*-Xdot + Xmax ;
-	if ( Ymax == Ymin )		*y = Ymin ;
-	*y = ( 62-(double)py+1)*Ydot  + Ymin ;
+//	if ( Ymax == Ymin )		*y = Ymin ;
+	*y = ( 62-py+1)*Ydot  + Ymin ;
 //	if ( Ymax >  Ymin )		*y = ( 62-(double)py+1)*Ydot  + Ymin ;
 //	if ( Ymax <  Ymin )		*y = (    (double)py-1)*-Ydot + Ymax ;
 	if ( fabs(*x) < 1.0e-13 ) *x=0;	// zero adjust
@@ -809,6 +809,87 @@ void DrawGCSR( int x, int y )
 }
 
 //--------------------------------------------------------------
+
+int PictSelectNum2( char*msg ) {		// 
+	char buffer[32];
+	unsigned int key;
+	int n;
+
+	PopUpWin(4);
+	locate( 3,2); Print((unsigned char *)msg);
+	locate( 6,3); Print((unsigned char *)"Picture Memory");
+	locate( 5,5); Print((unsigned char *)"Pict[1~20]:");
+
+	buffer[0]='\0';
+	while (1) {
+		key= InputStrSub( 17, 5, 2, 0, buffer, 2, ' ', REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return -1;  // exit
+		n=atof( buffer );
+ 		if ( (1<=n)&&(n<=20) ) break;
+ 		n=0;
+ 	}
+	return n ; // ok
+}
+
+unsigned int Pict() {
+	int cont=1;
+	unsigned int key;
+	int n;
+
+	while ( cont ) {
+		locate(1,8); PrintLine((unsigned char *)" ",21);
+		Fkey_dispR( 0, "PICT");
+		GetKey(&key);
+		switch (key) {
+			case KEY_CTRL_EXIT:
+				key=0;
+			case KEY_CTRL_AC:
+			case KEY_CTRL_EXE:
+				cont=0;
+				break;
+			case KEY_CTRL_F1:
+				Fkey_dispR( 0, "STO");
+				Fkey_dispR( 1, "RCL");
+				GetKey(&key);
+				switch (key) {
+					case KEY_CTRL_AC:
+					case KEY_CTRL_EXE:
+						cont=0;
+					case KEY_CTRL_EXIT:
+						break;
+					case KEY_CTRL_F1:
+						n=PictSelectNum2( "Store In" );
+						if (n>0) { 
+							RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
+							StoPict(n);
+							cont=0;
+						}
+						break;
+					case KEY_CTRL_F2:
+						n=PictSelectNum2( "Recall From" );
+						if (n>0) { 
+							RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
+							RclPict(n);
+							SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
+							cont=0;
+						}
+						break;
+					default:
+						break;
+				}
+			case KEY_CTRL_SHIFT:
+				cont=0;
+				break;
+			default:
+				break;
+		}
+	}
+
+	RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
+	return key;
+}
+
+//--------------------------------------------------------------
 unsigned int Plot()
 {
 	int cont=1;
@@ -838,14 +919,15 @@ unsigned int Plot()
 		PXYtoVW(GCursorX, GCursorY, &Plot_X, &Plot_Y);	// graphic cursor XY  to  VW(X,Y)
 		if ( Coord ) {
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintGR(buffer, Plot_X, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, Plot_X, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
-			sprintGR(buffer, Plot_Y, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, Plot_Y, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 //		Bdisp_PutDisp_DD();
 
 		GetKey(&key);
+		if ( key==KEY_CTRL_OPTN ) key=Pict();
 		switch (key) {
 			case KEY_CTRL_EXE:
 			case KEY_CTRL_AC:
@@ -868,7 +950,7 @@ unsigned int Plot()
 				if ( GCursorY <  63 ) GCursorY++;
 				break;
 			case KEY_CTRL_SHIFT:
-				locate(1,8); PrintLine(" ",21);
+				locate(1,8); PrintLine((unsigned char *)" ",21);
 				Fkey_dispR( 0, "Var");
 				Fkey_dispR( 2, "V-W");
 				Fkey_dispN( 5, "G<>T");
@@ -912,21 +994,20 @@ unsigned int Plot()
 // Graph function
 //----------------------------------------------------------------------------------------------
 void FkeyZoom(){
-	locate(1,8); PrintLine(" ",21);
+	locate(1,8); PrintLine((unsigned char *)" ",21);
 	Fkey_dispR( 1, "FACT");
 	Fkey_dispN( 2, " IN");
 	Fkey_dispN( 3, "OUT");
 }
 void FkeyGraph(){
-	locate(1,8); PrintLine(" ",21);
+	locate(1,8); PrintLine((unsigned char *)" ",21);
 	Fkey_dispN( 0, "TRCE");
 	Fkey_dispR( 1, "ZOOM");
 	Fkey_dispR( 2, "V-W");
 	Fkey_dispN( 5, "G<>T");
 }
 //--------------------------------------------------------------
-unsigned int ZoomXY()
-{
+unsigned int ZoomXY() {
 	int cont=1;
 	char buffer[21];
 	unsigned int key;
@@ -949,9 +1030,9 @@ unsigned int ZoomXY()
 		PXYtoVW(GCursorX, GCursorY, &regX, &regY);	// graphic cursor XY  to  VW(X,Y)
 		if ( Coord ) {
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintGR(buffer, regX, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, regX, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
-			sprintGR(buffer, regY, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, regY, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 		Bdisp_PutDisp_DD();
@@ -1055,19 +1136,20 @@ unsigned int Trace(int *index )
 			sprintf(buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
 			sprintf(buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintGR(buffer, regX,             13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, regX,             13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
-			sprintGR(buffer,traceAry[GCursorX],13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer,traceAry[GCursorX],13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
 		if ( Derivative ) {
 			PrintMini( 64,50,(unsigned char*)"dY/dX=",MINI_OVER);
 			dydx = (traceAry[GCursorX+1]-traceAry[GCursorX-1]) / (Xdot*2);
-			sprintGR(buffer, dydx, 6,LEFT_ALIGN, Norm,5); PrintMini( 88,50,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, dydx, 6,LEFT_ALIGN, Norm,5); PrintMini( 88,50,(unsigned char*)buffer,MINI_OVER);
 		}
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 		Bdisp_PutDisp_DD();
 
 		GetKey(&key);
+		if ( key==KEY_CTRL_OPTN ) key=Pict();
 		switch (key) {
 			case KEY_CTRL_AC:
 			case KEY_CTRL_F1:
@@ -1145,10 +1227,10 @@ void Graph_Draw(){
 	Plot_X = regX;
 	for ( i=0; i<=128; i++) {
 		//-----------------------------
-		traceAry[i]=Graph_Eval(GraphY);		// function
+		traceAry[i]=Graph_Eval((unsigned char *)GraphY);		// function
 		if ( ErrorPtr ) return ;
 		//-----------------------------
-		if ( fabs(traceAry[i])<1.0e-13 ) traceAry[i]=0;	// zero adjust
+//		if ( fabs(traceAry[i])<1.0e-13 ) traceAry[i]=0;	// zero adjust
 		if ( i==0 ) { Previous_X = Plot_X; Previous_Y = traceAry[i]; }
 		if ( ( 0<i ) && ( i<128 ) ) {
 			Plot_Y=traceAry[i];
@@ -1250,6 +1332,7 @@ unsigned int Graph_main(){
 
 	while (cont) {
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
+		if ( key==KEY_CTRL_OPTN ) key=Pict();
 		GetKey(&key);
 		switch (key) {
 			case KEY_CTRL_AC:
@@ -2060,6 +2143,8 @@ void SetupG(){		// ----------- Setup
 			buffer[0]='\0';
 			sprintf(buffer,"%d",CB_Round.DIGIT);
 			locate(17, 9-scrl); Print((unsigned char*)buffer);
+			locate(19, 9-scrl); 
+			if (ENG) Print((unsigned char*)"/E");
 		}
 		if ( ( scrl >=3 ) && (10-scrl > 0 ) ){
 			locate( 1,10-scrl); Print((unsigned char*)"TimeDsp     :");
@@ -2099,7 +2184,7 @@ void SetupG(){		// ----------- Setup
 				Fkey_dispR( 0, "Fix ");
 				Fkey_dispR( 1, "Sci ");
 				Fkey_dispR( 2, "Nrm ");
-				Fkey_Clear( 3 );
+				Fkey_dispN( 3, "Eng ");
 				break;
 			default:
 				break;
@@ -2225,6 +2310,9 @@ void SetupG(){		// ----------- Setup
 				switch (select) {
 					case 6: // Sketch  Line	Dot
 						S_L_Style = 3 ; 
+						break;
+					case 8: // Display
+						ENG=1-ENG;
 						break;
 					default:
 						break;

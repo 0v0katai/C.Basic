@@ -467,7 +467,7 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 	char tmpbuf[18];
 	unsigned int key;
 	int	cont=1;
-	int i,y;
+	int i,j,y;
 	int seltop=*select;
 
 	while ( oplist[opNum++] ) ;
@@ -484,7 +484,8 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 			locate(8,2+i); Print((unsigned char *)"            ");
 			OpcodeToStr( oplist[seltop+i], (unsigned char*)tmpbuf ) ; // SYSCALL
 			tmpbuf[12]='\0'; 
-			sprintf(buffer,"%04X:%-12s",oplist[seltop+i],tmpbuf ) ;
+			j=0; if ( tmpbuf[0]==' ' ) j++;
+			sprintf(buffer,"%04X:%-12s",oplist[seltop+i],tmpbuf+j ) ;
 			locate(3,2+i); Print((unsigned char *)buffer);
 		}
 		Bdisp_PutDisp_DD();	
@@ -525,144 +526,7 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 	
 	return oplist[(*select)];
 }
-/*
-unsigned short oplistALL[]={
-		0x0C,	// dsps
-		0x3A,	// :
-		0x3F,	// ?
-		0x13,	// =>
-		0x3C,	// <
-		0x3E,	// >
-		0x10,	// <=
-		0x11,	// !=
-		0x12,	// >=
-		0x23,	// #
-		0x24,	// $
-		0x25,	// %
-		0x26,	// &
-		0x27,	// '
-		0xAB,	// !
-		0x97,	// Abs
-		0xA6,	// Int
-		0xB6,	// frac
-		0x81,	// sin
-		0x82,	// cos
-		0x83,	// tan
-		0x91,	// arcsin
-		0x92,	// arccos
-		0x93,	// arctan
-		0x85,	// ln
-		0x86,	// sqrt
-		0x95,	// log
-		0xA1,	// sinh
-		0xA2,	// cosh
-		0xA3,	// tanh
-		0xB1,	// arcsinh
-		0xB2,	// arccosh
-		0xB3,	// arctanh
-		0xC1,	// Ran#
-		0xD1,	// Cls
-		0xD3,	// Rnd
-		0xDA,	// Deg
-		0xDB,	// Rad
-		0xDC,	// Grad
-		0xE0,	// Plot
-		0xE1,	// Line
-		0xE2,	// Lbl
-		0xE3,	// Fix
-		0xE4,	// Sci
-		0xE8,	// Dsz
-		0xE9,	// Isz
-		0xEB,	// ViewWindow
-		0xEC,	// Goto
-		0xED,	// Prog
-		0xEE,	// Graph Y=
 
-		0x7F00,	// Xmin
-		0x7F01,	// Xmax
-		0x7F02,	// Xscl
-		0x7F04,	// Ymin
-		0x7F05,	// Ymax
-		0x7F06,	// Yscl
-		0x7F0B,	// Xfct
-		0x7F0C,	// Yfct
-
-		0x7F3A,	// MOD(
-		0x7F46,	// Dim
-
-		0x7F86,	// RanFix(
-		0x7F87,	// RanInt#(
-		0x7F8F,	// Getkey
-
-		0x7FB0,	// And
-		0x7FB1,	// Or
-		0x7FB3,	// Not
-		0x7FB4,	// Xor
-
-		0x7FF0,	// GraphY
-
-		0xF700,	// If
-		0xF701,	// Then
-		0xF702,	// Else
-		0xF703,	// IfEnd
-		0xF704,	// For
-		0xF705,	// To
-		0xF706,	// Step
-		0XF707,	// Next
-		0xF708,	// While
-		0xF709,	// WhileEnd
-		0xF70A,	// Do
-		0xF70B,	// LpWhile
-		0xF70C,	// Return
-		0xF70D,	// Break
-		0xF70E,	// Stop
-		0xF710,	// Locate
-		0xF718,	// ClrText
-		0xF719,	// ClrGraph
-		0xF71A,	// ClrList
-		0xF71C,	// S-L-Normal
-		0xF71D,	// S-L-Thick
-		0xF71E,	// S-L-Broken
-		0xF71F,	// S-L-Dot
-		0xF720,	// DrawGraph
-		0xF770,	// G-Connect
-		0xF771,	// G-Plot
-		0xF77A,	// GridOff
-		0xF77D,	// GridOn
-		0xF78C,	// SketchNormal
-		0xF78D,	// SketchThick
-		0xF78E,	// SketchBroken
-		0xF78F,	// SketchDot
-		0xF793,	// StoPict
-		0xF794,	// RclPict
-		0xF797,	// StoV-Win
-		0xF798,	// RclV-Win
-		0xF79F,	// RclCapt
-		0xF7A3,	// Vertical
-		0xF7A4,	// Horizontal
-		0xF7A5,	// Text
-		0xF7A6,	// Circle
-		0xF7A7,	// F-Line
-		0xF7A8,	// PlotOn
-		0xF7A9,	// PlotOff
-		0xF7AA,	// PlotChg
-		0xF7AB,	// PxlOn
-		0xF7AC,	// PxlOff
-		0xF7AD,	// PxlChg
-		0xF7AF,	// PxlTest(
-		0xF7C2,	// AxesOn
-		0xF7C3,	// CoordOn
-		0xF7C4,	// LabelOn
-		0xF7D2,	// AxesOff
-		0xF7D3,	// CoordOff
-		0xF7D4,	// LabelOff
-		
-		0xF90B,	// EngOn
-		0xF90C,	// EngOff
-		0xF91E,	// ClrMat
-		0XF921,	// Xdot
-		0};
-*/
 unsigned short oplistOPTN[]={
 //		0x23,	// #
 //		0x24,	// $
@@ -695,15 +559,36 @@ unsigned short oplistOPTN[]={
 		0x7F3A,	// MOD(
 		0x7F46,	// Dim
 
-		0xC1,	// Ran#
-		0x7F86,	// RanFix(
-		0x7F87,	// RanInt#(
-
 		0x7FB0,	// And
 		0x7FB1,	// Or
 		0x7FB3,	// Not
 		0x7FB4,	// Xor
 
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
+		0xC1,	// Ran#
+		0x7F87,	// RanInt#(
+
+		0xD9,	// Norm
+		0xE3,	// Fix
+		0xE4,	// Sci
+		0xDD,	// Eng
+		0xF90B,	// EngOn
+		0xF90C,	// EngOff
+
+		0x01,	// femto
+		0x02,	// pico
+		0x03,	// nano
+		0x04,	// micro
+		0x05,	// milli
+		0x06,	// Kiro
+		0x07,	// Mega
+		0x08,	// Giga
+		0x09,	// Tera
+		0x0A,	// Peta
+		0x0B,	// Exa
+		
+		
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF797,	// StoV-Win
@@ -819,13 +704,6 @@ unsigned short oplistVARS[]={
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
-		0xD3,	// Rnd
-		0xD9,	// Norm
-		0xE3,	// Fix
-		0xE4,	// Sci
-		
-//		0xF90B,	// EngOn
-//		0xF90C,	// EngOff
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -885,19 +763,16 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 				break;
 		
 			case KEY_CTRL_F1:	// ?
-				(*select)=0;
-				n=0;
-				cont=0;
+				RestoreDisp(SAVEDISP_PAGE1);
+				return '?';
 				break;
 			case KEY_CTRL_F2:	// dsps
-				(*select)=0;
-				n=10;
-				cont=0;
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0x0C;
 				break;
 			case KEY_CTRL_F3:	// :
-				(*select)=0;
-				n=11;
-				cont=0;
+				RestoreDisp(SAVEDISP_PAGE1);
+				return ':';
 				break;
 
 			case KEY_CTRL_LEFT:
@@ -980,7 +855,7 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 	}
 
 	RestoreDisp(SAVEDISP_PAGE1);
-	Bdisp_PutDisp_DD();
+//	Bdisp_PutDisp_DD();
 
 	i=oplist[(*select)+n]; if (i==0xFFFF ) i=0;
 	return i;
@@ -1047,12 +922,12 @@ unsigned short oplistCMD[]={
 		0x7F8F,	// Getkey		4
 		0xED,	// Prog			5
 		0xFFFF,	// 				-
-		0xD9,	// Norm
-		0xE3,	// Fix
-		0xE4,	// Sci
 		0xFFFF,	// 				-
-		0xD3,	// Rnd
-		0x7F86,	// RanFix(
+		0xFFFF,	// 				-
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xFFFF,	// 				-
 
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
@@ -1073,12 +948,12 @@ unsigned short oplistCMD[]={
 		0xF7AF,	// PxlTest(
 		0xF7A5,	// Text
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xDA,	// Deg
-		0xDB,	// Rad
-		0xDC,	// Grad
-		0xFFFF,	// 				-
+		0xF78C,	// SketchNormal
+		0xF78D,	// SketchThick
+		0xF78E,	// SketchBroken
+		0xF78F,	// SketchDot
+		0xF770,	// G-Connect
+		0xF771,	// G-Plot
 		
 		0xF7C3,	// CoordOn
 		0xF7D3,	// CoordOff
@@ -1088,23 +963,10 @@ unsigned short oplistCMD[]={
 		0xF7D2,	// AxesOff
 		0xF7C4,	// LabelOn
 		0xF7D4,	// LabelOff
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xF770,	// G-Connect
-		0xF771,	// G-Plot
-		
 		0xF71C,	// S-L-Normal
 		0xF71D,	// S-L-Thick
 		0xF71E,	// S-L-Broken
 		0xF71F,	// S-L-Dot
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xF78C,	// SketchNormal
-		0xF78D,	// SketchThick
-		0xF78E,	// SketchBroken
-		0xF78F,	// SketchDot
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
 		
 		0x7F00,	// Xmin
 		0x7F01,	// Xmax
@@ -1125,26 +987,39 @@ unsigned short oplistCMD[]={
 		0xAB,	// !
 		0x7F3A,	// MOD(
 		0xFFFF,	// 				-
-		0x7F46,	// Dim
-		0xFFFF,	// 				-
-		0xDA,	// Deg
-		0xDB,	// Rad
-		0xDC,	// Grad
-		0xFFFF,	// 				-
-		
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
 		0xB1,	// arcsinh
 		0xB2,	// arccosh
 		0xB3,	// arctanh
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
+
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xD9,	// Norm
+		0xE3,	// Fix
+		0xE4,	// Sci
+		0xDD,	// Eng
+		0xF90B,	// EngOn
+		0xF90C,	// EngOff
 
+		0x01,	// femto
+		0x02,	// pico
+		0x03,	// nano
+		0x04,	// micro
+		0x05,	// milli
+		0x06,	// Kiro
+		0x07,	// Mega
+		0x08,	// Giga
+		0x09,	// Tera
+		0x0A,	// Peta
+		0x0B,	// Exa
+		0xFFFF,	// 				-
+		
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
@@ -1313,55 +1188,51 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					cont=0;
 					break;
 			case KEY_CTRL_F1:
-					offset=0;
-					csrPtr=0;
-					switch (dumpflg) {
-						case 2: 		// Opcode
-							break;
-						case 4: 		// hex dump
-						case 16:		// Ascii dump
-							cx=6; cy=2;
-							break;
-						default:
-							break;
-					}
-					key=0;
-					ClipStartPtr = -1 ;		// ClipMode cancel
-					break;
 			case 0x7553:		// ClipMode F1
 					if ( ClipEndPtr >= 0 ) {
 						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 						EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+					} else {
+						offset=0;
+						csrPtr=0;
+						switch (dumpflg) {
+							case 2: 		// Opcode
+								break;
+							case 4: 		// hex dump
+							case 16:		// Ascii dump
+								cx=6; cy=2;
+								break;
+							default:
+								break;
+						}
 					}
 					key=0;
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F2:
-					offset=EndOfSrc( SrcBase, offset );
-					csrPtr=offset;
-					switch (dumpflg) {
-						case 2: 		// Opcode
-							PrevLinePhy( SrcBase, &offset, &offset_y );
-							PrevLinePhy( SrcBase, &offset, &offset_y );
-							PrevLinePhy( SrcBase, &offset, &offset_y );
-							PrevLinePhy( SrcBase, &offset, &offset_y );
-							PrevLinePhy( SrcBase, &offset, &offset_y );
-							PrevLinePhy( SrcBase, &offset, &offset_y );
-							break;
-						case 4: 		// hex dump
-						case 16:		// Ascii dump
-							cx=6; cy=2;
-							break;
-						default:
-							break;
-					}
-					key=0;
-					ClipStartPtr = -1 ;		// ClipMode cancel
-					break;
 			case 0x7563:		// ClipMode F2
 					if ( ClipEndPtr >= 0 ) {
 						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 						EditCut( FileBase, &csrPtr, ClipStartPtr, ClipEndPtr );
+					} else {
+						offset=EndOfSrc( SrcBase, offset );
+						csrPtr=offset;
+						switch (dumpflg) {
+							case 2: 		// Opcode
+								PrevLinePhy( SrcBase, &offset, &offset_y );
+								PrevLinePhy( SrcBase, &offset, &offset_y );
+								PrevLinePhy( SrcBase, &offset, &offset_y );
+								PrevLinePhy( SrcBase, &offset, &offset_y );
+								PrevLinePhy( SrcBase, &offset, &offset_y );
+								PrevLinePhy( SrcBase, &offset, &offset_y );
+								break;
+							case 4: 		// hex dump
+							case 16:		// Ascii dump
+								cx=6; cy=2;
+								break;
+							default:
+								break;
+						}
 					}
 					key=0;
 					ClipStartPtr = -1 ;		// ClipMode cancel

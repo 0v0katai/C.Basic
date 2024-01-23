@@ -754,7 +754,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 			if ( hex_mode && ( KEY_CHAR_COS == key ) ) key=KEY_CHAR_E;
 			if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
 			if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
-			if ( float_mode && ( key == KEY_CTRL_XTT ) )   key='X'; // ^
+			if ( ( key == KEY_CTRL_XTT ) )   key='X'; // ^
 //			if ( key == KEY_CHAR_PLUS  )  key='+';
 //			if ( key == KEY_CHAR_MINUS )  key='-';
 //			if ( key == KEY_CHAR_PMINUS ) key='-';
@@ -925,8 +925,11 @@ double Round( double num, int round_mode, int digit){
 			}
 			break;
 		case Norm:	// normal
+			if ( digit==1 ) digit=10;
+			if ( digit==2 ) digit=10;
 		case Sci: // sci
 			if ( digit==0 ) break;
+			if ( digit>=16 ) break;
 			exf=log10(fabsnum);
 			exp=exf;
 			if ( exf > 0 ) exp++;
@@ -941,49 +944,52 @@ double Round( double num, int round_mode, int digit){
 	return num;
 }
 
-void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
-	int i,j,w,adj,minus=0,p;
+void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
+	int i,j,w,adj,minus=0,p,digit=round_digit;
 	char buffer2[32],fstr[16],tmp[16];
 	double fabsnum,pw;
 	unsigned char c;
 	char *dptr,*eptr,*nptr;
 	double dpoint=0.01;
 
-//	num = Round( num, round_mode, digit);
-	if ( num < 0 ) minus=-1;
-	fabsnum=fabs(num);
-
 	switch ( round_mode ) {
 		case Norm:
-			if ( round_digit==1 ) { dpoint=0.01;        round_digit=10; }
-			if ( round_digit==2 ) { dpoint=0.000000001; i=11; c='f'; break; }
-			if ( round_digit==0 ) round_digit=16;
+			if ( round_digit==1 ) { dpoint=0.01;        digit=10; }
+			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; }
+			if ( round_digit==0 ) digit=16;
+//			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; i=11; c='f'; break; }
+//			num = Round( num, round_mode, digit);
+			if ( num < 0 ) minus=-1;
+			fabsnum=fabs(num);
 		 	w=15; if ( w > width )  w=width;
 		 	pw=pow(10,w+minus);
 			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
-				w = floor((log10(fabsnum))) - minus + (15-round_digit);
-				if ( round_digit >= width ) w= w+(round_digit-width);
+				w = floor((log10(fabsnum))) - minus + (15-digit);
+				if ( digit >= width ) w= w+(digit-width);
 				i=14-w;
 				if ( i >= 18 ) i=18;
 				c='f';
-				if ( i <  0  ) { i=round_digit-1; c='e'; }
-				if ( i <  0  ) i=16;
+				if ( i <  0  ) { i=digit-1; c='e'; }
+				if ( i <  0  ) i=15;
+				if ( round_digit==2 ) if ( i>11 ) i=11;
 			} else {
 				adj = 1 - minus+ floor(log10(fabs(log10(fabsnum))))-1;
 				if ( ( 1e-10 <= num ) && ( num < 0.001 )) adj++;
 				i=width-adj-5;
-				if ( i > round_digit-1 ) i=round_digit-1;
+				if ( i > digit-1 ) i=digit-1;
 				if ( i >= 18 ) i=18;
 				if ( i <  1  ) i=1;
+				if ( round_digit==2 ) if ( i>11 ) i=11;
 				c='e';
 			}
 			break;
 		case Fix:
-				i=round_digit;
+				i=digit;
 				c='f';
 			break;
 		case Sci:
-				i=round_digit-1; if ( i < 0 ) i=16;
+				num = Round( num, round_mode, digit);
+				i=digit-1; if ( i < 0 ) i=15;
 				c='e';
 			break;
 	}
@@ -1006,7 +1012,7 @@ void sprintGR(char* buffer, double num, int width, int align_mode, int round_mod
 		}
 	}
 */	
-	if ( round_mode != Fix ) {
+	if ( round_mode == Norm ) {
 		dptr=strchr(buffer,'.');
 		if ( dptr ) {
 			eptr=strchr(buffer,'e');
@@ -1059,8 +1065,36 @@ void sprintGR(char* buffer, double num, int width, int align_mode, int round_mod
 	return ;
 }
 
+void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
+	unsigned char c,d=0;
+	if (ENG) { 
+		if ( ( 1e-15 <= num  ) && ( num < 1e21 ) ) {
+			width-- ; 
+			if      ( num >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
+			else if ( num >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
+			else if ( num >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
+			else if ( num >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
+			else if ( num >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
+			else if ( num >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
+			else if ( num >= 1    ) {             c=' ';  }
+			else if ( num >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
+			else if ( num >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
+			else if ( num >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
+			else if ( num >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
+			else if ( num >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
+			sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
+			width=strlen(buffer);
+			buffer[width++]=c;
+			buffer[width++]=d;
+			buffer[width]='\0';
+			return ;
+		}
+	}
+	sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
+}
+
 void sprintG(char* buffer, double num, int width, int align_mode) {
-	sprintGR(buffer, num, width, align_mode, Norm, 15); // + round
+	sprintGRS(buffer, num, width, align_mode, Norm, 15); // + round
 }
 
 //----------------------------------------------------------------------------------------------
