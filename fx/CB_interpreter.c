@@ -1536,7 +1536,10 @@ void CB_Circle( unsigned char *SRC ) { //	Circle
 	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
 	ExecPtr++;
 	r=CB_Eval(SRC+ExecPtr);
-	Circle(x, y, r, style);
+	c=SRC[ExecPtr];
+	if ( c==':' ) 	Circle(x, y, r, style, 0);
+		else 		Circle(x, y, r, style, 1);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 	tmp_Style = -1;
 }
 
@@ -1727,7 +1730,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 		if ( BreakPtr ) { CB_BreakStop(); return BreakPtr; }
 		c=SRC[ExecPtr++];
 		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryPtr )  return -1;  else  break; }
-		if ( c==':'  )   c=SRC[ExecPtr++]; 
+		if ( c==':'  )   { c=SRC[ExecPtr++]; if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
 		switch (c) {
 //			case 0x3A:	// <:>
 //				break;

@@ -317,6 +317,7 @@ int NextOpcode( unsigned char *SRC, int *offset ){
 int NextLine( unsigned char *SRC, int *offset ){
 	unsigned int c;
 	int ofst=*offset,ofst2;
+	int n;
 	while (1) {
 		 if ( NextOpcode( SRC, &(*offset) ) ==0 ) return (*offset)-ofst ;
 		ofst2=*offset;
@@ -388,6 +389,9 @@ int PrevLine( unsigned char *SRC, int *offset ){
 	return ofst-(*offset) ;
 }
 
+
+
+/*
 int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
 	char tmpbuf[18];
 	int i,len,x=1,xmax=21,cont=1,rev;
@@ -400,14 +404,9 @@ int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx
 	while ( cont ) {
 		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
 		if (ofst==csrPtr) { *cx=x; *cy=*y; }
-		c = buffer[ofst] ; 
-		opcode = c & 0x00FF ;
+		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
-		if ( ( c==0x7F ) || ( c==0xF7 ) ||( c==0xF9 ) ||( c==0xE5 ) ||( c==0xE6 ) ||( c==0xE7 ) ) {
-				ofst++;
-				opcode = ( ( c & 0x00FF )<<8 )	+ ( buffer[ofst] & 0x00FF );
-		}
-		ofst++;
+		ofst += OpcodeLen( opcode );
 		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
 		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
@@ -427,7 +426,8 @@ int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx
 	}
 	return ofst;
 }
-
+*/
+//----------------------------------------------------------------------------------------------
 int PrintOpcode(int x, int y, char *buffer, int width, int rev_mode, char SPC) {
 	char tmpbuf[18];
 	char spcbuf[2];
@@ -540,10 +540,19 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 	offsetX=OpStrLastoffset(buffer, ptrX, csrwidth ,&csrX);
 
+//	Cursor_SetFlashMode(1);			// cursor flashing on
+	CursorStyle=Cursor_GetFlashStyle();
+	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
+		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
+//	if ( ( alpha_mode ) && ( float_mode == 0) ) {
+//		if ( CursorStyle=0x0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
+//		if ( CursorStyle=0x6 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
+//	} else {
+//		if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
+//			else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
+//	}
 	Cursor_SetFlashMode(1);			// cursor flashing on
-	if (Cursor_GetFlashStyle()<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
-		else 						Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
-
+	
 	while (cont) {
 		multibyte=0;
 		buffer[length]='\0';

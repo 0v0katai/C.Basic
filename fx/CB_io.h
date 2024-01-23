@@ -16,8 +16,9 @@ int CPU_check(void);
 
 void PrintXYR(int ,int ,char *,int );
 void Fkey_dispN(int ,char *);
-void Fkey_DISPN(int ,char *);
 void Fkey_dispR(int ,char *) ;
+void Fkey_DISPN(int ,char *);
+void Fkey_DISPR(int ,char *);
 void Fkey_Clear(int );
 void Hex8PrintXY(int , int , char *, unsigned int );
 void Hex4PrintXY(int , int , char *, unsigned int );

@@ -216,7 +216,7 @@ void GraphAxesGrid(){
 		PrintMini(124,43,(unsigned char*)" ",MINI_OVER);
 		PrintMini(124,43,(unsigned char*)"X",MINI_OVER);
 	}
-	Bdisp_PutDisp_DD();
+//	Bdisp_PutDisp_DD();
 }
 
 void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax, double yscl){
@@ -706,7 +706,7 @@ void Horizontal(double y, int style) {
 	Linesub( 1, py, 127, py, style);
 }
 
-void Circle(double x, double y, double r, int style ) {
+void Circle(double x, double y, double r, int style, int drawflag ) {
 	double	angle, k, x0,y0,x1,y1;
 	int px,py;
 	int	i,n;
@@ -733,7 +733,7 @@ void Circle(double x, double y, double r, int style ) {
 					break;
 			}
 		}
-		Bdisp_PutDisp_DD_DrawBusy_skip();
+		if ( drawflag )	Bdisp_PutDisp_DD_DrawBusy_skip();
 	}
 	regX=Plot_X;
 	regY=Plot_Y;
