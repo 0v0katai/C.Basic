@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 0.93                                       */
+/*   inp Library  ver 0.95                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -24,6 +24,7 @@
 #define  LEFT_ALIGN   0
 #define  RIGHT_ALIGN  1
 
+unsigned int SelectChar() ;
 int OpcodeLen( unsigned short opcode );
 int OpcodeStrlen(int c);
 int OpcodeStrLenBuf(unsigned char *SRC, int offset) ;
@@ -37,10 +38,11 @@ void OpStrToStr(char *buffer, char *buffer2);
 
 int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
 
-void   sprintG(char* buffer, double num, int width, int align_mode);
+void sprintG(char* buffer, double num, int width, int align_mode);
+double Round( double num, int round_mode, int digit);
+void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int digit) ;
 
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode);
-
 unsigned int InputStr( int x, int y, int width, char* buffer,      char SPC, int rev_mode);
 
 

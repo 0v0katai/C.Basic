@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series      v0.10
+ Casio Basic RUNTIME library for fx-9860G series      v0.20
 
 ===============================================================================
 */
@@ -28,8 +28,12 @@ extern int S_L_Style;		// set line style
 extern int tmp_Style;		// set line style 
 extern int Angle;			// 0:deg  1:rad  2:grad
 
-extern double Previous_X;	// ViewWindow Previous XY
-extern double Previous_Y;	// ViewWindow Previous XY
+extern double Previous_X ;	// Plot Previous X
+extern double Previous_Y ;	// Plot Previous Y
+extern int Previous_PX   ;	// Plot Previous PX
+extern int Previous_PY   ;	// Plot Previous PY
+extern double Plot_X     ;	// Plot Current X
+extern double Plot_Y     ;	// Plot Current Y
 
 extern int TimeDsp;
 
@@ -68,15 +72,16 @@ extern double  REG[37];
 #define Xmin REG[26]
 #define Xmax REG[27]
 #define Xscl REG[28]
-#define Xdot REG[29]
-#define Ymin REG[30]
-#define Ymax REG[31]
-#define Yscl REG[32]
-#define Ydot REG[33]
+#define Ymin REG[29]
+#define Ymax REG[30]
+#define Yscl REG[31]
+#define TThetamin  REG[32]
+#define TThetamax  REG[33]
+#define TThetaptch REG[34]
 
-#define TThetamin  REG[34]
-#define TThetamax  REG[35]
-#define TThetaptch REG[36]
+#define Xdot REG[35]
+#define Ydot REG[36]
+
 
 extern	double Xfct;
 extern	double Yfct;
@@ -124,13 +129,14 @@ void PlotOff_DDVRAM(double x, double y);
 void PlotChg_VRAM(double x,  double y);
 void PlotChg_DDVRAM(double x, double y);
 
+void LinesubSetPoint(int px, int py) ;
 void Line(int style);
 void F_Line(double x1, double y1, double x2, double y2, int style);
 void Vertical(double x ,int style);
 void Horizontal(double y, int style);
 void Circle(double x, double y, double r, int style);
 
-unsigned int Plot(double X, double Y);
+unsigned int Plot();
 unsigned int Zoom_sub(unsigned int key);
 unsigned int ZoomXY();
 unsigned int Trace(int *index );

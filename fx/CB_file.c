@@ -226,7 +226,7 @@ unsigned int Explorer( int size, char *folder )
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.10" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.20" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -530,7 +530,9 @@ int LoadProgfile( char *name ) {
 
 	fsize=0xFFFF-(filebase[0x12]*256+filebase[0x13]);
 	size=SrcSize( filebase ) ;
-	if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize ); return 1;}
+	if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize );
+//		 return 1;
+	}
 	
 	CB_PreProcess( filebase  + 0x56 );
 	ProgEntryPtr=0;						// Main program

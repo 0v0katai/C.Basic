@@ -9,6 +9,10 @@ extern int BreakPtr;
 extern char   CB_CurrentStr[128];	//
 extern double CB_CurrentValue;	// Ans
 
+extern int CB_round;	// round mode    0:normal  1:Fix  2:Sci
+extern int CB_fix;
+extern int CB_sci;
+
 #define ProgMax 10
 extern int ProgEntryPtr;		// how many subroutin
 extern int ProgNo;			// current Prog No

@@ -1,3 +1,16 @@
+//-----------------------------------------------------------------------------
+struct st_round {
+	int MODE;	//    mode :   0:normal  1:Fix   2: Sci
+	int DIGIT;	//    digits   0~15
+};
+
+extern struct st_round CB_Round;	// struct Round
+
+#define Norm 0
+#define Fix  1
+#define Sci  2
+
+//-----------------------------------------------------------------------------
 
 int CPU_check(void);
 

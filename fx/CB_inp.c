@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 0.94                                       */
+/*   inp Library  ver 0.95                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -13,6 +13,149 @@
 #include "fx_syscall.h"
 #include "CB_inp.h"
 #include "CB_io.h"
+
+//----------------------------------------------------------------------------------------------
+unsigned short CharMATH[]= {
+	0x002B,0x002D,0x00A9,0x00B9,0x005E,0x002A,0x002F,0x003D,0x0011,0x003C,0x003E,0x0010,0x0012,0x0087,0xE5BE,0xE5BF,0xE6B0,0xE6B1,0xE5A3,
+	0xE5A4,0x7F50,0xE5B0,0x000F,0xE64F,0x7F53,0xE542,0x0086,0xE551,0xE54F,0xE6BB,0xE6B7,0xE6B8,0xE6B9,0xE5C0,0xE5C1,0xE5C2,0xE5C3,0xE5C4,
+	0xE5C5,0xE5C6,0xE5C7,0xE5C8,0xE5C9,0xE5CA,0xE5CB,0xE5CC,0xE5CD,0xE5CE,0xE5CF,0xE5D0,0xE5D1,0xE5D2,0xE5D3,0xE5D4,0xE5D5,0xE5D6,0xE5D7,
+	0xE5D8,0xE5D9,0xE5DA,0xE5DB,0xE5DC,0xE5DD,0xE5DE,0xE5DF,0x00C2,0x00C3,0x00CB,0x00CC,0x7FC7,0x7F54,0x008C,0x009C,0x00AC,0x00BC,0xE6BD,
+	0xE6BE,0xE6BF,0xE6C0,0xE6C1,0xE6C2,0xE6C3,0xE6C4,0xE6C5,0xE6C6,0xE6C7,0xE6C8,0xE6C9,0xE6CA,0xE6CB,0xE6D6,0xE6CC,0xE6CD,0xE6CE,0xE6CF,
+	0xE6D0,0xE6D1,0xE6D2,0xE6D3,0xE6D4,0xE6D5,0xE6B2,0xE6B3,0xE6B4,0xE6B5,0xE6BC,0xE6B6,0xE6D7,0xE6D8,0xE6D9,0xE6DA,0xE6DB,0xE6DC,0xE6DD,
+	0xE6DE,0x0000 };
+	
+unsigned short CharSYBL[]= {
+	0x0021,0x0022,0x0023,0x0024,0x0025,0x0026,0x0027,0x0028,0x0029,0x002C,0x002E,0x003A,0x003B,0x003F,0x0040,0x005B,0x005C,0x005D,0x005F,
+	0x0060,0x007B,0x007C,0x007D,0x007E,0x0013,0x00B5,0x00BB,0xE594,0xE595,0xE596,0xE597,0xE598,0xE590,0xE591,0xE592,0xE593,0xE599,0xE59A,
+	0xE59B,0xE59C,0xE59D,0xE59E,0xE5A1,0xE59F,0xE5A2,0xE5A0,0xE5A5,0xE5A6,0xE5A7,0xE5B5,0xE5B6,0xE5B8,0xE5B9,0xE5BA,0xE5BB,0xE5BC,0xE690,
+	0xE691,0xE692,0xE693,0xE694,0xE695,0xE696,0xE697,0xE698,0xE699,0xE69A,0xE69B,0xE69C,0xE69D,0xE69E,0xE69F,0xE6A0,0xE6A1,0xE6A2,0xE6A3,
+	0xE6A4,0xE6A5,0xE6A6,0xE6A7,0xE6A8,0xE6A9,0xE6AA,0x0000 };
+
+unsigned short CharABT[]= {
+	0xE540,0xE541,0xE542,0xE543,0xE544,0xE545,0xE546,0xE547,0xE548,0xE549,0xE54A,0xE54B,0xE54C,0xE54D,0xE54E,0xE54F,0xE550,0xE551,0xE553,
+	0xE554,0xE555,0xE556,0xE557,0xE558,0xE501,0xE502,0xE503,0xE504,0xE505,0xE506,0xE507,0xE508,0xE509,0xE50A,0xE50B,0xE50C,0xE50D,0xE50E,
+	0xE50F,0xE510,0xE511,0xE512,0xE513,0xE514,0xE515,0xE516,0xE517,0xE518,0xE519,0xE51A,0xE51B,0xE51C,0xE51D,0xE51E,0xE520,0xE521,0xE522,
+	0xE523,0xE524,0xE525,0xE526,0xE527,0xE528,0xE529,0xE52A,0xE52B,0xE52C,0xE52D,0xE52E,0xE52F,0xE530,0xE531,0xE532,0xE533,0xE534,0xE535,
+	0xE560,0xE561,0xE562,0xE563,0xE564,0xE565,0xE566,0xE567,0xE568,0xE569,0xE56A,0xE56B,0xE56C,0xE56D,0xE56E,0xE56F,0xE570,0xE571,0xE572,
+	0xE573,0xE574,0xE575,0xE576,0xE577,0xE578,0xE579,0xE57A,0xE57B,0xE57C,0xE57D,0xE57E,0xE580,0xE581,0xE582,0x0000 };
+
+unsigned short Charabr[]= {
+	0xE640,0xE641,0xE642,0xE643,0xE644,0xE645,0xE646,0xE647,0xE648,0xE649,0xE64A,0xE64B,0xE64C,0xE64D,0xE64E,0xE64F,0xE650,0xE651,0xE652,
+	0xE653,0xE654,0xE655,0xE656,0xE657,0xE658,0xE601,0xE602,0xE603,0xE604,0xE605,0xE606,0xE607,0xE608,0xE609,0xE60A,0xE60B,0xE60C,0xE60D,
+	0xE60E,0xE60F,0xE610,0xE611,0xE612,0xE613,0xE614,0xE615,0xE616,0xE617,0xE618,0xE619,0xE61A,0xE61B,0xE61C,0xE61D,0xE61E,0xE61F,0xE620,
+	0xE621,0xE622,0xE623,0xE624,0xE625,0xE626,0xE627,0xE628,0xE629,0xE62A,0xE62B,0xE62C,0xE62D,0xE62E,0xE62F,0xE630,0xE631,0xE632,0xE633,
+	0xE634,0xE635,0xE660,0xE661,0xE662,0xE663,0xE664,0xE665,0xE666,0xE667,0xE668,0xE669,0xE66A,0xE66B,0xE66C,0xE66D,0xE66E,0xE66F,0xE670,
+	0xE671,0xE672,0xE673,0xE674,0xE675,0xE676,0xE677,0xE678,0xE679,0xE67A,0xE67B,0xE67C,0xE67D,0xE67E,0xE680,0xE681,0xE682,0x0000 };
+
+unsigned short CharABC[]= {
+	0xE741,0xE742,0xE743,0xE744,0xE745,0xE746,0xE747,0xE748,0xE749,0xE74A,0xE74B,0xE74C,0xE74D,0xE74E,0xE74F,0xE750,0xE751,0xE752,0xE753,
+	0xE754,0xE755,0xE756,0xE757,0xE758,0xE759,0xE75A,0xE761,0xE762,0xE763,0xE764,0xE765,0xE766,0xE767,0xE768,0xE769,0xE76A,0xE76B,0xE76C,
+	0xE76D,0xE76E,0xE76F,0xE770,0xE771,0xE772,0xE773,0xE774,0xE775,0xE776,0xE777,0xE778,0xE779,0xE77A,0x0000 };
+	
+unsigned short *oplist=CharMATH;
+int CharPtr=0;
+
+unsigned int SelectChar() {
+
+	int cont=1, x,y,cx,cy,ptr,scrl=0;
+	unsigned int key;
+	char tmpbuf[18];
+	unsigned short opcode;
+	int opNum=0 ;
+
+	SaveDisp(SAVEDISP_PAGE1);		// --------
+
+	while (cont) {
+		opNum=0;
+		while ( oplist[opNum++] ) ;
+		opNum-=2;
+		if ( scrl == 0 ) if ( CharPtr>=114 ) scrl=1;
+		if ( scrl == 1 ) if ( CharPtr<  19 ) scrl=0;
+		Bdisp_AllClr_VRAM();
+		locate(1,1); Print((unsigned char*)"===Character Select===");
+		x=2; y=2;
+		opcode=1;
+		while ( opcode ) {
+			ptr=(y-2+scrl)*19+x-2 ;
+			opcode=oplist[ ptr ];
+			OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
+			locate(x,y);
+			if ( CharPtr == ptr ) PrintRevC( tmpbuf ); else PrintC( tmpbuf );
+			x++;
+			if (x>20) { x=2; y++; if ( y>7 ) break ; }
+//			Bdisp_PutDisp_DD();
+		}
+		if ( opNum>=114 ) {
+			if ( scrl ) {
+				locate(21,2); Print((unsigned char*)"\xE6\x92"); // 
+			} else {
+				locate(21,7); Print((unsigned char*)"\xE6\x93"); // 
+			}
+		}
+		Fkey_dispN( 0, "MATH");
+		Fkey_dispN( 1, "SYBL");
+		Fkey_dispN( 2, "AB\xCD");
+		Fkey_dispN( 3, "abr");
+		Fkey_dispN( 4, "ABC");
+		
+		cx=(CharPtr%19)+2;
+		cy=(CharPtr/19)+2-scrl;
+		locate(cx,cy);
+
+		GetKey(&key);
+		switch (key) {
+			case KEY_CTRL_AC:
+				RestoreDisp(SAVEDISP_PAGE1);	// --------
+				return 0;	// input cancel
+				break;
+			case KEY_CTRL_EXIT:
+				RestoreDisp(SAVEDISP_PAGE1);	// --------
+				return 0;	// input cancel
+				break;
+			case KEY_CTRL_EXE:
+				cont=0;
+				break;
+			case KEY_CTRL_F1:	// CharMATH
+				oplist=CharMATH;
+				CharPtr=0;
+				break;
+			case KEY_CTRL_F2:	// CharSYBL
+				oplist=CharSYBL;
+				CharPtr=0;
+				break;
+			case KEY_CTRL_F3:	// CharABT
+				oplist=CharABT;
+				CharPtr=0;
+				break;
+			case KEY_CTRL_F4:	// Charabr
+				oplist=Charabr;
+				CharPtr=0;
+				break;
+			case KEY_CTRL_F5:	// CharABC
+				oplist=CharABC;
+				CharPtr=0;
+				break;
+			case KEY_CTRL_LEFT:
+				CharPtr--; if ( CharPtr < 0 ) CharPtr=opNum;
+				break;
+			case KEY_CTRL_RIGHT:
+				CharPtr++; if ( CharPtr > opNum ) CharPtr=0;
+				break;
+			case KEY_CTRL_UP:
+				CharPtr-=19; if ( CharPtr < 0 ) CharPtr=opNum;
+				break;
+			case KEY_CTRL_DOWN:
+				if ( CharPtr == opNum ) { CharPtr= 0; break; }
+				CharPtr+=19; if ( CharPtr > opNum ) CharPtr=opNum;
+				break;
+			default:
+				break;
+		}
+	}
+	
+	RestoreDisp(SAVEDISP_PAGE1);	// --------
+	return ( oplist[ CharPtr ] );
+}
 
 //----------------------------------------------------------------------------------------------
 int charX=0,charY=0;
@@ -713,64 +856,131 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 }
 
 //----------------------------------------------------------------------------------------------
-void sprintG(char* buffer, double num, int width, int align_mode) {
-	int i,w,adj,minus=0;
-	double round_adj=0;
-	char buffer2[32];
-    
-	if ( num < 0 ) minus=-1;
- 	w=15; if ( w > width )  w=width;
-	if ( ( 0.0001 <= fabs(num) ) && ( fabs(num) < pow(10,w+minus) ) ) {
-		w = floor((log10(fabs(num)))) - minus;
-		if ( 16 >= width ) w= w+(16-width);
-		if ( w <= -5 ) sprintf(buffer,"%.19f",num);
-		if ( w == -4 ) sprintf(buffer,"%.18f",num);
-		if ( w == -3 ) sprintf(buffer,"%.17f",num);
-		if ( w == -2 ) sprintf(buffer,"%.16f",num);
-		if ( w == -1 ) sprintf(buffer,"%.15f",num);
-		if ( w ==  0 ) sprintf(buffer,"%.14f",num);
-		if ( w ==  1 ) sprintf(buffer,"%.13f",num);
-		if ( w ==  2 ) sprintf(buffer,"%.12f",num);
-		if ( w ==  3 ) sprintf(buffer,"%.11f",num);
-		if ( w ==  4 ) sprintf(buffer,"%.10f",num);
-		if ( w ==  5 ) sprintf(buffer,"%.9f",num);
-		if ( w ==  6 ) sprintf(buffer,"%.8f",num);
-		if ( w ==  7 ) sprintf(buffer,"%.7f",num);
-		if ( w ==  8 ) sprintf(buffer,"%.6f",num);
-		if ( w ==  9 ) sprintf(buffer,"%.5f",num);
-		if ( w == 10 ) sprintf(buffer,"%.4f",num);
-		if ( w == 11 ) sprintf(buffer,"%.3f",num);
-		if ( w == 12 ) sprintf(buffer,"%.2f",num);
-		if ( w == 13 ) sprintf(buffer,"%.1f",num);
-		if ( w >= 14 ) sprintf(buffer,"%.0f",num);
-	}
-	else {
-		adj = 1 - minus+ floor(log10(fabs(log10(fabs(num)))))-1;
-		if ( ( 1.e-10 < num ) && ( num < 0.001 )) adj++;
-		if ( width >= 23+adj ) sprintf(buffer,"%.18g",num);
-		if ( width >= 22+adj ) sprintf(buffer,"%.17g",num);
-		if ( width >= 21+adj ) sprintf(buffer,"%.16g",num);
-		if ( width >= 20+adj ) sprintf(buffer,"%.15g",num);
-		if ( width == 19+adj ) sprintf(buffer,"%.14g",num);
-		if ( width == 18+adj ) sprintf(buffer,"%.13g",num);
-		if ( width == 17+adj ) sprintf(buffer,"%.12g",num);
-		if ( width == 16+adj ) sprintf(buffer,"%.11g",num);
-		if ( width == 15+adj ) sprintf(buffer,"%.10g",num);
-		if ( width == 14+adj ) sprintf(buffer,"%.9g",num);
-		if ( width == 13+adj ) sprintf(buffer,"%.8g",num);
-		if ( width == 12+adj ) sprintf(buffer,"%.7g",num);
-		if ( width == 11+adj ) sprintf(buffer,"%.6g",num);
-		if ( width == 10+adj ) sprintf(buffer,"%.5g",num);
-		if ( width ==  9+adj ) sprintf(buffer,"%.4g",num);
-		if ( width ==  8+adj ) sprintf(buffer,"%.3g",num);
-		if ( width ==  7+adj ) sprintf(buffer,"%.2g",num);
-		if ( width <   7+adj ) sprintf(buffer,"%.1g",num);
-	}
+/*
+double round( double x, int n ) {
+	unsigned char row[9];
+	int tmp,exp;
+	int i,j,bt;
+	double result;
+	unsigned char *ptr;
 
-	if ( ( strchr(buffer,'.') != '\0' ) && ( strchr(buffer,'e') == '\0' ) ) {
-		i=strlen(buffer)-1;
-		while ( buffer[i]=='0' ) buffer[i--]='\0';		// 1.234500000  zero cut
-		if ( buffer[i]=='.' ) buffer[i]='\0';
+	ptr=(unsigned char *)(&x);
+	for (i=0;i<8;i++) row[i]=ptr[i];
+
+	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
+	exp=tmp-1023; // 
+	if ( ( 0 > exp ) || ( exp > 51 ) ) result = x;
+	else {
+		tmp=52-exp;
+		i=7; j=0; bt=0xFE;
+		while ( tmp ) {
+			if (tmp>7) {
+				 tmp-=8; row[i]=0; i--;
+			} else {
+				row[i]&=bt;
+				bt=bt<<1;
+				j++;
+				tmp--;
+			}
+		}
+		ptr=(unsigned char *)(&result);
+		for (i=0;i<8;i++) ptr[i]=row[i];
+	}
+	return ( result ); 
+}
+
+*/
+
+double Round( double num, int round_mode, int digit){
+	int minus=0,exp,ex2;
+	double fabsnum=fabs(num),tmp,tmp2,tmp3,exf;
+
+	if ( num < 0 ) minus=-1;
+
+	switch ( round_mode ) {
+		case Fix: // fix
+			if (fabsnum<1e15) {
+				tmp=pow(10,digit);
+				num=floor(fabsnum*tmp+.5)/tmp;
+				fabsnum=num;
+				if ( minus ) num=-num;
+			}
+			break;
+		case Norm:	// normal
+		case Sci: // sci
+			if ( digit==0 ) break;
+			exf=log10(fabsnum);
+			exp=exf;
+			if ( exf > 0 ) exp++;
+			exf=pow(10,exp);
+			tmp=fabsnum/exf;
+			tmp2=pow(10,digit);
+			tmp3=floor(tmp*tmp2+.5)/tmp2;
+			num=tmp3*exf;
+			if ( minus ) num=-num;
+			break;
+	}
+	return num;
+}
+
+void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
+	int i,w,adj,minus=0,p;
+	char buffer2[32],fstr[16],tmp[16];
+	double fabsnum;
+	unsigned char c;
+
+//	num = Round( num, round_mode, digit);
+	if ( num < 0 ) minus=-1;
+	fabsnum=fabs(num);
+
+	switch ( round_mode ) {
+		case Norm:
+			if ( round_digit==0 ) round_digit=16;
+		 	w=15; if ( w > width )  w=width;
+			if ( ( 0.0001 <= fabsnum ) && ( fabsnum < pow(10,w+minus) ) ) {
+				w = floor((log10(fabsnum))) - minus + (15-round_digit);
+				if ( round_digit >= width ) w= w+(round_digit-width);
+				i=14-w;
+				if ( i >= 18 ) i=18;
+				c='f';
+				if ( i <  0  ) { i=round_digit-1; c='e'; }
+				if ( i <  0  ) i=16;
+			}
+			else {
+				adj = 1 - minus+ floor(log10(fabs(log10(fabsnum))))-1;
+				if ( ( 1.e-10 < num ) && ( num < 0.001 )) adj++;
+				i=width-adj-5;
+				if ( i > round_digit-1 ) i=round_digit-1;
+				if ( i >= 18 ) i=18;
+				if ( i <  1  ) i=1;
+				c='g';
+			}
+			break;
+		case Fix:
+				i=round_digit;
+				c='f';
+			break;
+		case Sci:
+				i=round_digit-1; if ( i < 0 ) i=16;
+				c='e';
+			break;
+	}
+	
+	p=0;
+	fstr[p++]='%';
+	fstr[p++]='.';
+	if ( i >= 10 ) fstr[p++]='0'+i/10;
+	fstr[p++]='0'+i%10;
+	fstr[p++]=c;
+	fstr[p++]='\0';
+	sprintf(buffer, fstr, num);
+
+	if ( round_mode != Fix ) {
+		if ( ( strchr(buffer,'.') != '\0' ) && ( strchr(buffer,'e') == '\0' ) ) {
+			i=strlen(buffer)-1;
+			while ( buffer[i]=='0' ) buffer[i--]='\0';		// 1.234500000  zero cut
+			if ( buffer[i]=='.' ) buffer[i]='\0';
+		}
 	}
 
 	if ( align_mode == RIGHT_ALIGN ) {
@@ -785,7 +995,28 @@ void sprintG(char* buffer, double num, int width, int align_mode) {
 	}
 	
 	buffer[width]='\0';
+
+	i=-1;
+	while (i<width) {
+		c=buffer[++i];
+		switch ( c ) {
+			case '-':
+				buffer[i]=0x87;	// (-)
+				break;
+//			case '+':
+//				buffer[i]=0x89;	// (+)
+//				break;
+			case 'e':	// exp
+				buffer[i]=0x0F;	// (exp)
+				break;
+		}
+	}
+
 	return ;
+}
+
+void sprintG(char* buffer, double num, int width, int align_mode) {
+	sprintGR(buffer, num, width, align_mode, Norm, 15); // + round
 }
 
 //----------------------------------------------------------------------------------------------
