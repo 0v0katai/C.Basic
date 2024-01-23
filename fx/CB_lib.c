@@ -1448,6 +1448,7 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CHAR_8:
 			case KEY_CHAR_9:
 			case KEY_CHAR_DP:
+			case KEY_CHAR_EXP:
 			case KEY_CHAR_PLUS:
 			case KEY_CHAR_MINUS:
 			case KEY_CHAR_PMINUS:
@@ -1497,9 +1498,9 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CHAR_ROOT:   //    0x86
 			case KEY_CHAR_POWROOT: //   0xb8
 				if ( key == KEY_CTRL_XTT ) key='X';
-				if ( key == KEY_CHAR_PLUS  )  key='+';
-				if ( key == KEY_CHAR_MINUS )  key='-';
-				if ( key == KEY_CHAR_PMINUS ) key='-';
+//				if ( key == KEY_CHAR_PLUS  )  key='+';
+//				if ( key == KEY_CHAR_MINUS )  key='-';
+//				if ( key == KEY_CHAR_PMINUS ) key=0x87; // (-)
 				return key;
 			default:
 				break;
@@ -1634,22 +1635,22 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 						Xdot      =InputNumD_full( 8, y, 14, Xdot);	// 
 						break;
 					case 4: // Ymin
-						Ymin      =InputNumD_full( 8, y, 13, Ymin);	// 
+						Ymin      =InputNumD_full( 8, y, 14, Ymin);	// 
 						break;
 					case 5: // Ymax
-						Ymax      =InputNumD_full( 8, y, 13, Ymax);	// 
+						Ymax      =InputNumD_full( 8, y, 14, Ymax);	// 
 						break;
 					case 6: // Yscl
-						Yscl      =InputNumD_full( 8, y, 13, Yscl);	// 
+						Yscl      =InputNumD_full( 8, y, 14, Yscl);	// 
 						break;
 					case 7: // TThetamin
-						TThetamin =InputNumD_full( 8, y, 13, TThetamin);	// 
+						TThetamin =InputNumD_full( 8, y, 14, TThetamin);	// 
 						break;
 					case 8: // TThetamax
-						TThetamax =InputNumD_full( 8, y, 13, TThetamax);	// 
+						TThetamax =InputNumD_full( 8, y, 14, TThetamax);	// 
 						break;
 					case 9: // TThetaptch
-						TThetaptch=InputNumD_full( 8, y, 13, TThetaptch);	// 
+						TThetaptch=InputNumD_full( 8, y, 14, TThetaptch);	// 
 						break;
 					default:
 						break;
@@ -1679,22 +1680,22 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 						Xdot      =InputNumD_Char( 8, y, 14, Xdot, key);	// 
 						break;
 					case 4: // Ymin
-						Ymin      =InputNumD_Char( 8, y, 13, Ymin, key);	// 
+						Ymin      =InputNumD_Char( 8, y, 14, Ymin, key);	// 
 						break;
 					case 5: // Ymax
-						Ymax      =InputNumD_Char( 8, y, 13, Ymax, key);	// 
+						Ymax      =InputNumD_Char( 8, y, 14, Ymax, key);	// 
 						break;
 					case 6: // Yscl
-						Yscl      =InputNumD_Char( 8, y, 13, Yscl, key);	// 
+						Yscl      =InputNumD_Char( 8, y, 14, Yscl, key);	// 
 						break;
 					case 7: // TThetamin
-						TThetamin =InputNumD_Char( 8, y, 13, TThetamin, key);	// 
+						TThetamin =InputNumD_Char( 8, y, 14, TThetamin, key);	// 
 						break;
 					case 8: // TThetamax
-						TThetamax =InputNumD_Char( 8, y, 13, TThetamax, key);	// 
+						TThetamax =InputNumD_Char( 8, y, 14, TThetamax, key);	// 
 						break;
 					case 9: // TThetaptch
-						TThetaptch=InputNumD_Char( 8, y, 13, TThetaptch, key);	// 
+						TThetaptch=InputNumD_Char( 8, y, 14, TThetaptch, key);	// 
 						break;
 					default:
 						break;
@@ -1993,18 +1994,18 @@ void SetVar(int select){		// ----------- Set Variable
 //-----------------------------------------------------------------------------
 int SelectNum2( char*msg, int n ) {		// 
 	unsigned int key;
-	SaveDisp(SAVEDISP_PAGE1);
+//	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 6,5); Print((unsigned char *)msg);
 	locate( 9,5); Print((unsigned char *)"[0~15]:");
 	while (1) {
-		n=InputNumD(17, 5, 2, 0, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD(17, 5, 2, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
  		if ( (0<=n)&&(n<=15) ) break;
  		n=0;
  	}
 
-	RestoreDisp(SAVEDISP_PAGE1);
+//	RestoreDisp(SAVEDISP_PAGE1);
 	return n ; // ok
 }
 

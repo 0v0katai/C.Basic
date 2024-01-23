@@ -71,7 +71,9 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	char *src;
 
 	SetVeiwWindowInit();
-	
+//	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
+//	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
+
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear

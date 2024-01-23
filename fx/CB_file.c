@@ -226,7 +226,7 @@ unsigned int Explorer( int size, char *folder )
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.20" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.21" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -657,7 +657,7 @@ unsigned char * LoadPicture( int pictNo ){
 	pictname[3]='T';
 	pictname[4]= c;
 	pictname[5]= d;
-	pictname[6]='\n';
+	pictname[6]='\0';
 	
 	sprintf( fname, "\\\\"ROOT"\\%s\\%s.g1m", "Pict", pictname );
 

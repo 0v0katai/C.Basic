@@ -550,6 +550,7 @@ unsigned short oplistVARS[]={
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
 		0xD3,	// Rnd
+		0xD9,	// Norm
 		0xE3,	// Fix
 		0xE4,	// Sci
 		

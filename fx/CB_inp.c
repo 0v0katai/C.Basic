@@ -564,7 +564,6 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				}
 				break;
 			case KEY_CTRL_EXE:
-				key=0;
 				cont=0;
 				break;
 			case KEY_CTRL_DEL:
@@ -924,10 +923,12 @@ double Round( double num, int round_mode, int digit){
 }
 
 void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
-	int i,w,adj,minus=0,p;
+	int i,j,w,adj,minus=0,p;
 	char buffer2[32],fstr[16],tmp[16];
-	double fabsnum;
+	double fabsnum,pw;
 	unsigned char c;
+	char *dptr,*eptr,*nptr;
+	double dpoint=0.01;
 
 //	num = Round( num, round_mode, digit);
 	if ( num < 0 ) minus=-1;
@@ -935,9 +936,12 @@ void sprintGR(char* buffer, double num, int width, int align_mode, int round_mod
 
 	switch ( round_mode ) {
 		case Norm:
+			if ( round_digit==1 ) { dpoint=0.01;        round_digit=10; }
+			if ( round_digit==2 ) { dpoint=0.000000001; i=11; c='f'; break; }
 			if ( round_digit==0 ) round_digit=16;
 		 	w=15; if ( w > width )  w=width;
-			if ( ( 0.0001 <= fabsnum ) && ( fabsnum < pow(10,w+minus) ) ) {
+		 	pw=pow(10,w+minus);
+			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
 				w = floor((log10(fabsnum))) - minus + (15-round_digit);
 				if ( round_digit >= width ) w= w+(round_digit-width);
 				i=14-w;
@@ -945,15 +949,14 @@ void sprintGR(char* buffer, double num, int width, int align_mode, int round_mod
 				c='f';
 				if ( i <  0  ) { i=round_digit-1; c='e'; }
 				if ( i <  0  ) i=16;
-			}
-			else {
+			} else {
 				adj = 1 - minus+ floor(log10(fabs(log10(fabsnum))))-1;
-				if ( ( 1.e-10 < num ) && ( num < 0.001 )) adj++;
+				if ( ( 1e-10 <= num ) && ( num < 0.001 )) adj++;
 				i=width-adj-5;
 				if ( i > round_digit-1 ) i=round_digit-1;
 				if ( i >= 18 ) i=18;
 				if ( i <  1  ) i=1;
-				c='g';
+				c='e';
 			}
 			break;
 		case Fix:
@@ -975,11 +978,33 @@ void sprintGR(char* buffer, double num, int width, int align_mode, int round_mod
 	fstr[p++]='\0';
 	sprintf(buffer, fstr, num);
 
+/*
 	if ( round_mode != Fix ) {
 		if ( ( strchr(buffer,'.') != '\0' ) && ( strchr(buffer,'e') == '\0' ) ) {
 			i=strlen(buffer)-1;
 			while ( buffer[i]=='0' ) buffer[i--]='\0';		// 1.234500000  zero cut
 			if ( buffer[i]=='.' ) buffer[i]='\0';
+		}
+	}
+*/	
+	if ( round_mode != Fix ) {
+		dptr=strchr(buffer,'.');
+		if ( dptr ) {
+			eptr=strchr(buffer,'e');
+			i=strlen(buffer); 
+			nptr=buffer+i;
+			if (  eptr != '\0' ) {	// 1.234500000e123  zero cut
+				eptr--; i=0;
+				while ( eptr[i] == '0' ) i-- ;
+				if ( i ) {
+					j=0;
+					while ( eptr[j] != '\0' ) eptr[++i]=eptr[++j];
+				}
+			} else {				// 1.234500000  zero cut
+				i=-1;
+				while ( nptr[i] == '0' ) nptr[i--]='\0';
+				if ( nptr[i]=='.' ) nptr[i]='\0';
+			}
 		}
 	}
 
@@ -1023,13 +1048,15 @@ void sprintG(char* buffer, double num, int width, int align_mode) {
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
 	char buffer[32];
 	int csrX=0;
+	unsigned int key;
 
 	buffer[csrX]='\0';
 	if ( defaultNum != 0 ) {
 		sprintG(buffer, defaultNum, width, LEFT_ALIGN);
 		csrX=strlen(buffer);
 	}
-	if ( InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ) return (defaultNum);  // exit
+	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);  // exit
 	return atof( buffer );
 }
 
@@ -1039,7 +1066,7 @@ unsigned int InputStr(int x, int y, int width, char* buffer, char SPC, int rev_m
 
 	buffer[width]='\0';
 	csrX=strlen(buffer);
-	key=InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	return ( key );
 }
 
