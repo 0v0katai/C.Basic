@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 0.95                                       */
+/*   inp Library  ver 1.00                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -158,67 +158,121 @@ unsigned int SelectChar() {
 }
 
 //----------------------------------------------------------------------------------------------
-int charX=0,charY=0;
-
-int InputChar() {
-	unsigned char
-	CHAR[128]={' ', '!', '"', '#', '$', '%', '&',0x27, '(', ')', '*', '+', ',', '-', '.', '/',
-	           '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?',
-	           '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-	           'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[',0x5C, ']', '^', '_',
-	           0x60,'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-	           'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', 0xD8,
-	           0x01,0x03,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0F,0x10,0x11,0x12,0x13,0xC2,0xC3,
-	           0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,0x86,0x87,0x8C,0x9C,0xAC,0xBC,0xB5,0xBB,0xCB,0xCC};
-
-	int cont=1, cx,cy, C=0;
+int SelectOpcode(unsigned short *oplist, int *select) {
+	int opNum=0 ;
+	char buffer[22];
+	char tmpbuf[18];
 	unsigned int key;
+	int	cont=1;
+	int i,j,y;
+	int seltop=*select;
 
-	SaveDisp(SAVEDISP_PAGE1);		// --------
-	Bdisp_AllClr_DDVRAM();
+	while ( oplist[opNum++] ) ;
+	opNum-=2;
 
-	for (cy=0; cy<8; cy++) {
-		for (cx=0; cx<16; cx++) {
-			locate(cx+3,cy+1); PrintC( CHAR+ cx + cy*16 );
-		}
-	}
-	
+	SaveDisp(SAVEDISP_PAGE1);
+	PopUpWin(6);
+
 	while (cont) {
-		Cursor_SetPosition(charX+2,charY+0);
-	
-		GetKey(&key);
+		if (  (*select)<seltop ) seltop=(*select);
+		if ( ((*select)-seltop) > 5 ) seltop=(*select)-5;
+		if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
+		for ( i=0; i<6; i++ ) {
+			locate(8,2+i); Print((unsigned char *)"            ");
+			OpcodeToStr( oplist[seltop+i], (unsigned char*)tmpbuf ) ; // SYSCALL
+			tmpbuf[12]='\0'; 
+			j=0; if ( tmpbuf[0]==' ' ) j++;
+			sprintf(buffer,"%04X:%-12s",oplist[seltop+i],tmpbuf+j ) ;
+			locate(3,2+i); Print((unsigned char *)buffer);
+		}
+		Bdisp_PutDisp_DD();	
+		
+		y = ((*select)-seltop) + 1 ;
+		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
 		switch (key) {
-			case KEY_CTRL_AC:
-				RestoreDisp(SAVEDISP_PAGE1);	// --------
-				return -1;	// input cancel
-				break;
 			case KEY_CTRL_EXIT:
-				RestoreDisp(SAVEDISP_PAGE1);	// --------
-				return -1;	// input cancel
-				break;
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0;
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
+		
 			case KEY_CTRL_LEFT:
-				charX-=1; if ( charX <  0 ) charX=15;
+				*select = 0;
 				break;
 			case KEY_CTRL_RIGHT:
-				charX+=1; if ( charX > 15 ) charX= 0;
+				*select = opNum;
 				break;
 			case KEY_CTRL_UP:
-				charY-=1; if ( charY <  0 ) charY= 7;
+				(*select)--;
+				if ( *select < 0 ) *select = opNum;
 				break;
 			case KEY_CTRL_DOWN:
-				charY+=1; if ( charY >  7 ) charY= 0;
+				(*select)++;
+				if ( *select > opNum ) *select =0;
 				break;
 			default:
 				break;
 		}
 	}
+
+	RestoreDisp(SAVEDISP_PAGE1);
+	Bdisp_PutDisp_DD();
 	
-	RestoreDisp(SAVEDISP_PAGE1);	// --------
-	return ( CHAR[ charX + charY*16 ] );
+	return oplist[(*select)];
 }
+
+unsigned short oplistInp[]={
+		0x97,	// Abs
+		0xA6,	// Int
+		0xB6,	// frac
+		0xAB,	// !
+		0xA1,	// sinh
+		0xA2,	// cosh
+		0xA3,	// tanh
+		0xB1,	// arcsinh
+		0xB2,	// arccosh
+		0xB3,	// arctanh
+
+		0x7F3A,	// MOD(
+		0x7F46,	// Dim
+
+		0x7FB0,	// And
+		0x7FB1,	// Or
+		0x7FB3,	// Not
+		0x7FB4,	// Xor
+
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
+		0xC1,	// Ran#
+		0x7F87,	// RanInt#(
+
+		0x01,	// femto
+		0x02,	// pico
+		0x03,	// nano
+		0x04,	// micro
+		0x05,	// milli
+		0x06,	// Kiro
+		0x07,	// Mega
+		0x08,	// Giga
+		0x09,	// Tera
+		0x0A,	// Peta
+		0x0B,	// Exa
+		
+		0x7F00,	// Xmin
+		0x7F01,	// Xmax
+		0x7F02,	// Xscl
+		0XF921,	// Xdot
+		0x7F04,	// Ymin
+		0x7F05,	// Ymax
+		0x7F06,	// Yscl
+		0x7F0B,	// Xfct
+		0x7F0C,	// Yfct
+		0};
+
 
 //----------------------------------------------------------------------------------------------
 
@@ -241,15 +295,6 @@ int OpcodeStrlen(int c) {
 	int len;
 	unsigned short opcode;
 		opcode = c & 0xFFFF ;
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
-	return len;
-}
-int OpcodeStrlen1(int c) {
-	char tmpbuf[18];
-	int len;
-	unsigned short opcode;
-		opcode = c & 0x00FF ;
 		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
 		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
 	return len;
@@ -389,57 +434,69 @@ int PrevLine( unsigned char *SRC, int *offset ){
 	return ofst-(*offset) ;
 }
 
+//----------------------------------------------------------------------------------------------
 
-
-/*
-int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
-	char tmpbuf[18];
-	int i,len,x=1,xmax=21,cont=1,rev;
-	unsigned short opcode;
-	unsigned char  c=1;
-	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-	if ( ofst > csrPtr ) { 
-		ofst=csrPtr;
+int strlenOp( unsigned char *buffer ) {
+	int	i=0,len;
+	unsigned int c;
+	while ( 1 ) {
+		if ( NextOpcode( buffer, &i ) == 0x00 ) break;
 	}
-	while ( cont ) {
-		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
-		if (ofst==csrPtr) { *cx=x; *cy=*y; }
+	return i;
+}
+
+int InsertOpcode1( unsigned char *buffer, int Maxstrlen, int ptr, unsigned short opcode ){
+	int len,i,j;
+	int opH,opL;
+	len=OpcodeLen( opcode );
+	if ( ( len + strlenOp( buffer ) ) > Maxstrlen ) return -1 ;		// buffer over
+	j=ptr+len;
+	for ( i=Maxstrlen; i>=j; i-- )
+		 buffer[i]=buffer[i-len];
+		 
+	opH = (opcode&0xFF00) >> 8 ;
+	opL = (opcode&0x00FF) ;
+	switch (len) {
+		case 1:
+			buffer[ptr  ]=opL;
+			break;
+		case 2:
+			buffer[ptr ]=opH;
+			buffer[ptr+1]=opL;
+			break;
+	}
+	return 0;
+}
+void DeleteOpcode1( unsigned char *buffer, int Maxstrlen, int *ptr){
+	int len,i;
+	int opH,opL;
+	unsigned short opcode;
+	opcode=GetOpcode( buffer, *ptr );
+	if ( opcode == 0 ) {
+		PrevOpcode( buffer, &(*ptr) );
+		opcode=GetOpcode( buffer, *ptr );
+	}
+	len=OpcodeLen( opcode );
+	if ( len == 0 ) return ;
+	for ( i=(*ptr); i<=Maxstrlen; i++ ) buffer[i]=buffer[i+len];
+}
+
+//----------------------------------------------------------------------------------------------
+int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char SPC) {
+	char tmpbuf[18];
+	char spcbuf[2];
+	int i,len,xmax=x+width;
+	unsigned short opcode=1;
+	unsigned char  c=1;
+	while ( 1 ) {
+		if (ofst==ptrX) *csrX=x;
 		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
 		ofst += OpcodeLen( opcode );
 		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
 		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
-		while ( i < len ) {
-			locate(x,*y);
-			if ( rev )
-					PrintRevC( (unsigned char*)(tmpbuf+i) ) ;
-			else	PrintC(    (unsigned char*)(tmpbuf+i) ) ;
-//			Bdisp_PutDisp_DD();
-			x++;
-			if ( ( x > xmax ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {
-					if ( (*y) >= 7 ) { cont=0; break; }
-					(*y)++; x=1;
-			}
-			i++;
-		}
-	}
-	return ofst;
-}
-*/
-//----------------------------------------------------------------------------------------------
-int PrintOpcode(int x, int y, unsigned char *buffer, int width, int rev_mode, char SPC) {
-	char tmpbuf[18];
-	char spcbuf[2];
-	int i,j=0,len,xmax=x+width;
-	unsigned short opcode;
-	unsigned char  c=1;
-	while ( c != '\0' ) {
-		c = buffer[j++] ;
-		opcode = c & 0x00FF ;
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
-		i=0;
+		if ( x+len > xmax ) break;
 		while ( i < len ) {
 			if ( x < xmax ) {
 				locate(x,y); x++ ;
@@ -458,69 +515,29 @@ int PrintOpcode(int x, int y, unsigned char *buffer, int width, int rev_mode, ch
 	return x;
 }
 
-void OpStrToStr(unsigned char *buffer, unsigned char *buffer2) {
-	unsigned char tmpbuf[18];
-	int i,j,len;
-	unsigned short opcode;
-	unsigned char  c;
-	i=0; j=0;
-	c = buffer[j] ;
-	while ( c != '\0' ) {
-		c = buffer[j++] ;
-		opcode = c & 0x00FF ;
-		OpcodeToStr( opcode, tmpbuf ) ;	// SYSCALL
-		strcat((char*)buffer2,(char*)tmpbuf);
-	}
-}
-
 int OpStrLastoffset(unsigned char *buffer, int ptrX, int csrwidth, int *csrX) {
 	int i,j,len,csX,ofstX;
-	unsigned char  c;
+	unsigned int  c;
 	csX=0;
 	ofstX=ptrX;
 	while ( ptrX > 0 ) {
-		c = buffer[--ptrX] ;
-		len = OpcodeStrlen1( c );
+		PrevOpcode( buffer, &ptrX ) ;
+		c = GetOpcode ( buffer, ptrX ) ;
+		len = OpcodeStrlen( c );
 		csX += len ;
-		ofstX--;
-		if ( csX > csrwidth ) { ofstX++; csX-=len; break; }
+		PrevOpcode( buffer, &ofstX ) ;
+		if ( csX > csrwidth ) { NextOpcode( buffer, &ofstX ); csX-=len; break; }
 	}
 	*csrX = csX;
 	return  ofstX;
 }
 
-int csrX_to_dspX(int csrX, unsigned char *buffer, int width) {
-	int i,j,len;
-	unsigned char  c=1;
-	i=0; j=0;
-	while ( j < csrX ) {
-		c = buffer[j++] ;
-		len = OpcodeStrlen1( c );
-		if ( i>=width ) { i=width-1;  break ; }
-		i += len ;
-	}
-	return i;
-}
-
-int OpcodeOffsetCount(unsigned char *buffer, int length, int *csrX) {
-	int i,j,len;
-	unsigned char  c;
-	i=0; j=0;
-	while ( i < length ) {
-		c = buffer[j++] ;
-		len = OpcodeStrlen1( c );
-		i += len ;
-		*csrX = *csrX - len;
-	}
-	return j;
-}
-
 //----------------------------------------------------------------------------------------------
 
 int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
-	unsigned char buffer2[64];
+	unsigned char buffer2[128];
 	unsigned char buf[22];
-	unsigned int key=0;
+	unsigned int key=0,keyH,keyL;
 	int cont=1;
 	int i,j,k;
 	int csrX=ptrX;	// ptrX:  current buffer ptr      csrX: ccursor X
@@ -531,27 +548,18 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 	int key2,multibyte=0;	// 0:mono   non 0:multi
 	int dspX;
 	int oplen,oplenL,oplenR;
+	int selectOPTN=0;
 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
 	
-	length=strlen((char*)buffer);
 	for(i=0; i<=MaxStrlen; i++) buffer2[i]=buffer[i]; // backup
 
 	offsetX=OpStrLastoffset(buffer, ptrX, csrwidth ,&csrX);
 
-//	Cursor_SetFlashMode(1);			// cursor flashing on
 	CursorStyle=Cursor_GetFlashStyle();
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
-//	if ( ( alpha_mode ) && ( float_mode == 0) ) {
-//		if ( CursorStyle=0x0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
-//		if ( CursorStyle=0x6 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
-//	} else {
-//		if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
-//			else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
-//	}
-	Cursor_SetFlashMode(1);			// cursor flashing on
 
 	if ( ( float_mode == 0 ) && ( exp_mode == 0 ) && ( alpha_mode ) ) {
 		PutKey( KEY_CTRL_SHIFT, 1 );
@@ -559,9 +567,16 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 	}
 	
 	while (cont) {
-		multibyte=0;
-		buffer[length]='\0';
-		PrintOpcode(x, y, buffer+offsetX, width, rev_mode , SPC);
+		Cursor_SetFlashMode(1);			// cursor flashing on
+		length=strlenOp( buffer );
+		csrX=0;
+		while (1) {
+			PrintOpcode(x, y, buffer, width, offsetX, ptrX, &csrX, rev_mode , SPC);
+			if ( ( 0 < csrX ) && ( csrX < 22 ) )   break;
+			if ( offsetX < ptrX )	NextOpcode( buffer, &offsetX);
+				else				PrevOpcode( buffer, &offsetX);
+		}
+		
 		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN(4,"a<>A"); else Fkey_dispN(4,"A<>a");
 		if ( ( pallet_mode ) && ( alpha_mode ) ) Fkey_dispR(5,"CHAR");
 
@@ -570,8 +585,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 		if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
 		if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
 		if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
-//		dspX = csrX_to_dspX(csrX, buffer+offsetX, csrwidth);
-		Cursor_SetPosition(x+csrX-1,y-1);
+		Cursor_SetPosition(csrX-1,y-1);
 
 //		sprintf(buf,"len=%2d ptr=%2d off=%2d   csr=%2d  ",length,ptrX,offsetX,csrX); PrintMini( 0,7*8+2,(unsigned char *)buf, MINI_OVER);
 
@@ -579,7 +593,8 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 		switch (key) {
 			case KEY_CTRL_AC:
 				if ( length==0 ) cont=0;
-				csrX=0; ptrX=0; offsetX=0; length=0;
+				ptrX=0; offsetX=0;
+				buffer[0]='\0';
 				break;
 			case KEY_CTRL_EXIT:
 			 	if ( exit_cancel == 0 ) {
@@ -591,107 +606,19 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				cont=0;
 				break;
 			case KEY_CTRL_DEL:
-				if ( offsetX == 0 ) {
-					if ( csrX == 0 ) {	// left edge
-						if ( length > 0 ) {
-							for(i=ptrX; i<length; i++) buffer[i]=buffer[i+1];
-							length--;
-						}
-					} else { // csrX>0
-						if ( CursorStyle < 0x6 ) {	// insert mode
-								oplen =OpcodeStrlen1( buffer[ptrX-1] );
-								for(i=ptrX-1; i<length; i++) buffer[i]=buffer[i+1];
-								ptrX--;
-								length--;
-								csrX -= oplen;
-						}
-						else {					// overwrite mode
-							if ( ptrX == length ) { // rigth edge
-								oplen =OpcodeStrlen1( buffer[ptrX-1] );
-								for(i=ptrX-1; i<length; i++) buffer[i]=buffer[i+1];
-								ptrX--;
-								length--;
-								csrX -= oplen;
-							}
-							else {
-								for(i=ptrX  ; i<length; i++) buffer[i]=buffer[i+1];
-								length--;
-							}
-						}
-					}
-				} else {	// offsetX > 0
-					if ( csrX == OpcodeStrlen1( buffer[offsetX] ) ) {
-						if (CursorStyle<0x6) {	// insert mode
-								for(i=ptrX-1; i<length; i++) buffer[i]=buffer[i+1];
-								ptrX--;
-								length--;
-								offsetX--;
-								csrX = OpcodeStrlen1( buffer[offsetX] );
-						}
-						else {					// overwrite mode
-							if ( ptrX == length )  {
-								for(i=ptrX-1; i<length; i++) buffer[i]=buffer[i+1];
-								ptrX--;
-								length--;
-								offsetX--;
-								csrX = OpcodeStrlen1( buffer[offsetX] );
-							}
-							else {
-								for(i=ptrX  ; i<length; i++) buffer[i]=buffer[i+1];
-								length--;
-							}
-						}
-					} else
-					if ( csrX > OpcodeStrlen1( buffer[offsetX] ) ) {
-						if ( CursorStyle < 0x6 ) {	// insert mode
-								oplen =OpcodeStrlen1( buffer[--ptrX] );
-								for(i=ptrX  ; i<length; i++) buffer[i]=buffer[i+1];
-								length--;
-								csrX -= oplen;
-						}
-						else {					// overwrite mode
-							if ( ptrX == length )  {
-								oplen =OpcodeStrlen1( buffer[--ptrX] );
-								for(i=ptrX  ; i<length; i++) buffer[i]=buffer[i+1];
-								length--;
-								csrX -= oplen;
-							}
-							else {
-								for(i=ptrX  ; i<length; i++) buffer[i]=buffer[i+1];
-								length--;
-							}
-						}
-					}
+				if ( CursorStyle < 0x6 ) {		// insert mode
+					PrevOpcode( buffer, &ptrX );
+					if ( offsetX ) if ( ptrX == offsetX ) PrevOpcode( buffer, &offsetX );
 				}
+				DeleteOpcode1( buffer, MaxStrlen, &ptrX );
 				break;
 			case KEY_CTRL_LEFT:
-				if ( offsetX == 0 ) {
-						if ( csrX > 0 ) {
-							ptrX--;
-							csrX-=OpcodeStrlen1(buffer[ptrX]);
-						}
-				}
-				if ( offsetX > 0 ) {
-						if ( csrX > OpcodeStrlen1(buffer[offsetX]) ) {
-							ptrX--;
-							csrX-=OpcodeStrlen1(buffer[ptrX]);
-						} else  {
-							offsetX--;
-							ptrX--;
-							csrX = OpcodeStrlen1(buffer[offsetX]);
-						}
-				}
+				PrevOpcode( buffer, &ptrX );
 				break;
 			case KEY_CTRL_RIGHT:
-					if ( ptrX >= length ) break ;
-					while ( ( csrX + OpcodeStrlen1(buffer[ptrX]) ) > csrwidth ) {
-						csrX -= OpcodeStrlen1(buffer[offsetX++]);
-					}
-					csrX += OpcodeStrlen1(buffer[ptrX]);
-					ptrX++;
+				if ( buffer[ptrX] != 0x00 )	NextOpcode( buffer, &ptrX );
 				break;
 			case KEY_CTRL_UP:
-					csrX=0; 
 					ptrX=0;
 					offsetX=0;
 				break;
@@ -703,12 +630,45 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				if ( ( pallet_mode ) && ( alpha_mode ) ) lowercase=1-lowercase;
 				break;
 			case KEY_CTRL_F6:
-				if ( ( pallet_mode ) && ( alpha_mode ) ) key=InputChar();
+				if ( ( pallet_mode ) && ( alpha_mode ) ) key=SelectChar();
 				break;
 			default:
 				break;
 		}
-		if (
+
+
+		if ( key == KEY_CTRL_OPTN ) {
+				Cursor_SetFlashMode(0); 		// cursor flashing off
+				key=SelectOpcode(oplistInp,&selectOPTN);
+		}
+		if ( key == KEY_CTRL_XTT  )   key='X'; // 
+
+		if ( alpha_mode || exp_mode ) {
+			keyH=(key&0xFF00) >>8 ;
+			keyL=(key&0x00FF) ;
+			switch ( keyH ) {		// ----- 2byte code -----
+				case 0x7F:		// 
+				case 0xF7:		// 
+				case 0xF9:		// 
+				case 0xE5:		// 
+				case 0xE6:		// 
+				case 0xE7:		// 
+					if ( CursorStyle < 0x6 ) {		// insert mode
+						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+					} else {					// overwrite mode
+						DeleteOpcode1( buffer, MaxStrlen, &ptrX);
+						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+					}
+					if ( i==0 ) NextOpcode( buffer, &ptrX );
+					key=0;
+					break;
+				default:
+					break;
+			}
+		}
+
+
+		if (													// ----- 1 byte code -----
 		   ( KEY_CHAR_0 <= key  ) && ( key <= KEY_CHAR_9     ) ||
 		   ( hex_mode && ( KEY_CHAR_A <= key  ) && ( key <= KEY_CHAR_F ) ) ||
 		   ( hex_mode && ( KEY_CTRL_XTT == key ) ) ||
@@ -717,8 +677,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 		   ( hex_mode && ( KEY_CHAR_SIN == key ) ) ||
 		   ( hex_mode && ( KEY_CHAR_COS == key ) ) ||
 		   ( hex_mode && ( KEY_CHAR_TAN == key ) ) ||
-		   ( alpha_mode && ( 0x1A <= key  ) && ( key <= 0x7E ) ) ||
-		   ( alpha_mode && ( 0xD8 == key  ) ) ||
+		   ( alpha_mode && ( 0x01 <= key  ) && ( key <= 0xFF ) ) ||
 		   ( float_mode && ( key == KEY_CHAR_DP ) ) || ( key == KEY_CHAR_MINUS ) || ( key == KEY_CHAR_PMINUS ) || ( key == KEY_CHAR_PLUS ) ||
 		   ( float_mode && exp_mode && ( key == KEY_CHAR_EXP )  ) ||
 		   ( float_mode && ( 0x07 <= key  ) && ( key <= 0x0D ) ) ||
@@ -760,115 +719,18 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 			if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
 			if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
 			if ( ( key == KEY_CTRL_XTT ) )   key='X'; // ^
-//			if ( key == KEY_CHAR_PLUS  )  key='+';
-//			if ( key == KEY_CHAR_MINUS )  key='-';
-//			if ( key == KEY_CHAR_PMINUS ) key='-';
-//			if ( key == KEY_CHAR_EXP )    key='e';
-			
-			if ( CursorStyle < 0x6 ) {		// insert mode
-				if ( csrX == csrwidth ) {	// rigth edge
-					if ( ptrX == length ) {			// rigth edge new
-						if ( length < MaxStrlen ) {
-							buffer[ptrX]=key;
-							ptrX++;
-							length++;
-							oplen=OpcodeStrlen1(key); j=0;
-							while ( j<oplen ) {
-								i = OpcodeStrlen1(buffer[offsetX++]);
-								j += i;
-								csrX -= i;
-							}
-							csrX += oplen;
-						}
-					} else
-					if ( ptrX < length ) {	// rigth edge insert
-						if ( length < MaxStrlen ) {
-							for(i=length; i>ptrX; i--) buffer[i]=buffer[i-1];
-							buffer[ptrX]=key;
-							ptrX++;
-							length++;
-							oplen=OpcodeStrlen1(key); j=0;
-							while ( j<oplen ) {
-								i = OpcodeStrlen1(buffer[offsetX++]);
-								j += i;
-								csrX -= i;
-							}
-							csrX += oplen;
-						}
-					}
-				} else
-				if ( csrX < csrwidth ) {
-					if ( ptrX == length ) {	 // new 1st input at left edge
-						if ( length < MaxStrlen ) {
-							buffer[ptrX]=key;
-							ptrX++;
-							length++;
-							oplen=OpcodeStrlen1(key);
-							csrX+=oplen;
-							if ( csrX > csrwidth ) offsetX+=OpcodeOffsetCount(buffer+offsetX, csrX-csrwidth, &csrX);
-						}
-					} else 
-					if ( ptrX < length ) {	// insert
-						if ( length < MaxStrlen ) {
-							for(i=length; i>ptrX; i--) buffer[i]=buffer[i-1];
-							buffer[ptrX]=key;
-							ptrX++;
-							length++;
-							oplen=OpcodeStrlen1(key);
-							csrX+=oplen;
-							if ( csrX > csrwidth ) offsetX+=OpcodeOffsetCount(buffer+offsetX, csrX-csrwidth, &csrX);
-						}
-					}
+
+				if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
+				if ( CursorStyle < 0x6 ) {		// insert mode
+						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+				} else {					// overwrite mode
+						DeleteOpcode1( buffer, MaxStrlen, &ptrX);
+						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
 				}
-			} else {					// overwrite mode
-				if ( csrX == csrwidth ) {	// rigth edge
-					if ( ptrX == length ) {			// rigth edge new
-						if ( length < MaxStrlen ) {
-							buffer[ptrX]=key;
-							ptrX++;
-							length++;
-							oplen=OpcodeStrlen1(key); j=0;
-							while ( j<oplen ) {
-								i = OpcodeStrlen1(buffer[offsetX++]);
-								j += i;
-								csrX -= i;
-							}
-							csrX += oplen;
-						}
-					} else
-					if ( ptrX < length ) {	// overwrite
-							buffer[ptrX]=key;
-							ptrX++;
-							oplen=OpcodeStrlen1(key); j=0;
-							while ( j<oplen ) {
-								i = OpcodeStrlen1(buffer[offsetX++]);
-								j += i;
-								csrX -= i;
-							}
-							csrX += oplen;
-					}
-				} else
-				if ( csrX < csrwidth ) {  // overwrite
-					if ( ptrX == length ) {			// new 1st input at left edge
-						if ( length < MaxStrlen ) {
-							buffer[ptrX]=key;
-							ptrX++;
-							length++;
-							oplen=OpcodeStrlen1(key);
-							csrX+=oplen;
-							if ( csrX > csrwidth ) offsetX+=OpcodeOffsetCount(buffer+offsetX, csrX-csrwidth, &csrX);
-						}
-					} else
-					if ( ptrX < length ) {	// overwrite
-							buffer[ptrX]=key;
-							ptrX++;
-							oplen=OpcodeStrlen1(key);
-							csrX+=oplen;
-							if ( csrX > csrwidth ) offsetX+=OpcodeOffsetCount(buffer+offsetX, csrX-csrwidth, &csrX);
-					}
-				}
-			}
+				if ( i==0 ) NextOpcode( buffer, &ptrX );
+				key=0;
 		}
+
 	}
 
 	Cursor_SetFlashMode(0);		// cursor flashing off
@@ -1009,15 +871,6 @@ void sprintGRS(unsigned char* buffer, double num, int width, int align_mode, int
 	fstr[p++]='\0';
 	sprintf((char*)buffer, fstr, num);
 
-/*
-	if ( round_mode != Fix ) {
-		if ( ( strchr(buffer,'.') != '\0' ) && ( strchr(buffer,'e') == '\0' ) ) {
-			i=strlen(buffer)-1;
-			while ( buffer[i]=='0' ) buffer[i--]='\0';		// 1.234500000  zero cut
-			if ( buffer[i]=='.' ) buffer[i]='\0';
-		}
-	}
-*/	
 	if ( round_mode == Norm ) {
 		dptr=strchr((char*)buffer,'.');
 		if ( dptr ) {
@@ -1112,7 +965,7 @@ double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_m
 	buffer[csrX]='\0';
 	if ( defaultNum != 0 ) {
 		sprintG(buffer, defaultNum, width, LEFT_ALIGN);
-		csrX=strlen((char*)buffer);
+		csrX=strlenOp(buffer);
 	}
 	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);  // exit
@@ -1124,7 +977,7 @@ unsigned int InputStr(int x, int y, int width, unsigned char* buffer, char SPC, 
 	unsigned int key;
 
 	buffer[width]='\0';
-	csrX=strlen((char*)buffer);
+	csrX=strlenOp(buffer);
 	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	return ( key );
 }

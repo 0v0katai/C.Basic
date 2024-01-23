@@ -228,7 +228,7 @@ unsigned int Explorer( int size, char *folder )
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.36" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.40" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -438,7 +438,7 @@ unsigned int InputStrFilename(int x, int y, int width, unsigned char* buffer, ch
 
 	buffer[width]='\0';
 	csrX=strlen((char*)buffer);
-	key=InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_OFF);
+	key=InputStrSub( x, y, width, 0, buffer, width, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_OFF);
 	return ( key );
 }
 
@@ -763,7 +763,7 @@ int NewProg(){
 //----------------------------------------------------------------------------------------------
 void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 	unsigned int c=1;
-	char buffer[32]="";
+	unsigned char buffer[32]="";
 	char filename[32];
 	unsigned char *src;
 	unsigned char *StackProgSRC;
@@ -784,13 +784,13 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 				break;
 			case 0xED:	// Prog "..."
 				ExecPtr++;	// " skip
-				QuotStrOpcode(SRC, buffer);	// Prog name
+				GetQuotOpcode(SRC, buffer);	// Prog name
 //				locate( 1, 2); PrintLine(" ",21);						//
 //				locate( 1, 2); Print(buffer);							//
 //				locate( 1, 3); PrintLine(" ",21); GetKey(&key);			//
 				ProgNo = CB_SearchProg( buffer );
 				if ( ProgNo < 0 ) { 				// undefined Prog
-					SetFullfilenameG1M( filename, buffer );
+					SetFullfilenameG1M( filename, (char*)buffer );
 					src = loadFile( filename ,EditMaxfree);
 //					locate( 1, 3); Print(filename);						//
 //					locate( 1, 4); PrintLine(" ",21);					//

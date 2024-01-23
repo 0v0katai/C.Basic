@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series      v0.20
+ Casio Basic RUNTIME library for fx-9860G series      v0.40
 
 ===============================================================================
 */
@@ -40,7 +40,8 @@ extern int TimeDsp;
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-extern double  REG[37];
+extern double  REG[59];
+extern double  REGv[11];
 
 #define regA REG[ 0]
 #define regB REG[ 1]
@@ -69,18 +70,18 @@ extern double  REG[37];
 #define regY REG[24]
 #define regZ REG[25]
 
-#define Xmin REG[26]
-#define Xmax REG[27]
-#define Xscl REG[28]
-#define Ymin REG[29]
-#define Ymax REG[30]
-#define Yscl REG[31]
-#define TThetamin  REG[32]
-#define TThetamax  REG[33]
-#define TThetaptch REG[34]
+#define Xmin REGv[ 0]
+#define Xmax REGv[ 1]
+#define Xscl REGv[ 2]
+#define Ymin REGv[ 3]
+#define Ymax REGv[ 4]
+#define Yscl REGv[ 5]
+#define TThetamin  REGv[ 6]
+#define TThetamax  REGv[ 7]
+#define TThetaptch REGv[ 8]
 
-#define Xdot REG[35]
-#define Ydot REG[36]
+#define Xdot REGv[ 9]
+#define Ydot REGv[10]
 
 
 extern	double Xfct;

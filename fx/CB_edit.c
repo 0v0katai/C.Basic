@@ -74,6 +74,7 @@ void CB_PreProcess(unsigned char *SRC) {
 }
 
 //----------------------------------------------------------------------------------------------
+
 void InsertOpcode( unsigned char *filebase, int ptr, unsigned short opcode ){
 	int len,i,j;
 	int opH,opL;
@@ -121,7 +122,6 @@ void DeleteOpcode( unsigned char *filebase, int *ptr){
 	ProgfileEdit[ProgNo]=1;	// edit program
 }
 
-
 int EndOfSrc( unsigned char *SRC, int ptr ) {
 	unsigned char *filebase,*srcbase;
 	int endPtr;
@@ -143,7 +143,7 @@ void EditPaste( unsigned char *filebase, int *ptr ){
 
 	if ( ClipBuffer[0]=='\0' ) return ;	// no clip data
 		
-	len=strlen((char*)ClipBuffer);
+	len=strlenOp(ClipBuffer);
 	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
 		ErrorPtr=(*ptr); ErrorNo=MemoryERR;		// Memory error
 		CB_ErrNo(ErrorNo);
@@ -458,74 +458,7 @@ void DumpAsc(unsigned char *SrcBase, int offset){
 	}
 }
 
-
-		
 //---------------------------------------------------------------------------------------------
-int SelectOpcode(unsigned short *oplist, int *select) {
-	int opNum=0 ;
-	char buffer[22];
-	char tmpbuf[18];
-	unsigned int key;
-	int	cont=1;
-	int i,j,y;
-	int seltop=*select;
-
-	while ( oplist[opNum++] ) ;
-	opNum-=2;
-
-	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(6);
-
-	while (cont) {
-		if (  (*select)<seltop ) seltop=(*select);
-		if ( ((*select)-seltop) > 5 ) seltop=(*select)-5;
-		if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
-		for ( i=0; i<6; i++ ) {
-			locate(8,2+i); Print((unsigned char *)"            ");
-			OpcodeToStr( oplist[seltop+i], (unsigned char*)tmpbuf ) ; // SYSCALL
-			tmpbuf[12]='\0'; 
-			j=0; if ( tmpbuf[0]==' ' ) j++;
-			sprintf(buffer,"%04X:%-12s",oplist[seltop+i],tmpbuf+j ) ;
-			locate(3,2+i); Print((unsigned char *)buffer);
-		}
-		Bdisp_PutDisp_DD();	
-		
-		y = ((*select)-seltop) + 1 ;
-		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
-		Bdisp_PutDisp_DD();
-
-		GetKey( &key );
-		switch (key) {
-			case KEY_CTRL_EXIT:
-				return 0;
-			case KEY_CTRL_EXE:
-				cont=0;
-				break;
-		
-			case KEY_CTRL_LEFT:
-				*select = 0;
-				break;
-			case KEY_CTRL_RIGHT:
-				*select = opNum;
-				break;
-			case KEY_CTRL_UP:
-				(*select)--;
-				if ( *select < 0 ) *select = opNum;
-				break;
-			case KEY_CTRL_DOWN:
-				(*select)++;
-				if ( *select > opNum ) *select =0;
-				break;
-			default:
-				break;
-		}
-	}
-
-	RestoreDisp(SAVEDISP_PAGE1);
-	Bdisp_PutDisp_DD();
-	
-	return oplist[(*select)];
-}
 
 unsigned short oplistOPTN[]={
 //		0x23,	// #
@@ -594,6 +527,11 @@ unsigned short oplistOPTN[]={
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
 //		0xF79F,	// RclCapt
+//		0xF74C,	// Sum
+		0x0FB,	// ProbP(
+		0x0FC,	// ProbQ(
+//		0x0FD,	// ProbR(
+//		0x0FE,	// Probt(
 		0};
 							
 unsigned short oplistPRGM[]={	
@@ -601,6 +539,7 @@ unsigned short oplistPRGM[]={
 		0x3A,	// :
 		0x3F,	// ?
 		0x27,	// '
+		0x7E,	// ~
 		
 		0x3C,	// <
 		0x3E,	// >
@@ -887,7 +826,7 @@ unsigned short oplistCMD[]={
 		0xE2,	// Lbl			7
 		0xEC,	// Goto			8
 		0x27,	// '
-		0xFFFF,	// 				-
+		0x7E,	// ~
 		0x0C,	// dsps	
 		0x3A,	// :	
 
@@ -1603,7 +1542,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 						ClipStartPtr = -1 ;		// ClipMode cancel			
 				} else {
 					if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
-					if ( key == KEY_CHAR_POW )   key='^';
+//					if ( key == KEY_CHAR_POW )   key='^';
 					if ( CursorStyle < 0x6 ) {		// insert mode
 							InsertOpcode( FileBase, csrPtr, key );
 					} else {					// overwrite mode

@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series     v0.32
+ Casio Basic RUNTIME library for fx-9860G series     v0.40
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -50,7 +50,8 @@ int TimeDsp=0;		// Execution Time Display  0:off 1:on
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-double  REG[37];
+double  REG[59];
+double  REGv[11];
 
 double	Xfct     =  2;					// 
 double	Yfct     =  2;					// 
@@ -140,8 +141,8 @@ void PXYtoVW(int px, int py, double *x, double *y){	// pixel(x,y) -> ViewWwindow
 	*y = ( 62-py+1)*Ydot  + Ymin ;
 //	if ( Ymax >  Ymin )		*y = ( 62-(double)py+1)*Ydot  + Ymin ;
 //	if ( Ymax <  Ymin )		*y = (    (double)py-1)*-Ydot + Ymax ;
-	if ( fabs(*x) < 1.0e-13 ) *x=0;	// zero adjust
-	if ( fabs(*y) < 1.0e-13 ) *y=0;	// zero adjust
+//	if ( fabs(*x) < 1.0e-13 ) *x=0;	// zero adjust
+//	if ( fabs(*y) < 1.0e-13 ) *y=0;	// zero adjust
 }
 
 void PlotGrid(double x, double y){
@@ -671,7 +672,7 @@ void Line(int style) {
 		return;
 	}
 	i = VWtoPXY( Previous_X, Previous_Y, &px1, &py1) ;
-	j = VWtoPXY(     Plot_X,      Plot_Y, &px2, &py2) ;
+	j = VWtoPXY(     Plot_X,     Plot_Y, &px2, &py2) ;
 	Previous_X = Plot_X;
 	Previous_Y = Plot_Y;
 	Previous_PX = px2;
@@ -1038,6 +1039,7 @@ unsigned int ZoomXY() {
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 		Bdisp_PutDisp_DD();
 
+		KeyRecover();
 		GetKey(&key);
 		switch (key) {
 			case KEY_CTRL_AC:
@@ -1147,6 +1149,7 @@ unsigned int Trace(int *index ) {
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 		Bdisp_PutDisp_DD();
 
+		KeyRecover();
 		GetKey(&key);
 		if ( key==KEY_CTRL_OPTN ) key=Pict();
 		switch (key) {
@@ -1161,6 +1164,7 @@ unsigned int Trace(int *index ) {
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
+					case KEY_CTRL_F1:
 					case KEY_CTRL_F2:
 					case KEY_CTRL_F3:
 					case KEY_CTRL_F4:
@@ -1187,9 +1191,10 @@ unsigned int Trace(int *index ) {
 				FkeyGraph();
 				GetKey(&key);
 				switch (key) {
+					case KEY_CTRL_F3:
+						key=KEY_CHAR_3;
 					case KEY_CTRL_EXIT:
 					case KEY_CTRL_F2:
-					case KEY_CTRL_F3:
 					case KEY_CTRL_F4:
 					case KEY_CTRL_F6:
 						cont=0;
@@ -1210,12 +1215,14 @@ unsigned int Trace(int *index ) {
 }
 
 //----------------------------------------------------------------------------------------------
-double Graph_Eval( unsigned char *expbuf) {		// Eval Graph
-	unsigned int key;
+double Graph_Eval( unsigned char *SRC) {		// Eval Graph
 	double result;
-    ExpPtr= 0;
+	int execptr=ExecPtr;
+    ExecPtr = 0;
     ErrorPtr= 0;
-    result = EvalsubTop( expbuf );
+	ErrorNo = 0;
+    result = EvalsubTop( SRC );
+    ExecPtr=execptr;
 	return result;
 }
 
@@ -1223,26 +1230,23 @@ void Graph_Draw(){
 	int i;
 	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	regX   = Xmin-Xdot;
-	Plot_X = regX;
 	for ( i=0; i<=128; i++) {
 		//-----------------------------
 		traceAry[i]=Graph_Eval((unsigned char *)GraphY);		// function
 		if ( ErrorPtr ) return ;
 		//-----------------------------
-//		if ( fabs(traceAry[i])<1.0e-13 ) traceAry[i]=0;	// zero adjust
-		if ( i==0 ) { Previous_X = Plot_X; Previous_Y = traceAry[i]; }
+		if ( fabs(traceAry[i])<Ydot*1.0e-10 ) traceAry[i]=0;	// zero adjust
+		if ( i==0 ) { Previous_X = regX; Previous_Y = traceAry[0]; }
 		if ( ( 0<i ) && ( i<128 ) ) {
-			Plot_Y=traceAry[i];
-			if ( DrawType ) {	// 1:Plot
-				PlotOn_VRAM( Plot_X, Plot_Y);
-			} else {			// 0:connect
+			PlotOn_VRAM( regX, traceAry[i]);
+			Plot_X=regX;
+			Plot_Y=regY;
+			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
 				Line( S_L_Default );
-				regX = Plot_X;
-				regY = Plot_Y;
 			}
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 		}
-		Plot_X += Xdot;
+		regX += Xdot;
 	}
 	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
@@ -1266,31 +1270,33 @@ unsigned int Graph_trace_sub(int *tracex){
 		if ( key==KEY_CTRL_AC  ) break; // AC
 		if ( key==KEY_CTRL_F6  ) break; // F6
 		if ( key==KEY_CTRL_F2  ) {
-			Zoom_sub(KEY_CTRL_F2); // F2  Zoom fact
+			key=Zoom_sub(KEY_CTRL_F2); // F2  Zoom fact
 			Graph_reDraw();
 			break;
 		}
 		if ( key==KEY_CTRL_F3 ) { // Zoom in
 			key=Zoom_sub(KEY_CTRL_F3); // F3  Zoom in
 			if ( key==KEY_CTRL_EXIT) break; //exit
-			if ( key==KEY_CTRL_EXE ) break; //exe
+//			if ( key==KEY_CTRL_EXE ) break; //exe
 			if ( key==KEY_CTRL_AC  ) break; // AC
 			if ( key==KEY_CTRL_F6  ) break; // F6
-			if ( key!=KEY_CTRL_F1  ) {
-				Graph_reDraw();
-				break;
-			}
+//			if ( key!=KEY_CTRL_F1  ) {
+//				Graph_reDraw();
+//				break;
+//			}
+			Graph_reDraw();
 		}
 		if ( key==KEY_CTRL_F4 ) { // Zoom out
 			key=Zoom_sub(KEY_CTRL_F4); // F4  Zoom out
 			if ( key==KEY_CTRL_EXIT) break; //exit
-			if ( key==KEY_CTRL_EXE ) break; //exe
+//			if ( key==KEY_CTRL_EXE ) break; //exe
 			if ( key==KEY_CTRL_AC  ) break; // AC
 			if ( key==KEY_CTRL_F6  ) break; // F6
-			if ( key!=KEY_CTRL_F1  ) {
-				Graph_reDraw();
-				break;
-			}
+//			if ( key!=KEY_CTRL_F1  ) {
+//				Graph_reDraw();
+//				break;
+//			}
+			Graph_reDraw();
 		}
 		if ( key==KEY_CHAR_3 ) { // SetViewWindow
 			SetViewWindow();
@@ -1534,6 +1540,7 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CHAR_PLUS:
 			case KEY_CHAR_MINUS:
 			case KEY_CHAR_PMINUS:
+			case KEY_CHAR_ANS:
 			case KEY_CHAR_A:
 			case KEY_CHAR_B:
 			case KEY_CHAR_C:
@@ -1884,123 +1891,29 @@ void SetVar(int select){		// ----------- Set Variable
 	unsigned int key;
 	int	cont=1;
 	int scrl=0;
-	int y;
+	int seltop=select;
+	int i,y;
 	int selectreplay=-1;
-	
-	scrl=select;
-	if ( scrl > 19 ) scrl=19;
+	int opNum=25;
+	int small=0;
 	
 	while (cont) {
 		Bdisp_AllClr_VRAM();
-
-		if ( scrl <=0 ) {
-			locate( 1, 1-scrl); Print((unsigned char*)"A=");
-			sprintG(buffer, regA, 19,LEFT_ALIGN); locate( 3, 1-scrl); Print(buffer);
-		}
-		if ( scrl <=1 ) {
-			locate( 1, 2-scrl); Print((unsigned char*)"B=");
-			sprintG(buffer, regB, 19,LEFT_ALIGN); locate( 3, 2-scrl); Print(buffer);
-		}
-		if ( scrl <=2 ) {
-			locate( 1, 3-scrl); Print((unsigned char*)"C=");
-			sprintG(buffer, regC, 19,LEFT_ALIGN); locate( 3, 3-scrl); Print(buffer);
-		}
-		if ( scrl <=3 ) {
-			locate( 1, 4-scrl); Print((unsigned char*)"D=");
-			sprintG(buffer, regD, 19,LEFT_ALIGN); locate( 3, 4-scrl); Print(buffer);
-		}
-		if ( scrl <=4 ) {
-			locate( 1, 5-scrl); Print((unsigned char*)"E=");
-			sprintG(buffer, regE, 19,LEFT_ALIGN); locate( 3, 5-scrl); Print(buffer);
-		}
-		if ( scrl <=5 ) {
-			locate( 1, 6-scrl); Print((unsigned char*)"F=");
-			sprintG(buffer, regF, 19,LEFT_ALIGN); locate( 3, 6-scrl); Print(buffer);
-		}
-		if ( scrl <=6 ) {
-			locate( 1, 7-scrl); Print((unsigned char*)"G=");
-			sprintG(buffer, regG, 19,LEFT_ALIGN); locate( 3, 7-scrl); Print(buffer);
-		}
-		if ( ( scrl >=1 ) && ( 8-scrl > 0 ) ){
-			locate( 1, 8-scrl); Print((unsigned char*)"H=");
-			sprintG(buffer, regH, 19,LEFT_ALIGN); locate( 3, 8-scrl); Print(buffer);
-		}
-		if ( ( scrl >=2 ) && ( 9-scrl > 0 ) ) {
-			locate( 1, 9-scrl); Print((unsigned char*)"I=");
-			sprintG(buffer, regI, 19,LEFT_ALIGN); locate( 3, 9-scrl); Print(buffer);
-		}
-		if ( ( scrl >=3 ) && ( 10-scrl > 0 ) ) {
-			locate( 1, 10-scrl); Print((unsigned char*)"J=");
-			sprintG(buffer, regJ, 19,LEFT_ALIGN); locate( 3, 10-scrl); Print(buffer);
-		}
-		if ( ( scrl >=4 ) && ( 11-scrl > 0 ) ) {
-			locate( 1, 11-scrl); Print((unsigned char*)"K=");
-			sprintG(buffer, regK, 19,LEFT_ALIGN); locate( 3, 11-scrl); Print(buffer);
-		}
-		if ( ( scrl >=5 ) && ( 12-scrl > 0 ) ) {
-			locate( 1, 12-scrl); Print((unsigned char*)"L=");
-			sprintG(buffer, regL, 19,LEFT_ALIGN); locate( 3, 12-scrl); Print(buffer);
-		}
-		if ( ( scrl >=6 )  && ( 13-scrl > 0 ) ) {
-			locate( 1, 13-scrl); Print((unsigned char*)"M=");
-			sprintG(buffer, regM, 19,LEFT_ALIGN); locate( 3, 13-scrl); Print(buffer);
-		}
-		if ( ( scrl >=7 ) && ( 14-scrl > 0 ) ) {
-			locate( 1, 14-scrl); Print((unsigned char*)"N=");
-			sprintG(buffer, regN, 19,LEFT_ALIGN); locate( 3, 14-scrl); Print(buffer);
-		}
-		if ( ( scrl >=8 ) && ( 15-scrl > 0 ) ) {
-			locate( 1, 15-scrl); Print((unsigned char*)"O=");
-			sprintG(buffer, regO, 19,LEFT_ALIGN); locate( 3, 15-scrl); Print(buffer);
-		}
-		if ( ( scrl >=9 )  && ( 16-scrl > 0 ) ) {
-			locate( 1, 16-scrl); Print((unsigned char*)"P=");
-			sprintG(buffer, regP, 19,LEFT_ALIGN); locate( 3, 16-scrl); Print(buffer);
-		}
-		if ( ( scrl >=10 ) && ( 17-scrl > 0 ) ) {
-			locate( 1, 17-scrl); Print((unsigned char*)"Q=");
-			sprintG(buffer, regQ, 19,LEFT_ALIGN); locate( 3, 17-scrl); Print(buffer);
-		}
-		if ( ( scrl >=11 ) && ( 18-scrl > 0 ) ) {
-			locate( 1, 18-scrl); Print((unsigned char*)"R=");
-			sprintG(buffer, regR, 19,LEFT_ALIGN); locate( 3, 18-scrl); Print(buffer);
-		}
-		if ( ( scrl >=12 ) && ( 19-scrl > 0 ) ) {
-			locate( 1, 19-scrl); Print((unsigned char*)"S=");
-			sprintG(buffer, regS, 19,LEFT_ALIGN); locate( 3, 19-scrl); Print(buffer);
-		}
-		if ( ( scrl >=13 ) && ( 20-scrl > 0 ) ) {
-			locate( 1, 20-scrl); Print((unsigned char*)"T=");
-			sprintG(buffer, regT, 19,LEFT_ALIGN); locate( 3, 20-scrl); Print(buffer);
-		}
-		if ( ( scrl >=14 ) && ( 21-scrl > 0 ) ) {
-			locate( 1, 21-scrl); Print((unsigned char*)"U=");
-			sprintG(buffer, regU, 19,LEFT_ALIGN); locate( 3, 21-scrl); Print(buffer);
-		}
-		if ( ( scrl >=15 ) && ( 22-scrl > 0 ) ) {
-			locate( 1, 22-scrl); Print((unsigned char*)"V=");
-			sprintG(buffer, regV, 19,LEFT_ALIGN); locate( 3, 22-scrl); Print(buffer);
-		}
-		if ( ( scrl >=16 ) && ( 23-scrl > 0 ) ) {
-			locate( 1, 23-scrl); Print((unsigned char*)"W=");
-			sprintG(buffer, regW, 19,LEFT_ALIGN); locate( 3, 23-scrl); Print(buffer);
-		}
-		if ( ( scrl >=17 ) && ( 24-scrl > 0 ) ) {
-			locate( 1, 24-scrl); Print((unsigned char*)"X=");
-			sprintG(buffer, regX, 19,LEFT_ALIGN); locate( 3, 24-scrl); Print(buffer);
-		}
-		if ( ( scrl >=18 ) && ( 25-scrl > 0 ) ) {
-			locate( 1, 25-scrl); Print((unsigned char*)"Y=");
-			sprintG(buffer, regY, 19,LEFT_ALIGN); locate( 3, 25-scrl); Print(buffer);
-		}
-		if ( ( scrl >=19 ) && ( 26-scrl > 0 ) ) {
-			locate( 1, 26-scrl); Print((unsigned char*)"Z=");
-			sprintG(buffer, regZ, 19,LEFT_ALIGN); locate( 3, 26-scrl); Print(buffer);
-		}
-
-		y = select-scrl;
-		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		
+		if (  select<seltop ) seltop = select;
+		if ( (select-seltop) > 6 ) seltop = select-6;
+		if ( (opNum -seltop) < 6 ) seltop = opNum -6; 
+		for ( i=0; i<7; i++ ) {
+			buffer[0]='A'+seltop+i+small;
+			buffer[1]='=';
+			buffer[2]='\0';
+			locate(1,1+i); Print(buffer);
+			sprintG(buffer, REG[seltop+i+small], 19,LEFT_ALIGN);
+			locate(3,1+i); Print(buffer);
+		}
+
+		y = (select-seltop) ;
+		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		Bdisp_PutDisp_DD();
 
 		GetKey( &key );
@@ -2010,18 +1923,17 @@ void SetVar(int select){		// ----------- Set Variable
 				cont=0;
 				break;
 		
+			case KEY_CTRL_F1:
+				small=32-small;
+				break;
 			case KEY_CTRL_UP:
-				select-=1;
-				if ( select < 0 ) {select=25; scrl=19;}
-				if ( select < scrl ) scrl-=1;
-				if ( scrl < 0 ) scrl=0;
+				select--;
+				if ( select < 0 ) select = opNum;
 				selectreplay = -1; // replay cancel
 				break;
 			case KEY_CTRL_DOWN:
-				select+=1;
-				if ( select > 25 ) {select=0; scrl=0;}
-				if ((select - scrl) > 6 ) scrl+=1;
-				if ( scrl > 19 ) scrl=19;
+				select++;
+				if ( select > opNum ) select =0;
 				selectreplay = -1; // replay cancel
 				break;
 				
@@ -2033,7 +1945,7 @@ void SetVar(int select){		// ----------- Set Variable
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
-						REG[select]= InputNumD_full( 3, y, 19, REG[select]);
+						REG[select+small]= InputNumD_full( 3, y, 19, REG[select+small]);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -2048,7 +1960,7 @@ void SetVar(int select){		// ----------- Set Variable
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
-						REG[select]= InputNumD_replay( 3, y, 19, REG[select]);
+						REG[select+small]= InputNumD_replay( 3, y, 19, REG[select+small]);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -2065,7 +1977,7 @@ void SetVar(int select){		// ----------- Set Variable
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
-						REG[select]= InputNumD_Char( 3, y, 19, REG[select], key);
+						REG[select+small]= InputNumD_Char( 3, y, 19, REG[select+small], key);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -2146,8 +2058,12 @@ void SetupG(){		// ----------- Setup
 			if (ENG) Print((unsigned char*)"/E");
 		}
 		if ( ( scrl >=3 ) && (10-scrl > 0 ) ){
-			locate( 1,10-scrl); Print((unsigned char*)"TimeDsp     :");
-			locate(14,10-scrl); Print((unsigned char*)onoff[TimeDsp]);
+			locate( 1,10-scrl); Print((unsigned char*)"Break Stop  :");
+			locate(14,10-scrl); Print((unsigned char*)onoff[BreakCheck]);
+		}
+		if ( ( scrl >=4 ) && (11-scrl > 0 ) ){
+			locate( 1,11-scrl); Print((unsigned char*)"TimeDsp     :");
+			locate(14,11-scrl); Print((unsigned char*)onoff[TimeDsp]);
 		}
 
 		y = select-scrl;
@@ -2164,7 +2080,8 @@ void SetupG(){		// ----------- Setup
 			case 3: // Axes
 			case 4: // Label
 			case 5: // Derivative
-			case 9: // TimeDsp
+			case 9: // BreakCheck
+			case 10: // TimeDsp
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
@@ -2200,15 +2117,15 @@ void SetupG(){		// ----------- Setup
 		
 			case KEY_CTRL_UP:
 				select-=1;
-				if ( select < 0 ) {select=9; scrl=select-6;}
+				if ( select < 0 ) {select=(10); scrl=select-6;}
 				if ( select < scrl ) scrl-=1;
 				if ( scrl < 0 ) scrl=0;
 				break;
 			case KEY_CTRL_DOWN:
 				select+=1;
-				if ( select > 9 ) {select=0; scrl=0;}
+				if ( select > (10) ) {select=0; scrl=0;}
 				if ((select - scrl) > 6 ) scrl+=1;
-				if ( scrl > 3 ) scrl=3;
+				if ( scrl > (10) ) scrl=(10)-6;
 				break;
 				
 			case KEY_CTRL_F1:
@@ -2242,7 +2159,10 @@ void SetupG(){		// ----------- Setup
 						CB_Round.DIGIT=SelectNum2("Fix",CB_Round.DIGIT);
 						CB_Round.MODE =Fix;
 						break;
-					case 9: // TimeDsp
+					case 9: // Break
+						BreakCheck = 1 ; // on
+						break;
+					case 10: // TimeDsp
 						TimeDsp = 1 ; // on
 						break;
 					default:
@@ -2280,7 +2200,10 @@ void SetupG(){		// ----------- Setup
 						CB_Round.DIGIT=SelectNum2("Sci",CB_Round.DIGIT);
 						CB_Round.MODE =Sci;
 						break;
-					case 9: // Angle
+					case 9: // Break
+						BreakCheck = 0 ; // off
+						break;
+					case 10: // TimeDsp
 						TimeDsp = 0 ; // off
 						break;
 					default:

@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 0.95                                       */
+/*   inp Library  ver 1.00                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -25,6 +25,8 @@
 #define  RIGHT_ALIGN  1
 
 unsigned int SelectChar() ;
+int SelectOpcode(unsigned short *oplist, int *select) ;
+
 int OpcodeLen( unsigned short opcode );
 int OpcodeStrlen(int c);
 int OpcodeStrLenBuf(unsigned char *SRC, int offset) ;
@@ -33,9 +35,7 @@ int NextOpcode( unsigned char *SRC, int *offset );
 int NextLine( unsigned char *SRC, int *offset );
 int PrevOpcode( unsigned char *SRC, int *offset );
 int PrevLine( unsigned char *SRC, int *offset );
-//int OpcodeLineN(unsigned char *buffer, int *ofst) ;
-//int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) ;
-void OpStrToStr(unsigned char *buffer, unsigned char *buffer2);
+int strlenOp( unsigned char *buffer ) ;
 
 int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
 
