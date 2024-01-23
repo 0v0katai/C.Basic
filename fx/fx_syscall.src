@@ -1,0 +1,290 @@
+; refer to siomn's fxDocumentation
+
+ .SECTION P,CODE
+ .EXPORT _RTC_GetTicks
+ .EXPORT _PutKey
+ .EXPORT _Keyboard_ClrBuffer
+ .EXPORT _CatalogDialog
+ .EXPORT _HourGlass
+ .EXPORT _Cursor_SetPosition
+ .EXPORT _Cursor_SetFlashStyle
+ .EXPORT _Cursor_SetFlashMode
+ .EXPORT _Cursor_GetSettings
+ .EXPORT _Cursor_GetFlashStyle
+ .EXPORT _Cursor_SetFlashOn
+ .EXPORT _Cursor_SetFlashOff
+
+ .EXPORT _OpcodeToStr
+ .EXPORT _MB_IsLead
+ .EXPORT _MB_ElementCount
+ .EXPORT _MB_ByteCount
+ .EXPORT _MB_strcat
+ .EXPORT _MB_strncat
+ .EXPORT _MB_strcpy
+ .EXPORT _MB_GetSecondElemPtr
+ .EXPORT _MB_GetElement
+ .EXPORT _MB_CopyToHeap
+
+ .EXPORT _MCS_CreateDirectory
+ .EXPORT _MCS_WriteItem
+ .EXPORT _MCS_DeleteDirectory
+ .EXPORT _MCS_DeleteItem
+ .EXPORT _MCS_GetState
+ .EXPORT _MCS_GetSystemDirectoryInfo
+ .EXPORT _MCS_RenameItem
+ .EXPORT _MCS_OverwriteData
+ .EXPORT _MCS_GetItemData
+ .EXPORT _MCS_RenameDirectory
+ .EXPORT _MCS_SearchDirectory
+ .EXPORT _MCS_SearchDirectoryItem
+ .EXPORT _MCS_GetFirstDataPointerByDirno
+ .EXPORT _MCS_GetDirectoryEntryByNumber
+ .EXPORT _MCS_SearchItem
+ .EXPORT _MCS_str8cpy
+ .EXPORT _MCS_GetDirectoryEntryAddress
+ .EXPORT _MCS_GetCurrentBottomAddress
+ .EXPORT _MCS_GetCapa
+ .EXPORT _MCS_GetMainMemoryStart
+
+
+ .ALIGN	4
+
+_RTC_GetTicks:
+	mov.l SYSCALL,r1
+	mov.l #H'03B,r0
+	jmp @r1
+	nop
+
+_PutKey:
+	mov.l SYSCALL,r1
+	mov.l #H'910,r0
+	jmp @r1
+	nop
+
+_Keyboard_ClrBuffer:
+	mov.l SYSCALL,r1
+	mov.l #H'241,r0
+	jmp @r1
+	nop
+
+_CatalogDialog:
+	mov.l SYSCALL,r1
+	mov.l #H'AE8,r0
+	jmp @r1
+	nop
+
+_HourGlass:
+	mov.l SYSCALL,r1
+	mov.l #H'4E6,r0
+	jmp @r1
+	nop
+
+_Cursor_SetPosition:
+	mov.l SYSCALL,r1
+	mov.l #H'138,r0
+	jmp @r1
+	nop
+
+_Cursor_SetFlashStyle:
+	mov.l SYSCALL,r1
+	mov.l #H'139,r0
+	jmp @r1
+	nop
+
+_Cursor_SetFlashMode:
+	mov.l SYSCALL,r1
+	mov.l #H'13A,r0
+	jmp @r1
+	nop
+
+_Cursor_GetSettings:
+	mov.l SYSCALL,r1
+	mov.l #H'13B,r0
+	jmp @r1
+	nop
+
+_Cursor_GetFlashStyle:
+	mov.l SYSCALL,r1
+	mov.l #H'80E,r0
+	jmp @r1
+	nop
+
+_Cursor_SetFlashOn:
+	mov.l SYSCALL,r1
+	mov.l #H'811,r0
+	jmp @r1
+	nop
+
+_Cursor_SetFlashOff:
+	mov.l SYSCALL,r1
+	mov.l #H'812,r0
+	jmp @r1
+	nop
+
+
+_OpcodeToStr:
+	mov.l SYSCALL,r1
+	mov.l #H'07FC,r0
+	jmp @r1
+	nop
+
+_MB_IsLead:
+	mov.l SYSCALL,r1
+	mov.l #H'531,r0
+	jmp @r1
+	nop
+
+_MB_ElementCount:
+	mov.l SYSCALL,r1
+	mov.l #H'533,r0
+	jmp @r1
+	nop
+
+_MB_ByteCount:
+	mov.l SYSCALL,r1
+	mov.l #H'534,r0
+	jmp @r1
+	nop
+
+_MB_strcat:
+	mov.l SYSCALL,r1
+	mov.l #H'536,r0
+	jmp @r1
+	nop
+
+_MB_strncat:
+	mov.l SYSCALL,r1
+	mov.l #H'537,r0
+	jmp @r1
+	nop
+
+_MB_strcpy:
+	mov.l SYSCALL,r1
+	mov.l #H'538,r0
+	jmp @r1
+	nop
+
+_MB_GetSecondElemPtr:
+	mov.l SYSCALL,r1
+	mov.l #H'53C,r0
+	jmp @r1
+	nop
+
+_MB_GetElement:
+	mov.l SYSCALL,r1
+	mov.l #H'53D,r0
+	jmp @r1
+	nop
+
+_MB_CopyToHeap:
+	mov.l SYSCALL,r1
+	mov.l #H'53E,r0
+	jmp @r1
+	nop
+
+
+_MCS_CreateDirectory:
+	mov.l SYSCALL,r1
+	mov.l #H'363,r0
+	jmp @r1
+	nop
+_MCS_WriteItem:
+	mov.l SYSCALL,r1
+	mov.l #H'364,r0
+	jmp @r1
+	nop
+_MCS_DeleteDirectory:
+	mov.l SYSCALL,r1
+	mov.l #H'366,r0
+	jmp @r1
+	nop
+_MCS_DeleteItem:
+	mov.l SYSCALL,r1
+	mov.l #H'367,r0
+	jmp @r1
+	nop
+_MCS_GetState:
+	mov.l SYSCALL,r1
+	mov.l #H'368,r0
+	jmp @r1
+	nop
+_MCS_GetSystemDirectoryInfo:
+	mov.l SYSCALL,r1
+	mov.l #H'369,r0
+	jmp @r1
+	nop
+_MCS_RenameItem:
+	mov.l SYSCALL,r1
+	mov.l #H'370,r0
+	jmp @r1
+	nop
+_MCS_OverwriteData:
+	mov.l SYSCALL,r1
+	mov.l #H'371,r0
+	jmp @r1
+	nop
+_MCS_GetItemData:
+	mov.l SYSCALL,r1
+	mov.l #H'372,r0
+	jmp @r1
+	nop
+_MCS_RenameDirectory:
+	mov.l SYSCALL,r1
+	mov.l #H'373,r0
+	jmp @r1
+	nop
+_MCS_SearchDirectory:
+	mov.l SYSCALL,r1
+	mov.l #H'375,r0
+	jmp @r1
+	nop
+_MCS_SearchDirectoryItem:
+	mov.l SYSCALL,r1
+	mov.l #H'376,r0
+	jmp @r1
+	nop
+_MCS_GetFirstDataPointerByDirno:
+	mov.l SYSCALL,r1
+	mov.l #H'37C,r0
+	jmp @r1
+	nop
+_MCS_GetDirectoryEntryByNumber:
+	mov.l SYSCALL,r1
+	mov.l #H'37D,r0
+	jmp @r1
+	nop
+_MCS_SearchItem:
+	mov.l SYSCALL,r1
+	mov.l #H'37E,r0
+	jmp @r1
+	nop
+_MCS_str8cpy:
+	mov.l SYSCALL,r1
+	mov.l #H'37F,r0
+	jmp @r1
+	nop
+_MCS_GetDirectoryEntryAddress:
+	mov.l SYSCALL,r1
+	mov.l #H'380,r0
+	jmp @r1
+	nop
+_MCS_GetCurrentBottomAddress:
+	mov.l SYSCALL,r1
+	mov.l #H'381,r0
+	jmp @r1
+	nop
+_MCS_GetCapa:
+	mov.l SYSCALL,r1
+	mov.l #H'383,r0
+	jmp @r1
+	nop
+_MCS_GetMainMemoryStart:
+	mov.l SYSCALL,r1
+	mov.l #H'392,r0
+	jmp @r1
+	nop
+
+
+ .ALIGN	4
+SYSCALL: .DATA.L H'80010070
+ .END
