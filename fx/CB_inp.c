@@ -552,6 +552,11 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 //			else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
 //	}
 	Cursor_SetFlashMode(1);			// cursor flashing on
+
+	if ( ( float_mode == 0 ) && ( exp_mode == 0 ) && ( alpha_mode ) ) {
+		PutKey( KEY_CTRL_SHIFT, 1 );
+		PutKey( KEY_CTRL_ALPHA, 1 );
+	}
 	
 	while (cont) {
 		multibyte=0;
@@ -695,10 +700,10 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					offsetX=OpStrLastoffset(buffer, ptrX, csrwidth ,&csrX);
 				break;
 			case KEY_CTRL_F5:
-				lowercase=1-lowercase;
+				if ( ( pallet_mode ) && ( alpha_mode ) ) lowercase=1-lowercase;
 				break;
 			case KEY_CTRL_F6:
-				key=InputChar();
+				if ( ( pallet_mode ) && ( alpha_mode ) ) key=InputChar();
 				break;
 			default:
 				break;

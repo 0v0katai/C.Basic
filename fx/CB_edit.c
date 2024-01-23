@@ -747,6 +747,7 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 		Fkey_DISPR( 0, " ? ");
 		Fkey_DISPR( 1, " \x0C ");
 		Fkey_DISPR( 2, " : ");
+		Fkey_DISPR( 3, " ' ");
 
 		Bdisp_PutDisp_DD();	
 		
@@ -773,6 +774,10 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 			case KEY_CTRL_F3:	// :
 				RestoreDisp(SAVEDISP_PAGE1);
 				return ':';
+				break;
+			case KEY_CTRL_F4:	// '
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0x27;
 				break;
 
 			case KEY_CTRL_LEFT:
@@ -1249,7 +1254,6 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_F6:
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					stat = CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
-					ProgNo=ProgEntryPtr;
 					FileBase = ProgfileAdrs[ProgNo];
 					SrcBase  = FileBase+0x56;
 					offset = stat;

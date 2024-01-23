@@ -228,7 +228,7 @@ unsigned int Explorer( int size, char *folder )
 				PopUpWin( 6 );
 				locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 				locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-				locate( 3, 4 ); Print( (unsigned char*)"            v0.33" );
+				locate( 3, 4 ); Print( (unsigned char*)"            v0.34" );
 				locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 				locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 				GetKey(&key);
@@ -537,11 +537,11 @@ int LoadProgfile( char *name ) {
 	}
 	
 	CB_PreProcess( filebase  + 0x56 );
-	ProgEntryPtr=0;						// Main program
-	ProgfileAdrs[ProgEntryPtr]= filebase;
-	ProgfileMax[ProgEntryPtr]= SrcSize( filebase ) +EditMaxfree ;
-	ProgfileEdit[ProgEntryPtr]= 0;
-	ProgEntryPtr++;
+	ProgEntryN=0;						// Main program
+	ProgfileAdrs[ProgEntryN]= filebase;
+	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
+	ProgfileEdit[ProgEntryN]= 0;
+	ProgEntryN++;
 	CB_ProgEntry( filebase + 0x56 ) ;		// sub program search
 	
 	return 0;
@@ -752,10 +752,10 @@ int NewProg(){
 	
 	filenameToBas( filebase, basname);
 
-	ProgEntryPtr=0;						// new Main program
-	ProgfileAdrs[ProgEntryPtr]= filebase;
-	ProgfileMax[ProgEntryPtr]= SrcSize( filebase ) +EditMaxfree ;
-	ProgfileEdit[ProgEntryPtr]= 1;
+	ProgEntryN=0;						// new Main program
+	ProgfileAdrs[ProgEntryN]= filebase;
+	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
+	ProgfileEdit[ProgEntryN]= 1;
 
 	return 0;
 }
@@ -797,11 +797,11 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 //					sprintf(buffer,"ptr=%08X",src);						//
 //					locate( 1, 4); Print(buffer); GetKey(&key);			//
 					if ( src !=NULL ) {
-						ProgfileAdrs[ProgEntryPtr]= src;
-						ProgfileMax[ProgEntryPtr]= SrcSize( src );
-						ProgfileEdit[ProgEntryPtr]= 0;
-						ProgEntryPtr++;
-						if ( ProgEntryPtr > ProgMax ) { ErrorNo=MemoryERR; ErrorPtr=ExecPtr; } // Memory error
+						ProgfileAdrs[ProgEntryN]= src;
+						ProgfileMax[ProgEntryN]= SrcSize( src );
+						ProgfileEdit[ProgEntryN]= 0;
+						ProgEntryN++;
+						if ( ProgEntryN > ProgMax ) { ErrorNo=MemoryERR; ErrorPtr=ExecPtr; } // Memory error
 						StackProgPtr = ExecPtr;
 						CB_PreProcess( src + 0x56 );
 						CB_ProgEntry( src + 0x56  );		//
