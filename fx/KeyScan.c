@@ -52,26 +52,26 @@ int CheckKeyRow( int row ){
         *PORTB_CTRL = 0xAAAA ^ smask;    
 // configure port M as input; port M is inactive with row < 8
         *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;  
-        delay();
+//        delay();
         *PORTB = cmask;    // set the "row to check"-bit to 0 on port B
         *PORTM = (*PORTM & 0xF0 ) | 0x0F;    // port M is inactive with row < 8
   }else{
         *PORTB_CTRL = 0xAAAA;  // configure port B as input; port B is inactive with row >= 8
 // configure port M as input, except for the "row to check"-bit, which has to be an output.
         *PORTM_CTRL = ((*PORTM_CTRL & 0xFF00 ) | 0x00AA)  ^ smask;  
-        delay();
+//        delay();
         *PORTB = 0xFF;    // port B is inactive with row >= 8 (all to 1)
         *PORTM = (*PORTM & 0xF0 ) | cmask;  // set the "row to check"-bit to 0
   };
-  delay();
+//  delay();
   result = ~(*PORTA);   // a pressed key in the row-to-check draws the corresponding bit to 0
-  delay();
+//  delay();
   *PORTB_CTRL = 0xAAAA;  
   *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
-  delay();
+//  delay();
   *PORTB_CTRL = 0x5555;
   *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x0055;
-  delay();
+//  delay();
 
   return result;
 }
@@ -158,6 +158,15 @@ int KeyCheckSHIFT() {		// [SHIFT]
 	}
 	return flag0;
 }
+int KeyCheckCHAR4() {		// [4]
+	int kcode1 = 0, kcode2 = 0, flag0 = 0;
+	short unused = 0;
+
+	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
+		if ( ( kcode1 == 7 ) && (kcode2 == 4 ) ) flag0=1; // [SHIFT] is down
+	}
+	return flag0;
+}
 
 void KeyRecover() {
 //	CB_Getkey();
@@ -166,6 +175,7 @@ void KeyRecover() {
 	else	KeyCheckAC();				//SH4
 //	while(KeyCheckEXIT());
 	KeyCheckSHIFT();
+	KeyCheckCHAR4();
 	Keyboard_ClrBuffer();
 //	Sleep(10);
 }

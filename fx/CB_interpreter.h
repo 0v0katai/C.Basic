@@ -20,13 +20,20 @@ extern unsigned char *ProgfileAdrs[ProgMax+1];
 extern int ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 extern int ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 
+#define StackGotoMax 10+26+6+26+1
+#define StackForMax 8
+#define StackWhileMax 8
+#define StackDoMax 8
+
+extern int BreakCheck;	// Break Stop on/off
+
 //------------------------------------------------------------------------------
+int GetQuotOpcode(unsigned char *SRC, unsigned char *buffer ) ;
+void GetLocateStr(unsigned char *SRC, unsigned char *buffer ) ;
 void Skip_block( unsigned char *SRC );
 
 int StoPict( int pictNo );
 void RclPict( int pictNo );
-
-void CB_ProgEntry( unsigned char *SRC ) ; //	Prog "..." into memory
 
 int CB_interpreter( unsigned char *SRC) ;
 
