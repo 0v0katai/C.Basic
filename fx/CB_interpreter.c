@@ -45,7 +45,7 @@ int BreakPtr=0;		// Basic break ptr
 double CB_CurrentValue=0;	// Ans
 char   CB_CurrentStr[128];	//
 
-int ProgEntryPtr=0;		// Basic Program ptr (for subroutin)
+int ProgEntryN=0;		// Basic Program ptr (for subroutin)
 int ProgNo=0;			// current Prog No
 unsigned char *ProgfileAdrs[ProgMax+1];
 int ProgfileMax[ProgMax+1] ;	// Max edit filesize 
@@ -679,7 +679,7 @@ void CB_end( unsigned char *SRC, int dspflag ){
 	unsigned int key=0;
 	int scrmode=ScreenMode;
 
-	if ( ProgEntryPtr ) return ; //	in sub Prog
+	if ( ProgEntryN ) return ; //	in sub Prog
 	ExecPtr++;
 	
 	KeyRecover();
@@ -1722,6 +1722,7 @@ void CB_Prog( unsigned char *SRC ) { //	Prog "..."
 	unsigned char *StackProgSRC;
 	int StackProgExecPtr;
 	int stat;
+	int ProgNo_bk;
 
 	c=SRC[ExecPtr];
 	if ( c == 0x22 ) {	// String
@@ -1730,6 +1731,7 @@ void CB_Prog( unsigned char *SRC ) { //	Prog "..."
 	}
 	StackProgSRC     = SRC;
 	StackProgExecPtr = ExecPtr;
+	ProgNo_bk = ProgNo;
 	
 	ProgNo = CB_SearchProg( buffer );
 	if ( ProgNo < 0 ) { ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
@@ -1737,14 +1739,15 @@ void CB_Prog( unsigned char *SRC ) { //	Prog "..."
 	SRC = src + 0x56 ;
 	ExecPtr=0;
 	
-	ProgEntryPtr++;
+	ProgEntryN++;
 	
 	stat=CB_interpreter_sub( SRC ) ;
 	if ( stat > 0 ) return ;	// error or break
 	
-	ProgEntryPtr--;
+	ProgEntryN--;
 	SRC     = StackProgSRC ;
 	ExecPtr = StackProgExecPtr ;
+	ProgNo  = ProgNo_bk;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1788,7 +1791,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 		if ( ErrorNo  ) return ErrorPtr;
 		if ( BreakPtr ) { CB_BreakStop(); return BreakPtr; }
 		c=SRC[ExecPtr++];
-		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryPtr )  return -1;  else  break; }
+		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryN )  return -1;  else  break; }
 		if ( c==':'  )   { c=SRC[ExecPtr++]; if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
 		switch (c) {
 //			case 0x3A:	// <:>
@@ -1846,7 +1849,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						CB_LpWhile(SRC, &StackDoPtr, StackDoAdrs, &CurrentStructCNT, CurrentStructloop );
 						break;
 					case 0x0C:	// Return
-						if ( ProgEntryPtr ) return -1 ; //	in sub Prog
+						if ( ProgEntryN ) return -1 ; //	in sub Prog
 						dspflag=0;
 						cont=0;
 						break;
@@ -2090,6 +2093,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				break;
 			case 0xED:	// Prog "..."
 				CB_Prog(SRC);
+				if ( BreakPtr ) return BreakPtr;
 				dspflag=0;
 				break;
 			case 0x27:	// ' rem
@@ -2138,7 +2142,7 @@ int CB_interpreter( unsigned char *SRC ) {
 	CB_TicksStart=RTC_GetTicks();	// 
 	random( CB_TicksStart ) ;	// rand seed
 	CB_ClrText(SRC);
-	ProgEntryPtr=0;	// subroutin clear
+	ProgEntryN=0;	// subroutin clear
 	ErrorPtr=0;
 	ErrorNo= 0;
 	BreakPtr=0;

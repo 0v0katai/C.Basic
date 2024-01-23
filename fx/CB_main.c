@@ -37,10 +37,10 @@ int LoadFileSDK( unsigned char *src ) {
 
 	for (i=0;i<size;i++) buffer[i]=src[i];
 
-	ProgfileAdrs[ProgEntryPtr]= buffer;
-	ProgfileMax[ProgEntryPtr]= SrcSize( buffer ) +EditMaxfree ;
-	ProgfileEdit[ProgEntryPtr]= 1;
-	ProgEntryPtr++;
+	ProgfileAdrs[ProgEntryN]= buffer;
+	ProgfileMax[ProgEntryN]= SrcSize( buffer ) +EditMaxfree ;
+	ProgfileEdit[ProgEntryN]= 1;
+	ProgEntryN++;
 	CB_PreProcess( buffer + 0x56 );
 
 	return 0 ;
@@ -82,7 +82,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		key =( SelectFilefree( filename ) ) ;
 		switch ( key ) {
 			case KEY_CHAR_POWROOT:				// -- test for SDK (internal sample program)
-				ProgEntryPtr=0;						// Main program
+				ProgEntryN=0;						// Main program
 				LoadFileSDK( bas_src );
 				LoadFileSDK( bas_src1 );
 				LoadFileSDK( bas_src2 );

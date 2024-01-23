@@ -14,7 +14,7 @@ extern int CB_fix;
 extern int CB_sci;
 
 #define ProgMax 10
-extern int ProgEntryPtr;		// how many subroutin
+extern int ProgEntryN;		// how many subroutin
 extern int ProgNo;			// current Prog No
 extern unsigned char *ProgfileAdrs[ProgMax+1];
 extern int ProgfileMax[ProgMax+1] ;	// Max edit filesize 
