@@ -37,6 +37,15 @@ int PrevOpcode( unsigned char *SRC, int *offset );
 int PrevLine( unsigned char *SRC, int *offset );
 int strlenOp( unsigned char *buffer ) ;
 
+int CB_MB_ElementCount( unsigned char *str);
+int CB_OpcodeToStr( unsigned short opcode, unsigned char *string );
+void CB_Print( int x, int y, const unsigned char *str);
+void CB_PrintRev( int x, int y, const unsigned char *str);
+void CB_PrintC( int x, int y, const unsigned char *c);
+void CB_PrintRevC( int x, int y, const unsigned char *c);
+void CB_PrintXYC( int px, int py,const unsigned char *c );
+void CB_PrintXY( int px, int py, const unsigned char *str);
+
 int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
 
 double Round( double num, int round_mode, int digit);

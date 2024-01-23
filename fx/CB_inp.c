@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.00                                       */
+/*   inp Library  ver 1.01                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -13,6 +13,7 @@
 #include "fx_syscall.h"
 #include "CB_inp.h"
 #include "CB_io.h"
+#include "CB_Kana.h"
 
 //----------------------------------------------------------------------------------------------
 unsigned short CharMATH[]= {
@@ -51,9 +52,25 @@ unsigned short CharABC[]= {
 	0xE741,0xE742,0xE743,0xE744,0xE745,0xE746,0xE747,0xE748,0xE749,0xE74A,0xE74B,0xE74C,0xE74D,0xE74E,0xE74F,0xE750,0xE751,0xE752,0xE753,
 	0xE754,0xE755,0xE756,0xE757,0xE758,0xE759,0xE75A,0xE761,0xE762,0xE763,0xE764,0xE765,0xE766,0xE767,0xE768,0xE769,0xE76A,0xE76B,0xE76C,
 	0xE76D,0xE76E,0xE76F,0xE770,0xE771,0xE772,0xE773,0xE774,0xE775,0xE776,0xE777,0xE778,0xE779,0xE77A,0x0000 };
+
+unsigned short CharKANA[]= {
+	0xFFA0,0xFFA1,0xFFA2,0xFFA3,0xFFA4,0xFFA5,0xFFA6,0xFFA7,0xFFA8,0xFFA9,0xFFAA,0xFFAB,0xFFAC,0xFFAD,0xFFAE,0xFFAF,0xFFB0,0xFFB1,0xFFB2,
+	0xFFB3,0xFFB4,0xFFB5,0xFFB6,0xFFB7,0xFFB8,0xFFB9,0xFFBA,0xFFBB,0xFFBC,0xFFBD,0xFFBE,0xFFBF,0xFFC0,0xFFC1,0xFFC2,0xFFC3,0xFFC4,0xFFC5,
+	0xFFC6,0xFFC7,0xFFC8,0xFFC9,0xFFCA,0xFFCB,0xFFCC,0xFFCD,0xFFCE,0xFFCF,0xFFD0,0xFFD1,0xFFD2,0xFFD3,0xFFD4,0xFFD5,0xFFD6,0xFFD7,0xFFD8,
+	0xFFD9,0xFFDA,0xFFDB,0xFFDC,0xFFDD,0xFFDE,0xFFDF,0x0000 };
 	
 unsigned short *oplist=CharMATH;
 int CharPtr=0;
+
+
+void Fkey_KDISPN(int n,char *buffer) {
+	Fkey_Clear(n);
+	CB_PrintXY(n*21+3,7*8+1,(unsigned char *)buffer);
+	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
+	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
+	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
+	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
+}
 
 unsigned int SelectChar() {
 
@@ -78,9 +95,8 @@ unsigned int SelectChar() {
 		while ( opcode ) {
 			ptr=(y-2+scrl)*19+x-2 ;
 			opcode=oplist[ ptr ];
-			OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
-			locate(x,y);
-			if ( CharPtr == ptr ) PrintRevC((unsigned char*)tmpbuf ); else PrintC((unsigned char*)tmpbuf );
+			CB_OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
+			if ( CharPtr == ptr ) CB_PrintRevC( x, y, (unsigned char*)tmpbuf ); else CB_PrintC( x, y, (unsigned char*)tmpbuf );
 			x++;
 			if (x>20) { x=2; y++; if ( y>7 ) break ; }
 //			Bdisp_PutDisp_DD();
@@ -97,6 +113,7 @@ unsigned int SelectChar() {
 		Fkey_dispN( 2, "AB\xCD");
 		Fkey_DISPN( 3, "\xE6\x40\xE6\x41\xE6\x42");
 		Fkey_dispN( 4, "ABC");
+		Fkey_KDISPN(5, "\xFF\xA7\xFF\xA8\xFF\xA9");
 		
 		cx=(CharPtr%19)+2;
 		cy=(CharPtr/19)+2-scrl;
@@ -133,6 +150,10 @@ unsigned int SelectChar() {
 				break;
 			case KEY_CTRL_F5:	// CharABC
 				oplist=CharABC;
+				CharPtr=0;
+				break;
+			case KEY_CTRL_F6:	// CharKANA
+				oplist=CharKANA;
 				CharPtr=0;
 				break;
 			case KEY_CTRL_LEFT:
@@ -178,12 +199,12 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 		if ( ((*select)-seltop) > 5 ) seltop=(*select)-5;
 		if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
 		for ( i=0; i<6; i++ ) {
-			locate(8,2+i); Print((unsigned char *)"            ");
-			OpcodeToStr( oplist[seltop+i], (unsigned char*)tmpbuf ) ; // SYSCALL
+			CB_Print(8,2+i,(unsigned char *)"            ");
+			CB_OpcodeToStr( oplist[seltop+i], (unsigned char*)tmpbuf ) ; // SYSCALL
 			tmpbuf[12]='\0'; 
 			j=0; if ( tmpbuf[0]==' ' ) j++;
 			sprintf(buffer,"%04X:%-12s",oplist[seltop+i],tmpbuf+j ) ;
-			locate(3,2+i); Print((unsigned char *)buffer);
+			CB_Print(3,2+i,(unsigned char *)buffer);
 		}
 		Bdisp_PutDisp_DD();	
 		
@@ -284,6 +305,7 @@ int OpcodeLen( unsigned short opcode ){
 		case 0xE5:		// 
 		case 0xE6:		// 
 		case 0xE7:		// 
+		case 0xFF:	// 
 			return 2 ;
 			break;
 	}
@@ -291,12 +313,12 @@ int OpcodeLen( unsigned short opcode ){
 }
 
 int OpcodeStrlen(int c) {
-	char tmpbuf[18];
+	unsigned char tmpbuf[18];
 	int len;
 	unsigned short opcode;
 		opcode = c & 0xFFFF ;
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
+		CB_OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
+		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 	return len;
 }
 
@@ -312,6 +334,7 @@ int OpcodeStrLenBuf(unsigned char *SRC, int offset) {
 				case 0xE5:		// 
 				case 0xE6:		// 
 				case 0xE7:		// 
+				case 0xFF:	// 
 						opcode= (c&0xFF)*0x100+(d&0xFF);
 						break;
 				default:
@@ -333,6 +356,7 @@ unsigned short GetOpcode( unsigned char *SRC, int ptr ){
 		case 0xE5:		// 
 		case 0xE6:		// 
 		case 0xE7:		// 
+		case 0xFF:	// 
 			return (c<<8)+(SRC[ptr+1]&0xFF);
 			break;
 	}
@@ -352,6 +376,7 @@ int NextOpcode( unsigned char *SRC, int *offset ){
 		case 0xE5:		// 
 		case 0xE6:		// 
 		case 0xE7:		// 
+		case 0xFF:	// 
 			(*offset)++;
 			return 2 ;
 			break;
@@ -390,6 +415,7 @@ int PrevOpcode( unsigned char *SRC, int *offset ){
 			case 0xE5:		// 
 			case 0xE6:		// 
 			case 0xE7:		// 
+			case 0xFF:	// 
 				return 2 ;
 				break;
 		}
@@ -432,6 +458,89 @@ int PrevLine( unsigned char *SRC, int *offset ){
 		}
 	}
 	return ofst-(*offset) ;
+}
+
+//---------------------------------------------------------------------------------------------
+int CB_OpcodeToStr( unsigned short opcode, unsigned char *string  ) {
+	if ( opcode >= 0xFF00 ) {
+		string[0]=0xFF;
+		string[1]=opcode & 0xFF;
+		string[2]='\0';
+	} else {
+		return OpcodeToStr( opcode, string ) ; // SYSCALL
+	}
+}
+
+int CB_MB_ElementCount( unsigned char *str ) {
+	int ptr=0,len=0;
+	unsigned int c;
+	while ( 1 ) {
+		c=str[ptr++];
+		if (c==0x00) break;
+		else 
+		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) {
+			ptr++; }
+		len++;
+	}
+	return len;
+}
+
+void CB_PrintC( int x, int y,const unsigned char *c ){
+	if ( *c == 0xFF ) {
+		*c++;
+		KPrintChar( x*6-6, y*8-8, *c );
+	} else {
+		locate (x,y);
+		PrintC( c );
+	}
+}
+void CB_PrintRevC( int x, int y,const unsigned char *c ){
+	if ( *c == 0xFF ) {
+		*c++;
+		KPrintRevChar( x*6-6, y*8-8, *c );
+	} else {
+		locate (x,y);
+		PrintRevC( c );
+	}
+}
+void CB_Print( int x, int y, const unsigned char *str){
+	unsigned int c=*str;
+	while ( c ) {
+		c=*str;
+		CB_PrintC( x, y, str++ );
+		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) str++;
+		x++;
+		if ( x>21 ) break;
+	}
+}
+void CB_PrintRev( int x, int y, const unsigned char *str){
+	unsigned int c=*str;
+	while ( c ) {
+		c=*str;
+		CB_PrintRevC( x, y, str++ );
+		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) str++;
+		x++;
+		if ( x>21 ) break;
+	}
+}
+
+void CB_PrintXYC( int px, int py,const unsigned char *c ){
+	if ( *c == 0xFF ) {
+		*c++;
+		KPrintChar( px, py, *c );
+	} else {
+		PrintXY( px, py, c ,0);
+	}
+}
+void CB_PrintXY( int px, int py, const unsigned char *str){
+	unsigned int c=*str;
+	while ( c ) {
+		c=*str;
+		CB_PrintXYC( px, py, str++ );
+		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) str++;
+		px+=6;
+		if ( px>127 ) break;
+	}
 }
 
 //----------------------------------------------------------------------------------------------
@@ -483,7 +592,7 @@ void DeleteOpcode1( unsigned char *buffer, int Maxstrlen, int *ptr){
 
 //----------------------------------------------------------------------------------------------
 int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char SPC) {
-	char tmpbuf[18];
+	unsigned char tmpbuf[18];
 	char spcbuf[2];
 	int i,len,xmax=x+width;
 	unsigned short opcode=1;
@@ -493,24 +602,24 @@ int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int pt
 		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
 		ofst += OpcodeLen( opcode );
-		OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
-		len = MB_ElementCount( tmpbuf ) ;				// SYSCALL
+		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
+		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
 		if ( x+len > xmax ) break;
 		while ( i < len ) {
 			if ( x < xmax ) {
-				locate(x,y); x++ ;
-				if ( rev_mode ) PrintRevC( (unsigned char*)(tmpbuf+i) ) ;
-					else        PrintC(    (unsigned char*)(tmpbuf+i) ) ;
+				if ( rev_mode ) CB_PrintRevC( x,y, (unsigned char*)(tmpbuf+i) ) ;
+					else        CB_PrintC(    x,y, (unsigned char*)(tmpbuf+i) ) ;
+				x++ ;
 			}
 			i++ ;
 		}
 	}
 	spcbuf[0]=SPC;
 	while ( x < xmax ) {
-				locate(x,y); x++;
-				if ( rev_mode ) PrintRevC( (unsigned char*)spcbuf ) ;
-					else        PrintC(    (unsigned char*)spcbuf ) ;
+				if ( rev_mode ) CB_PrintRevC( x,y, (unsigned char*)spcbuf ) ;
+					else        CB_PrintC(    x,y, (unsigned char*)spcbuf ) ;
+				x++ ;
 	}
 	return x;
 }
@@ -630,6 +739,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				if ( ( pallet_mode ) && ( alpha_mode ) ) lowercase=1-lowercase;
 				break;
 			case KEY_CTRL_F6:
+				Cursor_SetFlashMode(0); 		// cursor flashing off
 				if ( ( pallet_mode ) && ( alpha_mode ) ) key=SelectChar();
 				break;
 			default:
@@ -653,6 +763,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				case 0xE5:		// 
 				case 0xE6:		// 
 				case 0xE7:		// 
+				case 0xFF:	// 
 					if ( CursorStyle < 0x6 ) {		// insert mode
 						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
 					} else {					// overwrite mode
