@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series     v0.10
+ Casio Basic RUNTIME library for fx-9860G series     v0.20
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -39,8 +39,12 @@ int S_L_Style   = S_L_Normal;
 int tmp_Style   = S_L_Normal;
 int Angle       = 1;	// 0:deg   1:rad  2:grad
 
-double Previous_X=1e308 ;	// ViewWindow Previous X
-double Previous_Y=1e308 ;	// ViewWindow Previous Y
+double Previous_X=1e308 ;	// Plot Previous X
+double Previous_Y=1e308 ;	// Plot Previous Y
+int    Previous_PX=-1   ;	// Plot Previous PX
+int    Previous_PY=-1   ;	// Plot Previous PY
+double Plot_X    =1e308 ;	// Plot Current X
+double Plot_Y    =1e308 ;	// Plot Current Y
 
 int TimeDsp=0;		// Execution Time Display  0:off 1:on
 //-----------------------------------------------------------------------------
@@ -230,8 +234,8 @@ void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax
 	
 	GraphAxesGrid();
 
-	Previous_X=1e308; Previous_Y=Previous_X;	// ViewWindow Previous XY init
-	regX =fabs(Xmin+Xmax)/2; regY =fabs(Ymin+Ymax)/2;	// ViewWindow Current  XY
+	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
+//	regX =fabs(Xmin+Xmax)/2; regY =fabs(Ymin+Ymax)/2;	// ViewWindow Current  XY
 }
 
 
@@ -379,6 +383,12 @@ void LinesubSetPoint(int px, int py) {
 	if ( ( px <   1 ) || ( px > 127 ) || ( py <   1 ) || ( py >  63 ) ) return;
 	Bdisp_SetPoint_VRAM(px, py, 1);
 }
+void LinesubSetPointThick(int px, int py) {
+		LinesubSetPoint(px  , py  );
+		LinesubSetPoint(px  , py-1);
+		LinesubSetPoint(px-1, py  );
+		LinesubSetPoint(px-1, py-1);
+}
 
 void Linesub(int px1, int py1, int px2, int py2, int style) {
 	int i, j;
@@ -523,20 +533,14 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 			if (wx==0) {	// vertical line
 					x=px1; y=py1;
 					while( wy>=0 ) {
-						LinesubSetPoint(x  , y  );
-						LinesubSetPoint(x  , y-1);
-						LinesubSetPoint(x-1, y  );
-						LinesubSetPoint(x-1, y-1);
+						LinesubSetPointThick(x  , y  );
 						wy--; y+=dy;
 					}
 			}
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
-						LinesubSetPoint(x  , y  );
-						LinesubSetPoint(x  , y-1);
-						LinesubSetPoint(x-1, y  );
-						LinesubSetPoint(x-1, y-1);
+						LinesubSetPointThick(x  , y  );
 						wx--; x+=dx;
 					}
 			}
@@ -545,10 +549,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dy>0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
-						LinesubSetPoint(x  , y  );
-						LinesubSetPoint(x  , y-1);
-						LinesubSetPoint(x-1, y  );
-						LinesubSetPoint(x-1, y-1);
+						LinesubSetPointThick(x  , y  );
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y++; }
 					}
@@ -556,10 +557,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dy<0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
-						LinesubSetPoint(x  , y  );
-						LinesubSetPoint(x  , y-1);
-						LinesubSetPoint(x-1, y  );
-						LinesubSetPoint(x-1, y-1);
+						LinesubSetPointThick(x  , y  );
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y--; }
 					}
@@ -569,10 +567,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dx>0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
-						LinesubSetPoint(x  , y  );
-						LinesubSetPoint(x  , y-1);
-						LinesubSetPoint(x-1, y  );
-						LinesubSetPoint(x-1, y-1);
+						LinesubSetPointThick(x  , y  );
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x++; }
 					}
@@ -580,10 +575,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dx<0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
-						LinesubSetPoint(x  , y  );
-						LinesubSetPoint(x  , y-1);
-						LinesubSetPoint(x-1, y  );
-						LinesubSetPoint(x-1, y-1);
+						LinesubSetPointThick(x  , y  );
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x--; }
 					}
@@ -596,10 +588,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1;
 					while( wy>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPoint(x  , y  );
-							LinesubSetPoint(x  , y-1);
-							LinesubSetPoint(x-1, y  );
-							LinesubSetPoint(x-1, y-1);
+							LinesubSetPointThick(x  , y  );
 						}
 						wy--; y+=dy;
 						Styleflag++; if (Styleflag>2) Styleflag=0;
@@ -609,10 +598,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1;
 					while( wx>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPoint(x  , y  );
-							LinesubSetPoint(x  , y-1);
-							LinesubSetPoint(x-1, y  );
-							LinesubSetPoint(x-1, y-1);
+							LinesubSetPointThick(x  , y  );
 						}
 						wx--; x+=dx;
 						Styleflag++; if (Styleflag>2) Styleflag=0;
@@ -624,10 +610,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPoint(x  , y  );
-							LinesubSetPoint(x  , y-1);
-							LinesubSetPoint(x-1, y  );
-							LinesubSetPoint(x-1, y-1);
+							LinesubSetPointThick(x  , y  );
 						}
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y++; }
@@ -638,10 +621,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPoint(x  , y  );
-							LinesubSetPoint(x  , y-1);
-							LinesubSetPoint(x-1, y  );
-							LinesubSetPoint(x-1, y-1);
+							LinesubSetPointThick(x  , y  );
 						}
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y--; }
@@ -654,10 +634,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPoint(x  , y  );
-							LinesubSetPoint(x  , y-1);
-							LinesubSetPoint(x-1, y  );
-							LinesubSetPoint(x-1, y-1);
+							LinesubSetPointThick(x  , y  );
 						}
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x++; }
@@ -668,10 +645,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPoint(x  , y  );
-							LinesubSetPoint(x  , y-1);
-							LinesubSetPoint(x-1, y  );
-							LinesubSetPoint(x-1, y-1);
+							LinesubSetPointThick(x  , y  );
 						}
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x--; }
@@ -692,17 +666,19 @@ void Line(int style) {
 	int px1,px2,py1,py2;
 	int i,j;
 	if ( Previous_X > 1e307 ) { 
-		 Previous_X = regX;
-		 Previous_Y = regY;
+		 Previous_X = Plot_X;
+		 Previous_Y = Plot_Y;
 		return;
 	}
 	i = VWtoPXY( Previous_X, Previous_Y, &px1, &py1) ;
-	j = VWtoPXY(       regX,       regY, &px2, &py2) ;
-	if ( i==RangeERR ) return ;
-	if ( j==RangeERR ) return ;
+	j = VWtoPXY(     Plot_X,      Plot_Y, &px2, &py2) ;
+	Previous_X = Plot_X;
+	Previous_Y = Plot_Y;
+	Previous_PX = px2;
+	Previous_PY = py2;
+	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
+	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
 	Linesub( px1, py1, px2, py2, style);
-	Previous_X = regX;
-	Previous_Y = regY;
 }
 
 void F_Line(double x1, double y1, double x2, double y2, int style) {
@@ -710,37 +686,57 @@ void F_Line(double x1, double y1, double x2, double y2, int style) {
 	int i,j;
 	i = VWtoPXY( x1, y1, &px1, &py1) ;
 	j = VWtoPXY( x2, y2, &px2, &py2) ;
-	if ( i==RangeERR ) return ;
-	if ( j==RangeERR ) return ;
+	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
+	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
 	Linesub( px2, py2, px1, py1 ,style);
 }
 
 void Vertical(double x, int style) {
 	int px,py;
-	if ( VWtoPXY( x, 0, &px, &py) ) return;
+	VWtoPXY( x, 0, &px, &py);
+	if ( px<  0 ) return;
+	if ( px>127 ) return;
 	Linesub( px, 1, px, 63, style);
 }
 void Horizontal(double y, int style) {
 	int px,py;
-	if ( VWtoPXY( 0, y, &px, &py) ) return;
+	VWtoPXY( 0, y, &px, &py);
+	if ( py<  0 ) return;
+	if ( py> 63 ) return;
 	Linesub( 1, py, 127, py, style);
 }
 
 void Circle(double x, double y, double r, int style ) {
-	double	angle, x0,y0,x1,y1;
-	int	i,n=floor(r*4);
-	Previous_X = r+x;
-	Previous_Y = 0+y;
+	double	angle, k, x0,y0,x1,y1;
+	int px,py;
+	int	i,n;
+	if (style==S_L_Normal) { k=8; if ( ( r/Xdot )  > 20 ) k=6; }
+	if (style==S_L_Dot )   { k=4; if ( ( r/Xdot )  > 6  ) k=3; }
+	if (style==S_L_Thick)  k=4;
+	if (style==S_L_Broken) k=2;
+	n=fabs(floor(r*k/Xdot));
+	Plot_X = r+x;
+	Plot_Y = 0+y;
 	for(i=1;i<=n;i++){
 		angle=PI*2*i/n;
-		regX=cos(angle)*r+x;
-		regY=sin(angle)*r+y;
-		if ( DrawType ) {	// 1:Plot
-			PlotOn_VRAM( regX, regY);
-		} else {			// 0:connect
-			Line( style );
+		Plot_X=cos(angle)*r+x;
+		Plot_Y=sin(angle)*r+y;
+		if ( VWtoPXY( Plot_X, Plot_Y, &px, &py) ==0 ) {
+			switch ( style ) {
+				case S_L_Normal:
+				case S_L_Dot:
+					LinesubSetPoint(px, py);
+					break;
+				case S_L_Thick:
+				case S_L_Broken:
+					LinesubSetPointThick(px, py);
+					break;
+			}
 		}
+		Bdisp_PutDisp_DD_DrawBusy_skip();
 	}
+	regX=Plot_X;
+	regY=Plot_Y;
 }
 
 //------------------------------------------------------------------------------
@@ -813,12 +809,13 @@ void DrawGCSR( int x, int y )
 }
 
 //--------------------------------------------------------------
-unsigned int Plot(double x, double y)
+unsigned int Plot()
 {
 	int cont=1;
 	char buffer[21];
 	unsigned int key;
 	int retcode=0;
+	int px1,py1;
 	
 	long FirstCount;	// pointer to repeat time of first repeat
 	long NextCount; 	// pointer to repeat time of second repeat
@@ -828,8 +825,7 @@ unsigned int Plot(double x, double y)
 //	while( KeyCheckAC() );
 	KeyRecover();
 	
-	regX=x; regY=y;
-	if ( VWtoPXY( regX, regY, &GCursorX, &GCursorY) ) return;	// VW(X,Y) to  graphic cursor XY
+	if ( VWtoPXY( Plot_X, Plot_Y, &GCursorX, &GCursorY) ) return;	// VW(X,Y) to  graphic cursor XY
 	
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(FirstCount,2);				// set graphic cursor repeat time  (count * 25ms)
@@ -839,21 +835,21 @@ unsigned int Plot(double x, double y)
 		GCursorSetFlashMode(1);	// graphic cursor flashing on
 		RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
-		PXYtoVW(GCursorX, GCursorY, &regX, &regY);	// graphic cursor XY  to  VW(X,Y)
+		PXYtoVW(GCursorX, GCursorY, &Plot_X, &Plot_Y);	// graphic cursor XY  to  VW(X,Y)
 		if ( Coord ) {
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintG(buffer, regX, 13,LEFT_ALIGN); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGR(buffer, Plot_X, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
-			sprintG(buffer, regY, 13,LEFT_ALIGN); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGR(buffer, Plot_Y, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 //		Bdisp_PutDisp_DD();
 
 		GetKey(&key);
 		switch (key) {
+			case KEY_CTRL_EXE:
 			case KEY_CTRL_AC:
 			case KEY_CTRL_EXIT:
-			case KEY_CTRL_EXE:
 				cont=0;
 				break;
 			case KEY_CTRL_F3:	// setViewWindow
@@ -906,7 +902,9 @@ unsigned int Plot(double x, double y)
 	GCursorSetFlashMode(0);	// graphic cursor flashing off
 	Bkey_Set_RepeatTime(FirstCount,NextCount);	// restore repeat time
 	RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
-	if ( retcode==0 ) Bdisp_SetPoint_VRAM( GCursorX, GCursorY, 1);
+//	if ( retcode==0 ) Bdisp_SetPoint_VRAM( GCursorX, GCursorY, 1);
+	regX = Plot_X ;
+	regY = Plot_Y ;
 	return key ;
 }
 
@@ -951,9 +949,9 @@ unsigned int ZoomXY()
 		PXYtoVW(GCursorX, GCursorY, &regX, &regY);	// graphic cursor XY  to  VW(X,Y)
 		if ( Coord ) {
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintG(buffer, regX, 13,LEFT_ALIGN); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGR(buffer, regX, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
-			sprintG(buffer, regY, 13,LEFT_ALIGN); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGR(buffer, regY, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 		Bdisp_PutDisp_DD();
@@ -1057,14 +1055,14 @@ unsigned int Trace(int *index )
 			sprintf(buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
 			sprintf(buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintG(buffer, regX,             13,LEFT_ALIGN); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGR(buffer, regX,             13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
-			sprintG(buffer,traceAry[GCursorX],13,LEFT_ALIGN); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGR(buffer,traceAry[GCursorX],13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
 		if ( Derivative ) {
 			PrintMini( 64,50,(unsigned char*)"dY/dX=",MINI_OVER);
 			dydx = (traceAry[GCursorX+1]-traceAry[GCursorX-1]) / (Xdot*2);
-			sprintG(buffer, dydx, 6,LEFT_ALIGN); PrintMini( 88,50,(unsigned char*)buffer,MINI_OVER);
+			sprintGR(buffer, dydx, 6,LEFT_ALIGN, Norm,5); PrintMini( 88,50,(unsigned char*)buffer,MINI_OVER);
 		}
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 		Bdisp_PutDisp_DD();
@@ -1143,25 +1141,34 @@ double Graph_Eval( unsigned char *expbuf) {		// Eval Graph
 void Graph_Draw(){
 	int i;
 	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	regX=Xmin-Xdot;
+	regX   = Xmin-Xdot;
+	Plot_X = regX;
 	for ( i=0; i<=128; i++) {
 		//-----------------------------
 		traceAry[i]=Graph_Eval(GraphY);		// function
 		if ( ErrorPtr ) return ;
 		//-----------------------------
 		if ( fabs(traceAry[i])<1.0e-13 ) traceAry[i]=0;	// zero adjust
+		if ( i==0 ) { Previous_X = Plot_X; Previous_Y = traceAry[i]; }
 		if ( ( 0<i ) && ( i<128 ) ) {
-			PlotOn_VRAM( regX, traceAry[i] );
-			if ( DrawType == 0 ) Line(S_L_Default);
+			Plot_Y=traceAry[i];
+			if ( DrawType ) {	// 1:Plot
+				PlotOn_VRAM( Plot_X, Plot_Y);
+			} else {			// 0:connect
+				Line( S_L_Default );
+				regX = Plot_X;
+				regY = Plot_Y;
+			}
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 		}
-		regX+=Xdot;
+		Plot_X += Xdot;
 	}
 	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 void Graph_reDraw(){
 	int i;
 	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
 	Graph_Draw();
 }
 //--------------------------------------------------------------
@@ -1234,8 +1241,12 @@ unsigned int Graph_main(){
 	int cont=1;
 	int tx=64;	// trace center 
 	
-	Previous_X=1e308; Previous_Y=Previous_X;	// ViewWindow Previous XY init
 	Graph_Draw();
+	
+//	while( KeyCheckEXE() );
+//	while( KeyCheckEXIT() );
+//	while( KeyCheckAC() );
+	KeyRecover();
 
 	while (cont) {
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
@@ -1980,12 +1991,29 @@ void SetVar(int select){		// ----------- Set Variable
 }
 
 //-----------------------------------------------------------------------------
+int SelectNum2( char*msg, int n ) {		// 
+	unsigned int key;
+	SaveDisp(SAVEDISP_PAGE1);
+	PopUpWin(3);
+	locate( 3,3); Print((unsigned char *)"Select Number");
+	locate( 6,5); Print((unsigned char *)msg);
+	locate( 9,5); Print((unsigned char *)"[0~15]:");
+	while (1) {
+		n=InputNumD(17, 5, 2, 0, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+ 		if ( (0<=n)&&(n<=15) ) break;
+ 		n=0;
+ 	}
 
-void SetupG(){		// ----------- Setup graphic
+	RestoreDisp(SAVEDISP_PAGE1);
+	return n ; // ok
+}
+
+void SetupG(){		// ----------- Setup 
     char *onoff[]  ={"off","on"};
     char *draw[]   ={"Connect","Plot"};
     char *style[]  ={"Normal","Thick","Broken","Dot"};
     char *degrad[]  ={"Deg","Rad","Grad"};
+    char *display[]  ={"Nrm","Fix","Sci"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
@@ -2028,8 +2056,15 @@ void SetupG(){		// ----------- Setup graphic
 			locate(14, 8-scrl); Print((unsigned char*)degrad[Angle]);
 		}
 		if ( ( scrl >=2 ) && ( 9-scrl > 0 ) ){
-			locate( 1, 9-scrl); Print((unsigned char*)"TimeDsp     :");
-			locate(14, 9-scrl); Print((unsigned char*)onoff[TimeDsp]);
+			locate( 1, 9-scrl); Print((unsigned char*)"Display     :");
+			locate(14, 9-scrl); Print((unsigned char*)display[CB_Round.MODE]);
+			buffer[0]='\0';
+			sprintf(buffer,"%d",CB_Round.DIGIT);
+			locate(17, 9-scrl); Print((unsigned char*)buffer);
+		}
+		if ( ( scrl >=3 ) && (10-scrl > 0 ) ){
+			locate( 1,10-scrl); Print((unsigned char*)"TimeDsp     :");
+			locate(14,10-scrl); Print((unsigned char*)onoff[TimeDsp]);
 		}
 
 		y = select-scrl;
@@ -2046,7 +2081,7 @@ void SetupG(){		// ----------- Setup graphic
 			case 3: // Axes
 			case 4: // Label
 			case 5: // Derivative
-			case 8: // TimeDsp
+			case 9: // TimeDsp
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
@@ -2061,10 +2096,15 @@ void SetupG(){		// ----------- Setup graphic
 				Fkey_dispN( 2, "Grad");
 				Fkey_Clear( 3 );
 				break;
+			case 8: // Display
+				Fkey_dispR( 0, "Fix ");
+				Fkey_dispR( 1, "Sci ");
+				Fkey_dispR( 2, "Nrm ");
+				Fkey_Clear( 3 );
+				break;
 			default:
 				break;
 		}
-			
 		
 		Bdisp_PutDisp_DD();
 
@@ -2077,15 +2117,15 @@ void SetupG(){		// ----------- Setup graphic
 		
 			case KEY_CTRL_UP:
 				select-=1;
-				if ( select < 0 ) {select=8; scrl=2;}
+				if ( select < 0 ) {select=9; scrl=select-6;}
 				if ( select < scrl ) scrl-=1;
 				if ( scrl < 0 ) scrl=0;
 				break;
 			case KEY_CTRL_DOWN:
 				select+=1;
-				if ( select > 8 ) {select=0; scrl=0;}
+				if ( select > 9 ) {select=0; scrl=0;}
 				if ((select - scrl) > 6 ) scrl+=1;
-				if ( scrl > 2 ) scrl=2;
+				if ( scrl > 3 ) scrl=3;
 				break;
 				
 			case KEY_CTRL_F1:
@@ -2115,7 +2155,11 @@ void SetupG(){		// ----------- Setup graphic
 					case 7: // Angle
 						Angle = 0 ; // Deg
 						break;
-					case 8: // TimeDsp
+					case 8: // Display
+						CB_Round.DIGIT=SelectNum2("Fix",CB_Round.DIGIT);
+						CB_Round.MODE =Fix;
+						break;
+					case 9: // TimeDsp
 						TimeDsp = 1 ; // on
 						break;
 					default:
@@ -2149,7 +2193,11 @@ void SetupG(){		// ----------- Setup graphic
 					case 7: // Angle
 						Angle = 1 ; // Rad
 						break;
-					case 8: // Angle
+					case 8: // Display
+						CB_Round.DIGIT=SelectNum2("Sci",CB_Round.DIGIT);
+						CB_Round.MODE =Sci;
+						break;
+					case 9: // Angle
 						TimeDsp = 0 ; // off
 						break;
 					default:
@@ -2164,6 +2212,10 @@ void SetupG(){		// ----------- Setup graphic
 						break;
 					case 7: // Angle
 						Angle = 2 ; // Grad
+						break;
+					case 8: // Display
+						CB_Round.DIGIT=SelectNum2("Nrm",CB_Round.DIGIT);
+						CB_Round.MODE =Norm;
 						break;
 					default:
 						break;

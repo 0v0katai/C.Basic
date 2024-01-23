@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.10
+ Casio Basic interpreter for fx-9860G series    v0.20
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -80,6 +80,7 @@ void CB_SelectGraphDD() {
 	Bdisp_PutDisp_DD();
 }
 
+
 void Scrl_Y(){
 	unsigned char pDATA[1024];
 	DISPGRAPH Gscrl;
@@ -123,10 +124,13 @@ int CB_GotoEndPtr( unsigned char *SRC ) {		// goto Program End Ptr
 //----------------------------------------------------------------------------------------------
 
 void CB_Cls( unsigned char *SRC ){
-	CursorX=1;
-	CursorY=1;
-	Bdisp_AllClr_VRAM();
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+//	Bdisp_AllClr_VRAM();
+//	GraphAxesGrid();
+	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
+	CB_SelectTextVRAM();	// Select Text Screen
+//	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
 }
 void CB_ClrText( unsigned char *SRC ){
 	CB_SelectTextVRAM();	// Select Text Screen
@@ -138,8 +142,7 @@ void CB_ClrText( unsigned char *SRC ){
 void CB_ClrGraph( unsigned char *SRC ){
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	SetVeiwWindowInit();
-	Bdisp_AllClr_VRAM();
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	CB_Cls(SRC);
 }
 
 void CB_Deg(){
@@ -153,6 +156,11 @@ void CB_Grad(){
 }
 
 int RangeErrorCK( unsigned char *SRC ) {
+	if ( UseGraphic == 0 ) {
+		if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
+		Bdisp_AllClr_VRAM();
+		GraphAxesGrid();
+	}
 	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { ErrorNo=RangeERR; PrevOpcode( SRC, &ExecPtr ); ErrorPtr=ExecPtr; return ErrorNo; }	// Range error
 	return 0;
 }
@@ -173,6 +181,32 @@ double CB_Eval( unsigned char *expbuf ) {		// Eval Basic
 }
 
 //-----------------------------------------------------------------------------
+void CB_Fix( unsigned char *SRC ){
+	int tmp;
+	tmp=CB_Eval( SRC+ExecPtr );
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	CB_Round.MODE = Fix ;
+	CB_Round.DIGIT= tmp ;
+}
+void CB_Sci( unsigned char *SRC ){
+	int tmp;
+	tmp=CB_Eval( SRC+ExecPtr );
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	CB_Round.MODE = Sci ;
+	CB_Round.DIGIT= tmp ;
+}
+void CB_Nomal( unsigned char *SRC ){
+	int tmp;
+	tmp=CB_Eval( SRC+ExecPtr );
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	CB_Round.MODE = Norm ;
+	CB_Round.DIGIT= tmp ;
+}
+void CB_Rnd(){
+	CB_CurrentValue = Round( CB_CurrentValue, CB_Round.MODE, CB_Round.DIGIT );
+}
+
+//-----------------------------------------------------------------------------
 int MatOprand( unsigned char *SRC, int *reg){ 
 	int dimA,dimB;
 	unsigned int c=SRC[ExecPtr];
@@ -181,11 +215,11 @@ int MatOprand( unsigned char *SRC, int *reg){
 		ExecPtr++ ;
 		if ( SRC[ExecPtr] != '[' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 		ExecPtr++ ;
-		dimA=floor(CB_Eval( SRC+ExecPtr ));
+		dimA=(CB_Eval( SRC+ExecPtr ));
 		if ( MatArySizeA[(*reg)] < dimA ) { ErrorNo=DimensionERR; ErrorPtr=ExecPtr; return; }	// Dimension error
 		if ( SRC[ExecPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 		ExecPtr++ ;
-		dimB=floor(CB_Eval( SRC+ExecPtr ));
+		dimB=(CB_Eval( SRC+ExecPtr ));
 		if ( MatArySizeB[(*reg)] < dimB ) { ErrorNo=DimensionERR; ErrorPtr=ExecPtr; return; }	// Dimension error
 		if ( SRC[ExecPtr] != ']' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 		ExecPtr++ ;
@@ -441,7 +475,7 @@ void PrintDone() {
 	locate( CursorX, CursorY); Print((unsigned char*)"                 Done");
 	CursorX=21;
 }
-int  CB_Done(){
+void CB_Done(){
 	if ( ScreenMode == 1 ) {	// Graphic mode
 		CB_SelectTextVRAM();	// Select Text Screen
 		PrintDone();
@@ -451,10 +485,32 @@ int  CB_Done(){
 	}
 }
 
+void PlotXYtoPrevPXY() {
+//		Previous_X=Plot_X;
+//		Previous_Y=Plot_Y;
+		VWtoPXY( Plot_X, Plot_Y, &Previous_PX, &Previous_PY );
+}
+void PlotPreviousPXY() {
+	if ( Previous_PX > 0 ) LinesubSetPoint(Previous_PX, Previous_PY);
+	PlotXYtoPrevPXY();
+}
+void PlotCurrentXY(){
+	PlotXYtoPrevPXY();
+	if ( ScreenMode == 0 ) {	//Text mode
+		CB_SelectGraphVRAM();	// Select Graphic Screen
+		PlotPreviousPXY();
+		CB_SelectTextVRAM();	// Select Text Screen
+	} else {
+		PlotPreviousPXY();
+	}
+}
+
 unsigned int GWait( int exit_cancel ) {
 	unsigned int key=0,key2=0;
 	int cont=1;
-	if (ScreenMode) if ( (UseGraphic==1)||(UseGraphic==2) ) { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; CB_SelectTextVRAM(); }
+	if (ScreenMode) {
+		if ( (UseGraphic==1)||(UseGraphic==2) ) { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; CB_SelectTextVRAM(); }
+	}
 	while (cont) {
 		if (key==0) GetKey(&key);
 		switch ( key ) {
@@ -468,13 +524,17 @@ unsigned int GWait( int exit_cancel ) {
 				if (exit_cancel==0) { 
 					if ( ScreenMode==0 ) cont=0;
 					else { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; }	// G<>T
-				} else cont=0;
+				} else { cont=0;
+					if ( UseGraphic == 1 ) PlotXYtoPrevPXY();
+				}
 				break;
 			case KEY_CTRL_EXIT:
 				if (exit_cancel==0) { 
 					if ( ScreenMode==0 ) cont =0 ;
 					else { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; }	// G<>T
-				} else { key=0; key2=0; }
+				} else { key=0; key2=0;
+					if ( UseGraphic == 1 ) PlotXYtoPrevPXY();
+				}
 				break;
 			case KEY_CTRL_SHIFT:
 				SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
@@ -505,7 +565,14 @@ unsigned int GWait( int exit_cancel ) {
 							if (ScreenMode) CB_SelectTextVRAM();	// Select Text Screen
 								else		CB_SelectGraphVRAM();	// Select Graphic Screen
 							if (ScreenMode) {
-								if (UseGraphic==1) key=Plot(regX,regY);
+								if (UseGraphic==1) {
+									key=Plot();	// Plot
+									if ( key==KEY_CTRL_EXE ) {
+//										if (exit_cancel==0) { //  end program
+											PlotCurrentXY(); // current plot
+//										}
+									}
+								}
 								if (UseGraphic==2) key=Graph_main();
 								if ( key==KEY_CTRL_AC   ) { if (exit_cancel) cont=0; 
 																else { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; } }
@@ -528,7 +595,6 @@ unsigned int GWait( int exit_cancel ) {
 	return key;
 }
 
-
 int CB_Disps( unsigned char *SRC ,int dspflag){
 	char buffer[32];
 	unsigned int c;
@@ -536,16 +602,18 @@ int CB_Disps( unsigned char *SRC ,int dspflag){
 	int scrmode;
 	
 	KeyRecover();
+	scrmode=ScreenMode;
 	if ( dspflag == 2 ) { CB_SelectTextVRAM();	// Select Text Screen
 		if ( CursorX >1 ) Scrl_Y();
-		sprintG(buffer, CB_CurrentValue, 22-CursorX,RIGHT_ALIGN);
+		sprintGR(buffer, CB_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
 		CursorX=21;
-	}
-	scrmode=ScreenMode;
-	if (scrmode) { CB_SelectTextVRAM();	// Select Text Screen
+		scrmode=ScreenMode;
+	} else {
+		if (scrmode) CB_SelectTextVRAM();	// Select Text Screen
 		PrintDone();
 	}
+	if (scrmode) CB_SelectTextVRAM();	// Select Text Screen
 	if ( CursorX >1 ) Scrl_Y();
 	locate( CursorX, CursorY); Print((unsigned char*)"             - Disp -");
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -563,7 +631,8 @@ int CB_Disps( unsigned char *SRC ,int dspflag){
 	CursorX=1;
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
 
-	if ( UseGraphic ) UseGraphic=UseGraphic | 0x100;
+	if ( UseGraphic == 1 ) PlotXYtoPrevPXY(); // Plot
+	if ( UseGraphic ) UseGraphic=UseGraphic | 0x100;  // 
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0;
 }
@@ -581,7 +650,7 @@ void CB_end( unsigned char *SRC, int dspflag ){
 	CB_SelectTextVRAM();	// Select Text Screen
 	if ( dspflag == 2 ) {
 		if ( CursorX >1 ) Scrl_Y();
-		sprintG(buffer, CB_CurrentValue, 22-CursorX,RIGHT_ALIGN);
+		sprintGR(buffer, CB_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
 		CursorX=21;
 	}
@@ -600,7 +669,7 @@ void CB_end( unsigned char *SRC, int dspflag ){
 	CB_SelectTextVRAM();	// Select Text Screen
 	if ( TimeDsp ) {
 		if ( CursorX >1 ) Scrl_Y();
-		sprintG(buffer, (double)(CB_TicksEnd-CB_TicksStart)/128.0, 8,RIGHT_ALIGN);
+		sprintGR(buffer, (double)(CB_TicksEnd-CB_TicksStart)/128.0, 8,RIGHT_ALIGN, Fix, 2);  // Fix:2
 		locate(  1, CursorY); Print((unsigned char*)"Execute Time=");
 		locate( 14, CursorY); Print((unsigned char*)buffer);
 		while ( 1 ) {
@@ -610,7 +679,11 @@ void CB_end( unsigned char *SRC, int dspflag ){
 			if ( key == KEY_CTRL_AC  ) return ;
 		}
 	}
-	
+	if ( (UseGraphic&0xFF) == 1 ) {	// Plot 
+		CB_SelectGraphVRAM();	// Select Graphic Screen
+		PlotPreviousPXY();
+		CB_SelectTextVRAM();	// Select Text Screen
+	}
 }
 
 
@@ -637,7 +710,7 @@ void CB_Locate( unsigned char *SRC ){
 		Print( (unsigned char*)buffer );
 	} else {			// expression
 		value = CB_Eval(SRC+ExecPtr);
-		sprintG(buffer, value, 22-lx,LEFT_ALIGN);
+		sprintGR(buffer, value, 22-lx,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 		locate(lx,ly);
 		Print( (unsigned char*)buffer );
 	}
@@ -669,8 +742,8 @@ void CB_Text( unsigned char *SRC, int *dspflag ) { //	Text
 	} else {			// expression
 		value = CB_Eval(SRC+ExecPtr);
 		d=(128-px)/4;
-		if (d>15) d=15;	// digit max
-		sprintG(buffer, value, d,LEFT_ALIGN);
+		if (d>21) d=21;	// digit max
+		sprintGR(buffer, value, d,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 		Text(py, px, buffer);
 	}
 	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
@@ -1027,7 +1100,7 @@ void CB_While( unsigned char *SRC, int *StackWhilePtr, int *StackWhileAdrs, int 
 	int wPtr=ExecPtr;
 	if ( CB_Eval(SRC+wPtr) == 0 ) {		// false
 		if ( Search_WhileEnd(SRC) == 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // While without WhileEnd error
-		return ;
+		return ; // exit
 	}
 	if ( *StackWhilePtr >= StackWhileMax-1 ) { ErrorNo=NestingERR; ErrorPtr=ExecPtr; return; }  //  nesting error
 	StackWhileAdrs[*StackWhilePtr] = wPtr;
@@ -1037,13 +1110,14 @@ void CB_While( unsigned char *SRC, int *StackWhilePtr, int *StackWhileAdrs, int 
 }
 
 void CB_WhileEnd( unsigned char *SRC, int *StackWhilePtr, int *StackWhileAdrs, int *CurrentStructCNT, int *CurrentStructloop  ) {
+	int exitPtr=ExecPtr;
 	if ( *StackWhilePtr <= 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // WhileEnd without While error
 	(*StackWhilePtr)--;
 	(*CurrentStructCNT)--;
 	ExecPtr = StackWhileAdrs[*StackWhilePtr] ;
 	if ( CB_Eval(SRC+ExecPtr) == 0 ) {		// false
-		if ( Search_WhileEnd(SRC) == 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // While without WhileEnd error
-		return ;
+		ExecPtr=exitPtr;
+		return ; // exit
 	}
 	(*StackWhilePtr)++;
 	CurrentStructloop[*CurrentStructCNT]=2;
@@ -1062,7 +1136,7 @@ void CB_LpWhile( unsigned char *SRC, int *StackDoPtr, int *StackDoAdrs, int *Cur
 	if ( *StackDoPtr <= 0 ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // LpWhile without Do error
 	(*StackDoPtr)--;
 	(*CurrentStructCNT)--;
-	if ( CB_Eval(SRC+ExecPtr) == 0  ) return ;		// false
+	if ( CB_Eval(SRC+ExecPtr) == 0  ) return ; // exit
 	ExecPtr = StackDoAdrs[*StackDoPtr] ;				// true
 	(*StackDoPtr)++;
 	CurrentStructloop[*CurrentStructCNT]=3;
@@ -1154,11 +1228,11 @@ void CB_MatrixInit( unsigned char *SRC ) { //	{n,m}->Dim Mat A
 	int reg;
 	double *ptr;
 	
-	dimA=floor(CB_Eval(SRC+ExecPtr));
+	dimA=(CB_Eval(SRC+ExecPtr));
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
 	ExecPtr++;
-	dimB=floor(CB_Eval(SRC+ExecPtr));
+	dimB=(CB_Eval(SRC+ExecPtr));
 	c=SRC[ExecPtr];
 	if ( c != '}' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
 	ExecPtr++;
@@ -1219,70 +1293,24 @@ void CB_ClrMat( unsigned char *SRC ) { //	ClrMat A
 }
 
 //----------------------------------------------------------------------------------------------
+
 void CB_ViewWindow( unsigned char *SRC ) { //	ViewWindow
 	unsigned int c;
-	double xmin, xmax, xscl, ymin, ymax, yscl;
-	c=SRC[ExecPtr];
-	if ( c == ',' ) {
-		ExecPtr++;
-		xmin=Xmin;
-	} else {
-		xmin=CB_Eval(SRC+ExecPtr);
+	int reg=26;
+	while ( reg <= 34 ) {
 		c=SRC[ExecPtr];
+		if ( (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
+		REG[reg]=CB_Eval(SRC+ExecPtr);
+		c=SRC[ExecPtr];
+		if ( (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
 		if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
 		ExecPtr++;
+		reg++;
 	}
-	c=SRC[ExecPtr];
-	if ( c == ',' ) {
-		ExecPtr++;
-		xmax=Xmax;
-	} else {
-		xmax=CB_Eval(SRC+ExecPtr);
-		c=SRC[ExecPtr];
-		if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-		ExecPtr++;
-	}
-	c=SRC[ExecPtr];
-	if ( c == ',' ) {
-		ExecPtr++;
-		xscl=Xscl;
-	} else {
-		xscl=CB_Eval(SRC+ExecPtr);
-		c=SRC[ExecPtr];
-		if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-		ExecPtr++;
-	}
-	c=SRC[ExecPtr];
-	if ( c == ',' ) {
-		ExecPtr++;
-		ymin=Ymin;
-	} else {
-		ymin=CB_Eval(SRC+ExecPtr);
-		c=SRC[ExecPtr];
-		if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-		ExecPtr++;
-	}
-	c=SRC[ExecPtr];
-	if ( c == ',' ) {
-		ExecPtr++;
-		ymax=Ymax;
-	} else {
-		ymax=CB_Eval(SRC+ExecPtr);
-		c=SRC[ExecPtr];
-		if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
-		ExecPtr++;
-	}
-	c=SRC[ExecPtr];
-	if ( c == ',' ) {
-		ExecPtr++;
-		yscl=Yscl;
-	} else {
-		yscl=CB_Eval(SRC+ExecPtr);
-	}
-	
 	CB_SelectGraphVRAM();	// Select Graphic Screen
-	ViewWindow( xmin, xmax, xscl, ymin, ymax, yscl);
-	Bdisp_PutDisp_DD_DrawBusy_skip();
+	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+	CB_SelectTextVRAM();	// Select Text Screen
+//	Bdisp_PutDisp_DD_DrawBusy_skip();
 }
 
 void CB_GridOff() {
@@ -1396,14 +1424,14 @@ void CB_Horizontal( unsigned char *SRC ) { //	Horizontal
 }
 
 void CB_Plot( unsigned char *SRC ) { //	Plot
-	unsigned int c,d;
+	unsigned int c;
 	double x,y;
-	unsigned int key;
 	
 	if ( RangeErrorCK(SRC) ) return;
+	
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	c=SRC[ExecPtr];
-	if ( ( c==':' ) || (c==0x0D) || ( c == 0x0C ) || (c==0x00) ) {
+	if ( ( c==':' ) || (c==0x0D) || ( c==0x0C ) || (c==0x00) ) {
 		x=(Xmax+Xmin)/2;
 		y=(Ymax+Ymin)/2;
 	} else {
@@ -1413,8 +1441,11 @@ void CB_Plot( unsigned char *SRC ) { //	Plot
 		ExecPtr++;
 		y=CB_Eval(SRC+ExecPtr);
 	}
-	PlotOn_VRAM(x,y);
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
+	Plot_X = x;
+	Plot_Y = y;
+	regX = x;
+	regY = y;
+	PlotPreviousPXY();
 }
 
 void CB_PlotOprand( unsigned char *SRC, double  *x, double *y) {
@@ -1449,12 +1480,12 @@ void CB_PlotChg( unsigned char *SRC ) { //	PlotChg
 
 void CB_PxlOprand( unsigned char *SRC, int *py, int *px) {
 	double x,y;
-	y = floor(CB_Eval(SRC+ExecPtr));
+	y = (CB_Eval(SRC+ExecPtr));
 	*py=y;
 	if ( ( y-floor(y) ) || ( (*py)<1 ) || ( (*py)>63 ) ) { ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }  // Argument error
 	if ( SRC[ExecPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
 	ExecPtr++;
-	x = floor(CB_Eval(SRC+ExecPtr));
+	x = (CB_Eval(SRC+ExecPtr));
 	*px=x;
 	if ( ( x-floor(x) ) || ( (*px)<1 ) || ( (*px)>127 ) ) { ErrorNo=ArgumentERR; ErrorPtr=ExecPtr; return; }  // Argument error}
 	CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -1482,23 +1513,6 @@ void CB_PxlChg( unsigned char *SRC ) { //	PxlChg
 }
 
 //----------------------------------------------------------------------------------------------
-void CB_CircleSub( unsigned char *SRC,double x, double y, double r, int style ) {
-	double	angle, x0,y0,x1,y1;
-	int	i,n=floor(r*4/Xdot);
-	Previous_X = r+x;
-	Previous_Y = 0+y;
-	for(i=1;i<=n;i++){
-		angle=PI*2*i/n;
-		regX=cos(angle)*r+x;
-		regY=sin(angle)*r+y;
-		if ( DrawType ) {	// 1:Plot
-			PlotOn_VRAM( regX, regY);
-		} else {			// 0:connect
-			Line( style );
-		}
-		Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-	}
-}
 void CB_Circle( unsigned char *SRC ) { //	Circle
 	unsigned int c;
 	double x,y,r;
@@ -1514,8 +1528,8 @@ void CB_Circle( unsigned char *SRC ) { //	Circle
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }  // Syntax error
 	ExecPtr++;
-	r=fabs(CB_Eval(SRC+ExecPtr));
-	CB_CircleSub(SRC, x, y, r, style);
+	r=CB_Eval(SRC+ExecPtr);
+	Circle(x, y, r, style);
 	tmp_Style = -1;
 }
 
@@ -1707,10 +1721,12 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 		if ( BreakPtr ) { CB_BreakStop(); return BreakPtr; }
 		c=SRC[ExecPtr];
 		if ( c==0x00 ) if ( ProgEntryPtr ) return -1;  else  break;
+		if ( c==':'  ) c=SRC[++ExecPtr];
+		if ( c==0x0D ) c=SRC[++ExecPtr];
 		ExecPtr++;
 		switch (c) {
-			case 0x3A:	// <:>
-				break;
+//			case 0x3A:	// <:>
+//				break;
 			case 0x0D:	// <CR>
 				break;
 			case 0x0E:	// ->
@@ -1787,7 +1803,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 					case 0x19:	// ClrGraph
 						CB_ClrGraph(SRC);
 						dspflag=0;
-						UseGraphic=3;
+						UseGraphic=0;
 						break;
 					case 0x1C:	// S-L-Normal
 						CB_S_L_Normal();
@@ -1844,6 +1860,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 					case 0xA5:	// Text
 						dspflag=0;
 						CB_Text(SRC, &dspflag);
+						UseGraphic=99;
 						break;
 					case 0xA6:	// Circle
 						CB_Circle(SRC);
@@ -1970,7 +1987,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 			case 0xD1:	// Cls
 				CB_Cls(SRC);
 				dspflag=0;
-				UseGraphic=3;
+				UseGraphic=0;
 				break;
 			case 0xDA:	// Deg
 				CB_Deg();
@@ -1997,6 +2014,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 			case 0xEB:	// ViewWindow
 				CB_ViewWindow(SRC);
 				dspflag=0;
+				UseGraphic=0;
 				break;
 			case 0xEE:	// Graph Y=
 				CB_GraphY(SRC);
@@ -2010,6 +2028,16 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 			case 0x27:	// ' rem
 				Skip_block(SRC);
 				dspflag=0;
+				break;
+				
+			case 0xD3:	// Rnd
+				CB_Rnd();
+				break;
+			case 0xE3:	// Fix
+				CB_Fix(SRC);
+				break;
+			case 0xE4:	// Sci
+				CB_Sci(SRC);
 				break;
 		
 			default:
@@ -2031,12 +2059,13 @@ int CB_interpreter( unsigned char *SRC ) {
 
 	CB_TicksStart=RTC_GetTicks();	// 
 	random( CB_TicksStart ) ;	// rand seed
-	CB_Cls(SRC);
 	CB_ClrText(SRC);
 	ProgEntryPtr=0;	// subroutin clear
 	ErrorPtr=0;
 	ErrorNo= 0;
 	BreakPtr=0;
+	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
+	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
 	Bdisp_PutDisp_DD_DrawBusy();
 	stat = CB_interpreter_sub( SRC );
 	KeyRecover(); 

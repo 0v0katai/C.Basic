@@ -231,13 +231,19 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 				cont=0;
 				break;
 		
+			case KEY_CTRL_LEFT:
+				*select = 0;
+				break;
+			case KEY_CTRL_RIGHT:
+				*select = opNum;
+				break;
 			case KEY_CTRL_UP:
 				(*select)--;
-				if ( *select < 0 ) *select=opNum;
+				if ( *select < 0 ) *select = opNum;
 				break;
 			case KEY_CTRL_DOWN:
 				(*select)++;
-				if ( *select > opNum ) *select=0;
+				if ( *select > opNum ) *select =0;
 				break;
 			default:
 				break;
@@ -286,12 +292,15 @@ unsigned short oplistALL[]={
 		0xB3,	// arctanh
 		0xC1,	// Ran#
 		0xD1,	// Cls
+		0xD3,	// Rnd
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
 		0xE0,	// Plot
 		0xE1,	// Line
 		0xE2,	// Lbl
+		0xE3,	// Fix
+		0xE4,	// Sci
 		0xE8,	// Dsz
 		0xE9,	// Isz
 		0xEB,	// ViewWindow
@@ -311,6 +320,7 @@ unsigned short oplistALL[]={
 		0x7F3A,	// MOD(
 		0x7F46,	// Dim
 
+		0x7F86,	// RanFix(
 		0x7F87,	// RanInt#(
 		0x7F8F,	// Getkey
 
@@ -402,20 +412,21 @@ unsigned short oplistOPTN[]={
 //		0x85,	// ln
 //		0x86,	// sqrt
 //		0x95,	// log
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
 		0xB1,	// arcsinh
 		0xB2,	// arccosh
 		0xB3,	// arctanh
-		0xDA,	// Deg
-		0xDB,	// Rad
-		0xDC,	// Grad
 
 		0x7F3A,	// MOD(
 		0x7F46,	// Dim
 
 		0xC1,	// Ran#
+		0x7F86,	// RanFix(
 		0x7F87,	// RanInt#(
 
 		0x7FB0,	// And
@@ -503,20 +514,20 @@ unsigned short oplistVARS[]={
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
 		
-		0xEE,	// Graph Y=
-		0xF720,	// DrawGraph
-		0x7FF0,	// GraphY
 
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xF7C3,	// CoordOn
+		0xF7D3,	// CoordOff
+		0xF77D,	// GridOn
+		0xF77A,	// GridOff
+		0xF7C2,	// AxesOn
+		0xF7D2,	// AxesOff
+		0xF7C4,	// LabelOn
+		0xF7D4,	// LabelOff
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
-		0xF77A,	// GridOff
-		0xF77D,	// GridOn
-		0xF7C2,	// AxesOn
-		0xF7C3,	// CoordOn
-		0xF7C4,	// LabelOn
-		0xF7D2,	// AxesOff
-		0xF7D3,	// CoordOff
-		0xF7D4,	// LabelOff
 		0xF71C,	// S-L-Normal
 		0xF71D,	// S-L-Thick
 		0xF71E,	// S-L-Broken
@@ -536,6 +547,11 @@ unsigned short oplistVARS[]={
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
 		0x7FF0,	// GraphY
+		0xF720,	// DrawGraph
+		0xEE,	// Graph Y=
+		0xD3,	// Rnd
+		0xE3,	// Fix
+		0xE4,	// Sci
 		
 //		0xF90B,	// EngOn
 //		0xF90C,	// EngOff
@@ -592,15 +608,16 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 		locate (1,1); Print( (unsigned char*)buffer );
 			Fkey_dispN( 0, "TOP ");
 			Fkey_dispN( 1, "BTM");
-			Fkey_dispR( 2, "Code");
-			Fkey_dispR( 3, "Dump");
-			Fkey_dispR( 4, "Asc");
+			if ( lowercase ) Fkey_dispN(3,"a<>A"); else Fkey_dispN(3,"A<>a");
+			Fkey_dispR( 4, "CHAR");
 			Fkey_dispN( 5, "EXE");
 		switch (dumpflg) {
 			case 2: 		// Opcode
+					Fkey_dispR( 2, "Dump");
 					DumpOpcode( SrcBase, &offset, csrPtr, &cx, &cy);
 					break;
 			case 4: 		// hex dump
+					Fkey_dispR( 2, "List");
 					DumpMix( SrcBase, offset );
 					break;
 			case 16:		// Ascii dump
@@ -706,12 +723,18 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					key=0;
 					break;
 			case KEY_CTRL_F3:
-					dumpflg=2;				// opcode edit
-					offset=csrPtr;
-					key=0;
-					break;
-			case KEY_CTRL_F4:
-					dumpflg=4;				// dump edit
+					switch (dumpflg) {
+						case 2: 		// Opcode
+							dumpflg=4;
+							break;
+						case 4: 		// hex dump
+							dumpflg=2;
+						case 16:		// Ascii dump
+							dumpflg=2;
+							break;
+						default:
+							break;
+					}
 					offset=csrPtr;
 					cx=6; cy=2;
 //					n  =(csrPtr)-(offset);
@@ -720,12 +743,11 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 //					cy = (n/4)+2;
 					key=0;
 					break;
+			case KEY_CTRL_F4:
+					lowercase=1-lowercase;
+					break;
 			case KEY_CTRL_F5:
-					Cursor_SetFlashMode(0); 		// cursor flashing off
-					dumpflg=16;				// ascii dump only
-					cx = 6;
-					cy = 2;
-					key=0;
+					key=SelectChar();
 					break;
 			case KEY_CTRL_F6:
 					Cursor_SetFlashMode(0); 		// cursor flashing off

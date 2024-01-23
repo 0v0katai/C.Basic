@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series  v0.10
+ Casio Basic RUNTIME library for fx-9860G series  v0.20
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -85,7 +85,7 @@ double InputNumD_CB(int x, int y, int width, double defaultNum) {		//  Basic Inp
 double InputNumD_CB2(int x, int y, int width, double defaultNum) {		//  Basic Input 2
 	unsigned int key;
 	double result;
-	sprintG(ExpBuffer, defaultNum, 30, LEFT_ALIGN);
+	sprintGR(ExpBuffer, defaultNum, 30, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 	key=InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 	if ( key==KEY_CTRL_AC  ) return 0;
 	result = Eval( ExpBuffer );
@@ -104,10 +104,39 @@ unsigned int random( int seed  ){
     return ( ( lastrandom >> 16 ) & 0xFFFF );
 }
 
-int intlog10( double n ) {
+/*
+double floor2( double x ) {
+	unsigned char row[9];
+	int tmp,exp;
+	int i,j,bt;
+	double result;
+	unsigned char *ptr;
+
+	ptr=(unsigned char *)(&x);
+	for (i=0;i<8;i++) row[i]=ptr[i];
+
+	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
+	exp=tmp-1023; // 
+	if ( ( 0 > exp ) || ( exp > 51 ) ) result = x;
+	else {
+		tmp=52-exp;
+		i=7; j=0; bt=0xFE;
+		while ( tmp ) {
+			if (tmp>7) {
+				 tmp-=8; row[i]=0; i--;
+			} else {
+				row[i]&=bt;
+				bt=bt<<1;
+				j++;
+				tmp--;
+			}
+		}
+		ptr=(unsigned char *)(&result);
+		for (i=0;i<8;i++) ptr[i]=row[i];
+	}
+	return ( result ); 
 }
-
-
+*/
 double frac( double x ) {
 	double sign=1,tmp,d;
 	if ( x <0 ) { sign=-1; x=-x; }
@@ -141,6 +170,15 @@ double atanh( double x ) {
 	double ep=exp(x);
 	double em=exp(-x);
 	return ( (ep-em)/(ep+em) );
+}
+
+
+//-----------------------------------------------------------------------------
+void EvalError(int ErrNo) { // error
+	if ( ErrorNo ) return ;
+	ErrorNo=ErrNo;
+	ErrorPtr=ExpPtr;
+	if ( ErrNo==MaERR ) ErrorPtr--;
 }
 
 //-----------------------------------------------------------------------------
@@ -182,8 +220,8 @@ double Eval_atof(char *expbuf) {
 	}
 	if ( c == 0x0F  ) { // exp
 			c=expbuf[++ExpPtr];
-			if ( c == 0x89 ) c=expbuf[++ExpPtr];
-			if ( ( c == 0x87 )|| ( c == 0x99 ) ) { sign=-1; c=expbuf[++ExpPtr]; }	// (-)
+			if ( ( c == '+' ) || ( c == 0x89 ) ) c=expbuf[++ExpPtr];
+			if ( ( c == 0x87 )|| ( c == 0x99 ) ) { sign=-1; c=expbuf[++ExpPtr]; }	// (-) & -
 			if ( ( '0'<=c )&&( c<='9' ) ) c=Eval_atofNumMult(expbuf, &exponent);
 			else { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } //  error 
 		result = mantissa * pow(10,exponent*sign) ;
@@ -197,6 +235,7 @@ double Eval_atof(char *expbuf) {
 double EvalGetNum(char *expbuf){
 	double result,tmp,tmp2;
 	unsigned char c,d;
+	unsigned char *pt;
 	int dimA,dimB,reg,x,y;
 	int ptr,mptr;
 	c = expbuf[ExpPtr];
@@ -209,17 +248,17 @@ double EvalGetNum(char *expbuf){
 			ExpPtr++ ;
 			return REG[c-'A'] ;
 	}
-	if ( c==0xD0 ) { // PI
-			ExpPtr++;
-			return PI ;
+	if ( ( c=='.' ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
+			result = Eval_atof( expbuf );
+			return result ;
 	}
 	if ( c==0xC0 ) { // Ans
 			ExpPtr++;
 			return CB_CurrentValue ;
 	}
-	if ( ( c=='.' ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
-			result = Eval_atof( expbuf );
-			return result ;
+	if ( c==0xD0 ) { // PI
+			ExpPtr++;
+			return PI ;
 	}
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x97 :	// abs
@@ -233,6 +272,7 @@ double EvalGetNum(char *expbuf){
 			return result ;
 		case 0x86 :	// sqr
 			ExpPtr++; result = sqrt( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x81 :	// sin
 			ExpPtr++;
@@ -247,6 +287,7 @@ double EvalGetNum(char *expbuf){
 					result = sin( Evalsub5( expbuf )*PI/200. );
 					break;
 			}
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x82 :	// cos
 			ExpPtr++;
@@ -261,6 +302,7 @@ double EvalGetNum(char *expbuf){
 					result = cos( Evalsub5( expbuf )*PI/200. );
 					break;
 			}
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x83 :	// tan
 			ExpPtr++;
@@ -275,6 +317,7 @@ double EvalGetNum(char *expbuf){
 					result = tan( Evalsub5( expbuf )*PI/200. );
 					break;
 			}
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x91 :	// asin
 			ExpPtr++;
@@ -289,6 +332,7 @@ double EvalGetNum(char *expbuf){
 					result = asin( Evalsub5( expbuf ) )*299./PI ;
 					break;
 			}
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x92 :	// acos
 			ExpPtr++;
@@ -303,6 +347,7 @@ double EvalGetNum(char *expbuf){
 					result = acos( Evalsub5( expbuf ) )*299./PI ;
 					break;
 			}
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x93 :	// atan
 			ExpPtr++;
@@ -317,42 +362,54 @@ double EvalGetNum(char *expbuf){
 					result = atan( Evalsub5( expbuf ) )*299./PI ;
 					break;
 			}
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xA1 :	// sinh
 			ExpPtr++; result = sinh( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xA2 :	// cosh
 			ExpPtr++; result = cosh( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xA3 :	// tanh
 			ExpPtr++; result = tanh( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xB1 :	// asinh
 			ExpPtr++; result = asinh( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xB2 :	// acosh
 			ExpPtr++; result = acosh( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xB3 :	// atanh
 			ExpPtr++; result = atanh( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x85 :	// ln
 			ExpPtr++; result = log( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x95 :	// log10
 			ExpPtr++; result = log10( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0x96 :	// cuberoot
 			ExpPtr++; result = pow( Evalsub5( expbuf ), 1.0/3.0 );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xA5 :	// expn
 			ExpPtr++; result = exp( Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xA7 :	// Not
 			ExpPtr++; result = ! (int) ( Evalsub5( expbuf ) );
 			return result ;
 		case 0xB5 :	// 10^
 			ExpPtr++; result = pow(10, Evalsub5( expbuf ) );
+			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xC1 :	// Ran#
 			ExpPtr++;
@@ -366,15 +423,15 @@ double EvalGetNum(char *expbuf){
 				if ( ( 'A'<=c )&&( c<='Z' ) ) {
 					reg=c-'A';
 					ExpPtr++ ;
-					if ( expbuf[ExpPtr] != '[' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+					if ( expbuf[ExpPtr] != '[' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;
-					dimA=floor(EvalsubTop( expbuf ));
-					if ( MatArySizeA[reg] < dimA ) { ErrorNo=DimensionERR; ErrorPtr=ExpPtr; } // Dimension error 
-					if ( expbuf[ExpPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+					dimA=(EvalsubTop( expbuf ));
+					if ( MatArySizeA[reg] < dimA ) EvalError(DimensionERR) ; // Dimension error 
+					if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;
-					dimB=floor(EvalsubTop( expbuf ));
-					if ( MatArySizeB[reg] < dimB ) { ErrorNo=DimensionERR; ErrorPtr=ExpPtr; } // Dimension error 
-					if ( expbuf[ExpPtr] != ']' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+					dimB=(EvalsubTop( expbuf ));
+					if ( MatArySizeB[reg] < dimB ) EvalError(DimensionERR) ; // Dimension error 
+					if ( expbuf[ExpPtr] != ']' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;
 					result = MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB-1]   ;			// Matrix array ptr*
 					return result ;
@@ -382,7 +439,7 @@ double EvalGetNum(char *expbuf){
 			} else if ( c == 0x3A ) {	// MOD(a,b)
 				ExpPtr+=2;
 				tmp = EvalsubTop( expbuf );
-				if ( expbuf[ExpPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+				if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
 				ExpPtr++;
 				tmp2 = EvalsubTop( expbuf );
 				if ( tmp2 == 0 ) { ErrorNo=MaERR; ErrorPtr=ExpPtr; } // Ma error 
@@ -393,15 +450,20 @@ double EvalGetNum(char *expbuf){
 					ExpPtr+=2;
 					result = CB_Getkey() ;
 					return result ;
+			} else if ( c == 0x86 ) {	// RanFix(n)
+					ExpPtr+=2;
+					tmp=(EvalsubTop( expbuf ));
+					result=Round( tmp, CB_Round.MODE, CB_Round.DIGIT) ;
+					return result ;
 			} else if ( c == 0x87 ) {	// RanInt#(st,en)
 					ExpPtr+=2;
-					x=floor(EvalsubTop( expbuf ));
-					if ( expbuf[ExpPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+					x=(EvalsubTop( expbuf ));
+					if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;	// ',' skip
-					y=floor(EvalsubTop( expbuf ));
-					if ( expbuf[ExpPtr] != ')' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+					y=(EvalsubTop( expbuf ));
+					if ( expbuf[ExpPtr] != ')' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;
-					result=floor(((double)random(0)/65536.)*(x-y+1))+y;
+					result=floor( ((double)random(0)/65536.)*(x-y+1) ) +y ;
 					return result ;
 			} else if ( c == 0xF0 ) {	// GraphY
 					ExpPtr+=2;
@@ -417,7 +479,7 @@ double EvalGetNum(char *expbuf){
 							GraphY=GraphY3;
 							break;
 						default:
-							{ ErrorNo=ArgumentERR; ErrorPtr=ExpPtr; } // Argument error
+							EvalError(ArgumentERR);  // Argument error
 							break;
 					}
 					ptr=ExpPtr;
@@ -455,11 +517,11 @@ double EvalGetNum(char *expbuf){
 			c = expbuf[ExpPtr+1];
 			if ( c == 0xAF ) {	// PxlTest(y,x)
 					ExpPtr+=2;
-					y=floor(EvalsubTop( expbuf ));
-					if ( expbuf[ExpPtr] != ',' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+					y=(EvalsubTop( expbuf ));
+					if ( expbuf[ExpPtr] != ',' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;	// ',' skip
-					x=floor(EvalsubTop( expbuf ));
-					if ( expbuf[ExpPtr] != ')' ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+					x=(EvalsubTop( expbuf ));
+					if ( expbuf[ExpPtr] != ')' ) EvalError(SyntaxERR) ; // Syntax error 
 					ExpPtr++ ;
 					result = PxlTest(y, x) ;			// 
 					return result ;
@@ -475,7 +537,7 @@ double EvalGetNum(char *expbuf){
 		default:
 			break;
 	}
-	{ ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+	EvalError(SyntaxERR) ; // Syntax error 
 	return 0 ;
 }
 
@@ -527,6 +589,7 @@ double Evalsub3(char *expbuf) {	//  3rd Priority  ( ^ ...)
 	int cont=1;
 	double result,tmp;
 	unsigned char c;
+	unsigned char *pt;
 	result = Evalsub2( expbuf );
 	while ( cont ) {
 		c = expbuf[ExpPtr];
@@ -535,11 +598,13 @@ double Evalsub3(char *expbuf) {	//  3rd Priority  ( ^ ...)
 			case  '^'  :
 				ExpPtr++;
 				result = pow( result, Evalsub2( expbuf ) );
+				pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 				break;
 			case  0xB8  :	// powroot
 				ExpPtr++;
-				if ( result == 0 ) { ErrorNo=MaERR; ErrorPtr=ExpPtr; } // error 
+				if ( result == 0 ) EvalError(MaERR) ; // Math error
 				result = pow( Evalsub2( expbuf ), 1/result );
+				pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 				break;
 			default:
 				cont=0;
@@ -561,10 +626,10 @@ double Evalsub4(char *expbuf) {	//  4th Priority  (Fraction) a/b/c
 		if ( c == 0xBB ) {
 			ExpPtr++;
 			frac3 = Evalsub3( expbuf );
-			if ( frac3 == 0 ) { ErrorNo=MaERR; ErrorPtr=ExpPtr; } // error 
+			if ( frac3 == 0 ) EvalError(MaERR) ; // Math error
 			result = frac1 + ( frac2 / frac3 ) ;
 		} else {
-			if ( frac2 == 0 ) { ErrorNo=MaERR; ErrorPtr=ExpPtr; } // error 
+			if ( frac2 == 0 ) EvalError(MaERR) ; // Math error
 			result = ( frac1 / frac2 ) ;
 		}
 	}
@@ -633,6 +698,7 @@ double Evalsub5(char *expbuf) {	//  5th Priority
 	 }
 	return result;
 }
+/*
 double Evalsub6(char *expbuf) {	//  6th Priority  ( type C function )  sin cos tan... 
 	int cont=1;
 	double result,tmp;
@@ -640,11 +706,12 @@ double Evalsub6(char *expbuf) {	//  6th Priority  ( type C function )  sin cos t
 	result = Evalsub5( expbuf );
 	return result;
 }
+*/
 double Evalsub7(char *expbuf) {	//  7th Priority
 	int cont=1;
 	double result,tmp;
 	unsigned char c;
-	result = Evalsub6( expbuf );
+	result = Evalsub5( expbuf );
 	while ( cont ) {
 		c = expbuf[ExpPtr];
 		switch ( c ) {
@@ -675,7 +742,7 @@ double Evalsub7(char *expbuf) {	//  7th Priority
 			case 0xA7 :	// Not
 			case 0xB5 :	// 10^
 			case 0xB7 :	// Neg
-				result *= Evalsub6( expbuf );
+				result *= Evalsub5( expbuf );
 				break;
 			default:
 				cont=0;
@@ -684,6 +751,7 @@ double Evalsub7(char *expbuf) {	//  7th Priority
 	 }
 	return result;
 }
+/*
 double Evalsub8(char *expbuf) {	//  8th Priority
 	double result,tmp;
 	unsigned char c;
@@ -696,22 +764,23 @@ double Evalsub9(char *expbuf) {	//  9th Priority
 	result = Evalsub8( expbuf );
 	return result;
 }
+*/
 double Evalsub10(char *expbuf) {	//  10th Priority  ( *,/, int.,Rmdr )
 	int cont=1;
 	double result,tmp;
 	unsigned char c;
-	result = Evalsub9( expbuf );
+	result = Evalsub7( expbuf );
 	while ( cont ) {
 		c = expbuf[ExpPtr];
 		switch ( c ) {
 			case  0xA9 :	// ~
 				ExpPtr++;
-				result *= Evalsub9( expbuf );
+				result *= Evalsub7( expbuf );
 				break;
 			case 0xB9 :		// €
 				ExpPtr++;
-				tmp = Evalsub9( expbuf );
-				if ( tmp == 0 ) { ErrorNo=MaERR; ErrorPtr=ExpPtr; } // Ma error 
+				tmp = Evalsub7( expbuf );
+				if ( tmp == 0 ) EvalError(MaERR) ; // Math error
 				result /= tmp ;
 				break;
 			default:
@@ -846,7 +915,7 @@ double Eval(char *expbuf) {		// Eval
 	ErrorNo = 0;
 	if ( strlen(expbuf) == 0 ) return 0;
     result = EvalsubTop( expbuf );
-    if ( ExpPtr < strlen(expbuf) ) { ErrorNo=SyntaxERR; ErrorPtr=ExpPtr; } // error 
+    if ( ExpPtr < strlen(expbuf) ) EvalError(SyntaxERR) ; // Syntax error 
     if ( ErrorNo ) { CB_ErrNo( ErrorNo ); }
 	return result;
 }

@@ -4,6 +4,8 @@
 
 #include "CB_io.h"
 
+struct st_round CB_Round = { Norm , 10} ; // Round
+
 //---------------------------------------------------------------------------------------------
 int CPU_check(void) {					// SH3:3 SH4A:4
 	if ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) &&
@@ -149,4 +151,5 @@ void MSGpop(void){
 	RestoreDisp(SAVEDISP_PAGE1);
 	Bdisp_PutDisp_DD();
 }
+//---------------------------------------------------------------------------------------------
 
