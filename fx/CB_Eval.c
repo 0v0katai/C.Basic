@@ -28,7 +28,7 @@
 //		Expression evaluation    string -> double
 //----------------------------------------------------------------------------------------------
 #define ExpMax 255
-char ExpBuffer[ExpMax+1];
+unsigned char ExpBuffer[ExpMax+1];
 int ExpPtr;	// Expression buffer ptr
 //-----------------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ double InputNumD_Char(int x, int y, int width, double defaultNum, char code) {		
 double InputNumD_replay(int x, int y, int width, double defaultNum) {		//  replay expression
 	unsigned int key;
 	double result;
-	key= InputStrSub( x, y, width, strlen(ExpBuffer), ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	key= InputStrSub( x, y, width, strlen((char*)ExpBuffer), ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 	result = Eval( ExpBuffer );
 	while ( ErrorNo ) {	// error loop
@@ -84,7 +84,7 @@ double InputNumD_CB(int x, int y, int width, double defaultNum) {		//  Basic Inp
 	key=InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 	if ( key==KEY_CTRL_AC  ) return 0;
 	result = Eval( ExpBuffer );
-	while ( ErrorNo || (strlen(ExpBuffer)==0) ) {	// error loop
+	while ( ErrorNo || (strlen((char*)ExpBuffer)==0) ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 		if ( key==KEY_CTRL_AC  ) return 0;
 		result = Eval( ExpBuffer );
@@ -99,10 +99,10 @@ double InputNumD_CB1(int x, int y, int width, double defaultNum) {		//  Basic In
 	if ( key==KEY_CTRL_AC  ) return 0;
 	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) return (defaultNum);
 	result = Eval( ExpBuffer );
-	while ( ErrorNo || (strlen(ExpBuffer)==0) ) {	// error loop
+	while ( ErrorNo || (strlen((char*)ExpBuffer)==0) ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 		if ( key==KEY_CTRL_AC  ) return 0;
-		if ( strlen(ExpBuffer)==0 ) if ( key==KEY_CTRL_EXE  ) return (defaultNum);
+		if ( strlen((char*)ExpBuffer)==0 ) if ( key==KEY_CTRL_EXE  ) return (defaultNum);
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok
@@ -122,13 +122,14 @@ double InputNumD_CB2(int x, int y, int width, double defaultNum) {		//  Basic In
 	return result; // value ok
 }
 //-----------------------------------------------------------------------------
+/*
 int lastrandom=0x12345678;
 unsigned int random( int seed  ){
     if (seed) lastrandom=seed;
     lastrandom = ( 0x41C64E6D*lastrandom ) + 0x3039; // + RTC_GetTicks();
     return ( ( lastrandom >> 16 ) & 0xFFFF );
 }
-
+*/
 /*
 double floor2( double x ) {
 	unsigned char row[9];
@@ -207,8 +208,8 @@ void EvalError(int ErrNo) { // error
 }
 
 //-----------------------------------------------------------------------------
-unsigned char Eval_atofNumDiv(char *expbuf, double *num ){
-	unsigned char c;
+unsigned char Eval_atofNumDiv(unsigned char *expbuf, double *num ){
+	unsigned int c;
 	double a=10;
 	c = expbuf[ExpPtr];
 	while ( ('0'<=c)&&(c<='9') ) {
@@ -218,8 +219,8 @@ unsigned char Eval_atofNumDiv(char *expbuf, double *num ){
 	}
 	return c;
 }
-unsigned char Eval_atofNumMult(char *expbuf, double *num ){
-	unsigned char c;
+unsigned char Eval_atofNumMult(unsigned char *expbuf, double *num ){
+	unsigned int c;
 	c = expbuf[ExpPtr];
 	while ( ('0'<=c)&&(c<='9') ) {
 		(*num) = (*num)*10 +(c-'0');
@@ -227,11 +228,11 @@ unsigned char Eval_atofNumMult(char *expbuf, double *num ){
 	}
 	return c;
 }
-double Eval_atof(char *expbuf) {
+double Eval_atof(unsigned char *expbuf) {
 	char buffer[64];
 	double temp,mantissa=0,exponent=0,result;
 	double sign=1;
-	unsigned char c;
+	unsigned int c;
 	c = expbuf[ExpPtr];
 	if ( c == '.'  )   {
 			ExpPtr++;
@@ -261,7 +262,7 @@ double Eval_atof(char *expbuf) {
 
 //-----------------------------------------------------------------------------
 
-double Evalsub1(char *expbuf) {	// 1th Priority
+double Evalsub1(unsigned char *expbuf) {	// 1th Priority
 	double result,tmp,tmp2;
 	unsigned char c,d;
 	unsigned char *pt;
@@ -447,8 +448,12 @@ double Evalsub1(char *expbuf) {	// 1th Priority
 			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) EvalError(MaERR) ; // Math error
 			return result ;
 		case 0xC1 :	// Ran#
-			ExpPtr++;
-			result=(double)random(0)/65536.;
+			c = expbuf[++ExpPtr];
+			if ( ( '1' <= c ) && ( c <= '9' ) ) {
+					ExpPtr++;
+					srand( c-'0' );
+			}
+			result=(double)rand()/(double)(RAND_MAX+1.0);
 			return result ;
 		case 0x7F:	// 7F..
 			c = expbuf[ExpPtr+1];
@@ -519,7 +524,7 @@ double Evalsub1(char *expbuf) {	// 1th Priority
 					ExpPtr++ ;	// ',' skip
 					y=(EvalsubTop( expbuf ));
 					if ( expbuf[ExpPtr] == ')' ) ExpPtr++;
-					result=floor( ((double)random(0)/65536.)*(x-y+1) ) +y ;
+					result=floor( ((double)rand()/(double)(RAND_MAX+1.0))*(x-y+1) ) +y ;
 					return result ;
 			} else if ( c == 0xF0 ) {	// GraphY
 					ExpPtr+=2;
@@ -597,10 +602,10 @@ double Evalsub1(char *expbuf) {	// 1th Priority
 	return 0 ;
 }
 
-double Evalsub2(char *expbuf) {	//  2nd Priority  ( type B function ) ...
+double Evalsub2(unsigned char *expbuf) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub1( expbuf );
 	while ( 1 ) {
 		c = expbuf[ExpPtr++];
@@ -661,9 +666,9 @@ double Evalsub2(char *expbuf) {	//  2nd Priority  ( type B function ) ...
 	 }
 	return result;
 }
-double Evalsub3(char *expbuf) {	//  3rd Priority  ( ^ ...)
+double Evalsub3(unsigned char *expbuf) {	//  3rd Priority  ( ^ ...)
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	unsigned char *pt;
 	result = Evalsub2( expbuf );
 	while ( 1 ) {
@@ -686,9 +691,9 @@ double Evalsub3(char *expbuf) {	//  3rd Priority  ( ^ ...)
 	 }
 	return result;
 }
-double Evalsub4(char *expbuf) {	//  4th Priority  (Fraction) a/b/c
+double Evalsub4(unsigned char *expbuf) {	//  4th Priority  (Fraction) a/b/c
 	double result,frac1,frac2,frac3;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub3( expbuf );
 	c = expbuf[ExpPtr];
 	if ( c == 0xBB ) {
@@ -708,9 +713,9 @@ double Evalsub4(char *expbuf) {	//  4th Priority  (Fraction) a/b/c
 	}
 	return result;
 }
-double Evalsub5(char *expbuf) {	//  5th Priority
+double Evalsub5(unsigned char *expbuf) {	//  5th Priority
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	int dimA,dimB,reg,x,y;
 	result = Evalsub4( expbuf );
 	while ( 1 ) {
@@ -770,20 +775,19 @@ double Evalsub5(char *expbuf) {	//  5th Priority
 			}
 		} else return result;
 	 }
-	return result;
 }
 /*
-double Evalsub6(char *expbuf) {	//  6th Priority  ( type C function )  sin cos tan... 
+double Evalsub6(unsigned char *expbuf) {	//  6th Priority  ( type C function )  sin cos tan... 
 	int cont=1;
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub5( expbuf );
 	return result;
 }
 */
-double Evalsub7(char *expbuf) {	//  7th Priority
+double Evalsub7(unsigned char *expbuf) {	//  7th Priority
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub5( expbuf );
 	while ( 1 ) {
 		c = expbuf[ExpPtr];
@@ -825,22 +829,22 @@ double Evalsub7(char *expbuf) {	//  7th Priority
 	return result;
 }
 /*
-double Evalsub8(char *expbuf) {	//  8th Priority
+double Evalsub8(unsigned char *expbuf) {	//  8th Priority
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub7( expbuf );
 	return result;
 }
-double Evalsub9(char *expbuf) {	//  9th Priority
+double Evalsub9(unsigned char *expbuf) {	//  9th Priority
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub8( expbuf );
 	return result;
 }
 */
-double Evalsub10(char *expbuf) {	//  10th Priority  ( *,/, int.,Rmdr )
+double Evalsub10(unsigned char *expbuf) {	//  10th Priority  ( *,/, int.,Rmdr )
 	double result,tmp;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub7( expbuf );
 	while ( 1 ) {
 		c = expbuf[ExpPtr++];
@@ -862,9 +866,9 @@ double Evalsub10(char *expbuf) {	//  10th Priority  ( *,/, int.,Rmdr )
 	return result;
 }
  
-double Evalsub11(char *expbuf) {	//  11th Priority  ( +,- )
+double Evalsub11(unsigned char *expbuf) {	//  11th Priority  ( +,- )
 	double result;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub10( expbuf );
 	while ( 1 ) {
 		c = expbuf[ExpPtr++];
@@ -886,9 +890,9 @@ double Evalsub11(char *expbuf) {	//  11th Priority  ( +,- )
 	return result;
 }
 
-double Evalsub12(char *expbuf) {	//  12th Priority ( =,!=,><,>=,<= )
+double Evalsub12(unsigned char *expbuf) {	//  12th Priority ( =,!=,><,>=,<= )
 	double result;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub11( expbuf );
 	while ( 1 ) {
 		c = expbuf[ExpPtr++];
@@ -920,9 +924,9 @@ double Evalsub12(char *expbuf) {	//  12th Priority ( =,!=,><,>=,<= )
 	return result;
 }
 
-double Evalsub13(char *expbuf) {	//  13th Priority  ( And,and)
+double Evalsub13(unsigned char *expbuf) {	//  13th Priority  ( And,and)
 	double result;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub12( expbuf );
 	while ( 1 ) {
 		c = expbuf[ExpPtr];
@@ -937,14 +941,13 @@ double Evalsub13(char *expbuf) {	//  13th Priority  ( And,and)
 					return result;
 					break;
 			}
-		} else break;
+		} else return result;
 	}
-	return result;
 }
 
-double EvalsubTop(char *expbuf) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
+double EvalsubTop(unsigned char *expbuf) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 	double result;
-	unsigned char c;
+	unsigned int c;
 	result = Evalsub13( expbuf );
 	while ( 1 ) {
 		c = expbuf[ExpPtr];
@@ -963,20 +966,19 @@ double EvalsubTop(char *expbuf) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 					return result;
 					break;
 			}
-		} else break;
+		} else return result;
 	}
-	return result;
 }
 
-double Eval(char *expbuf) {		// Eval
+double Eval(unsigned char *expbuf) {		// Eval
 	unsigned int key;
 	double result;
     ExpPtr= 0;
     ErrorPtr= 0;
 	ErrorNo = 0;
-	if ( strlen(expbuf) == 0 ) return 0;
+	if ( strlen((char*)expbuf) == 0 ) return 0;
     result = EvalsubTop( expbuf );
-    if ( ExpPtr < strlen(expbuf) ) EvalError(SyntaxERR) ; // Syntax error 
+    if ( ExpPtr < strlen((char*)expbuf) ) EvalError(SyntaxERR) ; // Syntax error 
     if ( ErrorNo ) { CB_ErrNo( ErrorNo ); }
 	return result;
 }

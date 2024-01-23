@@ -54,7 +54,7 @@ void Fkey_dispR(int n,char *buffer) {
 }
 void Fkey_DISPN(int n,char *buffer) {
 	Fkey_Clear(n);
-	PrintXY(n*21+2,7*8+1,(unsigned char *)buffer,0);
+	PrintXY(n*21+3,7*8+1,(unsigned char *)buffer,0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);

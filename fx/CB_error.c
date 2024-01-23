@@ -45,31 +45,31 @@ void CB_ERROR(char *buffer) {
 void CB_ErrNo(int ErrorNo) {
 	switch (ErrorNo) {
 		case 1:
-			CB_ERROR("Syntax ERR");
+			CB_ERROR("Syntax ERROR");
 			break;
 		case 2:
-			CB_ERROR("Math ERR");
+			CB_ERROR("Math ERROR");
 			break;
 		case 3:
-			CB_ERROR("Go ERR");
+			CB_ERROR("Go ERROR");
 			break;
 		case 4:
-			CB_ERROR("Nesting ERR");
+			CB_ERROR("Nesting ERROR");
 			break;
 		case 5:
-			CB_ERROR("Stack ERR");
+			CB_ERROR("Stack ERROR");
 			break;
 		case 6:
-			CB_ERROR("Memory ERR");
+			CB_ERROR("Memory ERROR");
 			break;
 		case 7:
-			CB_ERROR("Argument ERR");
+			CB_ERROR("Argument ERROR");
 			break;
 		case 8:
-			CB_ERROR("Dimension ERR");
+			CB_ERROR("Dimension ERROR");
 			break;
 		case 9:
-			CB_ERROR("Range ERR");
+			CB_ERROR("Range ERROR");
 			break;
 		default:
 			break;

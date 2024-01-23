@@ -88,10 +88,10 @@ extern	double Yfct;
 
 extern double	traceAry[130];		// Graph trace array
 
-extern char *GraphY;
-extern char GraphY1[];
-extern char GraphY2[];
-extern char GraphY3[];
+extern unsigned char *GraphY;
+extern unsigned char GraphY1[];
+extern unsigned char GraphY2[];
+extern unsigned char GraphY3[];
 
 #define PI 3.1415926535897932
 
@@ -103,7 +103,7 @@ extern double *MatAry[MatAryMax];			// Matrix array ptr*
 //-----------------------------------------------------------------------------
 double MOD(double numer, double denom);
 
-void Text(int y, int x, char*str);
+void Text(int y, int x, unsigned char*str);
 
 void DrawBusy();		// BusyInd=0: running indicator off,  BusyInd=1: on
 void Bdisp_PutDisp_DD_DrawBusy();

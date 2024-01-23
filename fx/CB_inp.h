@@ -35,16 +35,16 @@ int PrevOpcode( unsigned char *SRC, int *offset );
 int PrevLine( unsigned char *SRC, int *offset );
 //int OpcodeLineN(unsigned char *buffer, int *ofst) ;
 //int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) ;
-void OpStrToStr(char *buffer, char *buffer2);
+void OpStrToStr(unsigned char *buffer, unsigned char *buffer2);
 
-int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
+int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
 
-void sprintG(char* buffer, double num, int width, int align_mode);
 double Round( double num, int round_mode, int digit);
-void sprintGRS(char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ; 
-void sprintGR(char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode 
+void sprintGRS(unsigned char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ; 
+void sprintGR(unsigned char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode 
+void sprintG(unsigned char* buffer, double num, int width, int align_mode);
 
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode);
-unsigned int InputStr( int x, int y, int width, char* buffer,      char SPC, int rev_mode);
+unsigned int InputStr( int x, int y, int width, unsigned char* buffer,      char SPC, int rev_mode);
 
 

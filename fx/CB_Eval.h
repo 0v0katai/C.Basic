@@ -16,11 +16,11 @@ double InputNumD_replay(int x, int y, int width, double defaultNum) ;
 double InputNumD_CB(int x, int y, int width, double defaultNum) ;
 double InputNumD_CB1(int x, int y, int width, double defaultNum) ;
 double InputNumD_CB2(int x, int y, int width, double defaultNum) ;
-double Eval(char *expbuf);
-double Evalsub0(char *expbuf);
-double Evalsub1(char *expbuf);
-double Evalsub5(char *expbuf);
-double Evalsub6(char *expbuf);
-double Evalsub7(char *expbuf);
-double EvalsubTop(char *expbuf);
+double Eval(unsigned char *expbuf);
+double Evalsub0(unsigned char *expbuf);
+double Evalsub1(unsigned char *expbuf);
+double Evalsub5(unsigned char *expbuf);
+double Evalsub6(unsigned char *expbuf);
+double Evalsub7(unsigned char *expbuf);
+double EvalsubTop(unsigned char *expbuf);
 
