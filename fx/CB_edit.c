@@ -748,6 +748,8 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 		Fkey_DISPR( 1, " \x0C ");
 		Fkey_DISPR( 2, " : ");
 		Fkey_DISPR( 3, " ' ");
+		Fkey_DISPR( 4, " = ");
+		Fkey_DISPR( 5, " \x11 ");
 
 		Bdisp_PutDisp_DD();	
 		
@@ -778,6 +780,14 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 			case KEY_CTRL_F4:	// '
 				RestoreDisp(SAVEDISP_PAGE1);
 				return 0x27;
+				break;
+			case KEY_CTRL_F5:	// =
+				RestoreDisp(SAVEDISP_PAGE1);
+				return '=';
+				break;
+			case KEY_CTRL_F6:	// !=
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0x11;
 				break;
 
 			case KEY_CTRL_LEFT:
