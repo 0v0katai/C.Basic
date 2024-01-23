@@ -32,6 +32,8 @@ int SaveProgfile(int progNo );
 int SavePicture( unsigned char *filebase, int pictNo );
 unsigned char * LoadPicture( int pictNo );
 
-void DeleteFile(char *name) ;
+int  RenameFile(char *name) ;
+void DeleteFile(char *name, int yesno) ;
+
 int NewProg();
 void CB_ProgEntry( unsigned char *SRC ) ; //	Prog "..." into memory

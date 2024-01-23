@@ -72,7 +72,7 @@ unsigned int SelectChar() {
 		if ( scrl == 0 ) if ( CharPtr>=114 ) scrl=1;
 		if ( scrl == 1 ) if ( CharPtr<  19 ) scrl=0;
 		Bdisp_AllClr_VRAM();
-		locate(1,1); Print((unsigned char*)"===Character Select===");
+		locate(1,1); Print((unsigned char*)"==Character Select===");
 		x=2; y=2;
 		opcode=1;
 		while ( opcode ) {
@@ -80,7 +80,7 @@ unsigned int SelectChar() {
 			opcode=oplist[ ptr ];
 			OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
 			locate(x,y);
-			if ( CharPtr == ptr ) PrintRevC( tmpbuf ); else PrintC( tmpbuf );
+			if ( CharPtr == ptr ) PrintRevC((unsigned char*)tmpbuf ); else PrintC((unsigned char*)tmpbuf );
 			x++;
 			if (x>20) { x=2; y++; if ( y>7 ) break ; }
 //			Bdisp_PutDisp_DD();
@@ -384,12 +384,17 @@ int PrevLine( unsigned char *SRC, int *offset ){
 	return ofst-(*offset) ;
 }
 
-int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy) {
+int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
 	char tmpbuf[18];
-	int i,len,x=1,xmax=21,cont=1;
+	int i,len,x=1,xmax=21,cont=1,rev;
 	unsigned short opcode;
 	unsigned char  c=1;
+	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+	if ( ofst > csrPtr ) { 
+		ofst=csrPtr;
+	}
 	while ( cont ) {
+		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
 		if (ofst==csrPtr) { *cx=x; *cy=*y; }
 		c = buffer[ofst] ; 
 		opcode = c & 0x00FF ;
@@ -404,11 +409,13 @@ int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx
 		i=0;
 		while ( i < len ) {
 			locate(x,*y);
-			PrintC(    (unsigned char*)(tmpbuf+i) ) ;
+			if ( rev )
+					PrintRevC( (unsigned char*)(tmpbuf+i) ) ;
+			else	PrintC(    (unsigned char*)(tmpbuf+i) ) ;
 //			Bdisp_PutDisp_DD();
 			x++;
 			if ( ( x > xmax ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {
-					if ( (*y) >= 7 ) { cont=0;break;}
+					if ( (*y) >= 7 ) { cont=0; break; }
 					(*y)++; x=1;
 			}
 			i++;
@@ -416,7 +423,6 @@ int PrintlineOpcode(int *y, unsigned char *buffer, int ofst, int csrPtr, int *cx
 	}
 	return ofst;
 }
-
 
 int PrintOpcode(int x, int y, char *buffer, int width, int rev_mode, char SPC) {
 	char tmpbuf[18];

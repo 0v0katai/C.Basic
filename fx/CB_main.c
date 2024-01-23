@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.20.00 
+ Casio Basic Interpreter (& Compiler) ver 0.30.00 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -106,7 +106,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				EditRun(2);			// Program listing & edit
 				break;
 			case KEY_CTRL_F4:
-				DeleteFile(filename);
+				RenameFile(filename);
+				run=0;
+				break;
+			case KEY_CTRL_F5:
+				DeleteFile(filename,1);
 				run=0;
 				break;
 			default:

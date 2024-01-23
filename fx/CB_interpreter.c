@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.20
+ Casio Basic interpreter for fx-9860G series    v0.22
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
