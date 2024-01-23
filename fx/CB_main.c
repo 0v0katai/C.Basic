@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.42.00 
+ Casio Basic Interpreter (& Compiler) ver 0.50.00 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -72,6 +72,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	SetVeiwWindowInit();
 //	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
 //	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
+	LoadConfig();
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -90,27 +91,33 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				LoadFileSDK( bas_src5 );
 				EditRun(2);		// Program listing & edit
 				run=0;
+				SaveConfig();
 				break;
 			case KEY_CTRL_EXE:
 			case KEY_CTRL_F1:
 				if ( LoadProgfile( filename ) ) break;
 				EditRun(1);			// Program run
+				SaveConfig();
 				break;
 			case KEY_CTRL_F2:
 				if ( LoadProgfile( filename ) ) break;
 				EditRun(2);			// Program listing & edit
+				SaveConfig();
 				break;
 			case KEY_CTRL_F3:
 				if ( NewProg() ) break ;
 				EditRun(2);			// Program listing & edit
+				SaveConfig();
 				break;
 			case KEY_CTRL_F4:
 				RenameFile(filename);
 				run=0;
+				SaveConfig();
 				break;
 			case KEY_CTRL_F5:
-				DeleteFile(filename,1);
+				DeleteFileFav(filename);
 				run=0;
+				SaveConfig();
 				break;
 			default:
 				run=0;
