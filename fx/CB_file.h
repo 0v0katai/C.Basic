@@ -33,7 +33,12 @@ int SavePicture( unsigned char *filebase, int pictNo );
 unsigned char * LoadPicture( int pictNo );
 
 int  RenameFile(char *name) ;
-void DeleteFile(char *name, int yesno) ;
+void DeleteFile(char *name) ;
+void DeleteFileFav(char *sname) ;
 
 int NewProg();
 void CB_ProgEntry( unsigned char *SRC ) ; //	Prog "..." into memory
+
+void SaveFavorites();
+void SaveConfig();
+void LoadConfig();

@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.40
+ Casio Basic interpreter for fx-9860G series    v0.50
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -270,7 +270,7 @@ int MatOprand( unsigned char *SRC, int *reg){
 			dimA=(CB_Eval( SRC ));
 			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
 		}
-		if ( MatArySizeA[(*reg)] < dimA ) { CB_Error(DimensionERR); return -1; }	// Dimension error
+		if ( ( dimA < 1 ) || ( MatArySizeA[(*reg)] < dimA ) ) { CB_Error(DimensionERR); return -1; }	// Dimension error
 		c=SRC[++ExecPtr];
 		if ( SRC[ExecPtr+1] == ']' ) {
 			ExecPtr++ ;
@@ -280,7 +280,7 @@ int MatOprand( unsigned char *SRC, int *reg){
 			dimB=(CB_Eval( SRC ));
 			if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
 		}
-		if ( MatArySizeB[(*reg)] < dimB ) { CB_Error(DimensionERR); return -1; }	// Dimension error
+		if ( ( dimB < 1 ) || ( MatArySizeB[(*reg)] < dimB ) ) { CB_Error(DimensionERR); return -1; }	// Dimension error
 		ExecPtr++ ;
 		return (dimA-1)*MatArySizeB[(*reg)]+dimB-1;
 	} else
@@ -1011,9 +1011,9 @@ void Skip_quot( unsigned char *SRC ){ // skip "..."
 			case 0x00:	// <EOF>
 				ExecPtr--;
 			case 0x22:	// "
-			case 0x3A:	// <:>
-			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
+//			case 0x3A:	// <:>
+//			case 0x0C:	// dsps
+//			case 0x0D:	// <CR>
 				return ;
 				break;
 			case 0x7F:	// 
@@ -1036,6 +1036,33 @@ void Skip_block( unsigned char *SRC ){
 			case 0x00:	// <EOF>
 				ExecPtr--;
 			case 0x3A:	// <:>
+			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				return ;
+				break;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0x7F:	// 
+			case 0xF7:	// 
+			case 0xF9:	// 
+			case 0xE5:	// 
+			case 0xE6:	// 
+			case 0xE7:	// 
+//			case 0xFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+}
+void Skip_rem( unsigned char *SRC ){	// skip '...
+	unsigned int c;
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+//			case 0x3A:	// <:>
 			case 0x0C:	// dsps
 			case 0x0D:	// <CR>
 				return ;
@@ -1451,6 +1478,9 @@ void CB_Cond( unsigned char *SRC ) { //	=> Conditional jump
 void CB_Dsz( unsigned char *SRC ) { //	Dsz
 	unsigned int c;
 	int reg,mptr;
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
 	c=SRC[ExecPtr];
 	if ( ( 'A' <= c ) && ( c <='z' ) ) {
 		ExecPtr++;
@@ -1464,8 +1494,27 @@ void CB_Dsz( unsigned char *SRC ) { //	Dsz
 			ExecPtr+=2;
 			mptr=MatOprand( SRC, &reg);
 			if ( ErrorNo ) return ; // error
-			MatAry[reg][mptr] --;
-			CB_CurrentValue = MatAry[reg][mptr];			// Matrix array
+			switch ( MatAryElementSize[reg] ) {
+				case 8:
+					MatAry[reg][mptr] --;
+					CB_CurrentValue = MatAry[reg][mptr];			// Matrix array double
+					break;
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					MatAryC[mptr] --;
+					CB_CurrentValue = MatAryC[mptr]   ;			// Matrix array char
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					MatAryW[mptr] --;
+					CB_CurrentValue = MatAryW[mptr]   ;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					MatAryI[mptr] --;
+					CB_CurrentValue = MatAryI[mptr]   ;			// Matrix array int
+					break;
+			}
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
@@ -1487,6 +1536,9 @@ void CB_Dsz( unsigned char *SRC ) { //	Dsz
 void CB_Isz( unsigned char *SRC ) { //	Isz
 	unsigned int c;
 	int reg,mptr;
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
 	c=SRC[ExecPtr];
 	if ( ( 'A' <= c ) && ( c <='z' ) ) {
 		ExecPtr++;
@@ -1500,8 +1552,27 @@ void CB_Isz( unsigned char *SRC ) { //	Isz
 			ExecPtr+=2;
 			mptr=MatOprand( SRC, &reg);
 			if ( ErrorNo ) return ; // error
-			MatAry[reg][mptr] ++;
-			CB_CurrentValue = MatAry[reg][mptr];			// Matrix array
+			switch ( MatAryElementSize[reg] ) {
+				case 8:
+					MatAry[reg][mptr] ++;
+					CB_CurrentValue = MatAry[reg][mptr];			// Matrix array double
+					break;
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					MatAryC[mptr] ++;
+					CB_CurrentValue = MatAryC[mptr]   ;			// Matrix array char
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					MatAryW[mptr] ++;
+					CB_CurrentValue = MatAryW[mptr]   ;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					MatAryI[mptr] ++;
+					CB_CurrentValue = MatAryI[mptr]   ;			// Matrix array int
+					break;
+			}
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
@@ -2301,7 +2372,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				break;
 				
 			case 0x27:	// ' rem
-				Skip_block(SRC);
+				Skip_rem(SRC);
 				dspflag=0;
 				break;
 			case 0x22:	// " "

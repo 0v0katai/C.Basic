@@ -14,6 +14,7 @@
 #include "CB_glib2.h"
 #include "CB_Eval.h"
 #include "CB_interpreter.h"
+#include "CB_file.h"
 #include "CB_error.h"
 
 
@@ -1088,6 +1089,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 	    ( tThetamax != TThetamax ) ||
 	    ( tThetaptch!= TThetaptch) )  {
 			ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+			SaveConfig();
 			return -1; // change value
 	}
 	return 0;	// no change
@@ -1166,6 +1168,7 @@ void SetFactor(){
 		}
 
 	}
+	SaveConfig();
 }
 
 //-----------------------------------------------------------------------------
@@ -1267,6 +1270,7 @@ void SetVar(int select){		// ----------- Set Variable
 				}
 		}
 	}
+	SaveConfig();
 }
 
 //-----------------------------------------------------------------------------
@@ -1528,5 +1532,6 @@ void SetupG(){		// ----------- Setup
 				break;
 		}
 	}
+	SaveConfig();
 }
 

@@ -211,7 +211,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 						dimA=(EvalsubTop( SRC ));
 						if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					}
-					if ( MatArySizeA[(reg)] < dimA ) CB_Error(DimensionERR) ; // Dimension error 
+					if ( ( dimA < 1 ) || ( MatArySizeA[(reg)] < dimA ) ) CB_Error(DimensionERR) ; // Dimension error 
 					c = SRC[++ExecPtr];
 					if ( SRC[ExecPtr+1] == ']' ) {
 						ExecPtr++;
@@ -221,7 +221,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 						dimB=(EvalsubTop( SRC ));
 						if ( SRC[ExecPtr] != ']' ) CB_Error(SyntaxERR) ; // Syntax error 
 					}
-					if ( MatArySizeB[(reg)] < dimB ) CB_Error(DimensionERR) ; // Dimension error 
+					if ( ( dimB < 1 ) || ( MatArySizeB[(reg)] < dimB ) ) CB_Error(DimensionERR) ; // Dimension error 
 					ExecPtr++ ;
 					if ( ErrorNo ) return 0 ;
 					switch ( MatAryElementSize[reg] ) {
@@ -279,6 +279,58 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result=floor( ((double)rand()/(double)(RAND_MAX+1.0))*(x-y+1) ) +y ;
 					return result ;
+			} else if ( c == 0xE9 ) {	// CellSum(Mat A[x,y])
+					ExecPtr+=2;
+					c = SRC[ExecPtr];
+					if ( ( c!=0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) CB_Error(SyntaxERR) ; // Syntax error 
+					ExecPtr+=2;
+					c = SRC[ExecPtr];
+					if ( ( 'A'<=c )&&( c<='Z' ) ) {
+						reg=c-'A';
+						ExecPtr++ ;
+						if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
+						c = SRC[++ExecPtr];
+						if ( SRC[ExecPtr+1] == ',' ) {
+							ExecPtr++;
+							if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
+								else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REG[c-'A'];
+						} else {
+							dimA=(EvalsubTop( SRC ));
+							if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+						}
+						if ( ( dimA < 2 ) || ( MatArySizeA[(reg)] < dimA-1 ) ) CB_Error(DimensionERR) ; // Dimension error 
+						c = SRC[++ExecPtr];
+						if ( SRC[ExecPtr+1] == ']' ) {
+							ExecPtr++;
+							if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
+							else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REG[c-'A'];
+						} else {
+							dimB=(EvalsubTop( SRC ));
+							if ( SRC[ExecPtr] != ']' ) CB_Error(SyntaxERR) ; // Syntax error 
+						}
+						if ( ( dimB < 2 ) || ( MatArySizeB[(reg)] < dimB-1 ) ) CB_Error(DimensionERR) ; // Dimension error 
+						c = SRC[++ExecPtr];
+						if ( ErrorNo ) return 0 ;
+						if ( c == ')' ) ExecPtr++ ;
+						dimA--; dimB--;
+						switch ( MatAryElementSize[reg] ) {
+							case 8:														// Matrix array doubl
+								return MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB] + MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAry[reg][(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAry[reg][(dimA+1)*MatArySizeB[reg]+dimB] + MatAry[reg][(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAry[reg][(dimA)*MatArySizeB[reg]+dimB-1] + MatAry[reg][(dimA)*MatArySizeB[reg]+dimB+1];
+								break;
+							case 1:														// Matrix array char
+								MatAryC=(char*)MatAry[reg];
+								return MatAryC[(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAryC[(dimA-1)*MatArySizeB[reg]+dimB] + MatAryC[(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAryC[(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAryC[(dimA+1)*MatArySizeB[reg]+dimB] + MatAryC[(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAryC[(dimA)*MatArySizeB[reg]+dimB-1] + MatAryC[(dimA)*MatArySizeB[reg]+dimB+1] ;
+								break;
+							case 2:														// Matrix array word
+								MatAryW=(short*)MatAry[reg];
+								return  MatAryW[(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAryW[(dimA-1)*MatArySizeB[reg]+dimB] + MatAryW[(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAryW[(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAryW[(dimA+1)*MatArySizeB[reg]+dimB] + MatAryW[(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAryW[(dimA)*MatArySizeB[reg]+dimB-1] + MatAryW[(dimA)*MatArySizeB[reg]+dimB+1] ;
+								break;
+							case 4:														// Matrix array int
+								MatAryI=(int*)MatAry[reg];
+								return  MatAryI[(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAryI[(dimA-1)*MatArySizeB[reg]+dimB] + MatAryI[(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAryI[(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAryI[(dimA+1)*MatArySizeB[reg]+dimB] + MatAryI[(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAryI[(dimA)*MatArySizeB[reg]+dimB-1] + MatAryI[(dimA)*MatArySizeB[reg]+dimB+1] ;
+								break;
+						}
+					}
 			} else if ( c == 0xF0 ) {	// GraphY
 					ExecPtr+=2;
 					c=SRC[ExecPtr++];

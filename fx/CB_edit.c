@@ -532,6 +532,7 @@ unsigned short oplistOPTN[]={
 		0x0FC,	// ProbQ(
 //		0x0FD,	// ProbR(
 //		0x0FE,	// Probt(
+		0x7FE9,	// CellSum(
 		0};
 							
 unsigned short oplistPRGM[]={	
@@ -865,7 +866,7 @@ unsigned short oplistCMD[]={
 		0xF70A,	// Do			7
 		0xF70B,	// LpWhile		8
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
+		0x7FE9,	// CellSum(
 		0x7F46,	// Dim	
 		0x7F40,	// Mat	
 
@@ -1214,6 +1215,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_F6:
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					stat = CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
+					SaveConfig();
 					FileBase = ProgfileAdrs[ProgNo];
 					SrcBase  = FileBase+0x56;
 					offset = stat;
@@ -1429,15 +1431,19 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetupG();
 							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
+							ClipStartPtr = -1 ;			// ClipMode cancel
+							break;
+					case KEY_CTRL_F1:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetVar(0);		// A - 
 							key=0;
+							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 					case KEY_CTRL_F3:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetViewWindow();
 							key=0;
+							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 					case KEY_CTRL_F5:
 							switch (dumpflg) {
@@ -1459,6 +1465,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_F6:
 							CB_test();
 							key=0;
+							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 							
 					case KEY_CTRL_CLIP:
