@@ -60,7 +60,6 @@ unsigned int SelectFile (char *filename)
 	while( 1 ){
 		if ( FileListUpdate  ) {
 			MSG1("File Reading.....");
-//			Bdisp_PutDisp_DD_DrawBusy();
 			size = ReadFile( folder );
 			qsort( files, size, sizeof(Files), FileCmp );
 		}
@@ -82,7 +81,7 @@ unsigned int SelectFile (char *filename)
 			strcpy( folder, files[index].filename );
 			index = 0;
 			FileListUpdate = 1 ;
-			redrawsubfolder=0;
+			redrawsubfolder= 0 ;
 		} else {										//file
 			strcpy( name,   files[index].filename );
 			if ( strcmp( files[index].folder  ,  folder ) != 0 ) FileListUpdate=1;
@@ -105,6 +104,11 @@ void FileListfree() {
 	}
 }
 
+void Abort(){		// abort program
+	unsigned int key;
+	MSG2("Not enough Memory","Please Restart");
+	while (1) GetKey(&key);
+}
 
 static int ReadFile( char *folder )
 {
@@ -134,9 +138,7 @@ static int ReadFile( char *folder )
 /*				Get Name & Size			*/
 	if ( UseHiddenRAM ) if ( IsHiddenRAM )  files = (Files *)HiddenRAM();
 	if ( files == NULL ) files = (Files *)malloc( size*sizeof(Files) );
-	if ( files == NULL ) { 
-		while (1) MSG2("Not enough Memory","Please Restart");
-	}
+	if ( files == NULL ) Abort();
 	memset( files, 0, size*sizeof(Files) );
 
 	i = FavoritesMAX ;
@@ -712,12 +714,7 @@ char * loadFile( const char *name , int editMax)
 	size = Bfile_GetFileSize( handle );
 
 	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
-	if( buffer == NULL )
-	{
-		CB_ErrMsg(NotEnoughMemoryERR);
-		Bfile_CloseFile( handle );
-		return NULL;
-	}
+	if( buffer == NULL ) Abort();
 	memset( buffer, 0x00,     size*sizeof(char)+editMax+4 );
 
 	Bfile_ReadFile( handle, buffer, size, 0 );
@@ -1441,11 +1438,11 @@ int NewProg(){
 	
 	size=NewMax;
 	filebase = (char *)malloc( size*sizeof(char)+4 );
-	memset( filebase, 0x77,             size*sizeof(char)+4 );
 	if( filebase == NULL ) {
 		CB_ErrMsg(NotEnoughMemoryERR);
 		return 1;
 	}
+	memset( filebase, 0x77,             size*sizeof(char)+4 );
 	for (i=0; i<0x56+4; i++) filebase[i]=0x00;	// header clear
 
 	size=0x56+1;
@@ -1677,7 +1674,6 @@ void ConvertToText( char *fname ){
 		storeFile( fname, (unsigned char*)text, textsize );
 	}
 
-	FileListUpdate=1;	// 
 	ErrorMSGfile( "Convert Complete!", fname, 0);
 	SetShortName( sname, fname);
 	strncpy( renamename, sname, FILENAMEMAX);
@@ -1852,9 +1848,9 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 }
 
 //----------------------------------------------------------------------------------------------
-int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

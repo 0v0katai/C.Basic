@@ -275,7 +275,13 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						break;
 					case 0x0C:	// Return
-						if ( GosubNestN > 0 ) { ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
+						if ( GosubNestN > 0 ) { 
+							ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
+						c=SRC[ExecPtr];
+						if ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
+							if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
+							else		CB_CurrentValue    = EvalsubTop( SRC );
+						}
 						if ( ProgEntryN ) { return -2 ; }	//	return from  sub Prog
 						cont=0;
 						break;
@@ -574,7 +580,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x3B:	// StrInv(
 					case 0x3C:	// StrShift(
 					case 0x3D:	// StrRotate(
-//					case 0x3E:	// ToStr(
+					case 0x3E:	// Sprintf(
 					case 0x3F:	// Str
 					strjp:
 						ExecPtr-=2;
@@ -788,8 +794,8 @@ int CB_interpreter( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_quot( char *SRC ){ // skip "..."
