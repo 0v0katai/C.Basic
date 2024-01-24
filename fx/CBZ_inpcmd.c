@@ -698,7 +698,8 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo3, "DATE");
 					Fkey_dspRB( FKeyNo4, "TIME");
 					Fkey_dspRB( FKeyNo5, "BackL");
-					FkeyClear( FKeyNo6 );
+					Fkey_dspRB( FKeyNo6, "Batt");
+//					FkeyClear( FKeyNo6 );
 //					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 //				case 1:

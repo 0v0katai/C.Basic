@@ -832,6 +832,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return	BackLight(-1);
 				case 0xFFFFFFF2:	// PopUpWin(
 					return CB_PopUpWin(SRC);
+				case 0xFFFFFFDE:	// BatteryStatus
+					return CB_BatteryStatus(SRC);
 				default:
 					ExecPtr--;	// error
 					break;
@@ -1466,7 +1468,7 @@ void CB_Wait( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //int EvalIntObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
-int EvalIntObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

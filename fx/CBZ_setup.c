@@ -29,10 +29,16 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.23\xE6\x41";
-#define VERSION 223
+const char VerMSG[]="C.Basic  v2.24\xE6\x41";
+#define VERSION 224
 
 //---------------------------------------------------------------------------------------------
+
+void VBattDispSub( int x, int y) {
+	char buffer[32];
+	sprintf(buffer,"%4.2fv",(float)CB_BatteryStatus(buffer)/100);
+	PrintMini( x, y, (unsigned char*)buffer, MINI_OVER );
+}
 
 void VerDispSub() {
 	int freearea;
@@ -41,14 +47,16 @@ void VerDispSub() {
 	locate( 3, 2 ); Print( (unsigned char*)VerMSG );
 	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
 	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
-	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
-	locate( 3, 7 ); Print( (unsigned char*)"          (c)2019" );
+	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
+	locate( 3, 6 ); Print( (unsigned char*)"          (c)2019" );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
 		sprintf(buffer,"%d bytes free",freearea);
-		PrintMini( 2*6+2, 4*8+2, (unsigned char*)buffer, MINI_OVER );
+		PrintMini( 2*6+2, 6*8+2, (unsigned char*)buffer, MINI_OVER );
+		VBattDispSub( 15*6+2, 6*8+2 );
 //		locate( 3, 5 ); Print( (unsigned char*)buffer );
+		
 //	}
 		
 	Bdisp_PutDisp_DD();
@@ -1438,6 +1446,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 		}
 		y = select-scrl;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//		VBattDispSub( 14*6+2, 7*8+2 );
 		switch (select) {
 			case SETUP_DrawType: // Draw Type
 				Fkey_Icon( FKeyNo1, 357 );	//	Fkey_dispN( FKeyNo1, "Con");

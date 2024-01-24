@@ -1676,13 +1676,20 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		if ( ( flag_ ) && ( c=='_' ) ) c = text[++textofst];	// '_' skip
 		flag_=0; 
 		if ( c==0 ) break;
-		if ( ( c==0x0D ) && ( text[textofst+1]==0x0A ) ) { 	// 0x0D 0x0A
+		if ( c==0x0D ) {
+			if ( text[textofst+1]==0x0A )  textofst++;	// 0x0D 0x0A
 			if ( ( flag == 0x27 ) || ( ( flag == 0x22 ) && ( quotflag == 0 ) ) ) { flag=0; }	// ' end
 			srcbase[ofst++] = c;
 			textofst++;
-			textofst++;
 			goto tokenloop;
 		}
+		
+		if ( textmode ) {
+			srcbase[ofst++] = c;
+			textofst++;
+			goto tokenloop;	// plane text mode
+		}
+
 		if ( c == 0x22 ) {	// "
 			if ( flag == 0x22 )  { flag=0; goto tokenskip;	// " end
 			} else {

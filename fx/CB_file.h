@@ -47,6 +47,7 @@ extern char StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
 
 extern char ForceG1Msave;		//    1: force g1m save
 extern char AutoSaveMode;		//    1: Auto save ( not pop up )
+extern char textmode;
 
 extern char root2[root2_MAX];
 extern char root3[root2_MAX];
@@ -69,7 +70,7 @@ int SetRoot2( char* SRC ) ;
 #define FileCMD_RENDIR 10011
 #define FileCMD_DELDIR 10016
 
-char *loadFile( const char *name , int editMax, int disperror, int hiddenflag );
+char * loadFile( const char *name, int *editMax, int disperror, int *filesize );
 int  storeFile( const char *name, unsigned char* codes, int size);
 int LoadProgfile( char *name, int prgNo, int editsize, int disperror ) ;
 int SaveG1M( char *filebase );
@@ -112,7 +113,6 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) ;
 void CB_Save( char *SRC ) ; //	Save "TEST",Mat A[1,3]
 void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3] 
 void CB_Delete( char *SRC ) ;	// Delete "ABC.bin"[,Q]
-int VarPtrLength( char *SRC, int *length, int *type, int flag);
 
 void Setfoldername16( char *folder16, char *sname ) ;
 int CheckPassWord( char *filebase );	// 1:cancel  0:Ok  -1:no pass
@@ -150,7 +150,7 @@ void CB_BmpLoad( char *SRC ) ; //	BmpLoad("TEST" [, Ptr])->Mat A[1,3]
 int MCS_ReadFileList() ;	// MSC file list -> files
 void ShortName2basname( char *basname, char *sname );
 void SetBasName( char *basname, char *fname );
-char * MCS_LoadG1M( char *fname , int editMax, int disperror, int hiddenflag  ) ;	// MCS -> g1m file
+char * MCS_LoadG1M( char *fname , int *editMax, int disperror, int *filesize  ) ;	// MCS -> g1m file
 int MCS_SaveG1M( char *filebase ) ;	// g1m file -> MCS
 int MCS_DeleteG1M( char *fname  ) ;	// delete g1m
 int MCS_ExistFile( char *fname  ) ;	// exist?
@@ -159,3 +159,7 @@ char * MCS_LoadCAPT( char *pictname ) ;
 char * MCS_LoadPICT( char *pictname, int *length ) ;
 int MCS_SaveCAPT( char *pictname, char *filebase  ) ;
 int MCS_SavePICT( char *pictname, char *filebase  ) ;
+
+//-----------------------------------------------------------------------------
+int GetMainBatteryVoltage( int battery ) ;
+int CB_BatteryStatus(char *SRC);

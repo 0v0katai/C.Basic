@@ -60,7 +60,7 @@ void SetBasName( char *basname, char *fname ){
 	ShortName2basname( basname, sname );
 }
 
-char * MCS_LoadG1M( char *fname , int editMax, int disperror, int hiddenflag  ) {	// MCS -> g1m file
+char * MCS_LoadG1M( char *fname , int *editMax, int disperror, int *filesize  ) {	// MCS -> g1m file
 	TDirectoryItem *item;
 	int tmp[4];
 	char *filebase,*srcbase;
@@ -92,20 +92,21 @@ char * MCS_LoadG1M( char *fname , int editMax, int disperror, int hiddenflag  ) 
 	}
 
   loop:
-	filebase = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+editMax +0x56 +4 );
+	filebase = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+(*editMax) +0x56 +4 );
 	if( filebase == NULL ) {
-		editMax/=2; if ( editMax>=16 ) goto loop;
+		(*editMax)/=2; if ( (*editMax)>=16 ) goto loop;
 		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)basname, 0 );
 		CB_Error(NotEnoughMemoryERR); 
 		return NULL;
 //		Abort();
 	}
-	memset( filebase+0x56, 0x00,     size*sizeof(char)+editMax+4 );
+	memset( filebase+0x56, 0x00,     size*sizeof(char)+(*editMax)+4 );
 	memcpy( filebase+0x56-10, (char*)data_ptr, data_length );
 	size += 0x56;
 	G1M_header( filebase, &size );	// G1M header set
 	G1M_Basic_header( filebase );	// G1M Basic header set
 	basname8ToG1MHeader( filebase, basname);
+	(*filesize) = size;
 	return filebase;
 }
 

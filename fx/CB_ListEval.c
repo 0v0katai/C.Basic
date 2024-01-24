@@ -500,6 +500,8 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return	BackLight(-1);
 				case 0xFFFFFFF2:	// PopUpWin(
 					return CB_PopUpWin(SRC);
+				case 0xFFFFFFDE:	// BatteryStatus
+					return CB_BatteryStatus(SRC);
 				default:
 					ExecPtr--;	// error
 					break;

@@ -123,8 +123,7 @@ void GetGenuineCmdF6( unsigned int *code ){
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
-//				case 0: CommandPage=1;break;
-//				case 1: CommandPage=0;break;
+				case 0: (*code)=0xF7DE;return;	// BatteryStatus
 			} break;
 			
 		case CMD_SHIFT:		//	-----------------------------------------------------------SHIFT_F6

@@ -1519,6 +1519,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return	BackLight(-1);
 				case 0xFFFFFFF2:	// PopUpWin(
 					return CB_PopUpWin(SRC);
+				case 0xFFFFFFDE:	// BatteryStatus
+					return CB_BatteryStatus(SRC);
 				default:
 					ExecPtr--;	// error
 					break;
@@ -1669,10 +1671,10 @@ double DmsToDec( char *SRC, double h ) {	// 12"34"56 -> 12.5822222
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4hh( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAlignE4ii( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4jj( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4ii( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4jj( unsigned int n ){ return n ; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
@@ -2175,8 +2177,8 @@ int CB_IsError( char *SRC ){ //	IsError (...)
 //-----------------------------------------------------------------------------
 //int EvalObjectAlignE4s( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4t( unsigned int n ){ return n+n; }	// align +6byte
-int EvalObjectAlignE4u( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4v( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4u( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4v( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4w( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4x( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4y( unsigned int n ){ return n ; }	// align +4byte

@@ -427,6 +427,21 @@ void RclVwin( int n ) ;
 void CB_StoVWin( char *SRC ) ;
 void CB_RclVWin( char *SRC ) ;
 
+
+//------------------------------------------------------------------------------
+//  Send(/ Recv(  format
+//	"C"+"B"+ type + type2 + sizeL + sizeH + size3 + size4 + data........
+//  type: 0:bin  1:byte 2:short  4:int  8:double  99:str
+#define SERIAL_BIN    0
+#define SERIAL_BIT    1
+#define SERIAL_BYTE   8
+#define SERIAL_WORD   16
+#define SERIAL_LONG   32
+#define SERIAL_DOUBLE 64
+#define SERIAL_CPLX  128
+#define SERIAL_STRING 99
+
+int VarPtrLength( char *SRC, int *length, int *type, int flag);
 void CB_Send( char *SRC );				// Receive(
 void CB_Receive( char *SRC );			// OpenComport38k
 void CB_OpenComport38k( char *SRC );	// CloseComport38k
@@ -436,4 +451,8 @@ void CB_Receive38k( char *SRC );		// Receive38k
 
 void CB_Beep( char *SRC );
 
+int Search_Lbl( char *SRC, int lc );
+int CB_SearchProg( char *name ) ; //	Prog search
+
 void CB_ResetExecTicks();
+int SetStyle();
