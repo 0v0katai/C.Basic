@@ -909,6 +909,10 @@ int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // ƒJƒi‘Î‰
 		c = str[1];
 		if ( c <= 0xDF ) font=FontminiE6[c];
 	} else
+	if ( a == 0xE7 )  {
+		c = str[1];
+		if ( c < 0x7F ) font=Fontmini[c];
+	} else
 	if ( 0x80 <= a ) if ( a <= 0xDF ) font=Fontmini80[a-0x80];
 	
 	switch ( mode ) {

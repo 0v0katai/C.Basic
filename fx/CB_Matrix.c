@@ -179,28 +179,28 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
 }
 
 int DimMatrixDefaultElementSize( int reg ) {
-	switch ( reg+'A' ) {
-		case 'B':
-		case 'C':
-		case 's':
-			return 8;
-			break;
-		case 'D':
-		case 'W':
-			return 16;
-			break;
-		case 'L':
-		case 'I':
-			return 32;
-			break;
-		case 'E':
-		case 'F':
-			return 64;
-			break;
-		default:
+//	switch ( reg+'A' ) {
+//		case 'B':
+//		case 'C':
+//		case 's':
+//			return 8;
+//			break;
+//		case 'D':
+//		case 'W':
+//			return 16;
+//			break;
+//		case 'L':
+//		case 'I':
+//			return 32;
+//			break;
+//		case 'E':
+//		case 'F':
+//			return 64;
+//			break;
+//		default:
 			return CB_INT? 32:64 ;
-			break;
-	}
+//			break;
+//	}
 }
 
 int DimMatrix( int reg, int dimA, int dimB, int base ) {
@@ -1514,4 +1514,9 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A
 
 	TransposeMatirx( reg );
 }
+
+//-----------------------------------------------------------------------------
+//int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
+//-----------------------------------------------------------------------------
 
