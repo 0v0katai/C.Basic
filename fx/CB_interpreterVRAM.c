@@ -419,11 +419,13 @@ void CB_ViewWindow( char *SRC ) { //	ViewWindow
 	int reg=0;
 	while ( reg <= 10 ) {
 		c=SRC[ExecPtr];
+		if ( c == ',' ) goto next;
 		if ( (c==':') || (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
 		REGv[reg]=CB_EvalDbl( SRC );
 		c=SRC[ExecPtr];
 		if ( (c==':') || (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	  next:
 		ExecPtr++;
 		reg++;
 	}
@@ -1723,6 +1725,7 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 	listmax=n-1;
 	select=0;
 	scrl=0;
+	KeyRecover();
 
 	while ( cont ){
 		ML_rectangle( 4, 1, 124, 63, 1, 1, 0);
@@ -1741,7 +1744,7 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 		if ( listmax > scrl+5 ) PrintXY( 116, 54, (unsigned char*)"\xE6\x93", 0);
 		y = select-scrl+1;
 		Bdisp_AreaReverseVRAM( 8, y*8+6, 122, y*8+13);	// reverse select line 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 //			case KEY_CTRL_EXIT:
 			case KEY_CTRL_AC:
@@ -1997,11 +2000,11 @@ void CB_RclVWin( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

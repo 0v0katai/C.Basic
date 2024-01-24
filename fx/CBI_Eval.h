@@ -32,10 +32,14 @@ int fADDint( int x, int y ) ;	// x + y
 int fSUBint( int x, int y ) ;	// x - y
 int fMULint( int x, int y ) ;	// x * y
 int fDIVint( int x, int y ) ;	// x / y
-int fANDint( int x, int y ) ;	// x and y
-int fORint( int x, int y ) ;	// x or y
-int fXORint( int x, int y ) ;	// x xor y
-int fNotint( int x ) ;	// Not x
+int fANDint( int x, int y ) ;	// x & y
+int fORint( int x, int y ) ;	// x | y
+int fXORint( int x, int y ) ;	// x ^ y
+int fNotint( int x ) ;			// ! x
+int fANDint_logic( int x, int y ) ;	// x && y
+int fORint_logic( int x, int y ) ;	// x || y
+int fXORint_logic( int x, int y ) ;	// (x!=0) ^ (y!=0)
+int fNotint_logic( int x ) ;		//  x == 0
 int fcmpEQint( int x, int y ) ;	//  x = y
 int fcmpGTint( int x, int y ) ;	//  x > y
 int fcmpLTint( int x, int y ) ;	//  x < y

@@ -608,7 +608,6 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x79:	// BG-Pict
 						CB_BG_Pict( SRC );
 						dspflag=0;
-						UseGraphic=0;
 						break;
 					case 0x1A:	// ClrList
 						CB_ClrList(SRC);
@@ -888,51 +887,16 @@ void InitLocalVar() {
 	}
 }
 
-
-int CB_interpreter( char *SRC ) {
-	int flag;
-	int c;
-	int stat;
-
-	CB_INT = CB_INTDefault;
-	Waitcount=DefaultWaitcount;
-	MatBase = MatBaseDefault;
-	CB_TicksStart = RTC_GetTicks();	// 
-	CB_TicksAdjust = 0 ;	// 
-	srand( CB_TicksStart ) ;	// rand seed
-	ScreenMode = 0;	// Text mode
-	UseGraphic = 0;
-	PxlMode = 1;		// Pxl  1:set  0:clear	
-//	BG_Pict_No=0;		// BG-None
-	CB_ClrText(SRC);
-	ProgEntryN = 0;	// subroutin clear
-	GosubNestN = 0;	// Gosub clear
-	ErrorPtr = 0;
-	ErrorNo = 0;
-	CB_MatListAnsreg=27;	//	ListAns init
-	Bdisp_PutDisp_DD_DrawBusy();
-	KeyRecover(); 
-	Argc = 0;	// 
-	CB_AliasVarClr();
-	DeleteMatListAnsAll();	// Ans init	
-	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
-		
-	stat = CB_interpreter_sub( SRC );
-	KeyRecover(); 
-//	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
-	return stat;
-}
-
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+//int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_quot( char *SRC ){ // skip "..."
@@ -2524,7 +2488,49 @@ void CB_AliasVar( char *SRC ) {	// AliasVar A=ƒ¿
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int CB_interpreter( char *SRC ) {
+	int flag;
+	int c;
+	int stat;
+
+	CB_INT = CB_INTDefault;
+	Waitcount=DefaultWaitcount;
+	MatBase = MatBaseDefault;
+	CB_TicksStart = RTC_GetTicks();	// 
+	CB_TicksAdjust = 0 ;	// 
+	srand( CB_TicksStart ) ;	// rand seed
+	ScreenMode = 0;	// Text mode
+	UseGraphic = 0;
+	PxlMode = 1;		// Pxl  1:set  0:clear	
+	BG_Pict_No=0;		// BG-None
+	CB_ClrText(SRC);
+	ProgEntryN = 0;	// subroutin clear
+	GosubNestN = 0;	// Gosub clear
+	ErrorPtr = 0;
+	ErrorNo = 0;
+
+	defaultStrAry=26;	// <r>
+	defaultStrAryN=20;
+	defaultStrArySize=255+1;
+	defaultFnAry=27;		// Theta
+	defaultGraphAry=27;		// Theta
+
+	CB_MatListAnsreg=27;	//	ListAns init
+	Bdisp_PutDisp_DD_DrawBusy();
+	KeyRecover(); 
+	Argc = 0;	// 
+	CB_AliasVarClr();
+	DeleteMatListAnsAll();	// Ans init	
+	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
+		
+	stat = CB_interpreter_sub( SRC );
+	KeyRecover(); 
+//	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
+	return stat;
+}
+
+//----------------------------------------------------------------------------------------------
+//int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte

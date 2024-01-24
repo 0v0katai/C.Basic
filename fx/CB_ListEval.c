@@ -267,7 +267,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return result ;
 
 				case 0xFFFFFFB3 :		// Not
-					return EvalFxDbl( &fNot, ListEvalsub5( SRC ) ) ; 
+					return EvalFxDbl( &fNot_logic, ListEvalsub5( SRC ) ) ; 
 						
 				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
@@ -436,8 +436,8 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			return EvalFxDbl( &floor, ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFFB6 :	// frac
 			return EvalFxDbl( &frac, ListEvalsub5( SRC ) ) ; 
-//		case 0xFFFFFFA7 :	// Not
-//			return EvalFxDbl( &fNot, ListEvalsub5( SRC ) ) ; 
+		case 0xFFFFFFA7 :	// not
+			return EvalFxDbl( &fNot, ListEvalsub5( SRC ) ) ; 
 
 		case '%' :	// 1/128 Ticks
 			return RTC_GetTicks()-CB_TicksAdjust;	// 
@@ -942,6 +942,17 @@ double ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 			case 0x10 :	// <=
 				result = EvalFxDbl2( &fcmpLE, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
 				break;
+			case 0xFFFFFF9A :	// xor
+				result = EvalFxDbl2( &fXOR, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				break;
+			case '|' :	// or
+			case 0xFFFFFFAA :	// or
+				result = EvalFxDbl2( &fOR, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				break;
+			case '&' :	// and
+			case 0xFFFFFFBA :	// and
+				result = EvalFxDbl2( &fAND, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -966,7 +977,7 @@ double ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 			switch ( c ) {
 				case 0xFFFFFFB0 :	// And
 					ExecPtr+=2;
-					result = EvalFxDbl2( &fAND, &resultflag, &resultreg, result, ListEvalsub12( SRC ) ) ;
+					result = EvalFxDbl2( &fAND_logic, &resultflag, &resultreg, result, ListEvalsub12( SRC ) ) ;
 					break;
 				default:
 					return result;
@@ -993,11 +1004,11 @@ double ListEvalsubTop(char *SRC) {	//
 			switch ( c ) {
 				case 0xFFFFFFB1 :	// Or
 					ExecPtr+=2;
-					result = EvalFxDbl2( &fOR, &resultflag, &resultreg, result, ListEvalsub13( SRC ) ) ;
+					result = EvalFxDbl2( &fOR_logic, &resultflag, &resultreg, result, ListEvalsub13( SRC ) ) ;
 					break;
 				case 0xFFFFFFB4 :	// Xor
 					ExecPtr+=2;
-					result = EvalFxDbl2( &fXOR, &resultflag, &resultreg, result, ListEvalsub13( SRC ) ) ;
+					result = EvalFxDbl2( &fXOR_logic, &resultflag, &resultreg, result, ListEvalsub13( SRC ) ) ;
 					break;
 				default:
 					return result;
