@@ -2528,7 +2528,7 @@ void LoadConfig1(){
 		ExitDebugModeCheck=buffer[42];		S_L_Style     =buffer[42+1];	CommandInputMethod=bufshort[20];
 		ComplexMode   =buffer[46];			Angle         =buffer[46+1];	EnableExtFont  =buffer[ 44];		ForceG1Msave   =buffer[44+1];
 		BreakCheckDefault=bufshort[25];        								StorageMode    =bufshort[24];
-		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
+		TimeDsp       =bufshort[27];										PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        								MatBaseDefault=1-bufshort[28];
 		PictMode      =bufshort[31];        								CheckIfEnd    =bufshort[30];
 
