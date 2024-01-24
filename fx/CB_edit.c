@@ -453,9 +453,11 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr ){
 	
 	Bdisp_AllClr_DDVRAM();
 	
-	locate(1,1); Print((unsigned char *)"Search For Text");
+	locate(1,1); Print((unsigned char*)"Search For Text");
 	locate(1,3); Print((unsigned char*)"---------------------");
 	locate(1,5); Print((unsigned char*)"---------------------");
+	Fkey_dispN( 0, "SRC ");
+	Fkey_dispR( 2, "CMD");
 
 	Bdisp_PutDisp_DD_DrawBusy();
 		

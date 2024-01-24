@@ -746,7 +746,7 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 	if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
 	if ( sizeA > sizeA2 ) sizeA=sizeA2;
 	
-	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+//	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	tmpT=regT;
 	c = base;
 	for ( c=base; c<sizeA+base; c++ ) {
@@ -827,8 +827,10 @@ void DrawStat(){	// DrawStat
 	int c,No=0;
 	int at1st;
 	int xlistreg,ylistreg;
-	
-	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+
+	tmpX=regX; tmpY=regY;
+//	ML_clear_vram();
+//	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 
 	for ( No=0; No<3; No++ ) {
 		at1st=0;
@@ -856,7 +858,8 @@ void DrawStat(){	// DrawStat
 			}
 		}
 	}
-	regintX=regX; regintY=regY;
+//	regintX=regX; regintY=regY;
+	regX=tmpX; regY=tmpY;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 

@@ -1048,6 +1048,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				break;
 			case KEY_CTRL_F6:
 				small=32-small;
+				if ( small==0 ) listdsp=0;
 				break;
 				
 			case KEY_CTRL_UP:
@@ -1060,7 +1061,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				break;
 
 			case KEY_CTRL_OPTN:
-				listdsp=1-listdsp;
+				if ( listdsp ) { small=0; listdsp=0; } else { small=32; listdsp=32; };
 				break;
 				
 			case KEY_CTRL_RIGHT:

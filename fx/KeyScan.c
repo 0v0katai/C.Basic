@@ -29,6 +29,7 @@
 #include <fxlib.h>
 #include "KeyScan.h"
 #include "CB_io.h"
+#include "fx_syscall.h"
 #include "CB_interpreter.h"
 
 void delay( void ){
@@ -496,7 +497,9 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	
 	Getkey_shift=0;
 	Recent_code=0;
+	DisableGetkeyToMainFunctionReturn(); 
 	GetKey(&key);
+	EnableGetkeyToMainFunctionReturn(); 
 	return CB_KeyCodeCnvt( key ) ;
 }
 

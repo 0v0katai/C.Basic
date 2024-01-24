@@ -1396,16 +1396,16 @@ char * LoadPicture( int pictNo ){
 	pictname[5]= d;
 	pictname[6]='\0';
 
-	sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], "Pict", pictname );	// Pict folder
-	pict = loadFile( fname, 0, 0, 0 );					// no hidden load
-	if ( pict != NULL ) return pict;
-
-	ErrorNo=0;	// error cancel
-	if( strlen(folder) == 0 )		// current folder
+	if( strlen(folder) == 0 )		// current folder 1st
 		sprintf( fname, "\\\\%s\\%s.g1m", root[StorageMode], pictname );
 	else
 		sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], folder, pictname);
 		
+	pict = loadFile( fname, 0, 0, 0 );					// no hidden load
+	if ( pict != NULL ) return pict;
+
+	ErrorNo=0;	// error cancel
+	sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], "Pict", pictname );	// Pict folder 2nd
 	pict = loadFile( fname, 0, 0, 0 );					// no hidden load
 	return pict;
 }
@@ -2131,8 +2131,8 @@ int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
@@ -2153,6 +2153,7 @@ int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2162,12 +2163,12 @@ void FavoritesDowndummy( int *index ) {
 	tmp=files[(*index)+1].filesize;
 	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
 	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	files[(*index)].filesize=tmp;
-	(*index)++;
-	SaveFavorites();
+//	files[(*index)+1].filesize=files[(*index)].filesize;
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	files[(*index)].filesize=tmp;
+//	(*index)++;
+//	SaveFavorites();
 }
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
@@ -2196,10 +2197,10 @@ void FavoritesDowndummy3( int *index ) {
 	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
 	files[(*index)+1].filesize=files[(*index)].filesize;
 	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	(*index)++;
+//	files[(*index)].filesize=tmp;
+//	SaveFavorites();
 }
 void FavoritesDowndummy4( int *index ) {
 	unsigned short tmp;
@@ -2211,11 +2212,11 @@ void FavoritesDowndummy4( int *index ) {
 	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
 	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
 	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	(*index)++;
+//	files[(*index)].filesize=tmp;
+//	SaveFavorites();
 }
 void FavoritesDowndummy5( int *index ) {
 	unsigned short tmp;
@@ -2233,5 +2234,4 @@ void FavoritesDowndummy5( int *index ) {
 //	files[(*index)].filesize=tmp;
 //	SaveFavorites();
 }
-/*
 */

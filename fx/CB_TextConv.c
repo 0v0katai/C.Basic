@@ -1535,6 +1535,14 @@ int codecnvF900( char *srcbase, char *text, int *ofst, int *textofst ) {
 		if ( c == opstr[0] ) {
 			len = strlen( opstr );
 			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+				if ( code == 0x38 ) {	// Exp(
+					if ( ( text[(*textofst)+len] == '-' ) && ( text[(*textofst)+len+1] == ')' ) ) {	// Exp(-) ?
+						srcbase[(*ofst)++] = 0x0F;	// Exp
+						srcbase[(*ofst)++] = 0x87;	// (-)
+						(*textofst) += (len+2);
+						return 0;	 	// Exp(-)
+					} 
+				}
 				srcbase[(*ofst)++] = 0xF9;
 				srcbase[(*ofst)++] = code ;
 				(*textofst) += len;

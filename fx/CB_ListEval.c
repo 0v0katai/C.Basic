@@ -95,15 +95,17 @@ void WriteListAns2( double x, double y ) {
 //-----------------------------------------------------------------------------
 typedef double (*FXPTR)( double x );
 double EvalFxDbl( FXPTR fxptr, double result ) { 
-	int i;
+	int i,j;
 	int base;
 	int resultreg=CB_MatListAnsreg;
-	if ( dspflag == 4 ) {	// Listresult
+	if ( dspflag >= 3 ) {	// Listresult
 		base=MatAry[resultreg].Base;
 		for (i=base; i<MatAry[resultreg].SizeA+base; i++ ) {
-			result = ReadMatrix( resultreg, i, base );
-			result = (fxptr)( result );
-			WriteMatrix( resultreg, i, base, result ) ;	// Fx(Listresult) -> Listresult
+			for (j=base; j<MatAry[resultreg].SizeB+base; j++ ) {
+				result = ReadMatrix( resultreg, i, j );
+				result = (fxptr)( result );
+				WriteMatrix( resultreg, i, j, result ) ;	// Fx(Listresult) -> Listresult
+			}
 		}
 	} else {	// result
 		result = (fxptr)( result ) ;
@@ -113,33 +115,39 @@ double EvalFxDbl( FXPTR fxptr, double result ) {
 
 typedef double (*FXPTR2)( double x, double y );
 double EvalFxDbl2( FXPTR2 fxptr2, int *resultflag, int *resultreg, double result, double tmp ) { 
-	int i;
+	int i,j;
 	int base;
 	int tmpreg=CB_MatListAnsreg;
-	if ( dspflag == 4 ) {	// Listtmp
+	if ( dspflag >= 3 ) {	// Listtmp
 		base=MatAry[tmpreg].Base;
-		if ( *resultflag == 4 ) {
+		if ( *resultflag >= 3 ) {
 			if ( CheckAnsMatList(*resultreg) ) return 0;	// Not same List error
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
-				result = ReadMatrix( *resultreg, i, base);
-				tmp    = ReadMatrix( tmpreg, i, base);
-				WriteMatrix( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
+				for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
+					result = ReadMatrix( *resultreg, i, j);
+					tmp    = ReadMatrix( tmpreg, i, j);
+					WriteMatrix( *resultreg, i, j, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
+				}
 			}
 			DeleteMatListAns();
 		} else {
 			for (i=base; i<MatAry[tmpreg].SizeA+base; i++ ) {
-				tmp    = ReadMatrix( tmpreg, i, base);
-				WriteMatrix( tmpreg, i, base, (fxptr2)(result,tmp) ) ;	// result * Listtmp -> Listresult
+				for (j=base; j<MatAry[tmpreg].SizeB+base; j++ ) {
+					tmp    = ReadMatrix( tmpreg, i, j);
+					WriteMatrix( tmpreg, i, j, (fxptr2)(result,tmp) ) ;	// result * Listtmp -> Listresult
+				}
 			}
 			*resultflag=dspflag;
 			*resultreg=tmpreg;
 		}
 	} else {	// tmp
-		if ( *resultflag == 4 ) { // 4:Listresult
+		if ( *resultflag >= 3 ) { // 4:Listresult
 			base=MatAry[*resultreg].Base;
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
-				result = ReadMatrix( *resultreg, i, base);
-				WriteMatrix( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult * tmp -> Listresult
+				for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
+					result = ReadMatrix( *resultreg, i, j);
+					WriteMatrix( *resultreg, i, j, (fxptr2)(result,tmp) ) ;	// Listresult * tmp -> Listresult
+				}
 			}
 			dspflag = *resultflag ;
 		} else	{

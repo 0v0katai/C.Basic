@@ -96,6 +96,11 @@ char *GraphX;
 
 unsigned char *PictAry[PictMax+1];		// Pict array ptr
 char BG_Pict_No=0;
+
+unsigned char *Pictbase[PictbaseMAX];
+short PictbasePtr;
+short PictbaseCount;
+
 //----------------------------------------------------------------------------------------------
 //		Interpreter inside
 //----------------------------------------------------------------------------------------------
@@ -111,7 +116,7 @@ int CBint_CurrentValue;	//
 double CB_CurrentValue;	//
 
 char ScreenMode;	//  0:Text  1:Graphic
-char UseGraphic=0;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:9
+char UseGraphic=0;	// use Graph  ( no use :0    plot:1   graph:2   clrgraph:3  other:9
 char dspflag=0;		// 0:nondsp  1:str  2:num  3:mat 4:list
 char MatdspNo=0;		// 
 
@@ -393,7 +398,6 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x19:			// ClrGraph
 						CB_ClrGraph(SRC);
-						UseGraphic=3;
 						dspflag=0;
 						break;
 					case 0xFFFFFFE1:	// Rect
@@ -439,12 +443,10 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0xFFFFFF97:	// Sto-VWin
 						CB_StoVWin(SRC);
 						dspflag=0;
-						UseGraphic=0;
 						break;
 					case 0xFFFFFF98:	// Rcl-VWin
 						CB_RclVWin(SRC);
 						dspflag=0;
-						UseGraphic=0;
 						break;
 					case 0xFFFFFFFC:	// PutDispDD
 						Bdisp_PutDisp_DD_DrawBusy();
@@ -606,6 +608,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x79:	// BG-Pict
 						CB_BG_Pict( SRC );
 						dspflag=0;
+						UseGraphic=0;
 						break;
 					case 0x1A:	// ClrList
 						CB_ClrList(SRC);
@@ -733,7 +736,6 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0xFFFFFFD1:	// Cls
 				CB_Cls(SRC);
 				dspflag=0;
-				UseGraphic=3;
 				break;
 			case 0xFFFFFFE0:	// Plot
 				CB_Plot(SRC);
@@ -784,7 +786,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0xFFFFFFEB:	// ViewWindow
 				CB_ViewWindow(SRC);
 				dspflag=0;
-				UseGraphic=0;
+				UseGraphic=3;
 				break;
 			case 0xFFFFFFEE:	// Graph Y=
 				CB_GraphY(SRC);
@@ -899,8 +901,9 @@ int CB_interpreter( char *SRC ) {
 	CB_TicksAdjust = 0 ;	// 
 	srand( CB_TicksStart ) ;	// rand seed
 	ScreenMode = 0;	// Text mode
+	UseGraphic = 0;
 	PxlMode = 1;		// Pxl  1:set  0:clear	
-	BG_Pict_No=0;		// BG-None
+//	BG_Pict_No=0;		// BG-None
 	CB_ClrText(SRC);
 	ProgEntryN = 0;	// subroutin clear
 	GosubNestN = 0;	// Gosub clear
@@ -922,8 +925,8 @@ int CB_interpreter( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
@@ -1327,6 +1330,7 @@ int Search_Next( char *SRC ){
 
 void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	int c,reg,expbuf;
+	if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
 	if (CB_INT) {		//					------------ INT mode
 		CBint_CurrentValue = EvalIntsubTop( SRC );
 		c=SRC[ExecPtr];
@@ -1339,7 +1343,6 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 				CBint_Store(SRC);
 			} else { CB_Error(SyntaxERR); return; }	// Syntax error
 		}
-		if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
 		c=SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
@@ -1363,10 +1366,6 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 				return;
 			}
 		}
-		StackFor->Adrs[StackFor->Ptr] = ExecPtr;
-		StackFor->Ptr++;
-		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-		CurrentStruct->CNT++;
 		
 	} else {			//					------------ Double mode
 		CB_CurrentValue = EvalsubTop( SRC );
@@ -1380,7 +1379,6 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 				CB_Store(SRC);
 			} else { CB_Error(SyntaxERR); return; }	// Syntax error
 		}
-		if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
 		c=SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
@@ -1404,11 +1402,11 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 				return;
 			}
 		}
-		StackFor->Adrs[StackFor->Ptr] = ExecPtr;
-		StackFor->Ptr++;
-		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-		CurrentStruct->CNT++;
 	}
+	StackFor->Adrs[StackFor->Ptr] = ExecPtr;
+	StackFor->Ptr++;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+	CurrentStruct->CNT++;
 }
 
 void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
