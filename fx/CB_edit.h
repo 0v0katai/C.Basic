@@ -31,3 +31,15 @@ int CB_BreakStop() ;
 
 char* CLIP_Buffer();
 
+
+typedef struct {
+	char	enable;
+	int		sPtr;
+	int		ePtr;
+	int		Len;
+} cUndo;
+
+
+extern char *Undo;
+extern int *UndoPtr;
+extern int *UndoLen;

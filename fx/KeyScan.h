@@ -217,6 +217,7 @@ int KeyCheckF1();
 int KeyCheckCHAR4();
 int KeyCheckCHAR3();
 int KeyCheckCHAR6();
+int KeyCheckDEL();
 
 int CB_Getkey();
 int CB_Getkey0();
