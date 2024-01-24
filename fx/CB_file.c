@@ -609,9 +609,40 @@ void SetFullfilenameG1M( char *fname, char *sname ) {
 		sprintf( fname, "\\\\"ROOT"\\%s\\%s.g1m", folder, sname );
 }
 
+int GetFileSize( const char *fname ) {
+	int handle;
+	FONTCHARACTER filename[50];
+	int r,s;
+	int size;
+
+	/* disable, just for call "Bfile_FindFirst" */
+	FONTCHARACTER buffer[50];
+	FILE_INFO info;
+	/* end */
+
+	CharToFont( fname, filename );
+
+	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
+	if( handle < 0 ) { //	Can't find file
+		return 0;
+	}
+	size = Bfile_GetFileSize( handle );
+	r = Bfile_CloseFile( handle );
+	return size;
+/*
+	r = Bfile_FindFirst( filename, &handle, buffer, &info );
+	s = Bfile_FindClose( handle );
+	if ( r == 0 ) {	// existed
+		handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
+		size = Bfile_GetFileSize( handle );
+		r = Bfile_CloseFile( handle );
+		return size;
+	} else return 0;
+*/
+}
+
 /* file exist? */
-int ExistFile( const char *fname )
-{
+int ExistFile( const char *fname ) {
 	int handle;
 	FONTCHARACTER filename[50];
 	int r,s;
@@ -628,8 +659,7 @@ int ExistFile( const char *fname )
 }
 
 /* G1M file exist? */
-int ExistG1M( const char *sname )
-{
+int ExistG1M( const char *sname ) {
 	int handle;
 	FONTCHARACTER filename[50];
 	int r,s;
@@ -1183,6 +1213,23 @@ void SetFullfilenameBin( char *fname, char *sname ) {
 		sprintf( fname, "\\\\"ROOT"\\%s.bin", sname );
 	else
 		sprintf( fname, "\\\\"ROOT"\\%s\\%s.bin", folder, sname );
+}
+
+int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
+	char fname[32],sname[16];
+	int c,i,matsize;
+	char* FilePtr;
+	int r;
+
+	c =SRC[ExecPtr];
+	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	GetLocateStr(SRC, sname,8);
+	c =SRC[ExecPtr];
+	if ( c == ')' ) ExecPtr++;
+	SetFullfilenameBin( fname, sname );
+	
+	return GetFileSize( fname );
 }
 
 void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc

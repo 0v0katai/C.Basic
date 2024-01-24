@@ -409,8 +409,8 @@ const short oplistOPTN[]={
 //		0xF74C,	// Sum
 		0x0FB,	// ProbP(
 		0x0FC,	// ProbQ(
-		0x0FD,	// ProbR(
-		0x0FE,	// Probt(
+		0x0FD,	// Eval(
+//		0x0FE,	// Gosub
 		0x7FE9,	// CellSum(
 		0};
 							
@@ -468,6 +468,7 @@ const short oplistPRGM[]={
 		0x7F8F,	// Getkey
 
 		0xF720,	// DrawGraph
+		0x7FF5,	// IsExist(
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
 		0};
@@ -770,9 +771,10 @@ const short oplistCMD[]={
 		0x10,	// <=			6
 		0xF718,	// ClrText	
 		0xF719,	// ClrGraph	
-		0xFFFF,	// 				-
+//		0xFFFF,	// 				-
 //		0xF71A,	// ClrList	
 		0xF91E,	// ClrMat	
+		0x7FF5,	// IsExist(
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
 		
@@ -1137,6 +1139,17 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[3]='r';
 		string[4]=' ';
 		string[5]='\0';
+	} else
+	if ( opcode == 0x7FF5 ) {	// IsExist(
+		string[0]='I';
+		string[1]='s';
+		string[2]='E';
+		string[3]='x';
+		string[4]='i';
+		string[5]='s';
+		string[6]='t';
+		string[7]='(';
+		string[8]='\0';
 	} else
 	if ( opcode == 0xF94B ) {	// DotPut(
 		string[0]='D';
