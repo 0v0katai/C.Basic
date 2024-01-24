@@ -153,7 +153,7 @@ int CB_interpreter_sub( char *SRC ) {
 	complex	localvarDbl[ArgcMAX];	//	local var
 	int		localvarInt[ArgcMAX];	//	local var
 
-	if ( 0x88020200 > (int)&cont ) { CB_Error(StackERR); return -1; } //  stack error
+	if ( 0x0200 > ( (int)&cont & 0xFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
 	
 	ClrCahche();
 	
@@ -552,7 +552,7 @@ int CB_interpreter_sub( char *SRC ) {
 				else
 				if ( ( 0x38 != c ) && ( 0x3E != c ) && ( 0x34 <= c ) && ( c <= 0x49 ) )  goto strjp;
 				else
-				if ( ( 0xFFFFFF9B <= c ) && ( c <= 0xFFFFFF9F ) ) break;	// color command   Black/(White)/Magenta/Cyan/Yellow
+				if ( ( 0xFFFFFF98 <= c ) && ( c <= 0xFFFFFF9F ) ) break;	// color command   Black/(White)/Magenta/Cyan/Yellow
 				switch ( c ) {
 					case 0x30:	// StrJoin(
 //					case 0x34:	// StrLeft(
@@ -1144,7 +1144,7 @@ remloop:
 					}
 					goto DelStrBuffer;
 				}
-			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
+			} else { c=SRC[ExecPtr++]; }
 		} else
 		if ( c==0xFFFFFFF7 ) {
 			c=SRC[ExecPtr++];
@@ -1153,7 +1153,7 @@ remloop:
 				if ( ( c=='0' ) || ( c=='1' ) ) {
 					BreakCheck= (c-'0') ;
 				}
-			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
+			} else { c=SRC[ExecPtr++]; }
 		} else
 		if ( c=='5' ){	// 
 				c=SRC[ExecPtr++];
@@ -1162,6 +1162,9 @@ remloop:
 		if ( c=='9' ){	// 
 				c=SRC[ExecPtr++];
 				if ( ( c=='8' ) )  CB_fx5800P = 0;		// fx-5800P mode off
+		} else
+		if ( c=='R' ){	// Root folder
+				c = SetRoot2( SRC );
 		} else
 		if ( c==0x7F ) {
 			c=SRC[ExecPtr++];
@@ -1193,7 +1196,7 @@ remloop:
 				} else {
 					if ( TimeDsp ) TimeDsp &= ~0x2 ; // on  cont
 				}
-			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
+			} else { c=SRC[ExecPtr++]; }
 
 		}
 	}
@@ -3172,8 +3175,8 @@ int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

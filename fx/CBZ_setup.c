@@ -27,8 +27,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v2.00\xE6\x41";
-#define VERSION 200
+const char VerMSG[]="C.Basic  v2.10\xE6\x41";
+#define VERSION 210
 
 //---------------------------------------------------------------------------------------------
 
@@ -1154,13 +1154,14 @@ int SelectNum4( int n ) {		//
 #define SETUP_Matrixbase	36
 #define SETUP_DATE			37
 #define SETUP_TIME			38
-#define SETUP_AutoSaveMode	39
-#define SETUP_Forceg1msave	40
-#define SETUP_Pictmode		41
-#define SETUP_Storagemode	42
-#define SETUP_RefrshCtlDD	43
-#define SETUP_DefaultWaitcount	44
-#define SETUP_Executemode	45
+#define SETUP_RootFolder	39
+#define SETUP_AutoSaveMode	40
+#define SETUP_Forceg1msave	41
+#define SETUP_Pictmode		42
+#define SETUP_Storagemode	43
+#define SETUP_RefrshCtlDD	44
+#define SETUP_DefaultWaitcount	45
+#define SETUP_Executemode	46
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
     
@@ -1382,36 +1383,45 @@ int SetupG(int select, int limit){		// ----------- Setup
 			DateTimePrintSub();
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 39
+			locate( 1,cnt-scrl); Print((unsigned char*)"Root Folder:");		// 39
+			locate(13,cnt-scrl); 
+			if ( root2[0] == '\0' ) { 
+				Print((unsigned char*)"/");
+			} else {
+				Print((unsigned char*)root2);
+			}
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 40
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[AutoSaveMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 40
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 41
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 41
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 42
 			locate(14,cnt-scrl); if ( StorageMode & 1 ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 42
+			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 43
 			locate(14,cnt-scrl); Print((unsigned char*)Storagemode[StorageMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 43
+			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 44
 			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 44
+			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 45
 			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
 			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 45
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 46
 			locate(14,cnt-scrl); Print((unsigned char*)CBmode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -1554,6 +1564,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 				Fkey_dispN( FKeyNo2, " F1");
 				Fkey_dispN( FKeyNo3, "EXE");
 				Fkey_dispN( FKeyNo4, "Both");
+				break;
+			case SETUP_RootFolder:
+				Fkey_dispN( FKeyNo1, "  / ");
+				Fkey_dispN( FKeyNo2, "cur.f");
 				break;
 			default:
 				break;
@@ -1771,6 +1785,11 @@ int SetupG(int select, int limit){		// ----------- Setup
 						TimeStr[1]=(hour)%10+'0';
 						StorTIME( TimeStr );
 						break;
+					case SETUP_RootFolder:
+						root2[0]='\0';	// default root folder
+						folder[0]='\0';
+						FileListUpdate= 1;
+						break;
 					case SETUP_AutoSaveMode: // Auto save
 						AutoSaveMode = 1;
 						break;
@@ -1957,6 +1976,15 @@ int SetupG(int select, int limit){		// ----------- Setup
 						TimeStr[3]=(min/10)%10+'0';
 						TimeStr[4]=(min)%10+'0';
 						StorTIME( TimeStr );
+						break;
+					case SETUP_RootFolder:
+						if ( Is35E2 == 0 ) break;
+						if ( strlen( folder ) ) {
+							root2[0]='\\';	
+							strcpy( root2+1, folder );	// current folder
+						} else root2[0]='\0';	// root folder
+						folder[0]='\0';
+						FileListUpdate= 1;
 						break;
 					case SETUP_AutoSaveMode: // Auto save
 						AutoSaveMode = 0;

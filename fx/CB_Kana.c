@@ -1598,30 +1598,7 @@ void CB_SetFontMini( char *SRC ){	// SetFont 0xFFA0,Mat C
 //------------------------------------------------------------------------------
 int ReadBmpHeader( unsigned char *filebase, int *bfOffBits, int *biWidth, int *biHeight );	// 1:1 bit mono bmp file   24:24bit   0:no bmp
 void DecodeBmp2mem( char *buffer2, char *buffer, int width, int height );	//	bmpformat(buffer) -> bmp(buffer2)
-/*
-int Make_FontFoloder(){
-	int handle;
-	FONTCHARACTER filename[0x10A];
-	FONTCHARACTER buffer[0x10A];
-	FILE_INFO info;
-	char folder2[FILENAMEMAX];
-	int r,s;
-	char fname[32],basname[16];
-	int size,i;
 
-	sprintf( fname, "\\\\%s\\%s", root[StorageMode], "@Font" );
-	CharToFont( fname, filename );
-	r = Bfile_FindFirst_NON_SMEM( filename, &handle, buffer, &info );
-	s = Bfile_FindClose( handle );
-	if( r != 0 ) {
-		handle = Bfile_CreateDirectory( filename );
-		if( handle < 0 ) { 
-			return handle ; }
-		r = Bfile_CloseFile( handle );
-	}
-	return r ;
-}
-*/
 void FontCopy( char *font,  int reg,  int mx, int my, int dx, int dy ) {	// buffer[x,y]  -> font  1bit data
 	int i,j;
 	int x,y;

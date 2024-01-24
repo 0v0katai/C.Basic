@@ -37,6 +37,7 @@ typedef struct{	// 13+9+4=26
 }Files;
 
 #define FavoritesMAX 7
+#define	root2_MAX 10
 
 extern Files *files;
 extern char folder[FOLDERMAX];
@@ -46,6 +47,12 @@ extern char StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
 
 extern char ForceG1Msave;		//    1: force g1m save
 extern char AutoSaveMode;		//    1: Auto save ( not pop up )
+
+extern char root2[root2_MAX];
+extern char root3[root2_MAX];
+void StoreRoot2();
+void RestoreRoot2();
+int SetRoot2( char* SRC ) ;
 
 #define FileCMD_Prog   10000
 #define FileCMD_RUN    10001
@@ -114,10 +121,12 @@ void NewPassWord(char *name) ;
 void PP_ReplaceCode( char *SRC );
 int CheckSD();	// SD model  return : 1
 
+int CreateDirectorySub( char *newfolder, int dsperror );
 int MakeDirectory();
 int RenameDirectory();
 int RenameCopyFile( char *fname ,int select ) ;	// select:0 rename  select:1 copy
 int RenameCopyFilesBmp( char *fname, char *ext,int select  );	// bmp copy/rename
+int RenameDirectorys( char * foldername );
 
 void SetShortName( char *sname, char *filename) ;	// fullpath filename -> short name
 void ErrorMSGfile( char *buffer, char *filename, int err);

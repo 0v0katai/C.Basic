@@ -6,8 +6,11 @@ char ENG=0;	// ENG flag  1:ENG  3:3digit separate
 char UseHiddenRAM=1;	//	0x11 :HiddenRAMInit off
 char IsHiddenRAM =0;
 
-#define HIDDENRAM_TOP 0x88040000
-#define HIDDENRAM_END 0x88080000
+#define HIDDENRAM_TOP   0x88040000
+#define HIDDENRAM_TOP2  0x88060000
+#define HIDDENRAM_END   0x88080000
+char * HIDDENRAM_Top        =(char*)HIDDENRAM_TOP;				// Hidden RAM TOP
+
 char * HiddenRAM_Top        =(char*)HIDDENRAM_TOP+16+256;		// Hidden RAM TOP
 char * HiddenRAM_End        =(char*)HIDDENRAM_END;				// Hidden RAM END
 
@@ -15,6 +18,7 @@ char * HiddenRAM_ProgNextPtr=(char*)HIDDENRAM_TOP+16+256;		// Hidden RAM Prog ne
 char * HiddenRAM_MatTopPtr  =(char*)HIDDENRAM_END;				// Hidden RAM Mat top ptr
 
 char IsSH3;	//	3:SH3   4:SH4
+char Is35E2=0;	//
 
 /*
 ----------------------------------------
@@ -37,7 +41,10 @@ HiddenRAM_Top(0x88040000)
 */
 //---------------------------------------------------------------------------------------------
 int CPU_check(void) {					// SH3:1 SH4A:0   2:Slim
-	int slim=0;
+	int slim = 0;
+	if  ( OS_Version() >= 300 ) { Is35E2 = 1;
+		HIDDENRAM_Top =(char*)HIDDENRAM_TOP2;
+	}
 	if ( *(unsigned int*)0x80000300 == 0x80005D7C ){
 		if ( ( *(unsigned char*)0xA4000128 & 0x08 ) == 0 ) {
 			slim = 1;;
@@ -140,10 +147,10 @@ void HiddenRAM_freeMat( int reg ){
 const char MatAryCheckStr[]="#CBasic163#";
 
 void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
-	int *iptr1=(int*)(HIDDENRAM_TOP+12);
+	int *iptr1=(int*)(HIDDENRAM_Top+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		memcpy( (char *)HIDDENRAM_TOP, MatAryCheckStr, sizeof(MatAryCheckStr) );
+		memcpy( (char *)HIDDENRAM_Top, MatAryCheckStr, sizeof(MatAryCheckStr) );
 		memcpy( HiddenRAM_End,         MatAryCheckStr, sizeof(MatAryCheckStr) );
 		iptr1[0]=(int)MatAry;
 		iptr2[0]=(int)HiddenRAM_MatTopPtr;
@@ -151,13 +158,13 @@ void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
 }
 int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 	char buffer[10];
-	int *iptr1=(int*)(HIDDENRAM_TOP+12);
+	int *iptr1=(int*)(HIDDENRAM_Top+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	char *tmp;
 	tmp=HiddenRAM_End - sizeof(matary)*MatAryMax ;
 	if ( !(UseHiddenRAM&0xF0) )return 0;	// hidden init
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) && ( (char *)iptr1[0]==tmp ) ){
-		if ( ( strcmp((char *)HIDDENRAM_TOP, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
+		if ( ( strcmp((char *)HIDDENRAM_Top, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
 			HiddenRAM_MatTopPtr=(char*)iptr2[0];
 			MatAry=(matary *)tmp;
 			return 1;	// ok
@@ -182,7 +189,7 @@ void HiddenRAM_ExtFontAryInit() {
 }
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	char buffer[10];
-	int *iptr1=(int*)(HIDDENRAM_TOP+12);
+	int *iptr1=(int*)(HIDDENRAM_Top+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	MatAryMax=MATARY_MAX +ExtendList*52;
 	Mattmpreg=MatAryMax-1;
@@ -192,12 +199,12 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 		EditMaxProg = EDITMAXPROG2;
 		NewMax      = NEWMAX2;
 		ClipMax     = CLIPMAX2;
-		HiddenRAM_Top         = (char*)HIDDENRAM_TOP+16+256;		// Hidden RAM TOP
+		HiddenRAM_Top         = (char*)HIDDENRAM_Top+16+256;		// Hidden RAM TOP
 		HiddenRAM_End         = (char*)HIDDENRAM_END;				// Hidden RAM END
 		HiddenRAM_ExtFontAryInit();
 		HiddenRAM_ProgNextPtr = HiddenRAM_Top;						// Hidden RAM Prog next ptr
-		OplistRecentFreq=(toplistrecentfreq *)(HIDDENRAM_TOP+16);
-		OplistRecent    =(short *)(HIDDENRAM_TOP+16+128);
+		OplistRecentFreq=(toplistrecentfreq *)(HIDDENRAM_Top+16);
+		OplistRecent    =(short *)(HIDDENRAM_Top+16+128);
 		if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
 		HiddenRAM_MatTopPtr   = HiddenRAM_End - sizeof(matary)*MatAryMax ;
 		MatAry = (matary *)HiddenRAM_MatTopPtr;

@@ -25,33 +25,8 @@ char redrawsubfolder=0;
 char ForceG1Msave=0;		//    1: force g1m save 
 char AutoSaveMode=0;		//    1: Auto save ( not pop up )
 const char root[][5]={"fls0","crd0","fls0","crd0"};
-char root2[root2_MAX]="";	// "\\SAVE-F"
-char root3[root2_MAX]="";	// "\\SAVE-F"
-
-int SetRoot2( char* SRC ) {
-	char sname[root2_MAX];
-	int c;
-	c = SRC[ExecPtr++];
-	if ( c == '/' ) {
-		if ( SRC[ExecPtr] == '"' ) {
-			CB_GetLocateStr(SRC, sname, root2_MAX-1); if ( ErrorNo ) goto exit ;	// error
-			root2[0] = '\\';
-			strncpy( root2+1, sname, root2_MAX-1 );
-			root2[root2_MAX-1] = '\0';
-		} else root2[0] = '\0';
-	} else
-	if ( c=='.' ) RestoreRoot2() ;
-	else ExecPtr--;
-  exit:
-	return SRC[ExecPtr] ;
-}
-
-void StoreRoot2(){
-	strncpy( root3, root2, root2_MAX);
-}
-void RestoreRoot2(){
-	strncpy( root2, root3, root2_MAX);
-}
+char root2[10]="";	// "\\SAVE-F"
+char root3[10]="";	// "\\SAVE-F"
 
 void SetFullfilenameNoExtNoFolder( char *filename, char *sname ) {
 	sprintf( filename, "\\\\%s\\%s", root[StorageMode], sname);
@@ -204,31 +179,18 @@ static int FileCmp( const void *p1, const void *p2 )
 }
 
 
-void SetShortName( char *sname, char *filename) {	// fullpath filename -> short name
-	int c,i;
-	int ptr;
-	ptr=strlen(filename);
-	c=filename[--ptr];
-	while ( c!='\\' ) {
-		c=filename[--ptr];	//
-		if ( ptr<0 ) break;
-	}
-	i=0;
-	while ( c ) {
-		c=filename[++ptr];
-		sname[i++]=c;
-	}
-//	sname[i]='\0';
-}
-
 FONTCHARACTER * CharToFont( const char *cFileName, FONTCHARACTER *fFileName )
 {
 	int len, i;
-	char fname[128],sname[64];
+	char fname[64],sname[64];
 	strcpy( fname, cFileName );
-	if ( ( fname[0] == '\\' ) && ( fname[1] == '\\' ) ) memcpy( sname, fname+7, 64-1 );
-	else SetShortName( sname, fname );
-	sprintf( fname, "\\\\%s%s\\%s", root[StorageMode], root2, sname);
+	if ( Is35E2 ) {
+		SetShortName( sname, fname );
+		if ( ( strlen(folder) == 0 ) || ( StorageMode & 2 ) )
+			sprintf( fname, "\\\\%s%s\\%s", root[StorageMode], root2, sname);
+		else
+			sprintf( fname, "\\\\%s%s\\%s\\%s", root[StorageMode], root2, folder, sname);
+	}
 	for( i = 0, len = strlen( fname ); i < len ; ++i )
 		fFileName[i] = fname[i];
 	fFileName[i] = '\0';
@@ -238,12 +200,12 @@ FONTCHARACTER * CharToFont( const char *cFileName, FONTCHARACTER *fFileName )
 
 char * FontToChar( const FONTCHARACTER *fFileName, char *cFileName )
 {
-	int i = 0, len;
-	char fname[128],sname[64];
+	int i = 0;
+	char fname[64],sname[64];
 	while( ( fname[i] = fFileName[i]) !=0 )
 		++i;
-	len = strlen(root2);
-	if ( ( len != 0 ) && ( ( fname[0] == '\\' ) && ( fname[1] == '\\' ) ) && ( strncmp( fname+6, root2, len ) == 0 ) ) {
+
+	if ( ( Is35E2 ) && ( strncmp( fname+strlen(root2), root2, 7 ) == 0 ) ) {
 		SetShortName( sname, fname );
 		SetFullfilenameNoExt( fname, sname );
 	}
@@ -261,6 +223,23 @@ FONTCHARACTER * FilePath( char *sFolder, FONTCHARACTER *sFont )
 	//Convert to FONTCHARACTER
 	CharToFont( path, sFont );
 	return sFont;
+}
+
+void SetShortName( char *sname, char *filename) {	// fullpath filename -> short name
+	int c,i;
+	int ptr;
+	ptr=strlen(filename);
+	c=filename[--ptr];
+	while ( c!='\\' ) {
+		c=filename[--ptr];	//
+		if ( ptr<0 ) break;
+	}
+	i=0;
+	while ( c ) {
+		c=filename[++ptr];
+		sname[i++]=c;
+	}
+//	sname[i]='\0';
 }
 
 void ErrorMSGfile( char *buffer, char *filename, int err){
@@ -676,7 +655,6 @@ unsigned int Explorer( int size, char *folder )
 		if ( StorageMode & 2 ) {
 			locate(2,1);Print((unsigned char*)"Main Mem");
 		} else {
-			if ( root2[0] ) PrintMini(13, 1, (unsigned char*)(root2+1), MINI_OVER); 
 			locate(2,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
 		}
 														PrintMini(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
@@ -2712,7 +2690,7 @@ void SaveConfig2(){
 
 	memset( buffer, 0x00, ConfigMAX2 );
 	strcpy( (char *)buffer, (const char *)"CB.config180" );
-	strncpy( (char *)buffer+16, root2, root2_MAX);	// default
+	strncpy( (char *)buffer+16, root2, 10);	// default
 	
 	for ( i= 6; i<  6+58 ; i++ ) bufdbl[i]=REG[i-6].imag;
 
@@ -2920,7 +2898,7 @@ void LoadConfig2(){
 		 ( buffer[10]=='8' ) &&
 		 ( buffer[11]=='0' ) ) {
 									// load config & memory
-		strncpy( root2, (char *)buffer+16, root2_MAX);	// load default folder
+		strncpy( root2, (char *)buffer+16, 10);	// load default folder
 		for ( i= 6; i<  6+58 ; i++ ) REG[i-6].imag =bufdbl[i];	//
 		
 	} else {
@@ -3188,11 +3166,11 @@ int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4AA( unsigned int n ){ return n; }	// align +4byte
@@ -3247,7 +3225,6 @@ void FavoritesDowndummy3( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy4( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3264,6 +3241,7 @@ void FavoritesDowndummy4( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy5( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
