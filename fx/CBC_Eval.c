@@ -354,7 +354,7 @@ complex Cplx_frecy( complex r, complex t ) {	// Rec(r,Theta) -> y
 	return Dbl2Cplx( frecy(r.real, t.real) ) ;
 }
 complex Cplx_fAngle( complex r, complex t ) {	// (r,Theta) -> a+bi
-	if ( (r.imag!=0)||(t.imag!=0) ) { CB_Error(MathERR) ; return Int2Cplx(0); } // Math error
+	if ( (r.imag!=0)||(t.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
 	return Dbl2Cplx2( frecx(r.real, t.real), frecy(r.real, t.real) ) ;
 }
 
@@ -397,7 +397,7 @@ complex Cplx_fatanh( complex z ) {			// atanh(z) = .5*log((1+z)/(1-z))
 	return Cplx_fMUL( c2, Cplx_fln( Cplx_fDIV( tmp1, tmp2 ) ) );
 }
 
-double sqrtsquz( complex z ) {
+double fabsz( complex z ) {
 	return sqrt(z.real*z.real+z.imag*z.imag);
 }
 complex Cplx_fsqu( complex z ) {
@@ -409,7 +409,7 @@ complex Cplx_fsqrt( complex z ) {
 	else {
 		z.real *=2;
 		z.imag *=2;
-		c = sqrtsquz(z);
+		c = fabsz(z);
 		if ( z.imag >=  0 ) return Dbl2Cplx2( sqrt(z.real+c)/2,  sqrt(-z.real+c)/2 );
 		else				return Dbl2Cplx2( sqrt(z.real+c)/2, -sqrt(-z.real+c)/2 );
 	}
@@ -431,7 +431,7 @@ complex Cplx_fpow10( complex z ) {
 }
 complex Cplx_fln( complex z ) {
 	if ( (z.real>0)&&(z.imag==0) ) return Dbl2Cplx( fln(z.real) );
-	return Dbl2Cplx2( log(sqrtsquz(z)), atan2( z.imag, z.real ) );
+	return Dbl2Cplx2( log(fabsz(z)), atan2( z.imag, z.real ) );
 }
 complex Cplx_fexp( complex z ) {	// e^z = e^(z.real)*(cos(z.imag) + e^(z.real)*sin(z.imag)*i
 	double x = exp( z.real );
@@ -515,20 +515,17 @@ complex Cplx_fIDIV( complex x, complex y ) {	// floor( (int)x / (int)y )
 	return Cplx_floor( Cplx_fDIV( Cplx_floor(x), Cplx_floor(y) ) );
 }
 complex Cplx_fMOD( complex x, complex y ) {	// fMOD(x,y)
-	complex a;
-	if ( (x.imag==0)&&(y.imag==0) ) return Dbl2Cplx( fMOD(x.real, y.real) );
-	a = Cplx_floor( Cplx_fDIV( x, y ) );
-	return Cplx_fSUB( x, Cplx_fMUL( y, a ) ); 
+	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
+	return Dbl2Cplx( fMOD(x.real, y.real) );
 }
 
 complex Cplx_ffact( complex z ) {
 	double tmp;
 	tmp = floor( z.real );
-	if ( ( tmp < 0 ) || ( 170 < tmp ) ) { CB_Error(MathERR) ; return Int2Cplx(0); } // Math error
+	if ( ( tmp < 0 ) || ( 170 < tmp ) || ( z.imag != 0 ) ) { CB_Error(MathERR) ; return Int2Cplx(0); } // Math error
 	z.real = 1;
 	while ( tmp > 0 ) { z.real *= tmp; tmp--; }
 	CheckMathERR(&z.real); // Math error ?
-	z.imag = 0;
 	return z;
 }
 complex Cplx_frand() {
@@ -541,10 +538,12 @@ complex Cplx_fRanBin( complex n, complex p) {	// RanBin#
 	return Dbl2Cplx( fRanBin( n.real, p.real));
 }
 complex Cplx_fGCD( complex x, complex y ) {	// GCD(x,y)
+	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
 	return Dbl2Cplx( fGCD(x.real, y.real) );
 }
 complex Cplx_fLCM( complex x, complex y ) {	// LCM(x,y)
-	return Dbl2Cplx( fRanNorm( x.real, y.real));
+	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
+	return Dbl2Cplx( fLCM( x.real, y.real));
 }
 
 complex Cplx_fnot( complex z ) {
@@ -653,8 +652,8 @@ complex Cplx_RoundSci( complex num, complex digit){
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4cee( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4cff( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalObjectAlignE4cee( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4cff( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 int Cplx_Get2Eval( char *SRC, complex *tmp, complex *tmp2){
@@ -689,7 +688,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 	}
 	while ( c == 0xFFFFFF89 ) c=SRC[ExecPtr++];	// +
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
-		result = Cplx_fsign( Cplx_Evalsub1( SRC ) );
+		result = Cplx_fsign( Cplx_Evalsub5( SRC ) );
 		return result;
 	}
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
@@ -864,11 +863,11 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 				case 0x29 :				// Sigma( X, X, 1, 1000)
 					return CB_Sigma( SRC );
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
-					return Dbl2Cplx( CB_MinMax( SRC, 1 ) );
+					return CB_MinMax( SRC, 1 );
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
-					return Dbl2Cplx( CB_MinMax( SRC, 0 ) );
+					return CB_MinMax( SRC, 0 );
 				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-					return Dbl2Cplx( CB_Mean( SRC ) );
+					return CB_Mean( SRC );
 				case 0x4C :				// Sum List 1
 					return CB_Sum( SRC );
 				case 0x4D :				// Prod List 1

@@ -21,7 +21,7 @@ int MCS_ReadFileList() {	// MSC file list -> files
 	item = (TDirectoryItem*)pMCSdir_system->addr;
 
 	size = pMCSdir_system->count + FavoritesMAX + 1 ;
-	if ( pMCSdir_system->count == 0 ) return size;	// no file
+//	if ( pMCSdir_system->count == 0 ) return size;	// no file
 
   loop:
 	HiddenRAM_freeProg(HiddenRAM_Top);

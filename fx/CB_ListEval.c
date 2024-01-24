@@ -191,7 +191,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 	}
 	while ( c == 0xFFFFFF89 ) c=SRC[ExecPtr++];	// +
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
-		return EvalFxDbl( &fsign, ListEvalsub1( SRC ) ) ; 
+		return EvalFxDbl( &fsign, ListEvalsub5( SRC ) ) ; 
 	}
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  {
 		reg=c-'A';
@@ -379,11 +379,11 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x29 :				// Sigma( X, X, 1, 1000)
 					return CB_Sigma( SRC ).real;
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
-					return CB_MinMax( SRC, 1 );
+					return CB_MinMax( SRC, 1 ).real;
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
-					return CB_MinMax( SRC, 0 );
+					return CB_MinMax( SRC, 0 ).real;
 				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-					return CB_Mean( SRC );
+					return CB_Mean( SRC ).real;
 				case 0x4C :				// Sum List 1
 					return CB_Sum( SRC ).real;
 				case 0x4D :				// Prod List 1

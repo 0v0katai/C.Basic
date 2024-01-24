@@ -232,11 +232,10 @@ void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax
 	Xmin  =xmin;
 	Xmax  =xmax;
 	Xscl  =xscl;
-	Xdot  =(Xmax-Xmin)/126.0;
 	Ymin  =ymin;
 	Ymax  =ymax;
 	Yscl  =yscl;
-	Ydot  =(Ymax-Ymin)/ 62.0;
+	SetXdotYdot();
 
 //	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
 //	ML_clear_vram();
@@ -259,7 +258,6 @@ void ZoomIn(){
 	dx   = (Xmax-Xmin)/Xfct/2;	// zoom in dx
 	Xmin = cx-dx;
 	Xmax = cx+dx;
-	Xdot = (Xmax-Xmin)/126.0;
 	
 	dy   = (Ymax+Ymin)/2-regY.real;	// move center
 	Ymin = Ymin-dy;
@@ -269,7 +267,7 @@ void ZoomIn(){
 	dy   = (Ymax-Ymin)/Yfct/2;	// zoom in dy
 	Ymin = cy-dy;
 	Ymax = cy+dy;
-	Ydot = (Ymax-Ymin)/ 62.0;
+	SetXdotYdot();
 	
 	regX.real = (Xmax+Xmin)/2; // center
 	regY.real = (Ymax+Ymin)/2; // center
@@ -287,7 +285,6 @@ void ZoomOut(){
 	dx   = (Xmax-Xmin)*Xfct/2;	// zoom out dx
 	Xmin = cx-dx;
 	Xmax = cx+dx;
-	Xdot = (Xmax-Xmin)/126.0;
 	
 	dy   = (Ymax+Ymin)/2-regY.real;	// move center
 	Ymin = Ymin-dy;
@@ -297,7 +294,7 @@ void ZoomOut(){
 	dy   = (Ymax-Ymin)*Yfct/2;	// zoom out dy
 	Ymin = cy-dy;
 	Ymax = cy+dy;
-	Ydot = (Ymax-Ymin)/ 62.0;
+	SetXdotYdot();
 	
 	regX.real = (Xmax+Xmin)/2; // center
 	regY.real = (Ymax+Ymin)/2; // center

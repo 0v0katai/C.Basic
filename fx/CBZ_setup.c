@@ -24,8 +24,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.79\xE6\x41";
-#define VERSION 179
+const char VerMSG[]="C.Basic  v1.80\xE6\x41";
+#define VERSION 180
 
 //---------------------------------------------------------------------------------------------
 
@@ -171,44 +171,45 @@ void SetLineStyle() {
 
 //-----------------------------------------------------------------------------
 
+void SetXdotYdot(){
+		Xdot  = (Xmax-Xmin)/(126.);
+		Ydot  = (Ymax-Ymin)/(62.);
+}
 void SetVeiwWindowInit(){	// Initialize	return 0: no change  -1 : change
 		Xmin  =-6.3;
 		Xmax  = 6.3;
 		Xscl  = 1.0;
-		Xdot  = 0.1;
 		Ymin  =-3.1;
 		Ymax  = 3.1;
 		Yscl  = 1.0;
-		Ydot  = 0.1;
 		TThetamin = 0;
 		TThetamax = 6.2831853071796;
 		TThetaptch= 0.062831853071796;
+		SetXdotYdot();
 }
 void SetVeiwWindowTrig(){	// trig Initialize
 		Xmin  = finvdegree(-540);
 		Xmax  = finvdegree( 540);
 		Xscl  = finvdegree(  90);
-		Xdot  = (Xmax-Xmin)/126.0;
 		Ymin  =-1.6;
 		Ymax  = 1.6;
 		Yscl  = 0.5;
-		Ydot  = (Ymax-Ymin)/ 62.0;
 		TThetamin = 0;
 		TThetamax = finvdegree( 360);
 		TThetaptch= TThetamax/1000;
+		SetXdotYdot();
 }
 void SetVeiwWindowSTD(){	// STD Initialize
 		Xmin  =-10;
 		Xmax  = 10;
 		Xscl  =  1;
-		Xdot  =  0.158730158730159;
 		Ymin  =-10;
 		Ymax  = 10;
 		Yscl  =  1;
-		Ydot  = (Ymax-Ymin)/ 62.0;
 		TThetamin = 0;
 		TThetamax = 6.2831853071796;
 		TThetaptch= 0.062831853071796;
+		SetXdotYdot();
 }
 
 
@@ -391,11 +392,11 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 				switch (select) {
 					case 0: // Xmin
 						Xmin      =InputNumD_full( 8, y, 14, Xmin);	// 
-						Xdot = (Xmax-Xmin)/126.0;
+						SetXdotYdot();
 						break;
 					case 1: // Xmax
 						Xmax      =InputNumD_full( 8, y, 14, Xmax);	// 
-						Xdot = (Xmax-Xmin)/126.0;
+						SetXdotYdot();
 						break;
 					case 2: // Xscl
 						Xscl      =InputNumD_full( 8, y, 14, Xscl);	// 
@@ -406,11 +407,11 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 						break;
 					case 4: // Ymin
 						Ymin      =InputNumD_full( 8, y, 14, Ymin);	// 
-						Ydot = (Ymax-Ymin)/62.0;
+						SetXdotYdot();
 						break;
 					case 5: // Ymax
 						Ymax      =InputNumD_full( 8, y, 14, Ymax);	// 
-						Ydot = (Ymax-Ymin)/62.0;
+						SetXdotYdot();
 						break;
 					case 6: // Yscl
 						Yscl      =InputNumD_full( 8, y, 14, Yscl);	// 
@@ -441,11 +442,11 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 				switch (select) {
 					case 0: // Xmin
 						Xmin      =InputNumD_Char( 8, y, 14, Xmin, key);	// 
-						Xdot = (Xmax-Xmin)/126.0;
+						SetXdotYdot();
 						break;
 					case 1: // Xmax
 						Xmax      =InputNumD_Char( 8, y, 14, Xmax, key);	// 
-						Xdot = (Xmax-Xmin)/126.0;
+						SetXdotYdot();
 						break;
 					case 2: // Xscl
 						Xscl      =InputNumD_Char( 8, y, 14, Xscl, key);	// 
@@ -456,11 +457,11 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 						break;
 					case 4: // Ymin
 						Ymin      =InputNumD_Char( 8, y, 14, Ymin, key);	// 
-						Ydot = (Ymax-Ymin)/62.0;
+						SetXdotYdot();
 						break;
 					case 5: // Ymax
 						Ymax      =InputNumD_Char( 8, y, 14, Ymax, key);	// 
-						Ydot = (Ymax-Ymin)/62.0;
+						SetXdotYdot();
 						break;
 					case 6: // Yscl
 						Yscl      =InputNumD_Char( 8, y, 14, Yscl, key);	// 
@@ -1039,7 +1040,7 @@ int SelectNum4( int n ) {		//
 #define SETUP_HidnRamInit	21
 #define SETUP_ExtendPict	22
 #define SETUP_ExtendList	23
-#define SETUP_AutoDebugMode	24
+#define SETUP_DisableDebugMode	24
 #define SETUP_BreakStop		25
 #define SETUP_ExecTimeDsp	26
 #define SETUP_IfEndCheck	27
@@ -1218,7 +1219,7 @@ int SetupG(int select){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 24
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[!AutoDebugMode]);
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[!DisableDebugMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 25
@@ -1328,7 +1329,7 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_MaxMemMode: // Maximam Memory mode
 			case SETUP_UseHidnRam: // UseHiddenRAM
 			case SETUP_HidnRamInit: // HiddenRAMInit
-			case SETUP_AutoDebugMode: // AutoDebugMode
+			case SETUP_DisableDebugMode: // DisableDebugMode
 			case SETUP_BreakStop: // BreakCheck
 			case SETUP_IfEndCheck: // IfEnd Check
 			case SETUP_ACBreak: // ACBreak Check
@@ -1570,8 +1571,8 @@ int SetupG(int select){		// ----------- Setup
 						if ( UseHiddenRAM ) UseHiddenRAM &= 0x0F;	// on
 						HiddenRAM_MatAryInit();
 						break;
-					case SETUP_AutoDebugMode: // AutoDebugMode
-						AutoDebugMode = 0 ; // on
+					case SETUP_DisableDebugMode: // DisableDebugMode
+						DisableDebugMode = 0 ; // on
 						break;
 					case SETUP_BreakStop: // Break
 						BreakCheckDefault = 1 ; // on
@@ -1630,13 +1631,13 @@ int SetupG(int select){		// ----------- Setup
 						ForceG1Msave = 1 ; // g1m and text
 						break;
 					case SETUP_Pictmode: // Pict mode
-						PictMode = 0 ; // Storage Memory mode (default)
+						PictMode = 0 ; // Storage Memory mode 
 						break;
 					case SETUP_Storagemode: // Storage mode
 						StorageMode = 0 ; // Memory mode
 						break;
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
-						RefreshCtrl = 0 ; // off
+						RefreshCtrl = 0 ; // off  (default)
 						break;
 					case SETUP_DefaultWaitcount: // Wait count +
 						DefaultWaitcount+=10; if ( DefaultWaitcount > 9999 ) DefaultWaitcount = 9999;
@@ -1742,8 +1743,8 @@ int SetupG(int select){		// ----------- Setup
 						if ( UseHiddenRAM ) UseHiddenRAM |= 0x10;	// off
 						HiddenRAM_MatAryInit();
 						break;
-					case SETUP_AutoDebugMode: // AutoDebugMode
-						AutoDebugMode = 1 ; // disable 
+					case SETUP_DisableDebugMode: // DisableDebugMode
+						DisableDebugMode = 1 ; // disable 
 						break;
 					case SETUP_BreakStop: // Break
 						BreakCheckDefault = 0 ; // off
@@ -1935,7 +1936,7 @@ int SetupG(int select){		// ----------- Setup
 						if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
 						break;
 					case SETUP_Pictmode: // Pict mode
-						PictMode = 3 ; // MCS mode
+						PictMode = 3 ; // MCS mode (default)
 						break;
 					case SETUP_DefaultWaitcount: // Wait count init
 						DefaultWaitcount = 0;

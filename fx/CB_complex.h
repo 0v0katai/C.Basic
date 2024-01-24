@@ -96,6 +96,8 @@ complex Cplx_fRanBin( complex n, complex p) ;	// RanBin#
 complex Cplx_RoundFix( complex num, complex digit);
 complex Cplx_RoundSci( complex num, complex digit);
 
+double fabsz( complex z ) ;
+
 complex Cplx_Eval(char *SRC);
 complex Cplx_Eval2(char *SRC, int *ptr);
 complex Cplx_Evalsub1(char *SRC);
@@ -182,3 +184,5 @@ void InitMatSub( int reg, complex value );
 
 complex CB_Sum( char *SRC ) ;	// Sum( List 1 )
 complex CB_Prod( char *SRC ) ;	// Prod( List 1 )
+complex CB_MinMax( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max
+complex CB_Mean( char *SRC ) ;	// Mean( List 1 )

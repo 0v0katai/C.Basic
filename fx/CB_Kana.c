@@ -1394,19 +1394,21 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
-int CB_GetFontSub( char *SRC, char *cstr, int *orgflag ) {
+int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
 	int opcode;
 	int c=SRC[ExecPtr];
 	if ( c == ')' ) { ExecPtr++; return -1; }
 	*orgflag=0; if ( c == '@' ) { ExecPtr++; *orgflag=1; }
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, cstr, 8-1 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, cstr, CB_StrBufferMax-1 );		// String -> buffer	return 
 		GetOpcodeLen( cstr, 0, &opcode );
 	} else {	// expression
 		opcode = CB_EvalInt( SRC );
-		if ( opcode == 0 ) { EnableExtFont=0; ClearExtFontflag(); return -2; }
-		if ( opcode == 1 ) { EnableExtFont=1; return -2; } 
+		if ( getmode == 0 ) {
+			if ( opcode == 0 ) { EnableExtFont=0; ClearExtFontflag(); return -2; }
+			if ( opcode == 1 ) { EnableExtFont=1; return -2; } 
+		}
 		if ( opcode>0xFF ) { 
 			cstr[0]=(opcode>>8) & 0xFF;
 			cstr[1]=(opcode) & 0xFF;
@@ -1428,12 +1430,11 @@ int CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	int width=6,height=8;
 	char vbuf[16*8];
 	char *vram=(char*)PictAry[0];
-	unsigned char cstr[32];
+	unsigned char cstr[CB_StrBufferMax];
 	int orgflag;
 
-	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag) ;
+	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
 	if ( c == -1 ) goto exit;
-	if ( c == -2 ) { { if ( SRC[ExecPtr] == ')' ) ExecPtr++; } goto exit; }
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
@@ -1472,12 +1473,11 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	int width=6,height=6;
 	char vbuf[16*8];
 	char *vram=(char*)PictAry[0]+384*24*2;
-	unsigned char cstr[32];
+	unsigned char cstr[CB_StrBufferMax];
 	int orgflag;
 
-	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag) ;
+	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
 	if ( c == -1 ) goto exit;
-	if ( c == -2 ) { { if ( SRC[ExecPtr] == ')' ) ExecPtr++; } goto exit; }
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
@@ -1515,11 +1515,11 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 char* CB_SetFontSub( char *SRC, int *reg, int mini ) {
 	int CharNo;
 	int width,height;
-	unsigned char cstr[32];
+	unsigned char cstr[CB_StrBufferMax];
 	int orgflag;
 	char *fontptr;
 
-	CharNo=CB_GetFontSub( SRC, (char*)cstr, &orgflag );
+	CharNo=CB_GetFontSub( SRC, (char*)cstr, &orgflag, 0 );
 	if ( CharNo == -1 ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	if ( CharNo == -2 ) { return 0; }	// SetFont 0   SetFont 1
 	if ( CharNo < 0xFF ) {
@@ -1755,8 +1755,8 @@ void LoadExtFontAnkfolder( int flag, char* sname, int folder, int no ){		// FONT
 	ExtCharAnkFX = 1;
 	ExtCharAnkMiniFX = 1;
 	if ( sname[0]=='\0' ) {
-			if ( ( no < 0 )||( 9 < no ) )	sprintf(sname2 ,"%sFONTG6M",   fontfolderFX[folder] );
-			else							sprintf(sname2 ,"%sFONTG6M%d", fontfolderFX[folder], no);
+			if ( ( no < 0 )||( 9 < no ) )	sprintf(sname2 ,"%sFONTA8L",   fontfolderFX[folder] );
+			else							sprintf(sname2 ,"%sFONTA8L%d", fontfolderFX[folder], no);
 	}
 	if ( flag & 1 ) ExtCharAnkFX = LoadExtFontKana_sub( sname2, (char*)ExtAnkFontFX, 6 );
 	

@@ -263,11 +263,11 @@ int RegVarAliasEx( char *SRC ) {	//
 	for ( i=0; i<=AliasVarMAX; i++ ) {
 		if ( AliasVarCode[i].alias==(short)alias_code ) return AliasVarCode[i].org;
 	}
-	if ( ( (0x7FA4<=alias_code)&&(alias_code<=0x7FA6) ) ||	// a0 a1 a2
-		 ( (0x7FAA<=alias_code)&&(alias_code<=0x7FAC) ) ||	// b0 b1 b2
+	if ( ( (0x7F0D<=alias_code)&&(alias_code<=0x7F0F) ) ||	// D Start D End D pitch
+		 ( (0x7F90<=alias_code)&&(alias_code<=0x7FAE) ) ||	// F Result...a0 a1 a2...b0 b1 b2 anStart bnStart
 //		 ( (0x7F76<=alias_code)&&(alias_code<=0x7F7D) ) ||	// Q1 Q3 x1 y1 x2 y2 x3 y3
 //		 ( (0x7FC0<=alias_code)&&(alias_code<=0x7FC1) ) ||	// n1 n2
-		 ( (0xF915<=alias_code)&&(alias_code<=0xF917) ) ) {	// c0 c1 c2
+		 ( (0xF912<=alias_code)&&(alias_code<=0xF918) ) ) {	// c0 c1 c2 CnStart
 			AliasVarMAX++;  	// New Var 
 			IsExtVar++;
 			if ( ( IsExtVar > VARMAXSIZE ) || ( AliasVarMAX > ALIASVARMAX ) ) { CB_Error(TooManyVarERR); return -1 ; } // Too Many Var ERR
@@ -848,7 +848,7 @@ double fpowroot( double x, double y ) {	// powroot(x,y)
 }
 
 double frecip( double x ) {	// ^(-1) RECIP
-	if ( x == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	if ( x == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
 	return 1 / x ;
 }
 
@@ -865,7 +865,7 @@ double fMUL( double x, double y ) {	// x * y
 	return x*y;
 }
 double fDIV( double x, double y ) {	// x / y
-	if ( y == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	if ( y == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
 	return x/y;
 }
 void fDIVcheck( double *x, double *y ) {	//
@@ -931,10 +931,11 @@ double fGCD( double x, double y ) {	// GCD(x,y)
 		y=tmp;
 		tmp=fMOD(x,y);
 	}
-	return y;
+	return fabs(y);
 }
 double fLCM( double x, double y ) {	// LCM(x,y)
-	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
+	if ( ( x == 0 ) || ( y == 0 ) ) return 0;
+	if ( ( x < 0 ) || ( y < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
 	return x/fGCD(x,y)*y;
 }
 
@@ -1112,7 +1113,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 	}
 	while ( c == 0xFFFFFF89 ) c=SRC[ExecPtr++];	// +
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
-		result = - Evalsub1( SRC );
+		result = - Evalsub5( SRC );
 		return result;
 	}
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
@@ -1273,11 +1274,11 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x29 :				// Sigma( X, X, 1, 1000)
 					return CB_Sigma( SRC ).real;
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
-					return CB_MinMax( SRC, 1 );
+					return CB_MinMax( SRC, 1 ).real;
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
-					return CB_MinMax( SRC, 0 );
+					return CB_MinMax( SRC, 0 ).real;
 				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-					return CB_Mean( SRC );
+					return CB_Mean( SRC ).real;
 				case 0x4C :				// Sum List 1
 					return CB_Sum( SRC ).real;
 				case 0x4D :				// Prod List 1

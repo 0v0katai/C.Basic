@@ -125,7 +125,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 	}
 	while ( c == 0xFFFFFF89 ) c=SRC[ExecPtr++];	// +
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
-		return Cplx_EvalFxDbl( &Cplx_fsign, Cplx_ListEvalsub1( SRC ) ) ; 
+		return Cplx_EvalFxDbl( &Cplx_fsign, Cplx_ListEvalsub5( SRC ) ) ; 
 	}
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  {
 		reg=c-'A';
@@ -328,11 +328,11 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x29 :				// Sigma( X, X, 1, 1000)
 					return CB_Sigma( SRC );
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
-					return Dbl2Cplx( CB_MinMax( SRC, 1 ) );
+					return CB_MinMax( SRC, 1 );
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
-					return Dbl2Cplx( CB_MinMax( SRC, 0 ) );
+					return CB_MinMax( SRC, 0 );
 				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-					return Dbl2Cplx( CB_Mean( SRC ) );
+					return CB_Mean( SRC );
 				case 0x4C :				// Sum List 1
 					return CB_Sum( SRC );
 				case 0x4D :				// Prod List 1
