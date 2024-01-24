@@ -912,8 +912,16 @@ int CB_StrRotate( char *SRC ) {
 	return CB_StrBufferMax-1;
 }
 
-
 int CB_ExpToStr( char *SRC ) {	// 
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0 ;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	CB_CurrentStr = buffer;
+	CB_StorStr( SRC );
+	return 1;
 }
 
 int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
@@ -1103,4 +1111,10 @@ int CB_StrDMS( char *SRC ) {
 	CB_StrPrint(SRC, 23-(10+i+j) );
 }
 
+//----------------------------------------------------------------------------------------------
+//int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
 

@@ -115,6 +115,7 @@ void CBint_Store( char *SRC ){	// ->
 				InitMatIntSub( reg, CBint_CurrentValue);
 			} else {
 			Matrix:
+				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				ExecPtr++;
 				MatOprandInt2( SRC, reg, &dimA, &dimB);
 				if ( ErrorNo ) return ; // error
