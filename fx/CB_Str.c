@@ -1094,44 +1094,6 @@ int CB_StrDMS( char *SRC ) {
 }
 
 
-//--------------------------------------------------------------
-
-void CB_Fkey( char *SRC) {
-	char buffer[9];
-	int c;
-	int n;
-
-	if ( RangeErrorCK(SRC) ) return;
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	n=CB_EvalInt( SRC );
-	if ( ( n<1 )||(n>6) ) { CB_Error(ArgumentERR); return; }	// Argumenterror
-	c=SRC[ExecPtr];
-	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
-	ExecPtr++;
-	CB_GetLocateStr( SRC, buffer, 8 );		// String -> buffer	return 
-	c=SRC[ExecPtr];
-	if ( c != ',' )	Fkey_dispN( n-1 ,buffer);	// Normal
-	else {
-		ExecPtr++;	
-		c=SRC[ExecPtr++];
-		switch ( c ) {
-			case 'C':
-			case 'c':
-				Fkey_Clear( n-1 );			// clear
-				break;
-			case 'R':
-			case 'r':
-				Fkey_dispR( n-1 ,buffer);	// Reverse
-				break;
-			case 'N':
-			case 'n':
-				Fkey_dispN( n-1 ,buffer);	// Normal
-				break;
-		}
-	}
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
 
 //----------------------------------------------------------------------------------------------
 //int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte

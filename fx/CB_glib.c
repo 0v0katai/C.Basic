@@ -82,7 +82,7 @@ void Bdisp_PutDisp_DD_DrawBusy() {
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip() {
 	unsigned int t=RTC_GetTicks();
-	if ( abs(t-skip_count)>Refreshtime ) { skip_count=t;		// 128/3=42  1/42s
+	if ( abs(t-skip_count)>Refreshtime ) { skip_count=t;		// default 128/3=42  1/42s
 		Bdisp_PutDisp_DD_DrawBusy();
 	}
 }
