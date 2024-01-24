@@ -1009,6 +1009,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int help_code=0;
 	int indent;
 	int execptr;
+	int selectStr=0;
+	char *string;
 
 	cUndo Undo;
 
@@ -1048,9 +1050,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );	// csrY adjust
 	UpdateLineNum=1;
 
-	if ( run == 1 ) { key=KEY_CTRL_F6; }	// direct run
+	if ( run == 1 ) { key=KEY_CTRL_F6; goto directrun; }	// direct run
 
 	if ( DebugMode ) DebugMenuSw=1; 
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 
 //	Cursor_SetFlashMode(1);			// cursor flashing on
 	if (Cursor_GetFlashStyle()<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
@@ -1653,6 +1657,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
 									if ( SrcBase[offset] == 0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
 								} else {
+								  directrun:
 									if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
 										if ( DebugScreen == 1 ) { DebugMenuSw = 1; DebugScreen = 2; }
 										else
@@ -2146,7 +2151,25 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			default:
 				break;
 		}
-		
+
+
+		if ( key == 0x1F91B ) { 
+			CB_StoreString( 1, ClipBuffer );
+			key=0;
+		}
+		if ( key == 0x2F91B ) { 
+			string = CB_RecallString( 1 );
+			goto pastestring;
+		}
+		if ( key == 0x4F91B ) { 
+			string = CB_SeeString( 1, &selectStr, ClipBuffer );
+		  pastestring:
+			if ( string != NULL ) {
+				EditPaste( filebase, string, &csrPtr, &Undo );
+				UpdateLineNum=1;
+			}
+			key=0;
+		}
 		if ( dumpflg==2 ) {
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;

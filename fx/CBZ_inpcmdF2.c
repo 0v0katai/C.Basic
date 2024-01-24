@@ -122,6 +122,10 @@ void GetGenuineCmdF2( unsigned int *code ){
 				case 0: (*code)=0x0004;return;	// micro
 				case 1: (*code)=0x0007;return;	// Mega
 			} break;
+		case CMD_OPTN_FMEM:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x2F91B;return;	// RECALL
+			} break;
 		case CMD_OPTN_PICT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF794;return;	// RclPict

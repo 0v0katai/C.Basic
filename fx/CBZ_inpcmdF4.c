@@ -111,6 +111,10 @@ void GetGenuineCmdF4( unsigned int *code ){
 				case 0: (*code)=0x0002;return;	// pico
 				case 1: (*code)=0x0009;return;	// Tera
 			} break;
+		case CMD_OPTN_FMEM:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x4F91B;return;	// SEE
+			} break;
 		case CMD_OPTN_LOGIC:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7FB4;return;	// Xor

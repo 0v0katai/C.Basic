@@ -597,7 +597,11 @@ unsigned int Explorer( int size, char *folder )
 	char buffer3[32];
 	char fname[64];
 	char ext[5];
-	char search[9]="";
+	char search[10]="", *search2;
+	int ContinuousSelect=0;
+	int CursorStyle;
+	int alphalock ;
+	char alphalock_bk ;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -636,6 +640,16 @@ unsigned int Explorer( int size, char *folder )
 	GetMediaFreeStr10(buffer2);
 
 	textmode = 0 ;
+	
+//	lowercase = 0;
+ alpha_start:
+	CursorStyle=Cursor_GetFlashStyle();
+	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
+		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+	alphalock = 1;
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 
 	while( cont && (FileListUpdate==0) )
 	{
@@ -651,6 +665,8 @@ unsigned int Explorer( int size, char *folder )
 		}
 
 		Bdisp_AllClr_VRAM();
+		
+		if ( strlen(search) ) filemode=0; 
 		switch ( filemode ) {
 			case 0:
 				Fkey_Icon( FKeyNo1, 388 );	//	Fkey_dispN( FKeyNo1,"EXE ");
@@ -687,19 +703,27 @@ unsigned int Explorer( int size, char *folder )
 //		locate(1, 1);Print((unsigned char*)"File List  [        ]");
 //		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
 		locate(1, 1);Print((unsigned char*)"[        ]");
-		if ( strlen(search) ) {
-			locate(2,1);Print( (unsigned char*)search );	// search string
+		if ( StorageMode & 2 ) {
+			locate(2,1);Print((unsigned char*)"Main Mem");
 		} else {
-			if ( StorageMode & 2 ) {
-				locate(2,1);Print((unsigned char*)"Main Mem");
-			} else {
-				if ( root2[0] ) PrintMini(13, 1, (unsigned char*)(root2+1), MINI_OVER);
-				sprintf( buffer, "%-8s", folder );
-				locate(2,1);Print( strlen(folder) ? (unsigned char*)buffer : (unsigned char*)"/");	// root
-			}
+			if ( root2[0] ) PrintMini(13, 1, (unsigned char*)(root2+1), MINI_OVER);
+			sprintf( buffer, "%-8s", folder );
+			locate(2,1);Print( strlen(folder) ? (unsigned char*)buffer : (unsigned char*)"/");	// root
 		}
-														PrintMini(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
-		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file
+		if ( strlen(search) ) {
+			locate(12, 1);Print((unsigned char*)"[        ]");
+			locate(13,1);Print( (unsigned char*)search );	// search string
+			if ( lowercase  ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
+			Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
+//			Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
+			if ( StorageMode < 2 ) {
+				if ( search[0]=='/' ) Fkey_dispN( FKeyNo6, "\xE6\x91\x46ile"); else Fkey_dispN( FKeyNo6, "\xE6\x91 /");
+			}
+		} else {
+			PrintMini(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
+			sprintf(buffer, "(%d)", size-FavoritesMAX-1);
+			PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file
+		}
 		if( size < 2+FavoritesMAX-FavCount ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
@@ -776,88 +800,39 @@ unsigned int Explorer( int size, char *folder )
 
 		i = strlen(search);
 		if ( i ) {
-			locate(2+i,1);
+			locate(13+i,1);
 			Cursor_SetFlashMode(1);			// cursor flashing on
+			CursorStyle=Cursor_GetFlashStyle();
+			if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
+			if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
+			if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
+			if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
 		}
-		GetKey(&key);
+		if ( ContinuousSelect ) ContinuousSelect=0; else GetKey(&key);
 		Cursor_SetFlashMode(0); 		// cursor flashing off
-		if ( KEY_CTRL_DEL == key ) {
-			i=strlen(search);
-			if ( i ) {
-				i--;
-				search[i--]='\0';
-				if ( i>=0 ) {
-					key=search[i];
-					search[i]='\0';
-				}
-			}
-		}
-		if ( ( 'a' <= key ) && ( key <= 'z' ) ) key -= 'a'-'A';
-		if ( KEY_CTRL_XTT  == key ) key='A';
-		if ( KEY_CHAR_LOG  == key ) key='B';
-		if ( KEY_CHAR_LN   == key ) key='C';
-		if ( KEY_CHAR_SIN  == key ) key='D';
-		if ( KEY_CHAR_COS  == key ) key='E';
-		if ( KEY_CHAR_TAN  == key ) key='F';
-		if ( KEY_CHAR_FRAC == key ) key='G';
-		if ( KEY_CTRL_FD   == key ) key='H';
-		if ( KEY_CHAR_LPAR == key ) key='I';
-		if ( KEY_CHAR_RPAR == key ) key='J';
-		if ( KEY_CHAR_COMMA== key ) key='K';
-		if ( KEY_CHAR_STORE== key ) key='L';
-		if ( KEY_CHAR_7    == key ) key='M';
-		if ( KEY_CHAR_8    == key ) key='N';
-		if ( KEY_CHAR_9    == key ) key='O';
-		if ( KEY_CHAR_4    == key ) key='P';
-		if ( KEY_CHAR_5    == key ) key='Q';
-		if ( KEY_CHAR_6    == key ) key='R';
-		if ( KEY_CHAR_MULT == key ) key='S';
-		if ( KEY_CHAR_DIV  == key ) key='T';
-		if ( KEY_CHAR_1    == key ) key='U';
-		if ( KEY_CHAR_2    == key ) key='V';
-		if ( KEY_CHAR_3    == key ) key='W';
-		if ( KEY_CHAR_PLUS == key ) key='X';
-		if ( KEY_CHAR_MINUS== key ) key='Y';
-		if ( KEY_CHAR_0    == key ) key='Z';
-		if ( KEY_CHAR_DP   == key ) key='~';
-		if ( KEY_CHAR_EXP  == key ) key='@';
-		if ( ( '@' == key ) ) {
-			i=FavoritesMAX;
-			while ( i<size ) {
-				if ( files[i].filesize == FOLDER_FLAG ) {
-						index = i;
-						top = index;
-					break;
-				}
-				i++;
-			}
-
-		} else
-		if ( ( ( 'A' <= key ) && ( key <= 'Z' ) ) || ( key == '~' ) ) {
-			j=strlen(search);
-			if ( j<8 ) {
-				search[j++]=key;
-				search[j]='\0';
-			}
-			i=FavoritesMAX;
-			while ( i<size ) {
-				if ( files[i].filesize == FOLDER_FLAG ) i++;
-				else {
-					k=0;
-					while ( k<=j ) {
-						if ( files[i].filename[k] != search[k] ) { k=(k>=j); break; }
-						k++;
-					}
-					if ( k>0 ) {
-						index = i;
-						top = index;
-						break;
-					} else i++; // folder skip
-				}
-			}
-		} else search[0]='\0';
 		
+		if ( KeyCheckPMINUS() ) {
+			key = '@';
+		}
+
 		switch ( key ) {
+			case KEY_CTRL_ALPHA:
+				alphalock = 0 ;
+				key = 0;
+				break;
+					
+			case KEY_CTRL_DEL:
+				i=strlen(search);
+				if ( i ) {
+					i--;
+					search[i--]='\0';
+					if ( i>=0 ) {
+						key=search[i];
+						search[i]='\0';
+					}
+				}
+				break;
+			
 			case KEY_CTRL_UP:
 				if ( nofile ) break;
 				do {
@@ -951,6 +926,12 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F4:	// Copy file
+				if ( strlen(search) ) {
+					lowercase=1-lowercase;
+					if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+					key = 0;
+					break;
+				} 
 				switch ( filemode ) {
 					case 0:
 						if ( Isfolder ) break;
@@ -970,6 +951,11 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F5:	// delete file
+				if ( strlen(search) ) {
+					key=SelectChar( &ContinuousSelect);
+					if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+					break;
+				} 
 				switch ( filemode ) {
 					case 0:
 						if ( nofile ) break;
@@ -993,18 +979,25 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F6:		// ------- change function
+				if ( strlen(search) ) {
+					key='/';
+					break;
+				} 
 				filemode ++;
 				if ( filemode >2 ) filemode=0;
 				break;
 
-			case KEY_CTRL_AC:
-				search[0]='\0';
-				break;
 				
 			case KEY_CTRL_EXIT:
-				if ( ( nofile ) || ( index == StartLine ) ) key=KEY_CTRL_QUIT;
-//				index = size;
-				cont =0 ;
+				if ( ( nofile ) || ( index == StartLine ) ) {
+					key=KEY_CTRL_QUIT;
+					cont =0 ;
+					break;
+				}
+				index = 0;
+			case KEY_CTRL_AC:
+				search[0]='\0';
+				if  ( alphalock ) goto alpha_start;
 				break;
 
 			case KEY_CTRL_OPTN:		// ------- Favorites list
@@ -1020,7 +1013,8 @@ unsigned int Explorer( int size, char *folder )
 				break;
 
 //			case KEY_CHAR_SQUARE:
-			case KEY_CHAR_VALR:
+			case KEY_CHAR_ROOT:
+//			case KEY_CHAR_VALR:
 			  textmodejp:
 				strcpy(buffer,files[index].filename);
 				if ( buffer[0] == 0 ) break;
@@ -1041,9 +1035,24 @@ unsigned int Explorer( int size, char *folder )
 				else				  Fkey_dispN( FKeyNo5,"\xE6\x91Main");
 				Fkey_dispN( FKeyNo6, "Debg");
 				GetMemFreeStr10(buffer3);
-				PrintMini(10*6+1, 1, (unsigned char*)buffer3, MINI_OVER);  // free mem area
+				if ( strlen(search) == 0 ) PrintMini(10*6+1, 1, (unsigned char*)buffer3, MINI_OVER);  // free mem area
+				alphalock_bk = alphalock;
+				alphalock = 0 ;
+				i = strlen(search);
+				if ( i ) {
+					locate(13+i,1);
+					Cursor_SetFlashMode(1);			// cursor flashing on
+				}
 				GetKey(&key);
+				Cursor_SetFlashMode(0); 		// cursor flashing off
 				switch (key) {
+					case KEY_CTRL_SHIFT:
+							key = 0;
+							break;
+					case KEY_CTRL_ALPHA:
+							alphalock = 1 ;
+							key = 0;
+							break;
 					case KEY_CTRL_QUIT:
 						update:
 							FileListUpdate = 1 ; //
@@ -1110,8 +1119,117 @@ unsigned int Explorer( int size, char *folder )
 			default:
 				break;
 		}
+
+//		if ( KEY_CTRL_XTT  == key ) key='A';
+//		if ( KEY_CHAR_LOG  == key ) key='B';
+//		if ( KEY_CHAR_LN   == key ) key='C';
+//		if ( KEY_CHAR_SIN  == key ) key='D';
+//		if ( KEY_CHAR_COS  == key ) key='E';
+//		if ( KEY_CHAR_TAN  == key ) key='F';
+//		if ( KEY_CHAR_FRAC == key ) key='G';
+//		if ( KEY_CTRL_FD   == key ) key='H';
+//		if ( KEY_CHAR_LPAR == key ) key=0;
+//		if ( KEY_CHAR_RPAR == key ) key=0;
+//		if ( KEY_CHAR_COMMA== key ) key=0;
+//		if ( KEY_CHAR_STORE== key ) key='L';
+//		if ( KEY_CHAR_7    == key ) key='M';
+//		if ( KEY_CHAR_8    == key ) key='N';
+//		if ( KEY_CHAR_9    == key ) key='O';
+//		if ( KEY_CHAR_4    == key ) key='P';
+//		if ( KEY_CHAR_5    == key ) key='Q';
+//		if ( KEY_CHAR_6    == key ) key='R';
+		if ( KEY_CHAR_MULT == key ) key=0;
+		if ( KEY_CHAR_DIV  == key ) key='/';
+//		if ( KEY_CHAR_1    == key ) key='U';
+//		if ( KEY_CHAR_2    == key ) key='V';
+//		if ( KEY_CHAR_3    == key ) key='W';
+		if ( KEY_CHAR_PLUS == key ) key='+';
+		if ( KEY_CHAR_MINUS== key ) key='-';
+//		if ( KEY_CHAR_0    == key ) key='Z';
+		if ( KEY_CHAR_DP   == key ) key='.';
+		if ( KEY_CHAR_SQUARE  == key ) key='~';
+		if ( KEY_CHAR_VALR    == key ) key='~';
+		if ( KEY_CHAR_POW     == key ) key='^';
+		if ( KEY_CHAR_THETA   == key ) key=0x27;
+		if ( KEY_CHAR_EXP  == key ) key=0x0C;
+		if ( KEY_CHAR_PMINUS  == key ) key='@';
+		if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
+		if ( key == '/' ) {
+			key=0;
+			if (search[0]=='/') {
+				for (i=0; i<8; i++ ) search[i]=search[i+1];
+				goto fileSRC;
+			} else {
+				for (i=7; i>0; i-- ) search[i]=search[i-1];
+				search[8]='\0';
+				search[0]='/';
+				if ( search[1]==0 ) goto foldertop; else goto fileSRC;
+			}
+		}
+		if ( ( 0x0C == key ) ) {
+		  foldertop:
+			i=FavoritesMAX;
+			while ( i<size ) {
+				if ( files[i].filesize == FOLDER_FLAG ) {
+						index = i;
+						top = index;
+					break;
+				}
+				i++;
+			}
+		} else
+			if ( ( 0x20 <= key ) && ( key <= 0x7E ) ) {
+		  fileSRC:
+			j=strlen(search);
+			if ( j<8 ) {
+				if ( key != 0 ) {
+					search[j++]=key;
+					search[j]='\0';
+				}
+			}
+			if ( search[0]=='/' ) {;	// folder search
+				j--; if ( j==0 ) goto foldertop;
+			}
+			i=FavoritesMAX;
+			while ( i<size ) {
+				if ( search[0]=='/' ) {
+					if ( files[i].filesize != FOLDER_FLAG ) i++;
+					else {		// folder search
+						k=0;
+						search2=search+1;
+						while ( k<=j ) {
+							if ( files[i].filename[k] != search2[k] ) { k=(k>=j); break; }
+							k++;
+						}
+						if ( k>0 ) {
+							index = i;
+							top = index;
+							break;
+						} else i++; // FavoritesMAX skip
+					}
+				} else {		// file search
+					if ( files[i].filesize == FOLDER_FLAG ) i++;
+					else {
+						k=0;
+						while ( k<=j ) {
+							if ( files[i].filename[k] != search[k] ) { k=(k>=j); break; }
+							k++;
+						}
+						if ( k>0 ) {
+							index = i;
+							top = index;
+							break;
+						} else i++; // FavoritesMAX skip
+					}
+				}
+			}
+		} else {
+			if ( key != 0 ) search[0]='\0';
+		}
 	}
 
+	if ( alphalock ) { PutKey( KEY_CTRL_ALPHA, 1 ); i=key; GetKey(&key); key=i; }
+	
 	SaveFavorites();
 
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
@@ -3772,6 +3890,7 @@ int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4BB( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4CC( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4DD( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3852,7 +3971,6 @@ void FavoritesDowndummy5( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy6( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

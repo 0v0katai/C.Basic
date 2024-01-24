@@ -106,3 +106,7 @@ int CB_StrRepl( char *SRC );	// StrRepl( Str1,Str2,Str3,n )->str4
 
 int CB_StrSplit( char *SRC ) ;	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232]["4567"]["89"]]
 
+
+char* CB_RecallString(int type );				// ----------- Recall String  type: 0:string  1:fn   2:GraphY
+int CB_StoreString(int type, char *clipbuffer );		// ----------- Store  String  type: 0:string  1:fn   2:GraphY
+char* CB_SeeString(int type, int *select, char *clipbuffer );	// ----------- See    String  type: 0:string  1:fn   2:GraphY
