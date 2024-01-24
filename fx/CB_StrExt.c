@@ -2,10 +2,14 @@
 
 const char TypeTitle[][10]={"Strings  ","Function ","Graphics "};
 const char TypeStr[][2]={"S","f","Y"};
-	
+
+
 int SelectMemoryNum( int type, int max, int store, unsigned int *key ) {		//
 	char buffer[32];
 	int n=0,n0=1;
+	char *scrbuf[896];
+	memcpy( scrbuf, PictAry[0], 896);	// store VRAM
+
 	PopUpWin(4);
 	FkeyClearAll();
 	locate( 3,2); if ( store ) Print((unsigned char *)"Store In"); else Print((unsigned char *)"Recall From");
@@ -19,6 +23,7 @@ int SelectMemoryNum( int type, int max, int store, unsigned int *key ) {		//
 		if ( (1<=n)&&(n<=max) ) break;
 		n=n0;
 	}
+	memcpy( PictAry[0], scrbuf, 896);	// restore VRAM
 	return n ; // ok
 }
 
@@ -38,6 +43,29 @@ void LoadStringType( int type, int *reg, int *opNum ){
 			break;
 	}
 }
+char* GetStringPtr(int type, int n ){			// ----------- Store  String  type: 0:string  1:fn   2:GraphY
+	unsigned int key;
+	int reg,dimA,dimB;
+	int opNum;
+	char *str;
+
+	LoadStringType( type, &reg, &opNum );
+	if ( n>opNum ) return NULL;
+	ErrorNo=0;
+	switch ( type ) {
+		case 0:	// string
+			str = GetStrYFnPtrSub( reg, n, defaultStrArySize  );
+			break;
+		case 1:	// fn
+			str = GetStrYFnPtrSub( reg, n, defaultFnArySize  );
+			break;
+		case 2:	// GraphY
+			str = GetStrYFnPtrSub( reg, n, defaultGraphArySize  );
+			break;
+	}
+	if ( ErrorNo ) return NULL; // error
+	return str;
+}
 
 char* CB_RecallString(int type ){			// ----------- Recall String  type: 0:string  1:fn   2:GraphY
 	unsigned int key;
@@ -53,38 +81,38 @@ char* CB_RecallString(int type ){			// ----------- Recall String  type: 0:string
 		if ( key == KEY_CTRL_EXIT ) return 0;
 		if ( dimA >= n ) {
 			string = MatrixPtr(reg, n,  1);
-		}
+		} else string = NULL;
 	}
 	return string;
 }
 
+
+int CB_StoreStringSub(int type, int n, char *clipbuffer ){			// ----------- Store  String  type: 0:string  1:fn   2:GraphY
+	int reg,dimA,dimB;
+	int opNum;
+	char *str;
+
+	if ( clipbuffer == NULL ) return 0;
+	ErrorNo=0;
+	LoadStringType( type, &reg, &opNum );
+	str = GetStringPtr( type, n );
+	if ( ErrorNo ) return 0; // error
+	OpcodeCopy( str, clipbuffer , MatAry[reg].SizeB-1 );
+	return 0;
+}
 
 int CB_StoreString(int type, char *clipbuffer ){			// ----------- Store  String  type: 0:string  1:fn   2:GraphY
 	unsigned int key;
 	int reg,dimA,dimB;
 	int opNum,n;
 	char *str;
-
 	if ( clipbuffer == NULL ) return 0;
 	LoadStringType( type, &reg, &opNum );
 	n = SelectMemoryNum( type, opNum, 1, &key );
 	if ( key == KEY_CTRL_EXIT ) return 0;
-	ErrorNo=0;
-	switch ( type ) {
-		case 0:	// string
-			str = GetStrYFnPtrSub( reg, n, defaultStrArySize  );
-			break;
-		case 1:	// fn
-			str = GetStrYFnPtrSub( reg, n, defaultFnArySize  );
-			break;
-		case 2:	// GraphY
-			str = GetStrYFnPtrSub( reg, n, defaultGraphArySize  );
-			break;
-	}
-	if ( ErrorNo ) return -1; // error
-	OpcodeCopy( str, clipbuffer , MatAry[reg].SizeB-1 );
-	return 0;
+	return CB_StoreStringSub( type, n, clipbuffer ) ;
 }
+
 
 char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See    String  type: 0:string  1:fn   2:GraphY
 	char buffer[64];
@@ -96,6 +124,9 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 	int reg,dimA,dimB,ElementSize;
 	int base;
 	char *string=0,*str=0;
+
+	char *scrbuf[896];
+	memcpy( scrbuf, PictAry[0], 896);	// store VRAM
 
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 
@@ -117,9 +148,15 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 
 		for ( i=0; i<6; i++ ) {
 			k=seltop+i;
-			locate( 1, 2+i); Print((unsigned char*)TypeStr[type]);
-			sprintf( buffer,"%d:", k );
-			locate( 2, 2+i); Print((unsigned char*)buffer);
+			j=2; if ( k>=10 ) j=1;
+			locate( j, 2+i); Print((unsigned char*)TypeStr[type]);
+			sprintf( buffer,"%d", k );
+			if ( k<100 ) {
+				locate( j+1, 2+i); Print((unsigned char*)buffer);
+			} else {
+				PrintMini( 6+1, (1+i)*8+2,(unsigned char*)buffer,MINI_OVER);
+			}
+			locate( 4, 2+i); Print((unsigned char*)":");
 			locate( 5, 2+i);
 			dimA = MatAry[reg].SizeA ;
 			if ( dimA == 0 ) {
@@ -145,7 +182,7 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 
 		k=(*select);
 		
-		ElementSize=MatAry[reg].ElementSize;
+//		ElementSize=MatAry[reg].ElementSize;
 
 		GetKey( &key );
 		if ( KEY_CTRL_XTT   == key ) (*select)=23;	// X
@@ -185,8 +222,8 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 				break;
 
 			case KEY_CTRL_F1:	// store
-				cont=0;
-				return NULL;
+				CB_StoreStringSub( type, (*select), clipbuffer );
+				break;
 			case KEY_CTRL_F2:	// recall
 				str = MatrixPtr( reg, (*select), 1 ) ;
 				cont=0;
@@ -203,6 +240,7 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 				break;
 		}
 	}
+	memcpy( PictAry[0], scrbuf, 896);	// restore VRAM
 	return str;
 }
 

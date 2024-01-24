@@ -303,7 +303,7 @@ void CB_Locate( char *SRC ){
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 	
-	c=CB_IsStr( SRC, ExecPtr );
+	c=CB_IsStr_noYFn( SRC, ExecPtr );
 	if ( c ) {	// string
 		CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
 	} else {	// expression
@@ -499,7 +499,7 @@ void CB_Text( char *SRC ) { //	Text
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	c=SRC[++ExecPtr];
-	c=CB_IsStr( SRC, ExecPtr );
+	c=CB_IsStr_noYFn( SRC, ExecPtr );
 	if ( c ) {	// string
 		CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
 	} else {	// expression
@@ -542,7 +542,7 @@ void CB_LocateYX( char *SRC ){
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
-	c=CB_IsStr( SRC, ExecPtr );
+	c=CB_IsStr_noYFn( SRC, ExecPtr );
 	if ( c ) {	// string
 		CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
 	} else {	// expression
@@ -1755,7 +1755,7 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 		if ( CursorX >1 ) Scrl_Y();
 		
 		CB_StrBufferCNT=0;			// String buffer clear
-		c=CB_IsStr( SRC, ExecPtr );
+		c=CB_IsStr_noYFn( SRC, ExecPtr );
 		if ( c ) {	// string
 			CB_GetLocateStr( SRC, buffer, 128-1 );		// String -> buffer	return 
 		} else {	// expression
@@ -1952,7 +1952,7 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 
-	c=CB_IsStr( SRC, ExecPtr );
+	c=CB_IsStr_noYFn( SRC, ExecPtr );
 	if ( c ) {	// string
 		CB_GetLocateStr( SRC, buffer, 64-1 );		// String -> buffer	return 
 	} else {	// expression
@@ -2490,6 +2490,77 @@ void CB_RclVWin( char *SRC ) {
 	if ( ( n<1 ) || ( n>6 ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 	RclVwin( n );
 	CB_ChangeViewWindow() ;
+}
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+void CB_GraphFunc( char *SRC, int c ) {
+	int n,d;
+	char *buffer;
+	if ( ( 0x63<=c ) && ( c<=0x6F) ) {
+		switch ( c ) {
+			case 0x63:	d= 0; break;		// Y=Type
+			case 0x64:	d= 1; break;		// r=Type
+			case 0x65:	d= 2; break;		// ParamType
+//			case 0x66:			// 
+			case 0x67:	d= 3; break;		// X=Type
+			case 0x68:	d= 8; break;		// X>Type
+			case 0x69:	d= 9; break;		// X<Type
+			case 0x6A:	d= 4; break;		// Y>Type
+			case 0x6B:	d= 5; break;		// Y<Type
+			case 0x6C:	d= 6; break;		// Y>=Type
+			case 0x6D:	d= 7; break;		// Y<=Type
+			case 0x6E:	d=10; break;		// X>=Type
+			case 0x6F:	d=11; break;		// X<=Type
+		}
+		FuncType = d;
+		return;
+	}
+	if ( c == 0xFFFFFF98 ) {	// SetG-Color
+		c = CB_GetColor( SRC );
+		if ( SRC[ExecPtr]!=',' ) { CB_Error(SyntaxERR); goto exit; }	// Syntax error
+		ExecPtr++;
+		buffer = GetStrYFnPtr( SRC, defaultGraphAry, defaultGraphAryN, defaultGraphArySize ) ;
+		if ( buffer[7-1] ) {
+			buffer[5-1] = c/256;
+			buffer[6-1] = c%256;
+		}
+		goto exit; 
+	}
+
+	buffer = GetStrYFnPtr( SRC, defaultGraphAry, defaultGraphAryN, defaultGraphArySize ) ;
+	if ( buffer[7-1] == 0 ) goto exit; 
+	switch ( c ) {
+			case 0x2B:			// NormalG
+				buffer[4-1] = 0x02;
+				break;
+			case 0x2C:			// ThickG
+				buffer[4-1] = 0x03;
+				break;
+			case 0x2D:			// BrokenThickG
+				buffer[4-1] = 0x05;
+				break;
+			case 0x3F:			// DotG
+				buffer[4-1] = 0x08;
+				break;
+			case 0xFFFFFFF5:	// ThinG
+				buffer[4-1] = 0x12;
+				break;
+			case 0xFFFFFFC8:	// G SelOn
+				buffer[3-1] |= 0x80;
+				break;
+			case 0xFFFFFFC9:	// T SelOn
+				buffer[3-1] |= 0x20;
+				break;
+			case 0xFFFFFFD8:	// G SelOff
+				buffer[3-1] &= 0x7F;
+				break;
+			case 0xFFFFFFD9:	// T SelOff
+				buffer[3-1] &= 0xDF;
+				break;
+	}
+  exit:
+	dspflag=0;
 }
 
 //----------------------------------------------------------------------------------------------

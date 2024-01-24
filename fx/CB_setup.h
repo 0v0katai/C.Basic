@@ -35,6 +35,7 @@ extern int StackPtr;
 //------------------------------------------------------------------------------
 void VerDispSub( int flag ) ;
 void VerDisp( int flag ) ;
+unsigned int XTTKey( unsigned int  key) ;
 unsigned int MathKey( unsigned int  key) ;
 
 int CB_Version() ;	// Version

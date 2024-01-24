@@ -146,7 +146,8 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_VARS:		//	------------------------------------------------------------VARS_F1
 			switch ( CommandPage ) {
 				case 0:	CommandType=CMD_VARS_VWIN;CommandPage=0;break;
-				case 1: (*code)='#';return;	// '#'
+				case 1:	CommandType=CMD_VARS_TABL;CommandPage=0;break;
+//				case 1: (*code)='#';return;	// '#'
 			} break;
 		case CMD_VARS_VWIN:
 			switch ( CommandPage ) {
@@ -171,6 +172,10 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_VARS_GRPH:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7FF0;return;	// GRAPHY
+			} break;
+		case CMD_VARS_TABL:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F91;return;	// F Start
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
@@ -236,6 +241,7 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F1
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_MENU_STAT;CommandPage=0;break;
+				case 1: CommandType=CMD_MENU_TABL;CommandPage=0;break;
 			} break;
 		case CMD_MENU_STAT:
 			switch ( CommandPage ) {
@@ -260,6 +266,33 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_MENU_LIST:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7B0;return;	// SortA(
+			} break;
+		case CMD_MENU_GRPH:
+			switch ( CommandPage ) {
+				case 0: CommandType=CMD_MENU_GRPH_SEL;CommandPage=0;break;
+			} break;
+		case CMD_MENU_GRPH_SEL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF7C8;return;	// G SleOn
+			} break;
+		case CMD_MENU_GRPH_TYPE:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF763;return;	// Y=Type
+				case 1:  (*code)=0xF76A;return;	// Y>Type
+				case 2:  (*code)=0xF768;return;	// X>Type
+			} break;
+		case CMD_MENU_GRPH_STYL:
+		case CMD_MENU_TABL_STYL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF72B;return;	// NormalG
+			} break;
+		case CMD_MENU_TABL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF7C9;return;	// T SleOn
+			} break;
+		case CMD_MENU_TABL_TYPE:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF763;return;	// Y=Type
 			} break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {

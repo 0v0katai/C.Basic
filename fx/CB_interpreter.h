@@ -11,6 +11,7 @@ extern char	Grid      ;	// 0:off 1:on
 extern char	Axes      ;	// 0:off 1:on
 extern char	Label     ;	// 0:off 1:on
 extern char	Derivative     ;	// 0:off 1:on
+extern char FuncType;
 
 #define S_L_Normal   0
 #define S_L_Thick    1
@@ -52,6 +53,7 @@ extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
 extern complex  REG[VARMAXSIZE];
 extern double  REGv[11];
 extern double  VWIN[6][11];
+extern double  REGf[4];		// F_Start  F_End  F_pitch
 extern char VWinflag[6];		// VWin flag
 
 #define regA REG[ 0]
@@ -100,6 +102,11 @@ extern char VWinflag[6];		// VWin flag
 
 #define Xdot REGv[ 9]
 #define Ydot REGv[10]
+
+#define F_Result REGf[ 0]
+#define F_Start  REGf[ 1]
+#define F_End    REGf[ 2]
+#define F_pitch  REGf[ 3]
 
 
 extern	double Xfct;
@@ -365,6 +372,14 @@ void CB_FkeyMenu( char *SRC) ;
 int CB_PopUpWin( char *SRC );	//
 void CB_Menu( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
 void CB_Wait( char *SRC ) ;
+
+void CB_PlotLineColor( char *SRC );
+void CB_BackColor( char *SRC );
+void CB_TransparentColor( char *SRC );
+int CB_GetColor( char *SRC );
+unsigned short CB_RGB( char *SRC, int mode ) ;	// n or (r,g,b)   return : color code	// mode 0:RGB  1:HSV 2:HSL
+
+void CB_GraphFunc( char *SRC, int c ) ;
 
 //-----------------------------------------------------------------------------
 #define MAXNAMELEN 8

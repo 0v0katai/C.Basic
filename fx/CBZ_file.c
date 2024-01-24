@@ -3017,9 +3017,36 @@ void ChangeFavorites( int oldStorageMode, int newStorageMode ){	// old <> new fa
 void ChangeStorageMode( int newMode ) {
 	ChangeFavorites( StorageMode, newMode );	// old -> new favorites
 	StorageMode = newMode;
+	FileListUpdate = 1;
 }
 
 //------------------------------------------------------------------------ load from main memory
+void LoadConfig1data( int n ) {	// config data ->List Ans
+	unsigned char fname[8] ="CBasic1";
+	unsigned char buffer[ConfigMAX];
+	int fsize;
+	switch ( n ) {
+		case 1:
+			fsize=ConfigMAX;
+			break;
+		case 2:
+			fsize=ConfigMAX2;
+			fname[6]='2';
+			break;
+		case 3:
+			fsize=ConfigMAX3;
+			fname[6]='3';
+			break;
+		default:
+			return ;
+	}
+	if  ( LoadConfigReadFile( buffer, fname, fsize ) < 0 ) { CB_Error(CantFindFileERR); return ; }
+	
+	NewMatListAns( fsize, 1, 0, 8 );		// List Ans
+	if ( ErrorNo ) return ;
+	memcpy( MatAry[CB_MatListAnsreg].Adrs,  buffer , fsize );
+	dspflag=4; 	// List Ans;
+}
 
 void LoadConfig1(){
 	const unsigned char fname[]="CBasic1";
