@@ -4,8 +4,8 @@
 #define EDITMAXPROG2  512
 #define NEWMAX    4096+0x4C
 #define NEWMAX2   9999+0x4C
-#define EDITMAX   65000
-#define EDITMAX2  65000
+#define EDITMAX   256000
+#define EDITMAX2  256000
 
 #define CLIPMAX  2048
 #define CLIPMAX2 8192

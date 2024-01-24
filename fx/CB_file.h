@@ -27,13 +27,13 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 #define FOLDERMAX 9
 #define N_LINE 6
 
-#define FOLDER_FLAG       0xFFFF
-#define FOLDER_SEPALATOR  0xFFFE
+#define FOLDER_FLAG       -1
+#define FOLDER_SEPALATOR  -2
 
 typedef struct{
 	char filename[FILENAMEMAX];
 	char folder[FOLDERMAX];
-	unsigned short filesize;
+	int filesize;
 }Files;
 
 #define FavoritesMAX 7

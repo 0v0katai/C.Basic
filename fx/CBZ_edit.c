@@ -43,14 +43,20 @@ int ClipMax;
 int SrcSize( char *src ) {
 	int size ;
 	if ( src[0]=='\0' ) return 0 ;
-	size = (src[0x47]&0xFF)*256+(src[0x48]&0xFF)+0x4C;
-	return size & 0xFFFF;
+//	size = (src[0x47]&0xFF)*256+(src[0x48]&0xFF)+0x4C;
+	size = ((src[0x45]&0xFF)<<24)+((src[0x46]&0xFF)<<16)+((src[0x47]&0xFF)<<8)+(src[0x48]&0xFF)+0x4C;
+	return size ;
 }
 void SetSrcSize( char *src, int size ) {
+	int sizeH1,sizeL1 ;
 	int sizeH,sizeL ;
 	size=size-0x4C;
-	sizeH = (size&0xFF00) >> 8 ;
-	sizeL = (size&0x00FF) ;
+	sizeH1 = (size&0xFF000000) >> 24 ;
+	sizeL1 = (size&0xFF0000) >> 16 ;
+	sizeH  = (size&0xFF00) >> 8 ;
+	sizeL  = (size&0x00FF) ;
+	src[0x45]=sizeH1;
+	src[0x46]=sizeL1;
 	src[0x47]=sizeH;
 	src[0x48]=sizeL;
 }
@@ -1012,15 +1018,25 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			locate(1,8); PrintLine((unsigned char*)" ",21);
 			if ( SearchMode ) {
 					Fkey_Icon( FKeyNo1, 165 );	//	Fkey_dispR( FKeyNo1, "SRC ");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					switch ( SearchMode ) {
 						case 1:
+							FkeyClear( FKeyNo2 );
+							FkeyClear( FKeyNo4 );
 							break;
 						case 2:
 							Fkey_dispN( FKeyNo2, "REPL");
 							Fkey_dispN( FKeyNo4, "ALL");
+							Fkey_dispN( FKeyNo5, "ALL+");
 							break;
 						case 3:
-							locate (12,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode
+						case 4:
+//							FkeyClear( FKeyNo1 );
+							FkeyClear( FKeyNo2 );
+//							FkeyClear( FKeyNo4 );
+							locate (11,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode
 							break;
 					}
 			} else {
@@ -1109,6 +1125,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		}						
 		
 		MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
+//		Cursor_SetFlashMode(0); 			// cursor flashing off
 		switch (dumpflg) {
 			case 4: 		// hex edit
 				if ( ( ( KEY_CHAR_0 <= key ) && ( key <= KEY_CHAR_9 ) ) ||
@@ -1321,14 +1338,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( SearchMode == 2 ) {
 						if ( YesNo( "Replace All Ok?" ) == 0 ) break;
 						SearchMode = 3; //	Replace All
-//						while ( 1 ) {
-//							i = strlenOp(searchbuf)-1;
-//							csrPtr+=i;
-//							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
-//							EditPaste( filebase, replacebuf, &csrPtr);	// insert
-//							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
-//							if ( i==0 ) { SearchMode=0; break; }
-//						}
 					} else {
 						if ( ClipStartPtr >= 0 ) {	// Clip -> Search for text
 							if ( ClipEndPtr < 0 ) goto F4j;
@@ -1360,28 +1369,42 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F5:
-					if ( SearchMode ) break;
-					if ( ClipStartPtr >= 0 ) {	// Clip -> add '
-						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-						csrPtr = AddComment( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
-//						offset=csrPtr;
-//						offset_y=0;
-//						PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
+					if ( SearchMode == 2 ) {
+						if ( YesNo2( "Not Display mode", "Replace All Ok?") == 0 ) break;
+						locate (11,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode not display
+						Bdisp_PutDisp_DD;
+						while ( KeyScanDownAC() == 0 ) {
+							i = strlenOp(searchbuf);
+							csrPtr+=i;
+							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
+							EditPaste( filebase, replacebuf, &csrPtr);	// insert
+							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
+							if ( i==0 ) { SearchMode=0; break; }
+						}
 						UpdateLineNum=1;
 					} else {
-						if ( CommandType ) { GetGenuineCmdF5( &key );
-							if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); key=0; CommandType=0; }
+						if ( ClipStartPtr >= 0 ) {	// Clip -> add '
+							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+							csrPtr = AddComment( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
+//							offset=csrPtr;
+//							offset_y=0;
+//							PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
+							UpdateLineNum=1;
 						} else {
-							if ( DebugMenuSw ) {		// ====== Debug Mode ======
-								if ( DebugScreen )  DebugScreen=0; else DebugScreen=1;	// swap list <---> screen
-								key=0;
+							if ( CommandType ) { GetGenuineCmdF5( &key );
+								if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); key=0; CommandType=0; }
 							} else {
-								if ( JumpMenuSw ) {		// ====== Jump Mode
-										PrevLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Up
-										csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
+								if ( DebugMenuSw ) {		// ====== Debug Mode ======
+									if ( DebugScreen )  DebugScreen=0; else DebugScreen=1;	// swap list <---> screen
+									key=0;
 								} else {
-									key=SelectChar( &ContinuousSelect);
-									if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+									if ( JumpMenuSw ) {		// ====== Jump Mode
+											PrevLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Up
+											csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
+									} else {
+										key=SelectChar( &ContinuousSelect);
+										if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+									}
 								}
 							}
 						}
@@ -1977,8 +2000,8 @@ int CB_BreakStop() {
 
 //----------------------------------------------------------------------------------------------
 int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte

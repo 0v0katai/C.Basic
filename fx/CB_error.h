@@ -70,6 +70,7 @@ extern int ErrorNo;
 #define NotSupportERR 62
 #define TooManyVarERR 63
 #define DuplicateDefERR 64
+#define AlignmentERR 65
 
 #define FileERR 100
 

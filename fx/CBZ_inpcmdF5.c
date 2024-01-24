@@ -17,6 +17,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 		case CMD_PRGM_CTL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7F1;return;	// Local
+				case 1: (*code)=0xF95F;return;	// IsError(
 			} break;
 		case CMD_PRGM_JUMP:
 			switch ( CommandPage ) {
@@ -35,6 +36,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 		case CMD_PRGM_I_O:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F9F;return;	// KeyRow(
+				case 1: (*code)=0xF7DD;return;	// Beep 
 			} break;
 		case CMD_PRGM_STR:
 			switch ( CommandPage ) {
@@ -158,6 +160,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 				case 0: CommandType=CMD_SETUP_LABL;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_BACK;CommandPage=0;break;
 				case 3: (*code)=0xF94F;return;	// Wait
+				case 4: (*code)=0x7FDF;return;	// Version
 			} break;
 
 		default:

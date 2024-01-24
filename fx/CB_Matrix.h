@@ -7,12 +7,12 @@
 //extern short	MatArySizeB[MatAryMax];			// Matrix array size n X
 //extern double *MatAry[MatAryMax];				// Matrix array ptr*
 
-typedef struct {		// 16 bytes
+typedef struct {		// 20 bytes
 	int		Maxbyte;
 	short	Base;
 	short	ElementSize;
-	short	SizeA;
-	short	SizeB;
+	int		SizeA;
+	int		SizeB;
 	double *Adrs;
 } matary;
 
@@ -50,9 +50,9 @@ void EditMatrix(int reg, int ans );		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
 
 int ElementSizeSelect( char *SRC, int *base, int ElementSize ) ;
-void CB_MatrixInitsubNoMat( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) ; 	// 1-
-void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) ; 	// 1-
-void CB_MatrixInit( char *SRC ) ; //	{n,m}->Dim Mat A[.B][.W][.L][.F]
+void CB_MatrixInitsubNoMat( char *SRC, int *reg, int dimA, int dimB , int ElementSize, int dimdim ) ; 	// 1-
+void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize, int dimdim ) ; 	// 1-
+void CB_MatrixInit( char *SRC , int dimdim ) ; //	{n,m}->Dim Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2( char *SRC ) ; //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2Str( char *SRC ) ; //	["ABCD","12345","XYZ"]->Mat A[.B]
 void CB_ClrMat( char *SRC ) ; //	ClrMat A
@@ -78,7 +78,7 @@ int Cellsum( int reg, int x, int y );								// 0-
 
 //-----------------------------------------------------------------------------
 
-void CB_ListInitsub( char *SRC, int *reg, int dimA , int ElementSize ) ; 	// 1-
+void CB_ListInitsub( char *SRC, int *reg, int dimA , int ElementSize, int dimdim ) ; 	// 1-
 void CB_ListInit2( char *SRC ) ; //	{1.2,3,4,5,6}->List 1[.B][.W][.L][.F]
 void CB_Seq( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_ListCalc( char *SRC ) ; //	List 1 -> List 2  etc

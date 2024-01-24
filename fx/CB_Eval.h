@@ -112,7 +112,9 @@ int RegVar( int c ) ;
 int MatRegVar( char *SRC ) ;	// 
 int ListRegVar( char *SRC ) ;	// return reg no
 int Get2Eval( char *SRC, double *tmp, double *tmp2);
+int RegVarAliasEx( char *SRC ) ;
 
+int CB_IsError( char *SRC ); //	IsError (...)
 //-----------------------------------------------------------------------------
 void NewMatListAns( int dimA, int dimB, int base, int element );
 void DeleteMatListAns() ;

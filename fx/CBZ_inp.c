@@ -139,6 +139,11 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 				if ( nptr[i]=='.' ) nptr[i]='\0';
 			}
 		}
+	} else 
+	if ( ( round_mode == Fix ) && ( digit == 0 ) ) {
+		i=strlen((char*)buffer); 
+		buffer[i++]='.';
+		buffer[i]  ='\0';
 	}
 
 	if ( ENG==3 )  {	// 3 digit separate
@@ -971,6 +976,9 @@ const short oplistOPTN[]={
 		0x7F5F,	// Ticks
 		0xF94F,	// Wait 
 		0xF7DD,	// Beep
+		0x7FDF,	// Version
+		0x7FCF,	// System(
+		0xF95F, // IsError( 
 
 		0xFFFF,	// 				-
 		0x23,	// #
@@ -1669,12 +1677,12 @@ const short oplistCMD[]={		// 5800P like
 		0xF961,	// GetFontMini(
 		0xF962,	// SetFont 
 		0xF963,	// SetFOntMini
-		0xFFFF,	// 
+		0xF95F, // IsError( 
 		0xFFFF,	// 
 		0xFFFF,	// 
 		0xF7DD,	// Beep
-		0x24,	// $
-		0x26,	// &
+		0x7FDF,	// Version
+		0x7FCF,	// System(
 		0x23,	// #
 		0x25,	// %
 		
@@ -2107,6 +2115,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F5E, "RGB(" }, 
 	{ 0x7F5F, "Ticks" }, 
 	{ 0x7F9F, "KeyRow(" }, 
+	{ 0x7FCF, "System(" }, 
+	{ 0x7FDF, "Version" }, 
 	{ 0x7FB4, " Xor " }, 		// SDK emu not support
 	{ 0x7FBC, " Int\xB9 " }, 	// SDK emu not support
 	{ 0x7FBD, " Rmdr " }, 		// SDK emu not support
@@ -2181,6 +2191,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF94D, "StrSplit(" }, 
 	{ 0xF94F, "Wait " }, 
 	{ 0xF950, "StrAsc(" }, 
+	{ 0xF95F, "IsError(" }, 
 	{ 0xF960, "GetFont(" }, 
 	{ 0xF961, "SetFont " }, 
 	{ 0xF962, "GetFontMini(" }, 
@@ -2437,6 +2448,8 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	SaveDisp(SAVEDISP_PAGE1);
 	while (cont) {
 		RestoreDisp(SAVEDISP_PAGE1);
+		memcpy( GetVRAMAddress()+16*8*7, fnbuf, 16*8);		// fn key image restore
+		
 		Cursor_SetFlashMode(1);			// cursor flashing on
 		length=strlenOp( buffer );
 		if ( ptrX > length-1 ) ptrX=length;
@@ -2448,7 +2461,6 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				else				PrevOpcode( buffer, &offsetX);
 		}
 		
-		memcpy( GetVRAMAddress()+16*8*7, fnbuf, 16*8);		// fn key image restore
 		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
 		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_Icon( FKeyNo5, 673 ); }	//	Fkey_dispR( FKeyNo5, "CHAR");
 		if ( CommandInputMethod ) DispGenuineCmdMenu();

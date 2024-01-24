@@ -42,7 +42,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.73\xE6\x41";
+const char VerMSG[]="C.Basic  v1.74\xE6\x41";
+#define VERSION 174
 
 //---------------------------------------------------------------------------------------------
 
@@ -69,6 +70,24 @@ void VerDisp() {
 	unsigned int key;
 	VerDispSub();
 	GetKey(&key);
+}
+
+//----------------------------------------------------------------------------------------------
+int CB_Version() {	// Version
+	return VERSION;
+}
+int CB_System( char *SRC ) {	// System( n )
+	int r;
+	int c = SRC[ExecPtr];
+	switch ( CB_EvalInt( SRC ) ) {
+		case 0:	// Version
+			r = VERSION;
+			break;
+		default:
+			r = 0;
+	}
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return r;
 }
 
 //----------------------------------------------------------------------------------------------

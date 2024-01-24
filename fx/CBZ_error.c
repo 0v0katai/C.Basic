@@ -187,6 +187,10 @@ void CB_ErrMsg(int ErrNo) {
 		case DuplicateDefERR:
 			ERROR("Duplicate Def ERR");
 			break;
+		case AlignmentERR:
+//			ERROR("Alignment ERR");
+			ERROR("Address Align ERR");
+			break;
 			
 		default:
 			break;
