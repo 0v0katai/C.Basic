@@ -799,15 +799,6 @@ void StoPictHeap2Smem( int pictNo ){	// heap Pict -> SMEM Pict
 	}
 }
 
-void RclPictSmem( int pictNo, int offset){
-	unsigned char *pict;
-	int i;
-	pict=(unsigned char *)LoadPicture( pictNo );
-	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
-	WriteVram( pict+ offset );
-	HiddenRAM_freeProg(pict);
-}
-
 void StoPict( int pictNo){
 	int i,stat;
 	unsigned char *pict;
@@ -821,6 +812,24 @@ void StoPict( int pictNo){
 	pict = PictAry[pictNo];	//  heap mode
 	ReadVram(pict);
 	if ( PictMode == 2 ) StoPictHeap2Smem( pictNo );	// heap Pict -> SMEM Pict
+}
+
+void RclPictOr( char *pict ) {
+	int i;
+	char *pict2;
+	if ( SrcSize( (char*)pict ) < 2048+0x4C ) return ;
+	pict += 0x4C;
+	pict2 = pict+1024;;
+	for ( i=0; i<1024; i++) *pict++ |= *pict2++;
+}
+void RclPictSmem( int pictNo ){
+	unsigned char *pict;
+	int i;
+	pict=(unsigned char *)LoadPicture( pictNo );
+	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
+	RclPictOr( (char*)pict );
+	WriteVram( pict+0x4C );
+//	HiddenRAM_freeProg(pict);
 }
 
 void RclPictMCS( int pictNo, int errorcheck){
@@ -840,12 +849,12 @@ void RclPict( int pictNo, int errorcheck){	//
 	int i;
 	if ( ( PictMode == 0 )||( PictMode == 3 ) ) {
 		if ( PictMode == 0 ) {	// strage memory mode
-			RclPictSmem(pictNo, 0x4C );	// S.mem
+			RclPictSmem(pictNo );	// S.mem
 		} else {
 			RclPictMCS( pictNo, errorcheck); // MCS
 			if ( ErrorNo == MemoryERR ) { 	// Memory error
 				ErrorNo=0;
-				RclPictSmem(pictNo, 0x4C );	// S.mem
+				RclPictSmem(pictNo );	// S.mem
 				if ( ErrorNo == 0 ) {
 					StoPict( pictNo );
 				}
@@ -866,7 +875,8 @@ void RclPict( int pictNo, int errorcheck){	//
 		pict = HiddenRAM_mallocPict(pictNo) ;						// Pict array ptr*
 		if ( pict != NULL ) {
 			PictAry[pictNo] = pict;			//  heap mode pict
-			i=SrcSize( (char*)pict2 ); 
+			i=SrcSize( (char*)pict2 )-0x4C; 
+			RclPictOr( (char*)pict2 );
 			memcpy( pict, pict2+0x4C, 1024 );
 			if ( i<1024 ) memset( pict+i, 0, 1024-i );
 			WriteVram( pict );
@@ -2456,7 +2466,7 @@ int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
