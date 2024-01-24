@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -47,8 +47,8 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	dimB-=base;
 	switch ( MatAry[reg].ElementSize ) {
 		case  2:		// Vram
-			dimA+=base;
-			dimB+=base;
+//			dimA+=base;
+//			dimB+=base;
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 1 bit
 			return ( MatAryC[dimB*(((MatAry[reg].SizeA-1)>>3)+1)+(dimA>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
@@ -65,6 +65,10 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 			return MatAry[reg].Adrs[dimA*MatAry[(reg)].SizeB+dimB] ;			// Matrix array doubl
 	}
 }
+//-----------------------------------------------------------------------------
+//int EvalIntObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+//-----------------------------------------------------------------------------
 void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    base:1 1-
 	char*	MatAryC;
 	short*	MatAryW;
@@ -75,9 +79,9 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 	dimA-=base;
 	dimB-=base;
 	switch ( MatAry[reg].ElementSize ) {
-		case  2:	// Vram
-			dimA+=base;
-			dimB+=base;
+		case  2:		// Vram
+//			dimA+=base;
+//			dimB+=base;
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;					// Matrix array 1 bit
 			tmp=( 128>>(dimA&7) );
@@ -448,7 +452,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			} else if ( c == 0x58 ) {	// ElemSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAry[reg].ElementSize;
+					i=MatAry[reg].ElementSize;
+					if (i <= 4 ) i=1;
+					return i;
 			} else if ( c == 0x59 ) {	// ColSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -820,7 +826,7 @@ int EvalInt(char *SRC) {		// Eval temp
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int CB_Getkey3( char *SRC ) {
-	int key;
+	int key,tmpkey=0;
 	int result=0;
 	int shift=0;
 	int time1,time2;
@@ -836,9 +842,10 @@ int CB_Getkey3( char *SRC ) {
 
 	do {
 		key=CB_Getkey();
-		if ( key == 34 ) break;	// [AC]
+		if ( key == 34 ) return key;	// [AC]
+		if ( key ) tmpkey=key;
 	} while ( abs ( RTC_GetTicks()-CB_TicksAdjust - time2 ) < time1 ) ;
-
+	key=tmpkey;
 	return key;
 }
 

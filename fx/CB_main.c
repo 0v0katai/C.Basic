@@ -76,8 +76,12 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	CB_INT=0;	// double mode default
 	
 	HiddenRAM();	// Check HiddenRAM
-	ClipBuffer = (char *)malloc( ClipMax+1 );
-	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+	TVRAM = (char *)malloc( 1024 );
+//	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+	GVRAM = (char *)malloc( 1024 );
+//	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+//	ClipBuffer = (char *)malloc( ClipMax+1 );
+//	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -173,12 +177,14 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		for (i=ProgMax; i>=0; i--) {			// memory free
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
 			ptr=ProgfileAdrs[i];
-			if ( ptr != NULL ) free(ptr);
+			if ( ptr != NULL ) 
+				free(ptr);
 			ProgfileAdrs[i]=NULL;
 		}
 		for (i=PictMax; i>=1; i--) {			// memory free
 			ptr=(char*)PictAry[i];
-			if ( ptr != NULL ) free(ptr);
+			if ( ptr != NULL )
+				free(ptr);
 			PictAry[i]=NULL;
 		}
 //		FileListfree();

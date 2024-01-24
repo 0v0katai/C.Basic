@@ -53,8 +53,8 @@ char * MatrixPtr( int reg, int m, int n ){		// base:0  0-    base:1 1-
 	n-=base;
 	switch ( MatAry[reg].ElementSize ) {
 		case  2:	// Vram
-			m+=base;
-			n+=base;
+//			m+=base;
+//			n+=base;
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;
 			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>3)*n+(m>>3));
@@ -100,7 +100,7 @@ void TransposeMatirx( int reg ) {
 	int reg2=26;	// temp mat
 	int base=MatAry[reg].Base;
 
-	if ( MatAry[reg].ElementSize == 2 ) { CB_Error(ArgumentERR); return ; }	// Argument error
+	if ( 2 == ElementSize ) { CB_Error(ArgumentERR); return ; }	// Argument error
 	
 	if ( ( dimA == 1 ) || ( dimB == 1 ) ) {
 		MatAry[reg].SizeA=dimB;						// Matrix array size
@@ -142,13 +142,24 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
 	double	*dptr;
 	int i;
 	int matsize;
-	if ( ElementSize==2 ) { 						// 1 bit Vram array
-		MatAry[reg].SizeA       =128-base;					// Matrix array size
-		MatAry[reg].SizeB       = 64-base;					// Matrix array size
-		MatAry[reg].ElementSize = ElementSize;				// Matrix array Elementsize
-		MatAry[reg].Adrs        = (double*)(PictAry[0]);	// Matrix array ptr*
+	if ( ( 2<=ElementSize )&&( ElementSize<=4 ) ) { 						// 1 bit Vram array
+		if ( ( m != 128 ) || ( n != 64 ) ) { CB_Error(ArraySizeERR); return; }	// Illegal Ary size
+		switch ( ElementSize ) {
+			case 2:
+				MatAry[reg].Adrs        = (double*)(PictAry[0]);	// Matrix array ptr*  VRAM
+				break;
+			case 3:
+				MatAry[reg].Adrs        = (double*)(TVRAM);			// Matrix array ptr*  Text VRAM
+				break;
+			case 4:
+				MatAry[reg].Adrs        = (double*)(GVRAM);			// Matrix array ptr*  Graphic VRAM
+				break;
+		}
+		MatAry[reg].SizeA       =128;						// Matrix array size
+		MatAry[reg].SizeB       = 64;						// Matrix array size
+		MatAry[reg].ElementSize = 2;						// Matrix array Elementsize  2:VRAM
 		MatAry[reg].Maxbyte     =1024;						// Matrix array max byte
-		MatAry[reg].Base        = base;						// Matrix array base
+		MatAry[reg].Base        = 0;						// Matrix array base
 		return 0;
 	}
 	if ( ( m<1 ) || ( n<1 ) ) { CB_Error(ArgumentERR); return ErrorNo; }	// Argument error
@@ -1034,9 +1045,12 @@ int ElementSizeSelect( char *SRC, int reg, int *base ) {
 		c =SRC[++ExecPtr];
 		if (CB_INT)	ElementSize=32; else ElementSize=64;
 		if ( ( c=='0' ) || ( c=='1' ) ) { c=SRC[++ExecPtr]; *base = c-'0' ; }
-		if ( ( c=='G' ) || ( c=='g' ) ) { ExecPtr++; ElementSize= 1; }
 		if ( ( c=='P' ) || ( c=='p' ) ) { ExecPtr++; ElementSize= 1; }
-		if ( ( c=='V' ) || ( c=='v' ) ) { ExecPtr++; ElementSize= 2; }
+		if ( ( c=='V' ) || ( c=='v' ) ) { ExecPtr++; ElementSize= 2;
+			c =SRC[ExecPtr];
+			if ( ( c=='T' ) || ( c=='t' ) ) { ExecPtr++; ElementSize= 3; } // text VRAM
+			if ( ( c=='G' ) || ( c=='g' ) ) { ExecPtr++; ElementSize= 4; } // GraphicVRAM
+		}
 		if ( ( c=='B' ) || ( c=='b' ) ) { ExecPtr++; ElementSize= 8; }
 		if ( ( c=='W' ) || ( c=='w' ) ) { ExecPtr++; ElementSize=16; }
 		if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; ElementSize=32; }
@@ -1309,13 +1323,13 @@ void CopyMatrix( int reg2, int reg ) {	// reg -> reg2
 	base         = MatAry[reg ].Base;
 	base2        = MatAry[reg2].Base;
 	ElementSize  = MatAry[reg ].ElementSize;
-	if ( ElementSize  == 2 ) ElementSize  == 1+base;
+	if ( ElementSize  == 2 ) ElementSize  == 1;
 	ElementSize2 = MatAry[reg2].ElementSize;
-	if ( ElementSize2 == 2 ) ElementSize2 == 1+base2;
+	if ( ElementSize2 == 2 ) ElementSize2 == 1;
 
-	if ( base < base2 ) { CB_Error(ArraySizeERR); return; }	// Illegal Ary size
+//	if ( base < base2 ) { CB_Error(ArraySizeERR); return; }	// Illegal Ary size
 	
-	if ( ( ElementSize == ElementSize2 ) && ( sizeA == sizeA2 ) && ( sizeB == sizeB2 ) ) {
+	if ( ( ElementSize == ElementSize2 ) && ( sizeA == sizeA2 ) && ( sizeB == sizeB2 ) && ( base == base2 ) ) {
 		memcpy( MatAry[reg2].Adrs, MatAry[reg].Adrs, MatrixSize(reg, sizeA, sizeB) ) ;
 	} else { 
 		if ( ( ElementSize < 64 ) && ( ElementSize2 < 64 ) ) {
