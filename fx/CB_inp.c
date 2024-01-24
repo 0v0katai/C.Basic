@@ -386,7 +386,7 @@ const short oplistInp[]={
 		0x7F00,	// Xmin
 		0x7F01,	// Xmax
 		0x7F02,	// Xscl
-		0XF921,	// Xdot
+		0xF921,	// Xdot
 		0x7F04,	// Ymin
 		0x7F05,	// Ymax
 		0x7F06,	// Yscl
@@ -641,9 +641,9 @@ const short oplistVARS[]={
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
 		0xF7F0,	// DotShape(
-		0xF73F,	// DotGet(
+		0xF73E,	// DotGet(
 		0xF94B,	// DotPut(
-		0xF74F,	// DotTrim(
+		0xF73D,	// DotTrim(
 		0xF7E0,	// DotLife(
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
@@ -1085,9 +1085,9 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %	
 
-		0xF73F,	// DotGet(
+		0xF73E,	// DotGet(
 		0xF94B,	// DotPut(
-		0xF74F,	// DotTrim(
+		0xF73D,	// DotTrim(
 		0xF7E0,	// DotLife(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
@@ -1289,8 +1289,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7FF8, "VarPtr(" }, 
 	{ 0xF70C, "Return " }, 
 	{ 0xF717, "ACBreak" }, 
-	{ 0xF73F, "DotGet(" }, 
-	{ 0xF74F, "DotTrim(" }, 
+	{ 0xF73D, "DotTrim(" }, 
+	{ 0xF73E, "DotGet(" }, 
 	{ 0xF7E0, "DotLife(" }, 
 	{ 0xF7E1, "Rect " }, 
 	{ 0xF7E2, "FillRect " }, 

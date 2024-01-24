@@ -426,11 +426,11 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=2;
 						break;
-					case 0x3F:			// DotGet(
+					case 0x3E:			// DotGet(
 						CB_DotGet(SRC);
 						dspflag=0;
 						break;
-					case 0x4F:			// DotTirm(
+					case 0x3D:			// DotTirm(
 						CB_DotTrim(SRC);
 						dspflag=0;
 						break;

@@ -557,9 +557,9 @@ const char ConvListF700[][17]={
 "Pie",				// F73A
 "@F73B",			// F73B
 "Bar",				// F73C
-"@F73D",			// F73D
-"@F73E",			// F73E
-"DotGet(",				// F73F
+"DotTrim(",				// F73D
+"DotGet(",				// F73E
+"DotG",				// F73F
 
 "1-Variable ",		// F740
 "2-Variable ",		// F741
@@ -576,7 +576,7 @@ const char ConvListF700[][17]={
 "S-Gph3 ",			// F74C
 "Square",			// F74D
 "Cross",			// F74E
-"DotTrim(",				// F74F
+"Dot",				// F74F
 
 "Scatter",			// F750
 "xyLine",			// F751
