@@ -16,6 +16,7 @@
 #include "CB_Matrix.h"
 #include "CB_setup.h"
 #include "CB_TextConv.h"
+#include "CB_Str.h"
 
 #include "CB_test.h"
 
@@ -1335,6 +1336,7 @@ void ConvertToText( char *sname ){
 	int textptr;
 	int textsize;
 
+	MSG1("Wait a moment");
 	if ( LoadProgfile( sname, 0 ) ) return ; // error
 
 	filebase = ProgfileAdrs[0];
@@ -1395,7 +1397,7 @@ int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exi
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	GetLocateStr(SRC, sname,12);
+	CB_GetLocateStr(SRC, sname,12);
 	c =SRC[ExecPtr];
 	if ( c == ')' ) ExecPtr++;
 	SetFullfilenameBin( fname, sname );
@@ -1413,7 +1415,7 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	GetLocateStr(SRC, sname,12);
+	CB_GetLocateStr(SRC, sname,12);
 	SetFullfilenameBin( fname, sname );
 	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -1452,7 +1454,7 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	GetLocateStr(SRC, sname,12);
+	CB_GetLocateStr(SRC, sname,12);
 	SetFullfilenameBin( fname, sname );
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
@@ -1552,7 +1554,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 				break;
 			case 0xFFFFFFED:	// Prog "..."
 				ExecPtr++;	// " skip
-				GetQuotOpcode(SRC, buffer, 32);	// Prog name
+				CB_GetQuotOpcode(SRC, buffer, 32);	// Prog name
 //				locate( 1, 2); PrintLine(" ",21);						//
 //				locate( 1, 2); Print(buffer);							//
 //				locate( 1, 3); PrintLine(" ",21); GetKey(&key);			//

@@ -145,14 +145,14 @@ void CBint_Store( char *SRC ){	// ->
 				Yfct = CBint_CurrentValue ;
 		}
 	} else
-	if ( c==0xF9 ) {
+	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
 				if ( CBint_CurrentValue == 0 ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return; }	// Range error
 				ExecPtr+=2;
 				Xdot = CBint_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
-		}
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
 	} else
 	if ( c=='%' ) {
 		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;

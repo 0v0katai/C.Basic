@@ -1,6 +1,8 @@
-#include "fxlib.h"
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <fxlib.h>
 
 #include "CB_io.h"
 #include "KeyScan.h"
@@ -46,21 +48,21 @@ void CB_PrintRevC( int x, int y,const unsigned char *c ){
 void CB_Print( int x, int y, const unsigned char *str){
 	int c=(char)*str;
 	while ( c ) {
-		c=(char)*str;
 		CB_PrintC( x, y, str++ );
 		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
 		x++;
 		if ( x>21 ) break;
+		c=(char)*str;
 	}
 }
 void CB_PrintRev( int x, int y, const unsigned char *str){
 	unsigned int c=(char)*str;
 	while ( c ) {
-		c=(char)*str;
 		CB_PrintRevC( x, y, str++ );
 		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
 		x++;
 		if ( x>21 ) break;
+		c=(char)*str;
 	}
 }
 
@@ -76,13 +78,14 @@ void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){
 void CB_PrintXY( int px, int py, const unsigned char *str, int mode){
 	int c=(char)*str;
 	while ( c ) {
-		c=(char)*str;
 		CB_PrintXYC( px, py, str++ , mode);
 		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
 		px+=6;
 		if ( px>127 ) break;
+		c=(char)*str;
 	}
 }
+
 
 //---------------------------------------------------------------------------------------------
 void PrintXYR(int x,int y,char *buffer,int rev){
@@ -262,14 +265,14 @@ void MSG1(char*buffer1){
 	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(1);
 	locate(3,4); Print((unsigned char *)buffer1);
-//	Bdisp_PutDisp_DD();
+	Bdisp_PutDisp_DD();
 }
 void MSG2(char*buffer1,char*buffer2){
 	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(2);
 	locate(3,3); Print((unsigned char *)buffer1);
 	locate(3,4); Print((unsigned char *)buffer2);
-//	Bdisp_PutDisp_DD();
+	Bdisp_PutDisp_DD();
 }
 void MSGpop(void){
 	RestoreDisp(SAVEDISP_PAGE1);

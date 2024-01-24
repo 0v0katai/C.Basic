@@ -28,3 +28,4 @@ int EvalIntsub7(char *SRC);
 int EvalIntsubTop(char *SRC);
 int CB_EvalInt( char *SRC ) ;
 
+int EvalInt(char *SRC) ;		// Eval temp

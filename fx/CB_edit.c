@@ -15,7 +15,8 @@
 #include "CB_setup.h"
 
 //----------------------------------------------------------------------------------------------
-char ClipBuffer[ClipMax];
+//char ClipBuffer[ClipMax];
+char *ClipBuffer;
 int Contflag=0;	// Continue mode    0:disable  1:enable
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -479,7 +480,7 @@ void DumpAsc( char *SrcBase, int offset){
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
-int SearchOpcode( char *SrcBase, char *searchstr, int *csrptr){
+int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr){
 	int csrbkup=(*csrptr);
 	int sptr=0,cptr;
 	int opcode=1,srccode;
@@ -532,7 +533,7 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr){
 
 	while ( i==0 ) {	//  not found loop
 		csrp=*csrptr;
-		i=SearchOpcode( SrcBase, searchstr, &csrp);
+		i=SearchOpcodeEdit( SrcBase, searchstr, &csrp);
 		if ( i    ) break;
 		if ( i==0 ) ErrorMSGstr1(" Not Found ");
 		sptr=strlenOp(searchstr);
@@ -729,7 +730,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_F1:
 			case 0x7553:		// ClipMode F1
 					if ( SearchMode ) {		//	Next Search
-						i=SearchOpcode( SrcBase, searchbuf, &csrPtr);
+						i=SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr);
 						if ( i==0 ) SearchMode=0;
 					} else {
 						if ( ClipEndPtr >= 0 ) {
@@ -813,6 +814,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							BreakPtr=0;
 						} else {
 							ProgEntryN=1;
+							MSG1("Wait a moment");
 							CB_ProgEntry( SrcBase ) ;		// sub program search
 							ProgNo=0;
 							ExecPtr=0;

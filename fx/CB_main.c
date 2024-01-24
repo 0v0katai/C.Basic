@@ -75,8 +75,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	LoadConfig();
 	CB_INT=0;	// double mode default
 	
-//	ClipBuffer = (char *)malloc( ClipMax+1 );
-//	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+	ClipBuffer = (char *)malloc( ClipMax+1 );
+	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {

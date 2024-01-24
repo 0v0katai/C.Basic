@@ -15,93 +15,1041 @@
 #include "CB_edit.h"
 #include "CB_setup.h"
 #include "CB_Time.h"
-
+#include "CB_Matrix.h"
 #include "CB_interpreter.h"
 #include "CBI_interpreter.h"
 #include "CB_error.h"
+#include "CB_Str.h"
 #include "fx_syscall.h"
 
+//----------------------------------------------------------------------------------------------
+//		Interpreter inside
+//----------------------------------------------------------------------------------------------
+char   *CB_CurrentStr;	//
+char   *CB_CurrentStr2;	//
+
+char   CB_StrBufferCNT;
+char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+//----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-// Casio Basic Gloval variable
+int StrGetOpcode( char *SRC, int ptr ){
+	int c=SRC[ptr];
+	switch ( c ) {
+		case 0x00:		// <EOF>
+			return 0 ;
+		case 0x5C:	//  Backslash
+		case 0x7F:		// 
+		case 0xFFFFFFF7:		// 
+		case 0xFFFFFFF9:		// 
+		case 0xFFFFFFE5:		// 
+		case 0xFFFFFFE6:		// 
+		case 0xFFFFFFE7:		// 
+		case 0xFFFFFFFF:	// 
+			return ((unsigned char)c<<8)+(unsigned char)SRC[ptr+1];
+	}
+	return (unsigned char)c ;
+}
+int StrGetOpcodeInc( char *SRC, int *ptr ){
+	int c=SRC[(*ptr)++];
+	switch ( c ) {
+		case 0x00:		// <EOF>
+			(*ptr)--;
+			return 0 ;
+		case 0x5C:	//  Backslash
+		case 0x7F:		// 
+		case 0xFFFFFFF7:		// 
+		case 0xFFFFFFF9:		// 
+		case 0xFFFFFFE5:		// 
+		case 0xFFFFFFE6:		// 
+		case 0xFFFFFFE7:		// 
+		case 0xFFFFFFFF:	// 
+			return ((unsigned char)c<<8)+(unsigned char)SRC[(*ptr)++];
+	}
+	return (unsigned char)c ;
+}
+void StrPutOpcodeInc( char *SRC, int *ptr, int opcode ){
+	if ( opcode >= 0x100 ) {
+		SRC[(*ptr)++]=opcode>>8;
+		SRC[(*ptr)++]=opcode & 0xFF;
+	} else {
+		SRC[(*ptr)++]=opcode;
+	}
+}
+
+int StrNextOpcode( char *SRC, int *offset ){
+	switch ( SRC[(*offset)++] ) {
+		case 0x00:		// <EOF>
+			(*offset)--;
+			return 0 ;
+		case 0x5C:		//  Backslash
+		case 0x7F:		// 
+		case 0xFFFFFFF7:		// 
+		case 0xFFFFFFF9:		// 
+		case 0xFFFFFFE5:		// 
+		case 0xFFFFFFE6:		// 
+		case 0xFFFFFFE7:		// 
+		case 0xFFFFFFFF:	// 
+			(*offset)++;
+			return 2 ;
+	}
+	return 1 ;
+}
+int StrPrevOpcode( char *SRC, int *offset ){
+	int c;
+	(*offset)-=2; 
+	if ( *offset < 0 ) { (*offset)=0; return 0;}
+		c=SRC[*offset];
+		switch ( c ) {
+			case 0x5C:		//  Backslash
+			case 0x7F:		// 
+			case 0xFFFFFFF7:		// 
+			case 0xFFFFFFF9:		// 
+			case 0xFFFFFFE5:		// 
+			case 0xFFFFFFE6:		// 
+			case 0xFFFFFFE7:		// 
+			case 0xFFFFFFFF:	// 
+				return 2 ;
+		}
+	(*offset)++;
+	return 1 ;
+}
+
+int StrOpcodePtr( char *str, int strptr) {	// strptr(1- )   ->  byteptr(0- )
+	int i,ptr=0;
+	strptr--;
+	if ( strptr ) for ( i=0; i<strptr; i++ ) StrNextOpcode( str, &ptr );
+	return ptr;
+}
+
 //-----------------------------------------------------------------------------
+int StrLen( char *str , int *oplen ) {
+	int	slen=0;
+	(*oplen)=0;
+	while ( 1 ) {
+		if ( StrNextOpcode( str, &(*oplen) ) == 0x00 ) break;
+		slen++;
+	}
+	return slen;
+}
+void StrJoin( char *str1, char *str2, int maxlen ) {
+	int i,len,len1,len2;
+	len1=strlenOp( str1 );
+	len2=strlenOp( str2 ); if ( len2==0 ) return ;
+	len=len2;
+	if ( len1+len2 > maxlen ) len=maxlen-len1;
+	for ( i=0; i<=len; i++ ) str1[len1+i]=str2[i];
+}
+int StrCmp( char *str1, char *str2 ) {	// str1==str0 ->0   str1>str2 ->1   str1<str2 ->-1
+	int i=0,j=0,c,d;
+	while (1) {
+		c=StrGetOpcodeInc( str1, &i );
+		d=StrGetOpcodeInc( str2, &j );
+		if ( c > d ) return 1;
+		else
+		if ( c < d ) return -1;
+		if ( ( c==0 ) && ( d==0 ) ) return 0;
+	}	
+	return 0;
+}
 
-String Str*;
+int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){
+	int opbkup,csrptr;
+	int sptr,cptr;
+	int opcode=1,srccode;
 
+	csrptr=StrOpcodePtr( SrcBase, (*strptr) ); 	// opptr -> byteptr
+	opbkup=(*strptr);
+	while ( (csrptr)<size ) {
+		sptr=0;
+		opcode =StrGetOpcode( SrcBase, csrptr ) ;
+		srccode=StrGetOpcode( searchstr, sptr ) ;
+		if ( opcode == 0 ) { return 0; }	// No search
+		if ( opcode != srccode ) {
+			StrNextOpcode( SrcBase, &(csrptr) ); (*strptr)++;
+		} else {
+			cptr = (*strptr);
+			while ( (csrptr)<size ) {
+				StrNextOpcode( searchstr, &sptr );
+				srccode=StrGetOpcode( searchstr, sptr ) ;
+				if ( srccode == 0x00 ) { (*strptr)=cptr; return 1; }	// Search Ok
+				StrNextOpcode( SrcBase, &(csrptr) ); (*strptr)++;
+				opcode =StrGetOpcode( SrcBase, csrptr ) ;
+				if ( (csrptr) >= size ) { (*strptr)=opbkup; return 0; }	// No search
+				if ( opcode != srccode ) break ;
+			}
+		}
+	}
+	{ (*strptr)=opbkup; return 0; }	// No search
+}
 
-char Str[STRLENMAX * 20];
-char StrPtr[20];
+int StrMidCopySub( char *str1, char *str2, int oplen, int n, int m ) {	// mid$(str2,n,m) -> str1
+	int i,opptr1,opptr2;
+	opptr1=StrOpcodePtr( str2, n ); 		// strptr -> opptr1
+	opptr2=StrOpcodePtr( str2, n+m ); 		// strptr -> opptr2
+	if ( opptr2 > oplen ) opptr2=oplen;
+	i=opptr2-opptr1;
+	if ( i ) memcpy( str1, str2+opptr1, i );
+	return i;
+}
+void StrMid( char *str1, char *str2, int n, int m ) {	// mid$(str2,n,m) -> str1
+	int i,opptr1,opptr2,slen,oplen;
+	int opcode;
+	slen=StrLen( str2 ,&oplen );
+	if ( n < 1 ) n=1;
+	if ( n > slen ) n=slen;
+	if ( m == 0 ) 
+	if ( m > 0 ) {
+		if ( m > slen ) m=slen;
+	} else m = slen-n;
+	
+	i=StrMidCopySub( str1, str2, oplen, n, m );
+	str1[i]='\0';
+}
 
+void StrRight( char *str1, char *str2, int n ) {	// Right$(str2,n) -> str1
+	int i,opptr1,opptr2,slen,oplen,m;
+	int opcode;
+	slen=StrLen( str2 ,&oplen );
+	if ( n < 1 ) n=1;
+	if ( n > slen ) n=slen;
+	m=slen-n+1;
+	i=StrMidCopySub( str1, str2, oplen, m, n );
+	str1[i]='\0';
+}
+
+int StrInv( char *str1, char *str2 ) {	// mirror$(str2) -> str1
+	int i,slen,oplen;
+	int opcode;
+	int opptr1,opptr2;
+	slen=StrLen( str2 ,&oplen );
+	if ( slen < 2 ) return;
+	opptr1=0;
+	opptr2=StrOpcodePtr( str2, slen-1 ); 		// strptr -> opptr2
+	for (i=0; i<slen; i++ ) {
+		opcode =StrGetOpcode( str2, opptr2 ) ;
+		StrPrevOpcode( str2, &opptr2 ) ;
+		StrPutOpcodeInc( str1, &opptr1, opcode ) ;
+	}
+	str1[opptr1]='\0';
+}
+
+int StrRotate( char *str1, char *str2, int n ) {	// Rotate$("1234567",  2) -> "6712345"
+	int i,j,opptr1,opptr2,slen,oplen;				// Rotate$("1234567", -2) -> "3456712"
+	int opcode,m;
+	if ( n == 0 ) return;
+	slen=StrLen( str2 ,&oplen );
+	if ( n > 0 ) {
+		m=slen-n+1;
+		i=StrMidCopySub( str1, str2, oplen, m, n );
+		j=StrMidCopySub( str1+i, str2, oplen, 1, m-1 );
+	} else { n=-n;
+		m=slen-n;
+		i=StrMidCopySub( str1, str2, oplen, n+1, m );
+		j=StrMidCopySub( str1+i, str2, oplen, 1, n );
+	}
+	str1[i+j]='\0';
+}
+
+int StrShift( char *str1, char *str2, int n ) {		// Shift$("1234567",  2) -> "34567"
+	int i,opptr1,opptr2,slen,oplen;					// Shift$("1234567", -2) -> "12345"
+	int opcode,m;
+	if ( n == 0 ) return;
+	slen=StrLen( str2 ,&oplen );
+	if ( n > 0 ) {
+		m=slen-n+1;
+		i=StrMidCopySub( str1, str2, oplen, n, m );	// =Right$
+	} else { n=-n;
+		m=slen-n;
+		i=StrMidCopySub( str1, str2, oplen, 1, m );	// =Left$
+	}
+	str1[i]='\0';
+}
+int StrLwr( char *str1, char *str2 ) {		// Lwr$(str2, n) -> str1
+	int i,slen,oplen;
+	int opcode;
+	int opptr1,opptr2;
+	slen=StrLen( str2 ,&oplen );
+	if ( slen < 1 ) return;
+	opptr1=0;
+	opptr2=0;
+	for (i=0; i<slen; i++ ) {
+		opcode =StrGetOpcodeInc( str2, &opptr2 ) ;
+		if ( ( 'A' <= opcode ) && ( opcode <= 'Z' ) ) opcode+=('a'-'A');
+		StrPutOpcodeInc( str1, &opptr1, opcode ) ;
+	}
+	str1[opptr1]='\0';
+}
+int StrUpr( char *str1, char *str2 ) {		// Upr$(str2, n) -> str1
+	int i,slen,oplen;
+	int opcode;
+	int opptr1,opptr2;
+	slen=StrLen( str2 ,&oplen );
+	if ( slen < 1 ) return;
+	opptr1=0;
+	opptr2=0;
+	for (i=0; i<slen; i++ ) {
+		opcode =StrGetOpcodeInc( str2, &opptr2 ) ;
+		if ( ( 'a' <= opcode ) && ( opcode <= 'z' ) ) opcode-=('a'-'A');
+		StrPutOpcodeInc( str1, &opptr1, opcode ) ;
+	}
+	str1[opptr1]='\0';
+}
+
+//----------------------------------------------------------------------------------------------
+int OpcodeCopy(char *buffer, char *SRC, int Maxlen) {
+	int c;
+	int srcPtr=0,ptr=0;
+	while ( 1 ){
+		c = SRC[srcPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				buffer[ptr]='\0';
+				return ptr;
+			case 0x5C:	//  Backslash
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				if ( ptr < Maxlen-1 ) {	// 2byte opcode
+					buffer[ptr++]=c;
+					buffer[ptr++]=SRC[srcPtr++];
+				} else {
+					buffer[ptr]='\0';
+					return ptr;
+				}
+				break;
+			default:
+				if ( ptr < Maxlen ) {	// 1byte opcode
+					buffer[ptr++]=c;
+				} else {
+					buffer[ptr]='\0';
+					return ptr;
+				}
+				break;
+		}
+	}
+	return ptr;
+}
+
+void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode String  ->  Ascii String
+	char tmpbuf[18];
+	int i,j=0,len,srcPtr=0,ptr=0;
+	int c=1;
+	while ( c != '\0' ) {
+		c = SRC[srcPtr++] ; 
+		if ( c==0x5C ) // Backslash
+			c = SRC[srcPtr++]&0xFF ;
+		else
+		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) 
+			c = ( ( c & 0xFF )<< 8 ) + (SRC[srcPtr++]&0xFF);
+		else c = c & 0xFF;
+
+		CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
+		len = strlen( (char*)tmpbuf ) ;
+		i=0;
+		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
+		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+	}
+	buffer[ptr]='\0' ;
+}
 //-----------------------------------------------------------------------------
+int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
+	int c;
+	int ptr=0;
+	while (1){
+		c = SRC[ExecPtr++];
+		buffer[ptr++]=c;
+		switch ( c ) {
+			case 0x00:	// <EOF>
+			case 0x22:	// "
+				buffer[--ptr]='\0' ;
+				return ptr;
+			case 0x5C:	//
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				buffer[ptr++]=SRC[ExecPtr++];
+				break;
+			default:
+				break;
+		}
+		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+	}
+	return ptr;
+}
+int CB_GetLocatetOpcode(char *SRC, char *buffer, int Maxlen) {
+	int c;
+	int ptr=0;
+	while (1){
+		c = SRC[ExecPtr++];
+		buffer[ptr++]=c;
+		switch ( c ) {
+			case 0x00:	// <EOF>
+			case 0x0D:	// <CR>
+			case 0x22:	// "
+				buffer[--ptr]='\0' ;
+				return ptr;
+			case 0x5C:	//
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				buffer[ptr++]=SRC[ExecPtr++];
+				break;
+			default:
+				break;
+		}
+		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+	}
+	return ptr;
+}
 
-int StrCmp( char *str1, char *str2 ) {
-	return strcmp(str1,str2);
-}
-int StrSrc( char *str, char *src ) {
-	char *p;
-	p=strchr( str, src );
-	if (  p==NULL ) return 0;
-	return p-str;
-}
-int StrJoin( char *str1, char *str2 ) {
-	strcat( str1, str2);
-	return 1;
-}
-int StrLen( char *str ) {
-	return strlenOp( str ) ;
-}
-int StrLeft( char *str, int n ) {
-}
-int StrMid( char *str, int n, int m ) {
-}
-int StrRight( char *str, int n ) {
-}
-int StrInv( char *str ) {
-}
-int StrRotate( char *str, int n ) {
-}
-int StrShift( char *str, int n ) {
-}
-int StrLwr( char *str ) {
-}
-int StrUpr( char *str ) {
+void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) {
+	char tmpbuf[18];
+	int i,j=0,len,ptr=0;
+	int c=1;
+	while ( c != '\0' ) {
+		c = SRC[ExecPtr++] ; 
+		if ( c==0x22 ) break ; // "
+		else
+		if ( c==0x0D ) break ; // <CR>
+		else
+		if ( c==0x5C ) // Backslash
+			c = SRC[ExecPtr++]&0xFF ;
+		else
+		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) 
+			c = ( ( c & 0xFF )<< 8 ) + (SRC[ExecPtr++]&0xFF);
+		else c = c & 0xFF;
+
+		CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
+		len = strlen( (char*)tmpbuf ) ;
+		i=0;
+		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
+		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+	}
+	buffer[ptr]='\0' ;
 }
 
-
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 // Casio Basic
-//-----------------------------------------------------------------------------
-void CB_Exp( char *SRC ) {
-	double value=CB_EvalDbl( SRC );
-	Graph_Eval(str);
-}
-void CB_ExpToStr( char *SRC ) {
+//----------------------------------------------------------------------------------------------
+
+int CB_IsStr( char *SRC, int execptr ) {
+	int c=SRC[execptr];
+	if ( c == 0x22 ) {	// String
+		return 1;
+	} else
+	if ( ( c=='$' ) || ( c=='&' ) ) {	// Mat String
+		return 2;
+	} else
+	if ( c == 0xFFFFFFF9 ) {	// Str
+		c=SRC[execptr+1];
+		if ( c == 0x30 ) return c;	// StrJoin(
+		else
+		if ( ( 0x34 <= c ) && ( c <= 0x37 ) ) return c;
+		else
+		if ( ( 0x39 <= c ) && ( c <= 0x3F ) ) return c;
+	} else
+	if ( c == 0x7F ) {
+		c=SRC[execptr+1];
+		if ( c == 0xFFFFFFF0 )  return c;	// GraphY
+	}
+	return 0;
 }
 
-void CB_StrCmp( char *SRC ) {
-}
-void CB_StrSrc( char *SRC ) {
-}
-
-void CB_StrJoin( char *SRC ) {
-}
-void CB_StrLen( char *SRC ) {
-}
-void CB_StrLeft( char *SRC ) {
-}
-void CB_StrMid( char *SRC ) {
-}
-void CB_StrRight( char *SRC ) {
+char* NewStrBuffer(){
+	if ( CB_StrBufferCNT > CB_StrBufferCNTMax-1 ) { CB_Error(MemoryERR); return NULL; }	// Memory error
+	return CB_StrBuffer[CB_StrBufferCNT++];
 }
 
-void CB_StrInv( char *SRC ) {
+char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
+	int c,d,n;
+	int execptr,len,i=0;
+	int reg,dimA,dimB;
+	char *buffer;
+
+	switch ( CB_IsStr( SRC, ExecPtr ) ) {
+		case 1:	// """"
+			ExecPtr++;
+			buffer=NewStrBuffer(); if ( buffer==NULL ) return 0;
+			CB_GetQuotOpcode( SRC, buffer, CB_StrBufferMax-1 );
+			(*maxlen)=CB_StrBufferMax-1;
+			break;
+		case 2:	// &Mat
+			ExecPtr++;
+			MatrixOprand( SRC, &reg, &dimA, &dimB );
+			if ( ErrorNo ) return 0 ;			// error
+			buffer=MatrixPtr( reg, dimA, dimB );
+			(*maxlen)=MatArySizeB[reg];
+			break;
+		case 0x3F:	// Str 1-20
+			reg='s'-'A';
+	str1:	ExecPtr+=2;
+			if ( MatArySizeA[reg] == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
+			if ( CB_INT ) dimA = EvalIntsub1( SRC ); else dimA = Evalsub1( SRC );	// str no : Mat s[n,len]
+			if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+			dimB=0;
+			buffer=MatrixPtr( reg, dimA-1, dimB );
+			(*maxlen)=MatArySizeB[reg];
+			break;
+		case 0xFFFFFFF0:	// GraphY
+			reg='y'-'A';
+			goto str1;
+			break;
+		case 0x30:	// StrJoin(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrJoin( SRC );	// CB_CurrentStr + CB_CurrentStr2 -> CB_CurrentStr
+			return CB_CurrentStr;
+		case 0x34:	// StrLeft(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrLeft( SRC );
+			return CB_CurrentStr;
+		case 0x35:	// StrRight(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrRight( SRC );
+			return CB_CurrentStr;
+		case 0x36:	// StrMid(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrMid( SRC );
+			return CB_CurrentStr;
+		case 0x37:	// Exp->Str(
+			ExecPtr+=2;
+			(*maxlen)=CB_ExpToStr( SRC );
+			return CB_CurrentStr;
+		case 0x39:	// StrUpr(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrUpr( SRC );
+			return CB_CurrentStr;
+		case 0x3A:	// StrLwr(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrLwr( SRC );
+			return CB_CurrentStr;
+		case 0x3B:	// StrInv(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrInv( SRC );
+			return CB_CurrentStr;
+		case 0x3C:	// StrShift(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrShift( SRC );
+			return CB_CurrentStr;
+		case 0x3D:	// StrRotate(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrRotate( SRC );
+			return CB_CurrentStr;
+		case 0x3E:	// ToStr(
+			ExecPtr+=2;
+			(*maxlen)=CB_Sprintf( SRC );
+			return CB_CurrentStr;
+		default:
+			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
+	}
+	return buffer;
 }
-void CB_StrRotate( char *SRC ) {
+
+char* CB_GetOpStr( char *SRC, int *maxoplen  ) {	// Get opcode String 
+	int c;
+	char *buffer;
+	char *CB_StrAddBuffer;
+	
+	CB_CurrentStr=CB_GetOpStr1( SRC, &(*maxoplen) ) ;		// String -> CB_CurrentStr
+	if ( ErrorNo ) return 0;	// error
+	c=SRC[ExecPtr];
+	if ( c != 0xFFFFFF89 ) { // non +
+		if ( c == ')' ) ExecPtr++;	
+		return CB_CurrentStr; //
+	}
+	CB_StrAddBuffer=NewStrBuffer(); if ( buffer==NULL ) return 0;
+	OpcodeCopy( CB_StrAddBuffer, CB_CurrentStr, CB_StrBufferMax-1 );		//
+	while (1) {
+		ExecPtr++;
+		CB_CurrentStr=CB_GetOpStr1( SRC, &(*maxoplen) ) ;		// String -> CB_CurrentStr
+		if ( ErrorNo ) return 0;	// error
+		
+		StrJoin( CB_StrAddBuffer, CB_CurrentStr, CB_StrBufferMax-1 ) ;
+		c=SRC[ExecPtr];
+		if ( c != 0xFFFFFF89 ) break ; // +
+	}
+	if ( c == ')' ) ExecPtr++;	
+	return CB_StrAddBuffer;
 }
-void CB_StrShift( char *SRC ) {
+
+//----------------------------------------------------------------------------------------------
+void StorStrMat( char *SRC ) {	// ->&Mat A
+	int reg,dimA,dimB;
+	char *MatAryC;
+	MatrixOprand( SRC, &reg, &dimA, &dimB );
+	if ( ErrorNo ) return ; // error
+	if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+	if ( MatAryElementSize[reg] != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
+	MatAryC=MatrixPtr( reg, dimA, dimB );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatArySizeB[reg]-1 );
 }
-void CB_StrLwr( char *SRC ) {
+
+void StorStrStr( char *SRC ) {	// ->Sto 1-20
+	int reg,dimA,dimB;
+	char *MatAryC;
+	reg='s'-'A';
+	if ( MatArySizeA[reg] == 0 ) {
+		DimMatrixSub( reg, 8, 20, 64+1 );	// byte matrix
+		if ( ErrorNo ) return ; // error
+	}
+	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
+	if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	dimA--;
+	MatAryC=MatrixPtr( reg, dimA, 0 );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatArySizeB[reg]-1 );
 }
-void CB_StrUpr( char *SRC ) {
+
+void StorStrGraphY( char *SRC ) {	// GraphY 1-5
+	int reg,dimA,dimB;
+	char *MatAryC;
+	reg='y'-'A';
+	if ( MatArySizeA[reg] == 0 ) {
+		DimMatrixSub( reg, 8, 5, 64+1 );	// byte matrix
+		if ( ErrorNo ) return ;
+	}
+	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
+	if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	dimA--;
+	MatAryC=MatrixPtr( reg, dimA, 0 );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatArySizeB[reg]-1 );
+}
+
+void CB_StorStr( char *SRC ) {
+	int c;
+	c=CB_IsStr( SRC, ExecPtr );
+	switch ( c ) {
+		case 2:	// &Mat
+			ExecPtr++;
+			StorStrMat( SRC ) ;
+			break;
+		case 0x3F:	// Str 1-20
+			ExecPtr+=2;
+			StorStrStr( SRC ) ;
+			break;
+		case 0xFFFFFFF0:	// GraphY
+			ExecPtr+=2;
+			StorStrGraphY( SRC ) ;
+			break;
+		default:
+			{ CB_Error(SyntaxERR); return ; }  // Syntax error
+	}
+}
+
+//----------------------------------------------------------------------------------------------
+
+
+void CB_Str( char *SRC ){		// "" "" or %Mat or Str1-20 or StrFunction
+	char buffer[CB_StrBufferMax];
+	int c,d;
+	int execptr,maxoplen,i=0;
+	
+	CB_CurrentStr = CB_GetOpStr( SRC, &maxoplen );	
+	if ( ErrorNo ) return ;  // error
+	c = SRC[ExecPtr] ; 
+	if ( c == 0x0E ) {	// -> store str
+		ExecPtr++;
+		CB_StorStr( SRC );
+		if ( ErrorNo ) return ;  // error
+	} else {			// display str
+		OpcodeStringToAsciiString( buffer, CB_CurrentStr, CB_StrBufferMax-1 );
+		CB_SelectTextVRAM();	// Select Text Screen
+		if ( CursorX >1 ) Scrl_Y();
+		while ( buffer[i] ) {
+			CB_PrintC( CursorX,CursorY, (unsigned char*)buffer+i );
+			CursorX++; if (CursorX > 21) Scrl_Y();
+			c = buffer[i] ;
+			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
+			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
+			i++;
+		}
+		if ( buffer[0]=='\0' ) CursorX=22;
+		Bdisp_PutDisp_DD_DrawBusy_through( SRC );
+	}
+}
+
+//----------------------------------------------------------------------------------------------
+int CB_StrLen( char *SRC ) {
+	int i,maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return StrLen( buffer ,&i );
+}
+int CB_StrCmp( char *SRC ) {
+	int maxoplen;
+	char *buffer, *buffer2;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	buffer2 = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return StrCmp( buffer, buffer2 ) ;
+}
+
+int CB_StrSrc( char *SRC ) {
+	int sptr=0,slen,maxoplen;
+	char *buffer, *buffer2;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	slen=StrLen( CB_CurrentStr ,&maxoplen);
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	buffer2  = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0 ;  // error
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		sptr = CB_EvalInt( SRC );	//
+		if ( sptr < 1 ) sptr=1;
+		if ( sptr > slen ) sptr=slen;
+	}
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( StrSrc( buffer, buffer2, &sptr, CB_StrBufferMax-1 ) ==0 ) return 0 ; // no found
+	return sptr+1;
+}
+
+void CB_Exp( char *SRC ) {	// = CB_Eval()
+}
+//----------------------------------------------------------------------------------------------
+
+double CB_EvalStr( char *SRC) {		// Eval str -> double
+	double result;
+	int c;
+	int maxoplen;
+	int execptr;
+	int oplen;
+	char *buffer;
+	
+	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
+	if ( ErrorNo ) return 0;  // error
+	
+	oplen=strlenOp((char*)buffer);
+	if ( oplen == 0 ) return 0;
+	execptr=ExecPtr;
+	ExecPtr= 0;
+	ErrorPtr= 0;
+	ErrorNo = 0;
+	result = EvalsubTop( buffer );
+	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
+	ExecPtr=execptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;
+	return result;
+}
+
+int CBint_EvalStr( char *SRC) {		// Eval str -> int
+	int result;
+	int c;
+	int maxoplen;
+	int execptr;
+	int oplen;
+	char *buffer;
+
+	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
+	if ( ErrorNo ) return 0;  // error
+
+	oplen=strlenOp((char*)buffer);
+	if ( oplen == 0 ) return 0;
+	execptr=ExecPtr;
+	ExecPtr= 0;
+	ErrorPtr= 0;
+	ErrorNo = 0;
+	result = EvalIntsubTop( buffer );
+	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
+	ExecPtr=execptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;
+	return result;
+}
+
+//----------------------------------------------------------------------------------------------
+int CB_StrJoin( char *SRC ) {
+	int maxoplen;
+	char *CB_StrAddBuffer, *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	CB_StrAddBuffer=NewStrBuffer(); if ( CB_StrAddBuffer==NULL ) return 0;
+	OpcodeCopy( CB_StrAddBuffer, buffer, CB_StrBufferMax-1 );		//
+
+	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> CB_CurrentStr
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	StrJoin( CB_StrAddBuffer, buffer, CB_StrBufferMax-1 ) ;
+	CB_CurrentStr=CB_StrAddBuffer;
+	return CB_StrBufferMax-1;
+}
+
+int CB_StrLeft( char *SRC ) {	// StrLeft( str1, n  )
+	int n;
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	n = CB_EvalInt( SRC );	//
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrMid( CB_CurrentStr, buffer, 1, n ) ;
+	return CB_StrBufferMax-1;
+}
+int CB_StrRight( char *SRC ) {	// StrRight( str1, n  )
+	int n;
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return ;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	n = CB_EvalInt( SRC );	//
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrRight( CB_CurrentStr, buffer, n ) ;
+	return CB_StrBufferMax-1;
+}
+int CB_StrMid( char *SRC ) {	// StrMid( str1, n [,m] )
+	int n,m;
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	n = CB_EvalInt( SRC );	//
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		m = CB_EvalInt( SRC );	//
+	} else m=-1;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrMid( CB_CurrentStr, buffer, n, m ) ;
+	return CB_StrBufferMax-1;
+}
+
+
+int CB_StrLwr( char *SRC ) {	// StrLwr( str1 )
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrLwr( CB_CurrentStr, buffer ) ;
+	return CB_StrBufferMax-1;
+}
+int CB_StrUpr( char *SRC ) {	// StrUpr( str1 )
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrUpr( CB_CurrentStr, buffer ) ;
+	return CB_StrBufferMax-1;
+}
+int CB_StrInv( char *SRC ) {	// StrInv( str1 )
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrInv( CB_CurrentStr, buffer ) ;
+	return CB_StrBufferMax-1;
+}
+int CB_StrShift( char *SRC ) {	// StrShift( str1 [,n] )
+	int n;
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		n = CB_EvalInt( SRC );	//
+	} else n = 1;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrShift( CB_CurrentStr, buffer, n ) ;
+	return CB_StrBufferMax-1;
+}
+int CB_StrRotate( char *SRC ) {
+	int n;
+	int maxoplen;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0 ;  // error
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		n = CB_EvalInt( SRC );	//
+	} else n = 1;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrRotate( CB_CurrentStr, buffer, n ) ;
+	return CB_StrBufferMax-1;
+}
+
+
+int CB_ExpToStr( char *SRC ) {	// 
+}
+
+int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
+	int maxoplen;
+	int i,c;
+	int type[3]={-1,-1,-1};	// 0:dbl  1:int  2:str
+	double dblval[3]={0,0,0};
+	int    intval[3]={0,0,0};
+	char  *strval[3]={0,0,0};
+	char *buffer;
+
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0 ;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+
+	i=0;
+	do {
+		c=CB_IsStr( SRC, ExecPtr );
+		if ( c ) {	// string
+			strval[i]=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
+			type[i]=2;
+		} else {	// expression
+			c=SRC[ExecPtr];
+			if ( CB_INT ) { 
+				if ( c=='#' ) { ExecPtr++; type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
+				else {
+				if ( c=='%' ) ExecPtr++;
+				type[i]=1; intval[i]=CB_EvalInt( SRC );
+				}
+			} else	{
+				if ( c=='%' ) { ExecPtr++; type[i]=1; intval[i]=CB_EvalInt( SRC ); }
+				else {
+				if ( c=='#' ) ExecPtr++;
+				type[i]=0; dblval[i]=CB_EvalDbl( SRC );
+				}
+			}
+		}
+		c=SRC[ExecPtr];
+		if ( c != ',' ) break;
+		 ExecPtr++;
+		i++;
+	} while ( i<3 );
+
+	if ( c == ')' ) ExecPtr++;	
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	
+	switch ( type[0] ) {
+		case 0:			// dbl
+			switch ( type[1] ) {
+				case 0:		// dbl
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1]); break;
+					} break;
+				case 1:		// int
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1]); break;
+					} break;
+				case 2:		// str
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1]); break;
+					} break;
+				default:         i=sprintf( CB_CurrentStr, buffer, dblval[0]); break;
+			} break;
+		case 1:			// int
+			switch ( type[1] ) {
+				case 0:		// dbl
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1]); break;
+					} break;
+				case 1:		// int
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1]); break;
+					} break;
+				case 2:		// str
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1]); break;
+					} break;
+				default:         i=sprintf( CB_CurrentStr, buffer, intval[0]); break;
+			} break;
+		case 2:			// str
+			switch ( type[1] ) {
+				case 0:		// dbl
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1]); break;
+					} break;
+				case 1:		// int
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1]); break;
+					} break;
+				case 2:		// str
+					switch ( type[2] ) {
+						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1]); break;
+					} break;
+				default:         i=sprintf( CB_CurrentStr, buffer, strval[0]); break;
+			} break;
+		default: i=0; break;
+	}
+	if ( i=0 ) { CB_Error(ArgumentERR); return 0; }	// Argument error
+
+	i=-1;
+	while ( i < CB_StrBufferMax ) {
+		c=CB_CurrentStr[++i];
+		if ( c == 0 ) break;
+		switch ( c ) {
+			case '-':
+				CB_CurrentStr[i]=0x87;	// (-)
+				break;
+			case '+':
+				CB_CurrentStr[i]=0x89;	// (+)
+				break;
+//			case 'E':
+//			case 'e':
+//				CB_CurrentStr[i]=0x0F;	// (exp)
+//				break;
+		}
+	}
+
+	return CB_StrBufferMax-1;
 }
 
 
