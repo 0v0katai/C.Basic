@@ -674,7 +674,7 @@ int CBint_BinaryEval( unsigned char *SRC ) {	// eval 2
 					break;
 			}
 		}
-	} else  src = CBint_Eval1(SRC+ExecPtr);
+	} else  src = CBint_Eval1(SRC);
 
 	opPtr=ExecPtr;
 	op=SRC[ExecPtr++];	
@@ -715,7 +715,7 @@ int CBint_BinaryEval( unsigned char *SRC ) {	// eval 2
 					break;
 			}
 		}
-	} else  dst = CBint_Eval1(SRC+ExecPtr);
+	} else  dst = CBint_Eval1(SRC);
 
 //	ExecPtr++;
 	switch ( op ) {
@@ -795,7 +795,7 @@ int CBint_UnaryEval( unsigned char *SRC ) {	// eval 1
 					break;
 			}
 		}
-	} else  return CBint_Eval1(SRC+ExecPtr);
+	} else  return CBint_Eval1(SRC);
 }
 
 //----------------------------------------------------------------------------------------------

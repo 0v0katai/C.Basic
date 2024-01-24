@@ -233,29 +233,35 @@ int RangeErrorCK( unsigned char *SRC ) {
 #define CB_Eval1 Evalsub1
 
 //-----------------------------------------------------------------------------
-void CB_Fix( unsigned char *SRC ){
+int CB_Fix( unsigned char *SRC ){
 	int tmp;
 	if (CB_INT)	tmp=CBint_Eval( SRC );
 	else		tmp=CB_Eval( SRC );
+	if ( tmp < 0 ) if ( CB_Round.MODE == Fix ) return CB_Round.DIGIT; else return -1;
 	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	CB_Round.MODE = Fix ;
 	CB_Round.DIGIT= tmp ;
+	return tmp ;
 }
-void CB_Sci( unsigned char *SRC ){
+int CB_Sci( unsigned char *SRC ){
 	int tmp;
 	if (CB_INT)	tmp=CBint_Eval( SRC );
 	else		tmp=CB_Eval( SRC );
+	if ( tmp < 0 ) if ( CB_Round.MODE == Sci ) return CB_Round.DIGIT; else return -1;
 	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	CB_Round.MODE = Sci ;
 	CB_Round.DIGIT= tmp ;
+	return tmp ;
 }
-void CB_Norm( unsigned char *SRC ){
+int CB_Norm( unsigned char *SRC ){
 	int tmp;
 	if (CB_INT)	tmp=CBint_Eval( SRC );
 	else		tmp=CB_Eval( SRC );
+	if ( tmp < 0 ) if ( CB_Round.MODE == Norm ) return CB_Round.DIGIT; else return -1;
 	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	CB_Round.MODE = Norm ;
 	CB_Round.DIGIT= tmp ;
+	return tmp ;
 }
 void CB_Rnd(){
 	CB_CurrentValue = Round( CB_CurrentValue, CB_Round.MODE, CB_Round.DIGIT );
@@ -2393,7 +2399,7 @@ double CB_BinaryEval( unsigned char *SRC ) {	// eval 2
 					break;
 			}
 		}
-	} else  src = CB_Eval1(SRC+ExecPtr);
+	} else  src = CB_Eval1(SRC);
 
 	opPtr=ExecPtr;
 	op=SRC[ExecPtr++];	
@@ -2434,7 +2440,7 @@ double CB_BinaryEval( unsigned char *SRC ) {	// eval 2
 					break;
 			}
 		}
-	} else  dst = CB_Eval1(SRC+ExecPtr);
+	} else  dst = CB_Eval1(SRC);
 
 //	ExecPtr++;
 	switch ( op ) {
@@ -2514,7 +2520,7 @@ double CB_UnaryEval( unsigned char *SRC ) {	// eval 1
 					break;
 			}
 		}
-	} else  return CB_Eval1(SRC+ExecPtr);
+	} else  return CB_Eval1(SRC);
 }
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -2878,25 +2884,28 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				dspflag=0;
 				break;
 				
-			case 0xDD:	// Eng
-				ENG=1-ENG;
-				dspflag=0;
-				break;
+//			case 0xDD:	// Eng
+//				ENG=1-ENG;
+//				dspflag=0;
+//				break;
 			case 0xD3:	// Rnd
 				CB_Rnd();
 				dspflag=2;
 				break;
 			case 0xD9:	// Norm
-				CB_Norm(SRC);
-				dspflag=0;
+				CBint_CurrentValue = CB_Norm(SRC);
+				CB_CurrentValue    = CBint_CurrentValue ;
+				dspflag=2;
 				break;
 			case 0xE3:	// Fix
-				CB_Fix(SRC);
-				dspflag=0;
+				CBint_CurrentValue = CB_Fix(SRC);
+				CB_CurrentValue    = CBint_CurrentValue ;
+				dspflag=2;
 				break;
 			case 0xE4:	// Sci
-				CB_Sci(SRC);
-				dspflag=0;
+				CBint_CurrentValue = CB_Sci(SRC);
+				CB_CurrentValue    = CBint_CurrentValue ;
+				dspflag=2;
 				break;
 			case 0xEB:	// ViewWindow
 				CB_ViewWindow(SRC);

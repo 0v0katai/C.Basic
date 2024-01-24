@@ -404,7 +404,7 @@ unsigned int Explorer( int size, char *folder )
 							PopUpWin( 6 );
 							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.65" );
+							locate( 3, 4 ); Print( (unsigned char*)"            v0.66" );
 							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 							GetKey(&key);

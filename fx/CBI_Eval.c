@@ -323,6 +323,9 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 		case '%' :	// 1/128 Ticks
 			ExecPtr++;
 			return RTC_GetTicks() ;
+		case 0xDD :	// Eng
+			ExecPtr++;
+			return ENG ;
 		default:
 			break;
 	}
