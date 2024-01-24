@@ -29,8 +29,8 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.34\xE6\x41";
-#define VERSION 234
+const char VerMSG[]="C.Basic  v2.35\xE6\x41";
+#define VERSION 235
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );

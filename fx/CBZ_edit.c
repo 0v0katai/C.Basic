@@ -208,12 +208,15 @@ char* CLIP_Buffer(){
 	return (char*)MatAry[Mattmp_clipBuffer].Adrs;
 }
 
+char * Recent_HiddenRAM_MatTopPtr;
+
 char* NewclipBuffer( int *size ){	// size:-1  max
 	int free;
 	int reg = Mattmp_clipBuffer;	//	ClipBuffer
 	char *buffer;
 	free = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr;
-	if ( *size<0 ) *size=free;
+	Recent_HiddenRAM_MatTopPtr = HiddenRAM_MatTopPtr;
+	if ( *size<0 ) *size=free-4;
 	if ( free < *size ) {
 		ErrorNo=NotEnoughMemoryERR;		// Memory error
 		CB_ErrMsg(ErrorNo);
@@ -227,6 +230,12 @@ char* NewclipBuffer( int *size ){	// size:-1  max
 	buffer = (char *)MatAry[reg].Adrs;
 	buffer[0]='\0';
 	return buffer;
+}
+void AdjclipBuffer( int size ){	// size
+	size = (size+7) & 0xFFFFFFF8;	// 8byte align
+	memcpy2( Recent_HiddenRAM_MatTopPtr-size, HiddenRAM_MatTopPtr, size );
+	HiddenRAM_MatTopPtr = Recent_HiddenRAM_MatTopPtr - size;
+	MatAry[Mattmp_clipBuffer].Adrs = (double*)HiddenRAM_MatTopPtr;
 }
 
 void EditPaste( char *filebase, char *Buffer, int *ptr, cUndo *Undo ){
@@ -1135,7 +1144,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			if (dumpflg==2) {
 				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
 					else             { i=CB_INTDefault; j=MatBaseDefault; }
-					sprintf(buffer, "==%-8s==[%s%d]", buffer2, CBmode[i], j);
+					sprintf(buffer, "==%-8s==[%s%d]  ", buffer2, CBmode[i], j);
 			} else 	{
 					sprintf(buffer, "==%-8s==%08X ", buffer2, SrcBase);
 			}
