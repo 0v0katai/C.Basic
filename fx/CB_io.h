@@ -48,6 +48,9 @@ void CB_PrintRevC( int x, int y, const unsigned char *c);
 void CB_PrintXYC( int px, int py,const unsigned char *c , int mode );
 void CB_PrintXY( int px, int py, const unsigned char *str, int mode );
 void CB_PrintMini( int px, int py, const unsigned char *str, int mode);
+int  CB_PrintMiniC( int px, int py, const unsigned char *str, int mode);
+int  CB_PrintMiniLength( const unsigned char *str );
+int  CB_PrintMiniLengthStr( const unsigned char *str );
 
 void PrintXYR(int ,int ,char *,int );
 void Fkey_dispN(int ,char *);

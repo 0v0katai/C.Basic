@@ -21,6 +21,7 @@
 
 #include "CB_interpreter.h"
 #include "CB_error.h"
+#include "CB_setup.h"
 #include "fx_syscall.h"
 
 //----------------------------------------------------------------------------------------------
@@ -82,6 +83,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		ExecPtr=0;	
 		DebugMode=0;
 		DebugScreen=0;
+		ForceDebugMode=0;
 		
 		PictbasePtr=-1;
 		PictbaseCount=PictbaseCountMAX;
@@ -94,6 +96,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		switch ( key ) {
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
+				ForceDebugMode=1;
 			case KEY_CTRL_EXE:
 			case FileCMD_RUN:
 		runjp:

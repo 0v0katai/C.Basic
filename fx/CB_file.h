@@ -41,6 +41,7 @@ extern char AutoSaveMode;		//    1: Auto save ( not pop up )
 #define FileCMD_PASS   10009
 #define FileCMD_MKDIR  10010
 #define FileCMD_RENDIR 10011
+#define FileCMD_DELDIR 10016
 
 char *loadFile( const char *name , int editMax, int disperror, int hiddenflag );
 int  storeFile( const char *name, unsigned char* codes, int size);
@@ -54,6 +55,7 @@ char * LoadPicture( int pictNo );
 int  RenameFile(char *name) ;
 void DeleteFile(char *name) ;
 void DeleteFileFav(char *sname, int yesno) ;
+int DeleteFolder(char *foldername, int yesno ) ;	// delete folder
 int CopyFile( char *sname ) ;
 
 void ConvertToText( char *sname );
