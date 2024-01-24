@@ -134,7 +134,7 @@
 #define CMD_SETUP_SWIN		0x522
 #define CMD_SETUP_LIST		0x523
 #define CMD_SETUP_LOCS		0x524
-#define CMD_SETUP_TVAR		0x524	// <- 0x530
+#define CMD_SETUP_TVAR		0x530
 #define CMD_SETUP_SDSP		0x531
 #define CMD_SETUP_RESID		0x532
 #define CMD_SETUP_CPLX		0x521	// <- 0x533

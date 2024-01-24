@@ -2113,7 +2113,7 @@ int MatGetOpcode(char *SRC, char *buffer, int Maxlen ) {
 			buffer[ptr++] = SRC[ExecPtr++]&0xFF ;
 		} else buffer[ptr++] = c & 0xFF;
 
-		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr > Maxlen-2 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 	}
 	buffer[ptr]='\0' ;
 	return ptr;
@@ -2587,6 +2587,7 @@ void CB_MatSwap( char *SRC ) {	// Swap Mat A,2,3
 	if ( a == b ) return;
 
 	switch ( ElementSize ) {
+		case 128:
 		case 64:
 			for ( n=base; n<dimB; n++ ) {
 				dtmp  = Cplx_ReadMatrix( reg, a, n );
@@ -4340,6 +4341,183 @@ void Cplx_CB_MatInv( char *SRC ) {	// Inverse Mat A
 	dspflag=3; 
 }
 */
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+void Mat_Sort_leading_entry( int reg ) {
+    complex p,d,tmp1,tmp2;
+	int i,j,k,m,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base,b;
+	short w[1000];
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+	if ( ( sizeA < 2 ) || ( sizeB < 2 ) ) return;
+
+	for ( m = base; m < M; m++) {
+		for( i = base; i < N; i++) {
+			p = Cplx_ReadMatrix( reg, i,m );
+        	if ( ( p.real == 0 ) && ( p.imag == 0 ) ) {
+
+				for( k = i+1; k < N; k++){
+					d = Cplx_ReadMatrix( reg, k,m );
+					if ( ( d.real != 0 ) || ( d.imag != 0 ) ) {
+						for ( x=base; x<M; x++) {				// swap
+							tmp1 = Cplx_ReadMatrix( reg, i,x);
+							tmp2 = Cplx_ReadMatrix( reg, k,x);
+							Cplx_WriteMatrix( reg, k,x,  tmp1);
+							Cplx_WriteMatrix( reg, i,x,  tmp2);
+						}
+						break;
+					}
+					
+				}
+				
+			}
+		}
+	}
+
+}
+
+void Mat_Refto1( int reg ) {	// 
+    complex p,d;
+	int i,j,k,m,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+	for( i = base; i < N; i++) {
+		for(j = base; j < M; j++){
+			p = Cplx_ReadMatrix( reg,i,j);	
+    		if (  ( ( p.real != 0 ) || ( p.imag != 0 ) )  ) {
+				for(x = j; x < M; x++){
+					Cplx_WriteMatrix( reg,i,x, Cplx_fDIV( Cplx_ReadMatrix( reg,i,x) , p) );
+				}
+				break;
+			}
+		}
+	}
+}
+
+
+void Mat_Ref( int reg ) {	// Ref Mat A		Row echelon form
+    complex p,d;
+	int i,j,k,m,n,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+
+	n=base;
+	for( n = base; n < N-1; n++){
+		Mat_Refto1( reg );
+		for( i = n+1; i < N; i++) {
+			p = Cplx_ReadMatrix( reg,i,n);	
+			if ( ( p.real != 0 ) || ( p.imag != 0 ) ) {
+				for(x = n; x < M; x++){
+					Cplx_WriteMatrix( reg,i,x, Cplx_fSUB( Cplx_ReadMatrix( reg,i,x) , Cplx_ReadMatrix( reg,n,x) ) );
+				}
+			}
+		}
+		Mat_Sort_leading_entry( reg );
+	}
+	Mat_Refto1( reg );
+
+
+}
+
+void Mat_Rref( int reg ) {	// Ref Mat A		Reduced row echelon form (Gauss-Jordan elimination)
+    complex p,d;
+	int i,j,k,m,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+	for( i = base; i < N; i++) {
+		p = Cplx_ReadMatrix( reg,i,i);
+		
+    	if ( ( p.real != 0 ) || ( p.imag != 0 ) ){
+			for(j = base; j < M; j++){
+				Cplx_WriteMatrix( reg,i,j, Cplx_fDIV( Cplx_ReadMatrix( reg,i,j) , p) );
+			}
+
+			for(j = base; j < N; j++) {
+				if (i != j) {
+					d = Cplx_ReadMatrix( reg,j,i);
+
+					if ( ( d.real != 0 ) || ( d.imag != 0 ) ) {
+						for (k = i; k < M; k++)	Cplx_WriteMatrix( reg,j,k, Cplx_fSUB( Cplx_ReadMatrix( reg,j,k) , Cplx_fMUL( d , Cplx_ReadMatrix( reg,i,k) ) ) );	
+					}
+				}
+			}
+		}
+	}
+ 
+}
+
+complex Cplx_CB_MatRefRref( char *SRC, int select ) {	// Rref Mat A	
+	int reg,reg2;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int dspflagtmp=dspflag;
+	complex result={0,0};
+	
+//	{ CB_Error(NotSupportERR); return ; }	// Not support error
+
+	Cplx_ListEvalsub1(SRC);
+	if ( dspflag != 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
+	reg = CB_MatListAnsreg;
+
+	Mat_Sort_leading_entry( reg );
+	switch( select ) {
+		case 0:		// Ref
+			Mat_Ref( reg );
+			break;
+		case 1:		// Pref
+			Mat_Ref( reg );
+			Mat_Rref( reg );
+			break;
+	}
+	
+	return result;
+}
 
 //-----------------------------------------------------------------------------
 //	Vector

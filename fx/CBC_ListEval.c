@@ -2,10 +2,11 @@
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void Cplx_WriteListAns2( complex x, complex y ) {
+	int base=MatBase;
 	dspflag=4;	// List ans
-	NewMatListAns( 2, 1, 1, 128 );		// List Ans[2]
-	Cplx_WriteMatrix( CB_MatListAnsreg, 1,1, x ) ;	//
-	Cplx_WriteMatrix( CB_MatListAnsreg, 2,1, y ) ;	// 
+	NewMatListAns( 2, 1, base, 128 );		// List Ans[2]
+	Cplx_WriteMatrix( CB_MatListAnsreg, base,   base, x ) ;	//
+	Cplx_WriteMatrix( CB_MatListAnsreg, base+1, base, y ) ;	// 
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -361,6 +362,11 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x21:	// Det
 					return Cplx_CB_MatDet(SRC);
 				
+				case 0x55 :				// Ref Mat A
+					return Cplx_CB_MatRefRref( SRC, 0 );
+				case 0x56 :				// Rref Mat A
+					return Cplx_CB_MatRefRref( SRC, 1 );
+
 				case 0x46 :				// Dim
 					result.real = CB_Dim( SRC );
 					result.imag = 0;
@@ -534,10 +540,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=Cplx_NoListEvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 128 );		// List Ans[2]
-			Cplx_WriteMatrix( CB_MatListAnsreg, 1,1, Cplx_fpolr(tmp,tmp2) ) ;	// r
-			Cplx_WriteMatrix( CB_MatListAnsreg, 2,1, Cplx_fpolt(tmp,tmp2) ) ;	// Theta
+			Cplx_WriteListAns2( Cplx_fpolr(tmp,tmp2) , Cplx_fpolt(tmp,tmp2) ) ;
 			return Int2Cplx( 0 );
 		case 0xFFFFFFA0 :	// Rec( r, Theta ) -> X,Y
 			tmp=Cplx_NoListEvalsubTop( SRC );
@@ -545,10 +548,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=Cplx_NoListEvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 128 );		// List Ans[2]
-			Cplx_WriteMatrix( CB_MatListAnsreg, 1,1, Cplx_frecx(tmp,tmp2) ) ;	// x
-			Cplx_WriteMatrix( CB_MatListAnsreg, 2,1, Cplx_frecy(tmp,tmp2) ) ;	// y
+			Cplx_WriteListAns2( Cplx_frecx(tmp,tmp2) , Cplx_frecy(tmp,tmp2) ) ;
 			return Int2Cplx( 0 );
 
 		case 0xFFFFFFF9:	// F9..

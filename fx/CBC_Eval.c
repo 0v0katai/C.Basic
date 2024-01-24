@@ -898,6 +898,11 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					return Int2Cplx( 3 );
 				case 0x21:	// Det
 					return Cplx_CB_MatDet(SRC);
+					
+				case 0x55 :				// Ref Mat A
+					return Cplx_CB_MatRefRref( SRC, 0 );
+				case 0x56 :				// Rref Mat A
+					return Cplx_CB_MatRefRref( SRC, 1 );
 
 				case 0x46 :				// Dim
 					result.real = CB_Dim( SRC );

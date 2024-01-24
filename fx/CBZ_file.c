@@ -3057,9 +3057,17 @@ void LoadConfig1(){
 	double *bufdbl;
 	int size,i;
 	int handle,state;
+	char folder[32]="CBasic";		// default C.Basic working folder
 
-	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX ) < 0 ) return;
-
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX ) < 0 ) {
+		if ( Is35E2 ) {	
+			CreateDirectorySub( folder, 1 );		// creat default C.Basic folder for III model
+			root2[0]='\\';
+			strcpy( root2+1, folder );				// current folder
+		}
+		return;
+	}
+	
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
 	bufdbl=(double*)buffer;

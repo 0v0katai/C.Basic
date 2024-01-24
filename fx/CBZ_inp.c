@@ -240,32 +240,33 @@ void sprintGRSiE( char* buffer, double num, int width, int align_mode, int round
 	if ( ENG==1 ) { // ENG mode
 		fabsnum=fabs(num);
 		num = Round( num, round_mode, round_digit );
-		if ( ( num != 0 ) && ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
-			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
+		if ( ( 0== fabsnum ) || ( ( 1e-15 <= fabsnum ) && ( fabsnum < 1e21 ) ) ) {
+			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x1B; }	//  Exa
 			else if ( fabsnum >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
 			else if ( fabsnum >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
 			else if ( fabsnum >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
 			else if ( fabsnum >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
-			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
+			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x06; }	//  Kiro
 			else if ( fabsnum >= 1    ) { if ( cplx==0 ) c=' ';  }
-			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
-			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
+			else if ( fabsnum == 0 )    {                c=' ';  }	//  0
+			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x05; }	//  milli
+			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0x04; }	//  micro
 			else if ( fabsnum >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
-			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
-			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
+			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x02; }	//  pico
+			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x01; }	//  femto
 			width-- ; 
-			round_mode=Norm; round_digit=0;
+			round_mode=Norm; //round_digit=0;
 			sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, cplx );
 			width=strlen((char*)buffer);
 			if ( ( cplx ) && ( buffer[width-1] == 0x50 ) && c ) { 
 				width-=2;
 				buffer[width++]=c;
-				if ( d ) buffer[width++]=d;
+//				if ( d ) buffer[width++]=d;
 				buffer[width++]=0x7f;	// (i)
 				buffer[width++]=0x50;	// (i)
 			} else {
 				buffer[width++]=c;
-				buffer[width++]=d;
+//				buffer[width++]=d;
 			}
 			buffer[width]='\0';
 			return ;
@@ -1127,6 +1128,7 @@ const short oplistOPTN[]={
 		0x7F3C,	// GCD(
 		0x7F3D,	// LCM(
 		0x7F85,	// logab(
+		0x7F29,	// Sigma(
 		
 		0xFFFF,	// 				-
 		0x7FB0,	// And
@@ -1161,33 +1163,45 @@ const short oplistOPTN[]={
 
 		0xFFFF,	// 				-
 		0x7F46,	// Dim
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
-		0x7F45,	// Swap
-		0x7F42,	// *Row
-		0x7F43,	// *Row+
-		0x7F44,	// Row+
-		0x7F48,	// Identity
-		0x7F58,	// ElemSize(
-		0x7F59,	// RowSize(
-		0x7F5A,	// ColSize(
-		0x7F5B,	// MatBase(
-		0x7FE9,	// CellSum(
-
-		0xFFFF,	// 				-
-		0x7F2C,	// Seq(
-		0x7F49,	// Augment(
 		0x7F4A,	// List->Mat(
-		0x7F4B,	// Mat->List(
-		0x7F20,	// Max(
+		0x7F47,	// Fill(
+		0x7F2C,	// Seq(
 		0x7F2D,	// Min(
+		0x7F20,	// Max(
 		0x7F2E,	// Mean(
+		0x7F49,	// Augment(
 		0x7F4C,	// Sum
 		0x7F4D,	// Prod
 		0xF7B0,	// SortA(
 		0xF7B1,	// SortB(
 		0x7F5C,	// ListCmp(
-		0x7F29,	// Sigma(
+
+		0xFFFF,	// 				-
+		0x7F46,	// Dim
+		0x7F4B,	// Mat->List(
+		0x7F21, // Det
+		0x7F41,	// Trn 
+		0x7F49,	// Augment(
+		0x7F48,	// Identity
+		0x7F47,	// Fill(
+		0x7F55,	// Ref 
+		0x7F56,	// Rref 
+		0xF94A, // CrossP(	ver.2.04~
+		0xF94B, // DotP("
+		0xF96D, // Angle(	ver.2.04~
+		0xF95E, // UnitV(	ver.2.04~
+		0xF95B, // Norm("	ver.2.04~
+		
+		0xFFFF,	// 				-
+		0x7F45,	// Swap
+		0x7F42,	// *Row
+		0x7F43,	// *Row+
+		0x7F44,	// Row+
+		0x7F5B,	// MatBase(
+		0x7F58,	// ElemSize(
+		0x7F59,	// RowSize(
+		0x7F5A,	// ColSize(
+		0x7FE9,	// CellSum(
 
 		0xFFFF,	// 				-
 		0xA1,	// sinh
@@ -1202,9 +1216,9 @@ const short oplistOPTN[]={
 		0x7F23,	// Conjg 
 		0x7F24,	// ReP 
 		0x7F25,	// ImP 
-		0x7F54,	// Angle
-//		0x7F55,	// Ref 
-//		0x7F56,	// Rref 
+//		0x7F54,	// Angle
+		0xF906, // >a+bi
+		0xF907, // >re^Theta
 //		0x7F57,	// Conv
 
 		0xFFFF,	// 				-
@@ -1237,10 +1251,11 @@ const short oplistOPTN[]={
 		0xF942,	// TIME
 		0x7F5F,	// Ticks
 		0xF94F,	// Wait 
+		0xF7DE,	// BatteryStatus
 		0xF7DD,	// Beep
 		0x7FDF,	// Version
 		0x7FCF,	// System(
-		0xF95F, // IsError( 
+//		0xF95F, // IsError( 
 
 		0xFFFF,	// 				-
 		0x23,	// #
@@ -1308,12 +1323,16 @@ const short oplistPRGM[]={
 		0xF7F1,	// Local
 		0xFA,	// Gosub
 		0xF717,	// ACBreak
+		0xF737, // Try
+		0xF738,	// Except
+		0xF739,	// TryEnd
 
 		0xFFFF,	// 				-
 		0xF718,	// ClrText
 		0xF719,	// ClrGraph
 		0xF71A,	// ClrList
 		0xF91E,	// ClrMat
+		0xF93E,	// ClrVct	
 		0xF710,	// Locate
 		0x7F8F,	// Getkey
 		0xF7E4,	// Disp
@@ -1576,7 +1595,8 @@ const short oplistCMD[]={		// 5800P like
 		0xF719,	// ClrGraph	
 		0xF91E,	// ClrMat	
 		0xF71A,	// ClrList	
-		0x23,	// #
+		0xF93E,	// ClrVct	
+//		0x23,	// #
 		0x25,	// %
 		
 //											3
@@ -1610,33 +1630,63 @@ const short oplistCMD[]={		// 5800P like
 
 //											5
 		0x7F46,	// Dim	
-		0x7F49,	// Augment(
-		0x7F4B,	// Mat->List(
 		0x7F4A,	// List->Mat(
-		0x7F41,	// Trn 
 		0x7F47,	// Fill(
-		0x7F45,	// Swap
-		0x7F42,	// *Row
-		0x7F43,	// *Row+
-		0x7F44,	// Row+
-		0x7F48,	// Identity
-		0x25,	// %
-
-//											6
-		0x7F49,	// Augment(
 		0x7F2C,	// Seq(
-		0x7F20,	// Max(
 		0x7F2D,	// Min(
+		0x7F20,	// Max(
 		0x7F2E,	// Mean(
-		0x7F88,	// RanList#(
-		0xF7B0,	// SortA(
-		0xF7B1,	// SortB(
+		0x7F49,	// Augment(
 		0x7F4C,	// Sum
 		0x7F4D,	// Prod
 		0x7F5C,	// ListCmp(
 		0x25,	// %
+
+//											6
+		0x7F46,	// Dim	
+		0x7F4B,	// Mat->List(
+		0x7F21, // Det
+		0x7F41,	// Trn 
+		0x7F48,	// Identity
+		0x7F47,	// Fill(
+		0xFFFF,
+		0x7F49,	// Augment(
+		0x7F55,	// Ref 
+		0x7F56,	// Rref 
+//		0x5C,	// 
+//		0x24,	// $
+		0x23,	// #
+		0x25,	// %
 		
 //											7
+		0x7F84, // Vct
+		0xF94A, // CrossP(	ver.2.04~
+		0xF94B, // DotP("
+		0xF96D, // Angle(	ver.2.04~
+		0xF95E, // UnitV(	ver.2.04~
+		0xF95B, // Norm("	ver.2.04~
+		0xF7B0,	// SortA(
+		0xF7B1,	// SortB(
+		0x7F45,	// Swap
+		0x7F42,	// *Row
+		0x7F43,	// *Row+
+		0x7F44,	// Row+
+		
+//											8
+		0x7F5B,	// MatBase(
+		0x7F58,	// ElemSize(
+		0x7F59,	// RowSize(
+		0x7F5A,	// ColSize(
+		0x7FE9,	// CellSum(
+		0xFFFF,
+		0xFFFF,
+		0xFFFF,
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %
+
+//											9
 		0xF711,	// Send(
 		0xF712,	// Receive(
 		0xF713,	// OpenComport38k
@@ -1645,12 +1695,12 @@ const short oplistCMD[]={		// 5800P like
 		0xF716,	// Receive38k 
 		0xF7DD,	// Beep
 		0xFFFF,
-		0xFFFF,
-		0xFFFF,
+		0x5C,	// 
+		0x24,	// $
 		0x23,	// #
 		0x25,	// %
 
-//											8	GR
+//											10	GR
 		0xD1,	// Cls		
 		0xF719,	// ClrGraph
 		0xEB,	// ViewWindow
@@ -1663,7 +1713,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF7A7,	// F-Line
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
-//											9
+//											11
 		0xF7AB,	// PxlOn
 		0xF7AC,	// PxlOff
 		0xF7AD,	// PxlChg
@@ -1679,7 +1729,7 @@ const short oplistCMD[]={		// 5800P like
 //		0x23,	// #
 //		0x25,	// %
 
-//											10
+//											12
 		0xF5,	// Graph(X,Y)=(
 		0xF723,	// DrawStat
 		0xF7CC,	// DrawOn
@@ -1693,7 +1743,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF750,	// Scatter
 		0xF751,	// xyLine
 
-//											11
+//											13
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF78E,	// SketchBroken
@@ -1707,7 +1757,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 
-//											12
+//											14
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
 		0xF7C3,	// CoordOn
@@ -1721,7 +1771,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF797,	// StoV-Win
 		0xF798,	// RclV-Win
 		
-//											13
+//											15
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
 		0x7F01,	// Xmax
@@ -1735,7 +1785,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F09,	// TThetamax
 		0x7F0A,	// TThetaptch
 
-//											14	FN
+//											16	FN
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -1749,7 +1799,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F3C,	// GCD(
 		0x7F3D,	// LCM(
 
-//											15
+//											17
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
@@ -1763,7 +1813,7 @@ const short oplistCMD[]={		// 5800P like
 		0x26,	// &
 		0x7C,	// |
 		
-//											16
+//											18
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 		0x7F8A,	// RanNorm#(
@@ -1779,13 +1829,13 @@ const short oplistCMD[]={		// 5800P like
 //		0x23,	// #
 //		0x25,	// %
 
-//											17
+//											19
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
+		0xF91B,	// fn
 		0xF905,	// >DMS
 		0x8C,	// dms
-		0xF91B,	// fn
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
@@ -1793,7 +1843,7 @@ const short oplistCMD[]={		// 5800P like
 		0x80,	// Pol(
 		0xA0,	// Rec(
 
-//											18
+//											20
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -1807,25 +1857,25 @@ const short oplistCMD[]={		// 5800P like
 		0x0B,	// Exa
 		0x25,	// %	
 
-//											19
+//											21
 		0x7F22,	// Arg 
 		0x7F23,	// Conjg 
 		0x7F24,	// ReP 
 		0x7F25,	// ImP 
 //		0x7F54,	// Angle
-//		0x7F55,	// Ref 
-//		0x7F56,	// Rref 
 //		0x7F57,	// Conv
-		0xFFFF,	//
-		0xFFFF,	//
-		0xFFFF,	//
-		0xFFFF,	//
-		0xFFFF,	//
-		0xFFFF,	//
-		0x23,	// #
-		0x25,	// %	
+		0xF906, // >a+bi
+		0xF907, // >re^Theta		
+		0xD9,	// Norm
+		0xE3,	// Fix
+		0xE4,	// Sci
+		0xDD,	// Eng
+		0xF90B,	// EngOn
+		0xF90C,	// EngOff
+//		0x23,	// #
+//		0x25,	// %	
 
-//											20	STR
+//											22	STR
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -1839,7 +1889,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 		
-//											21
+//											23
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
@@ -1853,7 +1903,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											22
+//											24
 		0xF940,	// Str(
 		0xF943,	// Sprintf(
 		0xF946,	// Hex(
@@ -1867,7 +1917,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											23	EX
+//											25	EX
 		0xF90F,	// Alias
 		0x7F5F,	// Ticks
 		0xF941,	// DATE
@@ -1963,13 +2013,13 @@ const short oplistCMD[]={		// 5800P like
 		0xF961,	// GetFontMini(
 		0xF962,	// SetFont 
 		0xF963,	// SetFOntMini
-		0xF737, // Try
-		0xF738,	// Except
-		0xF739,	// TryEnd
-		0xFFFF,	// 
+		0xF7DE,	// BatteryStatus
 		0xF7DD,	// Beep
 		0x7FDF,	// Version
 		0x7FCF,	// System(
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
 		0x25,	// %
 		
 		
@@ -1979,10 +2029,10 @@ const short oplistCMD[]={		// 5800P like
 		0};
 
 #define CMD_STD  0
-#define CMD_GR   8
-#define CMD_FN  14
-#define CMD_STR 20
-#define CMD_EX  23
+#define CMD_GR  10
+#define CMD_FN  16
+#define CMD_STR 22
+#define CMD_EX  25
 
 int SelectOpcode5800P( int flag ) {
 	short *select=&selectCMD;
@@ -2390,6 +2440,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F3A, "MOD(" }, 		// SDK emu not support
 	{ 0x7F3C, "GCD(" }, 		// SDK emu not support
 	{ 0x7F3D, "LCM(" }, 		// SDK emu not support
+	{ 0x7F55, "Ref "  }, 		// SDK emu not support
+	{ 0x7F56, "Rref "  }, 		// SDK emu not support
 	{ 0x7F87, "RanInt#(" }, 	// SDK emu not support
 	{ 0x7F88, "RanList#(" }, 	// SDK emu not support
 	{ 0x7F89, "RanBin#(" }, 	// SDK emu not support

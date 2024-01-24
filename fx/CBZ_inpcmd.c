@@ -347,8 +347,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 205 );	//	Fkey_dspRB( FKeyNo1, "Iden");
 					Fkey_Icon( FKeyNo2, 164 );	//	Fkey_dspRB( FKeyNo2, "Dim ");
 					Fkey_Icon( FKeyNo3, 206 );	//	Fkey_dspRB( FKeyNo3, "Fill");
-					FkeyClear( FKeyNo4 );
-					Fkey_Icon( FKeyNo5, 790 );	//	Fkey_dispR( FKeyNo5, "SIZE");
+					Fkey_Icon( FKeyNo4,1042 );	//	Fkey_dspRB( FKeyNo4, "Ref ");
+					Fkey_Icon( FKeyNo5,1043 );	//	Fkey_dspRB( FKeyNo4, "Rref");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
@@ -364,7 +364,7 @@ void DispGenuineCmdMenu(){
 					FkeyClear( FKeyNo2 );
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
-					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo5, 790 );	//	Fkey_dispR( FKeyNo5, "SIZE");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}

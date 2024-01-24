@@ -1829,10 +1829,10 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 		iptr=CurrentStruct->Var[CurrentStruct->ForPtr];
 		(*iptr) += stepint;
 		if ( stepint > 0 ) { 	// step +
-			if ( *iptr > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; goto exit;} // exit
+			if ( (*iptr) > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= stepint; goto exit;} // exit
 		}
 		else {					// step -
-			if ( *iptr < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; goto exit;} // exit
+			if ( (*iptr) < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= stepint; goto exit;} // exit
 		}
 	} else {			//					------------ Double mode
 		step = CurrentStruct->Step[CurrentStruct->ForPtr];

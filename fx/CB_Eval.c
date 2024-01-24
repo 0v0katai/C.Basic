@@ -1422,6 +1422,11 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return 3;
 				case 0x21:	// Det
 					return Cplx_CB_MatDet(SRC).real;
+				
+				case 0x55 :				// Ref Mat A
+					return Cplx_CB_MatRefRref( SRC, 0 ).real;
+				case 0x56 :				// Rref Mat A
+					return Cplx_CB_MatRefRref( SRC, 1 ).real;
 
 				case 0x46 :				// Dim
 					result=CB_Dim( SRC );
