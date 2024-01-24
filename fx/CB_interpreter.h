@@ -193,5 +193,6 @@ double CB_BinaryEval( char *SRC ) ;	// eval 2
 double CB_UnaryEval( char *SRC ) ;	// eval 1
 
 void CB_Prog( char *SRC ) ; //	Prog "..."
+void CB_DotLife( char *SRC ) ;
 
 void CB_test() ;

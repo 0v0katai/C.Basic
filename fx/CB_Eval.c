@@ -157,7 +157,8 @@ double Eval_atof(char *SRC) {
 //-----------------------------------------------------------------------------
 
 double Evalsub1(char *SRC) {	// 1st Priority
-	double result=0,tmp,tmp2;
+	double result=0;
+	int tmp,tmp2,resultint;
 	char c,d;
 	char *pt;
 	int dimA,dimB,reg,x,y;
@@ -215,19 +216,20 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				}
 			} else if ( c == 0x3A ) {	// MOD(a,b)
 					ExecPtr+=2;
-					tmp = floor(EvalsubTop( SRC ) +.5);
+					tmp = EvalsubTop( SRC ) +.5;
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
-					tmp2 = floor( EvalsubTop( SRC ) +.5);
+					tmp2 = EvalsubTop( SRC ) +.5;
 					if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-					result= floor(fabs(fmod( tmp, tmp2 ))+.5);
-					if ( result == tmp2  ) result--;
+					resultint= tmp-tmp/tmp2*tmp2;
+					if ( result == tmp2  ) resultint--;
 					if ( tmp < 0 ) {
-						result=fabs(tmp2)-result;
-						if ( result == tmp2  ) result=0;
+						resultint=abs(tmp2)-resultint;
+						if ( resultint == tmp2  ) resultint=0;
 					}
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return result ;
+					return resultint ;
+					
 			} else if ( c == 0xFFFFFF8F ) {	// Getkey
 					ExecPtr+=2;
 					c = SRC[ExecPtr];
@@ -247,13 +249,13 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return result ;
 			} else if ( c == 0xFFFFFF87 ) {	// RanInt#(st,en)
 					ExecPtr+=2;
-					x=(EvalsubTop( SRC ));
+					x=EvalsubTop( SRC );
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
-					y=(EvalsubTop( SRC ));
+					y=EvalsubTop( SRC );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					result=floor( ((double)rand()/(double)(RAND_MAX+1.0))*(x-y+1) ) +y ;
-					return result ;
+					if ( x>y ) { i=x; x=y; y=i; }
+					return rand()*(y-x+1)/(RAND_MAX+1) +x ;
 			} else if ( c == 0xFFFFFFE9 ) {	// CellSum(Mat A[x,y])
 					ExecPtr+=2;
 					c = SRC[ExecPtr];
@@ -524,6 +526,13 @@ double Evalsub1(char *SRC) {	// 1st Priority
 	CB_Error(SyntaxERR) ; // Syntax error 
 	return 0 ;
 }
+
+double Evaldummy(char *SRC) {	// dummy
+	double result,tmp;
+	int c;
+	result *= Evalsub1( SRC )*Evalsub1( SRC );
+}
+
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
@@ -842,6 +851,7 @@ double EvalsubTop14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 	}
 }
 */
+
 double EvalsubTop( char *SRC ) {	// eval 1
 	int c;
 	int excptr=ExecPtr;

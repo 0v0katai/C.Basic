@@ -542,6 +542,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	int handle;
 	FONTCHARACTER filename[50];
 	int r,s;
+	int freespace[2];
 
 	/* disable, just for call "Bfile_FindFirst" */
 	FONTCHARACTER buffer[50];
@@ -552,10 +553,14 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	r = Bfile_FindFirst( filename, &handle, buffer, &info );
 	s = Bfile_FindClose( handle );
 	if( r == 0 ) { //already existed, delete it
+		r=Bfile_GetMediaFree(DEVICE_STORAGE,freespace);
+		if ( r != 0 ) { ErrorMSG( "SMEM error", r );	return 1 ; }
+		if ( freespace[0]==0 ) freespace[0]=freespace[1];
+		if ( freespace[0] < size+256 ) { ErrorMSG( "Not enough SMEM", freespace[0] ); return 1 ; }
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}
-
+	
 	handle = Bfile_CreateFile( filename, size );
 	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name ); return 1 ; }
 	r = Bfile_CloseFile( handle );
@@ -637,21 +642,22 @@ int InputFilename( char * buffer, char* msg) {		//
 }
 
 
-void filenameToBas( char *filebase, char *filename) {
+void filename8ToSname( char *filebase, char *sname) {
 	char *nameptr;
 	int c;
 	int i;
 	nameptr=filebase+0x3C;
 	for (i=0;i<8;i++) nameptr[i]='\0';
 	i=0;
-	c=filename[i];
+	c=sname[i];
 	while ( c != '\0' ) {
-		c=filename[i];
-		nameptr[i++]=c;
+		c=sname[i];
+		if (i<8) nameptr[i]=c;
+		i++;
 	}
 }
 
-void BasTofilename8( char *filebase, char *sname) {
+void SnameTofilename8( char *filebase, char *sname) {
 	char *nameptr;
 	int c;
 	int i;
@@ -704,6 +710,25 @@ void G1M_header( char *filebase ,int *size ) {
 	filebase[0x1F]=0xFE;
 }
 
+void G1M_Basic_header( char *filebase ) {
+	filebase[0x20]='P';			// G1M Basic header set
+	filebase[0x21]='R';
+	filebase[0x22]='O';
+	filebase[0x23]='G';
+	filebase[0x24]='R';
+	filebase[0x25]='A';
+	filebase[0x26]='M';
+	filebase[0x33]=0x01;
+	filebase[0x34]='s';
+	filebase[0x35]='y';
+	filebase[0x36]='s';
+	filebase[0x37]='t';
+	filebase[0x38]='e';
+	filebase[0x39]='m';
+	filebase[0x3C]=0x30;
+	filebase[0x44]=0x01;	// basic
+}
+
 
 int LoadProgfile( char *name ) {
 	char *filebase;
@@ -734,7 +759,7 @@ int SaveG1M( char *filebase ){
 	char fname[32],basname[16];
 	int size,i;
 
-	BasTofilename8( filebase, basname);
+	SnameTofilename8( filebase, basname);
 
 	SetFullfilenameG1M( fname, basname );
 
@@ -753,11 +778,12 @@ int SaveProgfile( int progNo ){
 	int size,i;
 	
 	filebase=ProgfileAdrs[progNo];
-	BasTofilename8( filebase, basname);
+	SnameTofilename8( filebase, basname);
+	G1M_Basic_header( filebase );	// G1M Basic header set
 
   loop:
 	if ( InputFilename( basname, "Save File Name?" ) ) return 1 ;
-	filenameToBas( filebase, basname);
+	filename8ToSname( filebase, basname);
 	if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) goto loop;
 
 	return SaveG1M( filebase );
@@ -803,7 +829,7 @@ int SavePicture( char *filebase, int pictNo ){
  	if ( c==' ' ) { c=d; d=0; }
  	filebase[0x40]= c;
 	filebase[0x41]= d;
-	filebase[0x44]=0x07;
+	filebase[0x44]=0x07;	// Picture
 
 	for (i=0;i<FILENAMEMAX;i++) folder2[i]=folder[i];	// backup folder
 	folder[0x00]='P';
@@ -894,13 +920,13 @@ int RenameFile( char *sname ) {
 	if ( LoadProgfile( sname ) ) return 1 ; // error
 	
 	filebase=ProgfileAdrs[0] ;
-	BasTofilename8( filebase, basname);
+	SnameTofilename8( filebase, basname);
 
 	if ( InputFilename( basname, "Rename File Name?" ) ) return 1 ; // cancel
 	SetFullfilenameG1M( fname, basname );
 	if ( strcmp(sname,fname)==0 ) return 0; // no rename
 	
-	filenameToBas( filebase, basname);
+	filename8ToSname( filebase, basname);
 
 	if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ; // cancel
 	
@@ -1099,8 +1125,8 @@ void SaveConfig(){
 
 	bufdbl[ 8]=Xfct;
 	bufdbl[ 9]=Yfct;
-	for ( i=10; i< 10+58 ; i++ ) bufdbl[i]=REG[i-10];
-	for ( i=68; i< 68+11 ; i++ ) bufdbl[i]=REGv[i-68];
+	for ( i= 10; i<  10+58 ; i++ ) bufdbl[i]=REG[i-10];
+	for ( i= 68; i<  68+11 ; i++ ) bufdbl[i]=REGv[i-68];
 	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
 
 	sbuf=buffer+220*4;
@@ -1170,8 +1196,8 @@ void LoadConfig(){
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];
-		for ( i=10; i< 10+58 ; i++ ) REG[i-10] =bufdbl[i];
-		for ( i=68; i< 68+11 ; i++ ) REGv[i-68]=bufdbl[i];
+		for ( i= 10; i<  10+58 ; i++ ) REG[i-10] =bufdbl[i];
+		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]=bufdbl[i];
 		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
 
 		sbuf=buffer+220*4;
@@ -1213,25 +1239,9 @@ int NewProg(){
 
 	size=0x56+1;
 	G1M_header( filebase, &size );	// G1M header set
+	G1M_Basic_header( filebase );	// G1M Basic header set
 	
-	filebase[0x20]='P';			// G1M Basic header set
-	filebase[0x21]='R';
-	filebase[0x22]='O';
-	filebase[0x23]='G';
-	filebase[0x24]='R';
-	filebase[0x25]='A';
-	filebase[0x26]='M';
-	filebase[0x33]=0x01;
-	filebase[0x34]='s';
-	filebase[0x35]='y';
-	filebase[0x36]='s';
-	filebase[0x37]='t';
-	filebase[0x38]='e';
-	filebase[0x39]='m';
-	filebase[0x3C]=0x30;
-	filebase[0x44]=0x01;
-	
-	filenameToBas( filebase, basname);
+	filename8ToSname( filebase, basname);
 
 	ProgEntryN=0;						// new Main program
 	ProgfileAdrs[ProgEntryN]= filebase;

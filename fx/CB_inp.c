@@ -498,6 +498,7 @@ const short oplistVARS[]={
 		0xF73F,	// DotGet(
 		0xF94B,	// DotPut(
 		0xF74F,	// DotTrim(
+		0xF7E0,	// DotLife(
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -841,7 +842,7 @@ const short oplistCMD[]={
 		0xF73F,	// DotGet(
 		0xF94B,	// DotPut(
 		0xF74F,	// DotTrim(
-		0xFFFF,	// 				-
+		0xF7E0,	// DotLife(
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
 		0xF793,	// StoPict
@@ -1079,6 +1080,17 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[4]='r';
 		string[5]='i';
 		string[6]='m';
+		string[7]='(';
+		string[8]='\0';
+	} else
+	if ( opcode == 0xF7E0 ) {
+		string[0]='D';
+		string[1]='o';
+		string[2]='t';
+		string[3]='L';
+		string[4]='i';
+		string[5]='f';
+		string[6]='e';
 		string[7]='(';
 		string[8]='\0';
 	} else
