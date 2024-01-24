@@ -1323,7 +1323,7 @@ int Search_Lbl( char *SRC, int lc ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFE2:	// Lbl
 				c = CB_CheckLbl( SRC );
@@ -1468,7 +1468,7 @@ void Search_IfEnd( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				c=SRC[ExecPtr++];
@@ -1503,7 +1503,7 @@ int Search_ElseIfEnd( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				c=SRC[ExecPtr++];
@@ -1537,7 +1537,7 @@ void CB_If( char *SRC, CchIf *Cache ){
 	judge  = CB_EvalCheckZero( SRC );
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
-	if ( c == 0x27 ) { Skip_rem(SRC); c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
+	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
 	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
 	if ( judge ) return ; // true
 	
@@ -1603,7 +1603,7 @@ int Search_Next( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0x13:	// =>
 				Skip_block(SRC);
@@ -1790,7 +1790,7 @@ int Search_WhileEnd( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0x13:	// =>
 				Skip_block(SRC);
@@ -1831,7 +1831,7 @@ int Search_LpWhile( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0x13:	// =>
 				Skip_block(SRC);
@@ -1940,7 +1940,7 @@ int Search_SwitchEnd( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				if ( SRC[ExecPtr] == 0xFFffFFEA ) { ExecPtr++;				// Switch
@@ -1972,7 +1972,7 @@ int Search_CaseEnd( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				if ( SRC[ExecPtr] == 0xFFffFFEA ) { ExecPtr++;				// Switch
@@ -3185,8 +3185,8 @@ void  CB_Input( char *SRC ){
 int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
