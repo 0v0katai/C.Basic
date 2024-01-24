@@ -191,7 +191,7 @@ extern char  ProgLocalVar[ProgMax+1][26];
 extern  char *TVRAM;
 extern  char *GVRAM;
 //------------------------------------------------------------------------------
-#define StackGotoMax 10+26+2
+#define StackGotoMax 10+26+2+6+26
 #define StackGosubMax 4
 #define IfCntMax 32
 #define RemCntMax 32
@@ -199,6 +199,11 @@ extern  char *GVRAM;
 #define StackWhileMax 4
 #define StackDoMax 4
 #define StackSwitchMax 4
+
+#define TYPE_For_Next 			1
+#define TYPE_While_WhileEnd		2
+#define TYPE_Do_LpWhile			3
+#define TYPE_Switch_Case		4
 
 typedef struct {		// 8 bytes
 	short	CNT;
@@ -258,7 +263,7 @@ void Skip_block( char *SRC );
 void Skip_rem( char *SRC );	// skip '...
 void CB_Rem( char *SRC, CchRem *CacheRem );
 void CB_Lbl( char *SRC, short *StackGotoAdrs );
-void CB_Goto( char *SRC, short *StackGotoAdrs);
+void CB_Goto( char *SRC, short *StackGotoAdrs );
 void CB_If( char *SRC, CchIf *CacheIf );
 void CB_Else( char *SRC, CchIf *CacheElse );
 void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );

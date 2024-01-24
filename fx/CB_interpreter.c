@@ -181,12 +181,6 @@ int CB_interpreter_sub( char *SRC ) {
 	
 	ClrCahche();
 	
-	StackFor.Ptr=0;
-	StackWhileDo.WhilePtr=0;
-	StackWhileDo.DoPtr=0;
-	StackSwitch.Ptr=0;
-	CurrentStruct.CNT=0;
-	
 	tmp_Style = -1;
 	dspflag=0;
 
@@ -200,6 +194,11 @@ int CB_interpreter_sub( char *SRC ) {
 		}
 	}
 	
+	CurrentStruct.CNT=0;
+	StackFor.Ptr=0;
+	StackWhileDo.WhilePtr=0;
+	StackWhileDo.DoPtr=0;
+	StackSwitch.Ptr=0;
 	
 	while (cont) {
 		dspflagtmp=0;
@@ -844,7 +843,7 @@ int CB_interpreter_sub( char *SRC ) {
 				ExecPtr--;
 			  Evalexit:
 				excptr=ExecPtr;
-				dspflag=0;
+				dspflag=2;
 				dspflagtmp=2;
 				if (CB_INT)	{
 					CBint_CurrentValue = EvalIntsubTop( SRC );
@@ -909,19 +908,47 @@ void InitLocalVar() {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
+void Skip_block( char *SRC ){
+	int c;
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+			case 0x3A:	// <:>
+			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				return ;
+				break;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+//			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+}
+
 void Skip_quot( char *SRC ){ // skip "..."
 	int c;
-	c=SRC[ExecPtr-1];
-	if ( ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
+	c=SRC[ExecPtr-2];
+	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
 		while (1){
 			c=SRC[ExecPtr++];
 			switch ( c ) {
@@ -966,33 +993,6 @@ void Skip_quot( char *SRC ){ // skip "..."
 					ExecPtr++;
 					break;
 			}
-		}
-	}
-}
-void Skip_block( char *SRC ){
-	int c;
-	while (1){
-		c=SRC[ExecPtr++];
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-			case 0x3A:	// <:>
-			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
-				return ;
-				break;
-			case 0x22:	// "
-				Skip_quot(SRC);
-				break;
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
 		}
 	}
 }
@@ -1122,7 +1122,7 @@ int CB_CheckLbl( int c ){
 	if ( ( '0'<=c )&&( c<='9' ) ) {
 		ExecPtr++;
 		return c-'0';
-	} else if ( ( 'A'<=c )&&( c<='Z' ) ) {
+	} else if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		return  c-'A'+10;
 	} else 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) {	// <r> or Theta
@@ -1176,7 +1176,7 @@ int Search_Lbl( char *SRC, int lc ){
 	return 0;
 }
 
-void CB_Goto( char *SRC, short *StackGotoAdrs){
+void CB_Goto( char *SRC, short *StackGotoAdrs ){
 	int c;
 	int label;
 	int ptr;
@@ -1191,7 +1191,6 @@ void CB_Goto( char *SRC, short *StackGotoAdrs){
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
 }
-
 
 //-----------------------------------------------------------------------------
 void Search_IfEnd( char *SRC ){
@@ -1417,7 +1416,7 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	}
 	StackFor->Adrs[StackFor->Ptr] = ExecPtr;
 	StackFor->Ptr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
 	CurrentStruct->CNT++;
 }
 
@@ -1436,18 +1435,15 @@ void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		(*iptr) += stepint;
 		if ( stepint > 0 ) { 	// step +
 			if ( *iptr > StackFor->IntEnd[StackFor->Ptr] ) { (*iptr) -= step; return ;} // exit
-			ExecPtr = StackFor->Adrs[StackFor->Ptr];
-			(StackFor->Ptr)++;		// continue
-		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-		CurrentStruct->CNT++;
 		}
-		else {									// step -
+		else {					// step -
 			if ( *iptr < StackFor->IntEnd[StackFor->Ptr] ) { (*iptr) -= step; return ;} // exit
-			ExecPtr = StackFor->Adrs[StackFor->Ptr];
-			StackFor->Ptr++;		// continue
-		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-		CurrentStruct->CNT++;
 		}
+		ExecPtr = StackFor->Adrs[StackFor->Ptr];
+		StackFor->Ptr++;		// continue
+		CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
+		CurrentStruct->CNT++;
+		
 	} else {			//					------------ Double mode
 		if ( StackFor->Ptr <= 0 ) { CB_Error(NextWithoutForERR); ErrorPtr=ExecPtr; return; } // Next without for error
 		StackFor->Ptr--;
@@ -1455,20 +1451,16 @@ void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		step = StackFor->Step[StackFor->Ptr];
 		dptr=(double*)StackFor->Var[StackFor->Ptr];
 		(*dptr) += step;
-		if ( step > 0 ) { 	// step +
+		if ( step > 0 ) { 		// step +
 			if ( (*dptr) > StackFor->End[StackFor->Ptr] ) { (*dptr) -= step; return ;} // exit
-			ExecPtr = StackFor->Adrs[StackFor->Ptr];
-			StackFor->Ptr++;		// continue
-		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-		CurrentStruct->CNT++;
 		}
-		else {									// step -
+		else {					// step -
 			if ( (*dptr) < StackFor->End[StackFor->Ptr] ) { (*dptr) -= step; return ;} // exit
-			ExecPtr = StackFor->Adrs[StackFor->Ptr];
-			StackFor->Ptr++;		// continue
-		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-		CurrentStruct->CNT++;
 		}
+		ExecPtr = StackFor->Adrs[StackFor->Ptr];
+		StackFor->Ptr++;		// continue
+		CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
+		CurrentStruct->CNT++;
 	}
 }
 
@@ -1548,7 +1540,7 @@ void CB_While( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) 
 	if ( StackWhileDo->WhilePtr >= StackWhileMax ) { CB_Error(NestingERR); return; }  //  nesting error
 	StackWhileDo->WhileAdrs[StackWhileDo->WhilePtr] = wPtr;
 	StackWhileDo->WhilePtr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=2;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_While_WhileEnd;
 	CurrentStruct->CNT++;
 }
 
@@ -1565,7 +1557,7 @@ void CB_WhileEnd( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct
 		return ; // exit
 	}
 	StackWhileDo->WhilePtr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=2;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_While_WhileEnd;
 	CurrentStruct->CNT++;
 }
 
@@ -1573,7 +1565,7 @@ void CB_Do( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) {
 	if ( StackWhileDo->DoPtr >= StackDoMax ) { CB_Error(NestingERR); return; }  //  nesting error
 	StackWhileDo->DoAdrs[StackWhileDo->DoPtr] = ExecPtr;
 	StackWhileDo->DoPtr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=3;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Do_LpWhile;
 	CurrentStruct->CNT++;
 }
 
@@ -1586,7 +1578,7 @@ void CB_LpWhile( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct 
 	if ( i == 0  ) return ; // exit
 	ExecPtr = StackWhileDo->DoAdrs[StackWhileDo->DoPtr] ;				// true
 	StackWhileDo->DoPtr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=3;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Do_LpWhile;
 	CurrentStruct->CNT++;
 }
 
@@ -1685,7 +1677,7 @@ void CB_Switch( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ,Cc
 	
 	if ( StackSwitch->Ptr >= StackSwitchMax ) { CB_Error(NestingERR); return; }  //  nesting error
 	StackSwitch->Ptr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=4;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
 	CurrentStruct->CNT++;
 	ExecPtr=wPtr;
 	
@@ -1711,7 +1703,7 @@ void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
 	}
 	StackSwitch->Ptr++;
 	CurrentStruct->CNT--;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=4;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
 	CurrentStruct->CNT++;
 }
 
@@ -1720,7 +1712,7 @@ void CB_Default( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) 
 	int c,i;
 	if ( StackSwitch->Ptr <= 0 ) { CB_Error(DefaultWithoutSwitchERR); return; }  // Default without Switch error
 	CurrentStruct->CNT--;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=4;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
 	CurrentStruct->CNT++;
 }
 
@@ -1737,19 +1729,19 @@ void CB_Break( char *SRC, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch 
 	if ( CurrentStruct->CNT <=0 ) { CB_Error(NotLoopERR); return; }  // Not Loop error
 	CurrentStruct->CNT--;
 	switch ( CurrentStruct->TYPE[CurrentStruct->CNT] ) {
-		case 1:	// For Next
+		case TYPE_For_Next:			// For Next
 			if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
 			StackFor->Ptr--;
 			return ;
-		case 2:	// While WhileEnd
+		case TYPE_While_WhileEnd:	// While WhileEnd
 			if ( Search_WhileEnd(SRC) == 0 ) { CB_Error(WhileWithoutWhileEndERR); return; }  // While without WhileEnd error
 			StackWhileDo->WhilePtr--;
 			return ;
-		case 3:	// DO LpWhile
+		case TYPE_Do_LpWhile:		// DO LpWhile
 			if ( Search_LpWhile(SRC) == 0 )  { CB_Error(DoWithoutLpWhileERR); return; }  // Do without LpWhile error
 			StackWhileDo->DoPtr--;
 			return ;
-		case 4:	// Switch
+		case TYPE_Switch_Case:		// Switch
 			StackSwitch->Ptr--;
 			ExecPtr=StackSwitch->EndAdrs[StackSwitch->Ptr];
 			return ;
@@ -2587,8 +2579,8 @@ int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

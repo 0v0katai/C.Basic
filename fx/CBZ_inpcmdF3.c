@@ -113,6 +113,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 		case CMD_VARS:		//	------------------------------------------------------------VARS_F3
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_VARS_EXT; CommandPage=0;break;
+				case 1: (*code)='~';return;	// '~'
 			} break;
 		case CMD_VARS_VWIN:
 			switch ( CommandPage ) {
