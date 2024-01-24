@@ -123,6 +123,8 @@
 
 #define KEYSC_AC 		0x010 // 
 
+int CheckKeyRow( int row );
+int CheckKeyRow7305( int row );
 int KeyScanDown(int keyscan_code);
 
 

@@ -716,6 +716,7 @@ const short oplistPRGM[]={
 		0x13,	// =>
 		0xE9,	// Isz
 		0xE8,	// Dsz
+		0xF79E,	// Menu
 		
 		0xFFFF,	// 				-
 		0xF700,	// If
@@ -762,6 +763,7 @@ const short oplistPRGM[]={
 		0xF7E4,	// Disp
 		
 		0xFFFF,	// 				-
+		0x7F9F,	// KeyRow(
 		0x7FF5,	// IsExist(
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
@@ -815,7 +817,6 @@ const short oplistVARS[]={
 		0xF7AC,	// PxlOff
 		0xF7AD,	// PxlChg
 		0xF7AF,	// PxlTest(
-
 
 		0xFFFF,	// 				-
 		0xDA,	// Deg
@@ -877,6 +878,7 @@ const short oplistVARS[]={
 		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
 		0xF7FD, // FKey(
+		0xF7F2,	// PopUpWin(
 		0xF7FE,	// BackLight
 		0xF7F8,	// RefreshCtrl
 		0xF7FA,	// RefreshTime
@@ -1154,7 +1156,7 @@ const short oplistCMD[]={
 		0xF719,	// ClrGraph	
 		0xF91E,	// ClrMat	
 //		0xF71A,	// ClrList	
-		0x7E,	// ~
+		0xF79E,	// Menu
 		0x23,	// #
 		0x25,	// %
 		
@@ -1164,11 +1166,11 @@ const short oplistCMD[]={
 		0x13,	// =>			3
 		0xF710,	// Locate		4
 		0xD1,	// Cls			5
+		0xF7E4,	// Disp
 		0x7FB0,	// And			6
 		0x7FB1,	// Or			7
 		0x7FB3,	// Not			8
 		0x7FB4,	// Xor			9
-		0xF7E4,	// Disp
 		0x23,	// #
 		0x25,	// %
 		
@@ -1397,8 +1399,8 @@ const short oplistCMD[]={
 		0xF7FE,	// BackLight
 		0xF7F8,	// RefreshCtrl
 		0xF7FA,	// RefreshTime
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
+		0x7F9F,	// KeyRow(
+		0xF7F2,	// PopUpWin(
 		0x7FE9,	// CellSum(
 		0x7FF5,	// IsExist(
 		0xF7EE,	// Save
@@ -1612,23 +1614,25 @@ typedef struct {
 } topcodes;
 
 const topcodes OpCodeStrList[] = {
-	{ 0x7F87, "RanInt#(" }, 
-	{ 0x7F3A, "MOD(" }, 
+	{ 0x7F3A, "MOD(" }, 		// SDK emu not support
+	{ 0x7F87, "RanInt#(" }, 	// SDK emu not support
 	{ 0x7F58, "ElemSize(" }, 
 	{ 0x7F59, "ColSize(" }, 
 	{ 0x7F5A, "RowSize(" }, 
 	{ 0x7F5B, "MatBase(" }, 
 	{ 0x7F5F, "Ticks" }, 
-	{ 0x7FB4, " Xor " }, 
+	{ 0x7F9F, "KeyRow(" }, 
+	{ 0x7FB4, " Xor " }, 		// SDK emu not support
 	{ 0x7FF5, "IsExist(" }, 
 	{ 0x7FF6, "Peek(" }, 
-	{ 0x7FFA, "ProgPtr(" }, 
 	{ 0x7FF8, "VarPtr(" }, 
-	{ 0xF70C, "Return " }, 
+	{ 0x7FFA, "ProgPtr(" }, 
+	{ 0xF70C, "Return " }, 		// add space
 	{ 0xF717, "ACBreak" }, 
 	{ 0xF73B, "DotPut(" }, 
 	{ 0xF73D, "DotTrim(" }, 
 	{ 0xF73E, "DotGet(" }, 
+	{ 0xF79E, "Menu " },		// SDK emu not support
 	{ 0xF7E0, "DotLife(" }, 
 	{ 0xF7E1, "Rect " }, 
 	{ 0xF7E2, "FillRect " }, 
@@ -1645,6 +1649,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7EF, "Load(" }, 
 	{ 0xF7F0, "DotShape(" }, 
 	{ 0xF7F1, "Local " }, 
+	{ 0xF7F2, "PopUpWin(" }, 
 	{ 0xF7F4, "SysCall(" }, 
 	{ 0xF7F5, "Call(" }, 
 	{ 0xF7F6, "Poke(" }, 
@@ -1654,21 +1659,21 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7FC, "PutDispDD" }, 
 	{ 0xF7FD, "FKeyMenu(" }, 
 	{ 0xF7FE, "BackLight " }, 
-	{ 0xF930, "StrJoin(" }, 
-	{ 0xF931, "StrLen(" }, 
-	{ 0xF932, "StrCmp(" }, 
-	{ 0xF933, "StrSrc(" }, 
-	{ 0xF934, "StrLeft(" }, 
-	{ 0xF935, "StrRight(" }, 
-	{ 0xF936, "StrMid(" }, 
-	{ 0xF937, "Exp\xE6\x9EStr(" }, 
-	{ 0xF938, "Exp(" }, 
-	{ 0xF939, "StrUpr(" }, 
-	{ 0xF93A, "StrLwr(" }, 
-	{ 0xF93B, "StrInv(" }, 
-	{ 0xF93C, "StrShift(" }, 
-	{ 0xF93D, "StrRotate(" }, 
-	{ 0xF93F, "Str " }, 
+	{ 0xF930, "StrJoin(" }, 		// SDK emu not support
+	{ 0xF931, "StrLen(" }, 			// SDK emu not support
+	{ 0xF932, "StrCmp(" }, 			// SDK emu not support
+	{ 0xF933, "StrSrc(" }, 			// SDK emu not support
+	{ 0xF934, "StrLeft(" }, 		// SDK emu not support
+	{ 0xF935, "StrRight(" }, 		// SDK emu not support
+	{ 0xF936, "StrMid(" }, 			// SDK emu not support
+	{ 0xF937, "Exp\xE6\x9EStr(" }, 	// SDK emu not support
+	{ 0xF938, "Exp(" }, 			// SDK emu not support
+	{ 0xF939, "StrUpr(" }, 			// SDK emu not support
+	{ 0xF93A, "StrLwr(" }, 			// SDK emu not support
+	{ 0xF93B, "StrInv(" }, 			// SDK emu not support
+	{ 0xF93C, "StrShift(" }, 		// SDK emu not support
+	{ 0xF93D, "StrRotate(" }, 		// SDK emu not support
+	{ 0xF93F, "Str " }, 			// SDK emu not support
 	{ 0xF940, "Str(" }, 
 	{ 0xF941, "DATE" }, 
 	{ 0xF942, "TIME" }, 

@@ -85,15 +85,21 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case FileCMD_RUN:
 		runjp:
 				i=LoadProgfile( filename, EditMaxfree ) ;
-				if ( i==0 )	EditRun(1);			// Program run
-				else
+				if ( i==0 )	{
+					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
+					ExecPtr=0;
+					EditRun(1);			// Program run
+				}else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				break;
 			case FileCMD_EDIT:
 				ExecPtr=0;
 				i=LoadProgfile( filename, EditMaxfree ) ;
-				if ( i==0 )	EditRun(2);			// Program listing & edit
-				else
+				if ( i==0 )	{
+					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
+					ExecPtr=0;
+					EditRun(2);			// Program listing & edit
+				} else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				break;
 			case FileCMD_NEW:

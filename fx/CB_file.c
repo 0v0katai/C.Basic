@@ -104,12 +104,105 @@ unsigned int SelectFile (char *filename)
 }
 
 
+//--------------------------------------------------------------
 void Abort(){		// abort program
 	unsigned int key;
 	MSG2("Not enough Memory","Please Restart");
 	while (1) GetKey(&key);
 }
 
+static int IsFileNeeded( FONTCHARACTER *find_name )
+{
+	char str[13];
+	FontToChar(find_name,str);
+	return ( (strcmp(str + strlen(str) - 4, ".g1m") == 0) || (strcmp(str + strlen(str) - 4, ".txt") == 0) );
+}
+
+static int FileCmp( const void *p1, const void *p2 )
+{
+	Files *f1 = (Files *)p1;
+	Files *f2 = (Files *)p2;
+
+	if( f1->filesize == FOLDER_FLAG && f2->filesize == FOLDER_FLAG )
+		return strcmp( f1->filename + 1, f2->filename + 1);
+	else if( f1->filesize == FOLDER_FLAG )
+		return 1;
+	else if( f2->filesize == FOLDER_FLAG )
+		return -1;
+	else
+		return strcmp( f1->filename, f2->filename );
+}
+
+
+FONTCHARACTER * CharToFont( const char *cFileName, FONTCHARACTER *fFileName )
+{
+	int len, i;
+	
+	for( i = 0, len = strlen( cFileName ); i < len ; ++i )
+		fFileName[i] = cFileName[i];
+	fFileName[i] = '\0';
+	
+	return fFileName;
+}
+
+char * FontToChar( const FONTCHARACTER *fFileName, char *cFileName )
+{
+	int i = 0;
+	while( (cFileName[i] = fFileName[i]) !=0 )
+		++i;
+	return cFileName;
+}
+
+FONTCHARACTER * FilePath( char *sFolder, FONTCHARACTER *sFont )
+{
+	char path[50];
+
+	if( strlen(sFolder)==0 )
+		sprintf( path, "\\\\%s\\*.*",root[StorageMode] );
+	else
+		sprintf( path, "\\\\%s\\%s\\*.*",root[StorageMode] ,sFolder );
+
+	//Convert to FONTCHARACTER
+	CharToFont( path, sFont );
+	return sFont;
+}
+
+void SetFullfilenameExt( char *fname, char *sname, char *extname ) {
+	if( strlen(folder) == 0 )
+		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
+	else
+		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
+}
+
+void SetShortName( char *sname, char *name) {	// fullpath name -> short name
+	int c,i;
+	int ptr=0;
+	c=name[ptr++];
+	while( c=='\\' ) c=name[ptr++];	//
+	while( c!='\\' ) c=name[ptr++];	// ROOT skip
+	if ( strchr(name+ptr,'\\') != NULL ) { name=strchr(name+ptr,'\\')+1; ptr=0;}
+	c=name[ptr];
+	i=0;
+	while ( c ) {
+		c=name[ptr++];
+		sname[i++]=c;
+	}
+	sname[i]='\0';
+}
+
+void ErrorMSGfile( char *buffer, char *name, int err){
+	char sname[32];
+	char buf[32];
+	SetShortName( sname, name);
+	if ( err ) {
+		sprintf(buf, "%s (%d)", sname, err);
+		ErrorMSGstr( buffer, buf);
+	} else {
+		ErrorMSGstr( buffer, sname);
+	}
+}
+
+//--------------------------------------------------------------
 static int ReadFile( char *folder )
 {
 	char str[FILENAMEMAX];
@@ -121,7 +214,7 @@ static int ReadFile( char *folder )
 
 	size = FavoritesMAX + 1 ;
 	FilePath( folder, find_path );
-
+	
 /*				Get File Num			*/
 
 	r = Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
@@ -173,8 +266,6 @@ static int ReadFile( char *folder )
 
 	return size;
 }
-
-
 
 //--------------------------------------------------------------
 void DeleteFavorites( int i ) {	// i:index
@@ -308,6 +399,7 @@ int CheckSD(){	// SD model  return : 1
 }
 
 
+//----------------------------------------------------------------------------------------------
 unsigned int Explorer( int size, char *folder )
 {
 	int cont=1;
@@ -675,89 +767,6 @@ unsigned int Explorer( int size, char *folder )
 }
 
 
-static int IsFileNeeded( FONTCHARACTER *find_name )
-{
-	char str[13];
-	FontToChar(find_name,str);
-	return ( (strcmp(str + strlen(str) - 4, ".g1m") == 0) || (strcmp(str + strlen(str) - 4, ".txt") == 0) );
-}
-
-static int FileCmp( const void *p1, const void *p2 )
-{
-	Files *f1 = (Files *)p1;
-	Files *f2 = (Files *)p2;
-
-	if( f1->filesize == FOLDER_FLAG && f2->filesize == FOLDER_FLAG )
-		return strcmp( f1->filename + 1, f2->filename + 1);
-	else if( f1->filesize == FOLDER_FLAG )
-		return 1;
-	else if( f2->filesize == FOLDER_FLAG )
-		return -1;
-	else
-		return strcmp( f1->filename, f2->filename );
-}
-
-
-FONTCHARACTER * CharToFont( const char *cFileName, FONTCHARACTER *fFileName )
-{
-	int len, i;
-	
-	for( i = 0, len = strlen( cFileName ); i < len ; ++i )
-		fFileName[i] = cFileName[i];
-	fFileName[i] = '\0';
-	
-	return fFileName;
-}
-
-char * FontToChar( const FONTCHARACTER *fFileName, char *cFileName )
-{
-	int i = 0;
-	while( (cFileName[i] = fFileName[i]) !=0 )
-		++i;
-	return cFileName;
-}
-
-FONTCHARACTER * FilePath( char *sFolder, FONTCHARACTER *sFont )
-{
-	char path[50];
-
-	if( strlen(sFolder)==0 )
-		sprintf( path, "\\\\%s\\*",root[StorageMode] );
-	else
-		sprintf( path, "\\\\%s\\%s\\*",root[StorageMode] ,sFolder );
-
-	//Convert to FONTCHARACTER
-	CharToFont( path, sFont );
-	return sFont;
-}
-
-void SetShortName( char *sname, char *name) {	// fullpath name -> short name
-	int c,i;
-	int ptr=0;
-	c=name[ptr++];
-	while( c=='\\' ) c=name[ptr++];	//
-	while( c!='\\' ) c=name[ptr++];	// ROOT skip
-	if ( strchr(name+ptr,'\\') != NULL ) { name=strchr(name+ptr,'\\')+1; ptr=0;}
-	c=name[ptr];
-	i=0;
-	while ( c ) {
-		c=name[ptr++];
-		sname[i++]=c;
-	}
-	sname[i]='\0';
-}
-
-void ErrorMSGfile( char *buffer, char *name, int err){
-	char sname[32];
-	char buf[32];
-	SetShortName( sname, name);
-	if ( err ) {
-		sprintf(buf, "%s (%d)", sname, err);
-		ErrorMSGstr( buffer, buf);
-	} else {
-		ErrorMSGstr( buffer, sname);
-	}
-}
 
 //----------------------------------------------------------------------------------------------
 /* load file to buffer */
@@ -830,12 +839,6 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	return 0 ;
 }
 
-void SetFullfilenameExt( char *fname, char *sname, char *extname ) {
-	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
-	else
-		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
-}
 
 int GetFileSize( const char *fname ) {
 	int handle;
@@ -1160,13 +1163,17 @@ int LoadProgfile( char *fname, int editsize ) {
 			textsize=strlen(filebase);
 			strncpy( basname, sname, strlen(sname)-4);
 			basname[strlen(sname)-4]='\0';
-			if ( editsize ) ConvertToOpcode( filebase, basname, editsize + EditMaxfree);		// text file -> G1M file
+			if ( editsize ) {
+				ConvertToOpcode( filebase, basname, editsize + EditMaxfree);		// text file -> G1M file
+				strncpy( filebase+0x3C-8, folder, 8);		// set folder to G1M header
+			}
 			progsize = textsize +  editsize ;
 	} else {	// G1M file
 			filebase = loadFile( fname , editsize );
 			if ( filebase == NULL ) return 1;
 			if ( CheckG1M( filebase ) ) { HiddenRAM_freeProg( filebase ); return 1; } // not support g1m
 			progsize = SrcSize( filebase ) + editsize ;
+			strncpy( filebase+0x3C-8, folder, 8);		// set folder to G1M header
 	}
 
 	ProgEntryN=0;						// Main program
@@ -1175,7 +1182,6 @@ int LoadProgfile( char *fname, int editsize ) {
 	ProgfileEdit[0]= 0;
 	ProgNo=0;
 	ExecPtr=0;
-	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
 
 	return 0; // ok
 }
@@ -2069,30 +2075,29 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-
 /*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;

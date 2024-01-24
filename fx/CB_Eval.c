@@ -203,14 +203,36 @@ int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// base:0  0-  
 	int c;
 	if ( MatrixOprandreg( SRC, &(*reg)) == 0 ) return 0 ;
 	c =SRC[ExecPtr];
+	if ( SRC[ExecPtr] != '[' ) { 
+		(*dimA)=MatAry[(*reg)].Base;
+		(*dimB)=(*dimA);	// Mat A  (no element)
+		if  ( ( '0'<=c )&&( c<='9' ) ) {
+			ExecPtr++;
+			(*dimA)= c-'0';		// A0 A5 etc
+			MatOprand1( SRC, (*reg), &(*dimA), &(*dimB) );
+		}
+		return -1 ;
+	}
+	ExecPtr++;
+	if ( CB_INT ) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
+	return 1;
+}
+/*
+int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// base:0  0-    base:1 1-
+	int c;
+	if ( MatrixOprandreg( SRC, &(*reg)) == 0 ) return 0 ;
+	c =SRC[ExecPtr];
 	if ( SRC[ExecPtr] != '[' ) { (*dimA)=MatAry[(*reg)].Base; (*dimB)=(*dimA); return -1 ; }	// no element
 	ExecPtr++;
 	if ( CB_INT ) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
 	return 1;
 }
-
+*/
 //----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+int EvalObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
+//-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
 	if (CB_INT) {
@@ -321,10 +343,7 @@ double EvalsubTop( char *SRC ) {	// eval 1
 	}
 }
 //----------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//int EvalObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 
 double frac( double x ) {
 	double sign=1,tmp,d;
@@ -509,6 +528,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 					
+			} else if ( c == 0xFFFFFF9F ) {	// KeyRow(
+					return CB_KeyRow( SRC ) ; 
 			} else if ( c == 0xFFFFFF8F ) {	// Getkey
 					c = SRC[ExecPtr];
 					if ( ( '0'<=c )&&( c<='3' )) {	ExecPtr++ ;
