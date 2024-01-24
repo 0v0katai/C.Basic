@@ -524,7 +524,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 				break;
 		}
 	  next:
-		if ( ptr >= Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 	}
 	return ptr;
 }

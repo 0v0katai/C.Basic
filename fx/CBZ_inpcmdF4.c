@@ -74,6 +74,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F41;return;	// Trn
+				case 1: (*code)=0x7F55;return;	// ref
 				case 2: (*code)=0xF96D;return;	// Angle(
 			} break;
 		case CMD_OPTN_MAT_SIZE:

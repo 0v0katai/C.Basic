@@ -76,10 +76,11 @@ int CheckAnsMatList( int reg ) {	// ListAns <-> List 1
 }
 
 void WriteListAns2( double x, double y ) {
+	int base=MatBase;
 	dspflag=4;	// List ans
-	NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-	WriteMatrix( CB_MatListAnsreg, 1,1, x ) ;	//
-	WriteMatrix( CB_MatListAnsreg, 2,1, y ) ;	// 
+	NewMatListAns( 2, 1, base, 64 );		// List Ans[2]
+	WriteMatrix( CB_MatListAnsreg, base,   base, x ) ;	//
+	WriteMatrix( CB_MatListAnsreg, base+1, base, y ) ;	// 
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -424,6 +425,11 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x21:	// Det
 					return Cplx_CB_MatDet(SRC).real;
 				
+				case 0x55 :				// Ref Mat A
+					return Cplx_CB_MatRefRref( SRC, 0 ).real;
+				case 0x56 :				// Rref Mat A
+					return Cplx_CB_MatRefRref( SRC, 1 ).real;
+
 				case 0x46 :				// Dim
 					result=CB_Dim( SRC );
 					if ( result >= 0 ) return result;
@@ -595,10 +601,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=NoListEvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-			WriteMatrix( CB_MatListAnsreg, 1,1, fpolr(tmp,tmp2) ) ;	// r
-			WriteMatrix( CB_MatListAnsreg, 2,1, fpolt(tmp,tmp2) ) ;	// Theta
+			WriteListAns2( fpolr(tmp,tmp2) , fpolt(tmp,tmp2) ) ;
 			return 0;
 		case 0xFFFFFFA0 :	// Rec( r, Theta ) -> X,Y
 			tmp=NoListEvalsubTop( SRC );
@@ -606,10 +609,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=NoListEvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-			WriteMatrix( CB_MatListAnsreg, 1,1, frecx(tmp,tmp2) ) ;	// x
-			WriteMatrix( CB_MatListAnsreg, 2,1, frecy(tmp,tmp2) ) ;	// y
+			WriteListAns2( frecx(tmp,tmp2) , frecy(tmp,tmp2) ) ;
 			return 0;
 
 		case 0xFFFFFFF9:	// F9..

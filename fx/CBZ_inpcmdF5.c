@@ -68,8 +68,9 @@ void GetGenuineCmdF5( unsigned int *code ){
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F49;return;	// Augment(
-				case 1: CommandType=CMD_OPTN_MAT_SIZE; CommandPage=0;break;
+				case 1: (*code)=0x7F56;return;	// Rref
 				case 2: (*code)=0xF95E;return;	// UnitV(
+				case 3: CommandType=CMD_OPTN_MAT_SIZE; CommandPage=0;break;
 			} break;
 		case CMD_OPTN_CALC:
 			break;

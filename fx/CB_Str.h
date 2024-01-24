@@ -46,7 +46,6 @@ void GetNewAry8( int reg, int aryN, int aryMax ) ;
 int CheckQuotCR( char *SRC, int ptr ) ;
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 
-int GetStrYFnNo( char *SRC, int reg, int aryN, int aryMax ) ;	// -> StringNo
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) ;
 char* GetStrYFnPtrSub( int reg, int dimA, int dimB ) ;
 int CB_IsStr( char *SRC, int execptr ) ;
@@ -107,24 +106,9 @@ int CB_Bin( char *SRC );		// Bin(
 int CB_StrBase( char *SRC );	// StrBase( Str1,base1,base2 )->str2
 int CB_StrRepl( char *SRC );	// StrRepl( Str1,Str2,Str3,n )->str4
 
-int	StrSplit( char *buffer, char *srcstr, int ptr, int maxlen );	// ptr:1-	->MatAns
 int CB_StrSplit( char *SRC ) ;	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232]["4567"]["89"]]
 
 
 char* CB_RecallString(int type );				// ----------- Recall String  type: 0:string  1:fn   2:GraphY
 int CB_StoreString(int type, char *clipbuffer );		// ----------- Store  String  type: 0:string  1:fn   2:GraphY
 char* CB_SeeString(int type, int *select, char *clipbuffer );	// ----------- See    String  type: 0:string  1:fn   2:GraphY
-
-//-----------------------------------------------------------------------------
-void StoreGraphY(  char *fstring, int FuncNo );
-void StoreGraphr(  char *fstring, int FuncNo );
-void StoreGraphXt( char *fstring, int FuncNo );
-void StoreGraphYt( char *fstring, int FuncNo );
-void StoreGraphX(  char *fstring, int FuncNo );
-
-char* ReadGraphY(  int FuncNo );
-char* ReadGraphr(  int FuncNo );
-char* ReadGraphXt( int FuncNo );
-char* ReadGraphYt( int FuncNo );
-char* ReadGraphX(  int FuncNo );
-
