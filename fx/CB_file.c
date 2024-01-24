@@ -149,6 +149,72 @@ static int ReadFile( char *folder )
 
 
 //--------------------------------------------------------------
+void FavoritesFunc( int *index ) {
+	char tmpname[FILENAMEMAX];
+	int i;
+	if ( files[(*index)].filesize == 0 ) return;
+	i=0;
+	while ( i < FavoritesMAX ) {	// file matching search
+		if ( strcmp( files[i].filename,  files[(*index)].filename )== 0 ) break; // not matching
+		i++;
+	}
+	if ( i < FavoritesMAX ) { 		//	off Favorites list
+		if ( YesNo( "Favorite-Off ?" ) ) {
+			files[i].filesize = 0;
+			memset( Favoritesfiles[i].filename, 0x00, FILENAMEMAX );
+				while ( i > 0 ) {	// space adjust
+					files[i].filesize = files[i-1].filesize ;
+					files[i-1].filesize = 0;
+					strncpy( files[i].filename, files[i-1].filename, FILENAMEMAX);
+					memset( Favoritesfiles[i-1].filename, 0x00, FILENAMEMAX );
+					i--;
+				}
+			SaveFavorites();
+		}
+	} else {						//	add Favorites list
+		if ( files[0].filesize ) ErrorMSG( "Favorites over ",FavoritesMAX);
+		else
+		if ( YesNo( "Favorite-ADD ?" ) ) {
+			i=1;
+			while ( i < FavoritesMAX ) {	// space adjust
+				files[i-1].filesize = files[i].filesize ;
+				strncpy( files[i-1].filename, files[i].filename, FILENAMEMAX);
+				i++;
+			}
+			i=FavoritesMAX-1;
+			files[i].filesize = files[(*index)].filesize ;
+			strncpy( files[i].filename, files[(*index)].filename, FILENAMEMAX);
+			(*index)=i;
+			SaveFavorites();
+		}
+	}
+}
+void FavoritesUp( int *index ) {
+	int tmp;
+	char tmpname[FILENAMEMAX];
+	strncpy( tmpname, files[(*index)-1].filename, FILENAMEMAX);
+	tmp=files[(*index)-1].filesize;
+	strncpy( files[(*index)-1].filename, files[(*index)].filename, FILENAMEMAX);
+	files[(*index)-1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX);
+	files[(*index)].filesize=tmp;
+	(*index)--;
+	SaveFavorites();
+}
+void FavoritesDown( int *index ) {
+	int tmp;
+	char tmpname[FILENAMEMAX];
+	strncpy( tmpname, files[(*index)+1].filename, FILENAMEMAX);
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX);
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX);
+	files[(*index)].filesize=tmp;
+	(*index)++;
+	SaveFavorites();
+}
+
+//--------------------------------------------------------------
 
 unsigned int Explorer( int size, char *folder )
 {
@@ -158,7 +224,7 @@ unsigned int Explorer( int size, char *folder )
 	unsigned int key;
 	int FavCount=0;
 	int StartLine;
-	char tmpname[FILENAMEMAX];
+	int filemode=0;
 	
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -217,12 +283,27 @@ unsigned int Explorer( int size, char *folder )
 		StartLine=FavoritesMAX - FavCount; if ( FavCount == 0 ) StartLine++;
 
 		Bdisp_AllClr_VRAM();
-		Fkey_dispN( 0,"EXE ");
-		Fkey_dispR( 1,"EDIT");
-		Fkey_dispR( 2,"NEW");
-		Fkey_dispR( 3,"REN");
-		Fkey_dispR( 4,"DEL");
-		Fkey_dispN( 5,"Fav.");
+		switch ( filemode ) {
+			case 0:
+				Fkey_dispN( 0,"EXE ");
+				Fkey_dispR( 1,"EDIT");
+				Fkey_dispR( 2,"NEW");
+				Fkey_dispR( 3,"COPY");
+				Fkey_dispR( 4,"DEL");
+				Fkey_DISPN( 5," \xE6\x9E ");
+				break;
+			case 1:
+				Fkey_dispN( 0,"Text");
+				Fkey_dispR( 1,"REN");
+//				Fkey_Clear( 2 );
+//				Fkey_Clear( 3 );
+//				Fkey_Clear( 4 );
+				Fkey_dispN( 2, "Fav.");
+				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
+				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
+				Fkey_DISPN( 5," \xE6\x9E ");
+				break;
+		}
 		locate(1, 1);Print((unsigned char*)"Prog List  [        ]");
 		locate(13, 1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"Root");
 		if( size < 1 ){
@@ -319,68 +400,92 @@ unsigned int Explorer( int size, char *folder )
 				break;
 			case KEY_CTRL_EXE:
 			case KEY_CTRL_F1:	// run
-			case KEY_CTRL_F2:	// edit
-			case KEY_CTRL_F3:	// New file
-			case KEY_CTRL_F4:	// rename file
-			case KEY_CTRL_F5:	// delete file
+				switch ( filemode ) {
+					case 0:
+						key=FileCMD_RUN;
+						break;
+					case 1:
+						key=FileCMD_TEXT;
+						break;
+				}
 				cont =0 ;
 				break;
-			case KEY_CTRL_F6:		// ------- Favorites list
-				if ( files[index].filesize == 0 ) break;
-				i=0;
-				while ( i < FavoritesMAX ) {	// file matching search
-					if ( strcmp( files[i].filename,  files[index].filename )== 0 ) break; // not matching
-					i++;
+			case KEY_CTRL_F2:	// edit
+				switch ( filemode ) {
+					case 0:
+						key=FileCMD_EDIT;
+						break;
+					case 1:
+						key=FileCMD_RENAME;
+						break;
 				}
-				if ( i < FavoritesMAX ) { 		//	off Favorites list
-					if ( YesNo( "Favorite-Off ?" ) ) {
-						files[i].filesize = 0;
-						memset( Favoritesfiles[i].filename, 0x00, FILENAMEMAX );
-							while ( i > 0 ) {	// space adjust
-								files[i].filesize = files[i-1].filesize ;
-								files[i-1].filesize = 0;
-								strncpy( files[i].filename, files[i-1].filename, FILENAMEMAX);
-								memset( Favoritesfiles[i-1].filename, 0x00, FILENAMEMAX );
-								i--;
-							}
-						SaveFavorites();
-					}
-				} else {						//	add Favorites list
-					if ( files[0].filesize ) ErrorMSG( "Favorites over ",FavoritesMAX);
-					else
-					if ( YesNo( "Favorite-ADD ?" ) ) {
-						i=1;
-						while ( i < FavoritesMAX ) {	// space adjust
-							files[i-1].filesize = files[i].filesize ;
-							strncpy( files[i-1].filename, files[i].filename, FILENAMEMAX);
-							i++;
-						}
-						i=FavoritesMAX-1;
-						files[i].filesize = files[index].filesize ;
-						strncpy( files[i].filename, files[index].filename, FILENAMEMAX);
-						index=i;
-						SaveFavorites();
-					}
-				}
-				redraw = 1;
+				cont =0 ;
 				break;
+			case KEY_CTRL_F3:	// New file
+				switch ( filemode ) {
+					case 0:
+						key=FileCMD_NEW;
+						cont =0 ;
+						break;
+					case 1:
+						FavoritesFunc( &index );
+						break;
+				}
+				break;
+			case KEY_CTRL_F4:	// Copy file
+				switch ( filemode ) {
+					case 0:
+						key=FileCMD_COPY;
+						cont =0 ;
+						break;
+					case 1:
+						if ( index <= StartLine ) break;
+						if ( index >= FavoritesMAX-1 ) break;
+						FavoritesUp( &index );
+						break;
+				}
+				break;
+			case KEY_CTRL_F5:	// delete file
+				switch ( filemode ) {
+					case 0:
+						key=FileCMD_DEL;
+						cont =0 ;
+						break;
+					case 1:
+						if ( FavCount < 1 ) break;
+						if ( index >= FavoritesMAX-1 ) break;
+						FavoritesDown( &index );
+						break;
+				}
+				break;
+			case KEY_CTRL_OPTN:		// ------- Favorites list
+				filemode = 0 ;
+				FavoritesFunc( &index );
+				break;
+			case KEY_CTRL_F6:		// ------- change function
+				filemode = 1-filemode ;
+				break;
+			
 			case KEY_CTRL_EXIT:
 				index = size;
 				cont =0 ;
 				break;
 			case KEY_CTRL_VARS:
+				filemode = 0 ;
 				SetVar(0);		// A - 
 				break;
 			case KEY_CTRL_SHIFT:
+				filemode = 0 ;
 				Fkey_dispR( 0, "Var");
 				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
 				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
 				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
-				Fkey_dispN( 5, "Text");
+				Fkey_dispN( 5, "Fav.");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CHAR_POWROOT:
+							key=FileCMD_Prog;
 					case KEY_CTRL_EXIT:
 					case KEY_CTRL_QUIT:
 							cont =0 ;
@@ -403,32 +508,19 @@ unsigned int Explorer( int size, char *folder )
 					case KEY_CTRL_PAGEUP:	// up
 					case KEY_CTRL_F4:	// up
 							if ( index <= StartLine ) break;
-							strncpy( tmpname, files[index-1].filename, FILENAMEMAX);
-							tmp=files[index-1].filesize;
-							strncpy( files[index-1].filename, files[index].filename, FILENAMEMAX);
-							files[index-1].filesize=files[index].filesize;
-							strncpy( files[index].filename, tmpname, FILENAMEMAX);
-							files[index].filesize=tmp;
-							index--;
-							SaveFavorites();
+							if ( index >= FavoritesMAX-1 ) break;
+							FavoritesUp( &index );
 							break;
-					case KEY_CTRL_PAGEDOWN:	// up
+					case KEY_CTRL_PAGEDOWN:	// down
 					case KEY_CTRL_F5:	// down
 							if ( FavCount < 1 ) break;
 							if ( index >= FavoritesMAX-1 ) break;
-							strncpy( tmpname, files[index+1].filename, FILENAMEMAX);
-							tmp=files[index+1].filesize;
-							strncpy( files[index+1].filename, files[index].filename, FILENAMEMAX);
-							files[index+1].filesize=files[index].filesize;
-							strncpy( files[index].filename, tmpname, FILENAMEMAX);
-							files[index].filesize=tmp;
-							index++;
-							SaveFavorites();
+							FavoritesDown( &index );
 							break;
 					case KEY_CTRL_F6:
 //							VerDisp();
 //							redraw = 1;
-							cont=0;
+							FavoritesFunc( &index );
 							break;
 					case KEY_CHAR_ASIN:
 							if ( CB_INTDefault ) CBint_test(); else CB_test();
@@ -1000,6 +1092,31 @@ int RenameFile( char *sname ) {
 		sprintf(fname, "%s.g1m", basname );
 		if ( Favoritesfiles[i].filesize ) strncpy( Favoritesfiles[i].filename, fname, FILENAMEMAX);
 	}
+	
+	return 0;
+}
+//----------------------------------------------------------------------------------------------
+int CopyFile( char *sname ) {
+	char *filebase;
+	char fname[32],basname[16];
+	int size,i,j;
+
+	if ( LoadProgfile( sname, 0) ) return 1 ; // error
+
+	filebase = ProgfileAdrs[0];
+	SnameTofilename8( filebase, basname);
+
+	if ( InputFilename( basname, "Copy File Name?" ) ) return 1 ; // cancel
+	SetFullfilenameExt( fname, basname, "g1m" );
+	if ( strcmp(sname,fname)==0 ) return 0; // no rename
+	
+	filename8ToSname( filebase, basname);
+
+	if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ; // cancel
+	
+	if ( SaveG1M( filebase ) ) return 1;
+
+	strncpy( rename, basname, FILENAMEMAX);
 	
 	return 0;
 }

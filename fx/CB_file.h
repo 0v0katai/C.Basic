@@ -24,6 +24,15 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 #endif
 
 
+#define FileCMD_Prog   10000
+#define FileCMD_RUN    10001
+#define FileCMD_EDIT   10002
+#define FileCMD_NEW    10003
+#define FileCMD_RENAME 10004
+#define FileCMD_DEL    10005
+#define FileCMD_COPY   10006
+#define FileCMD_TEXT   10007
+
 char *loadFile( const char *name , int editMax);
 int  storeFile( const char *name, unsigned char* codes, int size);
 int LoadProgfile( char *name, int searchProg ) ;
@@ -36,6 +45,7 @@ char * LoadPicture( int pictNo );
 int  RenameFile(char *name) ;
 void DeleteFile(char *name) ;
 void DeleteFileFav(char *sname) ;
+int CopyFile( char *sname ) ;
 
 void ConvertToText( char *sname );
 

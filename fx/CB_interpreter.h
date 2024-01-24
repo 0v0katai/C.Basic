@@ -28,6 +28,7 @@ extern double Plot_X     ;	// Plot Current X
 extern double Plot_Y     ;	// Plot Current Y
 
 extern char BreakCheck;	// Break Stop on/off
+extern char ACBreak;	// AC Break on/off
 
 extern char TimeDsp;
 extern char MatXYmode;
@@ -226,6 +227,10 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."
 void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs, int *localvarInt, double *localvarDbl  ); //	Gosub N
 double CB_EvalStr( char *SRC) ;		// Eval str -> double
 int CBint_EvalStr( char *SRC) ;		// Eval str -> int
+
+void GetMatStr(char *SRC, char *buffer, int Maxlen ) ;
+void GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;
+void CB_QuotMat( char *SRC );		// &Mat A
 
 void Skip_quot( char *SRC ); // skip "..."
 void Skip_block( char *SRC );

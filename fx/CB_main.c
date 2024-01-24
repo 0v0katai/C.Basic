@@ -94,7 +94,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	
 		key =( SelectFile( filename ) ) ;
 		switch ( key ) {
-			case KEY_CHAR_POWROOT:				// -- test for SDK (internal sample program)
+			case FileCMD_Prog:				// -- test for SDK (internal sample program)
 				ProgEntryN=0;						// Main program
 				LoadFileSDK( bas_src );
 				LoadFileSDK( bas_src1 );
@@ -108,7 +108,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				SaveConfig();
 				break;
 			case KEY_CTRL_EXE:
-			case KEY_CTRL_F1:
+			case FileCMD_RUN:
 				Contflag=0;
 				ExecPtr=0;
 				i=LoadProgfile( filename, 1 ) ;
@@ -117,7 +117,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				SaveConfig();
 				break;
-			case KEY_CTRL_F2:
+			case FileCMD_EDIT:
 				Contflag=0;
 				ExecPtr=0;
 				i=LoadProgfile( filename, 1 ) ;
@@ -126,23 +126,28 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				SaveConfig();
 				break;
-			case KEY_CTRL_F3:
+			case FileCMD_NEW:
 				if ( NewProg() ) break ;
 				Contflag=0;
 				EditRun(2);			// Program listing & edit
 				SaveConfig();
 				break;
-			case KEY_CTRL_F4:
+			case FileCMD_RENAME:
 				RenameFile(filename);
 				run=0;
 				SaveConfig();
 				break;
-			case KEY_CTRL_F5:
+			case FileCMD_DEL:
 				DeleteFileFav(filename);
 				run=0;
 				SaveConfig();
 				break;
-			case KEY_CTRL_F6:
+			case FileCMD_COPY:
+				CopyFile(filename);
+				run=0;
+				SaveConfig();
+				break;
+			case FileCMD_TEXT:
 				ConvertToText(filename);
 				run=0;
 				SaveConfig();

@@ -35,7 +35,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.96 " );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.97 " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -734,7 +734,7 @@ int SetupG(int select){		// ----------- Setup
 	int	cont=1;
 	int scrl=select-6;
 	int y,cnt;
-	int listmax=16;
+	int listmax=17;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -817,7 +817,11 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 16
+			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 16
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 17
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -837,6 +841,7 @@ int SetupG(int select){		// ----------- Setup
 			case 9: // BreakCheck
 			case 10: // TimeDsp
 			case 11: // IfEnd Check
+			case 16: // ACBreak Check
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
@@ -871,7 +876,7 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
-			case 16: // Execute Mode
+			case 17: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -956,7 +961,10 @@ int SetupG(int select){		// ----------- Setup
 					case 15: // Pict mode
 						PictMode = 0 ; // Memory mode
 						break;
-					case 16: // CB mode
+					case 16: // ACBreak
+						ACBreak = 1 ; // on
+						break;
+					case 17: // CB mode
 						CB_INTDefault = 0 ; // normal
 						break;
 					default:
@@ -1017,7 +1025,10 @@ int SetupG(int select){		// ----------- Setup
 					case 15: // Pict mode
 						PictMode = 1 ; // heap mode
 						break;
-					case 16: // CB mode
+					case 16: // ACBreak
+						ACBreak = 0 ; // off
+						break;
+					case 17: // CB mode
 						CB_INTDefault = 1 ; // int
 						break;
 					default:
