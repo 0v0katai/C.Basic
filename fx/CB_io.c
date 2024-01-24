@@ -19,6 +19,31 @@ int CPU_check(void) {					// SH3:3 SH4A:4
 }
 
 //---------------------------------------------------------------------------------------------
+void * HiddenRAM(void){
+	volatile unsigned int *NorRAM=(volatile unsigned int*)0x88000000;	// Nomarl RAM TOP
+	volatile unsigned int *HidRAM=(volatile unsigned int*)0x88040000;	// Hidden RAM TOP
+	int a,b;
+	int K55=0x5555;
+	int KAA=0xAAAA;
+	char * HidAddress=NULL;
+
+	a= *NorRAM;
+
+	*NorRAM=K55;
+	*HidRAM=KAA;
+	if ( *NorRAM != *HidRAM ) {
+		*NorRAM=KAA;
+		*HidRAM=K55;
+		if ( *NorRAM != *HidRAM ) {
+			HidAddress=(char*)HidRAM;	// Hidden RAM Exist
+			*HidRAM=0;
+		}
+	}
+	*NorRAM=a;
+	return HidAddress+16;
+}
+
+//---------------------------------------------------------------------------------------------
 void CB_PrintC( int x, int y,const unsigned char *c ){
 	if ( *c == 0xFF ) {
 		*c++;

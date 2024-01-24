@@ -275,7 +275,7 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						break;
 					case 0x0C:	// Return
-						if ( GosubNestN > 0 ) { ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return form subroutin 
+						if ( GosubNestN > 0 ) { ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
 						if ( ProgEntryN ) { return -2 ; }	//	return from  sub Prog
 						cont=0;
 						break;

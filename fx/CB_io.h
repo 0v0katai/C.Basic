@@ -14,6 +14,7 @@ extern int ENG;	// ENG flag
 //-----------------------------------------------------------------------------
 
 int CPU_check(void);
+void * HiddenRAM(void);
 
 void CB_Print( int x, int y, const unsigned char *str);
 void CB_PrintRev( int x, int y, const unsigned char *str);
