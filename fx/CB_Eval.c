@@ -398,6 +398,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					result= EvalsubTop( GraphY );
 					ExecPtr=ptr;
 					return result ;
+			} else if ( c == 0xFFFFFFF5 ) {	// IsExist(
+					ExecPtr+=2;
+					return  CB_IsExist( SRC );
 			} else if ( c == 0x00 ) {	// Xmin
 					ExecPtr+=2;
 					return Xmin;

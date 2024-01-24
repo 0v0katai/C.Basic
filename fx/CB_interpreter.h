@@ -173,19 +173,21 @@ extern double CB_CurrentValue;	// Ans
 #define StackDoMax 4
 #define StackSwitchMax 4
 
-typedef struct {
-	int		CNT;
+typedef struct {		// 8 bytes
+	short	CNT;
+	short	Prg;
 	short	Ptr[IfCntMax];
 	short	Adrs[IfCntMax];
 } CchIf;
 
-typedef struct {
-	int		CNT;
+typedef struct {		// 8 bytes
+	short	CNT;
+	short	Prg;
 	short	Ptr[RemCntMax];
 	short	Adrs[RemCntMax];
 } CchRem;
 
-typedef struct {
+typedef struct {		// 32 bytes
 	short	Ptr;
 	int		*Var[StackForMax];
 	short	Adrs[StackForMax];
@@ -195,21 +197,21 @@ typedef struct {
 	double Step[StackForMax];
 } StkFor;
 
-typedef struct {
+typedef struct {		// 8 bytes
 	short	WhilePtr;
 	short	DoPtr;
 	short	WhileAdrs[StackWhileMax];
 	short	DoAdrs[StackDoMax];
 } StkWhileDo;
 
-typedef struct {
+typedef struct {		// 8 bytes
 	char	Ptr;
 	char	flag[StackSwitchMax];
 	short	EndAdrs[StackSwitchMax];
 	int		Value[StackSwitchMax];
 } StkSwitch;
 
-typedef struct {
+typedef struct {		// 16 bytes
 	short	CNT;
 	char	TYPE[14];
 } CurrentStk;
@@ -217,7 +219,7 @@ typedef struct {
 //-----------------------------------------------------------------------------
 #define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
 //------------------------------------------------------------------------------
-
+void ClrCahche();
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."

@@ -45,5 +45,6 @@ void SaveFavorites();
 void SaveConfig();
 void LoadConfig();
 
+int CB_IsExist( char *SRC ) ;	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
 void CB_Save( char *SRC ) ; //	Save "TEST",Mat A[1,3]
 void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3] 

@@ -124,40 +124,45 @@ char  ProgLocalVar[ProgMax+1][26];
 
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 	short StackGotoAdrs[StackGotoMax];
 	
-	CchIf CacheIf;
-	CchIf CacheElse;
-	CchIf CacheElseIf;
-	CchIf CacheSwitch;
-	CchRem CacheRem;
+	CchIf	CacheIf;
+	CchIf	CacheElse;
+	CchIf	CacheElseIf;
+	CchIf	CacheSwitch;
+	CchRem	CacheRem;
+
+void ClrCahche(){
+	CacheIf.CNT=0;
+	CacheElse.CNT=0;
+	CacheElseIf.CNT=0;
+	CacheRem.CNT=0;
+	CacheSwitch.CNT=0;
+}
 
 int CB_interpreter_sub( char *SRC ) {
-	int cont=1;
-	int i,j;
-	int c;
-	int dspflagtmp=0;
+	char cont=1;
+	char dspflagtmp=0;
+	int c,j;
 
 	short StackGosubAdrs[StackGosubMax];
 	
-	CurrentStk CurrentStruct;
-	StkFor StackFor;
-	StkWhileDo StackWhileDo;
-	StkSwitch StackSwitch;
+	CurrentStk	CurrentStruct;
+	StkFor		StackFor;
+	StkWhileDo	StackWhileDo;
+	StkSwitch	StackSwitch;
 	
 	double	localvarDbl[ArgcMAX];	//	local var
 	int		localvarInt[ArgcMAX];	//	local var
 
 	if ( 0x88020100 > (int)&cont ) { CB_Error(StackERR); return -1; } //  stack error
 	
-	for (i=0; i<StackGotoMax; i++) StackGotoAdrs[i]=0;
+	for (c=0; c<StackGotoMax; c++) StackGotoAdrs[c]=0;
 	
-	CacheIf.CNT=0;
-	CacheElse.CNT=0;
-	CacheElseIf.CNT=0;
-	CacheRem.CNT=0;
-	CacheSwitch.CNT=0;
+	ClrCahche();
 	
 	StackFor.Ptr=0;
 	StackWhileDo.WhilePtr=0;
@@ -169,15 +174,15 @@ int CB_interpreter_sub( char *SRC ) {
 	dspflag=0;
 
 	if ( ProgNo ) {			// set local variable
-		for ( i=0; i<26; i++ ) {
-			LocalDbl[i]=&REGsmall[i];
-			LocalInt[i]=&REGINTsmall[i];
+		for ( c=0; c<26; c++ ) {
+			LocalDbl[c]=&REGsmall[c];
+			LocalInt[c]=&REGINTsmall[c];
 		}
-		for ( i=0; i<ProgLocalN[ProgNo]; i++ ) {
-			j=ProgLocalVar[ProgNo][i];
+		for ( c=0; c<ProgLocalN[ProgNo]; c++ ) {
+			j=ProgLocalVar[ProgNo][c];
 			if ( j>=0 ) { 
-				LocalDbl[j]=&localvarDbl[i]; LocalDbl[j][0]=LocalDbltmp[i];
-				LocalInt[j]=&localvarInt[i]; LocalInt[j][0]=LocalInttmp[i];
+				LocalDbl[j]=&localvarDbl[c]; LocalDbl[j][0]=LocalDbltmp[c];
+				LocalInt[j]=&localvarInt[c]; LocalInt[j][0]=LocalInttmp[c];
 			}
 		}
 	}
@@ -228,6 +233,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x04:	// For
 						if (CB_INT)	CBint_For(SRC, &StackFor, &CurrentStruct );
 						else		CB_For(SRC, &StackFor, &CurrentStruct );
+						ClrCahche();
 						break;
 					case 0x07:	// Next
 						if (CB_INT)	CBint_Next(SRC, &StackFor, &CurrentStruct );
@@ -235,12 +241,14 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x08:	// While
 						CB_While(SRC, &StackWhileDo, &CurrentStruct );
+						ClrCahche();
 						break;
 					case 0x09:	// WhileEnd
 						CB_WhileEnd(SRC, &StackWhileDo, &CurrentStruct );
 						break;
 					case 0x0A:	// Do
 						CB_Do(SRC, &StackWhileDo, &CurrentStruct );
+						ClrCahche();
 						break;
 					case 0x0B:	// LpWhile
 						CB_LpWhile(SRC, &StackWhileDo, &CurrentStruct );
@@ -546,6 +554,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0xFFFFFFED:	// Prog "..."
 				CB_Prog(SRC, localvarInt, localvarDbl );
 				if ( BreakPtr ) return BreakPtr;
+				ClrCahche();
 				dspflag=0;
 				break;
 			case 0xFFFFFFD1:	// Cls
