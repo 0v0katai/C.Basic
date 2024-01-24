@@ -833,11 +833,8 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 		c =SRC[ExecPtr];
 		if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
-		reg=RegVar(c);
+		reg=RegVarAliasEx(SRC);
 		if ( reg>=0 ) {
-			ExecPtr++;
-
 			if (px1>px2) { i=px1; px1=px2; px2=i; }
 			if (py1>py2) { i=py1; py1=py2; py2=i; }
 
@@ -1088,8 +1085,7 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 	c =SRC[ExecPtr];
 	if ( ( c == 0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat A
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
-		reg=RegVar(c); if ( reg>=0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		reg=RegVarAliasEx(SRC); if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 		ExecPtr++;
 		c=SRC[ExecPtr];
@@ -1481,13 +1477,14 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 		CursorX=21;
 		scrmode=ScreenMode;
 	} else
-	if ( dspflag == 3 ) { 	// Matrix display
-		c=SRC[ExecPtr-2];
-		reg=RegVar(c);
+	if ( dspflag == 3 ) { 	// Matrix display		Mat A 
+		ExecPtr-=3;
+		if ( SRC[ExecPtr]==0x40 ) ExecPtr++;	// Mat  0x7F40
+		reg=RegVarAliasEx(SRC);
 		if ( reg>=0 ) {
 			CB_SelectTextVRAM();	// Select Text Screen
 			CB_SaveTextVRAM();
-			EditMatrix( c -'A' );
+			EditMatrix( reg );
 			CB_RestoreTextVRAM();	// Resotre Graphic screen
 			if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
 			scrmode=ScreenMode;
@@ -1542,9 +1539,10 @@ void CB_end( char *SRC ){
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
 		CursorX=21;
 	} else
-	if ( dspflag == 3 ) { 	// Matrix display
-		c=SRC[ExecPtr-2];
-		reg=RegVar(c);
+	if ( dspflag == 3 ) { 	// Matrix display		Mat A 
+		ExecPtr-=3;
+		if ( SRC[ExecPtr]==0x40 ) ExecPtr++;	// Mat  0x7F40
+		reg=RegVarAliasEx(SRC);
 		if ( reg>=0 ) {
 			CB_SaveTextVRAM();
 			EditMatrix( reg );

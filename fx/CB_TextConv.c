@@ -783,7 +783,7 @@ const char ConvListF900[][17]={
 "EngOff",			// F90C
 "@F90D",			// F90D
 "@F90E",			// F90E
-"@F90F",			// F90F
+"AliasVar ",			// F90F
 
 "Sel a0",			// F910
 "Sel a1",			// F911

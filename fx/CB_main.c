@@ -73,6 +73,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		PictAry[0]=GetVRAMAddress();
 
 		InitLocalVar();		// init Local variable
+		CB_AliasVarClr();
 		ExecPtr=0;	
 		DebugMode=0;
 		DebugScreen=0;

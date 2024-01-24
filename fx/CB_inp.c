@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.3                                       */
+/*   inp Library  ver 1.3                                        */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -764,6 +764,7 @@ const short oplistPRGM[]={
 		
 		0xFFFF,	// 				-
 		0x7F9F,	// KeyRow(
+		0xF90F,	// AliasVar
 		0x7FF5,	// IsExist(
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
@@ -913,224 +914,7 @@ const short oplistVARS[]={
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 
-void FkeyRel(){
-	Fkey_DISPR( 0, " = ");
-	Fkey_DISPR( 1, " \x11 ");
-	Fkey_DISPR( 2, " > ");
-	Fkey_DISPR( 3, " < ");
-	Fkey_DISPR( 4, " \x12 ");
-	Fkey_DISPR( 5, " \x10 ");
-}
-
-int SelectOpcode5800P() {
-	int *select=&selectCMD;
-	short *oplist=oplistCMD;
-	int opNum=0 ;
-	char buffer[22];
-	char tmpbuf[18];
-	unsigned int key;
-	int	cont=1;
-	int i,j,y,n;
-	int seltop;
-	int shift=0;
-
-	while ( oplist[opNum++] ) ;
-	opNum-=2;
-	seltop=*select;
-
-	Cursor_SetFlashMode(0); 		// cursor flashing off
-
-	SaveDisp(SAVEDISP_PAGE1);
-//	Bdisp_AllClr_DDVRAM();
-	
-//	PopUpWin(6);
-
-	while (cont) {
-		Bdisp_AllClr_VRAM();
-		(*select)=(*select)/12*12;
-//		locate(1,1); Print((unsigned char *)"== Command Select ==");
-		locate(1,1); Print((unsigned char *)"==STD GR FN STR EX==");
-		if ( (*select) < 5*12 )       { locate( 3,1); PrintRev((unsigned char *)"STD"); }
-		else if ( (*select) < 10*12 ) { locate( 7,1); PrintRev((unsigned char *)"GR"); }
-		else if ( (*select) < 14*12 ) { locate(10,1); PrintRev((unsigned char *)"FN"); }
-		else if ( (*select) < 16*12 ) { locate(13,1); PrintRev((unsigned char *)"STR"); }
-		else                       { locate(17,1); PrintRev((unsigned char *)"EX"); }
-		
-		for ( i=0; i<12; i++ ) {
-			n=oplist[(*select)+i];
-			tmpbuf[0]='\0'; 
-			if ( n == 0xFFFF ) n=' ';
-			else CB_OpcodeToStr( n, tmpbuf ) ; // SYSCALL
-			tmpbuf[8]='\0'; 
-			DMS_Opcode( tmpbuf, n);
-			n=i+1; if (n>9) n=0;
-			j=0; if ( tmpbuf[0]==' ' ) j++;
-			if ( i< 10 ) sprintf(buffer,"%d:%-9s",n,tmpbuf+j ) ;
-			if ( i==10 ) sprintf(buffer,".:%-9s",tmpbuf+j ) ;
-			if ( i==11 ) sprintf(buffer,"\x0F:%-9s",tmpbuf+j ) ;
-			locate(0+(i%2)*12,2+i/2); 
-			Print((unsigned char *)buffer);
-			if ( i==11 ) { locate(0+(i%2)*12,2+i/2); Print((unsigned char *)"\x0F"); }
-		}
-		if ( shift ) {
-			Fkey_DISPR( 0, " = ");
-			Fkey_DISPR( 1, " \x11 ");
-			Fkey_DISPR( 2, " > ");
-			Fkey_DISPR( 3, " < ");
-			Fkey_DISPR( 4, " \x12 ");
-			Fkey_DISPR( 5, " \x10 ");
-		} else {
-			Fkey_DISPR( 0, " ? ");
-			Fkey_DISPR( 1, " \x0C ");
-			Fkey_DISPR( 2, " : ");
-			Fkey_DISPR( 3, " \x13 ");
-			Fkey_DISPR( 4, " ' ");
-			Fkey_DISPR( 5, " / ");
-		}
-		Bdisp_PutDisp_DD();	
-		
-		y = ((*select)-seltop) + 1 ;
-//		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
-		Bdisp_PutDisp_DD();
-
-		GetKey( &key );
-		switch (key) {
-			case KEY_CTRL_EXIT:
-			case KEY_CTRL_QUIT:
-				RestoreDisp(SAVEDISP_PAGE1);
-				return 0;
-			case KEY_CTRL_EXE:
-				cont=0;
-				break;
-		
-			case KEY_CTRL_F1:	// ?
-				RestoreDisp(SAVEDISP_PAGE1);
-				if ( shift ) return '='; else return '?';
-				break;
-			case KEY_CTRL_F2:	// dsps
-				RestoreDisp(SAVEDISP_PAGE1);
-				if ( shift ) return 0x11; else return 0x0C;
-				break;
-			case KEY_CTRL_F3:	// :
-				RestoreDisp(SAVEDISP_PAGE1);
-				if ( shift ) return '>'; else return ':';
-				break;
-			case KEY_CTRL_F4:	// '
-				RestoreDisp(SAVEDISP_PAGE1);
-				if ( shift ) return '<'; else return 0x13;
-				break;
-			case KEY_CTRL_F5:	// =>
-				RestoreDisp(SAVEDISP_PAGE1);
-				if ( shift ) return 0x12; else return 0x27;
-				break;
-			case KEY_CTRL_F6:	// !=
-				RestoreDisp(SAVEDISP_PAGE1);
-				if ( shift ) return 0x10; else return '/';
-				break;
-
-			case KEY_CTRL_LEFT:
-				if ( (*select) < 5*12 )       { (*select)=16*12; break; }
-				else if ( (*select) < 10*12 ) { (*select)= 0*12; break; }
-				else if ( (*select) < 14*12 ) { (*select)= 5*12; break; }
-				else if ( (*select) < 16*12 ) { (*select)=10*12; break; }
-				else                          { (*select)=14*12; break; }
-				break;
-			case KEY_CTRL_RIGHT:
-				if ( (*select) < 5*12 )       { (*select)= 5*12; break; }
-				else if ( (*select) < 10*12 ) { (*select)=10*12; break; }
-				else if ( (*select) < 14*12 ) { (*select)=14*12; break; }
-				else if ( (*select) < 16*12 ) { (*select)=16*12; break; }
-				else                          { (*select)= 0*12; break; }
-				break;
-			case KEY_CTRL_UP:
-			case KEY_CTRL_PAGEUP:
-				(*select)-=12;
-				if ( *select < 0 ) *select = opNum;
-				break;
-			case KEY_CTRL_DOWN:
-			case KEY_CTRL_PAGEDOWN:
-				(*select)+=12;
-				if ( *select >= opNum ) *select =0;
-				break;
-			case KEY_CHAR_1:
-			case KEY_CHAR_U:
-				n=0;
-				cont=0;
-				break;
-			case KEY_CHAR_2:
-			case KEY_CHAR_V:
-				n=1;
-				cont=0;
-				break;
-			case KEY_CHAR_3:
-			case KEY_CHAR_W:
-				n=2;
-				cont=0;
-				break;
-			case KEY_CHAR_4:
-			case KEY_CHAR_P:
-				n=3;
-				cont=0;
-				break;
-			case KEY_CHAR_5:
-			case KEY_CHAR_Q:
-				n=4;
-				cont=0;
-				break;
-			case KEY_CHAR_6:
-			case KEY_CHAR_R:
-				n=5;
-				cont=0;
-				break;
-			case KEY_CHAR_7:
-			case KEY_CHAR_M:
-				n=6;
-				cont=0;
-				break;
-			case KEY_CHAR_8:
-			case KEY_CHAR_N:
-				n=7;
-				cont=0;
-				break;
-			case KEY_CHAR_9:
-			case KEY_CHAR_O:
-				n=8;
-				cont=0;
-				break;
-			case KEY_CHAR_0:
-			case KEY_CHAR_Z:
-				n=9;
-				cont=0;
-				break;
-			case KEY_CHAR_DP:
-			case KEY_CHAR_SPACE:
-				n=10;
-				cont=0;
-				break;
-			case KEY_CHAR_EXP:
-			case KEY_CHAR_DQUATE:
-				n=11;
-				cont=0;
-				break;
-			case KEY_CTRL_SHIFT:
-//			case KEY_CTRL_OPTN:
-//			case KEY_CTRL_VARS:
-				shift=1-shift;
-				break;
-			default:
-				break;
-		}
-	}
-
-	RestoreDisp(SAVEDISP_PAGE1);
-//	Bdisp_PutDisp_DD();
-
-	i=oplist[(*select)+n]; if (i==0xFFFFFFFF ) i=0;
-	return i;
-}
-
-							
-const short oplistCMD[]={	
+const short oplistCMD[]={		// 5800P like
 //											0	STD
 		0x3F,	// ?			1
 		0x0E,	// ->			2
@@ -1356,7 +1140,7 @@ const short oplistCMD[]={
 		0x25,	// %	
 
 //											16	EX
-		0x7F46,	// Dim	
+		0xF90F,	// AliasVar
 		0x7F58,	// ElemSize(
 		0x7F59,	// ColSize(
 		0x7F5A,	// RowSize(
@@ -1441,9 +1225,250 @@ const short oplistCMD[]={
 
 		0};
 
+void FkeyRel(){
+	Fkey_DISPR( 0, " = ");
+	Fkey_DISPR( 1, " \x11 ");
+	Fkey_DISPR( 2, " > ");
+	Fkey_DISPR( 3, " < ");
+	Fkey_DISPR( 4, " \x12 ");
+	Fkey_DISPR( 5, " \x10 ");
+}
+
+#define CMD_STD  0
+#define CMD_GR   5
+#define CMD_FN  10
+#define CMD_STR 14
+#define CMD_EX  16
+
+int SelectOpcode5800P() {
+	int *select=&selectCMD;
+	short *oplist=oplistCMD;
+	int opNum=0 ;
+	char buffer[22];
+	char tmpbuf[18];
+	unsigned int key;
+	int	cont=1;
+	int i,j,y,n;
+	int seltop;
+	int shift=0;
+
+	while ( oplist[opNum++] ) ;
+	opNum-=2;
+	seltop=*select;
+
+	Cursor_SetFlashMode(0); 		// cursor flashing off
+
+	SaveDisp(SAVEDISP_PAGE1);
+//	Bdisp_AllClr_DDVRAM();
+	
+//	PopUpWin(6);
+
+	while (cont) {
+		Bdisp_AllClr_VRAM();
+		(*select)=(*select)/12*12;
+//		locate(1,1); Print((unsigned char *)"== Command Select ==");
+		locate(1,1); Print((unsigned char *)"==STD GR FN STR EX==");
+		if ( (*select) < CMD_GR*12 )       { locate( 3,1); PrintRev((unsigned char *)"STD"); }
+		else if ( (*select) < CMD_FN *12 ) { locate( 7,1); PrintRev((unsigned char *)"GR"); }
+		else if ( (*select) < CMD_STR*12 ) { locate(10,1); PrintRev((unsigned char *)"FN"); }
+		else if ( (*select) < CMD_EX *12 ) { locate(13,1); PrintRev((unsigned char *)"STR"); }
+		else                               { locate(17,1); PrintRev((unsigned char *)"EX"); }
+		
+		for ( i=0; i<12; i++ ) {
+			n=oplist[(*select)+i];
+			tmpbuf[0]='\0'; 
+			if ( n == 0xFFFF ) n=' ';
+			else CB_OpcodeToStr( n, tmpbuf ) ; // SYSCALL
+			tmpbuf[8]='\0'; 
+			DMS_Opcode( tmpbuf, n);
+			n=i+1; if (n>9) n=0;
+			j=0; if ( tmpbuf[0]==' ' ) j++;
+			if ( i< 10 ) sprintf(buffer,"%d:%-9s",n,tmpbuf+j ) ;
+			if ( i==10 ) sprintf(buffer,".:%-9s",tmpbuf+j ) ;
+			if ( i==11 ) sprintf(buffer,"\x0F:%-9s",tmpbuf+j ) ;
+			locate(0+(i%2)*12,2+i/2); 
+			Print((unsigned char *)buffer);
+			if ( i==11 ) { locate(0+(i%2)*12,2+i/2); Print((unsigned char *)"\x0F"); }
+		}
+		if ( shift ) {
+			Fkey_DISPR( 0, " = ");
+			Fkey_DISPR( 1, " \x11 ");
+			Fkey_DISPR( 2, " > ");
+			Fkey_DISPR( 3, " < ");
+			Fkey_DISPR( 4, " \x12 ");
+			Fkey_DISPR( 5, " \x10 ");
+		} else {
+			Fkey_DISPR( 0, " ? ");
+			Fkey_DISPR( 1, " \x0C ");
+			Fkey_DISPR( 2, " : ");
+			Fkey_DISPR( 3, " \x13 ");
+			Fkey_DISPR( 4, " ' ");
+			Fkey_DISPR( 5, " / ");
+		}
+		Bdisp_PutDisp_DD();	
+		
+		y = ((*select)-seltop) + 1 ;
+//		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
+		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
+		switch (key) {
+			case KEY_CTRL_EXIT:
+			case KEY_CTRL_QUIT:
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0;
+			case KEY_CTRL_EXE:
+				cont=0;
+				break;
+		
+			case KEY_CTRL_F1:	// ?
+				RestoreDisp(SAVEDISP_PAGE1);
+				if ( shift ) return '='; else return '?';
+				break;
+			case KEY_CTRL_F2:	// dsps
+				RestoreDisp(SAVEDISP_PAGE1);
+				if ( shift ) return 0x11; else return 0x0C;
+				break;
+			case KEY_CTRL_F3:	// :
+				RestoreDisp(SAVEDISP_PAGE1);
+				if ( shift ) return '>'; else return ':';
+				break;
+			case KEY_CTRL_F4:	// '
+				RestoreDisp(SAVEDISP_PAGE1);
+				if ( shift ) return '<'; else return 0x13;
+				break;
+			case KEY_CTRL_F5:	// =>
+				RestoreDisp(SAVEDISP_PAGE1);
+				if ( shift ) return 0x12; else return 0x27;
+				break;
+			case KEY_CTRL_F6:	// !=
+				RestoreDisp(SAVEDISP_PAGE1);
+				if ( shift ) return 0x10; else return '/';
+				break;
+
+			case KEY_CTRL_LEFT:
+				if ( (*select) < CMD_GR*12 )       { (*select)=CMD_EX *12; break; }
+				else if ( (*select) < CMD_FN *12 ) { (*select)=CMD_STD*12; break; }
+				else if ( (*select) < CMD_STR*12 ) { (*select)=CMD_GR *12; break; }
+				else if ( (*select) < CMD_EX *12 ) { (*select)=CMD_FN *12; break; }
+				else                               { (*select)=CMD_STR*12; break; }
+				break;
+			case KEY_CTRL_RIGHT:
+				if ( (*select) < CMD_GR*12 )       { (*select)=CMD_GR *12; break; }
+				else if ( (*select) < CMD_FN*12 )  { (*select)=CMD_FN *12; break; }
+				else if ( (*select) < CMD_STR*12 ) { (*select)=CMD_STR*12; break; }
+				else if ( (*select) < CMD_EX*12 )  { (*select)=CMD_EX *12; break; }
+				else                               { (*select)=CMD_STD*12; break; }
+				break;
+			case KEY_CTRL_UP:
+			case KEY_CTRL_PAGEUP:
+				(*select)-=12;
+				if ( *select < 0 ) *select = opNum;
+				break;
+			case KEY_CTRL_DOWN:
+			case KEY_CTRL_PAGEDOWN:
+				(*select)+=12;
+				if ( *select >= opNum ) *select =0;
+				break;
+			case KEY_CHAR_1:
+			case KEY_CHAR_U:
+				n=0;
+				cont=0;
+				break;
+			case KEY_CHAR_2:
+			case KEY_CHAR_V:
+				n=1;
+				cont=0;
+				break;
+			case KEY_CHAR_3:
+			case KEY_CHAR_W:
+				n=2;
+				cont=0;
+				break;
+			case KEY_CHAR_4:
+			case KEY_CHAR_P:
+				n=3;
+				cont=0;
+				break;
+			case KEY_CHAR_5:
+			case KEY_CHAR_Q:
+				n=4;
+				cont=0;
+				break;
+			case KEY_CHAR_6:
+			case KEY_CHAR_R:
+				n=5;
+				cont=0;
+				break;
+			case KEY_CHAR_7:
+			case KEY_CHAR_M:
+				n=6;
+				cont=0;
+				break;
+			case KEY_CHAR_8:
+			case KEY_CHAR_N:
+				n=7;
+				cont=0;
+				break;
+			case KEY_CHAR_9:
+			case KEY_CHAR_O:
+				n=8;
+				cont=0;
+				break;
+			case KEY_CHAR_0:
+			case KEY_CHAR_Z:
+				n=9;
+				cont=0;
+				break;
+			case KEY_CHAR_DP:
+			case KEY_CHAR_SPACE:
+				n=10;
+				cont=0;
+				break;
+			case KEY_CHAR_EXP:
+			case KEY_CHAR_DQUATE:
+				n=11;
+				cont=0;
+				break;
+			case KEY_CTRL_SHIFT:
+//			case KEY_CTRL_OPTN:
+//			case KEY_CTRL_VARS:
+				shift=1-shift;
+				break;
+			default:
+				break;
+		}
+	}
+
+	RestoreDisp(SAVEDISP_PAGE1);
+//	Bdisp_PutDisp_DD();
+
+	i=oplist[(*select)+n]; if (i==0xFFFFFFFF ) i=0;
+	return i;
+}
+
 
 //----------------------------------------------------------------------------------------------
 
+int GetOpcodeLen( char *SRC, int ptr, int *opcode ){
+	*opcode=SRC[ptr];
+	switch ( *opcode ) {
+		case 0x00:		// <EOF>
+			return 0 ;
+			break;
+		case 0x7F:		// 
+		case 0xFFFFFFF7:		// 
+		case 0xFFFFFFF9:		// 
+		case 0xFFFFFFE5:		// 
+		case 0xFFFFFFE6:		// 
+		case 0xFFFFFFE7:		// 
+		case 0xFFFFFFFF:	// 
+			*opcode= ((unsigned char)(*opcode)<<8)+(unsigned char)SRC[ptr+1] ;
+			return 2;
+			break;
+	}
+	return 1 ;
+}
 int OpcodeLen( int opcode ){
 	switch ( (opcode&0xFF00) >> 8 ) {
 		case 0x7F:		// 
@@ -1458,15 +1483,29 @@ int OpcodeLen( int opcode ){
 	}
 	return 1 ;
 }
+int GetOpcode( char *SRC, int ptr ){
+	int c=SRC[ptr];
+	switch ( c ) {
+		case 0x00:		// <EOF>
+			return 0 ;
+			break;
+		case 0x7F:		// 
+		case 0xFFFFFFF7:		// 
+		case 0xFFFFFFF9:		// 
+		case 0xFFFFFFE5:		// 
+		case 0xFFFFFFE6:		// 
+		case 0xFFFFFFE7:		// 
+		case 0xFFFFFFFF:	// 
+			return ((unsigned char)c<<8)+(unsigned char)SRC[ptr+1];
+			break;
+	}
+	return (unsigned char)c ;
+}
 
 int OpcodeStrlen(int c) {
 	char tmpbuf[18];
-	int len;
-	unsigned short opcode;
-		opcode = c & 0xFFFF ;
-		CB_OpcodeToStr( opcode, tmpbuf ) ;	// SYSCALL
-		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
-	return len;
+	CB_OpcodeToStr( c & 0xFFFF, tmpbuf ) ;		// SYSCALL+
+	return CB_MB_ElementCount( tmpbuf ) ;		// SYSCALL
 }
 
 int OpcodeStrLenBuf(char *SRC, int offset) {
@@ -1489,25 +1528,6 @@ int OpcodeStrLenBuf(char *SRC, int offset) {
 						break;
 		}
 		return OpcodeStrlen( opcode ) ;
-}
-
-int GetOpcode( char *SRC, int ptr ){
-	int c=SRC[ptr];
-	switch ( c ) {
-		case 0x00:		// <EOF>
-			return 0 ;
-			break;
-		case 0x7F:		// 
-		case 0xFFFFFFF7:		// 
-		case 0xFFFFFFF9:		// 
-		case 0xFFFFFFE5:		// 
-		case 0xFFFFFFE6:		// 
-		case 0xFFFFFFE7:		// 
-		case 0xFFFFFFFF:	// 
-			return ((unsigned char)c<<8)+(unsigned char)SRC[ptr+1];
-			break;
-	}
-	return (unsigned char)c ;
 }
 
 
@@ -1659,6 +1679,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7FC, "PutDispDD" }, 
 	{ 0xF7FD, "FKeyMenu(" }, 
 	{ 0xF7FE, "BackLight " }, 
+	{ 0xF90F, "AliasVar ",}, 
 	{ 0xF930, "StrJoin(" }, 		// SDK emu not support
 	{ 0xF931, "StrLen(" }, 			// SDK emu not support
 	{ 0xF932, "StrCmp(" }, 			// SDK emu not support
