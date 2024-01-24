@@ -386,7 +386,7 @@ unsigned int GWait( int exit_cancel ) {
 
 
 int CB_Disp( char *SRC ){		// Disp command
-	char buffer[64];
+	char buffer[CB_StrBufferMax];
 	int c;
 	double value;
 	
@@ -395,7 +395,7 @@ int CB_Disp( char *SRC ){		// Disp command
 	
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, 63 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 	} else {	// expression
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
@@ -536,7 +536,7 @@ int CB_LocateMode( char *SRC) {
 }
 
 void CB_Locate( char *SRC ){
-	char buffer[64];
+	char buffer[CB_StrBufferMax];
 	int c;
 	int lx,ly;
 	double value;
@@ -557,7 +557,7 @@ void CB_Locate( char *SRC ){
 	
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, 63 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 	} else {	// expression
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, 22-lx,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
@@ -587,7 +587,7 @@ void CB_TextOprand( char *SRC, int *py, int *px) {
 }
 void CB_Text( char *SRC ) { //	Text
 	unsigned int key;
-	char buffer[128];
+	char buffer[CB_StrBufferMax];
 	int c;
 	int px,py,d;
 	double value;
@@ -604,7 +604,7 @@ void CB_Text( char *SRC ) { //	Text
 	if ( ( c == 0xFFFFFF87 )||( c == 0xFFFFFF99 ) ) { ExecPtr++; kanamini=0; }
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, 127 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 	} else {	// expression
 		d=(128-px)/4;
 		if (d>24) d=24;	// digit max
@@ -631,7 +631,7 @@ void CB_Text( char *SRC ) { //	Text
 }
 //-----------------------------------------------------------------------------
 void CB_LocateYX( char *SRC ){
-	char buffer[64];
+	char buffer[CB_StrBufferMax];
 	int c;
 	int px,py,d;
 	double value;
@@ -646,7 +646,7 @@ void CB_LocateYX( char *SRC ){
 	ExecPtr++;
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, 63 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 	} else {	// expression
 		d=(128-px)/6;
 		if (d>21) d=21;	// digit max
