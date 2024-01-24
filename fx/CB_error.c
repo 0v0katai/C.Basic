@@ -13,6 +13,7 @@
 //-----------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int ErrorPtr=0;		// Error ptr
+int ErrorProg=0;	// Error Prog
 int ErrorNo;		// Error No
 //----------------------------------------------------------------------------------------------
 
@@ -111,6 +112,12 @@ void CB_ErrMsg(int ErrNo) {
 		case ArraySizeERR:
 			ERROR("Illegal Ary size");
 			break;
+		case NotfoundProgERR:
+			ERROR("Not found Prog");
+			break;
+		case TooManyProgERR:
+			ERROR("Too many SubProg");
+			break;
 		default:
 			break;
 	}
@@ -121,32 +128,8 @@ void CB_Error(int ErrNo) { // error
 	if ( ErrorNo ) return ;
 	ErrorNo=ErrNo;
 	ErrorPtr=ExecPtr;
+	ErrorProg=ProgNo;
 	if ( ErrNo==MathERR ) ErrorPtr--;
 }
 
-//----------------------------------------------------------------------------------------------
-
-void CB_BreakStop() {
-	unsigned int key=1;
-	char buf[22];
-
-	CB_SelectTextDD();	// Select Text Screen
-	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(4);
-	locate(9,3); Print((unsigned char *)"Break");
-	locate(6,5); Print((unsigned char *) "Press:[EXIT]");
-	Bdisp_PutDisp_DD();
-	
-	KeyRecover(); 
-	while ( KeyCheckAC() ) ;
-	while ( 1 ) {
-		GetKey(&key);
-		if ( key == KEY_CTRL_EXIT  ) break ;
-		if ( key == KEY_CTRL_AC    ) break ;
-		if ( key == KEY_CTRL_RIGHT ) break ;
-		if ( key == KEY_CTRL_LEFT  ) break ;
-	}
-	RestoreDisp(SAVEDISP_PAGE1);
-	Bdisp_PutDisp_DD();
-}
 

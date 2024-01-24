@@ -32,7 +32,8 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
-//int BusyInd     = 1;	// BusyInd=0: running indicator off,  BusyInd=1: on
+int CB_INTDefault=0;	// default mode  0:normal  1: integer mode
+int CB_INT=0;			// current mode  0:normal  1: integer mode
 
 int	DrawType    = 0;	// 0:connect  1:Plot
 int	Coord       = 1;	// 0:off 1:on
@@ -119,6 +120,12 @@ void RestoreGVRAM(){
 	Bdisp_WriteGraph_VRAM(&Gpict);
 }
 //----------------------------------------------------------------------------------------------
+void CB_SaveTextVRAM() {
+	SaveDisp(SAVEDISP_PAGE2);		// ------ SaveDisp2 Text screen
+}	
+void CB_RestoreTextVRAM() {
+	RestoreDisp(SAVEDISP_PAGE2);		// ------ RestoreDisp2 Text screen
+}	
 void CB_SelectTextVRAM() {
 	if ( ScreenMode == 0 ) return;
 	SaveGVRAM();		// ------ Save Graphic screen 
@@ -130,6 +137,12 @@ void CB_SelectTextDD() {
 	CB_SelectTextVRAM();
 	Bdisp_PutDisp_DD();
 }
+void CB_SaveGraphVRAM() {
+	SaveGVRAM();		// ------ Save Graphic screen 
+}	
+void CB_RestoreGraphVRAM() {
+	RestoreGVRAM();		// ------ Restore Graphic screen
+}	
 void CB_SelectGraphVRAM() {
 	if ( ScreenMode == 1 ) return;
 	SaveDisp(SAVEDISP_PAGE2);		// ------ SaveDisp2 Text screen
@@ -940,6 +953,17 @@ int CB_Disps( unsigned char *SRC ,int dspflag){
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
 		CursorX=21;
 		scrmode=ScreenMode;
+	} else
+	if ( dspflag == 3 ) { 	// Matrix display
+		c=SRC[ExecPtr-2];
+		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+			CB_SelectTextVRAM();	// Select Text Screen
+			CB_SaveTextVRAM();
+			EditMatrix( c -'A' );
+			CB_RestoreTextVRAM();	// Resotre Graphic screen
+			if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
+			scrmode=ScreenMode;
+		}
 	}
 	if (scrmode) {
 		CB_SelectTextVRAM();	// Select Text Screen
@@ -987,6 +1011,15 @@ void CB_end( unsigned char *SRC, int dspflag ){
 			sprintGR(buffer, CB_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
 		CursorX=21;
+	} else
+	if ( dspflag == 3 ) { 	// Matrix display
+		c=SRC[ExecPtr-2];
+		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+			CB_SaveTextVRAM();
+			EditMatrix( c -'A' );
+			CB_RestoreTextVRAM();	// Resotre Graphic screen
+			CB_Done();
+		}
 	}
 	if ( dspflag == 0 ) CB_Done();
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -2336,7 +2369,8 @@ void CB_Prog( unsigned char *SRC ) { //	Prog "..."
 	ProgNo_bk = ProgNo;
 	
 	ProgNo = CB_SearchProg( buffer );
-	if ( ProgNo < 0 ) { ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
+	if ( ProgNo < 0 ) { ProgNo=ProgNo_bk; ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
+
 	src = ProgfileAdrs[ProgNo];
 	SRC = src + 0x56 ;
 	ExecPtr=0;
@@ -2344,8 +2378,10 @@ void CB_Prog( unsigned char *SRC ) { //	Prog "..."
 	ProgEntryN++;
 	
 	stat=CB_interpreter_sub( SRC ) ;
-	
-	if ( stat > 0 ) return ;	// error or break
+	if ( stat ) {
+		if ( ErrorNo ) return ;			// error
+		else if ( BreakPtr > 0 ) return ;	// break
+	}
 	
 	ProgEntryN--;
 	SRC     = StackProgSRC ;
@@ -2563,7 +2599,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 
 	while (cont) {
 		if ( ErrorNo  ) return ErrorPtr;
-		if ( BreakPtr ) { CB_BreakStop(); return BreakPtr; }
+		if ( BreakPtr ) { if ( CB_BreakStop() ) return -1 ; }
 		c=SRC[ExecPtr++];
 		if ( c==':'  ) { c=SRC[ExecPtr++]; if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
 		if ( c==0x0D ) { while ( c==0x0D ) c=SRC[ExecPtr++];
@@ -2780,9 +2816,9 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						break;
 					default:
 						ExecPtr-=2;
+						dspflag=2;
 						if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 						else		CB_CurrentValue    = CB_Eval( SRC );
-						dspflag=2;
 				}
 				break;
 				
@@ -2794,9 +2830,9 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						break;
 					default:
 						ExecPtr-=2;
+						dspflag=2;
 						if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 						else		CB_CurrentValue    = CB_Eval( SRC );
-						dspflag=2;
 				}
 				break;
 				
@@ -2820,9 +2856,9 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						break;
 					default:
 						ExecPtr-=2;
+						dspflag=2;
 						if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 						else		CB_CurrentValue    = CB_Eval( SRC );
-						dspflag=2;
 				}
 				break;
 				
@@ -2919,21 +2955,21 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				break;
 				
 			case 0xFB:	//  P(  Unary Eval operation
+				dspflag=2;
 				if (CB_INT)	CBint_CurrentValue = CBint_UnaryEval(SRC);
 				else		CB_CurrentValue    = CB_UnaryEval(SRC);
-				dspflag=2;
 				break;
 			case 0xFC:	//  Q(  binaly Eval operation
+				dspflag=2;
 				if (CB_INT)	CBint_CurrentValue = CBint_BinaryEval(SRC);
 				else		CB_CurrentValue    = CB_BinaryEval(SRC);
-				dspflag=2;
 				break;
 		
 			default:
+				dspflag=2;
 				ExecPtr--;
 				if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 				else		CB_CurrentValue    = CB_Eval( SRC );
-				dspflag=2;
 				break;
 		}
 		c=SRC[ExecPtr];
@@ -2960,6 +2996,7 @@ int CB_interpreter( unsigned char *SRC ) {
 	unsigned int c;
 	int stat;
 
+	CB_INT=CB_INTDefault;
 	CB_TicksStart=RTC_GetTicks();	// 
 	srand( CB_TicksStart ) ;	// rand seed
 	CB_ClrText(SRC);

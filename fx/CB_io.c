@@ -143,11 +143,33 @@ void ErrorMSG(char*buffer,int err){
 	locate(3,2); Print((unsigned char *)buffer);
 	locate(3,4); Print((unsigned char *)buf);
 	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
-//	Bdisp_PutDisp_DD();
 
 	GetKey(&key);	
 	RestoreDisp(SAVEDISP_PAGE1);
-//	Bdisp_PutDisp_DD();
+}
+void ErrorMSGstr(char*buffer,char*buffer2){
+	unsigned int key;
+	char buf[20];
+
+	SaveDisp(SAVEDISP_PAGE1);
+	PopUpWin(5);
+	locate(3,2); Print((unsigned char *)buffer);
+	locate(3,4); Print((unsigned char *)buffer2);
+	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
+
+	GetKey(&key);	
+	RestoreDisp(SAVEDISP_PAGE1);
+}
+void ErrorMSGstr1(char*buffer){
+	unsigned int key;
+
+	SaveDisp(SAVEDISP_PAGE1);
+	PopUpWin(4);
+	locate(3,3); Print((unsigned char *)buffer);
+	locate(3,5); Print((unsigned char *) "   Press:[EXIT]");
+
+	GetKey(&key);	
+	RestoreDisp(SAVEDISP_PAGE1);
 }
 
 void ErrorADRS(char*buffer,int err){
@@ -159,11 +181,9 @@ void ErrorADRS(char*buffer,int err){
 	locate(3,2); Print((unsigned char *)buffer);
 	Hex8PrintXY(3,4,"addres:",err);
 	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
-//	Bdisp_PutDisp_DD();
 
 	GetKey(&key);	
 	RestoreDisp(SAVEDISP_PAGE1);
-//	Bdisp_PutDisp_DD();
 }
 
 void MSG1(char*buffer1){

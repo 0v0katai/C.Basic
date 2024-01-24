@@ -80,7 +80,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 				if ( ( 'A' <= c )&&( c <= 'Z' ) ) {
 					reg=c-'A';
 					ExecPtr++ ;
-					if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
+					if ( SRC[ExecPtr] != '[' ) { dspflag=3; return 1; }	// Mat A
 					c = SRC[++ExecPtr];
 					if ( SRC[ExecPtr+1] == ',' ) {
 						ExecPtr++;

@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.60.00 
+ Casio Basic Interpreter (& Compiler) ver 0.70.00 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -90,23 +90,33 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				LoadFileSDK( bas_src3 );
 				LoadFileSDK( bas_src4 );
 				LoadFileSDK( bas_src5 );
+				Contflag=0;
 				EditRun(2);		// Program listing & edit
 				run=0;
 				SaveConfig();
 				break;
 			case KEY_CTRL_EXE:
 			case KEY_CTRL_F1:
-				if ( LoadProgfile( filename ) ) break;
-				EditRun(1);			// Program run
+				Contflag=0;
+				ExecPtr=0;
+				i=LoadProgfile( filename ) ;
+				if ( i==0 )	EditRun(1);			// Program run
+				else
+				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				SaveConfig();
 				break;
 			case KEY_CTRL_F2:
-				if ( LoadProgfile( filename ) ) break;
-				EditRun(2);			// Program listing & edit
+				Contflag=0;
+				ExecPtr=0;
+				i=LoadProgfile( filename ) ;
+				if ( i==0 )	EditRun(2);			// Program listing & edit
+				else
+				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				SaveConfig();
 				break;
 			case KEY_CTRL_F3:
 				if ( NewProg() ) break ;
+				Contflag=0;
 				EditRun(2);			// Program listing & edit
 				SaveConfig();
 				break;

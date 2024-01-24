@@ -1453,7 +1453,7 @@ int SetupG(int select){		// ----------- Setup
 		}
 		if ( ( scrl >=6 ) && (13-scrl > 0 ) ){
 			locate( 1,13-scrl); Print((unsigned char*)"Execute mode:");
-			locate(14,13-scrl); Print((unsigned char*)mode[CB_INT]);
+			locate(14,13-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 
 		y = select-scrl;
@@ -1567,7 +1567,7 @@ int SetupG(int select){		// ----------- Setup
 						MatXYmode = 0 ; // m,n
 						break;
 					case 12: // CB mode
-						CB_INT = 0 ; // normal
+						CB_INTDefault = 0 ; // normal
 						break;
 					default:
 						break;
@@ -1614,7 +1614,7 @@ int SetupG(int select){		// ----------- Setup
 						MatXYmode = 1 ; // x,y
 						break;
 					case 12: // CB mode
-						CB_INT = 1 ; // int
+						CB_INTDefault = 1 ; // int
 						break;
 					default:
 						break;

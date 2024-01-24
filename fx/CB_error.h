@@ -1,5 +1,6 @@
 
 //------------------------------------------------------------------------------
+extern int ErrorProg;
 extern int ErrorPtr;
 extern int ErrorNo;
 
@@ -50,11 +51,11 @@ extern int ErrorNo;
 #define StringTooLongERR 43
 #define NoMatrixArrayERR 44
 #define ArraySizeERR 45
+#define NotfoundProgERR 46
+#define TooManyProgERR 47
 
 //------------------------------------------------------------------------------
 void ERROR(char *buffer) ;
 void CB_ErrMsg(int ErrNo) ;
 void CB_Error(int ErrNo) ;
-
-void CB_BreakStop() ;
 

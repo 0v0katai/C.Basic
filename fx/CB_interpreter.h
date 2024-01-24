@@ -1,7 +1,8 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
-//extern int	BusyInd   ;	// BusyInd=0: running indicator off,  BusyInd=1: on
+extern int CB_INTDefault;	// default mode  0:normal  1: integer mode
+extern int CB_INT;		// current mode  0:normal  1: integer mode
 
 extern int	DrawType  ;	// 0:connect  1:Plot
 extern int	Coord     ;	// 0:off 1:on
@@ -131,9 +132,14 @@ extern int BreakCheck;	// Break Stop on/off
 
 extern int dspflag;
 extern int MatXYmode;
+
 //------------------------------------------------------------------------------
+void CB_SaveTextVRAM() ;
+void CB_RestoreTextVRAM() ;
 void CB_SelectTextVRAM() ;
 void CB_SelectTextDD() ;
+void CB_SaveGraphVRAM() ;
+void CB_RestoreGraphVRAM() ;
 void CB_SelectGraphVRAM() ;
 void CB_SelectGraphDD() ;
 void Scrl_Y();
