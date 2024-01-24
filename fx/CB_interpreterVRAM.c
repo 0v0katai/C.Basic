@@ -1549,7 +1549,7 @@ int CB_Sci( char *SRC ){
 }
 int CB_Norm( char *SRC ){
 	int tmp;
-	if ( EvalEndCheck(SRC[ExecPtr]) ) { 
+	if ( EvalEndCheck(SRC[ExecPtr]) == 0 ) { 
 		tmp=CB_EvalInt( SRC );
 		if ( tmp < 0 ) if ( CB_Round.MODE == Norm ) return CB_Round.DIGIT; else return -1;
 		if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error

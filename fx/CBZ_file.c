@@ -1778,18 +1778,22 @@ void Restorefolder() {
 
 
 void SetFullfilenameBin( char *fname, char *sname, char *extname ) {
+	char sname2[32];
+	char extname2[32];
 	char *cptr;
 	int i;
-	cptr=strstr(sname,".");
+	strncpy( sname2,   sname,   31 ); sname2[31]='\0';
+	strncpy( extname2, extname, 31 ); extname2[31]='\0';
+	cptr=(char*)strstr(sname2,".");
 	if ( cptr!=NULL ) {
-		strncpy( extname, cptr+1, 3 );
+		strncpy( extname2, cptr+1, 3 );
 		*cptr='\0';
 	}
-	extname[3]='\0';
+	extname2[3]='\0';
 	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
+		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname2, extname2 );
 	else
-		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
+		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname2, extname2 );
 }
 
 int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
@@ -2461,18 +2465,18 @@ int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
