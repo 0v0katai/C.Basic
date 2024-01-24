@@ -242,7 +242,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x04:	// For
 						if (CB_INT)	CBint_For(SRC, &StackFor, &CurrentStruct );
 						else		CB_For(SRC, &StackFor, &CurrentStruct );
-						ClrCahche();
+//						ClrCahche();
 						break;
 					case 0x07:	// Next
 						if (CB_INT)	CBint_Next(SRC, &StackFor, &CurrentStruct );
@@ -250,14 +250,14 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x08:	// While
 						CB_While(SRC, &StackWhileDo, &CurrentStruct );
-						ClrCahche();
+//						ClrCahche();
 						break;
 					case 0x09:	// WhileEnd
 						CB_WhileEnd(SRC, &StackWhileDo, &CurrentStruct );
 						break;
 					case 0x0A:	// Do
 						CB_Do(SRC, &StackWhileDo, &CurrentStruct );
-						ClrCahche();
+//						ClrCahche();
 						break;
 					case 0x0B:	// LpWhile
 						CB_LpWhile(SRC, &StackWhileDo, &CurrentStruct );
@@ -796,9 +796,9 @@ int CB_interpreter( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_quot( char *SRC ){ // skip "..."

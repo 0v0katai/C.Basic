@@ -28,7 +28,7 @@ void * HiddenRAM(void);
 void * HiddenRAM_mallocMat( size_t size );
 void * HiddenRAM_mallocProg( size_t size );
 void HiddenRAM_freeProg( void *ptr );
-void HiddenRAM_freeMat( void *ptr );
+void HiddenRAM_freeMat( int reg );
 
 void CB_Print( int x, int y, const unsigned char *str);
 void CB_PrintRev( int x, int y, const unsigned char *str);
