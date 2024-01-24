@@ -194,8 +194,18 @@ void sprintGR( char* buffer, double num, int width, int align_mode, int round_mo
 void sprintG( char* buffer, double num, int width, int align_mode);
 
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode);
-unsigned int InputStr( int x, int y, int width,  char* buffer,      char SPC, int rev_mode);
+unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char SPC, int rev_mode) ;		// ABCDEF0123456789.(-)exp
 
+double InputNumD_fullsub(int x, int y, int width, double defaultNum ) ;
+double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) ;
+double InputNumD_full(int x, int y, int width, double defaultNum) ;
+double InputNumD_Char(int x, int y, int width, double defaultNum, char code) ;
+double InputNumD_replay(int x, int y, int width, double defaultNum) ;
+
+double InputNumD_CB(int x, int y, int width, int SPC, int REV, double defaultNum) ;		//  Basic Input
+double InputNumD_CB1(int x, int y, int width, int SPC, int REV, double defaultNum) ;		//  Basic Input 1
+double InputNumD_CB2(int x, int y, int width, int SPC, int REV, double defaultNum) ;		//  Basic Input 2
+	
 
 extern int CommandType;
 extern char CommandPage;

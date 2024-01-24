@@ -816,7 +816,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFF9:	// F9..
 			c = SRC[ExecPtr++];
 			switch ( c ) {
-				case 0x56:	// M_PixelTest(
+				case 0xFFFFFFC6:	// M_PixelTest(
 					return CB_ML_PixelTest( SRC );
 //				case 0x53:	// M_Contrast(
 //					return CB_ML_GetContrast( SRC );
