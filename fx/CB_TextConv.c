@@ -1362,6 +1362,7 @@ const tcnvopcodes ConvOpCodeStrList[] = {
 
 	{ 0xF7EC, "Default" }, 
 	{ 0xF7EE, "Save" }, 
+	{ 0x7F46, "Dim" },
 
 	{ 0, "" }
 };

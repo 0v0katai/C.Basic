@@ -663,8 +663,8 @@ char * loadFile( const char *name , int editMax)
 	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
 	if( buffer == NULL )
 	{
-		ErrorMSGfile( "Not enough memory", name, 0 );
-		CB_Error(FileERR); 
+		CB_Error(NotEnoughMemoryERR);
+		CB_ErrMsg( ErrorNo );
 		Bfile_CloseFile( handle );
 		return NULL;
 	}
@@ -1645,18 +1645,28 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 //					locate( 1, 4); PrintLine(" ",21);					//
 //					sprintf(buffer,"ptr=%08X",src);						//
 //					locate( 1, 4); Print(buffer); GetKey(&key);			//
-					if ( src == NULL ) { CB_Error(NotfoundProgERR); return ; }  // Not found Prog
-					else {
+					if ( ErrorNo ) {
+						ErrorPtr=ExecPtr;
+						ProgNo=progno;
+						ErrorProg=ProgNo;
+						return;
+					}
+					if ( src != NULL ) {
 						ProgfileAdrs[ProgEntryN]= src;
 						ProgfileMax[ProgEntryN]= SrcSize( src ) +EditMaxProg ;
 						ProgfileEdit[ProgEntryN]= 0;
 						ProgEntryN++;
-						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Memory error
+						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Too Many Prog error
 						StackProgPtr = ExecPtr;
 						CB_ProgEntry( src + 0x56  );		//
-						if ( ErrorNo==IfWithoutIfEndERR ) return ;
+						if ( ErrorNo == IfWithoutIfEndERR ) return ;
 						ExecPtr = StackProgPtr ;
-						if ( ErrorNo ) { ErrorPtr=StackProgPtr; ProgNo=progno; ErrorProg=ProgNo; return ;}
+//						if ( ErrorNo ) { 
+//							ErrorPtr=StackProgPtr;
+//							ProgNo=progno;
+//							ErrorProg=ProgNo;
+//							return ;
+//						}
 					}
 				}
 				break;

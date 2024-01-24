@@ -150,7 +150,7 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
 		MatAry[reg].Base        = base;						// Matrix array base
 		return 0;
 	}
-	if ( ( m<base ) || ( n<base ) ) { CB_Error(ArgumentERR); return ErrorNo; }	// Argument error
+	if ( ( m<1 ) || ( n<1 ) ) { CB_Error(ArgumentERR); return ErrorNo; }	// Argument error
 	if ( ElementSize>1 ) {
 			matsize=m*n*(ElementSize>>3);
 	} else {	// 1 bit matrix
@@ -1052,13 +1052,9 @@ int ElementSizeSelect( char *SRC, int reg, int *base ) {
 	return ElementSize;
 }
 
-void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) { 	// 1-
-	int c,d;
+void CB_MatrixInitsubNoMat( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) { 	// 1-
+	int c;
 	int base=MatBase;
-	c =SRC[ExecPtr];
-	d =SRC[ExecPtr+1];
-	if ( ( c != 0x7F ) || ( d !=0x40 ) ) { CB_Error(SyntaxERR); return; }  // no Mat  Syntax error
-	ExecPtr+=2;
 	c =SRC[ExecPtr];
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
@@ -1066,6 +1062,15 @@ void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize
 		if ( ElementSize<1 ) ElementSize=ElementSizeSelect( SRC, *reg , &base) & 0xFF;
 		DimMatrixSub( *reg, ElementSize, dimA, dimB, base);
 	} else { CB_Error(SyntaxERR); return; }  // Syntax error
+}
+void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) { 	// 1-
+	int c,d;
+	int base=MatBase;
+	c =SRC[ExecPtr];
+	d =SRC[ExecPtr+1];
+	if ( ( c != 0x7F ) || ( d !=0x40 ) ) { CB_Error(SyntaxERR); return; }  // no Mat  Syntax error
+	ExecPtr+=2;
+	CB_MatrixInitsubNoMat( SRC, &(*reg), dimA, dimB, ElementSize );
 }
 
 void CB_MatrixInit( char *SRC ) { //	{n,m}->Dim Mat A[.B][.W][.L][.F]

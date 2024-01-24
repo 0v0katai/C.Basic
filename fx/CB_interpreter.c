@@ -1682,6 +1682,17 @@ void CB_Store( char *SRC ){	// ->
 				if ( ErrorNo ) return ; // error
 				WriteMatrix( reg, dimA, dimB, CB_CurrentValue);
 			}
+		} else if ( c == 0x46 ) {	// Dim A
+				ExecPtr+=2;
+				if ( CB_CurrentValue ) 
+						CB_MatrixInitsubNoMat( SRC, &reg, CB_CurrentValue, 1, 0 );
+				else {
+					c = SRC[ExecPtr];
+					if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+						ExecPtr++;
+						DeleteMatrix( c-'A' );
+					}
+				}
 		} else if ( c == 0x00 ) {	// Xmin
 				ExecPtr+=2;
 				Xmin = CB_CurrentValue ;
@@ -1712,6 +1723,14 @@ void CB_Store( char *SRC ){	// ->
 				Yfct = CB_CurrentValue ;
 		}
 	} else
+	if ( c=='%' ) {
+		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
+		SetRtc( CB_CurrentValue );
+		i=RTC_GetTicks();
+		CB_TicksAdjust=i-CB_CurrentValue ;	// 
+		CB_TicksStart+=(i-1);	// 
+		skip_count=0;
+	} else
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
@@ -1720,14 +1739,6 @@ void CB_Store( char *SRC ){	// ->
 				Xdot = CB_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-	} else
-	if ( c=='%' ) {
-		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
-		SetRtc( CB_CurrentValue );
-		i=RTC_GetTicks();
-		CB_TicksAdjust=i-CB_CurrentValue ;	// 
-		CB_TicksStart+=(i-1);	// 
-		skip_count=0;
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 

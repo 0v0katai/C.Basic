@@ -125,8 +125,8 @@ void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 		(*dimA) = MatOperandIntSub( c );
 	} else
 	if ( d == 0xFFFFFF89 ) { 										// [a+1,
-		c=SRC[ExecPtr+3];
-		if ( ( c == ',' ) || ( c == ']' ) ) {
+		d=SRC[ExecPtr+3];
+		if ( ( d == ',' ) || ( d == ']' ) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandIntSub( c );
 			c=SRC[ExecPtr++];
@@ -134,8 +134,8 @@ void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 		} else goto L1;
 	} else
 	if ( d == 0xFFFFFF99 ) { 										// [a-1,
-		c=SRC[ExecPtr+3];
-		if ( ( c == ',' ) || ( c == ']' ) ) {
+		d=SRC[ExecPtr+3];
+		if ( ( d == ',' ) || ( d == ']' ) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandIntSub( c );
 			c=SRC[ExecPtr++];

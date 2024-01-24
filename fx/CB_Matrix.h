@@ -41,6 +41,7 @@ void EditMatrix(int reg);		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
 
 int ElementSizeSelect( char *SRC, int reg , int *base ) ;
+void CB_MatrixInitsubNoMat( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) ; 	// 1-
 void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) ; 	// 1-
 void CB_MatrixInit( char *SRC ) ; //	{n,m}->Dim Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2( char *SRC ) ; //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]

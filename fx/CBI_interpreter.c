@@ -120,6 +120,17 @@ void CBint_Store( char *SRC ){	// ->
 				if ( ErrorNo ) return ; // error
 				WriteMatrixInt( reg, dimA, dimB, CBint_CurrentValue);
 			}
+		} else if ( c == 0x46 ) {	// Dim A
+				ExecPtr+=2;
+				if ( CBint_CurrentValue ) 
+						CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
+				else {
+					c = SRC[ExecPtr];
+					if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+						ExecPtr++;
+						DeleteMatrix( c-'A' );
+					}
+				}
 		} else if ( c == 0x00 ) {	// Xmin
 				ExecPtr+=2;
 				Xmin = CBint_CurrentValue ;
@@ -150,6 +161,14 @@ void CBint_Store( char *SRC ){	// ->
 				Yfct = CBint_CurrentValue ;
 		}
 	} else
+	if ( c=='%' ) {
+		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
+		SetRtc( CBint_CurrentValue );
+		i=RTC_GetTicks();
+		CB_TicksAdjust=i-CBint_CurrentValue ;	// 
+		CB_TicksStart+=(i-1);	// 
+		skip_count=0;
+	} else
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
@@ -158,14 +177,6 @@ void CBint_Store( char *SRC ){	// ->
 				Xdot = CBint_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-	} else
-	if ( c=='%' ) {
-		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
-		SetRtc( CBint_CurrentValue );
-		i=RTC_GetTicks();
-		CB_TicksAdjust=i-CBint_CurrentValue ;	// 
-		CB_TicksStart+=(i-1);	// 
-		skip_count=0;
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
