@@ -483,6 +483,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			result = abs( EvalIntsub5( SRC ) );
 			return result ;
 		case 0xFFFFFFA6 :	// int
+		case 0xFFFFFFDE :	// intg
 			result = EvalIntsub5( SRC ) ;
 			return result ;
 		case 0xFFFFFFB6 :	// frac
@@ -708,6 +709,7 @@ int EvalIntsub7(char *SRC) {	//  7th Priority
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
 			case 0xFFFFFFB6 :	// frac
+			case 0xFFFFFFDE :	// intg
 			case 0xFFFFFF85 :	// ln
 			case 0xFFFFFF86 :	// sqr
 			case 0xFFFFFF95 :	// log10

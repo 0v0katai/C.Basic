@@ -287,12 +287,7 @@ void CB_Line( char *SRC ) ; //	Line
 void CB_Vertical( char *SRC ) ; //	Vertical
 void CB_Horizontal( char *SRC ) ; //	Horizontal
 void CB_Plot( char *SRC ) ; //	Plot
-void CB_PlotOn( char *SRC ) ; //	PlotOn
-void CB_PlotOff( char *SRC ) ; //	PlotOff
-void CB_PlotChg( char *SRC ) ; //	PlotChg
-void CB_PxlOn( char *SRC ) ; //	PxlOn
-void CB_PxlOff( char *SRC ) ; //	PxlOff
-void CB_PxlChg( char *SRC ) ; //	PxlChg
+void CB_PlotSub( char *SRC, int mode ); //	mode  1:PlotOn  0:PlotOff  2:PlotChg
 void CB_Circle( char *SRC ) ; //	Circle
 
 void CB_DrawGraph(  char *SRC );

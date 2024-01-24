@@ -176,8 +176,8 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
 		MatAry[reg].ElementSize = ElementSize;				// Matrix array Elementsize
 		MatAry[reg].Base        = base;						// Matrix array base
 	} else {
-		if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) free(MatAry[reg].Adrs);	// free
-		dptr = malloc( matsize );
+		if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat(MatAry[reg].Adrs);	// free
+		dptr = HiddenRAM_mallocMat( matsize );
 		if( dptr == NULL ) { CB_Error(NotEnoughMemoryERR); return ErrorNo; }	// Not enough memory error
 		MatAry[reg].SizeA       = m;						// Matrix array size
 		MatAry[reg].SizeB       = n;						// Matrix array size
@@ -233,7 +233,7 @@ void DeleteMatrix( int reg ) {
 	double *ptr;
 	if ( ( 0 <= reg ) && ( reg < MatAryMax ) ) {
 			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
-			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) free(ptr);
+			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat(ptr);
 			MatAry[reg].SizeA       = 0;				// Matrix array size
 			MatAry[reg].SizeB       = 0;				// Matrix array size
 			MatAry[reg].ElementSize = 0;				// Matrix array Elementsize
@@ -242,13 +242,14 @@ void DeleteMatrix( int reg ) {
 	} else {
 		for ( reg=0; reg<MatAryMax; reg++){
 			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
-			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) free(ptr);
+			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat(ptr);
 			MatAry[reg].SizeA       = 0;				// Matrix array size
 			MatAry[reg].SizeB       = 0;				// Matrix array size
 			MatAry[reg].ElementSize = 0;				// Matrix array Elementsize
 			MatAry[reg].Adrs        = NULL ;			// Matrix array ptr*
 			MatAry[reg].Maxbyte     = 0;				// Matrix array max byte
 		}
+		HiddenRAM_MatTopPtr = HiddenRAM_End;
 	}
 }
 
@@ -1331,6 +1332,8 @@ void CB_ClrMat( char *SRC ) { //	ClrMat A
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		DeleteMatrix( c-'A' );
+	} else {
+		DeleteMatrix(-1);	// ClrMat
 	}
 }
 
@@ -1885,9 +1888,9 @@ int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 /*
 int Dummy1_ElementSizeSelect( char *SRC, int reg, int *base ) {

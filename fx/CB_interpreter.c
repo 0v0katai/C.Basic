@@ -242,7 +242,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x04:	// For
 						if (CB_INT)	CBint_For(SRC, &StackFor, &CurrentStruct );
 						else		CB_For(SRC, &StackFor, &CurrentStruct );
-//						ClrCahche();
+						ClrCahche();
 						break;
 					case 0x07:	// Next
 						if (CB_INT)	CBint_Next(SRC, &StackFor, &CurrentStruct );
@@ -250,21 +250,20 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x08:	// While
 						CB_While(SRC, &StackWhileDo, &CurrentStruct );
-//						ClrCahche();
+						ClrCahche();
 						break;
 					case 0x09:	// WhileEnd
 						CB_WhileEnd(SRC, &StackWhileDo, &CurrentStruct );
 						break;
 					case 0x0A:	// Do
 						CB_Do(SRC, &StackWhileDo, &CurrentStruct );
-//						ClrCahche();
+						ClrCahche();
 						break;
 					case 0x0B:	// LpWhile
 						CB_LpWhile(SRC, &StackWhileDo, &CurrentStruct );
 						break;
 					case 0xFFFFFFEA:	// Switch
 						CB_Switch(SRC, &StackSwitch, &CurrentStruct, &CacheSwitch );
-//						CB_Switch(SRC, &StackSwitch, &CurrentStruct );
 						break;
 					case 0xFFFFFFEB:	// Case
 						CB_Case(SRC, &StackSwitch, &CurrentStruct );
@@ -300,32 +299,32 @@ int CB_interpreter_sub( char *SRC ) {
 						UseGraphic=99;
 						break;
 					case 0xFFFFFFAB:	// PxlOn
-						if (CB_INT)	CBint_PxlOn(SRC); else CB_PxlOn(SRC);
+						if (CB_INT)	CBint_PxlSub(SRC,1); else CB_PxlSub(SRC,1);
 						dspflag=0;
 						UseGraphic=99;
 						break;
 					case 0xFFFFFFAC:	// PxlOff
-						if (CB_INT)	CBint_PxlOff(SRC); else CB_PxlOff(SRC);
+						if (CB_INT)	CBint_PxlSub(SRC,0); else CB_PxlSub(SRC,0);
 						dspflag=0;
 						UseGraphic=99;
 						break;
 					case 0xFFFFFFAD:	// PxlChg
-						if (CB_INT)	CBint_PxlChg(SRC); else CB_PxlChg(SRC);
+						if (CB_INT)	CBint_PxlSub(SRC,2); else CB_PxlSub(SRC,2);
 						dspflag=0;
 						UseGraphic=99;
 						break;
 					case 0xFFFFFFA8:	// PlotOn
-						CB_PlotOn(SRC);
+						CB_PlotSub(SRC,1);
 						dspflag=0;
 						UseGraphic=99;
 						break;
 					case 0xFFFFFFA9:	// PlotOff
-						CB_PlotOff(SRC);
+						CB_PlotSub(SRC,0);
 						dspflag=0;
 						UseGraphic=99;
 						break;
 					case 0xFFFFFFAA:	// PlotChg
-						CB_PlotChg(SRC);
+						CB_PlotSub(SRC,2);
 						dspflag=0;
 						UseGraphic=99;
 						break;

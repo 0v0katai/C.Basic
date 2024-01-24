@@ -630,7 +630,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
 					else             { i=CB_INTDefault; j=MatBaseDefault; }
 							sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [Dbl#", j, "]");
-			} else 			sprintf(buffer, "==%-8s==%08X", buffer2, ProgfileAdrs[ProgNo]);
+			} else 			sprintf(buffer, "==%-8s==%08X", buffer2, SrcBase);
 			
 			locate (1,1); Print(    (unsigned char*)buffer );
 			if ( DebugMode >=1 ) // debug mode
@@ -1446,10 +1446,10 @@ int CB_BreakStop() {
 }
 
 //----------------------------------------------------------------------------------------------
-int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

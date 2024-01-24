@@ -41,6 +41,7 @@ int LoadFileSDK( char *src ) {	// test source to SDK
 	ProgfileMax[ProgEntryN]= SrcSize( buffer ) +EditMaxfree ;
 	ProgfileEdit[ProgEntryN]= 1;
 	ProgEntryN++;
+	memset( buffer+0x3C-8, 0x00,  8);		// set folder to header
 
 	return 0 ;
 }
@@ -172,18 +173,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				break;
 		}
 		
-//		for ( reg=0; reg<26; reg++){
-//			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
-//			if (ptr != NULL ) free(ptr);		
-//			MatAry[reg].SizeA=0;						// Matrix array size
-//			MatAry[reg].SizeB=0;						// Matrix array size
-//			MatAry[reg].Adrs =NULL ;					// Matrix array ptr*		
-//		}
 		for (i=ProgMax; i>=0; i--) {			// memory free
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
 			ptr=ProgfileAdrs[i];
 			if ( ptr != NULL ) 
-				free(ptr);
+				HiddenRAM_freeProg(ptr);
 			ProgfileAdrs[i]=NULL;
 		}
 		for (i=PictMax; i>=1; i--) {			// memory free
@@ -192,7 +186,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				free(ptr);
 			PictAry[i]=NULL;
 		}
-//		FileListfree();
 	}
 }
 

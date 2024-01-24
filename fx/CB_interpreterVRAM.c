@@ -726,6 +726,28 @@ void CB_Horizontal( char *SRC ) { //	Horizontal
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 	tmp_Style = -1;
 }
+//----------------------------------------------------------------------------------------------
+void CB_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn  0:PxlOff  2:PxlChg
+	double x,y;
+	int px,py;
+	if ( RangeErrorCK(SRC) ) return;
+	y = (EvalsubTop( SRC ));
+	py=y;
+	if ( ( y-floor(y) ) || ( (py)<MatBase ) || ( (py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	x = (EvalsubTop( SRC ));
+	px=x;
+	if ( ( x-floor(x) ) || ( (px)<MatBase ) || ( (px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+
+	BdispSetPointVRAM2(px, py, mode);
+	PXYtoVW(px, py, &regX, &regY);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
+}
+//----------------------------------------------------------------------------------------------
+//int ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
 
 void CB_Plot( char *SRC ) { //	Plot
 	int c;
@@ -755,77 +777,15 @@ void CB_Plot( char *SRC ) { //	Plot
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 
-void CB_PlotOprand( char *SRC, double  *x, double *y) {
-	*x=CB_EvalDbl( SRC );
+void CB_PlotSub( char *SRC, int mode ) { //	mode  1:PlotOn  0:PlotOff  2:PlotChg
+	double x,y;
+	if ( RangeErrorCK(SRC) ) return;
+	x=CB_EvalDbl( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	*y=CB_EvalDbl( SRC );
+	y=CB_EvalDbl( SRC );
 	CB_SelectGraphVRAM();	// Select Graphic Screen
-}
-
-void CB_PlotOn( char *SRC ) { //	PlotOn
-	double x,y;
-	if ( RangeErrorCK(SRC) ) return;
-	CB_PlotOprand( SRC, &x, &y);
-	PlotOn_VRAM(x,y);
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
-void CB_PlotOff( char *SRC ) { //	PlotOff
-	double x,y;
-	if ( RangeErrorCK(SRC) ) return;
-	CB_PlotOprand( SRC, &x, &y);
-	PlotOff_VRAM(x,y);
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
-void CB_PlotChg( char *SRC ) { //	PlotChg
-	double x,y;
-	if ( RangeErrorCK(SRC) ) return;
-	CB_PlotOprand( SRC, &x, &y);
-	PlotChg_VRAM(x,y);
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
-
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-int ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------
-void CB_PxlOprand( char *SRC, int *py, int *px) {
-	double x,y;
-	y = (EvalsubTop( SRC ));
-	*py=y;
-	if ( ( y-floor(y) ) || ( (*py)<MatBase ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	x = (EvalsubTop( SRC ));
-	*px=x;
-	if ( ( x-floor(x) ) || ( (*px)<MatBase ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-}
-void CB_PxlOn( char *SRC ) { //	PxlOn
-	int px,py;
-	if ( RangeErrorCK(SRC) ) return;
-	CB_PxlOprand( SRC, &py, &px);
-	PxlOn_VRAM(py,px);
-//	BdispSetPointVRAM2(px, py, 1);
-//	PXYtoVW(px, py, &regX, &regY);
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
-void CB_PxlOff( char *SRC ) { //	PxlOff
-	int px,py;
-	if ( RangeErrorCK(SRC) ) return;
-	CB_PxlOprand( SRC, &py, &px);
-	PxlOff_VRAM(py,px);
-//	BdispSetPointVRAM2(px, py, 0);
-//	PXYtoVW(px, py, &regX, &regY);
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
-void CB_PxlChg( char *SRC ) { //	PxlChg
-	int px,py;
-	if ( RangeErrorCK(SRC) ) return;
-	CB_PxlOprand( SRC, &py, &px);
-	PxlChg_VRAM(py,px);
-//	BdispSetPointVRAM2(px, py, 2);
-//	PXYtoVW(px, py, &regX, &regY);
+	PlotSub(x,y,mode);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 

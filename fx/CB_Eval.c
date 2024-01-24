@@ -359,6 +359,7 @@ double floor2( double x ) {
 	return ( result ); 
 }
 */
+
 double frac( double x ) {
 	double sign=1,tmp,d;
 	if ( x <0 ) { sign=-1; x=-x; }
@@ -635,8 +636,13 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			result = fabs( Evalsub5( SRC ) );
 			return result ;
 		case 0xFFFFFFA6 :	// int
-			result = floor( Evalsub5( SRC ) );
-			return result ;
+			result = Evalsub5( SRC );
+			if ( result >= 0 ) goto intg;
+			return -floor(-result);
+		case 0xFFFFFFDE :	// intg
+			result = Evalsub5( SRC );
+			intg:
+			return floor(result) ;
 		case 0xFFFFFFB6 :	// frac
 			result = frac( Evalsub5( SRC ) );
 			return result ;
@@ -1072,6 +1078,7 @@ double Evalsub7(char *SRC) {	//  7th Priority
 			case '(' :
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
+			case 0xFFFFFFDE :	// intg
 			case 0xFFFFFFB6 :	// frac
 			case 0xFFFFFF85 :	// ln
 			case 0xFFFFFF86 :	// sqr

@@ -410,6 +410,7 @@ const short oplistOPTN[]={
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
+		0xDE,	// Intg
 		0xAB,	// !
 		0x7FB0,	// And
 		0x7FB1,	// Or
@@ -996,9 +997,9 @@ const short oplistCMD[]={
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
-		0xAB,	// !
+		0xDE,	// Intg
 		0x7F3A,	// MOD(
-		0x7F5F,	// Ticks
+		0xAB,	// !
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh

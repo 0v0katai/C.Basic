@@ -13,6 +13,25 @@ char ENG=0;	// ENG flag  1:ENG  3:3digit separate
 char UseHiddenRAM=0;
 char IsHiddenRAM=0;
 
+char * HiddenRAM_Top =(char*)0x88040000;	// Hidden RAM TOP
+char * HiddenRAM_End =(char*)0x88080000;	// Hidden RAM END
+
+char * HiddenRAM_ProgNextPtr=(char*)0x88040000;	// Hidden RAM Prog next ptr
+char * HiddenRAM_MatTopPtr =(char*)0x88080000;	// Hidden RAM Mat top ptr
+
+/*
+----------------------------------------
+HiddenRAM_Top(0x88040000)
+		>>>
+		(prog area) HiddenRAM_ProgNextPtr
+			... 
+			(free area)
+				...
+				(Mat area)	HiddenRAM_MatTopPtr
+					<<<
+						HiddenRAM_End(0x88080000)
+----------------------------------------
+*/
 //---------------------------------------------------------------------------------------------
 int CPU_check(void) {					// SH3:3 SH4A:4
 	if ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) &&
@@ -22,11 +41,11 @@ int CPU_check(void) {					// SH3:3 SH4A:4
 
 //---------------------------------------------------------------------------------------------
 void * HiddenRAM(void){
-	volatile unsigned int *NorRAM=(volatile unsigned int*)0x88000000;	// Nomarl RAM TOP
+	volatile unsigned int *NorRAM=(volatile unsigned int*)0xA8000000;	// Nomarl RAM TOP
 	volatile unsigned int *HidRAM=(volatile unsigned int*)0x88040000;	// Hidden RAM TOP
 	int a,b;
-	int K55=0x5555;
-	int KAA=0xAAAA;
+	int K55=0x55555555;
+	int KAA=0xAAAAAAAA;
 	char * HidAddress=NULL;
 
 	IsHiddenRAM=0;
@@ -34,16 +53,51 @@ void * HiddenRAM(void){
 	*NorRAM=K55;
 	*HidRAM=KAA;
 	if ( *NorRAM != *HidRAM ) {
-		*NorRAM=KAA;
-		*HidRAM=K55;
-		if ( *NorRAM != *HidRAM ) {
 			HidAddress=(char*)HidRAM;	// Hidden RAM Exist
 			IsHiddenRAM=1;
-		}
 	}
 	*NorRAM=a;
 	return HidAddress;
 }
+
+void * HiddenRAM_mallocProg( size_t size ){
+	char * ptr;
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		ptr = HiddenRAM_ProgNextPtr;
+		HiddenRAM_ProgNextPtr += ( (size&0xFFFFFFF4) +4);
+		if ( HiddenRAM_ProgNextPtr >= HiddenRAM_MatTopPtr ) return NULL;
+		return ptr;
+	} else {
+		return malloc( size );
+	}
+}
+
+void * HiddenRAM_mallocMat( size_t size ){
+	char * ptr;
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		ptr = HiddenRAM_MatTopPtr;
+		HiddenRAM_MatTopPtr -= ( (size&0xFFFFFFF0) +16);
+		if ( HiddenRAM_MatTopPtr < HiddenRAM_ProgNextPtr ) return NULL;
+		return HiddenRAM_MatTopPtr;
+	} else {
+		return malloc( size );
+	}
+}
+
+void HiddenRAM_freeProg( void *ptr ){
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		HiddenRAM_ProgNextPtr=HiddenRAM_Top;	// Hidden RAM Prog next ptr
+	} else {
+		if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
+	}
+}
+void HiddenRAM_freeMat( void *ptr ){
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+	} else {
+		if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
+	}
+}
+
 
 //---------------------------------------------------------------------------------------------
 void CB_PrintC( int x, int y,const unsigned char *c ){
@@ -306,5 +360,16 @@ void MSGpop(void){
 	RestoreDisp(SAVEDISP_PAGE1);
 	Bdisp_PutDisp_DD();
 }
-//---------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int IObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
 

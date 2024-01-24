@@ -306,43 +306,33 @@ void ZoomOut(){
 }
 
 //------------------------------------------------------------------------------ PLOT
-void Plotsub(double x, double y, int kind, int mode){
+void PlotSub(double x, double y, int mode){
 	int px,py;
-	if ( VWtoPXY( x,y, &px, &py) == 0) {;
-		switch (mode) {
-			case 1:
-				Bdisp_SetPoint_VRAM( px, py, kind);
-				break;
-			case 2:
-				Bdisp_SetPoint_DD( px, py, kind);
-				break;
-			case 3:
-				Bdisp_SetPoint_DDVRAM( px, py , kind);
-				break;
-		}		
+	if ( VWtoPXY( x,y, &px, &py) == 0) {
+		BdispSetPointVRAM2(px, py, mode);
 	}
 	regX=x; regY=y;
 	regintX=regX; regintY=regY;
 }
 
 void PlotOn_VRAM(double x, double y){
-	Plotsub( x, y, 1, 1);		// VRAM
+	PlotSub( x, y, 1);		// VRAM
 }
-void PlotOn_DD(double x, double y){
-	Plotsub( x, y, 1, 2);		// DD
-}
-void PlotOn_DDVRAM(double x, double y){
-	Plotsub( x, y, 1, 3);		// DDVRAM
-}
+/*//void PlotOn_DD(double x, double y){
+//	Plotsub( x, y, 1, 2);		// DD
+//}
+//void PlotOn_DDVRAM(double x, double y){
+//	Plotsub( x, y, 1, 3);		// DDVRAM
+//}
 void PlotOff_VRAM(double x, double y){
 	Plotsub( x, y, 0, 1);		// VRAM
 }
-void PlotOff_DD(double x, double y){
-	Plotsub( x, y, 0, 2);		// DD
-}
-void PlotOff_DDVRAM(double x, double y){
-	Plotsub( x, y, 0, 3);		// DDVRAM
-}
+//void PlotOff_DD(double x, double y){
+//	Plotsub( x, y, 0, 2);		// DD
+//}
+//void PlotOff_DDVRAM(double x, double y){
+//	Plotsub( x, y, 0, 3);		// DDVRAM
+//}
 void PlotChg_VRAM(double x,  double y){
 	int px,py;
 	if ( VWtoPXY( x,y, &px, &py) ) return;
@@ -352,38 +342,36 @@ void PlotChg_VRAM(double x,  double y){
 	regX=x; regY=y;
 	regintX=regX; regintY=regY;
 }
-
-void PlotChg_DDVRAM(double x, double y){
-	PlotChg_VRAM(x, y);
-	Bdisp_PutDisp_DD();
-}
+*/
+//void PlotChg_DDVRAM(double x, double y){
+//	PlotChg_VRAM(x, y);
+//	Bdisp_PutDisp_DD();
+//}
+/*
 void PxlOn_VRAM(int py, int px){
 	Bdisp_SetPoint_VRAM(px, py, 1);
 	PXYtoVW(px, py, &regX, &regY);
 }
-void PxlOn_DD(int py, int px){
-	Bdisp_SetPoint_DD(px, py, 1);
-	PXYtoVW(px, py, &regX, &regY);
-}
-void PxlOn_DDVRAM(int py, int px){
-	Bdisp_SetPoint_DDVRAM(px, py, 1);
-	PXYtoVW(px, py, &regX, &regY);
-}
+//void PxlOn_DD(int py, int px){
+//	Bdisp_SetPoint_DD(px, py, 1);
+//	PXYtoVW(px, py, &regX, &regY);
+//}
+//void PxlOn_DDVRAM(int py, int px){
+//	Bdisp_SetPoint_DDVRAM(px, py, 1);
+//	PXYtoVW(px, py, &regX, &regY);
+//}
 void PxlOff_VRAM(int py, int px){
 	Bdisp_SetPoint_VRAM(px, py, 0);
 	PXYtoVW(px, py, &regX, &regY);
 }
-void PxlOff_DD(int py, int px){
-	Bdisp_SetPoint_DD(px, py, 0);
-	PXYtoVW(px, py, &regX, &regY);
-}
-void PxlOff_DDVRAM(int py, int px){
-	Bdisp_SetPoint_DDVRAM(px, py, 0);
-	PXYtoVW(px, py, &regX, &regY);
-}
-int PxlTest(int py, int px) {
-	return	Bdisp_GetPoint_VRAM(px, py);
-}
+//void PxlOff_DD(int py, int px){
+//	Bdisp_SetPoint_DD(px, py, 0);
+//	PXYtoVW(px, py, &regX, &regY);
+//}
+//void PxlOff_DDVRAM(int py, int px){
+//	Bdisp_SetPoint_DDVRAM(px, py, 0);
+//	PXYtoVW(px, py, &regX, &regY);
+//}
 void PxlChg_VRAM(int py, int px){
 //	if (Bdisp_GetPoint_VRAM(px, py)) 
 //		Bdisp_SetPoint_VRAM(px, py, 0);
@@ -392,7 +380,10 @@ void PxlChg_VRAM(int py, int px){
 	BdispSetPointVRAM2(px, py, 2);
 	PXYtoVW(px, py, &regX, &regY);
 }
-
+*/
+int PxlTest(int py, int px) {
+	return	Bdisp_GetPoint_VRAM(px, py);
+}
 //------------------------------------------------------------------------------ LINE
 void LinesubSetPoint(int px, int py, int mode) {
 	if ( ( px <  MatBase ) || ( px > 127 ) || ( py < MatBase ) || ( py >  63 ) ) return;

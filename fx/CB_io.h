@@ -6,17 +6,29 @@ struct st_round {
 
 extern struct st_round CB_Round;	// struct Round
 extern char ENG;	// ENG flag  1:ENG  3:3digit separate
-extern char UseHiddenRAM;		// 0: no use   1: use hiddenRAM
-extern char IsHiddenRAM;		// 0: hiddenRAM not exist   1: exist
 
 #define Norm 0
 #define Fix  1
 #define Sci  2
 
+extern char UseHiddenRAM;		// 0: no use   1: use hiddenRAM
+extern char IsHiddenRAM;		// 0: hiddenRAM not exist   1: exist
+
+extern char * HiddenRAM_Top ;			// Hidden RAM TOP
+extern char * HiddenRAM_End ;			// Hidden RAM END
+
+extern char * HiddenRAM_ProgNextPtr;	// Hidden RAM Prog next ptr
+extern char * HiddenRAM_MatTopPtr;		// Hidden RAM Mat top ptr
+
+
 //-----------------------------------------------------------------------------
 
 int CPU_check(void);
 void * HiddenRAM(void);
+void * HiddenRAM_mallocMat( size_t size );
+void * HiddenRAM_mallocProg( size_t size );
+void HiddenRAM_freeProg( void *ptr );
+void HiddenRAM_freeMat( void *ptr );
 
 void CB_Print( int x, int y, const unsigned char *str);
 void CB_PrintRev( int x, int y, const unsigned char *str);
