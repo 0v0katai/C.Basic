@@ -1,4 +1,5 @@
-#define MatAryMax 26+6+26+1
+#define LISTMAX 52
+#define MatAryMax 26+6+LISTMAX+1
 //extern int	MatAryMaxbyte[MatAryMax];		// Matrix array max memory size
 //extern char	MatAryBase[MatAryMax]			// Matrix array base 0 or 1
 //extern char	MatAryElementSize[MatAryMax];	// Matrix array word size
@@ -115,3 +116,6 @@ int CB_Call( char *SRC ) ;
 int CB_SysCall( char *SRC ) ;
 int CB_VarPtr( char *SRC ) ;
 int CB_ProgPtr( char *SRC ) ; //	ProgPtr(
+
+void NumToBin( char *buffer, unsigned int n, int digit) ;
+void NumToHex( char *buffer, unsigned int n, int digit) ;

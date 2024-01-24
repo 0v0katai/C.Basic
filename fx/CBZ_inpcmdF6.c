@@ -42,8 +42,12 @@ void GetGenuineCmdF6( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandPage=1;break;
 				case 1: CommandPage=2;break;
-				case 2: CommandPage=3;break;
-				case 3: CommandPage=0;break;
+				case 2: CommandPage=0;break;
+			} break;
+		case CMD_PRGM_EXSTR:
+			switch ( CommandPage ) {
+				case 0: CommandPage=1;break;
+				case 1: CommandPage=0;break;
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {

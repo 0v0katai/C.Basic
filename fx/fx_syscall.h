@@ -74,7 +74,8 @@ void MCS_GetDirectoryEntryAddress( void*directory_entry_address );
 void MCS_GetCurrentBottomAddress( void*current_bottom_address );
 int MCS_GetCapa( int*current_bottom );
 int MCS_GetMainMemoryStart( void );
-
+int Bfile_RenameEntry( const unsigned short *oldname, const unsigned short *newname );
+int DD_SetContrast(int value);
 //------------------------------------------------------- Bdisp
 unsigned char* GetVRAMAddress();
 

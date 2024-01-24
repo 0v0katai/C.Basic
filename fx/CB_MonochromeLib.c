@@ -87,39 +87,137 @@
 //void CB_ML_DispVRAM() { // ML_DispVRAM
 //	ML_display_vram();
 //}
-//int CB_ML_SetContrast( char *SRC ) { // ML_Contrast
+int CB_ML_SetContrast( char *SRC ) { // ML_Contrast
 //	ML_set_contrast( CB_EvalInt( SRC ) );
-//}
+	DD_SetContrast( CB_EvalInt( SRC ) );
+}
 //int CB_ML_GetContrast() { // ML_Contrast
 //	return ML_get_contrast();
 //}
 
 //----------------------------------------------------------------------------------------------
 void CB_GetOprand2( char *SRC, int *px, int *py) {
-	int x,y;
 	*px=CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	*py=CB_EvalInt( SRC );
 }
 void CB_GetOprand4( char *SRC, int *px, int *py, int *px2, int *py2) {
-	int x,y;
-	*px=CB_EvalInt( SRC );
+	CB_GetOprand2( SRC, &(*px), &(*py) );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	*py=CB_EvalInt( SRC );
+	CB_GetOprand2( SRC, &(*px2), &(*py2) );
+}
+void CB_GetOprand2dbl( char *SRC, double *x, double *y) {
+	*x=CB_EvalDbl( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	*px2=CB_EvalInt( SRC );
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	*py2=CB_EvalInt( SRC );
+	*y=CB_EvalDbl( SRC );
+}
+void CB_GetOprand2VW( char *SRC, int *px, int *py) {
+	double x,y;
+	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
+		ExecPtr++;
+		CB_GetOprand2dbl( SRC, &x, &y );
+		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+	} else {
+		CB_GetOprand2( SRC, &(*px), &(*py) );
+	}
+}
+void CB_GetOprand4VW( char *SRC, int *px, int *py, int *px2, int *py2) {
+	double x,y;
+	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
+		ExecPtr++;
+		CB_GetOprand2dbl( SRC, &x, &y );
+		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		CB_GetOprand2dbl( SRC, &x, &y );
+		VWtoPXY( x, y, &(*px2), &(*py2)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+	} else {
+		CB_GetOprand4( SRC, &(*px), &(*py), &(*px2), &(*py2) );
+	}
+}
+void CB_GetOprand4VWR( char *SRC, int *px, int *py, int *radius1, int *radius2) {
+	double x,y;
+	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
+		ExecPtr++;
+		CB_GetOprand2dbl( SRC, &x, &y );
+		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		CB_GetOprand2dbl( SRC, &x, &y );
+		*radius1=x/Xdot;
+		*radius2=y/Ydot;
+	} else {
+		CB_GetOprand4( SRC, &(*px), &(*py), &(*radius1), &(*radius2) );
+	}
+}
+void CB_GetOprand3VWR( char *SRC, int *px, int *py, int *radius1) {
+	double x,y;
+//	int radius2;
+	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
+		ExecPtr++;
+		CB_GetOprand2dbl( SRC, &x, &y );
+		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		x=CB_EvalDbl( SRC );
+		*radius1=x/Xdot;
+//		radius2=x/Ydot;
+//		if ( (*radius1) != radius2 ) { CB_Error(ArgumentERR); return; } // Argument error
+	} else {
+		CB_GetOprand2( SRC, &(*px), &(*py) );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		*radius1=CB_EvalInt( SRC );
+	}
+}
+void CB_GetOprand3VWyxx( char *SRC, int *py, int *px1, int *px2) {
+	double y,x1,x2;
+	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(y,x1,x2)->(py,px,px2)
+		ExecPtr++;
+		y=CB_EvalDbl( SRC );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		x1=CB_EvalDbl( SRC );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		x2=CB_EvalDbl( SRC );
+		VWtoPXY( x1, y, &(*px1), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY( x2, y, &(*px2), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+	} else {
+		CB_GetOprand2( SRC, &(*py), &(*px1) );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		*px2=CB_EvalInt( SRC );
+	}
+}
+void CB_GetOprand3VWxyy( char *SRC, int *px, int *py1, int *py2) {
+	double x,y1,y2;
+	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y1,y2)->(px,py,py2)
+		ExecPtr++;
+		x=CB_EvalDbl( SRC );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		y1=CB_EvalDbl( SRC );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		y2=CB_EvalDbl( SRC );
+		VWtoPXY( x, y1, &(*px), &(*py1)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY( x, y2, &(*px), &(*py2)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+	} else {
+		CB_GetOprand2( SRC, &(*px), &(*py1) );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		*py2=CB_EvalInt( SRC );
+	}
 }
 //----------------------------------------------------------------------------------------------
 void CB_ML_Pixel( char *SRC ) { // ML_Pixel x, y, color
 	int x,y;
 	int color;
-	CB_GetOprand2( SRC, &x, &y );
+	CB_GetOprand2VW( SRC, &x, &y );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	color=CB_EvalInt( SRC );
@@ -131,14 +229,17 @@ void CB_ML_Point( char *SRC ) { // ML_Point x, y, width, color
 	int x,y;
 	int width;
 	int color;
-	CB_GetOprand4( SRC, &x, &y, &width, &color );
+	CB_GetOprand2VW( SRC, &x, &y );
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	CB_GetOprand2( SRC, &width, &color );
 	if ( ErrorNo ) return ;
 	ML_point( x, y, width, color);
 }
 
 int CB_ML_PixelTest( char *SRC ) { // ML_PixelTest( x, y)
 	int x,y;
-	CB_GetOprand2( SRC, &x, &y );
+	CB_GetOprand2VW( SRC, &x, &y );
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( ErrorNo ) return ;
 	return ML_pixel_test( x, y);
@@ -148,7 +249,7 @@ int CB_ML_PixelTest( char *SRC ) { // ML_PixelTest( x, y)
 void CB_ML_Line( char *SRC ) { // ML_Line x1, y1, x2, y2, color
 	int x1,y1,x2,y2;
 	int color;
-	CB_GetOprand4( SRC, &x1, &y1, &x2, &y2);
+	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	color=CB_EvalInt( SRC );
@@ -159,7 +260,10 @@ void CB_ML_Line( char *SRC ) { // ML_Line x1, y1, x2, y2, color
 void CB_ML_Horizontal( char *SRC ) { // ML_Horizontal y, x1, x2, color
 	int y,x1,x2;
 	int color;
-	CB_GetOprand4( SRC, &y, &x1, &x2, &color);
+	CB_GetOprand3VWyxx( SRC, &y, &x1, &x2);
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	color=CB_EvalInt( SRC );
 	if ( ErrorNo ) return ;
 	ML_horizontal_line( y, x1, x2, color);
 }
@@ -167,7 +271,10 @@ void CB_ML_Horizontal( char *SRC ) { // ML_Horizontal y, x1, x2, color
 void CB_ML_Vertical( char *SRC ) { // ML_Vertical x, y1, y2, color
 	int x,y1,y2;
 	int color;
-	CB_GetOprand4( SRC, &x, &y1, &y2, &color);
+	CB_GetOprand3VWxyy( SRC, &x, &y1, &y2);
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	color=CB_EvalInt( SRC );
 	if ( ErrorNo ) return ;
 	ML_vertical_line( x, y1, y2, color);
 }
@@ -179,7 +286,7 @@ void CB_ML_Rect( char *SRC ) { // ML_Rectangle x1,y1,x2,y2, border_width, border
 	int border_color;
 	int fill_color;
 	
-	CB_GetOprand4( SRC, &x1, &y1, &x2, &y2);
+	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	border_width=CB_EvalInt( SRC );
@@ -205,7 +312,10 @@ void CB_ML_Circle( char *SRC, int fill ) { // ML_Circle x, y, radius, color
 	int x,y;
 	int radius;
 	int color;
-	CB_GetOprand4( SRC, &x, &y, &radius, &color);
+	CB_GetOprand3VWR( SRC, &x, &y, &radius);
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	color=CB_EvalInt( SRC );
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_circle( x, y, radius, color);
 	else		ML_circle( x, y, radius, color);
@@ -217,7 +327,7 @@ void CB_ML_Ellipse( char *SRC, int fill ) { // ML_Ellipse x, y, radius1, radius2
 	int radius1;
 	int radius2;
 	int color;
-	CB_GetOprand4( SRC, &x, &y, &radius1, &radius2);
+	CB_GetOprand4VWR( SRC, &x, &y, &radius1, &radius2);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	color=CB_EvalInt( SRC );
@@ -229,7 +339,7 @@ void CB_ML_Ellipse( char *SRC, int fill ) { // ML_Ellipse x, y, radius1, radius2
 void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x2, y2, color
 	int x1,y1,x2,y2;
 	int color;
-	CB_GetOprand4( SRC, &x1, &y1, &x2, &y2);
+	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	color=CB_EvalInt( SRC );
@@ -435,9 +545,9 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 //			CB_ML_DispVRAM();
 			ML_display_vram();
 			break;
-//		case 0xFFFFFFC3:	// _Contrast
-//			CB_ML_SetContrast( SRC );
-//			break;
+		case 0xFFFFFFC3:	// _Contrast
+			CB_ML_SetContrast( SRC );
+			break;
 		case 0xFFFFFFC4:	// _Pixel
 			CB_ML_Pixel( SRC );
 			break;

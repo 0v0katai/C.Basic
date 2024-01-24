@@ -41,7 +41,11 @@ void GetGenuineCmdF4( unsigned int *code ){
 				case 0: (*code)=0xF933;return;	// StrSrc(
 				case 1: (*code)=0xF937;return;	// Exp>Str(
 				case 2: (*code)=0xF93C;return;	// StrShift(
-				case 3: (*code)=0x0025;return;	// %
+			} break;
+		case CMD_PRGM_EXSTR:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x0025;return;	// %
+				case 1: (*code)=0xF946;return;	// Hex(
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {

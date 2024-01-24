@@ -682,7 +682,7 @@ int CB_interpreter_sub( char *SRC ) {
 				else
 				if ( ( 0x34 <= c ) && ( c <= 0x37 ) )  goto strjp;
 				else
-				if ( ( 0x39 <= c ) && ( c <= 0x43 ) )  goto strjp;
+				if ( ( 0x39 <= c ) && ( c <= 0x47 ) )  goto strjp;
 				switch ( c ) {
 					case 0x30:	// StrJoin(
 //					case 0x34:	// StrLeft(
@@ -699,6 +699,8 @@ int CB_interpreter_sub( char *SRC ) {
 //					case 0x41:	// DATE
 //					case 0x42:	// TIME
 //					case 0x43:	// Sprintf(
+//					case 0x44:	// StrChar(
+//					case 0x45:	// StrCenter(
 					strjp:
 						ExecPtr-=2;
 						CB_Str(SRC) ;
@@ -1277,8 +1279,7 @@ void CB_If( char *SRC, CchIf *CacheIf ){
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
 	if ( c == 0x27 ) { Skip_rem(SRC); c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
-	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x01 ) ) { CB_Error(ThenWithoutIfERR); return; } // not Then error 
-	ExecPtr+=2 ;
+	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
 	if ( value ) return ; // true
 	
 	for ( i=0; i<CacheIf->CNT; i++ ) {

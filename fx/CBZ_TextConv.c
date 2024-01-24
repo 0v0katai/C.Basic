@@ -840,10 +840,10 @@ const char ConvListF900[][17]={
 "DATE",					// F941
 "TIME",					// F942
 "Sprintf(",				// F943
-"@F944",			// F944
-"@F945",			// F945
-"@F946",			// F946
-"@F947",			// F947
+"StrChar(",				// F944
+"StrCenter(",			// F945
+"Hex(",					// F946
+"Bin(",					// F947
 "@F948",			// F948
 "@F949",			// F949
 "CrossP(",			// F94A		// ver.2.04~

@@ -297,24 +297,93 @@ void CB_ClrGraph( char *SRC ){
 	SetVeiwWindowInit();
 	CB_Cls( SRC );
 }
+
+void CB_GetOperandNDbl( char *SRC, int n, double*ary ){
+	int c;
+	int reg=0;
+	while ( reg <= n ) {
+		c=SRC[ExecPtr];
+		if ( c == ',' ) goto next;
+		if ( (c==':') || (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
+		ary[reg]=CB_EvalDbl( SRC );
+		c=SRC[ExecPtr];
+		if ( (c==':') || (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
+		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	  next:
+		ExecPtr++;
+		reg++;
+	}
+}
+
 void CB_Screen( char *SRC ){	// Screen.G   Screen.T
+	double ScrOp[4];
+	double x,y;
+	int px,py;
 	int c;
 	c=SRC[ExecPtr++];
 	if ( c == '.' ) { c=SRC[ExecPtr++];
-		if ( ( c=='G' ) || ( c=='g' ) ) { CB_ChangeGraphicMode( SRC ); UseGraphic=9; return; }	// Select Graphic Screen
-		if ( ( c=='T' ) || ( c=='t' ) ) { CB_SelectTextVRAM();  return; }	// Select Text Screen
+		if ( ( c=='G' ) || ( c=='g' ) ) goto scrG;	// Select Graphic Screen
+		if ( ( c=='T' ) || ( c=='t' ) ) goto scrT;	// Select Text Screen
+		if ( ( c=='R' ) || ( c=='r' ) ) goto scrR;	// ScreenR to reverse screen
+		if ( c == '#' ) goto scrCod;
+		if ( c == '%' ) goto scrCod2;
 		{ ExecPtr--; CB_Error(SyntaxERR); return; }	// Syntax error
 	} else 
+	if ( ( c=='G' ) || ( c=='g' ) ) goto scrG;	// Select Graphic Screen
+	else
+	if ( ( c=='T' ) || ( c=='t' ) ) goto scrT;	// Select Text Screen
+	else
+	if ( ( c=='R' ) || ( c=='r' ) ) {	// ScreenR to reverse screen
+	  scrR:
+//		Bdisp_AreaReverseVRAM(0,0,127,63);
+		ML_rectangle( 0, 0, 127, 63, 0, 0, 2);
+	} else
+	if ( c == '#' ) {	// Screen(X,Y[,Xmin][,Xmax][,Ymin][,Ymax] -> ViewWindow(X,Y)->(PX,PY)
+	  scrCod:
+		ScrOp[0]=Xmin;
+		ScrOp[1]=Xmax;
+		ScrOp[2]=Ymin;
+		ScrOp[3]=Ymax;
+		CB_GetOprand2dbl( SRC, &x, &y );
+		if ( SRC[ExecPtr] != ',' ) goto jmp;
+		ExecPtr++;
+		CB_GetOperandNDbl( SRC, 4, ScrOp );
+	  jmp:
+	  	if ( ScrOp[0]-ScrOp[1] == 0 ) { CB_Error(RangeERR); return; }
+		px =   1 + ( (x-ScrOp[0])*126.0/(ScrOp[1]-ScrOp[0]) + 0.5 ) ;
+	  	if ( ScrOp[2]-ScrOp[3] == 0 ) { CB_Error(RangeERR); return; }
+		py =  63 - ( (y-ScrOp[2])* 62.0/(ScrOp[3]-ScrOp[2]) - 0.49999999999999 ) ;
+		WriteListAns2( px, py );	//	->List Ans{px,py}
+//		if ( CB_INT )	{ regintX=px;regintY=py; } else { regX=px; regY=py; }
+	} else
+	if ( c == '%' ) {	// Screen(PX,PY[,Xmin][,Xmax][,Ymin][,Ymax] -> ViewWindow(X,Y)
+	  scrCod2:
+		ScrOp[0]=Xmin;
+		ScrOp[1]=Xmax;
+		ScrOp[2]=Ymin;
+		ScrOp[3]=Ymax;
+		CB_GetOprand2( SRC, &px, &py );
+		if ( SRC[ExecPtr] != ',' ) goto jmp2;
+		ExecPtr++;
+		CB_GetOperandNDbl( SRC, 4, ScrOp );
+	  jmp2:
+	  	if ( ScrOp[0]-ScrOp[1] == 0 ) { CB_Error(RangeERR); return; }
+		x = (   px-1)*(ScrOp[1]-ScrOp[0])/126.0 +  ScrOp[0] ;
+	  	if ( ScrOp[2]-ScrOp[3] == 0 ) { CB_Error(RangeERR); return; }
+		y = (62-py+1)*(ScrOp[3]-ScrOp[2])/ 62.0 +  ScrOp[2] ;
+		WriteListAns2( x, y );	//	->List Ans{px,py}
+	} else
 	if ( ( c==0 ) || ( c==0x0D ) || ( c==0x0C ) || ( c==':' ) ) {
-			if ( ScreenMode == 0 )  { CB_ChangeGraphicMode( SRC ); UseGraphic=9; return; }	// Select Graphic Screen
-			else					{ CB_SelectTextVRAM();  return; }	// Select Text Screen
-
+			if ( ScreenMode == 0 )  goto scrG;	// Select Graphic Screen
+			else					goto scrT;	// Select Text Screen
 	} else { ExecPtr--;
 		switch ( CB_EvalInt( SRC ) ) {
 			case 0:
+			  scrT:
 				CB_SelectTextVRAM();	// Select Text Screen
 				break;
 			case 1:
+			  scrG:
 				CB_ChangeGraphicMode( SRC ); UseGraphic=9;	// Select Graphic Screen
 				break;
 		}
@@ -416,19 +485,7 @@ void CB_ChangeViewWindow() {
 }
 void CB_ViewWindow( char *SRC ) { //	ViewWindow
 	int c;
-	int reg=0;
-	while ( reg <= 10 ) {
-		c=SRC[ExecPtr];
-		if ( c == ',' ) goto next;
-		if ( (c==':') || (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
-		REGv[reg]=CB_EvalDbl( SRC );
-		c=SRC[ExecPtr];
-		if ( (c==':') || (c==0x0C) || (c==0x0D) || (c==0x00) ) break;
-		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	  next:
-		ExecPtr++;
-		reg++;
-	}
+	CB_GetOperandNDbl( SRC, 10, REGv );
 //	CB_SelectGraphVRAM();	// Select Graphic Screen
 //	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 //	CB_SelectTextVRAM();	// Select Text Screen

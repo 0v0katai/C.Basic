@@ -27,6 +27,7 @@ extern char FileListUpdate;
 extern char StorageMode;		// 0:Storage memory   1:SD
 
 extern char ForceG1Msave;		//    1: force g1m save
+extern char AutoSaveMode;		//    1: Auto save ( not pop up )
 
 #define FileCMD_Prog   10000
 #define FileCMD_RUN    10001
@@ -38,6 +39,8 @@ extern char ForceG1Msave;		//    1: force g1m save
 #define FileCMD_COPY   10007
 #define FileCMD_TEXT   10008
 #define FileCMD_PASS   10009
+#define FileCMD_MKDIR  10010
+#define FileCMD_RENDIR 10011
 
 char *loadFile( const char *name , int editMax, int disperror, int hiddenflag );
 int  storeFile( const char *name, unsigned char* codes, int size);
@@ -74,3 +77,6 @@ void NewPassWord(char *name) ;
 
 void PP_ReplaceCode( char *SRC );
 int CheckSD();	// SD model  return : 1
+
+int MakeDirectory();
+int RenameDirectory();

@@ -50,12 +50,15 @@
  .EXPORT _MCS_GetCapa
  .EXPORT _MCS_GetMainMemoryStart
 
+ .EXPORT _Bfile_RenameEntry
+
  .EXPORT _GetVRAMAddress
  .EXPORT _Bdisp_ShapeToVRAM
 
  .EXPORT _GetFKeyIconPointer
  .EXPORT _DisplayFKeyIcon
  .EXPORT _GUI_ProgressBar
+ .EXPORT _DD_SetContrast
 
  .EXPORT _Calljmp
  .EXPORT _SysCalljmp
@@ -320,6 +323,11 @@ _MCS_GetMainMemoryStart:
 	mov.l #H'392,r0
 	jmp @r1
 	nop
+_Bfile_RenameEntry:
+	mov.l SYSCALL,r1
+	mov.l #H'438,r0
+	jmp @r1
+	nop
 
 _GetVRAMAddress:
 	mov.l SYSCALL,r1
@@ -348,6 +356,12 @@ _DisplayFKeyIcon:
 _GUI_ProgressBar:
 	mov.l SYSCALL,r1
 	mov.l #H'1A9,r0
+	jmp @r1
+	nop
+
+_DD_SetContrast:
+	mov.l SYSCALL,r1
+	mov.l #H'132,r0
 	jmp @r1
 	nop
 
