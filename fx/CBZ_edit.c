@@ -32,10 +32,10 @@ char  EDITpxNum=0;		//  EditLineNumber pixel
 char  EDITpxMAX=123;	//  max x pixel
 char  UpdateLineNum;
 
-short EditMaxfree;
-short EditMaxProg;
-short NewMax;
-short ClipMax;
+int EditMaxfree;
+int EditMaxProg;
+int NewMax;
+int ClipMax;
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -192,6 +192,79 @@ void EditCutDel( char *filebase, char *Buffer, int *ptr, int startp, int endp, i
 	ProgfileEdit[ProgNo]=1;	// edit program
 
 	(*ptr)=(startp);
+}
+
+//------------------------------------------------------------------------------
+
+int AddComment( char *filebase, int ptr, int startp, int endp ){
+	int len,i,j,plus=0;
+	char *srcbase=filebase+0x56;
+	int c; 
+	PrevLine( srcbase, &startp );
+	ptr=startp;
+	if ( ptr==0 ) { 
+		InsertOpcode( filebase, ptr, 0x27 );
+		plus++;
+	}
+	c=srcbase[ptr++];
+	while ( ptr<endp+plus ) {
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				return endp+plus;
+			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				InsertOpcode( filebase, ptr, 0x27 );
+				plus++;
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				ptr++;
+				break;
+		}
+		c=srcbase[ptr++];
+	}
+	return endp+plus;
+}
+
+int DelComment( char *filebase, int ptr, int startp, int endp ){
+	int len,i,j,plus=0;
+	char *srcbase=filebase+0x56;
+	int c; 
+	ptr=startp;
+	if ( srcbase[ptr]==0x27 ) {
+		DeleteOpcode( filebase, &ptr );
+		plus--;
+	} else PrevLine( srcbase, &startp );
+	c=srcbase[ptr++];
+	while ( ptr<endp+plus ) {
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				return endp+plus;
+			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				if ( srcbase[ptr]==0x27 ) {
+					DeleteOpcode( filebase, &ptr );
+					plus--;
+				}
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				ptr++;
+				break;
+		}
+		c=srcbase[ptr++];
+	}
+	return endp+plus;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -824,10 +897,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //	}
 //	GetKey(&key);
 
-	PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
-	if ( EditFontSize & 0xF0 ) EDITpxNum=18; else EDITpxNum=0;
+	mini= EditFontSize & 0x03 ;
+	if ( mini ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
+	if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; }
+	PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );	// csrY adjust
 	UpdateLineNum=1;
-	
+
 	if ( run == 1 ) { ProgNo=0; ExecPtr=0; key=KEY_CTRL_F6; }	// direct run
 
 	if ( DebugMode ) DebugMenuSw=1; 
@@ -848,7 +923,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		filebase = ProgfileAdrs[ProgNo];
 		SrcBase  = filebase+0x56;
 
-		if ( ClipStartPtr >=0 ) { CommandType=0; CommandPage=0; }
+		if ( ( ClipStartPtr >=0 ) || ( SearchMode ) ) { CommandType=0; CommandPage=0; }
 		
 		if ( ( run != 1 ) ) { // exec mode is Invalid
 			if ( filebase[0x55]==2 ) goto editpass;	// 
@@ -947,6 +1022,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					Fkey_Icon( FKeyNo2, 105 );	//	Fkey_dispN( FKeyNo2, "CUT ");
 					Fkey_Icon( FKeyNo3,   9 );	//	Fkey_dispN( FKeyNo2, "DEL ");
 					Fkey_Icon( FKeyNo4, 165 );	//	Fkey_dispN( FKeyNo1, "SRC ");
+					Fkey_dispN( FKeyNo5, "add'");
+					Fkey_dispN( FKeyNo6, "del'");
 				} else {
 					ClipEndPtr   = -1 ;		// ClipMode cancel
 					if ( DebugMode >=1 ) {  // debug mode
@@ -1002,7 +1079,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else { 
 					if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
 				}
-				if ( mini ) {
+				if ( mini && (dumpflg!=4) ) {
 					Cursor_SetFlashMode(0); 			// cursor flashing off
 					MiniCursorX=pcx-1+EDITpxNum;
 					MiniCursorY=(cy-1)*6+2;
@@ -1140,7 +1217,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_F2:
 			case 0x7563:		// ClipMode F2
 					if ( SearchMode >= 2 ) {	// replace one
-							i = strlenOp(searchbuf)-1;
+							i = strlenOp(searchbuf);
 							csrPtr+=i;
 							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
 							EditPaste( filebase, replacebuf, &csrPtr);	// insert
@@ -1249,8 +1326,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( ClipEndPtr < 0 ) goto F4j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 							EditCopy( filebase, ClipBuffer, csrPtr, ClipStartPtr, ClipEndPtr );
-							ClipBuffer[63]='\0';
-							SearchMode = SearchForText(  SrcBase, ClipBuffer, &csrPtr, replacebuf ) ;
+							ClipBuffer[64]='\0';
+							StrMid( searchbuf, ClipBuffer, 1, 64 ); 
+							SearchMode = SearchForText(  SrcBase, searchbuf, &csrPtr, replacebuf ) ;
 						} else {
 							if ( CommandType ) GetGenuineCmdF4( &key );
 							else {
@@ -1275,19 +1353,28 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F5:
 					if ( SearchMode ) break;
-					if ( CommandType ) { GetGenuineCmdF5( &key );
-						if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); key=0; CommandType=0; }
+					if ( ClipStartPtr >= 0 ) {	// Clip -> add '
+						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+						csrPtr = AddComment( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
+//						offset=csrPtr;
+//						offset_y=0;
+//						PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
+						UpdateLineNum=1;
 					} else {
-						if ( DebugMenuSw ) {		// ====== Debug Mode ======
-							if ( DebugScreen )  DebugScreen=0; else DebugScreen=1;	// swap list <---> screen
-							key=0;
+						if ( CommandType ) { GetGenuineCmdF5( &key );
+							if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); key=0; CommandType=0; }
 						} else {
-							if ( JumpMenuSw ) {		// ====== Jump Mode
-									PrevLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Up
-									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
+							if ( DebugMenuSw ) {		// ====== Debug Mode ======
+								if ( DebugScreen )  DebugScreen=0; else DebugScreen=1;	// swap list <---> screen
+								key=0;
 							} else {
-								key=SelectChar( &ContinuousSelect);
-								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+								if ( JumpMenuSw ) {		// ====== Jump Mode
+										PrevLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Up
+										csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
+								} else {
+									key=SelectChar( &ContinuousSelect);
+									if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+								}
 							}
 						}
 					}
@@ -1295,56 +1382,65 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F6:
 					if ( SearchMode ) break;;
-					Cursor_SetFlashMode(0); 			// cursor flashing off
-					MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
-					if ( ErrorNo ) {
-							offset = ErrorPtr;
-							csrPtr = offset;
-							offset_y=0;
-							run=2; // edit mode
-							if ( dumpflg == 2 ) {
-								PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
-							}
+					if ( ClipStartPtr >= 0 ) {	// Clip -> del '
+						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+						csrPtr = DelComment( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
+//						offset=csrPtr;
+//						offset_y=0;
+//						PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
+						UpdateLineNum=1;
 					} else {
-						if ( CommandType ) { GetGenuineCmdF6( &key ); goto F6j; }
-						else {
-							if ( JumpMenuSw ) {		// ====== Jump Mode
-								NextLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Down
-								csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
-								if ( SrcBase[offset] == 0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
-							} else {
-								if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
-									if ( DebugScreen == 1 ) { DebugMenuSw = 1; DebugScreen = 2; }
-									else
-									DebugMenuSw = 1-DebugMenuSw;
+						Cursor_SetFlashOff(); 			// cursor flashing off
+						MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
+						if ( ErrorNo ) {
+								offset = ErrorPtr;
+								csrPtr = offset;
+								offset_y=0;
+								run=2; // edit mode
+								if ( dumpflg == 2 ) {
+									PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
+								}
+						} else {
+							if ( CommandType ) { GetGenuineCmdF6( &key ); goto F6j; }
+							else {
+								if ( JumpMenuSw ) {		// ====== Jump Mode
+									NextLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Down
+									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
+									if ( SrcBase[offset] == 0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
 								} else {
-									if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
-									ProgEntryN=1;
-									MSG1("Prog Loading.....");
-									CB_ProgEntry( SrcBase ) ;		// sub program search
-									if ( ErrorNo ) { 
-										ProgNo=ErrorProg; 
-										stat=1;
+									if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
+										if ( DebugScreen == 1 ) { DebugMenuSw = 1; DebugScreen = 2; }
+										else
+										DebugMenuSw = 1-DebugMenuSw;
 									} else {
-										ProgNo=0;
-										ExecPtr=0;
-										stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
-									}
-									SaveConfig();
-									filebase = ProgfileAdrs[ProgNo];
-									SrcBase  = filebase+0x56;
-									if ( ForceReturn ) { cont=0; break; }	// force program end
-									if ( stat ) {
-										if ( ErrorNo ) offset = ErrorPtr ;			// error
-										else if ( BreakPtr ) offset = ExecPtr ;	// break
-									} else offset = 0;
-									if ( stat == -1 ) offset = ExecPtr-1;	// program  no error return
-									csrPtr = offset;
-									offset_y=0;
-									run=2; // edit mode
-									if ( dumpflg == 2 ) {
-										PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
-										if ( stat == -1 ) cont=0;	// program finish
+										if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
+										ProgEntryN=1;
+										MSG1("Prog Loading.....");
+										CB_ProgEntry( SrcBase ) ;		// sub program search
+										if ( ErrorNo ) { 
+											ProgNo=ErrorProg; 
+											stat=1;
+										} else {
+											ProgNo=0;
+											ExecPtr=0;
+											stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
+										}
+										SaveConfig();
+										filebase = ProgfileAdrs[ProgNo];
+										SrcBase  = filebase+0x56;
+										if ( ForceReturn ) { cont=0; break; }	// force program end
+										if ( stat ) {
+											if ( ErrorNo ) offset = ErrorPtr ;			// error
+											else if ( BreakPtr ) offset = ExecPtr ;	// break
+										} else offset = 0;
+										if ( stat == -1 ) offset = ExecPtr-1;	// program  no error return
+										csrPtr = offset;
+										offset_y=0;
+										run=2; // edit mode
+										if ( dumpflg == 2 ) {
+											PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
+											if ( stat == -1 ) cont=0;	// program finish
+										}
 									}
 								}
 							}
@@ -1354,7 +1450,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			F6j:	alphalock = 0 ;
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
-					
+
 			case 0x755A:		// ClipMode LEFT
 			case KEY_CTRL_LEFT:
 				switch ( dumpflg ) {
@@ -1629,7 +1725,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							EditPaste( filebase, ClipBuffer, &csrPtr);
 							offset=csrPtr;
 							offset_y=0;
-							PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
+							PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
 							UpdateLineNum=1;
 							key=0;
 							break;

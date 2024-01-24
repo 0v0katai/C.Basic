@@ -139,6 +139,14 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 	int c,n,result=1;
 	n=CB_EvalInt( SRC );
 	switch ( n ) {
+		case 0:
+			SaveDisp(SAVEDISP_PAGE1);
+			goto exit;
+			break;
+		case 9:
+			RestoreDisp(SAVEDISP_PAGE1);
+			goto exit;
+			break;
 		case 1:
 		case 2:
 		case 3:
@@ -199,7 +207,9 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 			{ CB_Error(ArgumentERR); return; }	// Argument error
 			break;
 	}
+  exit:
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 	return result;
 }
 

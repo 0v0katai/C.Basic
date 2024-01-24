@@ -210,7 +210,14 @@ int MatRegVar( char *SRC ) {	//
 	int exptr=ExecPtr;
 	int c=SRC[ExecPtr];
 	reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; return reg; }
-	if ( c=='@' ) { c=SRC[++ExecPtr];
+	if ( c=='@' ) {
+		c=SRC[++ExecPtr];
+		if ( c=='(' ) { 
+			ExecPtr++; 
+			reg=CB_EvalInt( SRC );
+			if ( SRC[ExecPtr] == ')' ) ExecPtr++ ;	// 
+			goto jp1;
+		}
 		i=RegVar( c );
 		if ( i>=0 ) { ExecPtr++;
 			if ( CB_INT ) reg=LocalInt[i][0] ; else reg=LocalDbl[i][0] ;
@@ -247,8 +254,14 @@ int ListRegVar( char *SRC ) {	// return reg no
 	}
 	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
+	if ( c=='(' ) { 
+		reg=CB_EvalInt( SRC );
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++ ;	// 
+		goto jp0;
+	}
 	ExecPtr--;
 	reg=Eval_atoi( SRC, c );
+  jp0:
 	if ( ( reg<1 ) || ( ExtListMax<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
   jp1:
   	if ( reg<=52 ) {

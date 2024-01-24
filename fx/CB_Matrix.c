@@ -637,6 +637,7 @@ void Mat2Clip( int reg, char *buffer , int max ) {	//
 	}
 	ptr--;
 	buffer[ptr++]=']';
+	buffer[ptr]='\0';
 	ErrorMSGstr1("Mat to Clip Ok!");
 }
 /*
@@ -1624,7 +1625,7 @@ void CB_MatrixInit2Str( char *SRC ) { //	["ABCD","12345","XYZ"]->Mat A[.B]
 	ExecPtr++;
 	exptr=ExecPtr;
 	m=1;
-	SkipSpcCR(SRC);
+//	SkipSpcCR(SRC);
 	while ( 1 ) {
 		len=MatGetOpcode(SRC, buffer, 255);
 		if ( len > maxlen ) maxlen=len;
@@ -3207,7 +3208,7 @@ int CB_MatBase( char *SRC ){	// MatBase( Mat A )
 //-----------------------------------------------------------------------------
 int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte

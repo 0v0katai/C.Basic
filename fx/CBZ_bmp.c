@@ -130,18 +130,7 @@ void DecodeBmp2mem( char *buffer2, char *buffer, int width, int height ){	//	bmp
 		}
 	}
 }
-void DecodeBmp2vram( char *vram, char *buffer, int width, int height ){	//	bmpformat(buffer) -> bmp(vram)
-	int i,x,y;
-	int xbyte,xbyte2;
-	xbyte =((((width+7)/8)+3)/4)*4;
-	xbyte2=   (width+7)/8;
-	for (y=0; y<height; y++) {
-		for (x=0; x<xbyte2; x++) {
-			if ( (0<=x)&&(x<128)&&(0<=y)&&(y<128) ) vram[(y<<4)+x]=buffer[(height-y-1)*xbyte+x];
-		}
-	}
-}
-int EnodeBmp2mem( char *buffer , char *buffer2 , int width, int height ){	//	bmp(buffer2) -> bmpformat(buffer)
+int EncodeBmp2mem( char *buffer , char *buffer2 , int width, int height ){	//	bmp(buffer2) -> bmpformat(buffer)
 	int i,x,y;
 	int xbyte,xbyte2;
 	int offset;
@@ -154,16 +143,78 @@ int EnodeBmp2mem( char *buffer , char *buffer2 , int width, int height ){	//	bmp
 	}
 	return 1;
 }
+int EncodeVram2Bmp( char *buffer , int width, int height, int px, int py  ){	//	vram -> bmpformat(buffer)
+	int i,x,y;
+	int xbyte,xbyte2;
+	int offset;
+	int b,g,r;
+	unsigned char buffer2[1024];
+	DISPBOX box;
+	box.left   =px;
+	box.right  =px+width-1;
+	box.top    =py;
+	box.bottom =py+height-1;
+	Bdisp_ReadArea_VRAM( &box,  buffer2 );
 
+	xbyte =((((width+7)/8)+3)/4)*4;
+	xbyte2=   (width+7)/8;
+	for (y=0; y<height; y++) {
+		for (x=px; x<px+xbyte2; x++) {
+			buffer[(height-y-1)*xbyte+x]=buffer2[y*xbyte2+x];
+		}
+	}
+	return 1;
+}
 
-int DecodeBmp2Vram( char *filebase ){	//	bmp -> vram
+/*
+void DecodeBmp2vram( char *vram, char *buffer, int width, int height ){	//	bmpformat(buffer) -> bmp(vram)
+	int i,x,y;
+	int xbyte,xbyte2;
+	xbyte =((((width+7)/8)+3)/4)*4;
+	xbyte2=   (width+7)/8;
+	for (y=0; y<height; y++) {
+		for (x=0; x<xbyte2; x++) {
+			if ( (0<=x)&&(x<128)&&(0<=y)&&(y<128) ) vram[(y<<4)+x]=buffer[(height-y-1)*xbyte+x];
+		}
+	}
+}
+*/
+void DecodeBmp2vram( char *vram, char *buffer, int width, int height, int bit, int px, int py ){	//	bmpformat(buffer) -> bmp(vram)
+	int i,x,y;
+	int xbyte,xbyte2;
+	int data;
+	int b,g,r;
+	switch ( bit ) {
+		case 1:		// 1bit bmp
+			xbyte =((((width+7)/8)+3)/4)*4;
+			xbyte2=   (width+7)/8;
+			for (y=0; y<height; y++) {
+				for (x=0; x<xbyte2; x++) {
+					if ( (0<=x)&&(x<128)&&(0<=y)&&(y<128) ) {
+//						vram[(y<<4)+x]=buffer[(height-y-1)*xbyte+x];
+						data=buffer[(height-y-1)*xbyte+x]; bit=128;
+						for ( i=0; i<8; i++ ) {
+							if ( ( x*8+i+px < 192 )&&( y+py < 64 ) ) BdispSetPointVRAM2( x*8+i+px, y+py, (bit&data)!=0 );
+							bit>>=1;
+						}
+					}
+				}
+			}
+			break;
+		default:
+			break;
+	}
+}
+
+int DecodeBmp2Vram( char *filebase, int px, int py ){	//	bmp -> vram
 	int i,x,y;
 	int width,height;
 	int offset;
-	char *vram=(char*)GetVRAMAddress();
-	if ( ReadBmpHeader( (unsigned char*)filebase, &offset, &width, &height ) == 0 ) return 0;	// not bmp
-	Bdisp_AllClr_VRAM();
-	DecodeBmp2vram( vram, filebase+offset, width, height );
+	int bit;
+	char *vram=(char*)PictAry[0];
+	bit=ReadBmpHeader( (unsigned char*)filebase, &offset, &width, &height );
+	if (  bit == 0 ) return 0;	// not bmp
+	DecodeBmp2vram( vram, filebase+offset, width, height, bit, px, py );
 	return 1;
 }
 
@@ -206,6 +257,8 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	char *bmpbuffer;
 	int dx,dy;
 	int dimA,dimB;
+	int direct=0;
+	int x1,y1,x2,y2;
 
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -214,37 +267,54 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
-	dimA =MatAry[reg].SizeA;
-	dimB =MatAry[reg].SizeB;
-	switch ( MatAry[reg].ElementSize ) {
-		case  1:
-		case  2:
-			width = dimA;
-			height= dimB;
-			break;
-		case  8:
-			width = dimB*8;
-			height= dimA;
-			break;
-		case 16:
-			width = dimB*16;
-			height= dimA;
-			break;
-		case 32:
-			width = dimB*32;
-			height= dimA;
-			break;
-		case 64:
-			width = dimB*64;
-			height= dimA;
-			break;
-		default:
-			CB_Error(ElementSizeERR);
-			break;
+	c =SRC[ExecPtr];
+	if ( ( c == 0x7F ) || ( SRC[ExecPtr] == 0x40 ) ) {	//	BmpSave "TEST.bmp",Mat A[,Q]
+		FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
+		dimA =MatAry[reg].SizeA;
+		dimB =MatAry[reg].SizeB;
+		if ( ErrorNo ) return; // error
+	} else {											//	BmpSave "TEST.bmp",x1,y1,x2,y2
+		CB_GetOprand4( SRC, &x1, &y1, & x2, &y2 );
+		direct=1;
 	}
-	if ( ErrorNo ) return; // error
-
+	c =SRC[ExecPtr];
+	if ( c == ',' ) {
+		c =SRC[++ExecPtr];
+		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
+		ExecPtr++;
+	}
+	if ( direct == 0 ) {
+		switch ( MatAry[reg].ElementSize ) {
+			case  1:
+				width = dimA;
+				height= dimB;
+				break;
+			case  8:
+				width = dimB*8;
+				height= dimA;
+				break;
+			case 16:
+				width = dimB*16;
+				height= dimA;
+				break;
+			case 32:
+				width = dimB*32;
+				height= dimA;
+				break;
+			case 64:
+				width = dimB*64;
+				height= dimA;
+				break;
+			default:
+				CB_Error(ElementSizeERR);
+				break;
+		}
+	} else {
+		if ( x1 > x2 ) { i=x1; x1=x2; x2=i; }
+		if ( y1 > y2 ) { i=y1; y1=y2; y2=i; }
+		width = x2-x1+1;
+		height= y2-y1+1;
+	}
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
 		c =SRC[++ExecPtr];
@@ -257,7 +327,8 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	if( bmpbuffer == NULL ) Abort();
 	memset( bmpbuffer, 0x00, bfSize+4 );
 	WriteBmpHeader( bmpbuffer, width, height );
-	EnodeBmp2mem( bmpbuffer+bfOffBits , FilePtr, width, height );
+	if ( direct == 0 )	EncodeBmp2mem( bmpbuffer+bfOffBits , FilePtr, width, height );
+	else 				EncodeVram2Bmp( bmpbuffer+bfOffBits , width, height, x1, y1 );
 	CB_SaveSub( sname, bmpbuffer, bfSize, check, "bmp" );
 	free( bmpbuffer );	// free
 
@@ -270,24 +341,33 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 	int width,height;
 	int offset,ptr=0,size;
 	char* matptr;
+	int direct=0;
+	int px=0,py=0;
 
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
 	
-	c =SRC[ExecPtr];
-	if ( c == ',' ) {
-		ExecPtr++;
-		ptr=CB_EvalInt( SRC );
-		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
-	}
+//	c =SRC[ExecPtr];
+//	if ( c == ',' ) {
+//		ExecPtr++;
+//		ptr=CB_EvalInt( SRC );
+//		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
+//	}
 	c =SRC[ExecPtr];
 	if ( c == ')' ) ExecPtr++;
 	c =SRC[ExecPtr];
-	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	CB_SaveLoadOprand( SRC, &reg, &matsize );
-	if ( ErrorNo == NoMatrixArrayERR ) { ErrorNo=0; }	// No Mat error cancel
+	if ( c == 0x0E ) {
+		ExecPtr++;
+		CB_SaveLoadOprand( SRC, &reg, &matsize );
+		if ( ErrorNo == NoMatrixArrayERR ) { ErrorNo=0; }	// No Mat error cancel
+	} else {
+		direct=1;
+		if ( c == ',' ) { 
+			ExecPtr++;
+			CB_GetOprand2( SRC, &px, &py);
+		}
+	}
 	FilePtr=CB_LoadSub( sname, ptr, &size, "bmp" ) ;
 	if ( ErrorNo ) return ; // error
 
@@ -296,6 +376,11 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 	dimB = height;
 	base = 0;
 	ElementSize = 1;
+	if ( direct ) {
+		DecodeBmp2Vram( FilePtr, px, py );
+//		Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
+		goto exit; 
+	}
 	DimMatrixSub( reg, ElementSize, dimA, dimB, base ) ;
 	if ( ErrorNo ) goto exit; // error
 	matptr=(char*)MatAry[reg].Adrs;

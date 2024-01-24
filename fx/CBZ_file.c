@@ -1180,7 +1180,8 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 	unsigned int key;
 	int fsize,size;
 	if ( ( filebase[0x00] == 'B' ) && ( filebase[0x01] == 'M' ) ) {	// bmp ?
-		if ( DecodeBmp2Vram( filebase ) ==0 ) return 1; // not bmp
+		Bdisp_AllClr_VRAM();
+		if ( DecodeBmp2Vram( filebase, 0, 0 ) ==0 ) return 1; // not bmp
 		GetKey( &key );
 		return 1;
 	}
@@ -1236,6 +1237,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	ProgEntryN=prgNo;						// set program no
 	ProgfileAdrs[prgNo]= filebase;
 	ProgfileMax[prgNo]= progsize;
+	if ( ProgfileMax[prgNo] > EDITMAX ) ProgfileMax[prgNo] = EDITMAX;
 	ProgfileEdit[prgNo]= 0;
 	ProgfileMode[prgNo]= CurrentFileMode;
 	ProgNo=prgNo;
@@ -1360,6 +1362,7 @@ int NewProg(){
 	ProgEntryN=0;						// new Main program
 	ProgfileAdrs[0]= filebase;
 	ProgfileMax[0]= SrcSize( filebase ) + NewMax ;
+	if ( ProgfileMax[0] > EDITMAX ) ProgfileMax[0] = EDITMAX;
 	ProgfileEdit[0]= 1;
 	ProgfileMode[0]= 0;	// g1m default
 	ProgNo=0;
@@ -1645,6 +1648,7 @@ int MakeDirectory(){
 	strcpy( folder, name );
 	return 0;	// ok
 }
+/*
 int RenameDirectory( char * foldername ){
 	char newname[16];
 	char oldfolder[16];
@@ -1663,22 +1667,28 @@ int RenameDirectory( char * foldername ){
 	FileListUpdate = 1 ;
 	return 0;	// ok
 }
-
+*/
 //----------------------------------------------------------------------------------------------
 int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 copy
 	char *filebase;
 	char name[32],sname[16],sname2[16],basname[32];
 	int size,i,j;
 	char msg[2][18]={"Rename File Name?" ,"Copy File Name?" };
+	int bmp=0;
 
 	if ( LoadProgfile( fname, 0, 0, 1 ) ) return 1 ; // error
 	filebase = ProgfileAdrs[0];
 	SetShortName( sname, fname);
+	if ( strcmp( sname + strlen(sname) - 4, ".bmp") == 0 ) {	// bmp file
+		bmp=1; goto jmp;
+	} else
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
+	   jmp:
 		strncpy( basname, sname, strlen(sname)-4);
 		basname[strlen(sname)-4]='\0';
 		if ( InputFilename( basname, msg[select] ) ) return 1 ; // cancel
-		SetFullfilenameExt( name, basname, "txt" );
+		if ( bmp )	 	SetFullfilenameExt( name, basname, "bmp" );
+		else			SetFullfilenameExt( name, basname, "txt" );
 		if ( strcmp(name,fname)==0 ) return 0; // no rename
 		if ( ExistFile( name ) == 0 ) if ( YesNoOverwrite() ) return 1 ; // cancel
 		if ( storeFile( name, (unsigned char*)filebase, strlen(filebase) )==0 ) {
@@ -2463,16 +2473,16 @@ int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
