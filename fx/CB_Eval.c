@@ -444,10 +444,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[++ExecPtr];
-			if ( ( '1' <= c ) && ( c <= '9' ) ) {
-					ExecPtr++;
-					srand( c-'0' );
-			}
+			if ( ( '0' <= c ) && ( c <= '9' ) ) srand( Eval_atod( SRC, c ) );
 			result=(double)rand()/(double)(RAND_MAX+1.0);
 			return result ;
 		case 0xFFFFFF97 :	// abs

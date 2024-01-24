@@ -345,6 +345,8 @@ const short oplistOPTN[]={
 		0xA6,	// Int
 		0xB6,	// frac
 		0xAB,	// !
+		0xC1,	// Ran#
+		0x7F87,	// RanInt#(
 //		0x81,	// sin
 //		0x82,	// cos
 //		0x83,	// tan
@@ -373,9 +375,6 @@ const short oplistOPTN[]={
 		0x7FB1,	// Or
 		0x7FB3,	// Not
 		0x7FB4,	// Xor
-
-		0xC1,	// Ran#
-		0x7F87,	// RanInt#(
 
 		0xD3,	// Rnd
 		0x7F86,	// RndFix(

@@ -137,6 +137,7 @@ int Eval_atod(char *SRC, int c ) {
 				if ( ('a'<=c)&&(c<='f') ) result = result*16 +(c-'a'+10);
 				c=SRC[++ExecPtr];
 			}
+			return result ;
 		}
 		else
 		if ( (  c=='b' ) || ( c=='B' ) ) {
@@ -145,12 +146,12 @@ int Eval_atod(char *SRC, int c ) {
 				result = result*2 +(c-'0');
 				c=SRC[++ExecPtr];
 			}
+			return result ;
 		}
-	} else {
-		while ( ('0'<=c)&&(c<='9') ) {
-			result = result*10 +(c-'0');
-			c=SRC[++ExecPtr];
-		}
+	}
+	while ( ('0'<=c)&&(c<='9') ) {
+		result = result*10 +(c-'0');
+		c=SRC[++ExecPtr];
 	}
 	return result ;
 }
@@ -324,10 +325,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[++ExecPtr];
-			if ( ( '1' <= c ) && ( c <= '9' ) ) {
-					ExecPtr++;
-					srand( c-'0' );
-			}
+			if ( ( '0' <= c ) && ( c <= '9' ) ) srand( Eval_atod( SRC, c ) );
 			result=rand();
 			return result ;
 		case 0xFFFFFF97 :	// abs

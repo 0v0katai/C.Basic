@@ -343,14 +343,14 @@ void Search_IfEnd( char *SRC ){
 	return ;
 }
 
-void Search_ElseIfEnd( char *SRC ){
+int Search_ElseIfEnd( char *SRC ){
 	unsigned int c;
 	while (1){	// Search  Else or IfEnd
 		c=SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
-				return ;
+				return 0 ;
 			case 0x27:	// ' rem
 				Skip_rem(SRC);
 				break;
@@ -360,11 +360,11 @@ void Search_ElseIfEnd( char *SRC ){
 					Search_IfEnd(SRC);
 					break;
 				} else
-				if ( c == 0x02 ) return ; 	// Else
+				if ( c == 0x02 ) return 1 ; 	// Else
 				else
-				if ( c == 0x03 ) return ; 	// IfEnd
+				if ( c == 0x03 ) return 2 ; 	// IfEnd
 				else
-				if ( c == 0x0F ) { ExecPtr-=2; return ; } 	// ElseIf
+				if ( c == 0x0F ) return 3 ; 	// ElseIf
 				break;
 			case 0x0000007F:	// 
 			case 0xFFFFFFF9:	// 
@@ -376,12 +376,13 @@ void Search_ElseIfEnd( char *SRC ){
 				break;
 		}
 	}
-	return ;
+	return 0 ;
 }
 
 void CB_If( char *SRC, CchIf *CacheIf ){
-	int c,i;
+	int c,i,stat;
 	int value;
+  loop:
 	if (CB_INT)	value = CBint_Eval( SRC ) ;
 	else		value = CB_Eval( SRC ) ;
 	c =SRC[ExecPtr];
@@ -395,40 +396,17 @@ void CB_If( char *SRC, CchIf *CacheIf ){
 		if ( CacheIf->Ptr[i]==ExecPtr ) { ExecPtr=CacheIf->Adrs[i]; return ; }	// adrs ok
 	}
 	CacheIf->Ptr[CacheIf->CNT]=ExecPtr;
-	Search_ElseIfEnd( SRC );
+	stat=Search_ElseIfEnd( SRC );
 	if ( CacheIf->CNT < IfCntMax ) {
 		CacheIf->Adrs[CacheIf->CNT]=ExecPtr;
 		CacheIf->CNT++;
 	} else CacheIf->CNT=0;	// over reset
-}
 
-
-void CB_ElseIf( char *SRC, CchIf *CacheElseIf ){
-	int c,i;
-	int value;
-	if (CB_INT)	value = CBint_Eval( SRC ) ;
-	else		value = CB_Eval( SRC ) ;
-	c =SRC[ExecPtr];
-	if ( ( c == ':'  ) || ( c == 0x0D ) )  c=SRC[++ExecPtr];
-	if ( c == 0x27 ) if ( SRC[++ExecPtr]=='/' )  c=SRC[++ExecPtr];
-	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x01 ) ) { CB_Error(ThenWithoutIfERR); return; } // not Then error 
-	ExecPtr+=2 ;
-	if ( value ) return ; // true
-
-	for ( i=0; i<CacheElseIf->CNT; i++ ) {
-		if ( CacheElseIf->Ptr[i]==ExecPtr ) { ExecPtr=CacheElseIf->Adrs[i]; return ; }	// adrs ok
-	}
-	CacheElseIf->Ptr[CacheElseIf->CNT]=ExecPtr;
-	Search_IfEnd( SRC );
-	if ( CacheElseIf->CNT < IfCntMax ) {
-		CacheElseIf->Adrs[CacheElseIf->CNT]=ExecPtr;
-		CacheElseIf->CNT++;
-	} else CacheElseIf->CNT=0;	// over reset
+	if ( stat == 3 ) goto loop;	// ElseIf
 }
 
 void CB_Else( char *SRC, CchIf *CacheElse ){
 	int i;
-	
 	for ( i=0; i<CacheElse->CNT; i++ ) {
 		if ( CacheElse->Ptr[i]==ExecPtr ) { ExecPtr=CacheElse->Adrs[i]; return ; }	// adrs ok
 	}
@@ -868,11 +846,12 @@ int CB_interpreter_sub( char *SRC ) {
 		if ( c==':'  ) { c=SRC[ExecPtr++]; if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
 		if ( c==0x0D ) {
 				while ( c==0x0D ) c=SRC[ExecPtr++];
-				while ( c==0x20 ) c=SRC[ExecPtr++];
+//				while ( c==0x20 ) c=SRC[ExecPtr++];
 				if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); }	// [AC] break?
 		}
 		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryN )  return -1;  else  break; }
 		
+		while ( c==0x20 ) c=SRC[ExecPtr++];
 		switch (c) {
 			case 0xFFFFFFEC:	// Goto
 				CB_Goto(SRC, StackGotoAdrs );
@@ -897,7 +876,7 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_Else(SRC, &CacheElse );
 						break;
 					case 0x0F:	// ElseIf
-						CB_ElseIf(SRC, &CacheElseIf );
+						CB_Else(SRC, &CacheElseIf );
 						break;
 					case 0x03:	// IfEnd
 						break;
