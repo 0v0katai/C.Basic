@@ -467,9 +467,9 @@ const short oplistOPTN[]={
 //		0xF74C,	// Sum
 //		0x0FB,	// ProbP(
 //		0x0FC,	// ProbQ(
-		0xF938,	// Exp(
+//		0xF938,	// Exp(
 //		0x0FD,	// Eval(
-//		0x0FE,	// Gosub
+//		0x0FA,	// Gosub
 		0x7FE9,	// CellSum(
 		0x7F5F,	// Ticks
 		0};
@@ -514,7 +514,7 @@ const short oplistPRGM[]={
 		
 		0xF7F1,	// Local
 		0xED,	// Prog
-		0xFE,	// Gosub
+		0xFA,	// Gosub
 		0xF70C,	// Return
 		0xF70D,	// Break
 		0xF70E,	// Stop
@@ -613,11 +613,11 @@ const short oplistVARS[]={
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
-		0xF7F0,	// DotShape(
-		0xF73F,	// DotGet(
-		0xF94B,	// DotPut(
-		0xF74F,	// DotTrim(
-		0xF7E0,	// DotLife(
+		0xF7F0,	// dotShape(
+		0xF73F,	// dotGet(
+		0xF94B,	// dotPut(
+		0xF74F,	// dotTrim(
+		0xF7E0,	// dotLife(
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
@@ -896,7 +896,7 @@ const short oplistCMD[]={
 		0xF7ED,	// SwitchEnd
 		0xF717,	// ACBreak
 		0xF7F1,	// Local
-		0xFE,	// Gosub
+		0xFA,	// Gosub
 
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
@@ -1029,10 +1029,10 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %	
 
-		0xF73F,	// DotGet(
-		0xF94B,	// DotPut(
-		0xF74F,	// DotTrim(
-		0xF7E0,	// DotLife(
+		0xF73F,	// dotGet(
+		0xF94B,	// dotPut(
+		0xF74F,	// dotTrim(
+		0xF7E0,	// dotLife(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
 		0xF7E8,	// ReadGraph(
@@ -1225,12 +1225,12 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F59, "ColSize(" }, 
 	{ 0x7F5A, "RowSize(" }, 
 	{ 0x7F5F, "Ticks" }, 
-	{ 0x7FB4, " xor " }, 
+	{ 0x7FB4, " Xor " }, 
 	{ 0x7FF5, "IsExist(" }, 
 	{ 0xF717, "ACBreak" }, 
-	{ 0xF73F, "DotGet(" }, 
-	{ 0xF74F, "DotTrim(" }, 
-	{ 0xF7E0, "DotLife(" }, 
+	{ 0xF73F, "dotGet(" }, 
+	{ 0xF74F, "dotTrim(" }, 
+	{ 0xF7E0, "dotLife(" }, 
 	{ 0xF7E1, "Rect " }, 
 	{ 0xF7E2, "FillRect " }, 
 	{ 0xF7E3, "LocateYX " }, 
@@ -1243,7 +1243,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7ED, "SwitchEnd" }, 
 	{ 0xF7EE, "Save " }, 
 	{ 0xF7EF, "Load(" }, 
-	{ 0xF7F0, "DotShape(" }, 
+	{ 0xF7F0, "dotShape(" }, 
 	{ 0xF7F1, "Local " }, 
 	{ 0xF7FE, "BackLight " }, 
 	{ 0xF930, "StrJoin(" }, 
@@ -1262,11 +1262,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF93D, "StrRotate(" }, 
 	{ 0xF93E, "Sprintf(" }, 
 	{ 0xF93F, "Str " }, 
-	{ 0xF94B, "DotPut(" }, 
-	{ 0x00FB, "Ev1(" }, 
-	{ 0x00FC, "Ev2(" }, 
-	{ 0x00FD, "Eval(" }, 
-	{ 0x00FE, "Gosub "},
+	{ 0xF94B, "dotPut(" }, 
+	{ 0x00FA, "Gosub "},
 	{ 0, "" }
 };
 

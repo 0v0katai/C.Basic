@@ -851,7 +851,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						} else {
 							if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
 							ProgEntryN=1;
-							MSG1("Wait a moment");
+							MSG1("Prog Loading.....");
+//							MSG1("Wait a moment");
 							CB_ProgEntry( SrcBase ) ;		// sub program search
 							if ( ErrorNo ) { 
 								ProgNo=ErrorProg; 
