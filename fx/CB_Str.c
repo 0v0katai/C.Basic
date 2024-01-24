@@ -970,6 +970,7 @@ void CB_StorStr( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 void ClrLine5800P( int CsrX ){
+	if ( CsrX > 21 ) return ;
 	if ( CB_fx5800P == 0 ) locate(CsrX,CursorY); PrintLine((unsigned char*)" ",21);
 }
 void CB_StrPrint( char *SRC , int csrX ) {
@@ -2016,7 +2017,7 @@ int CB_TimeToStr() {	// "23:59:59"
 
 //----------------------------------------------------------------------------------------------
 int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte

@@ -29,10 +29,11 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.25\xE6\x41";
-#define VERSION 225
+const char VerMSG[]="C.Basic  v2.26\xE6\x41";
+#define VERSION 226
 
 //---------------------------------------------------------------------------------------------
+void GetMemFreeStr10( char *buffer );
 
 void VBattDispSub( int x, int y) {
 	char buffer[32];
@@ -40,9 +41,10 @@ void VBattDispSub( int x, int y) {
 	PrintMini( x, y, (unsigned char*)buffer, MINI_OVER );
 }
 
-void VerDispSub() {
+void VerDispSub( int flag ) {
 	int freearea;
 	char buffer[32];
+	char maxbk=MaxMemMode;
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)VerMSG );
 	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
@@ -51,8 +53,10 @@ void VerDispSub() {
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2019" );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
-		sprintf(buffer,"%d bytes free",freearea);
+//		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
+//		sprintf(buffer,"%d bytes free",freearea);
+		if ( flag ) MaxMemMode=0;
+		GetMemFreeStr10(buffer);
 		PrintMini( 2*6+2, 6*8+2, (unsigned char*)buffer, MINI_OVER );
 		VBattDispSub( 15*6+2, 6*8+2 );
 //		locate( 3, 5 ); Print( (unsigned char*)buffer );
@@ -60,10 +64,11 @@ void VerDispSub() {
 //	}
 		
 	Bdisp_PutDisp_DD();
+	MaxMemMode=maxbk;
 }
-void VerDisp() {
+void VerDisp( int flag ) {
 	unsigned int key;
-	VerDispSub();
+	VerDispSub( flag );
 	GetKey(&key);
 }
 
@@ -2205,7 +2210,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 				}
 				break;
 			case KEY_CTRL_F6:
-				VerDisp();
+				VerDisp( limit );
 				break;
 			default:
 				break;

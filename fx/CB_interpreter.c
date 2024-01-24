@@ -760,17 +760,18 @@ int CB_interpreter_sub( char *SRC ) {
 					CBint_CurrentValue = EvalIntsubTop( SRC );
 					if ( dspflag>=3 ) {
 						ExecPtr=excptr;
-						dspflagtmp=ListEvalIntsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
+						ListEvalIntsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
 					}
 				} else {
 					if (CB_INT==0)	CB_CurrentValue.real = EvalsubTop( SRC );		// double
 					else 			CB_CurrentValue      = Cplx_EvalsubTop( SRC );	// complex
 					if ( dspflag>=3 ) {
 						ExecPtr=excptr;
-						if (CB_INT==0)	dspflagtmp=ListEvalsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
-						else			dspflagtmp=Cplx_ListEvalsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
+						if (CB_INT==0)	ListEvalsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
+						else			Cplx_ListEvalsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
 					}
 				}
+				dspflagtmp = dspflag;
 				c=SRC[ExecPtr]; 
 				if (c==0x0E) goto inext1;
 				if (c==0x13) goto inext2;
@@ -1007,8 +1008,8 @@ void InitLocalVar() {
 //int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------

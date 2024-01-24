@@ -1899,9 +1899,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_PASTE:
 							if ( ClipBuffer != NULL ) {
 								EditPaste( filebase, ClipBuffer, &csrPtr);
-								offset=csrPtr;
-								offset_y=0;
-								PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
+								x=1; y=0; ptr=0;
+								OpcodeLineN( ClipBuffer, &ptr, &x, &y );
+								if ( ( y >= (ymax-cy) ) || ( y >= ymax ) ) {
+									offset=csrPtr;
+									offset_y=0;
+									PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
+								}
 								UpdateLineNum=1;
 							}
 							key=0;
