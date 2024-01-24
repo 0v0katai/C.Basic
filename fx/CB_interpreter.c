@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.80
+ Casio Basic interpreter for fx-9860G series    v0.81
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -1217,41 +1217,6 @@ void Skip_block( char *SRC ){
 		}
 	}
 }
-void Skip_rem( char *SRC ){	// skip '...
-	int c;
-	while (1){
-		c=SRC[ExecPtr++];
-		if ( c=='#' ) {
-			if ( strncmp( (char*)SRC+ExecPtr,"CBint",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBINT",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBdbl",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBDBL",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBasic",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBASIC",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
-		} else 
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-//			case 0x3A:	// <:>
-			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
-				return ;
-				break;
-			case 0x22:	// "
-				Skip_quot(SRC);
-				break;
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
-		}
-	}
-}
 
 //-----------------------------------------------------------------------------
 
@@ -1323,6 +1288,56 @@ void CB_Goto( char *SRC, short *StackGotoAdrs){
 	} else  ExecPtr = ptr ;
 }
 
+//----------------------------------------------------------------------------------------------
+void Skip_rem( char *SRC ){	// skip '...
+	int c;
+	while (1){
+		c=SRC[ExecPtr++];
+		if ( c=='#' ) {
+			if ( strncmp( (char*)SRC+ExecPtr,"CBint",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBINT",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBdbl",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBDBL",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBasic",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBASIC",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
+		} else 
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+//			case 0x3A:	// <:>
+			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				return ;
+				break;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+//			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+}
+void CB_Rem( char *SRC, CchRem *CacheRem ){
+	int i;
+	
+	for ( i=0; i<CacheRem->CNT; i++ ) {
+		if ( CacheRem->Ptr[i]==ExecPtr ) { ExecPtr=CacheRem->Adrs[i]; return ; }	// adrs ok
+	}
+	CacheRem->Ptr[CacheRem->CNT]=ExecPtr;
+	Skip_rem( SRC );
+	if ( CacheRem->CNT < RemCntMax ) {
+		CacheRem->Adrs[CacheRem->CNT]=ExecPtr;
+		CacheRem->CNT++;
+	} else CacheRem->CNT=0;	// over reset
+}
+
 //-----------------------------------------------------------------------------
 void Search_IfEnd( char *SRC ){
 	int c;
@@ -1355,7 +1370,7 @@ void Search_IfEnd( char *SRC ){
 	}
 }
 
-void Search_ElseIfend( char *SRC ){
+void Search_ElseIfEnd( char *SRC ){
 	unsigned int c;
 	while (1){	// Search  Else or IfEnd
 		c=SRC[ExecPtr++];
@@ -1388,10 +1403,9 @@ void Search_ElseIfend( char *SRC ){
 	}
 }
 
-void CB_If( char *SRC, CchIf *CacheIf, CurrentStk *CurrentStruct ){
+void CB_If( char *SRC, CchIf *CacheIf ){
 	int c,i;
 	int value;
-	int ptr;
 	if (CB_INT)	value = CBint_Eval( SRC ) ;
 	else		value = CB_Eval( SRC ) ;
 	c =SRC[ExecPtr];
@@ -1400,31 +1414,26 @@ void CB_If( char *SRC, CchIf *CacheIf, CurrentStk *CurrentStruct ){
 	ExecPtr+=2 ;
 	if ( value ) return ; // true
 	
-	if ( CurrentStruct->CNT ==0 ) { Search_ElseIfend( SRC ); CacheIf->CNT=0; return ; } 
-	
 	for ( i=0; i<CacheIf->CNT; i++ ) {
 		if ( CacheIf->Ptr[i]==ExecPtr ) { ExecPtr=CacheIf->Adrs[i]; return ; }	// adrs ok
 	}
-	if ( CacheIf->CNT > IfCntMax-1 ) CacheIf->CNT=0;	// over reset
 	CacheIf->Ptr[CacheIf->CNT]=ExecPtr;
-	Search_ElseIfend( SRC );
-	CacheIf->Adrs[CacheIf->CNT]=ExecPtr;
-	CacheIf->CNT++;
+	Search_ElseIfEnd( SRC );
+	if ( CacheIf->CNT < IfCntMax ) {
+		CacheIf->Adrs[CacheIf->CNT]=ExecPtr;
+		CacheIf->CNT++;
+	} else CacheIf->CNT=0;	// over reset
 }
 
-void CB_Else( char *SRC, CchIf *CacheElse, CurrentStk *CurrentStruct ){
-	int c,i;
-	int value;
-	int ptr;
+void CB_Else( char *SRC, CchIf *CacheElse ){
+	int i;
 	
-	if ( CurrentStruct->CNT ==0 ) { Search_IfEnd( SRC ); CacheElse->CNT=0; return ; }
-
 	for ( i=0; i<CacheElse->CNT; i++ ) {
 		if ( CacheElse->Ptr[i]==ExecPtr ) { ExecPtr=CacheElse->Adrs[i]; return ; }	// adrs ok
 	}
 	CacheElse->Ptr[CacheElse->CNT]=ExecPtr;
 	Search_IfEnd( SRC );
-	if ( CacheElse->CNT < IfCntMax-1 ) {
+	if ( CacheElse->CNT < IfCntMax ) {
 		CacheElse->Adrs[CacheElse->CNT]=ExecPtr;
 		CacheElse->CNT++;
 	} else CacheElse->CNT=0;	// over reset
@@ -2627,58 +2636,6 @@ void CB_RclPict( char *SRC ) { //	RclPict
 }
 
 //----------------------------------------------------------------------------------------------
-int CB_SearchProg( char *name ) { //	Prog search
-	int j,i=1;
-	char *ptr;
-	
-	while ( ProgfileAdrs[i] ) {
-		ptr=ProgfileAdrs[i]+0x3C;
-		for (j=0;j<8;j++) if ( ptr[j] != name[j] ) break;
-		if ( j==8 )	return i ; // ok
-		i++;
-	}
-	return -1; // fault
-}
-
-void CB_Prog( char *SRC ) { //	Prog "..."
-	int c;
-	char buffer[32]="";
-	char *src;
-	char *StackProgSRC;
-	int StackProgExecPtr;
-	int stat;
-	int ProgNo_bk;
-
-	c=SRC[ExecPtr];
-	if ( c == 0x22 ) {	// String
-		ExecPtr++;
-		GetQuotOpcode(SRC, buffer,16);	// Prog name
-	}
-	StackProgSRC     = SRC;
-	StackProgExecPtr = ExecPtr;
-	ProgNo_bk = ProgNo;
-	
-	ProgNo = CB_SearchProg( buffer );
-	if ( ProgNo < 0 ) { ProgNo=ProgNo_bk; ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
-
-	src = ProgfileAdrs[ProgNo];
-	SRC = src + 0x56 ;
-	ExecPtr=0;
-	
-	ProgEntryN++;
-	
-	stat=CB_interpreter_sub( SRC ) ;
-	if ( stat ) {
-		if ( ErrorNo ) return ;			// error
-		else if ( BreakPtr > 0 ) return ;	// break
-	}
-	
-	ProgEntryN--;
-	SRC     = StackProgSRC ;
-	ExecPtr = StackProgExecPtr ;
-	ProgNo  = ProgNo_bk;
-}
-
 //----------------------------------------------------------------------------------------------
 double CB_BinaryEval( char *SRC ) {	// eval 2
 	int c,op;
@@ -2848,8 +2805,9 @@ double CB_UnaryEval( char *SRC ) {	// eval 1
 		}
 	} else  return CB_Eval1(SRC);
 }
-//----------------------------------------------------------------------------------------------
 
+
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
 int CB_interpreter_sub( char *SRC ) {
@@ -2862,6 +2820,7 @@ int CB_interpreter_sub( char *SRC ) {
 	CurrentStk CurrentStruct;
 	CchIf CacheIf;
 	CchIf CacheElse;
+	CchRem CacheRem;
 	StkFor StackFor;
 	StkWhileDo StackWhileDo;
 
@@ -2870,6 +2829,7 @@ int CB_interpreter_sub( char *SRC ) {
 	ExecPtr=0;
 	CacheIf.CNT=0;
 	CacheElse.CNT=0;
+	CacheRem.CNT=0;
 	StackFor.Ptr=0;
 	StackWhileDo.WhilePtr=0;
 	StackWhileDo.DoPtr=0;
@@ -2905,10 +2865,10 @@ int CB_interpreter_sub( char *SRC ) {
 				c=SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x00:	// If
-						CB_If(SRC, &CacheIf, &CurrentStruct );
+						CB_If(SRC, &CacheIf );
 						break;
 					case 0x02:	// Else
-						CB_Else(SRC, &CacheElse, &CurrentStruct );
+						CB_Else(SRC, &CacheElse );
 						break;
 					case 0x03:	// IfEnd
 						break;
@@ -3148,7 +3108,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				CB_Rem(SRC, &CacheRem );
 				dspflag=0;
 				break;
 			case 0x22:	// " "
@@ -3299,6 +3259,60 @@ int CB_interpreter( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
+int CB_SearchProg( char *name ) { //	Prog search
+	int j,i=1;
+	char *ptr;
+	
+	while ( ProgfileAdrs[i] ) {
+		ptr=ProgfileAdrs[i]+0x3C;
+		for (j=0;j<8;j++) if ( ptr[j] != name[j] ) break;
+		if ( j==8 )	return i ; // ok
+		i++;
+	}
+	return -1; // fault
+}
+
+void CB_Prog( char *SRC ) { //	Prog "..."
+	int c;
+	char buffer[32]="";
+	char *src;
+	char *StackProgSRC;
+	int StackProgExecPtr;
+	int stat;
+	int ProgNo_bk;
+
+	c=SRC[ExecPtr];
+	if ( c == 0x22 ) {	// String
+		ExecPtr++;
+		GetQuotOpcode(SRC, buffer,16);	// Prog name
+	}
+	StackProgSRC     = SRC;
+	StackProgExecPtr = ExecPtr;
+	ProgNo_bk = ProgNo;
+	
+	ProgNo = CB_SearchProg( buffer );
+	if ( ProgNo < 0 ) { ProgNo=ProgNo_bk; ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
+
+	src = ProgfileAdrs[ProgNo];
+	SRC = src + 0x56 ;
+	ExecPtr=0;
+	
+	ProgEntryN++;
+	
+	stat=CB_interpreter_sub( SRC ) ;
+	if ( stat ) {
+		if ( ErrorNo ) return ;			// error
+		else if ( BreakPtr > 0 ) return ;	// break
+	}
+	
+	ProgEntryN--;
+	SRC     = StackProgSRC ;
+	ExecPtr = StackProgExecPtr ;
+	ProgNo  = ProgNo_bk;
+}
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+
 
 double q_un_sub(void) {
      int i;

@@ -550,11 +550,11 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result != dst;
 	} else
-	if ( c==0x12) { // ==
+	if ( c==0x12) { // >=
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result >= dst;
 	} else
-	if ( c==0x10) { // ==
+	if ( c==0x10) { // <=
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result <= dst;
 	} else
