@@ -200,24 +200,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				ExecPtr++;
 				MatOprandInt2( SRC, reg, &dimA, &dimB );
 				if ( ErrorNo ) return 1 ; // error
-/*				if ( MatAryElementSize[reg] >= 8 ) {
-					mptr=dimA*MatArySizeB[(reg)]+dimB;
-					switch ( MatAryElementSize[reg] ) {
-						case 32:
-							MatAryI=(int*)MatAry[reg];
-							return MatAryI[mptr] ;				// Matrix array int
-						case  8:
-							MatAryC=(char*)MatAry[reg];
-							return MatAryC[mptr] ;				// Matrix array char
-						case 16:
-							MatAryW=(short*)MatAry[reg];
-							return MatAryW[mptr] ;				// Matrix array word
-						case 64:
-							return MatAry[reg][mptr] ;			// Matrix array doubl
-					}
-				} else {
-*/					return ReadMatrixInt( reg, dimA, dimB);
-//				}
+				return ReadMatrixInt( reg, dimA, dimB);
+
 			} else if ( c == 0x3A ) {	// MOD(a,b)
 					ExecPtr+=2;
 					tmp = EvalIntsubTop( SRC );
@@ -236,9 +220,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			} else if ( c == 0xFFFFFF8F ) {	// Getkey
 					ExecPtr+=2;
 					c = SRC[ExecPtr];
-					if ( c=='0' ) {	ExecPtr++ ; result = CB_Getkey0() ; if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } }
-					if ( c=='1' ) {	ExecPtr++ ; result = CB_Getkey1() ; if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } }
-					if ( c=='2' ) {	ExecPtr++ ; result = CB_Getkey2() ; if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } }
+					if ( ( '0'<=c )&&( c<='2' )) {	ExecPtr++ ; result = CB_GetkeyN(c-'0') ; if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } }
 					else		  	result = CB_Getkey() ;
 					return result ;
 			} else if ( c == 0xFFFFFF87 ) {	// RanInt#(st,en)

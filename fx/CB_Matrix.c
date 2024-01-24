@@ -31,133 +31,128 @@ double *MatAry[MatAryMax];					// Matrix array ptr*
 double MatDefaultValue=0;
 
 //-----------------------------------------------------------------------------
-double ReadMatrix( int reg, int dimA, int dimB){
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	double value;
-	int mptr;
-	int ElementSize=MatAryElementSize[reg];
-	if ( ElementSize >=8 ) {
-		mptr=dimB*MatArySizeA[(reg)]+dimA;
-		switch ( ElementSize ) {
-			case 64:
-				return MatAry[reg][mptr] ;			// Matrix array doubl
-			case  8:
-				MatAryC=(char*)MatAry[reg];
-				return MatAryC[mptr] ;				// Matrix array char
-			case 16:
-				MatAryW=(short*)MatAry[reg];
-				return MatAryW[mptr] ;				// Matrix array word
-			case 32:
-				MatAryI=(int*)MatAry[reg];
-				return MatAryI[mptr] ;				// Matrix array int
-		}
-	} else {
-				if ( ElementSize == 2 ) { dimA++; dimB++; }	// Vram
-				MatAryC=(char*)MatAry[reg];			// Matrix array 1 bit
-				return ( MatAryC[dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
-	}
-}
 int ReadMatrixInt( int reg, int dimA, int dimB){
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
 	int value;
-	int mptr;
-	int ElementSize=MatAryElementSize[reg];
-	if ( ElementSize >=8 ) {
-		mptr=dimB*MatArySizeA[(reg)]+dimA;
-		switch ( ElementSize ) {
-			case  8:
-				MatAryC=(char*)MatAry[reg];
-				return MatAryC[mptr] ;				// Matrix array char
-			case 16:
-				MatAryW=(short*)MatAry[reg];
-				return MatAryW[mptr] ;				// Matrix array word
-			case 32:
-				MatAryI=(int*)MatAry[reg];
-				return MatAryI[mptr] ;				// Matrix array int
-			case 64:
-				return MatAry[reg][mptr] ;			// Matrix array doubl
-		}
-	} else {
-				if ( ElementSize == 2 ) { dimA++; dimB++; }	// Vram
-				MatAryC=(char*)MatAry[reg];			// Matrix array 1 bit
-				return ( MatAryC[dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+	switch ( MatAryElementSize[reg] ) {
+		case  2:		// Vram
+			dimA++; dimB++;
+		case  1:
+			MatAryC=(char*)MatAry[reg];			// Matrix array 1 bit
+			return ( MatAryC[dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			return MatAryC[dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array char
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			return MatAryW[dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array word
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			return MatAryI[dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array int
+		case 64:
+			return MatAry[reg][dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array doubl
 	}
 }
 
-void WriteMatrix( int reg, int dimA, int dimB, double value){
+double ReadMatrix( int reg, int dimA, int dimB){
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	int tmp;
-	int mptr;
-	int ElementSize=MatAryElementSize[reg];
-	if ( ElementSize >=8 ) {
-		mptr=(dimB)*MatArySizeA[reg]+dimA;
-		switch ( MatAryElementSize[reg] ) {
-			case 64:
-				MatAry[reg][mptr] = (double)value ;		// Matrix array double
-				break;
-			case  8:
-				MatAryC=(char*)MatAry[reg];
-				MatAryC[mptr] = (char)value ;			// Matrix array char
-				break;
-			case 16:
-				MatAryW=(short*)MatAry[reg];
-				MatAryW[mptr] = (short)value ;			// Matrix array word
-				break;
-			case 32:
-				MatAryI=(int*)MatAry[reg];
-				MatAryI[mptr] = (int)value ;			// Matrix array int
-				break;
-		}
-	} else {
-			MatAryC=(char*)MatAry[reg];					// Matrix array 1 bit
-			if ( ElementSize == 2 ) { dimA++; dimB++; }	// Vram
-			tmp=( 128>>(dimA&7) );
-			mptr=dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3);
-			if ( value ) 	MatAryC[mptr] |= tmp ;
-			else	 		MatAryC[mptr] &= ~tmp ;
+	double value;
+	switch ( MatAryElementSize[reg] ) {
+		case 64:
+			return MatAry[reg][dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array doubl
+		case  2:		// Vram
+			dimA++; dimB++;
+		case  1:
+			MatAryC=(char*)MatAry[reg];			// Matrix array 1 bit
+			return ( MatAryC[dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			return MatAryC[dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array char
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			return MatAryW[dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array word
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			return MatAryI[dimB*MatArySizeA[(reg)]+dimA] ;			// Matrix array int
 	}
 }
+
 void WriteMatrixInt( int reg, int dimA, int dimB, int value){
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
 	int tmp;
 	int mptr;
-	int ElementSize=MatAryElementSize[reg];
-	if ( ElementSize >=8 ) {
-		mptr=(dimB)*MatArySizeA[reg]+dimA;
-		switch ( MatAryElementSize[reg] ) {
-			case  8:
-				MatAryC=(char*)MatAry[reg];
-				MatAryC[mptr] = (char)value ;			// Matrix array char
-				break;
-			case 16:
-				MatAryW=(short*)MatAry[reg];
-				MatAryW[mptr] = (short)value ;			// Matrix array word
-				break;
-			case 32:
-				MatAryI=(int*)MatAry[reg];
-				MatAryI[mptr] = (int)value ;			// Matrix array int
-				break;
-			case 64:
-				MatAry[reg][mptr] = (double)value ;		// Matrix array double
-				break;
-		}
-	} else {
+//	if ( ( (dimA) < 0 ) || ( MatArySizeA[(reg)] <= (dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+//	if ( ( (dimB) < 0 ) || ( MatArySizeB[(reg)] <= (dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	switch ( MatAryElementSize[reg] ) {
+		case  2:	// Vram
+			dimA++; dimB++;
+		case  1:
 			MatAryC=(char*)MatAry[reg];					// Matrix array 1 bit
-			if ( ElementSize == 2 ) { dimA++; dimB++; }	// Vram
 			tmp=( 128>>(dimA&7) );
 			mptr=dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3);
 			if ( value ) 	MatAryC[mptr] |= tmp ;
 			else	 		MatAryC[mptr] &= ~tmp ;
+			break;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			MatAryC[dimB*MatArySizeA[reg]+dimA] = (char)value ;	// Matrix array char
+			break;
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			MatAryW[dimB*MatArySizeA[reg]+dimA] = (short)value ;	// Matrix array word
+			break;
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			MatAryI[dimB*MatArySizeA[reg]+dimA] = (int)value ;		// Matrix array int
+			break;
+		case 64:
+			MatAry[reg][dimB*MatArySizeA[reg]+dimA]  = (double)value ;	// Matrix array double
+			break;
 	}
 }
+void WriteMatrix( int reg, int dimA, int dimB, double value){
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int tmp;
+	int mptr;
+//	if ( ( (dimA) < 0 ) || ( MatArySizeA[(reg)] <= (dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+//	if ( ( (dimB) < 0 ) || ( MatArySizeB[(reg)] <= (dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	switch ( MatAryElementSize[reg] ) {
+		case 64:
+			MatAry[reg][dimB*MatArySizeA[reg]+dimA]  = (double)value ;	// Matrix array double
+			break;
+		case  2:	// Vram
+			dimA++; dimB++;
+		case  1:
+			MatAryC=(char*)MatAry[reg];					// Matrix array 1 bit
+			tmp=( 128>>(dimA&7) );
+			mptr=dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3);
+			if ( value ) 	MatAryC[mptr] |= tmp ;
+			else	 		MatAryC[mptr] &= ~tmp ;
+			break;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			MatAryC[dimB*MatArySizeA[reg]+dimA] = (char)value ;	// Matrix array char
+			break;
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			MatAryW[dimB*MatArySizeA[reg]+dimA] = (short)value ;	// Matrix array word
+			break;
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			MatAryI[dimB*MatArySizeA[reg]+dimA] = (int)value ;		// Matrix array int
+			break;
+	}
+}
+
+
 //-----------------------------------------------------------------------------
 int Cellsum( int reg, int x, int y ){
 	return ReadMatrixInt(reg,x-1,y-1)+ReadMatrixInt(reg,x-1,y)+ReadMatrixInt(reg,x-1,y+1)+ReadMatrixInt(reg,x,y-1)+ReadMatrixInt(reg,x,y+1)+ReadMatrixInt(reg,x+1,y-1)+ReadMatrixInt(reg,x+1,y)+ReadMatrixInt(reg,x+1,y+1);
@@ -216,7 +211,7 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n ) {
 		MatArySizeA[reg]=127;						// Matrix array size
 		MatArySizeB[reg]= 63;						// Matrix array size
 		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
-		MatAry[reg] = (double*)(PictAry[0]);				// Matrix array ptr*
+		MatAry[reg] = (double*)(PictAry[0]);		// Matrix array ptr*
 		MatAryMaxbyte[reg]=1024;					// Matrix array max byte
 		return 0;
 	}
@@ -224,16 +219,16 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n ) {
 	if ( ElementSize>1 ) {
 			matsize=dimA*dimB*(ElementSize>>3);
 	} else {	// 1 bit matrix
-			dimA=((m)>>3)+1;
+			dimA=((m-1)>>3)+1;
 			matsize=dimA*dimB;
 	}
-	if ( ( MatAry[reg] != NULL ) && ( MatAryMaxbyte[reg] >= matsize ) ) { // already exist
+	if ( ( MatAry[reg] != NULL ) && ( MatAryMaxbyte[reg] >= matsize ) && ( MatAryElementSize[reg]!=2 ) ) { // already exist
 		dptr = MatAry[reg] ;						// Matrix array ptr*
 		MatArySizeA[reg]=m;							// Matrix array size
 		MatArySizeB[reg]=n;							// Matrix array size
 		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
 	} else {
-		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
+		if ( ( MatAry[reg] != NULL ) && ( MatAryElementSize[reg]!=2 ) ) free(MatAry[reg]);	// free
 		dptr = malloc( matsize );
 		if( dptr == NULL ) { CB_Error(NotEnoughMemoryERR); return ErrorNo; }	// Not enough memory error
 		MatArySizeA[reg]=m;							// Matrix array size
@@ -311,7 +306,7 @@ void DeleteMatrix( int reg ) {
 void MatAryElementSizePrint( int ElementSize ) {
 		switch ( ElementSize ) {
 			case 1:
-				Print((unsigned char*)"[bit]");
+				Print((unsigned char*)"[1bit]");
 				break;
 			case 2:
 				Print((unsigned char*)"[VRAM]");
@@ -622,6 +617,13 @@ double InitMatrix( int reg, double value ,int ElementSize ) {
 
 //-----------------------------------------------------------------------------
 
+int MatrixObjectAlign( char *buffer, unsigned int n, int digit) {		// align
+	unsigned int i,j,k;
+	n &= (k*2-1);
+	buffer[digit]='\0';
+	return n*2;
+}
+
 void NumToBin( char *buffer, unsigned int n, int digit) {
 	unsigned int i,j,k=pow(2,(digit-1));
 	char bins[]="01";
@@ -778,7 +780,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				Bdisp_DrawLineVRAM( x*dx+20,7,x*dx+20+dx-5,7);
 				if ( MaxX==7 ) 	sprintf((char*)buffer,"%2d",seltopX+x+1);
 				else 			sprintf((char*)buffer,"%3d",seltopX+x+1);
-				PrintMini(x*dx+27-MaxX+(MaxDX==0)*18,1,(unsigned char*)buffer,MINI_OVER);
+				PrintMini(x*dx+16+(dx-5)/2,1,(unsigned char*)buffer,MINI_OVER);
 			}
 		}
 
@@ -1233,9 +1235,37 @@ void CB_ClrMat( char *SRC ) { //	ClrMat A
 	}
 }
 
+void CopyMatrix( int reg, int reg2 ) {
+	int m,n;
+	int dimA,dimB,dimA2,dimB2;
+	int ElementSize,ElementSize2;
+	
+	ElementSize =MatAryElementSize[reg ];
+	ElementSize2=MatAryElementSize[reg2];
+	dimA =MatArySizeA[reg ];
+	dimA2=MatArySizeA[reg2];
+	dimB =MatArySizeB[reg ];
+	dimB2=MatArySizeB[reg2];
+
+	if ( ( ElementSize == ElementSize2 ) && ( dimA == dimA2 ) && ( dimB == dimB2 ) ) {
+		if ( ElementSize < 8 ) { dimA=((dimA-1)>>3)+1; ElementSize=1; } else ElementSize >>=3;
+		memcpy( MatAry[reg2], MatAry[reg], ElementSize*dimA*dimB ) ;
+	} else { 
+		if ( ( ElementSize < 64 ) && ( ElementSize2 < 64 ) ) {
+			for ( m=0; m<dimA; m++ ) {
+				if ( m<dimA2 ) for ( n=0; n<dimB; n++ ) if ( n<dimB2 ) WriteMatrixInt( reg2, m, n,  ReadMatrixInt( reg, m, n ) );
+			}
+		} else {
+			for ( m=0; m<dimA; m++ ) {
+				if ( m<dimA2 ) for ( n=0; n<dimB; n++ ) if ( n<dimB2 ) WriteMatrix( reg2, m, n,  ReadMatrix( reg, m, n ) );
+			}
+		}
+	}
+}
+
 void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 	int c,d,i,m,n;
-	int dimA,dimB,dimA2,dimB2;
+	int dim=0,dimA,dimB,dimA2,dimB2;
 	int ElementSize,ElementSize2;
 	int reg,reg2;
 	double	*dptr, *dptr2;
@@ -1251,29 +1281,106 @@ void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 	if ( c == 0x0E ) {	// ->
 		ExecPtr++;
 		c =SRC[ExecPtr];
-		if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
-		ExecPtr+=2;
-		c =SRC[ExecPtr];
+		if ( c != 0x7F ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		c =SRC[++ExecPtr];
+		if ( c == 0x46 ) { 		// Mat A -> Dim Mat B[.w]
+			dim=1;
+			c =SRC[++ExecPtr];
+			if ( c != 0x7F ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			c =SRC[++ExecPtr];
+		}
+		if ( ( c !=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		c =SRC[++ExecPtr];
 		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 			ExecPtr++;
 			reg2=c-'A';
-			if ( MatArySizeA[reg2] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-
-		ElementSize =MatAryElementSize[reg ];
-		ElementSize2=MatAryElementSize[reg2];
-		dimA =MatArySizeA[reg ];
-		dimA2=MatArySizeA[reg2];
-		dimB =MatArySizeB[reg ];
-		dimB2=MatArySizeB[reg2];
-	
-		if ( ( ElementSize == ElementSize2 ) && ( dimA == dimA2 ) && ( dimB == dimB2 ) ) {
-			if ( ElementSize < 8 ) { dimB=((dimB-1)>>3)+1; ElementSize=1; } else ElementSize >>=3;
-			memcpy( MatAry[reg2], MatAry[reg], ElementSize*dimA*dimB ) ;
-		} else { 
-			for ( m=0; m<dimA; m++ ) {
-				if ( m<dimA2 ) for ( n=0; n<dimB; n++ ) if ( n<dimB2 ) WriteMatrix( reg2, m, n,  ReadMatrix( reg, m, n ) );
+		if ( dim ) { 		// Mat A -> Dim Mat B[.w]
+			ElementSize =MatAryElementSize[reg];
+			ElementSize2=ElementSizeSelect( SRC, reg2 );
+			if ( ( ElementSize == 2 ) || ( ElementSize2 == 2 ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+			if ( ElementSize == ElementSize2 ) return;
+			dimA =MatArySizeA[reg];
+			dimB =MatArySizeB[reg];
+			dimB2=dimB;
+			dimA2=dimA;
+			switch ( ElementSize2 ) {
+				case  1:
+					switch ( ElementSize ) {
+						case  8:
+							dimA2 *= 8;	break;
+						case 16:
+							dimA2 *=16;	break;
+						case 32:
+							dimA2 *=32;	break;
+						case 64:
+							dimA2 *=64;	break;
+					}
+					break;
+				case  8:
+					switch ( ElementSize ) {
+						case  1:
+							dimA2=((dimA2-1)/8)+1;	break;
+						case 16:
+							dimA2 *= 2;	break;
+						case 32:
+							dimA2 *= 4;	break;
+						case 64:
+							dimA2 *= 8;	break;
+					}
+					break;
+				case 16:
+					switch ( ElementSize ) {
+						case  1:
+							dimA2=((dimA2-1)/8)+1;
+						case  8:
+							if ( dimA2 & 1 ) { dimA2=-1; break; }
+							dimA2 /= 2;	break;
+						case 32:
+							dimA2 *= 2;	break;
+						case 64:
+							dimA2 *= 4;	break;
+					}
+					break;
+				case 32:
+					switch ( ElementSize ) {
+						case  1:
+							dimA2=((dimA2-1)/8)+1;
+						case  8:
+							if ( dimA2 & 3 ) { dimA2=-1; break; }
+							dimA2 /= 4;	break;
+						case 16:
+							if ( dimA2 & 1 ) { dimA2=-1; break; }
+							dimA2 /= 2;	break;
+						case 64:
+							dimA2 *= 2;	break;
+					}
+					break;
+				case 64:
+					switch ( ElementSize ) {
+						case  1:
+							dimA2=((dimA2-1)/8)+1;
+							if ( dimA2 & 7 ) { dimA2=-1; break; }
+						case  8:
+							dimA2 /= 8;	break;
+						case 16:
+							if ( dimA2 & 3 ) { dimA2=-1; break; }
+							dimA2 /= 4;	break;
+						case 32:
+							if ( dimA2 & 1 ) { dimA2=-1; break; }
+							dimA2 /= 2;	break;
+					}
+					break;
 			}
+			if ( dimA2 < 0 ) { CB_Error(DimensionERR); return ; }	// Dimension error
+			if ( reg != reg2 ) { DimMatrixSub( reg2, ElementSize, dimA, dimB ); CopyMatrix( reg, reg2 ); }
+			MatArySizeA[reg2]=dimA2;
+			MatAryElementSize[reg2]=ElementSize2;
+			
+		} else {								// Mat A -> Mat B
+			if ( MatArySizeA[reg2] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+			if ( reg == reg2 ) return;
+			CopyMatrix( reg, reg2 );
 		}
 		dspflag=0;
 	} else {
