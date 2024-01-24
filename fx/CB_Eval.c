@@ -965,13 +965,13 @@ double fMOD( double x, double y ) {	// fMOD(x,y)
 	double result;
 	fDIVcheck( &x, &y );
 	result= floor(fabs(fmod( x, y ))+.5);
-	if ( result == y  ) result--;
 	if ( x < 0 ) {
-		result=fabs(y)-result;
-		if ( result == y  ) result=0;
+		result = fabs(y)-result;
+		if ( ( result == fabs(y)  ) || ( x == y  ) ) result=0;
 	}
 	return result ;
 }
+
 double fIDIV( double x, double y ) {	// floor( floor(x) / floor(y) )
 	double result;
 	fDIVcheck( &x, &y );
@@ -1139,7 +1139,9 @@ double RoundSci( double x, double digit){
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //int EvalObjectAlignE4ee( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4ef( unsigned int n ){ return n ; }	// align +4byte
 int EvalObjectAlignE4ff( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalObjectAlignE4fg( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
@@ -2175,7 +2177,7 @@ int CB_IsError( char *SRC ){ //	IsError (...)
 */
 
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4s( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4s( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4t( unsigned int n ){ return n+n; }	// align +6byte
 //int EvalObjectAlignE4u( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4v( unsigned int n ){ return n ; }	// align +4byte
