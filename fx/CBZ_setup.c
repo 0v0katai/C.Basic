@@ -77,7 +77,7 @@ void VerDisp( int flag ) {
 
 int IsG3or35E2() {
 	unsigned char version[16];
-	SysCalljmp( (int)&version[0], 0, 0, 0, 0x02EE );	//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
+	System_GetOSVersion( &version[0] );		//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
 	if ( version[6]=='2' ) return 4;	//  35+EII
 	if ( version[6]=='3' ) return 6;	//  9750GIII
 	return 5;							//	9860GIII
@@ -89,6 +89,13 @@ int GetMemFree() ;
 int CB_Version() {	// Version
 	return VERSION;
 }
+int OS_VersionMinor() {
+	int ver;
+	unsigned char version[16];
+	System_GetOSVersion( &version[0] );		//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
+	return (version[6]-'0')*1000 + (version[7]-'0')*100 + (version[8]-'0')*10 + (version[9]-'0');
+}
+
 int System( int n ) {
 	int r=0;
 	switch ( n ) {
@@ -107,6 +114,9 @@ int System( int n ) {
 //		case -3:
 //			r=MAXHEAP/1024;
 //			break;
+		case -22:
+			r=OS_VersionMinor();
+			break;
 		case -2:
 			r=OS_Version();
 			break;
