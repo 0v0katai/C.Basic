@@ -66,3 +66,5 @@ void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3]
 void Setfoldername16( char *folder16, char *sname ) ;
 int CheckPassWord( char *filebase );	// 1:cancel  0:Ok  -1:no pass
 void NewPassWord(char *name) ;
+
+void PP_ReplaceCode( char *SRC );

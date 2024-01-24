@@ -934,10 +934,10 @@ int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // ƒJƒi‘Î‰ž
 			break;
 	}
     kfont_info.width = font[0];
-    kfont_info.height = 7;
-    kfont_info.pBitmap = font+1;
+    kfont_info.height = 6;
+    kfont_info.pBitmap = font+2;
     kfont.x = px;
-    kfont.y = py-1;
+    kfont.y = py-0;
     kfont.GraphData = kfont_info;
     Bdisp_WriteGraph_VRAM(&kfont);
     

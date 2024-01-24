@@ -24,7 +24,7 @@
 #include "CB_sample.h"
 #include "fx_syscall.h"
 
-//#define loadsdk
+#define loadsdk
 //----------------------------------------------------------------------------------------------
 #ifdef loadsdk
 int LoadFileSDK( char *src ) {	// test source to SDK

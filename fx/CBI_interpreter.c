@@ -95,9 +95,9 @@ void CBint_Store( char *SRC ){	// ->
 			c=SRC[ExecPtr];
 			if ( c=='#' ) { ExecPtr++;  LocalDbl[ reg ][0] = CBint_CurrentValue ; }
 			else
-			if ( c=='[' ) goto Matrix;
+			if ( c=='[' ) { reg+=('a'-'A'); goto Matrix; }
 			else
-			if ( ( '0'<=c )&&( c<='9' ) ) {
+			if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
 				ExecPtr++;
 				dimA=c-'0';
 				MatOprand1( SRC, reg, &dimA, &dimB );
@@ -305,11 +305,11 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			CBint_CurrentValue = LocalDbl[reg][0] ;
 		} else
 		if ( c=='[' ) { 
-			ExecPtr++;
+			ExecPtr++; reg+=('a'-'A');
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else
-		if ( ( '0'<=c )&&( c<='9' ) ) {
+		if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
 			ExecPtr++;
 			dimA=c-'0';
 			MatOprand1( SRC, reg, &dimA, &dimB );
@@ -392,11 +392,11 @@ void CBint_Isz( char *SRC ) { //	Isz
 			CBint_CurrentValue = LocalDbl[reg][0] ;
 		} else
 		if ( c=='[' ) { 
-			ExecPtr++;
+			ExecPtr++; reg+=('a'-'A');
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else
-		if ( ( '0'<=c )&&( c<='9' ) ) {
+		if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
 			ExecPtr++;
 			dimA=c-'0';
 			MatOprand1( SRC, reg, &dimA, &dimB );

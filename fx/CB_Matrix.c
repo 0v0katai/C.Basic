@@ -113,13 +113,13 @@ void TransposeMatirx( int reg ) {
 	
 	switch ( ElementSize ) {
 		case 64:
-			for ( m=0; m<dimA; m++ ) {
-				for ( n=0; n<dimB; n++ ) WriteMatrix( reg2, n, m,  ReadMatrix( reg, m, n ) );
+			for ( m=base; m<dimA+base; m++ ) {
+				for ( n=base; n<dimB+base; n++ ) WriteMatrix( reg2, n, m,  ReadMatrix( reg, m, n ) );
 			}
 			break;
 		default:
-			for ( m=0; m<dimA; m++ ) {
-				for ( n=0; n<dimB; n++ ) WriteMatrixInt( reg2, n, m,  ReadMatrixInt( reg, m, n ) );
+			for ( m=base; m<dimA+base; m++ ) {
+				for ( n=base; n<dimB+base; n++ ) WriteMatrixInt( reg2, n, m,  ReadMatrixInt( reg, m, n ) );
 			}
 			break;
 	}
@@ -1070,7 +1070,7 @@ int ElementSizeSelect( char *SRC, int reg, int *base ) {
 	if ( c=='.' ) {
 		c =SRC[++ExecPtr];
 		if (CB_INT)	ElementSize=32; else ElementSize=64;
-		if ( ( c=='0' ) || ( c=='1' ) ) { c=SRC[++ExecPtr]; *base = c-'0' ; }
+		if ( ( c=='0' ) || ( c=='1' ) ) { *base = c-'0'; c=SRC[++ExecPtr]; }
 		if ( ( c=='P' ) || ( c=='p' ) ) { ExecPtr++; ElementSize= 1; }
 		if ( ( c=='V' ) || ( c=='v' ) ) { ExecPtr++; ElementSize= 2;
 			c =SRC[ExecPtr];
@@ -1833,9 +1833,9 @@ int CB_VarPtr( char *SRC ) {
 				c=SRC[ExecPtr];
 				if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; }
 				else
-				if ( c=='[' ) goto Matrix;
+				if ( c=='[' ) { reg+=('a'-'A'); goto Matrix; }
 				else
-				if ( ( '0'<=c )&&( c<='9' ) ) {
+				if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
 					Matrix1:
 						ExecPtr++;
 						dimA=c-'0';
@@ -1852,7 +1852,6 @@ int CB_VarPtr( char *SRC ) {
 				if ( ( 'A'<=c )&&( c<='z' ) ) { 
 					reg=c-'A';
 					if ( SRC[++ExecPtr] == '[' ) {
-						result=(int)MatAry[reg].Adrs;
 					Matrix:	
 						ExecPtr++;
 						MatOprand2( SRC, reg, &dimA, &dimB );
