@@ -75,6 +75,13 @@ void VerDisp( int flag ) {
 	GetKey(&key);
 }
 
+int IsG3or35E2() {
+	unsigned char version[16];
+	SysCalljmp( (int)&version[0], 0, 0, 0, 0x02EE );	//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
+	if ( version[6]=='2' ) return 4;	//  35+EII
+	return 5;							//	9860GIII
+}
+
 //----------------------------------------------------------------------------------------------
 int GetMemFree() ;
 
@@ -102,11 +109,11 @@ int System( int n ) {
 		case -2:
 			r=OS_Version();
 			break;
-		case -1:	// 9860G:0  slim:1  9860GII(SH3):2   9860GII(SH4A):3
+		case -1:	// 9860G:0  slim:1  9860GII(SH3):2   9860GII(SH4A):3	Graph35+EII:4  9860GIII:5
 			r = ( IsSH3==0 );
 			if ( IsHiddenRAM ) r |= 0x2;;
 			if ( IsSH3==2 ) r = 1 ;
-			if ( Is35E2 ) r = 4 ;
+			if ( Is35E2 ) r = IsG3or35E2() ;
 			break;
 		case 0:	// Version
 			r = VERSION;
