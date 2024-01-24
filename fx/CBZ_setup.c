@@ -29,8 +29,8 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.41\xE6\x41";
-#define VERSION 241
+const char VerMSG[]="C.Basic  v2.42\xE6\x41";
+#define VERSION 242
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );
@@ -50,7 +50,7 @@ void VerDispSub( int flag ) {
 	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
 	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
-	locate( 3, 6 ); Print( (unsigned char*)"          (c)2019" );
+	locate( 3, 6 ); Print( (unsigned char*)"          (c)2020" );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 //		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;

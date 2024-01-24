@@ -852,6 +852,7 @@ void CB_DrawMat( char *SRC ) { // DrawMat Mat A[x,y],px,py,width, height[,zoomwi
 	}
 	ML_bmp_zoom( (unsigned char*)MatAry[reg2].Adrs, xx, yy, width, height, zoomwidth,zoomheight, color) ;
 //	DeleteMatrix( reg2 );
+	dspflag=0;
 }
 
 //-----------------------------------------------------------------------------------------MLtest
@@ -1136,8 +1137,8 @@ int MLObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 int MLObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 int MLObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 int MLObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int MLObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 //int MLObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
 //int MLObjectAlign4w( unsigned int n ){ return n; }	// align +4byte

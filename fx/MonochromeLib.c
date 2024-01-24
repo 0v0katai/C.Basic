@@ -522,8 +522,8 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 	dy = y2 - y1;
 	sx = sgn(dx);
 	sy = sgn(dy);
-	dx = abs(dx); if ( dx>127 ) dx=127;
-	dy = abs(dy); if ( dy> 63 ) dy= 63;
+	dx = abs(dx);
+	dy = abs(dy);
 	ML_pixel(x, y, color);
 	if(dx > dy)
 	{
