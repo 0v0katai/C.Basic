@@ -504,11 +504,11 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 	int c,d;
 	int base=MatAry[reg].Base;
 	MatOprand1sub( SRC, reg, &(*dimA) );
-	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { CB_Error(DimensionERR); (*dimA)=base;; }	// Dimension error
 	if ( SRC[ExecPtr] == ',' ) {
 		ExecPtr++ ;
 		MatOprand1sub( SRC, reg, &(*dimB) );
-		if ( ( (*dimB) < base ) || ( MatAry[reg].SizeB-1+base < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+		if ( ( (*dimB) < base ) || ( MatAry[reg].SizeB-1+base < (*dimB) ) ) { CB_Error(DimensionERR); (*dimB)=base; }	// Dimension error
 	} else {
 		(*dimB)=base;
 	}
@@ -525,11 +525,9 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 	base=MatAry[reg].Base;
 	(*dimB)=base;
 	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) {
-//		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// List element +
-//		else 
 		if ( (MatAry[reg].SizeA+1)==((*dimA)-1+base) ) MatElementPlus( reg, (*dimA)-1+base, MatAry[reg].SizeB );	// List element +
 		else
-		{ CB_Error(DimensionERR); return ; }	// Dimension error
+		{ CB_Error(DimensionERR); }	// Dimension error
 	}
 	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 }
@@ -537,9 +535,11 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 //----------------------------------------------------------------------------------------------
 int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
@@ -1375,8 +1375,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x48:	// Identity 
 					CB_Identity(SRC);
 					return 3;
-				case 0x49:	// Argument(
-					CB_Argument(SRC);
+				case 0x49:	// Augment(
+					CB_Augment(SRC);
 					return 3;
 				case 0x2C:	// Seq
 					CB_Seq(SRC);

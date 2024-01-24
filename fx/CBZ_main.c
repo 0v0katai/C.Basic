@@ -75,10 +75,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		ForceReturn=0;
 		CB_AliasVarClr();
 		
-		for (i=1; i<=PictMax; i++) {
-//			if ( !( (UseHiddenRAM&0xF0) && ( UseHiddenRAM ) && ( IsHiddenRAM ) ) )
-			PictAry[i]=NULL;		// Pict ptr clear
-		}
+		DeleteStrBuffer();
+		DeletePictPtr();
 		
 		if ( MaxMemMode ) HiddenRAM_freeProg(HiddenRAM_Top);		// Prog memory init	
 		key =( SelectFile( filename ) ) ;

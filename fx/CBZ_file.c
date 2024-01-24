@@ -117,7 +117,7 @@ static int IsFileNeeded( FONTCHARACTER *find_name )
 	ToLower(buffer);
 	GetExtName( buffer, ext );
 	if( strlen(folder) ) return 1;	// all of sub folder
-	return ( (strcmp(ext, "g3m") == 0) || (strcmp(ext, "g1m") == 0) || (strcmp(ext, "txt") == 0) || (strcmp(ext, ".bmp") == 0) || (strcmp(ext, "bin") == 0) );
+	return ( (strcmp(ext, "g3m") == 0) || (strcmp(ext, "g1m") == 0) || (strcmp(ext, "txt") == 0) || (strcmp(ext, "bmp") == 0) || (strcmp(ext, "bin") == 0) );
 }
 
 static int FileCmp( const void *p1, const void *p2 )
@@ -868,7 +868,7 @@ unsigned int Explorer( int size, char *folder )
 							break;
 					case KEY_CTRL_SETUP:
 							i = StorageMode ;
-							selectSetup=SetupG(selectSetup);
+							selectSetup=SetupG(selectSetup, 0);
 							SaveFavorites();
 							if ( i != StorageMode ) { index = 0; goto update; }
 							break;
@@ -1469,6 +1469,7 @@ int SaveProgfile( int progNo ){
 			if ( InputFilenameG1MorG3M( basname, "Save", ext ) ) if ( CurrentFileMode == 1 ) goto loop2; else return 1 ;
 			if ( ExistG1Mext( basname, ext ) ==0 ) if ( YesNoOverwrite() ) goto loop;
 		}
+		basname[8]='\0';
 		basname8ToG1MHeader( filebase, basname);
 		sprintf(sname, "%s.g1m", basname );
 		r=SaveBasG1MorG3M( filebase, ext );	// S.mem / MCS
@@ -1481,6 +1482,7 @@ int SaveProgfile( int progNo ){
 		if ( AutoSaveMode == 0 ) {
 			if ( InputFilename( basname, "Save Text Name?" ) ) return 1 ;
 		}
+		basname[8]='\0';
 		SetFullfilenameExt( fname, basname, "txt" );
 		if ( AutoSaveMode == 0 ) {
 			if ( ExistFile( fname ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
@@ -1896,6 +1898,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		} else {
 			if ( InputFilenameG1MorG3M( basname, "Copy", ext ) ) return 1 ; // cancel
 		}
+		basname[8]='\0';
 		SetFullfilenameExt( name, basname, ext );
 		if ( ( strcmp( name, fname)==0 ) && ( strcmp(ext,ext2)==0 ) ) return 0; // no rename
 		basname8ToG1MHeader( filebase, basname);
@@ -1910,6 +1913,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		filebase=CB_LoadSub( basname, 0, &size, ext ) ;
 		if ( filebase ==NULL ) return 1 ; // error
 		if ( InputFilename( basname, RenameCopy_msg[select] ) ) return 1 ; // cancel
+		basname[8]='\0';
 		SetFullfilenameExt( name, basname, ext );
 		if ( strcmp(name,fname)==0 ) return 0; // no copy
 		if ( ExistFile( name ) == 0 ) if ( YesNoOverwritefile(name) ) return 1 ; // cancel
@@ -2243,6 +2247,7 @@ void ConvertToText( char *fname ){
 		filebase = ProgfileAdrs[0];
 		G1MHeaderTobasname8( filebase, basname);
 		if ( InputFilenameG1MorG3M( basname, "Convert", ext ) ) return ; // cancel
+		basname[8]='\0';
 		SetFullfilenameExt( fname, basname, (char*)ext );
 		basname8ToG1MHeader( filebase, basname);
 		if ( ExistG1Mext( basname, ext ) ==0 ) if ( YesNoOverwritefile(name) ) return ; // cancel
@@ -2661,21 +2666,22 @@ int PP_Search_IfEnd( char *SRC ){
 	}
 	return 0;
 }
+
 void PP_ReplaceCode( char *SRC ){
 	int c,i;
-	while (1){
-		c=SRC[ExecPtr++];
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-				return ;
-			case 0x0000007F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
+//	while (1){
+//		c=SRC[ExecPtr++];
+//		switch ( c ) {
+//			case 0x00:	// <EOF>
+//				ExecPtr--;
+//				return ;
+//			case 0x0000007F:	// 
+//			case 0xFFFFFFE5:	// 
+//			case 0xFFFFFFE6:	// 
+//			case 0xFFFFFFE7:	// 
+//			case 0xFFFFFFFF:	// 
+//				ExecPtr++;
+//				break;
 //			case 0xFFFFFFF7:	// 
 //				c=SRC[ExecPtr++];
 //				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
@@ -2689,8 +2695,8 @@ void PP_ReplaceCode( char *SRC ){
 //				else
 //				if ( c==0x3E ) SRC[ExecPtr-1]=0x43;	// Sprintf(  F93E -> F943
 //				break;				
-		}
-	}
+//		}
+//	}
 	return ;
 }
 
@@ -2699,7 +2705,7 @@ void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
 	int execptr=ExecPtr;
 
 	ExecPtr=0;
-	PP_ReplaceCode( SRC );
+//	PP_ReplaceCode( SRC );
 	ErrorNo=0;
 	ExecPtr=0;
 	if ( CheckIfEnd ) PP_Search_IfEnd(SRC);
@@ -2810,8 +2816,8 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
@@ -2859,6 +2865,7 @@ int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2875,7 +2882,6 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

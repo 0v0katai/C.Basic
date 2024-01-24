@@ -17,10 +17,10 @@ char CB_INTDefault=0;	// default mode  0:normal  1: integer mode
 
 char	DrawType    = 0;	// 0:connect  1:Plot
 char	Coord       = 1;	// 0:off 1:on
-char	Grid        = 1;	// 0:off 1:on
+char	Grid        = 0;	// 0:off 1:on
 char	Axes        = 1;	// 0:off 1:on
-char	Label       = 1;	// 0:off 1:on
-char	Derivative  = 1;	// 0:off 1:on
+char	Label       = 0;	// 0:off 1:on
+char	Derivative  = 0;	// 0:off 1:on
 char	S_L_Style   = S_L_Normal;
 char	tmp_Style   = S_L_Normal;
 char	Angle       = 1;	// 0:deg   1:rad  2:grad
@@ -1107,8 +1107,7 @@ remloop:
 						}
 					}
 				  DelStrBuffer:
-					DeleteMatrix( reg );
-					DeleteMatrix( Mattmp_StrBuffer );
+					DeleteStrBuffer();
 				}
 			} else
 			if ( c==0x1B ) {	// fn
@@ -2627,9 +2626,8 @@ int CB_interpreter( char *SRC ) {
 	defaultStrAry=26;	// <r>
 	defaultFnAry=57;		// z
 	defaultGraphAry=27;		// Theta
-	DeleteMatrix( Mattmp_StrBuffer );
 	DeleteMatrix( Mattmp_traceAry );
-	if ( MaxMemMode ) DeleteMatrix( Mattmp_ClipBuffer );
+	if ( MaxMemMode ) DeleteMatrix( Mattmp_clipBuffer );
 	
 	CB_MatListAnsreg=27;	//	ListAns init
 	Bdisp_PutDisp_DD_DrawBusy();

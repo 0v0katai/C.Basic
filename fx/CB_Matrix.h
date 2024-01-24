@@ -1,5 +1,5 @@
 #define LISTMAX 52
-#define MATARY_MAX 26+6+LISTMAX+26+1+3	// add vctx26	+ StrBuffer + traceAry + ClipBuffer
+#define MATARY_MAX 26+6+LISTMAX+26+1+3	// add vctx26	+ traceAry + ClipBuffer + StrBuffer
 //extern int	MatAryMaxbyte[MatAryMax];		// Matrix array max memory size
 //extern char	MatAryBase[MatAryMax]			// Matrix array base 0 or 1
 //extern char	MatAryElementSize[MatAryMax];	// Matrix array word size
@@ -22,10 +22,11 @@ extern matary *MatAry;
 extern short ExtListMax;		// List Max number
 extern short Mattmpreg;		//
 
-#define Mattmp_StrBuffer   Mattmpreg-1
-#define Mattmp_traceAry    Mattmpreg-2
-#define Mattmp_ClipBuffer  Mattmpreg-3
+#define Mattmp_traceAry    Mattmpreg-1
+#define Mattmp_clipBuffer  Mattmpreg-2
+#define Mattmp_strBuffer   Mattmpreg-3
 
+#define ClipBuffer CLIP_Buffer()
 
 extern char	MatBaseDefault;
 extern char	MatBase;
@@ -92,7 +93,7 @@ void CB_ListInit2( char *SRC ) ; //	{1.2,3,4,5,6}->List 1[.B][.W][.L][.F]
 void CB_Seq( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_ListCalc( char *SRC ) ; //	List 1 -> List 2  etc
 void CB_Identity( char *SRC ) ;	// Identity 
-void CB_Argument( char *SRC ) ;	// Argument( List1, List2 )		Argument( Mat A, Mat B)
+void CB_Augment( char *SRC ) ;	// Augment( List1, List2 )		Augment( Mat A, Mat B)
 void CB_SortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )
 int  CB_EvalSortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )  for Eval
 void CB_MatSwap( char *SRC ) ;		// Swap Mat A,2,3

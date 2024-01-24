@@ -882,8 +882,8 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 				case 0x48:	// Identity 
 					CB_Identity(SRC);
 					return Int2Cplx( 3 );
-				case 0x49:	// Argument(
-					CB_Argument(SRC);
+				case 0x49:	// Augment(
+					CB_Augment(SRC);
 					return Int2Cplx( 3 );
 				case 0x2C:	// Seq
 					CB_Seq(SRC);

@@ -6,7 +6,7 @@ extern char  *CB_CurrentStr2;	//
 //#define CB_StrBufferMax 256
 extern char   CB_StrBufferCNT;
 extern int   CB_StrBufferMax;
-extern char  *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+extern char  *CB_StrBufPtr;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 extern char   defaultStrAry;
 extern short  defaultStrAryN;
@@ -39,7 +39,9 @@ void StrDMSsub( char *buffer, double a ) ;	//
 //-----------------------------------------------------------------------------
 // Casio Basic
 //-----------------------------------------------------------------------------
+void DeleteStrBuffer();
 char* NewStrBuffer();
+void GetNewAry8( int reg, int aryN, int aryMax ) ;
 
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 

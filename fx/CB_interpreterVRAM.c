@@ -740,6 +740,11 @@ void CB_Circle( char *SRC ) { //	Circle
 
 
 //----------------------------------------------------------------------------------------------
+void DeletePictPtr(){
+	int i;
+	for (i=1; i<=PictMax; i++) PictAry[i]=NULL;		// Pict ptr clear
+}
+
 void ReadVram( unsigned char *pDATA ){
 	Bdisp_GetDisp_VRAM( pDATA ) ;
 }
@@ -1638,7 +1643,7 @@ unsigned int GWait( int exit_cancel ) {
 				if (key2==0) GetKey(&key2);
 				switch (key2) {
 					case KEY_CTRL_SETUP:
-							selectSetup=SetupG(selectSetup);
+							selectSetup=SetupG(selectSetup, 1);
 							key=0; key2=0;
 							break;
 					case KEY_CTRL_F1:
