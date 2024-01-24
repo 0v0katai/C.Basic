@@ -65,7 +65,7 @@ unsigned int SelectFile (char *filename)
 	Bdisp_AllClr_DDVRAM();
 	while( 1 ){
 		if ( FileListUpdate  ) {
-			MSG1("File Reading.....");
+			MSG2(VerMSG,"File Reading.....");
  			size = ReadFile( folder );
 			qsort( files, size, sizeof(Files), FileCmp );
 		}
@@ -359,7 +359,7 @@ int GetMediaFree( unsigned int *high, unsigned int *low) {
 	switch ( StorageMode ) {	
 		case 0:		// Strage memory
 			if ( Bfile_GetMediaFree(DEVICE_STORAGE,freespace) != 0 ) Abort() ;
-			if ( CPU_check() == 3 ) {
+			if ( IsSH3 ) {
 				(*high)=0;
 				(*low) =freespace[0];
 			} else {
@@ -369,7 +369,7 @@ int GetMediaFree( unsigned int *high, unsigned int *low) {
 			break;
 		case 1:		// SD
 			if ( Bfile_GetMediaFree(DEVICE_SD_CARD,freespace) != 0 ) Abort() ;
-			if ( CPU_check() == 3 ) {
+			if ( IsSH3 ) {
 				(*high)=0;
 				(*low) =freespace[0];
 			} else {
@@ -1299,6 +1299,7 @@ int NewProg(){
 	ProgfileAdrs[0]= filebase;
 	ProgfileMax[0]= SrcSize( filebase ) + NewMax ;
 	ProgfileEdit[0]= 1;
+	ProgfileMode[0]= 0;	// g1m default
 	ProgNo=0;
 	ExecPtr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
@@ -1792,7 +1793,7 @@ void SaveConfig(){
 	bufshort[13]=Grid;				bufshort[12]=ENG;
 	bufshort[15]=Axes;				bufshort[14]=CB_Round.MODE;
 	bufshort[17]=Label;				bufshort[16]=CB_Round.DIGIT-1;
-	bufshort[19]=Derivative;		bufshort[18]=Waitcount;
+	bufshort[19]=Derivative;		bufshort[18]=DefaultWaitcount;
 	bufshort[21]=S_L_Style;			bufshort[20]=0;
 	bufshort[23]=Angle;				bufshort[22]=ForceG1Msave;
 	bufshort[25]=BreakCheck;		bufshort[24]=StorageMode;
@@ -1874,7 +1875,7 @@ void LoadConfig(){
 		Grid          =bufshort[13];        ENG           =bufshort[12];
 		Axes          =bufshort[15];        CB_Round.MODE =bufshort[14];
 		Label         =bufshort[17];        CB_Round.DIGIT=bufshort[16]+1;
-		Derivative    =bufshort[19];        Waitcount     =bufshort[18];
+		Derivative    =bufshort[19];        DefaultWaitcount=bufshort[18];
 		S_L_Style     =bufshort[21];        
 		Angle         =bufshort[23];        ForceG1Msave   =bufshort[22];
 		BreakCheck    =bufshort[25];        StorageMode    =bufshort[24];
@@ -1940,6 +1941,9 @@ int PP_Search_IfEnd( char *SRC ){
 			case 0x00:	// <EOF>
 				ExecPtr--;
 				return 0 ;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
 			case 0x27:	// ' rem
 				Skip_rem(SRC);
 				break;
@@ -1984,8 +1988,8 @@ void PP_ReplaceCode( char *SRC ){
 			case 0xFFFFFFF7:	// 
 				c=SRC[ExecPtr++];
 				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
-				else
-				if ( c==0x4F ) SRC[ExecPtr-1]=0x3D;	// DotTrim(  F74F -> F73D
+//				else
+//				if ( c==0x4F ) SRC[ExecPtr-1]=0x3D;	// DotTrim(  F74F -> F73D
 				break;
 			case 0xFFFFFFF9:	// 
 				c=SRC[ExecPtr++];
@@ -2040,11 +2044,11 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 			case 0x3A:	// <:>
 			case 0x0D:	// <CR>
 				break;
-			case 0x27:	// ' rem
-				Skip_rem(SRC);
-				break;
 			case 0x22:	// "
 				Skip_quot(SRC);
+				break;
+			case 0x27:	// ' rem
+				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFED:	// Prog "..."
 				ExecPtr++;	// " skip
@@ -2109,7 +2113,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
@@ -2134,7 +2138,6 @@ int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2152,6 +2155,39 @@ void FavoritesDowndummy( int *index ) {
 	SaveFavorites();
 }
 void FavoritesDowndummy2( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+//	files[(*index)+1].filesize=files[(*index)].filesize;
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	(*index)++;
+//	files[(*index)].filesize=tmp;
+//	SaveFavorites();
+}
+/*
+void FavoritesDowndummy3( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
+}
+void FavoritesDowndummy4( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
 	char tmpfolder[FOLDERMAX];

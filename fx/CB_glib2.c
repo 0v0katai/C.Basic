@@ -734,15 +734,15 @@ double GraphXYEval( char *buffer ) {
 	return result;
 }
 
-void Graph_Draw_XY_List(int list1reg, int list2reg){	// Graph XY ( List 1, List 2)
+void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 2)
 	double tmpT=regT;
 	double tmpX,tmpY;
 	int sizeA,sizeA2;
 	int base=0,base2=0;
 	int c;
 	int at1st;
-	if ( list1reg==0 ) sizeA =1; else { sizeA =MatAry[list1reg].SizeA; base =MatAry[list1reg].Base; }
-	if ( list2reg==0 ) sizeA2=1; else { sizeA2=MatAry[list2reg].SizeA; base2=MatAry[list2reg].Base; }
+	if ( xlistreg==0 ) sizeA =1; else { sizeA =MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base; }
+	if ( ylistreg==0 ) sizeA2=1; else { sizeA2=MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base; }
 	if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
 	if ( sizeA > sizeA2 ) sizeA=sizeA2;
 	
@@ -759,9 +759,9 @@ void Graph_Draw_XY_List(int list1reg, int list2reg){	// Graph XY ( List 1, List 
 			tmpY=GraphXYEval(GraphY);		// function
 			if ( ErrorPtr ) return ;
 			//-----------------------------
-			if ( list1reg )	regX=ReadMatrix( list1reg, c, base );
+			if ( xlistreg )	regX=ReadMatrix( xlistreg, c, base );
 			else 			regX=tmpX;
-			if ( list2reg )	regY=ReadMatrix( list2reg, c, base2 );
+			if ( ylistreg )	regY=ReadMatrix( ylistreg, c, base2 );
 			else			regY=tmpY;
 			if ( fabs(regX)*1e10<Xdot ) regX=0;	// zero adjust
 			if ( fabs(regY)*1e10<Ydot ) regY=0;	// zero adjust
@@ -778,6 +778,84 @@ void Graph_Draw_XY_List(int list1reg, int list2reg){	// Graph XY ( List 1, List 
 	}
 	regintX=regX; regintY=regY;
 	regT=tmpT;
+//	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
+}
+
+
+//----------------------------------------------------------------------------------------------
+
+void DrawStat_PlotOn_VRAM(double x, double y, int Type){
+	int px,py;
+	if ( VWtoPXY( x,y, &px, &py) == 0) {
+		switch ( Type ) {
+			case 0:	// Square
+				BdispSetPointVRAM2(px-1, py-1, 1);
+				BdispSetPointVRAM2(px  , py-1, 1);
+				BdispSetPointVRAM2(px+1, py-1, 1);
+				BdispSetPointVRAM2(px-1, py  , 1);
+//				BdispSetPointVRAM2(px  , py  , 0);
+				BdispSetPointVRAM2(px+1, py  , 1);
+				BdispSetPointVRAM2(px-1, py+1, 1);
+				BdispSetPointVRAM2(px  , py+1, 1);
+				BdispSetPointVRAM2(px+1, py+1, 1);
+				break;
+			case 1:	// Cross
+				BdispSetPointVRAM2(px-1, py-1, 1);
+//				BdispSetPointVRAM2(px  , py-1, 1);
+				BdispSetPointVRAM2(px+1, py-1, 1);
+//				BdispSetPointVRAM2(px-1, py  , 1);
+				BdispSetPointVRAM2(px  , py  , 1);
+//				BdispSetPointVRAM2(px+1, py  , 1);
+				BdispSetPointVRAM2(px-1, py+1, 1);
+//				BdispSetPointVRAM2(px  , py+1, 1);
+				BdispSetPointVRAM2(px+1, py+1, 1);
+				break;
+			case 2:	// Dot
+			default:
+				BdispSetPointVRAM2(px  , py  , 1);
+				break;
+		}
+	}
+	regX=x; regY=y;
+	regintX=regX; regintY=regY;
+}
+
+void DrawStat(){	// DrawStat
+	double tmpX,tmpY;
+	int sizeA,sizeA2;
+	int base=0,base2=0;
+	int c,No=0;
+	int at1st=0;
+	int xlistreg,ylistreg;
+	
+	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+
+	for ( No=0; No<3; No++ ) {
+		if ( Sgraph[No].Draw == 1 ) {
+			xlistreg=Sgraph[No].xList;
+			ylistreg=Sgraph[No].yList;
+			if ( xlistreg==0 ) sizeA =1; else { sizeA =MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base; }
+			if ( ylistreg==0 ) sizeA2=1; else { sizeA2=MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base; }
+			if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
+			if ( sizeA > sizeA2 ) sizeA=sizeA2;
+			c = base;
+			for ( c=base; c<sizeA+base; c++ ) {
+				regX=ReadMatrix( xlistreg, c, base );
+				regY=ReadMatrix( ylistreg, c, base2 );
+				if ( fabs(regX)*1e10<Xdot ) regX=0;	// zero adjust
+				if ( fabs(regY)*1e10<Ydot ) regY=0;	// zero adjust
+				if ( at1st==0 ) { Previous_X = regX; Previous_Y = regY; at1st=1; }
+				DrawStat_PlotOn_VRAM(regX, regY, Sgraph[No].MarkType);
+				Plot_X=regX;
+				Plot_Y=regY;
+				if ( Sgraph[No].GraphType == 1 ) {	// 1:xyLine
+					Line( S_L_Normal , 1, 1);	// error check
+				}
+//				Bdisp_PutDisp_DD();
+			}
+		}
+	}
+	regintX=regX; regintY=regY;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 

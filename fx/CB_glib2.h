@@ -7,3 +7,4 @@ void Graph_Draw();
 void Graph_Draw_XY();
 void Graph_Draw_XY_List(int list1reg, int list2reg);	// Graph XY ( List 1, List 2)
 unsigned int Graph_main();
+void DrawStat();

@@ -196,8 +196,8 @@ void CB_ML_Polygon( char *SRC, int fill ) { // ML_Polygon &Mat X, &Mat Y, nb_ver
 	int color;
 	CB_GetOprand4( SRC, &ary_x, &ary_y, &nb_vertices, &color );
 	if ( ErrorNo ) return ;
-	if ( fill ) ML_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
-	else		ML_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
+	if ( fill ) ML_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
+	else		ML_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
 }
 
 //----------------------------------------------------------------------------------------------

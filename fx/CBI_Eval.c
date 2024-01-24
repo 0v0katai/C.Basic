@@ -114,7 +114,7 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
-	if ( ( ( 'A'<=c )&&( c<='z' ) ) && ( c != '[' ) ) return LocalInt[c-'A'][0] ;
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) return LocalInt[c-'A'][0] ;
 	if ( c == 0xFFFFFFC0 ) return c-0xFFFFFFC0+28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) return LocalInt[c-0xFFFFFFCD+26][0] ;	// <r> or Theta
 	CB_Error(SyntaxERR);
@@ -180,6 +180,21 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+int fMODint( int x, int y ) {	// fMODint(x,y)
+	int tmp,tmp2,result;
+	tmp  = x;
+	tmp2 = y;
+	if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
+	result= tmp-tmp/tmp2*tmp2;
+	if ( result == tmp2  ) result--;
+	if ( tmp < 0 ) {
+		result=abs(tmp2)-result;
+		if ( result == tmp2  ) result=0;
+	}
+	return result ;
+}
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 int CB_EvalInt( char *SRC ) {
 	int value;
 	if (CB_INT) value=EvalIntsubTop( SRC ); else value=EvalsubTop( SRC ); 
@@ -235,6 +250,7 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
 	} else
 	if ( c==0xFFFFFFB9 ) { // /
+	  divj:
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
 		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result/dst;
@@ -253,6 +269,12 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 		} else
 		if ( c==0xFFFFFFB4 ) { // Xor
 			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result ^ (int)dst;
+		} else
+		if ( c==0xFFFFFFBC ) { // Int/
+			goto divj;
+		} else
+		if ( c==0xFFFFFFBD ) { // Rmdr
+			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMODint(result,dst);
 		}
 	}
 
@@ -337,7 +359,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
 		return - EvalIntsub1( SRC );
 	}
-	if ( ( ( 'A'<=c )&&( c<='z' ) ) && ( c != '[' ) )  {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  {
 		reg=c-'A';
 	  regj:
 		c=SRC[ExecPtr];
@@ -381,6 +403,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					
 				case 0x51 :		// List 1~26
 					reg=ListRegVar( SRC );
+				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
 						ExecPtr++;
 						MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
@@ -390,24 +413,35 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 							CopyMatList2Ans( reg );
 					}
 					return ReadMatrixInt( reg, dimA, dimB);
+					
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
+					reg=c+(32-0x6A); goto Listj;
 						
 				case 0x3A :		// MOD(a,b)
 					tmp = EvalIntsubTop( SRC );
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
 					tmp2 = EvalIntsubTop( SRC );
-					if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-					result= tmp-tmp/tmp2*tmp2;
-					if ( result == tmp2  ) result--;
-					if ( tmp < 0 ) {
-						result=abs(tmp2)-result;
-						if ( result == tmp2  ) result=0;
-					}
+					result= fMODint(tmp,tmp2);
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 					
+				case 0xFFFFFF85 :		// logab(a,b)
+					tmp = EvalIntsubTop( SRC );
+					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					ExecPtr++;
+					tmp2 = EvalIntsubTop( SRC );
+					result = flogab(tmp,tmp2);
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return result ;
+
 				case 0xFFFFFFB3 :		// Not
-					return ( EvalIntsubTop(SRC) == 0 ) ;
+					return ( EvalIntsub5(SRC) == 0 ) ;
 						
 				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
@@ -447,6 +481,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x5F :				// 1/128 Ticks
 					return RTC_GetTicks()-CB_TicksAdjust;	// 
 						
+				case 0xFFFFFFF0 :		// GraphY str
+					return CBint_GraphYStr( SRC, defaultGraphAry );
+						
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC );
 				case 0xFFFFFFF6 :		// Peek(
@@ -481,19 +518,41 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x29 :				// Sigma( X, X, 1, 1000)
 					return CB_Sigma( SRC );
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
-					return CB_Max( SRC );
+					return CB_MinMax( SRC, 1 );
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
-					return CB_Min( SRC );
-				case 0x4C :				// Sum( List 1)
+					return CB_MinMax( SRC, 0 );
+				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
+					return CB_Mean( SRC );
+				case 0x4C :				// Sum List 1
 					return CB_Sum( SRC );
-				case 0x4D :				// Prod( List 1)
+				case 0x4D :				// Prod List 1)
 					return CB_Prod( SRC );
+				case 0x47:	// Fill(
+					CB_MatFill(SRC);
+					return 3;
+				case 0x49:	// Argument(
+					CB_Argument(SRC);
+					return 3;
+				case 0x2C:	// Seq
+					CB_Seq(SRC);
+					return 4;
+				case 0x41:	// Trn
+					CB_MatTrn(SRC);
+					return 3;
 				
 				case 0x46 :				// Dim
-					if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// Dim List
-						ExecPtr+=2;
-						goto ColSizej;
-					}
+					if ( SRC[ExecPtr]==0x7F ) {
+						if ( SRC[ExecPtr+1]==0x40 ) {	// Dim Mat
+							MatrixOprandreg( SRC, &reg );
+							WriteListAns2( MatAry[reg].SizeA, MatAry[reg].SizeB );
+							return MatAry[reg].SizeA;
+						} else
+						if ( SRC[ExecPtr+1]==0x51 ) {	// Dim List
+							goto ColSizej;
+						}
+					} 
+					ExecPtr--;	// error
+					break;
 				case 0x58 :				// ElemSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -501,7 +560,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					if (i <= 4 ) i=1;
 					return i;
 				case 0x59 :				// ColSize( Mat A )
-					ColSizej:
+				  ColSizej:
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeA;
@@ -513,6 +572,13 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].Base;
+
+				case 0x4A :				// List>Mat( List 1, List 2,..) -> List 5
+					CB_List2Mat( SRC );
+					return 0;
+				case 0x4B :				// Mat>List( Mat A, m) -> List n
+					CB_Mat2List( SRC );;
+					return 0;
 				default:
 					ExecPtr--;	// error
 					break;
@@ -620,9 +686,11 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x33:	// StrSrc(
 					return CB_StrSrc( SRC );
 				case 0x38:	// Exp(
-					return CB_EvalStr(SRC);
+					return CBint_EvalStr(SRC);
 				case 0x21:	// Xdot
 					return Xdot;
+				case 0x1B :		// fn str
+					return CBint_GraphYStr( SRC, defaultFnAry );
 				default:
 					ExecPtr--;	// error
 					break;
@@ -703,7 +771,8 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 	result = EvalIntsub4( SRC );
 	while ( 1 ) {
 		c = SRC[ExecPtr];
-		if ((( 'A'<=c )&&( c<='z' )) ||
+		if ((( 'A'<=c )&&( c<='Z' )) ||
+			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFCD ) || // <r>
 			 ( c == 0xFFFFFFCE ) || // Theta
 			 ( c == 0xFFFFFFD0 ) || // PI
@@ -816,6 +885,24 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				tmp = EvalIntsub7( SRC );
 				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 				result /= tmp ;
+				break;
+			case 0x7F:
+				c = SRC[ExecPtr++];
+				switch ( c ) {
+					case 0xFFFFFFBC:	// IntÅÄ
+						tmp = EvalIntsub7( SRC );
+						if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+						result /= tmp ;
+						break;
+					case 0xFFFFFFBD:	// Rmdr
+						tmp = EvalIntsub7( SRC );
+						result = fMODint( result, tmp );
+						break;
+					default:
+						ExecPtr-=2;
+						return result;
+						break;
+				}
 				break;
 			default:
 				ExecPtr--;
@@ -947,7 +1034,7 @@ int CB_KeyRow( char *SRC ) {		// Row Keyscan
 	row = CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
-	if ( CPU_check() == 3 ) {
+	if ( IsSH3 ) {
 		return ( CheckKeyRow(row) ) ;			//SH3
 	}
 	else {

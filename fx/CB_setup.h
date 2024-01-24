@@ -3,6 +3,7 @@ extern int KeyRepeatNextCount;	// pointer to repeat time of second repeat( 5:def
 extern int selectSetup;
 extern int selectVar;
 extern int selectMatrix;
+extern const char VerMSG[];
 
 #define PageUpDownNumDefault 1
 extern short PageUpDownNum;		// Pageup/down count

@@ -33,7 +33,6 @@ void WriteMatrix( int reg, int dimA, int dimB, double value);	// 0-
 char *  MatrixPtr( int reg, int m, int n );						// 0-
 int	MatrixSize( int reg, int sizeA, int sizeB ) ;	// size 1-
 
-int DimMatrixDefaultElementSize() ;
 int DimMatrixSub( int reg, int ElementSize, int dimA, int dimA, int base ) ;	// 1-
 int DimMatrix( int reg, int dimA, int dimB, int base ) ;						// 1-
 int MatElementPlus( int reg, int m, int n ) ;	// 1-
@@ -46,13 +45,14 @@ void NumToHex( char *buffer, unsigned int n, int digit) ;
 void EditMatrix(int reg, int ans );		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
 
-int ElementSizeSelect( char *SRC, int *base ) ;
+int ElementSizeSelect( char *SRC, int *base, int ElementSize ) ;
 void CB_MatrixInitsubNoMat( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) ; 	// 1-
 void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) ; 	// 1-
 void CB_MatrixInit( char *SRC ) ; //	{n,m}->Dim Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2( char *SRC ) ; //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2Str( char *SRC ) ; //	["ABCD","12345","XYZ"]->Mat A[.B]
 void CB_ClrMat( char *SRC ) ; //	ClrMat A
+void CB_ClrList( char *SRC ) ; //	ClrList A
 int CB_MatCalc( char *SRC ) ; //	Mat A -> Mat B  etc
 void CB_MatFill( char *SRC ) ; //	Fill(value, Mat A)
 void CB_MatTrn( char *SRC ) ; //	Trn Mat A
@@ -80,10 +80,14 @@ void CB_Seq( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_ListCalc( char *SRC ) ; //	List 1 -> List 2  etc
 void CB_Argument( char *SRC ) ;	// Argument( List1, List2 )		Argument( Mat A, Mat B)
 void CB_SortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )
-double CB_Min( char *SRC ) ;	// Min( List 1 )
-double CB_Max( char *SRC ) ;	// Max( List 1 )
+double CB_MinMax( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max
+double CB_Mean( char *SRC ) ;	// Mean( List 1 )
+double CB_Median( char *SRC ) ;	// Median( List 1, List 2 )
 double CB_Sum( char *SRC ) ;	// Sum( List 1 )
 double CB_Prod( char *SRC ) ;	// Prod( List 1 )
+void CB_MatSwap( char *SRC ) ;	// Swap Mat A,2,3
+void CB_Mat2List( char *SRC ) ;	// Mat>List( Mat A, m) -> List n
+void CB_List2Mat( char *SRC ) ;	// List>Mat( List 1, List 2,..) -> List 5
 
 //-----------------------------------------------------------------------------
 double CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f

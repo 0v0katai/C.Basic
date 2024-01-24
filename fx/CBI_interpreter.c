@@ -85,7 +85,7 @@ void CBint_Store( char *SRC ){	// ->
 			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
-				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; dspflag=0; return ; }	// MatAns -> Mat A
+				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatSub( reg, CBint_CurrentValue);		// 10 -> Mat A
 			} else {
@@ -103,7 +103,7 @@ void CBint_Store( char *SRC ){	// ->
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
 			if ( SRC[ExecPtr] != '[' ) { 
-				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; dspflag=0; return ; }	// ListAns -> List 1
+				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; dspflag=0; return ; }	// ListAns -> List 1
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatSub( reg, CBint_CurrentValue);		// 10 -> List 1
 			} else {

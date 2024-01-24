@@ -25,10 +25,11 @@
 //
 //
 
+#include <stdio.h>
 #include <fxlib.h>
 #include "KeyScan.h"
+#include "CB_io.h"
 #include "CB_interpreter.h"
-
 
 void delay( void ){
 int i;
@@ -85,12 +86,13 @@ int CheckKeyRow7305( int row ){
 	return result & 0xFF ;
 }
 
+
 int KeyScanDown(int keyscan_code){
 	int row,col,rowdata;
 	row = keyscan_code & 0x0F;
 	col = keyscan_code >> 4;
 
-	if (*(volatile unsigned short*)0xFFFFFF80 != 0) {
+	if ( IsSH3 ) {
 		return ( CheckKeyRow(row) & col ) ;			//SH3
 	}
 	else {
@@ -102,6 +104,7 @@ int KeyScanDownAC(){
 	int n,s,t;
 	n=Waitcount;
 	if ( n<=0 ) return KeyScanDown(KEYSC_AC) ;
+	if ( IsSH3==0 ) n*=5;	// SH4 adjust
 	while ( n ) {
 		result = KeyScanDown(KEYSC_AC);
 		if ( result ) break;
@@ -120,7 +123,7 @@ int BackLight( int n ){		// 0:off  1:on   2:xor
 	unsigned char bit;
 	int result;
 	
-	if (*(volatile unsigned short*)0xFFFFFF80 != 0) {
+	if ( IsSH3 ) {
 		adrs=(volatile unsigned char *)0xA400012C; bit=0x80;		// SH3
 	} else {
 		adrs=(volatile unsigned char *)0xA4050138; bit=0x10;		// SH4A
@@ -146,7 +149,7 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	int i,row,c,SH3;
 	int code=0;
 	row=1;
-	SH3= (*(volatile unsigned short*)0xFFFFFF80 != 0) ;
+	SH3= IsSH3 ;
 	
 	if ( Recent_code ) {
 		if ( KeyScanDown(Recent_rowcode) ) return Recent_code ;
@@ -243,7 +246,7 @@ int KeyCheckCHAR4() {		// [4]
 
 void KeyRecover() {
 //	CB_Getkey();
-	if (*(volatile unsigned short*)0xFFFFFF80 != 0) 
+	if ( IsSH3 ) 
 		IsKeyDown( KEY_CTRL_AC );		//SH3
 	else	KeyCheckAC();				//SH4
 //	KeyCheckAC();

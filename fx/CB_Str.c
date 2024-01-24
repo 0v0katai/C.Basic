@@ -30,12 +30,22 @@ char   *CB_CurrentStr;	//
 char   CB_StrBufferCNT;
 char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
-char   defaultStrAry='s'-'A';
+char   defaultStrAry=26;	// <r>
 char   defaultStrAryN=20;
-char   defaultStrArySize=64+1;
-char   defaultGraphAry='y'-'A';
-char   defaultGraphAryN=5;
-char   defaultGraphArySize=64+1;
+short  defaultStrArySize=255+1;
+
+char   defaultFnAry=27;		// Theta
+char   defaultFnAryN=8;
+short  defaultFnArySize=255+1;
+
+char   defaultGraphAry=27;		// Theta
+char   defaultGraphAryN=8;
+short  defaultGraphArySize=255+1;
+
+char	dummychar1;
+char	dummychar2;
+char	dummychar3;
+char	dummychar4;
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int StrGetOpcode( char *SRC, int ptr ){
@@ -444,6 +454,8 @@ int CB_IsStr( char *SRC, int execptr ) {
 		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
 		else
 		if ( ( 0x34 <= c ) && ( c <= 0x43 ) ) return c;
+		else
+		if ( c == 0x1B ) return c;	// fn
 	} else
 	if ( c == 0x7F ) {
 		c=SRC[execptr+1];
@@ -480,20 +492,29 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			break;
 		case 0x3F:	// Str 1-20
 			reg=defaultStrAry;
-	str1:	ExecPtr+=2;
-//			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
+			ExecPtr+=2;
 			if ( MatAry[reg].SizeA == 0 ) {
 				DimMatrixSub( reg, 8, defaultStrAryN+1-MatBase, defaultStrArySize, MatBase );	// byte matrix
-				if ( ErrorNo ) return ; // error
 			}
+	str1:	if ( ErrorNo ) return ; // error
 			if ( CB_INT ) dimA = EvalIntsub1( SRC ); else dimA = Evalsub1( SRC );	// str no : Mat s[n,len]
 			if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
 			dimB=MatAry[reg].Base;
 			buffer=MatrixPtr( reg, dimA, dimB );
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
+		case 0x1B:	// fn
+			reg=defaultFnAry;
+			if ( MatAry[reg].SizeA == 0 ) {
+				DimMatrixSub( reg, 8, defaultFnAryN+1-MatBase, defaultFnArySize, MatBase );	// byte matrix
+			}
+			goto str1;
+			break;
 		case 0xFFFFFFF0:	// GraphY
 			reg=defaultGraphAry;
+			if ( MatAry[reg].SizeA == 0 ) {
+				DimMatrixSub( reg, 8, defaultGraphAryN+1-MatBase, defaultGraphArySize, MatBase );	// byte matrix
+			}
 			goto str1;
 			break;
 		case 0x30:	// StrJoin(
@@ -619,7 +640,21 @@ void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
 		DimMatrixSub( reg, 8, defaultGraphAryN+1-MatBase, defaultGraphArySize, MatBase );	// byte matrix
 		if ( ErrorNo ) return ;
 	}
-	dimA = CB_EvalInt( SRC );	// GraphY no : Mat s[n,len]
+	dimA = CB_EvalInt( SRC );	// GraphY no : Mat y[n,len]
+	if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	MatAryC=MatrixPtr( reg, dimA, MatAry[reg].Base );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
+}
+
+void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
+	int reg,dimA,dimB;
+	char *MatAryC;
+	reg=defaultFnAry;
+	if ( MatAry[reg].SizeA == 0 ) {
+		DimMatrixSub( reg, 8, defaultFnAryN+1-MatBase, defaultFnArySize, MatBase );	// byte matrix
+		if ( ErrorNo ) return ;
+	}
+	dimA = CB_EvalInt( SRC );	// fn no : Mat x[n,len]
 	if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 	MatAryC=MatrixPtr( reg, dimA, MatAry[reg].Base );
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
@@ -689,6 +724,10 @@ void CB_StorStr( char *SRC ) {
 			ExecPtr+=2;
 			StorTIME( CB_CurrentStr ) ;
 			break;
+		case 0x1B:			// fn
+			ExecPtr+=2;
+			StorStrFn( SRC ) ;
+			break;
 		case 0xFFFFFFF0:	// GraphY
 			ExecPtr+=2;
 			StorStrGraphY( SRC ) ;
@@ -739,14 +778,17 @@ void CB_Str( char *SRC ){		// "" "" or &Mat or Str1-20 or StrFunction
 //----------------------------------------------------------------------------------------------
 int CB_StrLen( char *SRC ) {
 	int i,maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_StrBufferCNT=buffercnt;
 	return StrLen( buffer ,&i );
 }
 int CB_StrCmp( char *SRC ) {
 	int maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
 	char *buffer, *buffer2;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
@@ -754,12 +796,14 @@ int CB_StrCmp( char *SRC ) {
 	ExecPtr++;
 	buffer2 = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
+	CB_StrBufferCNT=buffercnt;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return StrCmp( buffer, buffer2 ) ;
 }
 
 int CB_StrSrc( char *SRC ) {
 	int sptr=0,slen,maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
 	char *buffer, *buffer2;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
@@ -768,6 +812,7 @@ int CB_StrSrc( char *SRC ) {
 	ExecPtr++;
 	buffer2  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
+	CB_StrBufferCNT=buffercnt;
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		sptr = CB_EvalInt( SRC );	//
@@ -788,51 +833,76 @@ double CB_EvalStrDBL( char *buffer) {		// Eval str -> double
     ExecPtr = 0;
     ErrorPtr= 0;
 	ErrorNo = 0;
-    result = EvalsubTop( buffer );
+    result = ListEvalsubTop( buffer );
 	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
 }
-
-double CB_EvalStr( char *SRC) {		// Eval str -> double
+double CB_EvalStr( char *SRC) {		// Exp(	
 	double result;
 	int c;
 	int maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
 	char *buffer;
 	
 	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
 	if ( ErrorNo ) return 0;  // error
-
+	CB_StrBufferCNT=buffercnt;
 	result=CB_EvalStrDBL( buffer );
-	
 	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;
 	return result;
 }
 
-int CBint_EvalStr( char *SRC) {		// Eval str -> int
+int CB_EvalStrInt( char *buffer) {		// Eval str -> Int
+	int result;
+	int execptr=ExecPtr;
+	int oplen=strlenOp( buffer );
+	if ( oplen == 0 ) return 0;
+    ExecPtr = 0;
+    ErrorPtr= 0;
+	ErrorNo = 0;
+    result = EvalIntsubTop( buffer );
+	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
+    ExecPtr=execptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	return result;
+}
+int CBint_EvalStr( char *SRC) {		// Exp(			Eval str -> int
 	int result;
 	int c;
 	int maxoplen;
-	int execptr;
-	int oplen;
+	int	buffercnt=CB_StrBufferCNT;
 	char *buffer;
-
+	
 	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
 	if ( ErrorNo ) return 0;  // error
-
-	oplen=strlenOp( buffer );
-	if ( oplen == 0 ) return 0;
-	execptr=ExecPtr;
-	ExecPtr= 0;
-	result = EvalIntsubTop( buffer );
-	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
-	ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	CB_StrBufferCNT=buffercnt;
+	result=CB_EvalStrInt( buffer );
 	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;
 	return result;
 }
 
+double CB_GraphYStr( char *SRC, int reg ) {	// reg: defaultGraphAry or defaultFnAry
+	double result;
+	int dimA,dimB;
+	int base=MatAry[reg].Base;
+	dimA=Evalsub1( SRC );
+	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(ArgumentERR); }  // Argument error
+	if ( ErrorNo ) return 0;
+	result=CB_EvalStrDBL( MatrixPtr( reg, dimA, base ) );
+	return result ;
+}
+int CBint_GraphYStr( char *SRC, int reg ) {	// reg: defaultGraphAry or defaultFnAry
+	int result;
+	int dimA,dimB;
+	int base=MatAry[reg].Base;
+	dimA=EvalIntsub1( SRC );
+	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(ArgumentERR); }  // Argument error
+	if ( ErrorNo ) return 0;
+	result=CB_EvalStrInt( MatrixPtr( reg, dimA, base ) );
+	return result ;
+}
 //----------------------------------------------------------------------------------------------
 int CB_StrJoin( char *SRC ) {
 	int maxoplen;

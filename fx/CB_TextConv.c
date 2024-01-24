@@ -503,7 +503,7 @@ const char ConvListF700[][17]={
 "Next",				// F707
 "While ",			// F708
 "WhileEnd",			// F709
-"Do",				// F70A
+"Do ",				// F70A
 "LpWhile ",			// F70B
 "Return ",			// F70C
 "Break",			// F70D
@@ -851,7 +851,7 @@ const char ConvListF900[][17]={
 "@F94C",			// F94C
 "@F94D",			// F94D
 "@F94E",			// F94E
-"@F94F",			// F94F
+"Wait ",				// F94F
 
 "@F950",			// F950
 "@F951",			// F951
@@ -1320,7 +1320,7 @@ const char ConvListE700[][13]={
 //-----------------------------------------------------------------------------
 typedef struct {
 	short code;
-	char str[16];
+	char str[8];
 } tcnvopcodes;
 
 const tcnvopcodes ConvOpCodeStrList[] = {
@@ -1366,6 +1366,7 @@ const tcnvopcodes ConvOpCodeStrList[] = {
 	{ 0xF7EE, "Save" }, 
 	{ 0x7F46, "Dim" },
 	{ 0xF74F, "Dot" },
+	{ 0xF70A, "Do" },
 
 	{ 0, "" }
 };
@@ -1383,20 +1384,17 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 	char flag=0;	// ' "
 	
 	strncpy( text, cbasicstr,18);	// header
-
 	while ( cont ) {
 	  tokenloop:
 		code = GetOpcode( srcbase, ofst ) ;
 		if ( code == 0 ) break;
 
-		if ( code == 0x0D ) {
-			if ( flag == 0x27 )  flag=0;	// ' end
-		}
+		if ( ( code == 0x0D ) && ( flag == 0x27 ) ) flag=0;	// ' end
 		if ( code == 0x22 ) {	// "
 			if ( flag == 0x22 )  flag=0; // " end
 			else flag=code;	// "
 		}
-		if ( ( code == 0x27 ) && ( flag != 0x27 ) ) flag=code;	// '
+		if ( ( code == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=code;	// '
 
 		if ( ( code != 0x21 ) && ( code != 0x2A ) && ( code != 0x2B ) && ( code != 0x2D ) && ( code != 0x2F ) && ( 0x20 <= code ) && ( code <= 0x7E ) ){
 				text[textofst++] = code;
@@ -1446,13 +1444,13 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			}
 		}
 		
-		if ( code == 0x0C ) { //
-			flag=0;
-			if ( GetOpcode( srcbase, ofst ) != 0x0D ) {;
-				text[textofst++] ='\r';
-				text[textofst++] ='\n';
-			}
-		}
+//		if ( code == 0x0C ) { // Disps
+//			flag=0;
+//			if ( GetOpcode( srcbase, ofst ) != 0x0D ) {;
+//				text[textofst++] ='\r';
+//				text[textofst++] ='\n';
+//			}
+//		}
 		if ( textofst > maxsize-16 ) return -1; // text buffer overflow
 	}
 	text[textofst] ='\0';
@@ -1513,7 +1511,7 @@ int codecnvF700( char *srcbase, char *text, int *ofst, int *textofst ) {
 	int code;
 	int len;
 	int c=text[(*textofst)];
-	for ( code=0x00FF; code>=0x0000; code--) {		// 0xF700 - 0xF7FF
+	for ( code=0x00FF; code>=0x0000; code--) {		// 0xF7FF - 0xF700
 		opstr=ConvListF700[code];
 		if ( c == opstr[0] ) {
 			len = strlen( opstr );
@@ -1656,10 +1654,11 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 			textofst++;
 			goto tokenloop;
 		}
-		if ( ( flag == 0x22 ) && ( c== 0x22 ) ) { flag=0; goto tokenskip; }	// " end
-		if ( ( c == 0x27 ) || ( c == 0x22 ) ) { // ' " 
-			flag=c;
+		if ( c == 0x22 ) {	// "
+			if ( flag == 0x22 )  { flag=0; goto tokenskip; }	// " end
+			else flag=c;	// "
 		}
+		if ( ( c == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=c;	// '
 		if ( flag ) {
 			if ( c!='_' ) {
 				if ( ( c!=0x0D ) && ( c!='+' ) && ( c!='-' ) && ( c!='*' ) && ( c!='/' ) && ( c!='!' ) && ( c!='^' ) ) goto tokenskip;
@@ -1706,8 +1705,8 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		if ( c != '(' ) {
 			c=codecnv0000( srcbase, text, &ofst, &textofst ) ;	// 0x0001 - 0x002F
 			if ( c==0 ) {
-				c=srcbase[ofst-1];
-				if ( ( c == 0x0C ) || ( c == 0x0D ) ) flag=0;
+//				c=srcbase[ofst-1];
+//				if ( ( c == 0x0C ) || ( c == 0x0D ) ) flag=0;
 				goto tokenloop;
 			}
 		}
@@ -1719,7 +1718,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 
 	  tokenskip:
 		if ( ( 0x20 <= c ) && ( c <= 0x7E ) ) {
-			if ( c == 'C' ) { 
+			if ( c == 'C' ) { 	// Char
 				if ( ( text[textofst+1] == 'h' ) && ( text[textofst+2] == 'a' ) && ( text[textofst+3] == 'r' ) ) {
 					c=text[textofst+4];
 					if ( ( c == '!' ) || ( c == '-') ) {
@@ -1740,7 +1739,8 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 				srcbase[ofst++] = c;
 				textofst++;
 		} else {	// no token
-				srcbase[ofst++] = '*';
+				srcbase[ofst++] = '?';
+				srcbase[ofst++] = '?';
 				textofst++;
 		}
 	}
