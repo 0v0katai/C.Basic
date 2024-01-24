@@ -126,8 +126,8 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 		(*dimA) = MatOperandSub( c );
 	} else
 	if ( d == 0xFFFFFF89 ) { 										// [a+1,
-		c=SRC[ExecPtr+3];
-		if ( ( c == ',' ) || ( c == ']' ) ) {
+		d=SRC[ExecPtr+3];
+		if ( ( d == ',' ) || ( d == ']' ) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandSub( c );
 			c=SRC[ExecPtr++];
@@ -136,7 +136,7 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 	} else
 	if ( d == 0xFFFFFF99 ) { 										// [a-1,
 		c=SRC[ExecPtr+3];
-		if ( ( c == ',' ) || ( c == ']' ) ) {
+		if ( ( d == ',' ) || ( d == ']' ) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandSub( c );
 			c=SRC[ExecPtr++];
@@ -181,8 +181,9 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 
 int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 	int c;
-	if ( ( SRC[ExecPtr] != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return 0 ; }	// Syntax error
-	ExecPtr+=2;
+//	if ( ( SRC[ExecPtr] != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return 0 ; }	// Syntax error
+//	ExecPtr+=2;
+	if ( ( SRC[ExecPtr] == 0x7F ) && ( SRC[ExecPtr+1] == 0x40 ) ) ExecPtr+=2;	// skip 'Mat '
 	c =SRC[ExecPtr];
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;

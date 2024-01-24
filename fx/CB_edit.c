@@ -348,7 +348,7 @@ int PrintOpcodeLine1(int csry, int n, char *buffer, int ofst, int csrPtr, int *c
 int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr){
 	int i,n,x,y,ynum;
 	int ofst,ofst2,ofstYptr;
-	int count=500;
+	int count=250;
 
 	*cx=0; *cy=0;
 
@@ -852,8 +852,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
 							ProgEntryN=1;
 							MSG1("Prog Loading.....");
-//							MSG1("Wait a moment");
 							CB_ProgEntry( SrcBase ) ;		// sub program search
+//							if ( ErrorNo == FileERR ) cont=0;
 							if ( ErrorNo ) { 
 								ProgNo=ErrorProg; 
 								stat=1;

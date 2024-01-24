@@ -653,7 +653,7 @@ void CB_StorStr( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 
 
-void CB_Str( char *SRC ){		// "" "" or %Mat or Str1-20 or StrFunction
+void CB_Str( char *SRC ){		// "" "" or &Mat or Str1-20 or StrFunction
 	char buffer[CB_StrBufferMax];
 	int c,d;
 	int execptr,maxoplen,i=0;
