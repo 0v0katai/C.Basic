@@ -202,6 +202,8 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 	while ( oplist[opNum++] ) ;
 	opNum-=2;
 
+	Cursor_SetFlashMode(0); 		// cursor flashing off
+
 	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(6);
 
@@ -257,7 +259,7 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 	return oplist[(*select)];
 }
 
-unsigned short oplistInp[]={
+const unsigned short oplistInp[]={
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -303,6 +305,548 @@ unsigned short oplistInp[]={
 		0x7F06,	// Yscl
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
+		0};
+
+
+//----------------------------------------------------------------------------------------------
+
+const unsigned short oplistOPTN[]={
+		0x23,	// #
+//		0x24,	// $
+		0x25,	// %
+//		0x26,	// &
+//		0x27,	// '
+		0x97,	// Abs
+		0xA6,	// Int
+		0xB6,	// frac
+		0xAB,	// !
+//		0x81,	// sin
+//		0x82,	// cos
+//		0x83,	// tan
+//		0x91,	// arcsin
+//		0x92,	// arccos
+//		0x93,	// arctan
+//		0x85,	// ln
+//		0x86,	// sqrt
+//		0x95,	// log
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xA1,	// sinh
+		0xA2,	// cosh
+		0xA3,	// tanh
+		0xB1,	// arcsinh
+		0xB2,	// arccosh
+		0xB3,	// arctanh
+
+		0x7F3A,	// MOD(
+		0x7F46,	// Dim
+		0x7F40,	// Mat	
+
+		0x7FB0,	// And
+		0x7FB1,	// Or
+		0x7FB3,	// Not
+		0x7FB4,	// Xor
+
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
+		0xC1,	// Ran#
+		0x7F87,	// RanInt#(
+
+		0xD9,	// Norm
+		0xE3,	// Fix
+		0xE4,	// Sci
+		0xDD,	// Eng
+		0xF90B,	// EngOn
+		0xF90C,	// EngOff
+
+		0x01,	// femto
+		0x02,	// pico
+		0x03,	// nano
+		0x04,	// micro
+		0x05,	// milli
+		0x06,	// Kiro
+		0x07,	// Mega
+		0x08,	// Giga
+		0x09,	// Tera
+		0x0A,	// Peta
+		0x0B,	// Exa
+		
+		
+		0xF793,	// StoPict
+		0xF794,	// RclPict
+//		0xF797,	// StoV-Win
+//		0xF798,	// RclV-Win
+//		0xF79F,	// RclCapt
+//		0xF74C,	// Sum
+		0x0FB,	// ProbP(
+		0x0FC,	// ProbQ(
+//		0x0FD,	// ProbR(
+//		0x0FE,	// Probt(
+		0x7FE9,	// CellSum(
+		0};
+							
+const unsigned short oplistPRGM[]={	
+		0x0C,	// dsps
+		0x3A,	// :
+		0x3F,	// ?
+		0x27,	// '
+		0x7E,	// ~
+		
+		0x3C,	// <
+		0x3E,	// >
+		0x10,	// <=
+		0x11,	// !=
+		0x12,	// >=
+		
+		0xE2,	// Lbl
+		0xEC,	// Goto
+		0x13,	// =>
+		0xE9,	// Isz
+		0xE8,	// Dsz
+		
+		0xF700,	// If
+		0xF701,	// Then
+		0xF702,	// Else
+		0xF703,	// IfEnd
+		0xF704,	// For
+		0xF705,	// To
+		0xF706,	// Step
+		0XF707,	// Next
+		0xF708,	// While
+		0xF709,	// WhileEnd
+		0xF70A,	// Do
+		0xF70B,	// LpWhile
+		
+		0xED,	// Prog
+		0xF70C,	// Return
+		0xF70D,	// Break
+		0xF70E,	// Stop
+
+		0xF718,	// ClrText
+		0xF719,	// ClrGraph
+		0xF71A,	// ClrList
+		0xF91E,	// ClrMat
+		
+		0xF710,	// Locate
+		0x7F8F,	// Getkey
+
+		0xF720,	// DrawGraph
+		0};
+		
+const unsigned short oplistVARS[]={
+		0xD1,	// Cls
+		0xF719,	// ClrGraph
+		0xE0,	// Plot
+		0xE1,	// Line
+		0xEB,	// ViewWindow
+
+		0xF7A3,	// Vertical
+		0xF7A4,	// Horizontal
+		0xF7A5,	// Text
+		0xF7A6,	// Circle
+		0xF7A7,	// F-Line
+		0xF7A8,	// PlotOn
+		0xF7A9,	// PlotOff
+		0xF7AA,	// PlotChg
+		0xF7AB,	// PxlOn
+		0xF7AC,	// PxlOff
+		0xF7AD,	// PxlChg
+		0xF7AF,	// PxlTest(
+
+//		0xF797,	// StoV-Win
+//		0xF798,	// RclV-Win
+		0xF793,	// StoPict
+		0xF794,	// RclPict
+//		0xF79F,	// RclCapt
+		
+
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xF7C3,	// CoordOn
+		0xF7D3,	// CoordOff
+		0xF77D,	// GridOn
+		0xF77A,	// GridOff
+		0xF7C2,	// AxesOn
+		0xF7D2,	// AxesOff
+		0xF7C4,	// LabelOn
+		0xF7D4,	// LabelOff
+		0xF770,	// G-Connect
+		0xF771,	// G-Plot
+		0xF71C,	// S-L-Normal
+		0xF71D,	// S-L-Thick
+		0xF71E,	// S-L-Broken
+		0xF71F,	// S-L-Dot
+		0xF78C,	// SketchNormal
+		0xF78D,	// SketchThick
+		0xF78E,	// SketchBroken
+		0xF78F,	// SketchDot
+		
+		0x7F00,	// Xmin
+		0x7F01,	// Xmax
+		0x7F02,	// Xscl
+		0XF921,	// Xdot
+		0x7F04,	// Ymin
+		0x7F05,	// Ymax
+		0x7F06,	// Yscl
+		0x7F0B,	// Xfct
+		0x7F0C,	// Yfct
+		0x7FF0,	// GraphY
+		0xF720,	// DrawGraph
+		0xEE,	// Graph Y=
+		0xF73F,	// DotG(
+		0xF94B,	// DotP(
+		0};
+
+//---------------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+int SelectOpcode5800P(unsigned short *oplist, int *select) {
+	int opNum=0 ;
+	char buffer[22];
+	char tmpbuf[18];
+	unsigned int key;
+	int	cont=1;
+	int i,j,y,n;
+	int seltop=*select;
+
+	while ( oplist[opNum++] ) ;
+	opNum-=2;
+	
+	Cursor_SetFlashMode(0); 		// cursor flashing off
+
+	SaveDisp(SAVEDISP_PAGE1);
+//	Bdisp_AllClr_DDVRAM();
+	
+//	PopUpWin(6);
+
+	while (cont) {
+		Bdisp_AllClr_VRAM();
+		locate(1,1); Print((unsigned char *)"== Command Select ==");
+		(*select)=(*select)/12*12;
+		for ( i=0; i<12; i++ ) {
+			n=oplist[(*select)+i];
+			tmpbuf[0]='\0'; 
+			if ( n == 0xFFFF ) n=' ';
+			else CB_OpcodeToStr( n, (unsigned char*)tmpbuf ) ; // SYSCALL
+			tmpbuf[8]='\0'; 
+			n=i+1; if (n>9) n=0;
+			j=0; if ( tmpbuf[0]==' ' ) j++;
+			if ( i< 10 ) sprintf(buffer,"%d:%-9s",n,tmpbuf+j ) ;
+			if ( i==10 ) sprintf(buffer,".:%-9s",tmpbuf+j ) ;
+			if ( i==11 ) sprintf(buffer,"\x0F:%-9s",tmpbuf+j ) ;
+			locate(0+(i%2)*12,2+i/2); 
+			Print((unsigned char *)buffer);
+			if ( i==11 ) { locate(0+(i%2)*12,2+i/2); Print((unsigned char *)"\x0F"); }
+		}
+		Fkey_DISPR( 0, " ? ");
+		Fkey_DISPR( 1, " \x0C ");
+		Fkey_DISPR( 2, " : ");
+		Fkey_DISPR( 3, " ' ");
+		Fkey_DISPR( 4, " = ");
+		Fkey_DISPR( 5, " \x11 ");
+
+		Bdisp_PutDisp_DD();	
+		
+		y = ((*select)-seltop) + 1 ;
+//		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
+		switch (key) {
+			case KEY_CTRL_EXIT:
+				return 0;
+			case KEY_CTRL_EXE:
+				cont=0;
+				break;
+		
+			case KEY_CTRL_F1:	// ?
+				RestoreDisp(SAVEDISP_PAGE1);
+				return '?';
+				break;
+			case KEY_CTRL_F2:	// dsps
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0x0C;
+				break;
+			case KEY_CTRL_F3:	// :
+				RestoreDisp(SAVEDISP_PAGE1);
+				return ':';
+				break;
+			case KEY_CTRL_F4:	// '
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0x27;
+				break;
+			case KEY_CTRL_F5:	// =
+				RestoreDisp(SAVEDISP_PAGE1);
+				return '=';
+				break;
+			case KEY_CTRL_F6:	// !=
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0x11;
+				break;
+
+			case KEY_CTRL_LEFT:
+				*select = 0;
+				break;
+			case KEY_CTRL_RIGHT:
+				*select = opNum;
+				break;
+			case KEY_CTRL_UP:
+				(*select)-=12;
+				if ( *select < 0 ) *select = opNum;
+				break;
+			case KEY_CTRL_DOWN:
+				(*select)+=12;
+				if ( *select >= opNum ) *select =0;
+				break;
+			case KEY_CHAR_1:
+			case KEY_CHAR_U:
+				n=0;
+				cont=0;
+				break;
+			case KEY_CHAR_2:
+			case KEY_CHAR_V:
+				n=1;
+				cont=0;
+				break;
+			case KEY_CHAR_3:
+			case KEY_CHAR_W:
+				n=2;
+				cont=0;
+				break;
+			case KEY_CHAR_4:
+			case KEY_CHAR_P:
+				n=3;
+				cont=0;
+				break;
+			case KEY_CHAR_5:
+			case KEY_CHAR_Q:
+				n=4;
+				cont=0;
+				break;
+			case KEY_CHAR_6:
+			case KEY_CHAR_R:
+				n=5;
+				cont=0;
+				break;
+			case KEY_CHAR_7:
+			case KEY_CHAR_M:
+				n=6;
+				cont=0;
+				break;
+			case KEY_CHAR_8:
+			case KEY_CHAR_N:
+				n=7;
+				cont=0;
+				break;
+			case KEY_CHAR_9:
+			case KEY_CHAR_O:
+				n=8;
+				cont=0;
+				break;
+			case KEY_CHAR_0:
+			case KEY_CHAR_Z:
+				n=9;
+				cont=0;
+				break;
+			case KEY_CHAR_DP:
+			case KEY_CHAR_SPACE:
+				n=10;
+				cont=0;
+				break;
+			case KEY_CHAR_EXP:
+			case KEY_CHAR_DQUATE:
+				n=11;
+				cont=0;
+				break;
+			default:
+				break;
+		}
+	}
+
+	RestoreDisp(SAVEDISP_PAGE1);
+//	Bdisp_PutDisp_DD();
+
+	i=oplist[(*select)+n]; if (i==0xFFFF ) i=0;
+	return i;
+}
+
+							
+const unsigned short oplistCMD[]={	
+		0x3F,	// ?			1
+		0x0E,	// ->			2
+		0xF700,	// If			3
+		0xF701,	// Then			4
+		0xF702,	// Else			5
+		0xF703,	// IfEnd		6
+		0xE2,	// Lbl			7
+		0xEC,	// Goto			8
+		0x27,	// '
+		0x7E,	// ~
+		0x23,	// #
+		0x25,	// %
+//		0x0C,	// dsps	
+//		0x3A,	// :	
+
+		0x3D,	// =			1
+		0x11,	// !=			2
+		0x3E,	// >			3
+		0x3C,	// <			4
+		0x12,	// >=			5
+		0x10,	// <=			6
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xF718,	// ClrText	
+		0xF719,	// ClrGraph	
+		0xF71A,	// ClrList	
+		0xF91E,	// ClrMat	
+		
+		0xE8,	// Dsz			1
+		0xE9,	// Isz			2
+		0x13,	// =>			3
+		0xF710,	// Locate		4
+		0xD1,	// Cls			5
+		0x7FB0,	// And			6
+		0x7FB1,	// Or			7
+		0x7FB3,	// Not			8
+		0x7FB4,	// Xor			9
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0x25,	// 	%			-
+		
+		0xF704,	// For			1
+		0xF705,	// To			2
+		0xF706,	// Step			3
+		0XF707,	// Next			4
+		0xF708,	// While		5
+		0xF709,	// WhileEnd		6
+		0xF70A,	// Do			7
+		0xF70B,	// LpWhile		8
+		0xFFFF,	// 				-
+		0x7FE9,	// CellSum(
+		0x7F46,	// Dim	
+		0x7F40,	// Mat	
+
+		
+		0xF70D,	// Break		1
+		0xF70C,	// Return		2
+		0xF70E,	// Stop			3
+		0x7F8F,	// Getkey		4
+		0xED,	// Prog			5
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xFFFF,	// 				-
+
+		0xD1,	// Cls
+		0xF719,	// ClrGraph
+		0xEB,	// ViewWindow
+		0xE0,	// Plot
+		0xF7A8,	// PlotOn
+		0xF7A9,	// PlotOff
+		0xF7AA,	// PlotChg
+		0xF7A6,	// Circle
+		0xE1,	// Line
+		0xF7A7,	// F-Line
+		0xF7A3,	// Vertical
+		0xF7A4,	// Horizontal
+		
+		0xF7AB,	// PxlOn
+		0xF7AC,	// PxlOff
+		0xF7AD,	// PxlChg
+		0xF7AF,	// PxlTest(
+		0xF7A5,	// Text
+		0xFFFF,	// 				-
+		0xF78C,	// SketchNormal
+		0xF78D,	// SketchThick
+		0xF78E,	// SketchBroken
+		0xF78F,	// SketchDot
+		0xF770,	// G-Connect
+		0xF771,	// G-Plot
+		
+		0xF7C3,	// CoordOn
+		0xF7D3,	// CoordOff
+		0xF77D,	// GridOn
+		0xF77A,	// GridOff
+		0xF7C2,	// AxesOn
+		0xF7D2,	// AxesOff
+		0xF7C4,	// LabelOn
+		0xF7D4,	// LabelOff
+		0xF71C,	// S-L-Normal
+		0xF71D,	// S-L-Thick
+		0xF71E,	// S-L-Broken
+		0xF71F,	// S-L-Dot
+		
+		0x7F00,	// Xmin
+		0x7F01,	// Xmax
+		0x7F02,	// Xscl
+		0x7F0B,	// Xfct
+		0XF921,	// Xdot
+		0xFFFF,	// 				-
+		0x7F04,	// Ymin
+		0x7F05,	// Ymax
+		0x7F06,	// Yscl
+		0x7F0C,	// Yfct
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+
+		0x97,	// Abs
+		0xA6,	// Int
+		0xB6,	// frac
+		0xAB,	// !
+		0x7F3A,	// MOD(
+		0xFFFF,	// 				-
+		0xA1,	// sinh
+		0xA2,	// cosh
+		0xA3,	// tanh
+		0xB1,	// arcsinh
+		0xB2,	// arccosh
+		0xB3,	// arctanh
+
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
+		0xC1,	// Ran#
+		0x7F87,	// RanInt#(
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0xD9,	// Norm
+		0xE3,	// Fix
+		0xE4,	// Sci
+		0xDD,	// Eng
+		0xF90B,	// EngOn
+		0xF90C,	// EngOff
+
+		0x01,	// femto
+		0x02,	// pico
+		0x03,	// nano
+		0x04,	// micro
+		0x05,	// milli
+		0x06,	// Kiro
+		0x07,	// Mega
+		0x08,	// Giga
+		0x09,	// Tera
+		0x0A,	// Peta
+		0x0B,	// Exa
+		0xFFFF,	// 				-
+		
+		0xF720,	// DrawGraph
+		0xEE,	// Graph Y=
+		0x7FF0,	// GraphY
+		0xFFFF,	// 				-
+		0xF73F,	// DotG(
+		0xF94B,	// DotP(
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+//		0xF797,	// StoV-Win
+//		0xF798,	// RclV-Win
+		0xF793,	// StoPict
+		0xF794,	// RclPict
+//		0xF79F,	// RclCapt
+		0xFFFF,	// 				-
+
 		0};
 
 
@@ -717,6 +1261,15 @@ int OpStrLastoffset(unsigned char *buffer, int ptrX, int csrwidth, int *csrX) {
 
 //----------------------------------------------------------------------------------------------
 
+void PutAlphamode1( int CursorStyle ){
+	if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
+}
+
+int selectCMD=0;
+int selectOPTN=0;
+int selectVARS=0;
+int selectPRGM=0;
+
 int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
 	unsigned char buffer2[128];
 	unsigned char buf[22];
@@ -842,9 +1395,24 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 		}
 
 		if ( key == KEY_CTRL_OPTN ) {
-				Cursor_SetFlashMode(0); 		// cursor flashing off
 				key=SelectOpcode(oplistInp,&selectOPTN);
-				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
+				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+		}
+		if ( key == KEY_CTRL_F3 )  {
+				key=SelectOpcode5800P(oplistCMD,&selectCMD);
+				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+		}
+		if ( key == KEY_CTRL_OPTN ) {
+				key=SelectOpcode(oplistOPTN,&selectOPTN);
+				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+		}
+		if ( key == KEY_CTRL_VARS ) {
+				key=SelectOpcode(oplistVARS,&selectVARS);
+				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+		}
+		if ( key == KEY_CTRL_PRGM ) {
+				key=SelectOpcode(oplistPRGM,&selectPRGM);
+				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( alpha_mode || exp_mode ) {
 			keyH=(key&0xFF00) >>8 ;

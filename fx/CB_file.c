@@ -11,6 +11,7 @@
 #include "CB_edit.h"
 #include "CB_interpreter.h"
 #include "CB_Matrix.h"
+#include "CB_setup.h"
 
 #include "CBI_interpreter.h"
 
@@ -377,6 +378,7 @@ unsigned int Explorer( int size, char *folder )
 							SetViewWindow();
 							SaveFavorites();
 							break;
+					case KEY_CTRL_PAGEUP:	// up
 					case KEY_CTRL_F4:	// up
 							if ( index <= StartLine ) break;
 							strncpy( tmpname, files[index-1].filename, FILENAMEMAX);
@@ -388,6 +390,7 @@ unsigned int Explorer( int size, char *folder )
 							index--;
 							SaveFavorites();
 							break;
+					case KEY_CTRL_PAGEDOWN:	// up
 					case KEY_CTRL_F5:	// down
 							if ( FavCount < 1 ) break;
 							if ( index >= FavoritesMAX-1 ) break;
@@ -401,13 +404,7 @@ unsigned int Explorer( int size, char *folder )
 							SaveFavorites();
 							break;
 					case KEY_CTRL_F6:
-							PopUpWin( 6 );
-							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
-							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.70" );
-							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
-							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
-							GetKey(&key);
+							VerDisp();
 							redraw = 1;
 							break;
 					default:
@@ -621,7 +618,7 @@ unsigned int InputStrFilename(int x, int y, int width, unsigned char* buffer, ch
 	unsigned int key;
 
 	buffer[width]='\0';
-	csrX=strlen((char*)buffer);
+//	csrX=strlen((char*)buffer);
 	key=InputStrSub( x, y, width, 0, buffer, width, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_OFF);
 	return ( key );
 }
@@ -938,7 +935,6 @@ void SaveConfigS(){
 	int size,i,r;
 	
 	memset( buffer, 0x00, ConfigMAX );
-
 	buffer[ 0]='C';
 	buffer[ 1]='B';
 	buffer[ 2]='.';
@@ -949,69 +945,37 @@ void SaveConfigS(){
 	buffer[ 7]='i';
 	buffer[ 8]='g';
 	buffer[ 9]='0';
-	buffer[10]='5';
+	buffer[10]='6';
 	buffer[11]='0';
-	buffer[12]='\0';
-	buffer[13]='\0';
-	buffer[14]='\0';
-	buffer[15]='\0';
-	buffer[16]='C';
-	buffer[17]='B';
-	buffer[18]='.';
-	buffer[19]='c';
-	buffer[20]='o';
-	buffer[21]='n';
-	buffer[22]='f';
-	buffer[23]='i';
-	buffer[24]='g';
-	buffer[25]='0';
-	buffer[26]='5';
-	buffer[27]='0';
-	buffer[28]='\0';
-	buffer[29]='\0';
-	buffer[30]='\0';
-	buffer[31]='\0';
 
-	bufint[ 8]=DrawType;
-	bufint[ 9]=Coord;
-	bufint[10]=Grid;
-	bufint[11]=Axes;
-	bufint[12]=Label;
-	bufint[13]=Derivative;
-	bufint[14]=S_L_Style;
-	bufint[15]=Angle;
-	bufint[16]=BreakCheck;
-	bufint[17]=TimeDsp;
+	bufint[ 3]=CB_INTDefault;
+	bufint[ 4]=DrawType;
+	bufint[ 5]=Coord;
+	bufint[ 6]=Grid;
+	bufint[ 7]=Axes;
+	bufint[ 8]=Label;
+	bufint[ 9]=Derivative;
+	bufint[10]=S_L_Style;
+	bufint[11]=Angle;
+	bufint[12]=BreakCheck;
+	bufint[13]=TimeDsp;
+	bufint[14]=MatXYmode;
+	bufint[15]=0;
+
+	bufdbl[ 8]=Xfct;
+	bufdbl[ 9]=Yfct;
+	for ( i=10; i< 10+58 ; i++ ) bufdbl[i]=REG[i-10];
+	for ( i=68; i< 68+11 ; i++ ) bufdbl[i]=REGv[i-68];
+	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
+
+	sbuf=buffer+220*4;
 	
-	bufint[18]=0;
-	bufint[19]=0;
-	bufint[20]=0;
-	bufint[21]=0;
-	bufint[22]=0;
-	bufint[23]=0;
-	bufint[24]=0;
-	bufint[25]=0;
-	bufint[26]=0;
-	bufint[27]=0;
-	bufint[28]=0;
-	bufint[29]=0;
-	bufint[30]=0;
-	bufint[31]=0;
-
-	bufdbl[16]=Xfct;
-	bufdbl[17]=Yfct;
-	bufdbl[18]=0;
-	bufdbl[19]=0;
-	for ( i=20; i< 20+26 ; i++ ) bufdbl[i]=REG[i-20];
-	for ( i=46; i< 46+11 ; i++ ) bufdbl[i]=REGv[i-46];
-
-	sbuf=buffer+512;
-
+	strncpy( (char*)sbuf, folder, FILENAMEMAX);
+	sbuf+=FILENAMEMAX;
 	for ( i=0; i<FavoritesMAX; i++ ) {
 		strncpy( (char*)sbuf, Favoritesfiles[i].filename, FILENAMEMAX);
 		sbuf+=FILENAMEMAX;
 	}
-
 	r=storeFile( fname, buffer, ConfigMAX );	// 0:ok
 }
 
@@ -1037,26 +1001,34 @@ void LoadConfigS(){
 		 ( buffer[ 5]=='n' ) &&
 		 ( buffer[ 6]=='f' ) &&
 		 ( buffer[ 7]=='i' ) &&
-		 ( buffer[ 8]=='g' ) ) {
+		 ( buffer[ 8]=='g' ) &&
+		 ( buffer[ 9]=='0' ) &&
+		 ( buffer[10]=='6' ) &&
+		 ( buffer[11]=='0' ) ) {
 		
-		DrawType  =bufint[ 8];	// load config & memory
-		Coord     =bufint[ 9];
-		Grid      =bufint[10];
-		Axes      =bufint[11];
-		Label     =bufint[12];
-		Derivative=bufint[13];
-		S_L_Style =bufint[14];
-		Angle     =bufint[15];
-		BreakCheck=bufint[16];
-		TimeDsp   =bufint[17];
+		CB_INTDefault =bufint[ 3];
+		DrawType  =bufint[ 4];	// load config & memory
+		Coord     =bufint[ 5];
+		Grid      =bufint[ 6];
+		Axes      =bufint[ 7];
+		Label     =bufint[ 8];
+		Derivative=bufint[ 9];
+		S_L_Style =bufint[10];
+		Angle     =bufint[11];
+		BreakCheck=bufint[12];
+		TimeDsp   =bufint[13];
+		MatXYmode =bufint[14];
 
-		Xfct=bufdbl[16];
-		Yfct=bufdbl[17];
-		for ( i=20; i< 20+26 ; i++ ) REG[i-20] =bufdbl[i];
-		for ( i=46; i< 46+11 ; i++ ) REGv[i-46]=bufdbl[i];
+		Xfct=bufdbl[ 8];
+		Yfct=bufdbl[ 9];
+		for ( i=10; i< 10+58 ; i++ ) REG[i-10] =bufdbl[i];
+		for ( i=68; i< 68+11 ; i++ ) REGv[i-68]=bufdbl[i];
+		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
 
-		sbuf=buffer+512;
+		sbuf=buffer+220*4;
 
+		strncpy( folder, (char*)sbuf, FILENAMEMAX);
+		sbuf+=FILENAMEMAX;
 		for ( i=0; i<FavoritesMAX; i++ ) {
 			strncpy( Favoritesfiles[i].filename, (char*)sbuf, FILENAMEMAX);
 			sbuf+=FILENAMEMAX;
@@ -1218,8 +1190,6 @@ void LoadConfig(){
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-#define NewMax 2048+0x4C
-
 int NewProg(){
 	unsigned char *filebase;
 	char fname[32],basname[16],msg[32];
@@ -1266,7 +1236,7 @@ int NewProg(){
 
 	ProgEntryN=0;						// new Main program
 	ProgfileAdrs[ProgEntryN]= filebase;
-	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
+	ProgfileMax[ProgEntryN]= SrcSize( filebase ) ;
 	ProgfileEdit[ProgEntryN]= 1;
 	ProgNo=0;
 	ExecPtr=0;
@@ -1315,7 +1285,7 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 					if ( src == NULL ) { CB_Error(NotfoundProgERR); return ; }  // Not found Prog
 					else {
 						ProgfileAdrs[ProgEntryN]= src;
-						ProgfileMax[ProgEntryN]= SrcSize( src );
+						ProgfileMax[ProgEntryN]= SrcSize( src ) +EditMaxfree ;
 						ProgfileEdit[ProgEntryN]= 0;
 						ProgEntryN++;
 						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Memory error

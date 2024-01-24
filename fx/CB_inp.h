@@ -27,6 +27,15 @@
 void Fkey_dispN_Aa(int n, char *buffer) ;
 void Fkey_dispN_aA(int n, char *buffer) ;
 
+extern const unsigned short oplistInp[];
+extern const unsigned short oplistOPTN[];
+extern const unsigned short oplistPRGM[];
+extern const unsigned short oplistVARS[];
+extern const unsigned short oplistCMD[];
+
+int SelectOpcode(unsigned short *oplist, int *select) ;
+int SelectOpcode5800P(unsigned short *oplist, int *select) ;
+
 unsigned int SelectChar() ;
 int SelectOpcode(unsigned short *oplist, int *select) ;
 
@@ -49,6 +58,12 @@ void CB_PrintRevC( int x, int y, const unsigned char *c);
 void CB_PrintXYC( int px, int py,const unsigned char *c );
 void CB_PrintXY( int px, int py, const unsigned char *str);
 
+extern int selectCMD;
+extern int selectOPTN;
+extern int selectVARS;
+extern int selectPRGM;
+
+void PutAlphamode1( int CursorStyle );
 int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
 
 double Round( double num, int round_mode, int digit);
