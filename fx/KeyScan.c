@@ -148,21 +148,28 @@ int BackLight( int n ){		// 0:off  1:on   2:xor
 	if ( (*adrs) && (~bit) ) return 1; else return 0;
 }
 
+int KeyConvert2Slim( int code ) {
+	int row=code%10;
+	int col=code/10;
+	const unsigned char keyrow_slim_table[9][6]={
+		{KEYS_MENU,	KEYS_XTT,	KEYS_SHIFT,	KEYS_ALPHA,	0,			0			},
+		{KEYS_F1,	KEYS_LOG,	KEYS_SQUARE,KEYS_POW,	KEYS_LEFT,	KEYS_UP	 	},
+		{KEYS_F2,	KEYS_LN,	KEYS_COMMA,	KEYS_OPTN,	KEYS_DOWN,	KEYS_RIGHT	},
+		{KEYS_F3,	KEYS_SIN,	KEYS_STORE,	KEYS_VARS,	31,			21			},
+		{KEYS_F4,	KEYS_COS,	KEYS_7,		KEYS_4,		KEYS_1,		KEYS_0		},
+		{KEYS_F5,	KEYS_TAN,	KEYS_8,		KEYS_5,		KEYS_2,		KEYS_DP	 	},
+		{KEYS_F6,	KEYS_FRAC,	KEYS_9,		KEYS_6,		KEYS_3,		KEYS_EXP	},
+		{KEYS_EXIT,	KEYS_FD,	KEYS_DEL,	KEYS_MULT,	KEYS_PLUS,	KEYS_PMINUS },
+		{0,			KEYS_LPAR,	KEYS_RPAR,	KEYS_DIV,	KEYS_EXE,	KEYS_MINUS  }
+	};
+	return keyrow_slim_table[9-row][7-col];
+}
+
+
 int CB_Getkey() {			// CasioBasic Getkey compatible
 	unsigned int key;
 	int i,row,c,SH3;
 	int code=0;
-	const short keyrow_slim_table[9][6]={
-		{KEYSC_MENU,	KEYSC_XTT,	KEYSC_SHIFT,	KEYSC_ALPHA,	0,			0			 },
-		{KEYSC_F1,		KEYSC_LOG,	KEYSC_SQUARE,	KEYSC_POW,		KEYSC_LEFT,	KEYSC_UP	 },
-		{KEYSC_F2,		KEYSC_LN,	KEYSC_COMMA,	KEYSC_OPTN,		KEYSC_DOWN,	KEYSC_RIGHT	 },
-		{KEYSC_F3,		KEYSC_SIN,	KEYSC_STORE,	KEYSC_VARS,		-1,			-1			 },
-		{KEYSC_F4,		KEYSC_COS,	KEYSC_7,		KEYSC_4,		KEYSC_1,	KEYSC_0		 },
-		{KEYSC_F5,		KEYSC_TAN,	KEYSC_8,		KEYSC_5,		KEYSC_2,	KEYSC_DP	 },
-		{KEYSC_F6,		KEYSC_FRAC,	KEYSC_9,		KEYSC_6,		KEYSC_3,	KEYSC_EXP	 },
-		{KEYSC_EXIT,	KEYSC_FD,	KEYSC_DEL,		KEYSC_MULT,		KEYSC_PLUS,	KEYSC_PMINUS },
-		{0,				KEYSC_LPAR,	KEYSC_RPAR,		KEYSC_DIV,		KEYSC_EXE,	KEYSC_MINUS  }
-	};
 	row=1;
 	SH3= IsSH3 ;
 
@@ -186,15 +193,7 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	}
 	
 	if ( (IsSH3==2)&&(code!=0) ) {	// slim
-		c   = keyrow_slim_table[9-row][7-(code/10)];
-		row = c&0x0F;
-		c   = c>>4;
-		if ( c & 0x02 ) { code=20+row;  }	//
-		if ( c & 0x04 ) { code=30+row;  }	//
-		if ( c & 0x08 ) { code=40+row;  }	//
-		if ( c & 0x10 ) { code=50+row;  }	//
-		if ( c & 0x20 ) { code=60+row;  }	//
-		if ( c & 0x40 ) { code=70+row;  }	//
+		code = KeyConvert2Slim( code );
 	}
 	
 	Recent_rowcode=(c<<4)+row;

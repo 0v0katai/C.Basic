@@ -471,7 +471,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int quotflag=0;
 	int ptr=0;
 	c=SRC[ExecPtr-2];
-	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) quotflag=1;
+	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) || ( c=='+' ) ) quotflag=1;
 	while (1){
 		c = SRC[ExecPtr++];
 		buffer[ptr++]=c;
@@ -766,8 +766,21 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
-void StorStrList0( char *SRC ) {	// "String" -> List n[0]
+void StorStrList0( char *SRC ) {	// "String" -> List n[0]	->List "ABS"   ->List Str1
+	char name[10];
 	int reg,dimA,base;
+	int c=CB_IsStr( SRC, ExecPtr );
+	if ( c ) {	//	->List "ABS"   ->List Str1
+		reg = SearchListname( SRC );	// string
+		if ( reg>=0 ) return ;
+		for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
+			if ( MatAry[reg].SizeA == 0 ) goto newlist;
+		}
+		for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
+			if ( MatAry[reg].SizeA == 0 ) goto newlist;
+		}
+		{ CB_Error(MemoryERR); return; }  // memory error
+	}
 	reg=ListRegVar( SRC );
 	if ( reg<0 ) { CB_Error(SyntaxERR); return ; }  // Syntax error
 	if ( SRC[ExecPtr]=='[' ) {
@@ -777,8 +790,9 @@ void StorStrList0( char *SRC ) {	// "String" -> List n[0]
 		if ( dimA >= base ) { CB_Error(ArgumentERR); return; }  // Argument error
 		if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 	}
+  newlist:
 	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, DefaultElemetSize(), 10-MatBase, 1, MatBase );	// new matrix
+		DimMatrixSub( reg, DefaultElemetSize(), 1, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 	memcpy( MatAry[reg].name, CB_CurrentStr, 8);
@@ -1365,7 +1379,7 @@ int CB_StrRotate( char *SRC ) {	// StrRotate( str1 [,n] )
 	} else n = 1;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	StrRotate( CB_CurrentStr, buffer, n ) ;
+	StrRotate( CB_CurrentStr, buffer, -n ) ;
 	return CB_StrBufferMax-1;
 }
 

@@ -136,6 +136,12 @@ void GetGenuineCmdF6( unsigned int *code ){
 				case 1: CommandPage=2;break;
 				case 2: CommandPage=0;break;
 			} break;
+		case CMD_SHIFT_SKTCH_GRPH:
+			switch ( CommandPage ) {
+				case 0: CommandPage=1;break;
+				case 1: CommandPage=2;break;
+				case 2: CommandPage=0;break;
+			} break;
 		case CMD_SHIFT_SKTCH_EXT:
 			switch ( CommandPage ) {
 				case 0: CommandPage=1;break;

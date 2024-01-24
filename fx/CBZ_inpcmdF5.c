@@ -127,6 +127,10 @@ void GetGenuineCmdF5( unsigned int *code ){
 				case 1: (*code)=0xF7A4;return;	// Horizontal
 				case 2: CommandType=CMD_SHIFT_SKTCH_STYL;CommandPage=0;break;
 			} break;
+		case CMD_SHIFT_SKTCH_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x00EF;return;	// Graph Integral
+			} break;
 		case CMD_SHIFT_SKTCH_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7F2;return;	// PopUpWin(

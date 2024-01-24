@@ -131,14 +131,7 @@ int EncodeMat2Bmp( int reg , char *buffer , int width, int height ){	//	Mat -> b
 	int b,g,r,d;
 	char *buffer2;
 	buffer2=(char*)MatAry[reg].Adrs;
-	xbyte =((((width+7)/8)+3)/4)*4;
-	xbyte2=   (width+7)/8;
-	for (y=0; y<height; y++) {
-		for (x=0; x<xbyte2; x++) {
-			buffer[(height-y-1)*xbyte+x]=buffer2[y*xbyte2+x];
-		}
-	}
-	return 1;
+	return EncodeBmp2mem( buffer , buffer2 , width, height );
 }
 
 int EncodeVram2Bmp( char *buffer , int width, int height, int px, int py  ){	//	vram -> bmpformat(buffer)
@@ -153,15 +146,7 @@ int EncodeVram2Bmp( char *buffer , int width, int height, int px, int py  ){	//	
 	box.top    =py;
 	box.bottom =py+height-1;
 	Bdisp_ReadArea_VRAM( &box,  buffer2 );
-
-	xbyte =((((width+7)/8)+3)/4)*4;
-	xbyte2=   (width+7)/8;
-	for (y=0; y<height; y++) {
-		for (x=px; x<px+xbyte2; x++) {
-			buffer[(height-y-1)*xbyte+x]=buffer2[y*xbyte2+x];
-		}
-	}
-	return 1;
+	return EncodeBmp2mem( buffer , (char*)buffer2 , width, height );
 }
 
 /*
@@ -181,7 +166,7 @@ void DecodeBmp2vram( char *vram, char *buffer, int width, int height, int bit, i
 	int i,x,y;
 	int xbyte,xbyte2;
 	int data;
-	int b,g,r;
+	int tx,ty;
 	char bw=buffer[-2];
 	switch ( bit ) {
 		case 1:		// 1bit bmp
@@ -193,7 +178,10 @@ void DecodeBmp2vram( char *vram, char *buffer, int width, int height, int bit, i
 //						vram[(y<<4)+x]=buffer[(height-y-1)*xbyte+x];
 						data=buffer[(height-y-1)*xbyte+x]^bw; bit=128;
 						for ( i=0; i<8; i++ ) {
-							if ( ( x*8+i+px < 192 )&&( y+py < 64 ) ) BdispSetPointVRAM2( x*8+i+px, y+py, (bit&data)!=0 );
+							tx=x*8+i+px; ty=y+py;
+							if ( tx < width+px ) {
+								if ( ( 0 <= tx )&&( tx < 128 )&&( 0 <= ty )&&(ty < 64 ) ) BdispSetPointVRAM2( tx, ty, (bit&data)!=0 );
+							}
 							bit>>=1;
 						}
 					}

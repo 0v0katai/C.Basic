@@ -762,11 +762,29 @@ void DispGenuineCmdMenu(){
 			switch ( CommandPage ) {
 				case 0:
 					Fkey_Icon( FKeyNo1, 472 );	//	Fkey_dspRB( FKeyNo1, "Y= ");
+//					Fkey_Icon( FKeyNo2, 473 );	//	Fkey_dspRB( FKeyNo2, "r= ");
 					FkeyClear( FKeyNo2 );
 					Fkey_Icon( FKeyNo3, 474 );	//	Fkey_dspRB( FKeyNo3, "Parm");
-					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo4, 468 );	//	Fkey_dspRB( FKeyNo4, "X= ");
+					Fkey_Icon( FKeyNo5, 652 );	//	Fkey_dspRB( FKeyNo5, "integral= ");
 					FkeyClear( FKeyNo5 );
-					FkeyClear( FKeyNo6 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 1:
+					Fkey_Icon( FKeyNo1, 476 );	//	Fkey_dspRB( FKeyNo1, "Y> ");
+					Fkey_Icon( FKeyNo2, 477 );	//	Fkey_dspRB( FKeyNo1, "Y< ");
+					Fkey_Icon( FKeyNo3, 478 );	//	Fkey_dspRB( FKeyNo1, "Y>=");
+					Fkey_Icon( FKeyNo4, 479 );	//	Fkey_dspRB( FKeyNo1, "Y<=");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 2:
+					Fkey_Icon( FKeyNo1, 469 );	//	Fkey_dspRB( FKeyNo1, "X> ");
+					Fkey_Icon( FKeyNo2, 470 );	//	Fkey_dspRB( FKeyNo1, "X< ");
+					Fkey_Icon( FKeyNo3, 481 );	//	Fkey_dspRB( FKeyNo1, "X>=");
+					Fkey_Icon( FKeyNo4, 482 );	//	Fkey_dspRB( FKeyNo1, "X<=");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
@@ -1028,7 +1046,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 761 );	//	Fkey_dispR( FKeyNo1, "FUNC");
 					Fkey_Icon( FKeyNo2, 180 );	//	Fkey_dispR( FKeyNo2, "CPLX");
 					Fkey_Icon( FKeyNo3, 762 );	//	Fkey_dispR( FKeyNo3, "SWin");
-					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo4, 178 );	//	Fkey_dispR( FKeyNo3, "LIST");
 					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
@@ -1152,6 +1170,18 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 277 );	//	Fkey_dspRB( FKeyNo1, "Real");
 					Fkey_Icon( FKeyNo2, 278 );	//	Fkey_dspRB( FKeyNo2, "a+bi");
 					Fkey_Icon( FKeyNo3, 279 );	//	Fkey_dspRB( FKeyNo3, "r+theta");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
+		case CMD_SETUP_LIST:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1,  43 );	//	Fkey_dspRB( FKeyNo1, "File");
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );

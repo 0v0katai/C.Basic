@@ -352,6 +352,11 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
+					case 0x62:			// Graph X=
+						CB_GraphX(SRC);
+						dspflag=0;
+						UseGraphic=9;
+						break;
 					case 0x18:			// ClrText
 						CB_ClrText(SRC);
 						dspflag=0;
@@ -586,6 +591,10 @@ int CB_interpreter_sub( char *SRC ) {
 						ENG=0;
 						dspflag=0;
 						break;
+					case 0x1C:	// File 
+						CB_ListFile(SRC);
+						dspflag=0;
+						break;
 					case 0x1E:	// ClrMat
 						CB_ClrMat(SRC);
 						dspflag=0;
@@ -603,6 +612,14 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x63:	// SetFontMini 
 						CB_SetFontMini(SRC);
+						break;
+					case 0x2C:	// Graph X>
+					case 0x2D:	// Graph X<
+					case 0x2E:	// Graph X>=
+					case 0x2F:	// Graph X<=
+						CB_GraphX(SRC);
+						dspflag=0;
+						UseGraphic=9;
 						break;
 					default:
 						Evalexit2:
@@ -680,6 +697,12 @@ int CB_interpreter_sub( char *SRC ) {
 				UseGraphic=3;
 				break;
 			case 0xFFFFFFEE:	// Graph Y=
+			case 0xFFFFFFEF:	// Graph Integral
+			case 0xFFFFFFF0:	// Graph Y>
+			case 0xFFFFFFF1:	// Graph Y<
+			case 0xFFFFFFF2:	// Graph Y>=
+			case 0xFFFFFFF3:	// Graph Y<=
+			case 0xFFFFFFF4:	// Graph r=
 				CB_GraphY(SRC);
 				dspflag=0;
 				UseGraphic=2;
@@ -2588,6 +2611,8 @@ int CB_interpreter( char *SRC ) {
 	ErrorPtr = 0;
 	ErrorNo = 0;
 	CB_CurrentValue.imag = 0;
+	ListFileNo  = 0;	// List File No
+	ListFilePtr = 0;	// List File Ptr
 
 	defaultStrAry=26;	// <r>
 	defaultFnAry=27;		// Theta

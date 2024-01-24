@@ -15,7 +15,7 @@ char  EditListChar = 0;	// List character change
 char  EditExtFont=0;	// Edit ext Font enable:1
 
 char  ExtendPict=0;	// 0:20  21~99						( use hidden ram only )
-char  ExtendList=0;	// 0:52(default) 1:+16 ~ 63:+1008	( use hidden ram only )
+char  ExtendList=0;	// 0:52(default) 1:+52 ~ 19:+988	( use hidden ram only )
 char  ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
 char  ForceReturn;		// 0:none  1:return
 char  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.85\xE6\x41";
-#define VERSION 185
+const char VerMSG[]="C.Basic  v1.86\xE6\x41";
+#define VERSION 186
 
 //---------------------------------------------------------------------------------------------
 
@@ -762,7 +762,7 @@ int SetVarCharVct( char *buffer, int c ) {
 		buffer[ptr++]='n';
 		buffer[ptr++]='s';
 	} else
-	if ( c >= 58 ) {
+	if ( c >= 84 ) {
 		buffer[ptr++]='A'+c-84;
 	} else {
 		buffer[ptr++]='A'+c;
@@ -1299,8 +1299,8 @@ int SetupG(int select){		// ----------- Setup
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max List No:");		// 23
-			sprintf((char*)buffer,"%d",52+ExtendList*52);
+			locate( 1, cnt-scrl); Print((unsigned char*)"Max List 52\xA9:");		// 23
+			sprintf((char*)buffer,"%d (%d)", ExtendList+1, 52+ExtendList*52);
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
@@ -1678,6 +1678,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( IsHiddenRAM ) UseHiddenRAM = 1 ; // on
+						ExtendList=(6-1);
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit

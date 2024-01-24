@@ -461,14 +461,15 @@ void CB_Screen( char *SRC ){	// Screen.G   Screen.T
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
-void CB_TextOprand( char *SRC, int *py, int *px) {
+int CB_TextOprand( char *SRC, int *py, int *px) {
 	int x,y;
 	*py=CB_EvalInt( SRC );
-	if ( ( (*py)<0 ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	if ( ( (*py)<0 ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return 1; }  // Argument error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 1; }  // Syntax error
 	ExecPtr++;
 	*px=CB_EvalInt( SRC );
-	if ( ( (*px)<0 ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
+	if ( ( (*px)<0 ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return 1; }  // Argument error}
+	return 0;
 }
 void CB_Text( char *SRC ) { //	Text
 	unsigned int key;
@@ -482,7 +483,7 @@ void CB_Text( char *SRC ) { //	Text
 
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; kanamini=0; }		// OS PrintMini
-	CB_TextOprand( SRC, &py, &px);
+	if ( CB_TextOprand( SRC, &py, &px) ) return;
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	c=SRC[++ExecPtr];
@@ -525,7 +526,7 @@ void CB_LocateYX( char *SRC ){
 
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// OS PrintMini
-	CB_TextOprand( SRC, &py, &px);
+	if ( CB_TextOprand( SRC, &py, &px) ) return;
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
@@ -2098,6 +2099,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 //----------------------------------------------------------------------------------------------
 tgraphstat GraphStat[GRAPHMAX];
 int	GraphPtr;
+double IntegralStart,IntegralEnd;
 //----------------------------------------------------------------------------------------------
 void CB_DrawGraph(  char *SRC ){
 	int reg,dimA,base;
@@ -2141,12 +2143,21 @@ void GraphYOprand( char *SRC ){	// Graph Y=sin x + cos x
 }
 void CB_GraphY( char *SRC ){
 	int len;
+	GraphStat[GraphPtr].type = SRC[ExecPtr-1];
 	if ( SRC[ExecPtr] == '"' ) {
 		CB_Str( SRC );				// graph text print
 	} else {
 		GraphYOprand( SRC );
 	}
 	if ( ErrorNo ) return ;  // error
+	if ( GraphStat[GraphPtr].type == 0xFFFFFFEF ) { // Integral
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		ExecPtr++;
+		IntegralStart=CB_EvalDbl( SRC );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		ExecPtr++;
+		IntegralEnd=CB_EvalDbl( SRC );
+	}
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	len=strlen(CB_CurrentStr); if ( len >= GRAPHLENMAX ) len=GRAPHLENMAX;
 	memcpy( GraphStat[GraphPtr].gstr, CB_CurrentStr, len );
@@ -2156,6 +2167,52 @@ void CB_GraphY( char *SRC ){
 	GraphPtr++; if ( GraphPtr >= GRAPHMAX ) GraphPtr=0;	// reset
 	Graph_Draw();
 }
+
+//--------------------------------------------------------------
+void GraphXOprand( char *SRC ){	// Graph X=sin x + cos x
+	int exptr=ExecPtr;
+	int errflag=1;
+	int i,j,len;
+	char *buffer;
+	complex tmpY=regY;
+	double data;
+  	regY.real=Ymin; regY.imag=0;
+	data=CB_EvalDbl( SRC );	// dummy read
+	if ( ErrorNo == 0 ) errflag=0;
+	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( errflag ) if ( ErrorNo ) return ;	// fatal error
+	errflag=ErrorNo;	// error?
+	regY=tmpY;
+	buffer=NewStrBuffer(); if ( buffer==NULL ) return ;
+	len = ExecPtr-exptr; if ( len == 0 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	i=0; j=exptr;
+	while ( i<CB_StrBufferMax-1 ) {
+		buffer[i++]=SRC[j++];
+		if ( i>=len ) break;
+	}
+	buffer[i]='\0';
+	CB_CurrentStr=buffer;
+}
+void CB_GraphX( char *SRC ){
+	int len;
+	GraphStat[GraphPtr].type = SRC[ExecPtr-1];
+	if ( SRC[ExecPtr] == '"' ) {
+		CB_Str( SRC );				// graph text print
+	} else {
+		GraphXOprand( SRC );
+	}
+	if ( ErrorNo ) return ;  // error
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+	len=strlen(CB_CurrentStr); if ( len >= GRAPHLENMAX ) len=GRAPHLENMAX;
+	memcpy( GraphStat[GraphPtr].gstr, CB_CurrentStr, len );
+	GraphY=(char *)GraphStat[GraphPtr].gstr;
+	if ( tmp_Style >= 0 ) GraphStat[GraphPtr].style = tmp_Style; else GraphStat[GraphPtr].style = S_L_Style;
+	GraphStat[GraphPtr].en = 1;
+	GraphPtr++; if ( GraphPtr >= GRAPHMAX ) GraphPtr=0;	// reset
+	Graph_Draw_X();
+}
+
+//--------------------------------------------------------------
 
 int CB_GraphXYEval( char *SRC ) {
 	double result;
@@ -2229,10 +2286,14 @@ int GetListNo( char *SRC ) {
 		if ( d==0x51 ) {	// List
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
+			if ( ListFilePtr ) {
+				reg -= ListFilePtr;
+				if ( reg<26 ) reg+=58; else reg+=32;
+			}
 		} else
-		if ( (0x6A<=d) && (d<=0x6F) ) {
+		if ( (0x6A<=d) && (d<=0x6F) ) {	// List1 ~ List6
 			ExecPtr+=2;
-			reg=d+(58-0x6A);
+			reg = d+(58-0x6A);
 		}
 	}
 	return reg;
@@ -2349,7 +2410,7 @@ void CB_RclVWin( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte

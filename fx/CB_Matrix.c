@@ -11,6 +11,8 @@ short Mattmpreg;		//
 complex MatDefaultValue={0,0};
 char	MatBaseDefault=1;
 char	MatBase=1;
+char	ListFileNo=0;	// 0:normal	 1~:file mode
+short	ListFilePtr=0;
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -280,12 +282,7 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 	*base=MatBase;
 
 	PopUpWin(5);
-	FkeyClear( FKeyNo1 );
-	FkeyClear( FKeyNo2 );
-	FkeyClear( FKeyNo4 );
-	FkeyClear( FKeyNo5 );
-	FkeyClear( FKeyNo3 );
-	FkeyClear( FKeyNo6 );
+	FkeyClearAll();
 	
 	*dimA=MatAry[reg].SizeA;	//
 	*dimB=MatAry[reg].SizeB;	//
@@ -996,7 +993,14 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 	int strdisp=0;
 	int dotedit=0;
 	int list=0;
-	if ( reg >= 0x1000 ) { list=1; reg&=0x0FFF; }
+	if ( reg >= 0x1000 ) { 
+		if ( reg >=0x2000 ) {
+			list=2;
+		} else {
+			list=1;
+		}
+		reg&=0x0FFF;
+	}
 	base=MatAry[reg].Base;
 	ElementSize=MatAry[reg].ElementSize;
 	if (MatAry[reg].SizeA==0) return;
@@ -1132,16 +1136,25 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 
 		Bdisp_AllClr_VRAM();
 		j=0;
-		if ( reg<84 ) {
-			j=SetVarCharMat( buffer, reg); buffer[j]='\0';
-			if ( ( 32<=reg ) && ( list ) ) {
-				if ( reg>=58 ) i=reg-57;
-				else
-				if ( reg<=57 ) i=reg-5;
-				sprintf(buffer,"%d",i);
+		if ( reg<110 ) {
+			switch( list ) {
+				case 0:	// Mat
+					j=SetVarCharMat( buffer, reg); buffer[j]='\0';
+					break;
+				case 2:	// Vct
+					j=SetVarCharVct( buffer, reg); buffer[j]='\0';
+					break;
+				case 1:	// List
+					if ( 32<=reg ) {
+						if ( reg>=58 ) i=reg-57;
+						else
+						if ( reg<=57 ) i=reg-5;
+					}
+					sprintf(buffer,"%d",i);
+					break;
 			}
 		} else {
-			if ( list ) i=reg-31; else i=reg-31;
+			i=reg-57;
 			sprintf(buffer,"%d",i);
 		}
 		locate( 1, 1); Print((unsigned char*)buffer);
@@ -1280,6 +1293,10 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				locate(1,6); Print((unsigned char*)buffer3);
 				OpcodeStringToAsciiString( buffer3, buffer2, 64-1 );
 				if ( (selectY-seltopY)==4 ) { seltopY++; goto dspjp; }
+			}
+			if ( list==1 ) {
+				if ( MatXYmode ) locate(1,6); else locate(13,1);
+				Print((unsigned char*)MatAry[reg].name);
 			}
 			locate(1,7); Print((unsigned char*)buffer3);
 		}
@@ -1422,12 +1439,12 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				MatDotEditCursorSetFlashMode( 0 );
 				switch ( key ) {			
 					case KEY_CTRL_CLIP:
-						if ( list ) List2Clip( reg, ClipBuffer, ClipMax-16, bit );
+						if ( list==1 ) List2Clip( reg, ClipBuffer, ClipMax-16, bit );
 						else		Mat2Clip(  reg, ClipBuffer, ClipMax-16, bit );
 						break;
 					case KEY_CTRL_PASTE:
 						if ( ClipBuffer == NULL ) break;
-						if ( list ) Clip2List( ClipBuffer, reg );
+						if ( list==1 ) Clip2List( ClipBuffer, reg );
 						else		Clip2Mat(  ClipBuffer, reg );
 						break;
 					default:
@@ -1499,14 +1516,20 @@ int SetMatrix(int select){		// ----------- Set Matrix
 					Print((unsigned char*)"Mat");
 					break;
 				case 1: // List
-					reg=LstRegData[k];
+					reg=LstRegData[k]; 
 					if ( ( 26<=reg ) && ( reg<=28 ) ) { 
 						j=SetVarCharMat( buffer, reg); 
+						Print((unsigned char*)"Lst ");
 					} else  { 
 						k=k+1; if ( reg<58 ) k-=3;
-						sprintf( buffer,"%d", k ); j=strlen(buffer);
+						if ( ListFilePtr ) reg = k-1+ListFilePtr;
+						sprintf( buffer,"L%d",k);
+						locate( 1, 1+i); Print((unsigned char*)buffer);
+						if ( MatAry[reg].name[0] !='\0' ) {
+							sprintf( buffer,"%s",MatAry[reg].name);
+							j=strlen(buffer);
+						} else j=0;
 					}
-					Print((unsigned char*)"Lst");
 					break;
 				case 2: // Vct
 					reg=VctRegData[k]; j=SetVarCharVct( buffer, reg);
@@ -1516,7 +1539,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			buffer[j]='\0';
 			locate( 5, 1+i); Print((unsigned char*)buffer);
 			locate(13, 1+i); Print((unsigned char*)":");
-			x=5+CB_MB_ElementCount( buffer );
+			x=5+CB_MB_ElementCount( buffer ); if ( x>12 ) x=12;
 			locate( x, 1+i); MatAryElementSizePrint( MatAry[reg].ElementSize ) ;
 			if ( MatAry[reg].SizeA ) {
 				locate( 4, 1+i); if ( MatAry[reg].Maxbyte <= 0 ) Print((unsigned char*)"*");	// Adrs redefinition
@@ -1551,8 +1574,13 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				reg=MatRegData[k]; 
 				break;
 			case 1: // List
-				Fkey_dispN( FKeyNo5, "Lst:"); 
-				reg=LstRegData[k];
+				if ( ListFileNo ) {
+					sprintf( buffer, "L:%d", ListFileNo );
+					Fkey_dispN( FKeyNo5, buffer);
+				} else  {
+					Fkey_dispN( FKeyNo5, "Lst:");
+				}
+				if ( ListFilePtr==0 ) reg=LstRegData[k]; else reg = k+ListFilePtr;
 				break;
 			case 2: // Vct
 				Fkey_dispN( FKeyNo5, "Vct:");
@@ -1599,7 +1627,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				}
 				HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 			  edmat:
-				EditMatrix( reg + 0x1000*(listdsp!=0), 0 );
+				EditMatrix( reg + 0x1000*(listdsp), 0 );
 				break;
 			case KEY_CTRL_RIGHT:
 				select+=7;
@@ -1611,38 +1639,43 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			case KEY_CTRL_F5:
 				switch ( listdsp ) {
 					case 1:	// List
-						i=SelectNum1( "List", listselect ,1, ExtListMax, &key);
-						if ( key == KEY_CTRL_EXIT ) break;
-						listselect=i;
-						reg=listselect;
-					 	if ( reg<=52 ) { select=reg-1;
-							if ( 27<=reg ) { reg+=5; select+=3; }
-							else reg+=57;
-						} else reg+=31+26;	// +26(Vct)
+						if ( ListFileNo ) {
+							i=SelectNum1( "ListFile", ListFileNo ,1, ExtendList+1, &key);
+							if ( key == KEY_CTRL_EXIT ) break;
+							ListFileNo  = i;
+							CB_ListNo2Ptr( ListFileNo );
+							if ( ListFilePtr==0 ) reg=LstRegData[k]; else reg = k+ListFilePtr;
+						} else {
+							i=SelectNum1( "List", listselect ,1, ExtListMax, &key);
+							if ( key == KEY_CTRL_EXIT ) break;
+							listselect=i;
+							reg=i-1;
+						 	if ( reg<52 ) { select=reg;
+								if ( 26<=reg ) { reg+=6; select+=3; } else reg+=58;
+							} else reg+=32+26;
+						}
 						break;
 					case 0:	// Mat
 						i=SelectNum1( "Mat ", listselect ,1, ExtListMax, &key);
 						if ( key == KEY_CTRL_EXIT ) break;
 						listselect=i;
-						reg=listselect;
-					 	if ( reg<=52 ) { select=reg-1;
-							if ( 27<=reg ) { reg+=5; select+=3; }
-							else reg--;
-						} else reg+=31+26;	// +26(Vct)
+						reg=i-1;
+					 	if ( reg<52 ) { select=reg;
+							if ( 26<=reg ) { reg+=6; select+=3; }
+						} else reg+=32+26;
 						break;
 					case 2:	// Vct
 						i=SelectNum1( "Vct ", listselect ,1, ExtListMax, &key);
 						if ( key == KEY_CTRL_EXIT ) break;
 						listselect=i;
-						reg=listselect;
-					 	if ( reg<=52 ) { select=reg-1;
-							if ( 27<=reg ) { reg+=5; select+=3; }
-							else reg--;
-						} else reg+=31+26;	// +26(Vct)
+						reg=i-1;
+					 	if ( reg<52 ) { select=reg;
+							if ( 26<=reg ) { reg+=6; select+=3; } else reg+=84;
+						} else reg+=32+26;
 						break;
 				}
 				ElementSize=MatAry[reg].ElementSize;
-				goto newmat;
+				if ( (  listdsp != 1 ) || ( ListFileNo == 0 ) ) goto newmat;
 				break;
 			case KEY_CTRL_F6:
 				small=1-small;
@@ -1880,9 +1913,9 @@ void CB_Matrix( char *SRC ) { //	[[1.2,3][4,5,6]]->Mat Ans
 			SkipSpcCR(SRC);
 			n++;
 		}
+		m++;
 		ExecPtr++;
 		SkipSpcCR(SRC);
-		m++;
 	}
 	ExecPtr=exptr2;
 	dspflag=3;	// Matrix data
@@ -2010,7 +2043,11 @@ void CB_ClrList( char *SRC ) { //	ClrList 1
 	if ( reg>=0 ) {
 		DeleteMatrix( reg );
 	} else { ErrorNo=0;	//
-		for ( i=58; i<58+26; i++ ) DeleteMatrix( i );	// ClrList 1-26
+		if ( ListFilePtr ) {
+			for ( i=32; i<32+26; i++ ) DeleteMatrix( i +ListFilePtr );	// ClrList 1-26 (File 2~)
+		} else {
+			for ( i=58; i<58+26; i++ ) DeleteMatrix( i );	// ClrList 1-26
+		}
 	}
 }
 
@@ -2560,7 +2597,7 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A -> Mat Ans
 	base       =MatAry[reg].Base;
 	dimA       =MatAry[reg].SizeA;
 	dimB       =MatAry[reg].SizeB;
-	DimMatrixSub( tmpreg, ElementSize, dimA, dimA, base);	//
+	DimMatrixSub( tmpreg, ElementSize, dimB, dimA, base);	//
 	if ( ErrorNo ) return ;
 	reg2=tmpreg;
 	
@@ -2662,7 +2699,8 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 	while ( m < dimA+base ) {
 		if (CB_INT==1)	WriteMatrixInt( reg, m, n, EvalIntsubTop( SRC ));
 		else 		    Cplx_WriteMatrix( reg, m, n, Cplx_EvalsubTop( SRC ));
-		SkipSpcCR(SRC);
+		c=SkipSpcCR(SRC);
+		if ( c != ',' ) break;
 		ExecPtr++;	// "," skip
 		SkipSpcCR(SRC);
 		m++;
@@ -4698,6 +4736,23 @@ int CB_MatBase( char *SRC ){	// MatBase( Mat A )
 	MatrixOprandreg( SRC, &reg );
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return MatAry[reg].Base;
+}
+
+
+void CB_ListNo2Ptr( int n ){
+	if ( n > 1 ) { 
+		ListFilePtr = (110)+(n-2)*52;
+	} else {
+		ListFilePtr = 0;
+	}
+}
+void CB_ListFile( char *SRC ){
+	int n = CB_EvalInt( SRC );
+	if ( ( n<0 ) || ( ExtendList+1<n ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	ListFileNo = n;
+	n--;
+	if ( ExtendList < n) { CB_Error(MemoryERR); return ; } // memory error
+	CB_ListNo2Ptr( ListFileNo );
 }
 
 //-----------------------------------------------------------------------------

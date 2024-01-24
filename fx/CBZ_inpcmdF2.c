@@ -181,6 +181,12 @@ void GetGenuineCmdF2( unsigned int *code ){
 				case 1: CommandType=CMD_SHIFT_SKTCH_LINE;CommandPage=0;break;
 				case 2: (*code)=0xF7A5;return;	// Text
 			} break;
+		case CMD_SHIFT_SKTCH_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x00F4;return;	// Graph r=
+				case 1: (*code)=0x00F1;return;	// Graph Y<
+				case 2: (*code)=0xF92D;return;	// Graph X<
+			} break;
 		case CMD_SHIFT_SKTCH_PLOT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7A8;return;	// PlotOn
