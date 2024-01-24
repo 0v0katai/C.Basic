@@ -65,6 +65,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	traceAry = (double *)malloc( 130*8 );
 //	if ( traceAry == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
+
+	for (i=1; i<=PictMax; i++) {
+		PictAry[i]=NULL;		// Pict ptr clear
+	}
+	PictAry[0]=GetVRAMAddress();
 	
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -72,10 +77,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			ProgfileEdit[i]=0;		// Prog Edit flag clear
 			for (j=0; j<26; j++)	ProgLocalVar[i][j]=-1;
 		}
-		for (i=1; i<=PictMax; i++) {
-			PictAry[i]=NULL;		// Pict ptr clear
-		}
-		PictAry[0]=GetVRAMAddress();
 
 		InitLocalVar();		// init Local variable
 		CB_AliasVarClr();
@@ -139,7 +140,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				HiddenRAM_freeProg(ptr);
 			ProgfileAdrs[i]=NULL;
 		}
-		for (i=PictMax; i>=1; i--) {			// memory free
+		for (i=PictMax; i>=1; i--) {			// Pict memory free
 			ptr=(char*)PictAry[i];
 			if ( ptr != NULL )
 				free(ptr);

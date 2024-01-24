@@ -227,7 +227,7 @@ void GraphAxesGrid(){
 		PrintMini(124,43,(unsigned char*)"X",MINI_OVER);
 	}
 	
-	if ( BG_Pict_No ) if ( PictAry[BG_Pict_No] != NULL ) RclPict(BG_Pict_No);
+	if ( BG_Pict_No ) RclPict(BG_Pict_No, 0);	// no error check
 //	Bdisp_PutDisp_DD();
 }
 

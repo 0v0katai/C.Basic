@@ -39,7 +39,7 @@ extern char ForceG1Msave;		//    1: force g1m save
 #define FileCMD_TEXT   10008
 #define FileCMD_PASS   10009
 
-char *loadFile( const char *name , int editMax, int disperror );
+char *loadFile( const char *name , int editMax, int disperror, int hiddenflag );
 int  storeFile( const char *name, unsigned char* codes, int size);
 int LoadProgfile( char *name, int prgNo, int editsize, int disperror ) ;
 int SaveG1M( char *filebase );

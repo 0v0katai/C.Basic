@@ -14,6 +14,40 @@ typedef struct Ev1i {
 	int value;
 };
 //-----------------------------------------------------------------------------
+int fintint( int x ) ;
+int fabsint( int x ) ;
+int fnotint( int x ) ;
+int fsqrtint( int x ) ;
+int flog10int( int x ) ;
+int fpow10int( int x ) ;
+int flnint( int x ) ;
+int ffracint( int x ) ;
+int fexpint( int x ) ;
+int fcuberootint( int x ) ;
+int fsquint( int x ) ;
+int ffactint( int x ) ;
+int frecipint( int x ) ;	// ^(-1) RECIP
+int fsignint( int x ) ;	// -x
+int fADDint( int x, int y ) ;	// x + y
+int fSUBint( int x, int y ) ;	// x - y
+int fMULint( int x, int y ) ;	// x * y
+int fDIVint( int x, int y ) ;	// x / y
+int fANDint( int x, int y ) ;	// x and y
+int fORint( int x, int y ) ;	// x or y
+int fXORint( int x, int y ) ;	// x xor y
+int fNotint( int x ) ;	// Not x
+int fcmpEQint( int x, int y ) ;	//  x = y
+int fcmpGTint( int x, int y ) ;	//  x > y
+int fcmpLTint( int x, int y ) ;	//  x < y
+int fcmpNEint( int x, int y ) ;	//  x != y
+int fcmpGEint( int x, int y ) ;	//  x >= y
+int fcmpLEint( int x, int y ) ;	//  x <= y
+int fpowint( int x, int y ) ;	// pow(x,y)
+int fpowrootint( int x, int y ) ;	// powroot(x,y)
+int flogabint( int x, int y ) ;	// flogab(x,y)
+int frandint() ;
+int fMODint( int x, int y ) ;	// fMODint(x,y)
+//-----------------------------------------------------------------------------
 int InputNumI_full(int x, int y, int width, int defaultNum) ;
 int InputNumI_Char(int x, int y, int width, int defaultNum, char code) ;
 int InputNumI_replay(int x, int y, int width, int defaultNum) ;
@@ -25,9 +59,31 @@ int EvalIntsub1(char *SRC);
 int EvalIntsub5(char *SRC);
 int EvalIntsub6(char *SRC);
 int EvalIntsub7(char *SRC);
+int EvalIntsub14(char *SRC);
 int EvalIntsubTop(char *SRC);
 int CB_EvalInt( char *SRC ) ;
 
 int EvalInt(char *SRC) ;		// Eval temp
 int CB_Getkey3( char *SRC ) ;
 int CB_KeyRow( char *SRC ) ;		// Row Keyscan
+
+
+int ListEvalIntsub1(char *SRC) ;
+int ListEvalIntsub2(char *SRC) ;
+int ListEvalIntsub3(char *SRC) ;
+int ListEvalIntsub4(char *SRC) ;
+int ListEvalIntsub5(char *SRC) ;
+int ListEvalIntsub6(char *SRC) ;
+int ListEvalIntsub7(char *SRC) ;
+int ListEvalIntsub8(char *SRC) ;
+int ListEvalIntsub9(char *SRC) ;
+int ListEvalIntsub10(char *SRC) ;
+int ListEvalIntsub11(char *SRC) ;
+int ListEvalIntsub12(char *SRC) ;
+int ListEvalIntsub13(char *SRC) ;
+int ListEvalIntsub14(char *SRC) ;
+int NoListEvalIntsubTop(char *SRC) ;	//  
+int ListEvalIntsubTop(char *SRC) ;
+int ListEvalIntsub1Ans(char *SRC) ;	//  
+int ListEvalIntsubTopAns(char *SRC) ;	//  
+

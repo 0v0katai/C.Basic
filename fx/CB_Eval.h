@@ -100,6 +100,7 @@ double Evalsub10(char *SRC);
 double Evalsub11(char *SRC);
 double Evalsub12(char *SRC);
 double Evalsub13(char *SRC);
+double Evalsub14(char *SRC);
 double EvalsubTop(char *SRC);
 double CB_EvalDbl( char *SRC ) ;
 int RegVar( int c ) ;
@@ -128,12 +129,12 @@ double ListEvalsub11(char *SRC) ;
 double ListEvalsub12(char *SRC) ;
 double ListEvalsub13(char *SRC) ;
 double ListEvalsub14(char *SRC) ;
-double ListEvalsub1Top(char *SRC) ;
-double ListEvalsub1Ans(char *SRC) ;	//  
-double ListEvalsubTop(char *SRC) ;
-double ListEvalsubTopAns(char *SRC) ;	//  
 double NoListEvalsubTop(char *SRC) ;	//  
+double ListEvalsubTop(char *SRC) ;
+int ListEvalsub1Ans(char *SRC) ;	//  
+int ListEvalsubTopAns(char *SRC) ;	//  
 
 double CB_Sigma( char *SRC ) ; //	Sigma(X^2,X,1.10)
+int CB_SigmaInt( char *SRC ) ; //	Sigma(X^2,X,1.10)
 
 

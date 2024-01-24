@@ -105,11 +105,26 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatrixOprandreg( char *SRC, int *reg) {	// 0-
-	int c;
-	if ( SRC[ExecPtr] == 0x7F ) {
-		if ( SRC[ExecPtr+1] == 0x40 ) ExecPtr+=2;	// skip 'Mat '
-		else
-		if ( SRC[ExecPtr+1] == 0x51 ) ExecPtr+=2;	// skip 'List '
+	int c,d;
+	if ( SRC[ExecPtr] == 0x7F ) { d=SRC[ExecPtr+1];
+		switch ( d ) {
+			case 0x40:
+				ExecPtr+=2;	// skip 'Mat '
+				break;
+			case 0x51:		// 'List '
+				ExecPtr+=2;
+				*reg=ListRegVar( SRC );
+				return 1;
+			case 0x6A :		// List1
+			case 0x6B :		// List2
+			case 0x6C :		// List3
+			case 0x6D :		// List4
+			case 0x6E :		// List5
+			case 0x6F :		// List6
+				*reg=d+(32-0x6A); return 1;
+			default:
+				break;
+		}
 	}
 	c =SRC[ExecPtr];
 	if ( ( 'A'<=c )&&( c<='z' ) ) {
@@ -164,7 +179,7 @@ void MatOprand1num( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 e
 //-----------------------------------------------------------------------------
 int RegVar( int c ) {
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  return c-'A' ;
-	if ( c == 0xFFFFFFC0 ) return c-0xFFFFFFC0+28;		// Ans
+	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
 	return -1;
 }
@@ -187,19 +202,24 @@ int RegVarAliasEx( char *SRC ) {	//
 int ListRegVar( char *SRC ) {	// return reg no
 	int c;
 	int	reg;
-	reg=RegVarAliasEx(SRC); if ( reg>=0 ) return reg;
-	c=SRC[ExecPtr];
+	c=SRC[ExecPtr++];
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
+		if ( CB_INT ) reg=LocalInt[c-'A'][0] ; else reg=LocalDbl[c-'A'][0] ;
+		return reg+31;
+	}
+	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
+	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
+	ExecPtr--;
 	reg=Eval_atod( SRC, c );
-	if ( ( reg<1 ) || ( 26<reg ) ) { CB_Error(DimensionERR); return -1; }	// Dimension error
-	reg+=31;
-	return reg;
+	if ( ( reg<1 ) || ( 26<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
+	return reg+31;
 }
 
 //-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
 	if ( ( 'A'<=c )&&( c<='z' ) )  return LocalDbl[c-'A'][0] ;
-	if ( c == 0xFFFFFFC0 ) return c-0xFFFFFFC0+28;		// Ans
+	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return LocalDbl[c-0xFFFFFFCD+26][0] ;	// <r> or Theta
 	CB_Error(SyntaxERR);
 	return -1 ; 	// Syntax error
@@ -373,37 +393,9 @@ double EvalsubTop( char *SRC ) {	// eval 1
 	
 	ExecPtr=excptr;
 	CB_MatListAnsreg=ansreg;
-	result = Evalsub13( SRC );
-	while ( 1 ) {
-		c = SRC[ExecPtr];
-		if ( c == 0x7F ) {
-			c = SRC[ExecPtr+1];
-			switch ( c ) {
-				case 0xFFFFFFB1 :	// Or
-					ExecPtr+=2;
-					result = ( (int)result | (int)Evalsub13( SRC ) );
-					break;
-				case 0xFFFFFFB4 :	// Xor
-					ExecPtr+=2;
-					result = ( (int)result ^ (int)Evalsub13( SRC ) );
-					break;
-				default:
-					return result;
-					break;
-			}
-		} else return result;
-	}
+	return Evalsub14( SRC );
 }
 
-double NoListEvalsubTop(char *SRC) {	//  
-	double result,tmp;
-	int c,i;
-	int base;
-
-	result = EvalsubTop( SRC );
-	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return result; } // Argument error
-	return result;
-}
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
@@ -849,6 +841,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			c = SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x40 :		// Mat A[a,b]
+					c=SRC[ExecPtr];
 					if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
 					else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 					Matrix1:	
@@ -932,6 +925,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 //					if ( x>=y ) CB_Error(ArgumentERR);  // Argument error
 					if ( x>y ) { i=x; x=y; y=i; }
 					return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+					
 				case 0xFFFFFF88 :		// RanList(n) ->ListAns
 					CB_RanList( SRC ) ;
 					return 4 ;
@@ -955,7 +949,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return result ;
 						
 				case 0xFFFFFFF0 :		// GraphY str
-					return CB_GraphYStr( SRC, defaultGraphAry );
+					return CB_GraphYStr( SRC, 0 );
 						
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC );
@@ -1021,7 +1015,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 							return MatAry[reg].SizeA;
 						} else
 						if ( SRC[ExecPtr+1]==0x51 ) {	// Dim List
-							goto ColSizej;
+							MatrixOprandreg( SRC, &reg );
+							return MatAry[reg].SizeA;
 						}
 					} 
 					ExecPtr--;	// error
@@ -1033,7 +1028,6 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					if (i <= 4 ) i=1;
 					return i;
 				case 0x59 :				// ColSize( Mat A )
-				  ColSizej:
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeA;
@@ -1194,11 +1188,11 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x33:	// StrSrc(
 					return CB_StrSrc( SRC );
 				case 0x38:	// Exp(
-					return CB_EvalStr(SRC);
+					return CB_EvalStr(SRC, 0 );
 				case 0x21:	// Xdot
 					return Xdot;
 				case 0x1B :		// fn str
-					return CB_GraphYStr( SRC, defaultFnAry );
+					return CB_FnStr( SRC, 0 );
 				default:
 					ExecPtr--;	// error
 					break;
@@ -1595,8 +1589,7 @@ double Evalsub13(char *SRC) {	//  13th Priority  ( And,and)
 		} else return result;
 	}
 }
-/*
-double EvalsubTop14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
+double Evalsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 	double result;
 	int c;
 	result = Evalsub13( SRC );
@@ -1620,7 +1613,6 @@ double EvalsubTop14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 		} else return result;
 	}
 }
-*/
 
 
 //----------------------------------------------------------------------------------------------
