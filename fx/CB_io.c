@@ -43,7 +43,7 @@ int CPU_check(void) {					// SH3:1 SH4A:0   2:Slim
 			slim = 1;;
 		}
 	}
-	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) + slim;
+	return ! ( ( *(unsigned short*)0xFFFFFF80 == 0 ) && ( *(unsigned short*)0xFFFFFF84 == 0 ) ) + slim;
 }
 
 int OS_Version(){
@@ -173,7 +173,6 @@ void HiddenRAM_ExtFontAryInit() {
 		ExtKanaFontFX    =(unsigned char *)(ExtAnkFontFXmini + 96*8) ;	// Ext Kana & Gaiji font
 		ExtKanaFontFXmini=(unsigned char *)(ExtKanaFontFX    + 112*8) ;	// Ext Kana & Gaiji font
 		HiddenRAM_Top    =((char *)ExtKanaFontFX + 112*8) ;			// Heap RAM top ptr
-		
 	} else {
 		ExtAnkFontFX     =(unsigned char *)Font00   +32*8;	//  Ascii font
 		ExtAnkFontFXmini =(unsigned char *)Fontmini +32*8;	//  Ascii font
@@ -195,8 +194,8 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 		ClipMax     = CLIPMAX2;
 		HiddenRAM_Top         = (char*)HIDDENRAM_TOP+16+256;		// Hidden RAM TOP
 		HiddenRAM_End         = (char*)HIDDENRAM_END;				// Hidden RAM END
-		HiddenRAM_ProgNextPtr = HiddenRAM_Top;						// Hidden RAM Prog next ptr
 		HiddenRAM_ExtFontAryInit();
+		HiddenRAM_ProgNextPtr = HiddenRAM_Top;						// Hidden RAM Prog next ptr
 		OplistRecentFreq=(toplistrecentfreq *)(HIDDENRAM_TOP+16);
 		OplistRecent    =(short *)(HIDDENRAM_TOP+16+128);
 		if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready

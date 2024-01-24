@@ -1935,13 +1935,13 @@ const short oplistCMD[]={		// 5800P like
 		0xF961,	// GetFontMini(
 		0xF962,	// SetFont 
 		0xF963,	// SetFOntMini
-		0xF95F, // IsError( 
-		0xFFFF,	// 
+		0xF737, // Try
+		0xF738,	// Except
+		0xF739,	// TryEnd
 		0xFFFF,	// 
 		0xF7DD,	// Beep
 		0x7FDF,	// Version
 		0x7FCF,	// System(
-		0x23,	// #
 		0x25,	// %
 		
 		
@@ -2388,6 +2388,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF70C, "Return " }, 		// add space
 	{ 0xF70F, "ElseIf " }, 
 	{ 0xF717, "ACBreak" }, 
+	{ 0xF737, "Try " }, 
+	{ 0xF738, "Except " }, 
+	{ 0xF739, "TryEnd" }, 
 	{ 0xF73B, "DotPut(" }, 
 	{ 0xF73D, "DotTrim(" }, 
 	{ 0xF73E, "DotGet(" }, 
@@ -2458,7 +2461,6 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF94D, "StrSplit(" }, 
 	{ 0xF94F, "Wait " }, 
 	{ 0xF950, "StrAsc(" }, 
-	{ 0xF95F, "IsError(" }, 
 	{ 0xF960, "GetFont(" }, 
 	{ 0xF961, "SetFont " }, 
 	{ 0xF962, "GetFontMini(" }, 

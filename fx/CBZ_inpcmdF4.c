@@ -19,6 +19,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 		case CMD_PRGM_CTL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF70E;return;	// Stop
+				case 1: (*code)=0xF738;return;	// Except
 			} break;
 		case CMD_PRGM_JUMP:
 			switch ( CommandPage ) {

@@ -116,10 +116,10 @@ void DispGenuineCmdMenu(){
 				case 1:
 					Fkey_dspRB( FKeyNo1, "Gosub");
 					Fkey_dspRB( FKeyNo2, "ACBrk");
-					FkeyClear( FKeyNo3 );
-					FkeyClear( FKeyNo4 );
-//					FkeyClear( FKeyNo5 );
-					Fkey_dspRB( FKeyNo5, "IsError(");
+					Fkey_dspRB( FKeyNo3, "Try");
+					Fkey_dspRB( FKeyNo4, "Except ");
+					Fkey_dspRB( FKeyNo5, "TryEnd");
+//					Fkey_dspRB( FKeyNo5, "IsError(");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}

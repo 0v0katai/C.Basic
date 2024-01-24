@@ -171,7 +171,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
 			ExecPtr++;
-			MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
+			MatOprand2( SRC, reg, &dimA, &dimB );	// List 1[a]
 			if ( ErrorNo ) return 0 ; // error
 			result=(int)MatrixPtr( reg, dimA, dimB );
 			goto Matrix3;

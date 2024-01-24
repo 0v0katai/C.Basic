@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series  v1.8x
+ Casio Basic RUNTIME library for fx-9860G series  v1.9x
 
  copyright(c)2015/2016/2017/2018 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -1597,8 +1597,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return CB_EvalStr(SRC, 0 );
 				case 0x50:	// StrAsc(
 					return CB_StrAsc( SRC );
-				case 0x5F:	// IsError(
-					return CB_IsError(SRC);
+//				case 0x5F:	// IsError(
+//					return CB_IsError(SRC);
 				case 0x60:	// GetFont(
 					return CB_GetFont(SRC);
 				case 0x62:	// GetFontMini(
@@ -1671,7 +1671,7 @@ double DmsToDec( char *SRC, double h ) {	// 12"34"56 -> 12.5822222
 //int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4hh( unsigned int n ){ return n+n; }	// align +6byte
 //int EvalObjectAlignE4ii( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4jj( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4jj( unsigned int n ){ return n ; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
@@ -2139,6 +2139,7 @@ double Eval2(char *SRC, int *ptr) {		// Eval temp mat
 	ExecPtr=execptr;
 	return result;
 }
+
 double Eval(char *SRC) {		// Eval temp
 	int ptr=0;
 	return Eval2( SRC, &ptr);
@@ -2146,12 +2147,12 @@ double Eval(char *SRC) {		// Eval temp
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+/*
 int CB_IsError( char *SRC ){ //	IsError (...)
 	int c,err=0;
   loop:
 	ErrorNo=0;
-	if (CB_INT==1) ListEvalIntsubTopAns( SRC ) ;
-	else 		  ListEvalsubTopAns( SRC ) ;
+	CB_Cplx_EvalDbl( SRC );
 	if ( err==0 ) 	err = ErrorNo;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;	// Clear List Ans
 	c=SRC[ExecPtr];
@@ -2165,14 +2166,16 @@ int CB_IsError( char *SRC ){ //	IsError (...)
 		}
 	}
 	ErrorNo=0;
+	dspflag=0;
 	return err;
 }
+*/
 
 //-----------------------------------------------------------------------------
 //int EvalObjectAlignE4s( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4t( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAlignE4u( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4v( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4u( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4v( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4w( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4x( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4y( unsigned int n ){ return n ; }	// align +4byte

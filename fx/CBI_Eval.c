@@ -853,8 +853,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CBint_EvalStr(SRC, 0 );
 				case 0x50:	// StrAsc(
 					return CB_StrAsc( SRC );
-				case 0x5F:	// IsError(
-					return CB_IsError(SRC);
+//				case 0x5F:	// IsError(
+//					return CB_IsError(SRC);
 				case 0x60:	// GetFont(
 					return CB_GetFont(SRC);
 				case 0x62:	// GetFontMini(
