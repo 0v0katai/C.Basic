@@ -11,6 +11,7 @@
 #include "CB_edit.h"
 
 #include "CB_interpreter.h"
+#include "CB_Matrix.h"
 #include "CB_error.h"
 
 //----------------------------------------------------------------------------------------------
@@ -1060,7 +1061,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 			Fkey_dispN( 0, "TOP ");
 			Fkey_dispN( 1, "BTM");
 			Fkey_dispR( 2, "CMD");
-			if ( lowercase  ) Fkey_dispN_aA(3); else Fkey_dispN_Aa(3);
+			if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"a<>A");
 			Fkey_dispR( 4, "CHAR");
 			Fkey_dispN( 5, "EXE");
 		}
@@ -1381,7 +1382,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 				alphalock = 0 ;
 				ClipStartPtr = -1 ;		// ClipMode cancel
 				Fkey_dispR( 0, "Var");
-				Fkey_Clear( 1 );
+				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
 				Fkey_Clear( 3 );
 				if ( dumpflg==2 ) Fkey_dispR( 4, "Dump"); else Fkey_dispR( 4, "List");
@@ -1436,6 +1437,12 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_F1:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetVar(0);		// A - 
+							key=0;
+							ClipStartPtr = -1 ;			// ClipMode cancel
+							break;
+					case KEY_CTRL_F2:
+							Cursor_SetFlashMode(0); 		// cursor flashing off
+							SetMatrix(0);		// 
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;

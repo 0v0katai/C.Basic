@@ -3,12 +3,14 @@
 #include "stdio.h"
 #include "string.h"
 
-#include "CB_inp.h"
 #include "CB_io.h"
+#include "CB_error.h"
+
+#include "CB_inp.h"
 #include "CB_file.h"
 #include "CB_edit.h"
 #include "CB_interpreter.h"
-#include "CB_error.h"
+#include "CB_Matrix.h"
 
 //-------------------------------------------------------------- source code refer to (WSC) file.c
 //---------------------------------------------------------------------------------------------
@@ -139,10 +141,11 @@ unsigned int Explorer( int size, char *folder )
 {
 	int cont=1;
 	int top, redraw;
-	int i,j,k;
+	int i,j,k,tmp;
 	unsigned int key;
 	int FavCount=0;
 	int StartLine;
+	char tmpname[FILENAMEMAX];
 	
 	FavCount=0;
 	j=FavoritesMAX-1;
@@ -189,7 +192,7 @@ unsigned int Explorer( int size, char *folder )
 		Fkey_dispR( 2,"NEW");
 		Fkey_dispR( 3,"REN");
 		Fkey_dispR( 4,"DEL");
-		Fkey_dispN( 5,"Fav");
+		Fkey_dispN( 5,"Fav.");
 		locate(1, 1);Print((unsigned char*)"Prog List  [        ]");
 		locate(13, 1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"Root");
 		if( size < 1 ){
@@ -340,10 +343,10 @@ unsigned int Explorer( int size, char *folder )
 				break;
 			case KEY_CTRL_SHIFT:
 				Fkey_dispR( 0, "Var");
-				Fkey_Clear( 1 );
+				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
-				Fkey_Clear( 3 );
-				Fkey_Clear( 4 );
+				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
+				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
 				Fkey_dispN( 5, "ver.");
 				GetKey(&key);
 				switch (key) {
@@ -359,15 +362,41 @@ unsigned int Explorer( int size, char *folder )
 							SetVar(0);		// A - 
 							SaveFavorites();
 							break;
+					case KEY_CTRL_F2:
+							SetMatrix(0);		//
+							break;
 					case KEY_CTRL_F3:
 							SetViewWindow();
+							SaveFavorites();
+							break;
+					case KEY_CTRL_F4:	// up
+							if ( index <= StartLine ) break;
+							strncpy( tmpname, files[index-1].filename, FILENAMEMAX);
+							tmp=files[index-1].filesize;
+							strncpy( files[index-1].filename, files[index].filename, FILENAMEMAX);
+							files[index-1].filesize=files[index].filesize;
+							strncpy( files[index].filename, tmpname, FILENAMEMAX);
+							files[index].filesize=tmp;
+							index--;
+							SaveFavorites();
+							break;
+					case KEY_CTRL_F5:	// down
+							if ( FavCount < 1 ) break;
+							if ( index >= FavoritesMAX-1 ) break;
+							strncpy( tmpname, files[index+1].filename, FILENAMEMAX);
+							tmp=files[index+1].filesize;
+							strncpy( files[index+1].filename, files[index].filename, FILENAMEMAX);
+							files[index+1].filesize=files[index].filesize;
+							strncpy( files[index].filename, tmpname, FILENAMEMAX);
+							files[index].filesize=tmp;
+							index++;
 							SaveFavorites();
 							break;
 					case KEY_CTRL_F6:
 							PopUpWin( 6 );
 							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.50" );
+							locate( 3, 4 ); Print( (unsigned char*)"            v0.51" );
 							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 							GetKey(&key);

@@ -91,7 +91,7 @@ extern unsigned char GraphY3[];
 #define MatAryMax 26
 extern short	MatArySizeA[MatAryMax];		// Matrix array status
 extern short	MatArySizeB[MatAryMax];		// Matrix array status
-extern char		MatAryElementSize[MatAryMax];		// Matrix array status
+extern char		MatAryElementSize[MatAryMax];		// Matrix array word size
 extern double *MatAry[MatAryMax];			// Matrix array ptr*
 
 //------------------------------------------------------------------------------
