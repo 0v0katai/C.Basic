@@ -746,7 +746,7 @@ void MatNumToExpBuf( complex value, int bit ){	// value -> ExpBuffer
 	}
 }
 
-char* NewClipBuffer( int *size );
+char* NewclipBuffer( int *size );
 
 void List2Clip( int reg, int bit ) {	// 
 	int i,j,dimA,dimB,x,y;
@@ -763,7 +763,7 @@ void List2Clip( int reg, int bit ) {	//
 		dimB=MatAry[reg].SizeB-1+base;
 	}
 	max = -1;
-	buffer = NewClipBuffer( &max );	// max size
+	buffer = NewclipBuffer( &max );	// max size
 
 	buffer[ptr++]='{';
 	y=base;
@@ -783,7 +783,7 @@ void List2Clip( int reg, int bit ) {	//
 	ptr--;
 	buffer[ptr++]='}';
 	buffer[ptr++]='\0';
-	NewClipBuffer( &ptr );	// adjust size
+	NewclipBuffer( &ptr );	// adjust size
 	ErrorMSGstr1("List to Clip Ok!");
 }
 
@@ -802,7 +802,7 @@ void Mat2Clip( int reg, int bit ) {	//
 		dimB=MatAry[reg].SizeB-1+base;
 	}
 	max = -1;
-	buffer = NewClipBuffer( &max );	// max size
+	buffer = NewclipBuffer( &max );	// max size
 
 	buffer[ptr++]='[';
 //	buffer[ptr++]=0x0D;
@@ -828,7 +828,7 @@ void Mat2Clip( int reg, int bit ) {	//
 	ptr--;
 	buffer[ptr++]=']';
 	buffer[ptr++]='\0';
-	NewClipBuffer( &ptr );	// adjust size
+	NewclipBuffer( &ptr );	// adjust size
 	ErrorMSGstr1("Mat to Clip Ok!");
 }
 
@@ -2911,7 +2911,7 @@ double CB_RanBin( char *SRC ) {		// RanBin#( n, p [,m] ) -> List Ans
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void CB_ArgumentMat( char *SRC, int reg ) {	// Argument( Mat A, Mat B )	
+void CB_AugmentMat( char *SRC, int reg ) {	// Augment( Mat A, Mat B )	
 	int reg2;
 	int m,n,i;
 	int sizeA,sizeB,sizeA2,sizeB2,sizeB3;
@@ -2954,7 +2954,7 @@ void CB_ArgumentMat( char *SRC, int reg ) {	// Argument( Mat A, Mat B )
 	CopyMatList2Ans( tmpreg );		// tmpreg -> CB_MatListAnsreg
 	dspflag = 3;
 }
-void CB_ArgumentList( char *SRC, int reg ) {	// Argument( List1, List2 )	
+void CB_AugmentList( char *SRC, int reg ) {	// Augment( List1, List2 )	
 	int reg2;
 	int m,n,i;
 	int sizeA,sizeB,sizeA2,sizeB2,sizeA3;
@@ -2996,7 +2996,7 @@ void CB_ArgumentList( char *SRC, int reg ) {	// Argument( List1, List2 )
 	dspflag = 4;
 }
 
-void CB_Argument( char *SRC ) {	// Argument( List1, List2 )		Argument( Mat A, Mat B)
+void CB_Augment( char *SRC ) {	// Augment( List1, List2 )		Augment( Mat A, Mat B)
 	int reg,reg2;
 	int m,n;
 	int sizeA,sizeB,sizeA2,sizeB2;
@@ -3005,8 +3005,8 @@ void CB_Argument( char *SRC ) {	// Argument( List1, List2 )		Argument( Mat A, Ma
 	int c;
 	Cplx_ListEvalsubTop(SRC);
 	reg = CB_MatListAnsreg;
-	if ( dspflag == 3 )  { CB_ArgumentMat(SRC, reg); return; }
-	if ( dspflag == 4 )  { CB_ArgumentList(SRC, reg); return; }
+	if ( dspflag == 3 )  { CB_AugmentMat(SRC, reg); return; }
+	if ( dspflag == 4 )  { CB_AugmentList(SRC, reg); return; }
 	 { CB_Error(ArgumentERR); return ; } // Argument error
 }
 
@@ -3487,7 +3487,7 @@ int CB_ProdInt( char *SRC ) {	// Prod List 1
 //-----------------------------------------------------------------------------
 void SeqOprand( char *SRC, int *fxreg, double *start, double *end, double *step ){	// Seq(X^2,X,1,10[,1])
 	int exptr=ExecPtr;
-	int errflag;
+	int errflag=0;
 	double data;
   restart:
 	data=CB_EvalDbl( SRC );	// dummy read
@@ -3968,7 +3968,7 @@ void Mat_inverse( int ansreg ) {
 	int ElementSize;
 	int base;
 	int reg,tmpreg=Mattmpreg;
-	int pv[1000];
+	int pv[1000],pvrow;
 	double a,b,c,d;
 	double z,tmp,tmp2,tmp3;
 	base    = MatAry[ansreg ].Base;
@@ -4014,29 +4014,31 @@ void Mat_inverse( int ansreg ) {
 		}
 	}
 	for ( y=base; y<N; y++ ){
-		z = ReadMatrix( reg, y, y );
-		pv[y]=y;
-		if ( z == 0 ) {
-			for(i = y+1 ; i < N; i++){
-				z = ReadMatrix( reg, i, y );
-				if ( z != 0 ) {
-					break;
-				}
+		b=0.0; pvrow = y;
+		for(i = y ; i < N; i++){
+			z = fabs(ReadMatrix( reg, i, y ));
+			if ( z > b ) {
+				b = z;
+				pvrow = i;
 			}
-			if (i < N){
-				for(x = base ; x < N; x++){
-					tmp = ReadMatrix( reg, i, x); 
-					WriteMatrix( reg, i, x, ReadMatrix( reg, y, x) ) ;
-					WriteMatrix( reg, y, x, tmp);
-				}
-				pv[y]=i;
-			} else { CB_Error(MathERR); return ; }
 		}
-		tmp = frecip( z );
+		if ( b==0.0 ) { CB_Error(MathERR); return ; }
+		pv[y] = pvrow;
+		
+		if ( y != pvrow ) {
+			for(x = base ; x < N; x++){
+				tmp = ReadMatrix( reg, pvrow, x); 
+				WriteMatrix( reg, pvrow, x, ReadMatrix( reg, y, x) ) ;
+				WriteMatrix( reg, y,     x, tmp);
+			}
+		}
+
+		tmp = frecip( ReadMatrix( reg, y, y ) );
 		for ( x=base; x<N; x++ ) {
 			tmp2 = ReadMatrix(    reg, y, x );	WriteMatrix(    reg, y, x, tmp*tmp2 );
 			tmp2 = ReadMatrix( ansreg, y, x );	WriteMatrix( ansreg, y, x, tmp*tmp2 );
 		}
+		
 		for ( x=base; x<N; x++ ){
 			if ( y != x ) {
 				tmp = ReadMatrix( reg, x, y );
@@ -4064,7 +4066,7 @@ void Cplx_Mat_inverse( int ansreg ) {
 	int ElementSize;
 	int base;
 	int reg,tmpreg=Mattmpreg;
-	int pv[1000];
+	int pv[1000],pvrow;
 	complex a,b,c,d;
 	complex k0={0,0},k1={1,0};
 	complex z,tmp,tmp2,tmp3;
@@ -4111,25 +4113,26 @@ void Cplx_Mat_inverse( int ansreg ) {
 		}
 	}
 	for ( y=base; y<N; y++ ){
-		z = Cplx_ReadMatrix( reg, y, y );
-		pv[y]=y;
-		if ( ( z.real == 0 ) && ( z.imag == 0 ) ) {
-			for(i = y+1 ; i < N; i++){
-				z = Cplx_ReadMatrix( reg, i, y );
-				if( ( z.real != 0 ) || ( z.imag != 0 ) ) {
-					break;
-				}
+		b.real=0.0; pvrow = y;
+		for(i = y ; i < N; i++){
+			z.real = Cplx_fabs( Cplx_ReadMatrix( reg, i, y ) ).real;
+			if ( z.real > b.real ) {
+				b.real = z.real;
+				pvrow = i;
 			}
-			if (i < N){
-				for(x = base ; x < N; x++){
-					tmp = Cplx_ReadMatrix( reg, i, x); 
-					Cplx_WriteMatrix( reg, i, x, Cplx_ReadMatrix( reg, y, x) ) ;
-					Cplx_WriteMatrix( reg, y, x, tmp);
-				}
-				pv[y]=i;
-			} else { CB_Error(MathERR); return ; }
 		}
-		tmp = Cplx_frecip( z );
+		if ( b.real==0.0 ) { CB_Error(MathERR); return ; }
+		pv[y] = pvrow;
+		
+		if ( y != pvrow ) {
+			for(x = base ; x < N; x++){
+				tmp = Cplx_ReadMatrix( reg, pvrow, x); 
+				Cplx_WriteMatrix( reg, pvrow, x, Cplx_ReadMatrix( reg, y, x) ) ;
+				Cplx_WriteMatrix( reg, y,     x, tmp);
+			}
+		}
+		
+		tmp = Cplx_frecip( Cplx_ReadMatrix( reg, y, y ) );
 		for ( x=base; x<N; x++ ) {
 			tmp2 = Cplx_ReadMatrix(    reg, y, x );	Cplx_WriteMatrix(    reg, y, x, Cplx_fMUL( tmp, tmp2 ) );
 			tmp2 = Cplx_ReadMatrix( ansreg, y, x );	Cplx_WriteMatrix( ansreg, y, x, Cplx_fMUL( tmp, tmp2 ) );
@@ -4790,9 +4793,9 @@ int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------

@@ -4,15 +4,15 @@ struct st_round CB_Round = { Norm , 1} ; // Round
 char ENG=0;	// ENG flag  1:ENG  3:3digit separate
 
 char UseHiddenRAM=0;	//	0x11 :HiddenRAMInit off
-char IsHiddenRAM=0;
+char IsHiddenRAM =0;
 
-#define PICTBACKSPACE 512	//
 #define HIDDENRAM_TOP 0x88040000
-char * HiddenRAM_Top  =(char*)0x88040000+16+256;				// Hidden RAM TOP
-char * HiddenRAM_End  =(char*)0x88080000-PICTBACKSPACE;			// Hidden RAM END
+#define HIDDENRAM_END 0x88080000
+char * HiddenRAM_Top        =(char*)HIDDENRAM_TOP+16+256;		// Hidden RAM TOP
+char * HiddenRAM_End        =(char*)HIDDENRAM_END;				// Hidden RAM END
 
-char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16+256;			// Hidden RAM Prog next ptr
-char * HiddenRAM_MatTopPtr =(char*)0x88080000-PICTBACKSPACE;	// Hidden RAM Mat top ptr
+char * HiddenRAM_ProgNextPtr=(char*)HIDDENRAM_TOP+16+256;		// Hidden RAM Prog next ptr
+char * HiddenRAM_MatTopPtr  =(char*)HIDDENRAM_END;				// Hidden RAM Mat top ptr
 
 char IsSH3;	//	3:SH3   4:SH4
 
@@ -32,9 +32,7 @@ HiddenRAM_Top(0x88040000)
 					(*MatAry)
 					MatAry index area
 						<<<
-							Pict buffer ( 1~20~99)
-							<<<
-								HiddenRAM_End(0x88080000)
+						HiddenRAM_End(0x88080000)
 ----------------------------------------
 */
 //---------------------------------------------------------------------------------------------
@@ -96,13 +94,12 @@ void * HiddenRAM_mallocMat( size_t size ){
 }
 
 unsigned char *  HiddenRAM_mallocPict( int pictNo ){
-	char *  ptr;
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		ptr = HiddenRAM_End-1024*(pictNo);
-		return (unsigned char *)ptr;
-	} else {
-		return (unsigned char *)HiddenRAM_mallocProg( 1024 );
-	}
+	int dimA,dimB;
+	unsigned char *buffer;
+	int pictsize=1024;
+	dimA = pictNo;
+	buffer = (unsigned char *)HiddenRAM_mallocProg( pictsize );
+	return buffer;
 }
 
 void HiddenRAM_freeProg( void *ptr ){
@@ -148,7 +145,6 @@ void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		memcpy( (char *)HIDDENRAM_TOP, MatAryCheckStr, sizeof(MatAryCheckStr) );
 		memcpy( HiddenRAM_End,         MatAryCheckStr, sizeof(MatAryCheckStr) );
-		memcpy( HiddenRAM_End+16,      PictAry, sizeof(PictAry) );
 		iptr1[0]=(int)MatAry;
 		iptr2[0]=(int)HiddenRAM_MatTopPtr;
 	}
@@ -158,11 +154,10 @@ int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 	int *iptr1=(int*)(HIDDENRAM_TOP+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	char *tmp;
-	tmp=HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
+	tmp=HiddenRAM_End - sizeof(matary)*MatAryMax ;
 	if ( !(UseHiddenRAM&0xF0) )return 0;	// hidden init
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) && ( (char *)iptr1[0]==tmp ) ){
 		if ( ( strcmp((char *)HIDDENRAM_TOP, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
-			memcpy( PictAry, HiddenRAM_End+16, sizeof(PictAry) );
 			HiddenRAM_MatTopPtr=(char*)iptr2[0];
 			MatAry=(matary *)tmp;
 			return 1;	// ok
@@ -192,28 +187,25 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	MatAryMax=MATARY_MAX +ExtendList*52;
 	Mattmpreg=MatAryMax-1;
-	ExtListMax=MatAryMax-33;
+	ExtListMax=MatAryMax-33-26;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {		// hidden RAM init
-		ClipBuffer  = (char *)((char*)AliasVarCodeLbl+ sizeof(ALIAS_VAR)*ALIASVARMAXLBL );
 		EditMaxfree = EDITMAXFREE2;
 		EditMaxProg = EDITMAXPROG2;
 		NewMax      = NEWMAX2;
 		ClipMax     = CLIPMAX2;
-		HiddenRAM_Top         = (char*)0x88040000+16+256;			// Hidden RAM TOP
-		HiddenRAM_End         = (char*)0x88080000-PICTBACKSPACE;	// Hidden RAM END
+		HiddenRAM_Top         = (char*)HIDDENRAM_TOP+16+256;		// Hidden RAM TOP
+		HiddenRAM_End         = (char*)HIDDENRAM_END;				// Hidden RAM END
 		HiddenRAM_ProgNextPtr = HiddenRAM_Top;						// Hidden RAM Prog next ptr
 		HiddenRAM_ExtFontAryInit();
 		OplistRecentFreq=(toplistrecentfreq *)(HIDDENRAM_TOP+16);
 		OplistRecent    =(short *)(HIDDENRAM_TOP+16+128);
 		if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
-		HiddenRAM_MatTopPtr   = HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
+		HiddenRAM_MatTopPtr   = HiddenRAM_End - sizeof(matary)*MatAryMax ;
 		MatAry = (matary *)HiddenRAM_MatTopPtr;
 		HiddenRAM_MatAryStore();
 		InitOpcodeRecent();
-		ClipBuffer[0]='\0';
 	} else {		// use heap RAM
 		HiddenRAM_Top    = (char *)((char*)AliasVarCodeLbl+ sizeof(ALIAS_VAR)*ALIASVARMAXLBL );
-		ClipBuffer  = 0 ;		//
 		EditMaxfree = EDITMAXFREE;
 		EditMaxProg = EDITMAXPROG;
 		NewMax      = NEWMAX;
@@ -228,6 +220,8 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 		InitOpcodeRecent();
 	}
 	memset( MatAry, 0, sizeof(matary)*MatAryMax );
+	DeleteStrBuffer();
+	DeletePictPtr();
 	FileListUpdate=1;
 }
 

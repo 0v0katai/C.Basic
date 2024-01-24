@@ -44,7 +44,7 @@ void SetVeiwWindowSTD();
 int SetViewWindwo(void);
 void SetFactor();
 int SetVar(int select);
-int SetupG(int select);
+int SetupG(int select, int limit);
 int SetVarChar( char *buffer, int c ) ;
 int SetVarCharMat( char *buffer, int c ) ;
 int SetVarCharVct( char *buffer, int c ) ;

@@ -224,7 +224,7 @@ unsigned int Plot()
 					case KEY_CTRL_EXIT:
 						break;
 					case KEY_CTRL_SETUP:
-						selectSetup=SetupG(selectSetup);
+						selectSetup=SetupG(selectSetup, 1);
 						break;
 					case KEY_CTRL_F1:
 						selectVar=SetVar(selectVar);		// A - 
@@ -782,7 +782,7 @@ unsigned int Graph_main(){
 						cont=0;
 						break;
 					case KEY_CTRL_SETUP:
-						selectSetup=SetupG(selectSetup);
+						selectSetup=SetupG(selectSetup, 1);
 						Graph_reDraw();
 						break;
 					case KEY_CTRL_F1:

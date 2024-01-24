@@ -1138,7 +1138,7 @@ const short oplistOPTN[]={
 
 		0xFFFF,	// 				-
 		0x7F2C,	// Seq(
-		0x7F49,	// Argument(
+		0x7F49,	// Augment(
 		0x7F4A,	// List->Mat(
 		0x7F4B,	// Mat->List(
 		0x7F20,	// Max(
@@ -1572,7 +1572,7 @@ const short oplistCMD[]={		// 5800P like
 
 //											5
 		0x7F46,	// Dim	
-		0x7F49,	// Argument(
+		0x7F49,	// Augment(
 		0x7F4B,	// Mat->List(
 		0x7F4A,	// List->Mat(
 		0x7F41,	// Trn 
@@ -1585,7 +1585,7 @@ const short oplistCMD[]={		// 5800P like
 		0x25,	// %
 
 //											6
-		0x7F49,	// Argument(
+		0x7F49,	// Augment(
 		0x7F2C,	// Seq(
 		0x7F20,	// Max(
 		0x7F2D,	// Min(
@@ -2620,7 +2620,7 @@ void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr){
 }
 
 //---------------------------------------------------------------------------------------------
-char* NewClipBuffer( int *size );
+char* NewclipBuffer( int *size );
 
 void EditPaste1( char *srcbase, char *Buffer, int *ptr, int maxlength ){
 	int len,i,j,clipPtr;
@@ -2648,7 +2648,7 @@ void EditCopy1( char *srcbase, int ptr, int startp, int endp ){
 	i=OpcodeLen( GetOpcode(srcbase, endp ) );
 	len=(endp)-(startp)+i;
 	if ( len <=0 ) return;
-	Buffer=NewClipBuffer(&len);
+	Buffer=NewclipBuffer(&len);
 	if ( Buffer== 0 ) return ;	// no clip data
 	for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i+startp];	// copy to Buffer
 	Buffer[i]='\0';
@@ -2664,7 +2664,7 @@ void EditCutDel1( char *srcbase, int *ptr, int startp, int endp, int del, int ma
 	len=(endp)-(startp)+i;
 	if ( len <=0 ) return;
 	if ( del == 0 ) {
-		Buffer=NewClipBuffer(&len);
+		Buffer=NewclipBuffer(&len);
 		if ( Buffer== 0 ) return ;	// no clip data
 		for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i+startp];	// copy to Buffer
 		Buffer[i]='\0';
@@ -2947,7 +2947,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 			case KEY_CTRL_F5:
 				if ( ClipStartPtr >= 0 ) ClipStartPtr = -1 ;		// ClipMode cancel
 				if ( CommandType ) { GetGenuineCmdF5( &key );
-					if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); CommandType=0; }
+					if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup, 1); CommandType=0; }
 				} else {
 					Cursor_SetFlashMode(0); 		// cursor flashing off
 					if ( ( pallet_mode ) && ( alpha_mode ) ) {
@@ -3029,7 +3029,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 							if ( CommandInputMethod ) {
 								CommandType=CMD_SETUP; CommandPage=0;
 							} else {
-								selectSetup=SetupG(selectSetup);
+								selectSetup=SetupG(selectSetup, 1);
 							}
 							break;
 							

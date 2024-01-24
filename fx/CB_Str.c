@@ -6,7 +6,7 @@
 char   *CB_CurrentStr;	//
 
 char   CB_StrBufferCNT;
-char   *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+char   *CB_StrBufPtr=NULL;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 char   defaultStrAry=26;	// <r>
 short  defaultStrAryN=127;
@@ -20,8 +20,8 @@ char   defaultGraphAry=27;		// Theta
 char   defaultGraphAryN=127;
 short  defaultGraphArySize=255+1;
 
-char	dummychar1;
-char	dummychar2;
+//char	dummychar1;
+//char	dummychar2;
 //char	dummychar3;
 //char	dummychar4;
 //----------------------------------------------------------------------------------------------
@@ -549,18 +549,30 @@ int CB_IsStr( char *SRC, int execptr ) {
 	return 0;
 }
 
+void DeleteStrBuffer(){
+	int i;
+	DeleteMatrix( Mattmp_strBuffer );
+//	CB_StrBufPtr = NULL;
+}
 char* NewStrBuffer(){
-	int reg = Mattmp_StrBuffer;	//	StrBuffer
+	int reg = Mattmp_strBuffer;	//	StrBuffer
 	if ( MatAry[reg].SizeA == 0 ) {
 		CB_StrBufferCNT=1;			// 1:CurrentStr		2~4:tmpStrBbuffer
 		DimMatrixSub( reg, 8, CB_StrBufferCNTMax, CB_StrBufferMax, 1 );	// byte matrix
 	} else { 
 		CB_StrBufferCNT++;
-		MatElementPlus( reg, CB_StrBufferCNT, CB_StrBufferMax );	// matrix +
+		if ( CB_StrBufferCNT > CB_StrBufferCNTMax ) { CB_Error(MemoryERR); return NULL; }	// Memory error
 	}
-	if ( ErrorNo ) { CB_StrBuffer=0; CB_Error(MemoryERR); return NULL; }	// Memory error
-	CB_StrBuffer = (char*)MatAry[reg].Adrs;
+	if ( ErrorNo ) { CB_StrBufPtr=NULL; CB_Error(MemoryERR); return NULL; }	// Memory error
 	return (char *)MatrixPtr( reg, CB_StrBufferCNT, 1 );
+}
+void GetNewAry8( int reg, int aryN, int aryMax ) {
+	char *buffer;
+	if ( MatAry[reg].SizeA == 0 ) {
+		DimMatrixSub( reg, 8, aryN, aryMax, 1 );	// byte matrix
+	} else { 
+		if ( MatAry[reg].SizeA < aryN ) MatElementPlus( reg, aryN, aryMax );				// matrix +
+	}
 }
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 	int dimA,dimB;
@@ -568,11 +580,7 @@ char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
 	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
 	dimB = aryMax;
-	if ( MatAry[reg].SizeA == 0 ) {
-		DimMatrixSub( reg, 8, dimA, dimB, 1 );	// byte matrix
-	} else { 
-		if ( MatAry[reg].SizeA < dimA ) MatElementPlus( reg, dimA, dimB );				// matrix +
-	}
+	GetNewAry8( reg, dimA, dimB );
 	if ( ErrorNo ) return 0; // error
 	dimB=MatAry[reg].Base;
 	buffer=MatrixPtr( reg, dimA, dimB );
@@ -1938,7 +1946,7 @@ int CB_TimeToStr() {	// "23:59:59"
 int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

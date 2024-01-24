@@ -1,6 +1,7 @@
 #include "CB.h"
 
 char Transfermode=1;		// 0:binmode  1:normal
+int serial_exitflag=0;		// 0:no exit  1:exit
 
 int send_data( unsigned char *buffer, int n ){
 	int r;
@@ -14,7 +15,8 @@ int send_data( unsigned char *buffer, int n ){
 	while ( n>i ) {
 	  loop:
 		while ( Serial_GetFreeTransmitSpace() < 128 ) {
-			if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
+			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
+			if ( serial_exitflag ) if ( KeyScanDown(KEYSC_EXIT) ) return -9;	// [EXIT]
 		}
 		r=Serial_BufferedTransmitOneByte( buffer[0] );
 		if ( r==2 ) goto loop;	// no space is available in the serial interrupt transmit buffer (256 bytes max)
@@ -38,7 +40,8 @@ int receive_data( unsigned char *buffer, int n ){
 	while ( n>i ) {
 	  loop:
 		while ( Serial_GetReceivedBytesAvailable() < 1 ) {
-			if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
+			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
+			if ( serial_exitflag ) if ( KeyScanDown(KEYSC_EXIT) ) return -9;	// [EXIT]
 		}
 		r=Serial_ReadOneByte( buffer );
 		if ( r==1 ) goto loop;	// no byte is available
@@ -243,14 +246,17 @@ void CB_Send( char *SRC ){				// Send( data )
 
 	ptr=VarPtrLength(SRC, &length, &type, 0 );
 	if ( ErrorNo ) return;
-//	CB_length( SRC, &length );
 	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
+	serial_exitflag=0;
+	CB_length( SRC, &serial_exitflag);
 	Serial_Open( mode );	// open
 	r=send_formatdata( (unsigned char*)ptr, type, length );
 //	while ( Serial_Close(0)==5 );	// transmissions are under way?
 //	Serial_Close( 1 );	// close
-	if ( Serial_Close_sub() ) return ;	// error
+	Serial_Close_sub();
+	if ( r == -9 ) { ErrorNo=0; r=0; }	//
+	if ( ErrorNo ) return;
 	if ( r ) CB_Error(TransmitERR);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 }
@@ -263,15 +269,18 @@ void CB_Receive( char *SRC ){			// Receive( data )
 
 	ptr=VarPtrLength(SRC, &length, &type, 1 );
 	if ( ErrorNo ) return;
-//	CB_length( SRC, &length );
 	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
+	serial_exitflag=0;
+	CB_length( SRC, &serial_exitflag);
 	Serial_Open( mode );
 	type2=type;
 	r=receive_formatdata( (unsigned char*)ptr, &type2, &length );
 //	while ( Serial_Close(0)==5 );	// transmissions are under way?
 //	Serial_Close( 1 );	// close
-	if ( Serial_Close_sub() ) return ;	// error
+	Serial_Close_sub();
+	if ( r == -9 ) { ErrorNo=0; r=0; }	//
+	if ( ErrorNo ) return;
 	if ( type2 != type ) CB_Error(TypeMismatchERR);
 	if ( r ) CB_Error(ReceiveERR);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -284,6 +293,8 @@ void CB_OpenComport38k( char *SRC ){	// OpenComport38k
 	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
 	CB_length( SRC, &tmode );
+	serial_exitflag=0;
+	CB_length( SRC, &serial_exitflag);
 	Transfermode=tmode;
 	r=Serial_Open( mode );	// open
 //	if ( r==3 ) CB_Error(AlreadyOpenERR);
@@ -304,6 +315,7 @@ void CB_Send38k( char *SRC ){			// Send38k
 	} else {
 		r=send_formatdata( (unsigned char*)ptr, type, length );
 	}
+	if ( r==-9 ) return ;
 	if ( r==3 ) CB_Error(ComNotOpenERR);
 	if ( r ) CB_Error(TransmitERR);
 	
@@ -323,6 +335,7 @@ void CB_Receive38k( char *SRC ){		// Receive38k
 		r=receive_formatdata( (unsigned char*)ptr, &type2, &length );
 		if ( type2 != type ) CB_Error(TypeMismatchERR);
 	}
+	if ( r==-9 ) return ;
 	if ( r==3 ) CB_Error(ComNotOpenERR);
 	if ( r ) CB_Error(ReceiveERR);
 }

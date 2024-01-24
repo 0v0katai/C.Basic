@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.88\xE6\x41";
-#define VERSION 188
+const char VerMSG[]="C.Basic  v1.89\xE6\x41";
+#define VERSION 189
 
 //---------------------------------------------------------------------------------------------
 
@@ -1155,7 +1155,7 @@ int SelectNum4( int n ) {		//
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
     
-int SetupG(int select){		// ----------- Setup 
+int SetupG(int select, int limit){		// ----------- Setup 
     const char *degrad[]  ={"Deg","Rad","Grad"};
     const char *cplxmode[]={"Real","a+b\x7F\x50","r\x7F\x54\xE6\x47"};
     const char *onoff[]   ={"off","on"};
@@ -1644,6 +1644,7 @@ int SetupG(int select){		// ----------- Setup
 						CB_RecoverSetup = 1 ; // recover on
 						break;
 					case SETUP_EnableExtFONT: // Enable External Font
+						if ( limit ) break;
 						EnableExtFont=1;
 						HiddenRAM_MatAryInit();
 						break;
@@ -1667,13 +1668,15 @@ int SetupG(int select){		// ----------- Setup
 						EditListChar=0;		// normal
 						break;
 					case SETUP_ExtendPict:		// Max Pict
+						if ( limit ) break;
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						ExtendPict+=10;
 						if ( 79<ExtendPict ) ExtendPict=79;
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_ExtendList:		// Max List
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						if ( limit ) break;
+//						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						ExtendList++;
 						if ( 19<ExtendList ) ExtendList=19;
 						HiddenRAM_MatAryInit();
@@ -1683,11 +1686,13 @@ int SetupG(int select){		// ----------- Setup
 						FileListUpdate=1;
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
+						if ( limit ) break;
 						if ( IsHiddenRAM ) UseHiddenRAM = 1 ; // on
 						ExtendList=(6-1);
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
+						if ( limit ) break;
 						if ( UseHiddenRAM ) UseHiddenRAM &= 0x0F;	// on
 						HiddenRAM_MatAryInit();
 						break;
@@ -1818,6 +1823,7 @@ int SetupG(int select){		// ----------- Setup
 						CB_RecoverSetup = 0 ; // recover off
 						break;
 					case SETUP_EnableExtFONT: // Enable External Font
+						if ( limit ) break;
 						EnableExtFont=0;
 						EditExtFont=0;
 						HiddenRAM_MatAryInit();
@@ -1843,13 +1849,15 @@ int SetupG(int select){		// ----------- Setup
 						EditListChar=1;		// 
 						break;
 					case SETUP_ExtendPict:		// Max Pict
+						if ( limit ) break;
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						if (ExtendPict>70) ExtendPict=70; else ExtendPict-=10;
 						if (ExtendPict<0) ExtendPict=0;
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_ExtendList:		// Max List
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						if ( limit ) break;
+//						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						ExtendList--;
 						if (ExtendList<0) ExtendList=0;
 						HiddenRAM_MatAryInit();
@@ -1859,13 +1867,16 @@ int SetupG(int select){		// ----------- Setup
 						FileListUpdate=1;
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
+						if ( limit ) break;
 						UseHiddenRAM = 0 ; // off
 						ExtendPict=0;
 						ExtendList=0;
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
-						if ( UseHiddenRAM ) UseHiddenRAM |= 0x10;	// off
+						if ( limit ) break;
+						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						UseHiddenRAM |= 0x10;	// off
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
@@ -2040,6 +2051,7 @@ int SetupG(int select){		// ----------- Setup
 						EditFontSize |= 0x03;	// underbar cursor
 						break;
 					case SETUP_ExtendPict:		// Max Pict
+						if ( limit ) break;
 						ExtendPict=0;
 						HiddenRAM_MatAryInit();
 						break;
@@ -2049,6 +2061,7 @@ int SetupG(int select){		// ----------- Setup
 						else					TimeDsp |=  0x2 ; // on  reset GetKey1/2 
 						break;
 					case SETUP_ExtendList:		// Max List
+						if ( limit ) break;
 						ExtendList=0;
 						ExtListMax=0;
 						HiddenRAM_MatAryInit();
