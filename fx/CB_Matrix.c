@@ -2511,7 +2511,7 @@ int CB_ProdInt( char *SRC ) {	// Prod List 1
 }
 
 //-----------------------------------------------------------------------------
-void SeqOprand( char *SRC, int *fxreg, double *start, double *end, double *step ){	// Seq(X^2,X,1.10[,1])
+void SeqOprand( char *SRC, int *fxreg, double *start, double *end, double *step ){	// Seq(X^2,X,1,10[,1])
 	int exptr=ExecPtr;
 	int errflag;
 	double data;
@@ -2547,7 +2547,7 @@ void SeqOprand( char *SRC, int *fxreg, double *start, double *end, double *step 
 	
 }
 
-void CB_Seq( char *SRC ) { //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
+void CB_Seq( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 	int c,d;
 	int dimA,dimB,i;
 	int fxreg,reg;
@@ -2587,7 +2587,7 @@ void CB_Seq( char *SRC ) { //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 	ExecPtr=exptr2;
 	dspflag =4 ;	// List data
 }
-void SeqOprandInt( char *SRC, int *fxreg, int *start, int *end, int *step ){	// Seq(X^2,X,1.10[,1])
+void SeqOprandInt( char *SRC, int *fxreg, int *start, int *end, int *step ){	// Seq(X^2,X,1,10[,1])
 	int exptr=ExecPtr;
 	int errflag;
 	int data;
@@ -2622,7 +2622,7 @@ void SeqOprandInt( char *SRC, int *fxreg, int *start, int *end, int *step ){	// 
 	}
 }
 
-void CB_SeqInt( char *SRC ) { //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
+void CB_SeqInt( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 	int c,d;
 	int dimA,dimB,i;
 	int fxreg,reg;
@@ -2664,7 +2664,7 @@ void CB_SeqInt( char *SRC ) { //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 }
 
 
-double CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1.10[,1])
+double CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 	int c,d;
 	int i;
 	int fxreg,reg;
@@ -2691,7 +2691,7 @@ double CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1.10[,1])
 	return result;
 }
 
-int CB_SigmaInt( char *SRC ) { //	Sigma(X^2,X,1.10[,1])
+int CB_SigmaInt( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 	int c,d;
 	int i;
 	int fxreg,reg;

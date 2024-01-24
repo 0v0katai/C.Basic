@@ -552,7 +552,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFF91 :	// asin
 			return EvalFxDbl( &fasin, ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFF92 :	// acos
-			return EvalFxDbl( &fcos, ListEvalsub5( SRC ) ) ; 
+			return EvalFxDbl( &facos, ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFF93 :	// atan
 			return EvalFxDbl( &fatan, ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFFA1 :	// sinh

@@ -139,7 +139,7 @@ void GetGenuineCmdF6( unsigned int *code ){
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F6
 			switch ( CommandPage ) {
-				case 0: (*code)='#';return;	// #
+				case 0: (*code)='%';return;	// %
 			} break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {

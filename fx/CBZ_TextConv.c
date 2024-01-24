@@ -1397,14 +1397,19 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			} else {
 				flag=0x22;	// "
 				c=srcbase[ofst-1];
-				if ( ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) quotflag=1; else quotflag=0;
+				if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) quotflag=1; else quotflag=0;
 			}
 		}
 		if ( ( code == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=0x27;	// '
 
 		if ( ( code != 0x21 ) && ( code != 0x2A ) && ( code != 0x2B ) && ( code != 0x2D ) && ( code != 0x2F ) && ( 0x20 <= code ) && ( code <= 0x7E ) ){
+			if ( code == 0x5C ) {	//
 				text[textofst++] = code;
 				ofst++;
+				code = srcbase[ofst] ;
+			}
+			text[textofst++] = code;
+			ofst++;
 		} else
 		if ( ( 0xFFA0 <= code ) && ( code <= 0xFFDF ) ) {	// kana
 				text[textofst++] = code & 0xFF;
@@ -1433,11 +1438,15 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 				text[textofst++] ='@';
 				NumToHex( text+textofst, code, 4);
 				textofst+=4;
-				ofst++; if ( code >= 0x100 ) ofst++; 
+				ofst++; if ( code >= 0x100 ) ofst++;
 				goto tokenloop;
 			}
+			
+			
 			len = strlen( opstr );
-			if ( ( flag ) && ( ( (0x20>code) && (code!=0x0D) ) || ( (code>0x7E) ) && ( (code!=0x89) && (code!=0x99) && (code!=0xA8) && (code!=0xA9) && (code!=0xB9) && (code!=0xAB) ) ) ) {
+			if ( 0xF70A == code ) len=2;	// Do
+			if ( 0xF74F == code ) len=3;	// Dot
+			if ( ( flag ) && ( ( (code<0x20) && (code!=0x0D) ) || ( (0x7E<code) ) && ( (code!=0x89) && (code!=0x99) && (code!=0xA8) && (code!=0xA9) && (code!=0xB9) && (code!=0xAB) ) ) ) {
 				text[textofst++] ='_';
 				strncpy( text+textofst, opstr, len );
 				textofst += len;
@@ -1650,7 +1659,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	int textofst=0;
 	char *opstr;
 	char flag=0;	// ' "
-	char flag_=0;
+	char flag_=0;	// '_'
 	char quotflag=0;	// ""  no <CR>
 
 	srcbase=filebase+0x56;
@@ -1660,7 +1669,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	  tokenloop:
 		if ( ofst > maxsize )  break;
 		c = text[textofst];
-		if ( ( flag_ ) && ( c=='_' ) ) c=text[++textofst];	// '_' skip
+		if ( ( flag_ ) && ( c=='_' ) ) c = text[++textofst];	// '_' skip
 		flag_=0; 
 		if ( c==0 ) break;
 		if ( ( c==0x0D ) && ( text[textofst+1]==0x0A ) ) { 	// 0x0D 0x0A
@@ -1675,18 +1684,23 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 			} else {
 				flag=0x22;	// "
 				d = text[textofst-1];
-				if ( ( d==' ' ) || ( d==0x0A ) || ( d==':' ) ) quotflag=1; else quotflag=0;
+				if ( ( d==0x27 ) || ( d==' ' ) || ( d==0x0A ) || ( d==':' ) ) quotflag=1; else quotflag=0;
 			}
 		}
 		if ( ( c == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=0x27;	// '
 		if ( flag ) {
-			if ( c!='_' ) {
-				if ( ( c!=0x0D ) && ( c!='+' ) && ( c!='-' ) && ( c!='*' ) && ( c!='/' ) && ( c!='!' ) && ( c!='^' ) ) goto tokenskip;
-			} else {
+			if ( c == '_' ) { 	// '_'
+				flag_=c;
 				textofst++;	// '_'  skip
-				flag_=c; 
-			}
+				srcbase[ofst] = c;
+				d = text[textofst];
+				if ( ( d=='"') || ( d=='$') || ( d=='%') || ( d==0x27 ) || ( d==')' ) || ( d=='.' ) || ( d=='/' ) ) {
+					ofst++; goto tokenloop;
+				}
+			} else
+			if ( ( c!=0x0D ) && ( c!='+' ) && ( c!='-' ) && ( c!='*' ) && ( c!='/' ) && ( c!='!' ) && ( c!='^' ) ) goto tokenskip;
 		}
+		
 		c=codecnv7F00( srcbase, text, &ofst, &textofst ) ;	// 0x7F00 - 0x7FFF
 		if ( c==0 ) goto tokenloop;
 
@@ -1724,17 +1738,17 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		} else
 		if ( c != '(' ) {
 			c=codecnv0000( srcbase, text, &ofst, &textofst ) ;	// 0x0001 - 0x002F
-			if ( c==0 ) {
-//				c=srcbase[ofst-1];
-//				if ( ( c == 0x0C ) || ( c == 0x0D ) ) flag=0;
-				goto tokenloop;
-			}
+			if ( c==0 ) goto tokenloop;
 		}
 		c=codecnv0080( srcbase, text, &ofst, &textofst ) ;	// 0x0080 - 0x00FE
 		if ( c==0 ) goto tokenloop;
 		
 		c=ex_codecnv( srcbase, text, &ofst, &textofst ) ;	// ext
 		if ( c==0 ) goto tokenloop;
+
+//		if ( flag_ ) {		// '_'
+//					ofst++; goto tokenloop;
+//		}
 
 	  tokenskip:
 		if ( ( 0x20 <= c ) && ( c <= 0x7E ) ) {
@@ -1753,8 +1767,13 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 					textofst++;
 				}
 			} else {
-				srcbase[ofst++] = c;
-				textofst++;
+				if ( c == 0x5C ) {
+					srcbase[ofst++] = c;
+					textofst++;
+					c = text[textofst];
+				}
+					srcbase[ofst++] = c;
+					textofst++;
 			}
 		} else 
 		if ( ( 0xFFFFFFA0 <= c ) && ( c <= 0xFFFFFFDF ) ) {	// kana

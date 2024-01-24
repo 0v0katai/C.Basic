@@ -211,11 +211,12 @@ void StrMid( char *str1, char *str2, int n, int m ) {	// mid$(str2,n,m) -> str1
 	int i,opptr1,opptr2,slen,oplen;
 	int opcode;
 	slen=StrLen( str2 ,&oplen );
-	if ( n < 1 ) n=1;
+	if ( n < 1 )  { i=0; goto exit; }
 	if ( n > slen ) n=slen;
 	if ( ( m <= 0 ) || ( m > slen-n ) ) m=slen-n+1;
 	
 	i=StrMidCopySub( str1, str2, oplen, n, m );
+	exit:
 	str1[i]='\0';
 }
 
@@ -223,10 +224,11 @@ void StrRight( char *str1, char *str2, int n ) {	// Right$(str2,n) -> str1
 	int i,opptr1,opptr2,slen,oplen,m;
 	int opcode;
 	slen=StrLen( str2 ,&oplen );
-	if ( n < 1 ) n=1;
+	if ( n < 1 ) { i=0; goto exit; }
 	if ( n > slen ) n=slen;
 	m=slen-n+1;
 	i=StrMidCopySub( str1, str2, oplen, m, n );
+	exit:
 	str1[i]='\0';
 }
 
@@ -372,8 +374,8 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int c;
 	int ptr=0;
-	c=SRC[ExecPtr-1];
-	if ( ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
+	c=SRC[ExecPtr-2];
+	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
 		while (1){
 			c = SRC[ExecPtr++];
 			buffer[ptr++]=c;
@@ -504,6 +506,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			break;
 		case 0x1B:	// fn
 			reg=defaultFnAry;
+			ExecPtr+=2;
 			if ( MatAry[reg].SizeA == 0 ) {
 				DimMatrixSub( reg, 8, defaultFnAryN+1-MatBase, defaultFnArySize, MatBase );	// byte matrix
 			}
@@ -511,6 +514,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			break;
 		case 0xFFFFFFF0:	// GraphY
 			reg=defaultGraphAry;
+			ExecPtr+=2;
 			if ( MatAry[reg].SizeA == 0 ) {
 				DimMatrixSub( reg, 8, defaultGraphAryN+1-MatBase, defaultGraphArySize, MatBase );	// byte matrix
 			}
@@ -1010,7 +1014,8 @@ int CB_StrLeft( char *SRC ) {	// StrLeft( str1, n  )
 	n = CB_EvalInt( SRC );	//
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	StrMid( CB_CurrentStr, buffer, 1, n ) ;
+	if ( n > 0 ) StrMid( CB_CurrentStr, buffer, 1, n ) ;
+	else	CB_CurrentStr[0]='\0';
 	return CB_StrBufferMax-1;
 }
 int CB_StrRight( char *SRC ) {	// StrRight( str1, n  )
@@ -1024,7 +1029,8 @@ int CB_StrRight( char *SRC ) {	// StrRight( str1, n  )
 	n = CB_EvalInt( SRC );	//
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	StrRight( CB_CurrentStr, buffer, n ) ;
+	if ( n > 0 ) StrRight( CB_CurrentStr, buffer, n ) ;
+	else	CB_CurrentStr[0]='\0';
 	return CB_StrBufferMax-1;
 }
 int CB_StrMid( char *SRC ) {	// StrMid( str1, n [,m] )

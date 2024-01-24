@@ -32,7 +32,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.52\xE6\x41";
+const char VerMSG[]="C.Basic  v1.53\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -908,7 +908,7 @@ int SetupG(int select){		// ----------- Setup
     const char *display[] ={"Nrm","Fix","Sci"};
     const char *ENGmode[] ={"  ","/E","  ","/3"};
     const char *CMDinput[] ={"C.Basic","Standard"};
-    const char *mode[]    ={"Dbl#","Int%"};
+    const char *mode[]    ={"DBL#","INT%"};
     const char *Matmode[]    ={"[m,n]","[X,Y]"};
     const char *Matbase[]    ={"0","1"};
     const char *Pictmode[]    ={"S.Mem","Heap"};
@@ -1176,8 +1176,8 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_Icon( FKeyNo5,  95 );	//	Fkey_dispN( FKeyNo5, "Init");
 				break;
 			case SETUP_Executemode: // Execute Mode
-				Fkey_dispN( FKeyNo1, "Dbl#");
-				Fkey_dispN( FKeyNo2, "Int%");
+				Fkey_dispN( FKeyNo1, "DBL#");
+				Fkey_dispN( FKeyNo2, "INT%");
 				break;
 			default:
 				break;

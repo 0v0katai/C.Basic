@@ -121,7 +121,7 @@ unsigned int Pict() {
 
 	while ( cont ) {
 		locate(1,8); PrintLine((unsigned char *)" ",21);
-		Fkey_dispR( FKeyNo1, "PICT");
+		Fkey_Icon( FKeyNo1, 183 );	//	Fkey_dispR( FKeyNo1, "PICT");
 		GetKey(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
@@ -131,8 +131,8 @@ unsigned int Pict() {
 				cont=0;
 				break;
 			case KEY_CTRL_F1:
-				Fkey_dispR( FKeyNo1, "STO");
-				Fkey_dispR( FKeyNo2, "RCL");
+				Fkey_Icon( FKeyNo1, 693 );	//	Fkey_dispR( FKeyNo1, "STO");
+				Fkey_Icon( FKeyNo2, 700 );	//	Fkey_dispR( FKeyNo2, "RCL");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_AC:
@@ -283,16 +283,16 @@ unsigned int Plot()
 //----------------------------------------------------------------------------------------------
 void FkeyZoom(){
 	locate(1,8); PrintLine((unsigned char *)" ",21);
-	Fkey_dispR( FKeyNo2, "FACT");
-	Fkey_dispN( FKeyNo3, " IN");
-	Fkey_dispN( FKeyNo4, "OUT");
+	Fkey_Icon( FKeyNo2, 565 );	//	Fkey_dispR( FKeyNo2, "FACT");
+	Fkey_Icon( FKeyNo3, 566 );	//	Fkey_dispN( FKeyNo3, " IN");
+	Fkey_Icon( FKeyNo4, 567 );	//	Fkey_dispN( FKeyNo4, "OUT");
 }
 void FkeyGraph(){
 	locate(1,8); PrintLine((unsigned char *)" ",21);
-	Fkey_dispN( FKeyNo1, "TRCE");
-	Fkey_dispR( FKeyNo2, "ZOOM");
-	Fkey_dispR( FKeyNo3, "V-W");
-	Fkey_dispN( FKeyNo6, "G<>T");
+	Fkey_Icon( FKeyNo1, 558 );	//	Fkey_dispN( FKeyNo1, "TRCE");
+	Fkey_Icon( FKeyNo2, 559 );	//	Fkey_dispR( FKeyNo2, "ZOOM");
+	Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "V-W");
+	Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 }
 //--------------------------------------------------------------
 unsigned int ZoomXY() {
@@ -536,7 +536,7 @@ void Graph_Draw(){
 void Graph_reDraw(){
 	int i;
 	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-//	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
+	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
 	Graph_Draw();
 }
 //--------------------------------------------------------------

@@ -532,9 +532,9 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo6,   6 );	//	Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					FkeyClear( FKeyNo1 );
-					FkeyClear( FKeyNo2 );
-					FkeyClear( FKeyNo3 );
+					Fkey_Icon( FKeyNo1, 403 );	//	Fkey_DISPR( FKeyNo5, " # ");
+					Fkey_Icon( FKeyNo2, 176 );	//	Fkey_DISPR( FKeyNo6, " % ");
+					Fkey_Icon( FKeyNo3, 400 );	//	Fkey_DISPR( FKeyNo2, " ~ ");
 					Fkey_Icon( FKeyNo4, 952 );	//	Fkey_DISPR( FKeyNo4, " $ ");
 					Fkey_Icon( FKeyNo5, 268 );	//	Fkey_dspRB( FKeyNo5, "Str ");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
@@ -808,8 +808,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 179 );	//	Fkey_dispR( FKeyNo2, "MAT ");
 					Fkey_Icon( FKeyNo3, 178 );	//	Fkey_dispR( FKeyNo3, "LIST");
 					Fkey_dispN( FKeyNo4, "extc");
-					Fkey_Icon( FKeyNo5, 176 );	//	Fkey_DISPN( FKeyNo5, " % ");
-					Fkey_Icon( FKeyNo6, 403 );	//	Fkey_DISPN( FKeyNo6, " # ");
+					Fkey_Icon( FKeyNo5, 403 );	//	Fkey_DISPN( FKeyNo6, " # ");
+					Fkey_Icon( FKeyNo6, 176 );	//	Fkey_DISPN( FKeyNo5, " % ");
 					break;
 			}
 			break;

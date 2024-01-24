@@ -130,7 +130,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F5
 			switch ( CommandPage ) {
-				case 0: (*code)='%';return;	// %
+				case 0: (*code)='#';return;	// #
 			} break;
 		case CMD_MENU_STAT_GRPH:
 			switch ( CommandPage ) {

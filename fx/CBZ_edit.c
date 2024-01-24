@@ -421,7 +421,7 @@ void editmenu(){
 	if ( CommandInputMethod ) {
 			Fkey_Icon( FKeyNo3, 396 );	//	Fkey_dispR( FKeyNo3, "MENU"); 
 		} else {
-			Fkey_dispR( FKeyNo3, "CMD");
+			Fkey_dispN( FKeyNo3, "CMD");
 		}
 	if ( lowercase  ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
 	Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
@@ -646,7 +646,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			if (dumpflg==2) {
 				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
 					else             { i=CB_INTDefault; j=MatBaseDefault; }
-							sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [Dbl#", j, "]");
+							sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
 			} else 			sprintf(buffer, "==%-8s==%08X", buffer2, SrcBase);
 			
 			locate (1,1); Print(    (unsigned char*)buffer );
@@ -714,7 +714,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						switch ( DebugMenuSw ) {
 							case 1:
 								Fkey_dispN( FKeyNo1, "CONT");
-								Fkey_dispN( FKeyNo2, "TRCE");
+								Fkey_Icon( FKeyNo2, 558 );	//	Fkey_dispN( FKeyNo2, "TRCE");
 								Fkey_dispN( FKeyNo3, "STEP");
 								Fkey_dispN( FKeyNo4, "S.OT");
 								Fkey_dispN( FKeyNo5, "L<>S");

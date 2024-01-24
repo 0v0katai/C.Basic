@@ -1533,7 +1533,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 		if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
 		scrmode=ScreenMode;
 		goto exitj;
-	}
+	} else
 	if ( (scrmode) || ( UseGraphic == 3 ) ) {	// Graphic mode
 		CB_SelectTextVRAM();	// Select Text Screen
 		PrintDone();
@@ -1855,6 +1855,7 @@ void CB_DrawGraph(  char *SRC ){
 
 void CB_GraphY( char *SRC ){
 	CB_Str( SRC );				// graph text print
+	if ( ErrorNo ) return ;  // error
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	GraphY=CB_CurrentStr;
 	Graph_Draw();
