@@ -943,7 +943,7 @@ void InitLocalVar() {
 int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
@@ -1491,6 +1491,7 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		
 	} else {			//					------------ Double mode
 		CB_CurrentValue.real = EvalsubTopReal( SRC );
+		CB_CurrentValue.imag = 0;
 		c=SRC[ExecPtr];
 		if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }	// Syntax error	// ->
 		ExecPtr++;
@@ -1536,10 +1537,11 @@ void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	int stepint;
 	int i;
 	int *iptr;
+	if ( StackFor->Ptr <= 0 ) { CB_Error(NextWithoutForERR); return; } // Next without for error
+//	if ( StackFor->Ptr <= 0 ) { return; } // Next without for through (no error)
+	StackFor->Ptr--;
+	CurrentStruct->CNT--;
 	if (CB_INT==1) {		//					------------ INT mode
-		if ( StackFor->Ptr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
-		StackFor->Ptr--;
-		CurrentStruct->CNT--;
 		stepint = StackFor->IntStep[StackFor->Ptr];
 		iptr=StackFor->Var[StackFor->Ptr];
 		(*iptr) += stepint;
@@ -1549,15 +1551,7 @@ void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		else {					// step -
 			if ( *iptr < StackFor->IntEnd[StackFor->Ptr] ) { (*iptr) -= step; return ;} // exit
 		}
-		ExecPtr = StackFor->Adrs[StackFor->Ptr];
-		StackFor->Ptr++;		// continue
-		CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
-		CurrentStruct->CNT++;
-		
 	} else {			//					------------ Double mode
-		if ( StackFor->Ptr <= 0 ) { CB_Error(NextWithoutForERR); ErrorPtr=ExecPtr; return; } // Next without for error
-		StackFor->Ptr--;
-		CurrentStruct->CNT--;
 		step = StackFor->Step[StackFor->Ptr];
 		dptr=(double*)StackFor->Var[StackFor->Ptr];
 		(*dptr) += step;
@@ -1567,13 +1561,19 @@ void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		else {					// step -
 			if ( (*dptr) < StackFor->End[StackFor->Ptr] ) { (*dptr) -= step; return ;} // exit
 		}
-		ExecPtr = StackFor->Adrs[StackFor->Ptr];
-		StackFor->Ptr++;		// continue
-		CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
-		CurrentStruct->CNT++;
 	}
+	ExecPtr = StackFor->Adrs[StackFor->Ptr];
+	StackFor->Ptr++;		// continue
+	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
+	CurrentStruct->CNT++;
 }
 
+//----------------------------------------------------------------------------------------------
+int ObjectAligni4( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAligni6a( unsigned int n ){ return n+n; }	// align +6byte
+//int ObjectAligni4b( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAligni4c( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int Search_WhileEnd( char *SRC ){
 	int c;

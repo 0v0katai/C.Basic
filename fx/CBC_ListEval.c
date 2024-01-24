@@ -116,7 +116,8 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 
 	dspflag=2;		// 2:value		3:list    4:mat
 
-	c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+	c = SRC[ExecPtr++];
+  topj:
 	if ( c == '(') {
 		result = Cplx_ListEvalsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -339,6 +340,9 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x47:	// Fill(
 					CB_MatFill(SRC);
 					return Int2Cplx( 3 );
+				case 0x48:	// Identity 
+					CB_Identity(SRC);
+					return Int2Cplx( 3 );
 				case 0x49:	// Argument(
 					CB_Argument(SRC);
 					return Int2Cplx( 3 );
@@ -552,7 +556,9 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 	if ( c == '#') {
 		result = Cplx_EvalsubTop( SRC );
 		return result;
-	}
+	} else
+	if ( c==' ' ) { while ( c==' ' )c=SRC[ExecPtr++]; goto topj; }	// Skip Space
+	
 	ExecPtr--;
 	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
 	CB_Error(SyntaxERR) ; // Syntax error 
@@ -573,7 +579,7 @@ complex Cplx_ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	result = Cplx_ListEvalsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				result = Cplx_EvalFxDbl( &Cplx_fsqu, result) ; 
@@ -634,6 +640,8 @@ complex Cplx_ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result = Cplx_EvalFxDbl( &Cplx_finvgrad, result) ; 
 				break;
 				
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -653,13 +661,15 @@ complex Cplx_ListEvalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = Cplx_EvalFxDbl2( &Cplx_fpow, &resultflag, &resultreg, result, Cplx_ListEvalsub2( SRC ) ) ;
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = Cplx_EvalFxDbl2( &Cplx_fpowroot, &resultflag, &resultreg, result, Cplx_ListEvalsub2( SRC ) ) ;
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -725,6 +735,9 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 				case 0xFFFFFF85:	// logab(a,b)
 				case 0xFFFFFF86:	// RndFix(n,digit)
 				case 0xFFFFFF87:	// RanInt#(st,en)
+				case 0xFFFFFF88 :	// RanList#(n) ->ListAns
+				case 0xFFFFFF89 :	// RanBin#(n,p[,m]) ->ListAns
+				case 0xFFFFFF8A :	// RanNorm#(sd,mean[,n]) ->ListAns
 				case 0xFFFFFFB3 :	// Not
 				case 0xFFFFFFF0:	// GraphY
 				case 0x00:	// Xmin
@@ -853,7 +866,7 @@ complex Cplx_ListEvalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF88 :		// nPr
 //				result = Cplx_EvalFxDbl2( &Cplx_fnPr, &resultflag, &resultreg, result, Cplx_ListEvalsub7( SRC ) ) ;
@@ -862,7 +875,7 @@ complex Cplx_ListEvalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 //				result = Cplx_EvalFxDbl2( &Cplx_fnCr, &resultflag, &resultreg, result, Cplx_ListEvalsub7( SRC ) ) ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
 				switch ( c ) {
 					case 0x54:	// /_ Angle
 						result = Cplx_EvalFxDbl2( &Cplx_fAngle, &resultflag, &resultreg, result, Cplx_ListEvalsub7( SRC ) ) ;
@@ -872,6 +885,8 @@ complex Cplx_ListEvalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 						return result;
 						break;
 				}
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -891,7 +906,7 @@ complex Cplx_ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// ~
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub8( SRC ) ) ;
@@ -900,7 +915,7 @@ complex Cplx_ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = Cplx_EvalFxDbl2( &Cplx_fDIV, &resultflag, &resultreg, result, Cplx_ListEvalsub8( SRC ) ) ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						result = Cplx_EvalFxDbl2( &Cplx_fIDIV, &resultflag, &resultreg, result, Cplx_ListEvalsub8( SRC ) ) ;
@@ -913,6 +928,8 @@ complex Cplx_ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						return result;
 						break;
 				}
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -932,13 +949,15 @@ complex Cplx_ListEvalsub11(char *SRC) {	//  11th Priority  ( +,- )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result = Cplx_EvalFxDbl2( &Cplx_fADD, &resultflag, &resultreg, result, Cplx_ListEvalsub10( SRC ) ) ;
 				break;
 			case 0xFFFFFF99 :		// -
 				result = Cplx_EvalFxDbl2( &Cplx_fSUB, &resultflag, &resultreg, result, Cplx_ListEvalsub10( SRC ) ) ;
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -958,7 +977,7 @@ complex Cplx_ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case '=' :	// =
 				result = Cplx_EvalFxDbl2( &Cplx_fcmpEQ, &resultflag, &resultreg, result, Cplx_ListEvalsub11( SRC ) ) ;
@@ -989,6 +1008,8 @@ complex Cplx_ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 			case 0xFFFFFFBA :	// and
 				result = Cplx_EvalFxDbl2( &Cplx_fAND, &resultflag, &resultreg, result, Cplx_ListEvalsub11( SRC ) ) ;
 				break;
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -1007,7 +1028,7 @@ complex Cplx_ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1019,7 +1040,9 @@ complex Cplx_ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 
@@ -1034,7 +1057,7 @@ complex Cplx_ListEvalsubTop(char *SRC) {	//
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1050,7 +1073,9 @@ complex Cplx_ListEvalsubTop(char *SRC) {	//
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 

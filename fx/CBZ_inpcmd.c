@@ -344,7 +344,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					FkeyClear( FKeyNo1 );
+					Fkey_Icon( FKeyNo1, 205 );	//	Fkey_dspRB( FKeyNo1, "Iden");
 					Fkey_Icon( FKeyNo2, 164 );	//	Fkey_dspRB( FKeyNo2, "Dim ");
 					Fkey_Icon( FKeyNo3, 206 );	//	Fkey_dspRB( FKeyNo3, "Fill");
 					FkeyClear( FKeyNo4 );

@@ -50,8 +50,8 @@ complex Cplx_ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 
 	return result;
 }
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 void Cplx_WriteMatrix( int reg, int dimA, int dimB, complex value){		// base:0  0-    base:1 1-
@@ -444,13 +444,13 @@ complex Cplx_flogab( complex x, complex y ) {	// flogab(x,y)
 	return Cplx_fDIV( Cplx_fln(y), Cplx_fln(x) ) ;
 }
 complex Cplx_fpow( complex x, complex y ) {	// pow(x,y)
-	if ( (x.imag==0)&&(y.imag==0) ) return Dbl2Cplx( fpow(x.real, y.real) );
-	if ( (x.real==0)&&(x.imag==0) && (y.real>0)&&(y.imag==0) )return Int2Cplx(0);
+	if ( (x.real>=0)&&(x.imag==0)&&(y.imag==0) ) return Dbl2Cplx( fpow(x.real, y.real) );
+//	if ( (x.real==0)&&(x.imag==0) && (y.real>0)&&(y.imag==0) )return Int2Cplx(0);
 	return Cplx_fexp( Cplx_fMUL( Cplx_fln(x), y) );
 }
 complex Cplx_fpowroot( complex x, complex y ) {	// powroot(x,y)
 	if ( (x.real>=0)&&(x.imag==0)&&(y.imag==0) ) return Dbl2Cplx( fpowroot(x.real, y.real) );
-	if ( (x.real==0)&&(x.imag==0) ) return Int2Cplx(0);
+//	if ( (x.real==0)&&(x.imag==0) ) return Int2Cplx(0);
 	return Cplx_fexp( Cplx_fMUL( Cplx_fln(x), Cplx_frecip(y) ) );
 }
 
@@ -499,6 +499,7 @@ complex Cplx_fDIV( complex x, complex y ) {	// x / y
 	double tmp;
 	complex z;
 	if ( (x.imag==0)&&(y.imag==0) ) {
+		if ( y.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 		z.real = x.real / y.real;
 		z.imag = 0;
 	} else {
@@ -509,8 +510,9 @@ complex Cplx_fDIV( complex x, complex y ) {	// x / y
 	}
 	return z;
 }
-complex Cplx_fIDIV( complex x, complex y ) {	// (int)x / (int)y
-	return Cplx_fDIV( Cplx_fint(x), Cplx_fint(y) );
+complex Cplx_fIDIV( complex x, complex y ) {	// floor( (int)x / (int)y )
+	if ( (x.imag==0)&&(y.imag==0) ) return Dbl2Cplx( fIDIV(x.real, y.real) );
+	return Cplx_floor( Cplx_fDIV( Cplx_floor(x), Cplx_floor(y) ) );
 }
 complex Cplx_fMOD( complex x, complex y ) {	// fMOD(x,y)
 	complex a;
@@ -678,7 +680,8 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 	int*	MatAryI;
 	double*	MatAryF;
 
-	c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+	c = SRC[ExecPtr++];
+  topj:
 	if ( c == '(') {
 		result = Cplx_EvalsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -776,7 +779,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					return Cplx_flogab(tmp,tmp2);
 					
 				case 0xFFFFFFB3 :		// Not
-					return Cplx_fNot( Cplx_Evalsub5( SRC ) ) ;
+					return Cplx_fNot_logic( Cplx_Evalsub5( SRC ) ) ;
 						
 				case 0xFFFFFF9F :		// KeyRow(
 					return Int2Cplx( CB_KeyRow( SRC ) ) ; 
@@ -872,6 +875,9 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					return CB_Prod( SRC );
 				case 0x47:	// Fill(
 					CB_MatFill(SRC);
+					return Int2Cplx( 3 );
+				case 0x48:	// Identity 
+					CB_Identity(SRC);
 					return Int2Cplx( 3 );
 				case 0x49:	// Argument(
 					CB_Argument(SRC);
@@ -1080,7 +1086,9 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 		result = Cplx_EvalsubTop( SRC );
 //		result = Cplx_Evalsub1( SRC );
 		return result;
-	}
+	} else
+	if ( c==' ' ) { while ( c==' ' )c=SRC[ExecPtr++]; goto topj; }	// Skip Space
+	
 	ExecPtr--;
 	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
 	CB_Error(SyntaxERR) ; // Syntax error 
@@ -1100,7 +1108,7 @@ complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int c;
 	result = Cplx_Evalsub1( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				result = Cplx_fMUL( result, result ) ;
@@ -1162,6 +1170,8 @@ complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result=Cplx_finvgrad( result );
 				break;
 				
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -1176,7 +1186,7 @@ complex Cplx_Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 	char *pt;
 	result = Cplx_Evalsub2( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = Cplx_fpow( result, Cplx_Evalsub2( SRC ) );
@@ -1185,6 +1195,8 @@ complex Cplx_Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 			case  0xFFFFFFB8  :	// powroot
 				result = Cplx_fpow( Cplx_Evalsub2( SRC ), Cplx_frecip( result ) );
 				CheckMathERR(&result.real); // Math error ?
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -1244,6 +1256,9 @@ complex Cplx_Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0xFFFFFF85:	// logab(a,b)
 				case 0xFFFFFF86:	// RndFix(n,digit)
 				case 0xFFFFFF87:	// RanInt#(st,en)
+				case 0xFFFFFF88 :	// RanList#(n) ->ListAns
+				case 0xFFFFFF89 :	// RanBin#(n,p[,m]) ->ListAns
+				case 0xFFFFFF8A :	// RanNorm#(sd,mean[,n]) ->ListAns
 				case 0xFFFFFFB3 :	// Not
 				case 0xFFFFFFF0:	// GraphY
 				case 0x00:	// Xmin
@@ -1363,7 +1378,7 @@ complex Cplx_Evalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 	int c;
 	result = Cplx_Evalsub7( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 //			case 0xFFFFFF88 :		// nPr
 //				result = Cplx_fnPr( result, Cplx_Evalsub7( SRC ) );
@@ -1372,7 +1387,7 @@ complex Cplx_Evalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 //				result = Cplx_fnCr( result, Cplx_Evalsub7( SRC ) );
 //				break;
 			case 0x7F:
-				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
 				switch ( c ) {
 					case 0x54:	// /_ Angle
 						result = Cplx_fAngle( result, Cplx_Evalsub7( SRC ) );
@@ -1382,6 +1397,8 @@ complex Cplx_Evalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 						return result;
 						break;
 				}
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -1396,7 +1413,7 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	int c;
 	result = Cplx_Evalsub8( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// ~
 				result = Cplx_fMUL( result, Cplx_Evalsub8( SRC ) );
@@ -1407,7 +1424,7 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = Cplx_fDIV( result, tmp );
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						result = Cplx_fIDIV( result, Cplx_Evalsub8( SRC ) );
@@ -1420,6 +1437,8 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						return result;
 						break;
 				}
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -1434,13 +1453,15 @@ complex Cplx_Evalsub11(char *SRC) {	//  11th Priority  ( +,- )
 	int c;
 	result = Cplx_Evalsub10( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result = Cplx_fADD( result, Cplx_Evalsub10( SRC ) );
 				break;
 			case 0xFFFFFF99 :		// -
 				result = Cplx_fSUB( result, Cplx_Evalsub10( SRC ) );
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -1456,7 +1477,7 @@ complex Cplx_Evalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	int c;
 	result = Cplx_Evalsub11( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case '=' :	// =
 				result = Cplx_fcmpEQ( result,  Cplx_Evalsub11( SRC ) );
@@ -1487,6 +1508,8 @@ complex Cplx_Evalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 			case 0xFFFFFFBA :	// and
 				result = Cplx_fAND( result,  Cplx_Evalsub11( SRC ) );
 				break;
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -1500,7 +1523,7 @@ complex Cplx_Evalsub13(char *SRC) {	//  13th Priority  ( And,and)
 	int c;
 	result = Cplx_Evalsub12( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1512,7 +1535,9 @@ complex Cplx_Evalsub13(char *SRC) {	//  13th Priority  ( And,and)
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 complex Cplx_Evalsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
@@ -1520,7 +1545,7 @@ complex Cplx_Evalsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 	int c;
 	result = Cplx_Evalsub13( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1536,7 +1561,9 @@ complex Cplx_Evalsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 
