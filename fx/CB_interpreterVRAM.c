@@ -427,11 +427,10 @@ void CB_Screen( char *SRC ){	// Screen.G   Screen.T
 		CB_GetOperandNDbl( SRC, 4, ScrOp );
 	  jmp:
 	  	if ( ScrOp[0]-ScrOp[1] == 0 ) { CB_Error(RangeERR); return; }
-		px =   1 + ( (x-ScrOp[0])*126.0/(ScrOp[1]-ScrOp[0]) + 0.5 ) ;
+		x =   1 + ( (x-ScrOp[0])*126.0/(ScrOp[1]-ScrOp[0]) + 0.5 ) ;
 	  	if ( ScrOp[2]-ScrOp[3] == 0 ) { CB_Error(RangeERR); return; }
-		py =  63 - ( (y-ScrOp[2])* 62.0/(ScrOp[3]-ScrOp[2]) - 0.49999999999999 ) ;
-		WriteListAns2( px, py );	//	->List Ans{px,py}
-//		if (CB_INT==1)	{ regintX=px;regintY=py; } else { regX.real=px; regY.real=py; }
+		y =  63 - ( (y-ScrOp[2])* 62.0/(ScrOp[3]-ScrOp[2]) - 0.49999999999999 ) ;
+		goto listout;
 	} else
 	if ( c == '%' ) {	// Screen(PX,PY[,Xmin][,Xmax][,Ymin][,Ymax] -> ViewWindow(X,Y)
 	  scrCod2:
@@ -448,7 +447,10 @@ void CB_Screen( char *SRC ){	// Screen.G   Screen.T
 		x = (   px-1)*(ScrOp[1]-ScrOp[0])/126.0 +  ScrOp[0] ;
 	  	if ( ScrOp[2]-ScrOp[3] == 0 ) { CB_Error(RangeERR); return; }
 		y = (62-py+1)*(ScrOp[3]-ScrOp[2])/ 62.0 +  ScrOp[2] ;
+	 listout:
+		if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 		WriteListAns2( x, y );	//	->List Ans{px,py}
+		dspflag=4;	// List ans
 	} else
 	if ( ( c==0 ) || ( c==0x0D ) || ( c==0x0C ) || ( c==':' ) ) {
 			if ( ScreenMode == 0 )  goto scrG;	// Select Graphic Screen
@@ -2494,13 +2496,13 @@ int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
