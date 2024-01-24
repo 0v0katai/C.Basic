@@ -496,7 +496,7 @@ void jumpmenu(){
 	Fkey_dispN_aA( 5, "Skp\xE6\x93");
 }
 
-int JumpGoto( char * SrcBase ) {
+int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 	unsigned int key;
 	char buffer[32];
 	int lineAll,curline;
@@ -508,9 +508,21 @@ int JumpGoto( char * SrcBase ) {
 	Bdisp_PutDisp_DD_DrawBusy();
 	
 	ofst=0; ofsty=0;
-	for ( lineAll=0; lineAll<99999999; lineAll++ ) {
-		if ( SrcBase[ofst] == 0 ) break;
+	curline=0;
+	while ( ( (*offset) != ofst ) || ( (*offset_y) != ofsty ) ){
 		NextLinePhy( SrcBase, &ofst, &ofsty );
+		curline++;
+	}
+	curline+=(cy-1);
+	sprintf(buffer,"current:%d",curline);
+	locate( 3,4); Print((unsigned char *)buffer);
+	Bdisp_PutDisp_DD_DrawBusy();
+	
+	ofst=0; ofsty=0;
+	lineAll=0;
+	while ( SrcBase[ofst] ) {
+		NextLinePhy( SrcBase, &ofst, &ofsty );
+		lineAll++;
 	}
 	lineAll++;
 	
@@ -870,7 +882,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						key=0;
 					} else {
 						if ( JumpMenuSw ) {		// ====== Jump Mode
-							i=JumpGoto( SrcBase );					// Goto
+							i=JumpGoto( SrcBase, &offset, &offset_y, cy );					// Goto
 							if ( i>0 ) { 
 								offset=0; offset_y=0;
 								NextLinePhyN( i-1, SrcBase, &offset, &offset_y );
@@ -1414,13 +1426,14 @@ int CB_BreakStop() {
 }
 
 //----------------------------------------------------------------------------------------------
-int eObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//void edeitdummy(int x, int y){
+//int edeitdummy(int x, int y){
+//	return x*y;
 //	locate(x,y  ); Print((unsigned char *) "1234");
 //	locate(x,y+1); Print((unsigned char *) "5678");
 //	locate(x,y+2); Print((unsigned char *) "ABCD");
