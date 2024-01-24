@@ -190,31 +190,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 	}
 	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
 		return Eval_atof( SRC );
-/*		c = SRC[ExecPtr];
-		if ( c == '.'  )   {	// .123456
-				c = SRC[++ExecPtr]; a=10;
-				while ( ('0'<=c)&&(c<='9') ) { mantissa += (double)(c-'0')/a; a*=10; c=SRC[++ExecPtr]; }
-		} else if ( c == 0x0F  ) {  // exp
-				mantissa = 1.0;
-				goto lblexp;
-		} else { 	// 123456
-				while ( ('0'<=c)&&(c<='9') ) { mantissa = mantissa*10 +(c-'0'); c=SRC[++ExecPtr]; }
-				if ( c == '.'  ) {	// 123456.789
-					c = SRC[++ExecPtr]; a=10;
-					while ( ('0'<=c)&&(c<='9') ) { mantissa += (double)(c-'0')/a; a*=10; c=SRC[++ExecPtr]; }
-				}
-		}
-		lblexp:
-		if ( c == 0x0F  ) { // exp
-				c=SRC[++ExecPtr];
-				if ( ( c == 0x89 ) || ( c == '+'  ) ) c=SRC[++ExecPtr];
-				if ( ( c == 0x87 ) || ( c == 0x99 ) ) { sign=-1; c=SRC[++ExecPtr]; }	// (-) & -
-				if ( ( '0'<=c )&&( c<='9' ) ) while ( ('0'<=c)&&(c<='9') ) { exponent = exponent*10 +(c-'0'); c=SRC[++ExecPtr]; }
-				else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; } //  error 
-			return mantissa * pow(10,exponent*sign) ;
-		} else
-			return mantissa ;
-*/	}
+	}
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
 			c = SRC[ExecPtr+1];
@@ -224,7 +200,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 				if ( ( 'A' <= c )&&( c <= 'Z' ) ) {
 					reg=c-'A';
 					ExecPtr++ ;
-					if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
+					if ( SRC[ExecPtr] != '[' ) { dspflag=3; return 1; }	// Mat A
 					c = SRC[++ExecPtr];
 					if ( SRC[ExecPtr+1] == ',' ) {
 						ExecPtr++;

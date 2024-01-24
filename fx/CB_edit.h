@@ -6,7 +6,11 @@ extern int selectSetup;
 extern int selectVar;
 extern int selectMatrix;
 
+extern int Contflag;
+
 void CB_PreProcess(unsigned char *SRC);
 int SrcSize( unsigned char *src ) ;
 
-void EditRun(int run);
+unsigned int EditRun(int run);
+int CB_BreakStop() ;
+

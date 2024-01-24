@@ -404,7 +404,7 @@ unsigned int Explorer( int size, char *folder )
 							PopUpWin( 6 );
 							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.66" );
+							locate( 3, 4 ); Print( (unsigned char*)"            v0.70" );
 							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 							GetKey(&key);
@@ -480,7 +480,27 @@ FONTCHARACTER * FilePath( char *sFolder, FONTCHARACTER *sFont )
 	return sFont;
 }
 
+void SetShortName( char *sname, char *name) {
+	int c,i;
+	int ptr=0;
+	c=name[ptr++];
+	while( c=='\\' ) c=name[ptr++];	//
+	while( c!='\\' ) c=name[ptr++];	// ROOT skip
+	if ( strchr(name+ptr,'\\') != NULL ) { name=strchr(name+ptr,'\\'); ptr=0;}
+	c=name[ptr];
+	i=0;
+	while ( c ) {
+		c=name[ptr++];
+		sname[i++]=c;
+	}
+	name[i]='\0';
+}
 
+void ErrorMSGfile( char *buffer, char *name){
+	char sname[32];
+	SetShortName( sname, name);
+	ErrorMSGstr( buffer, sname);
+}
 
 //----------------------------------------------------------------------------------------------
 /* load file to buffer */
@@ -496,7 +516,7 @@ unsigned char * loadFile( const char *name , int editMax)
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 )
 	{
-		ErrorMSG( "Can't open file", handle);
+		ErrorMSGfile( "Can't open file", name);
 		return NULL;
 	}
 
@@ -540,7 +560,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	}
 
 	handle = Bfile_CreateFile( filename, size );
-	if( handle < 0 ) { ErrorMSG( "Can't create file", handle ); return 1 ; }
+	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name ); return 1 ; }
 	r = Bfile_CloseFile( handle );
 
 	handle = Bfile_OpenFile( filename, _OPENMODE_WRITE );
@@ -688,11 +708,11 @@ void G1M_header( unsigned char *filebase ,int *size ) {
 }
 
 
-int LoadProgfile( char *sname ) {
+int LoadProgfile( char *name ) {
 	unsigned char *filebase;
 	int fsize,size;
-	filebase = loadFile( sname , EditMaxfree );
-	if ( filebase == NULL ) return 1 ;
+	filebase = loadFile( name , EditMaxfree );
+	if ( filebase == NULL ) { ErrorMSGfile( "Not enough memory", name ); return 1 ; }
 
 	fsize=0xFFFF-(filebase[0x12]*256+filebase[0x13]);
 	size=SrcSize( filebase ) ;
@@ -706,8 +726,11 @@ int LoadProgfile( char *sname ) {
 	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
 	ProgfileEdit[ProgEntryN]= 0;
 	ProgEntryN++;
+	ErrorNo=0;
 	CB_ProgEntry( filebase + 0x56 ) ;		// sub program search
-	
+	if ( ErrorNo ) return ErrorNo; // error
+	ProgNo=0;
+	ExecPtr=0;
 	return 0;
 }
 
@@ -1089,7 +1112,7 @@ void SaveConfig(){
 	buffer[10]='6';
 	buffer[11]='0';
 
-	bufint[ 3]=CB_INT;
+	bufint[ 3]=CB_INTDefault;
 	bufint[ 4]=DrawType;
 	bufint[ 5]=Coord;
 	bufint[ 6]=Grid;
@@ -1161,7 +1184,7 @@ void LoadConfig(){
 		 ( buffer[10]=='6' ) &&
 		 ( buffer[11]=='0' ) ) {
 		
-		CB_INT    =bufint[ 3];
+		CB_INTDefault =bufint[ 3];
 		DrawType  =bufint[ 4];	// load config & memory
 		Coord     =bufint[ 5];
 		Grid      =bufint[ 6];
@@ -1245,7 +1268,8 @@ int NewProg(){
 	ProgfileAdrs[ProgEntryN]= filebase;
 	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
 	ProgfileEdit[ProgEntryN]= 1;
-
+	ProgNo=0;
+	ExecPtr=0;
 	return 0;
 }
 
@@ -1258,11 +1282,14 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 	unsigned char *StackProgSRC;
 	int StackProgPtr;
 	unsigned int key=0;
+	int srcPrg;
 
 //	locate( 1, 1); PrintLine(" ",21);						//
 //	sprintf(buffer,"==%-8s==%08X",SRC-0x56+0x3C, SRC-0x56);
 //	locate (1, 1); Print( (unsigned char*)buffer );
 
+	if ( ErrorNo ) return ;
+	ProgNo=ProgEntryN-1;
 	ExecPtr=0;
 	while ( c!=0 ) {
 		c=SRC[ExecPtr++];
@@ -1277,20 +1304,21 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 //				locate( 1, 2); PrintLine(" ",21);						//
 //				locate( 1, 2); Print(buffer);							//
 //				locate( 1, 3); PrintLine(" ",21); GetKey(&key);			//
-				ProgNo = CB_SearchProg( buffer );
-				if ( ProgNo < 0 ) { 				// undefined Prog
+				srcPrg = CB_SearchProg( buffer );
+				if ( srcPrg < 0 ) { 				// undefined Prog
 					SetFullfilenameG1M( filename, (char*)buffer );
 					src = loadFile( filename ,EditMaxfree);
 //					locate( 1, 3); Print(filename);						//
 //					locate( 1, 4); PrintLine(" ",21);					//
 //					sprintf(buffer,"ptr=%08X",src);						//
 //					locate( 1, 4); Print(buffer); GetKey(&key);			//
-					if ( src !=NULL ) {
+					if ( src == NULL ) { CB_Error(NotfoundProgERR); return ; }  // Not found Prog
+					else {
 						ProgfileAdrs[ProgEntryN]= src;
 						ProgfileMax[ProgEntryN]= SrcSize( src );
 						ProgfileEdit[ProgEntryN]= 0;
 						ProgEntryN++;
-						if ( ProgEntryN > ProgMax ) { ErrorNo=MemoryERR; ErrorPtr=ExecPtr; } // Memory error
+						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Memory error
 						StackProgPtr = ExecPtr;
 						CB_PreProcess( src + 0x56 );
 						CB_ProgEntry( src + 0x56  );		//

@@ -27,6 +27,8 @@ void Hex2PrintXY(int , int , char *, unsigned int );
 int YesNo( char*buffer);
 int YesNo2( char*buffer, char*buffer2);
 void ErrorMSG(char*, int );
+void ErrorMSGstr(char*buffer,char*buffer2);
+void ErrorMSGstr1(char*buffer);
 void ErrorADRS(char*, int );
 void MSG1(char*);
 void MSG2(char*, char*);
