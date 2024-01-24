@@ -211,7 +211,7 @@ unsigned int Plot()
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 //		Bdisp_PutDisp_DD();
 
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		if ( key==KEY_CTRL_OPTN ) key=Pict();
 		switch (key) {
 			case KEY_CTRL_EXE:
@@ -241,7 +241,7 @@ unsigned int Plot()
 				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
 				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
 				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
 						break;
@@ -328,7 +328,7 @@ unsigned int ZoomXY() {
 		Bdisp_PutDisp_DD();
 
 		KeyRecover();
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_AC:
 			case KEY_CTRL_EXIT:
@@ -368,7 +368,7 @@ unsigned int Zoom_sub(unsigned int key){
 
 	FkeyZoom();
 
-	if (key==0) GetKey(&key);
+	if (key==0) GetKey_DisableMenu(&key);
 	switch (key) {
 		case KEY_CTRL_AC:
 		case KEY_CTRL_EXIT:
@@ -441,7 +441,7 @@ unsigned int Trace(int *index ) {
 		Bdisp_PutDisp_DD();
 
 		KeyRecover();
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		if ( key==KEY_CTRL_OPTN ) key=Pict();
 		switch (key) {
 			case KEY_CTRL_AC:
@@ -452,7 +452,7 @@ unsigned int Trace(int *index ) {
 				break;
 			case KEY_CTRL_F2:
 				FkeyZoom();
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
 					case KEY_CTRL_F1:
@@ -480,7 +480,7 @@ unsigned int Trace(int *index ) {
 				break;
 			case KEY_CTRL_SHIFT:
 				FkeyGraph();
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_F3:
 						key=KEY_CHAR_3;

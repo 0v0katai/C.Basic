@@ -32,15 +32,15 @@ char  EditFontSize = 0;	// 0:standard  1:mini
 char  EditListChar = 0;	// List character change
 char  ExtendPict=0;	// 0:20  21~99						( use hidden ram only )
 char  ExtendList=0;	// 0:52(default) 1:+16 ~ 63:+1008	( use hidden ram only )
+char  ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
+char  ForceReturn;		// 0:none  1:return
 char  dummy1;
-char  dummy2;
-char  dummy3;
 
 int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.61\xE6\x41";
+const char VerMSG[]="C.Basic  v1.62\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -159,52 +159,27 @@ void SetVeiwWindowSTD(){	// STD Initialize
 
 
 unsigned int MathKey( unsigned int  key) {
+	if ( ( (  KEY_CHAR_0 <= key ) && ( key <= KEY_CHAR_9 ) ) ||
+		 ( (  KEY_CHAR_A <= key ) && ( key <= KEY_CHAR_Z ) ) ) return key;
 	switch ( key ) {
-			case KEY_CHAR_0:
-			case KEY_CHAR_1:
-			case KEY_CHAR_2:
-			case KEY_CHAR_3:
-			case KEY_CHAR_4:
-			case KEY_CHAR_5:
-			case KEY_CHAR_6:
-			case KEY_CHAR_7:
-			case KEY_CHAR_8:
-			case KEY_CHAR_9:
 			case KEY_CHAR_DP:
 			case KEY_CHAR_EXP:
 			case KEY_CHAR_PLUS:
 			case KEY_CHAR_MINUS:
+			case KEY_CHAR_MULT:
+			case KEY_CHAR_DIV:
 			case KEY_CHAR_PMINUS:
 			case KEY_CHAR_ANS:
-			case KEY_CHAR_A:
-			case KEY_CHAR_B:
-			case KEY_CHAR_C:
-			case KEY_CHAR_D:
-			case KEY_CHAR_E:
-			case KEY_CHAR_F:
-			case KEY_CHAR_G:
-			case KEY_CHAR_H:
-			case KEY_CHAR_I:
-			case KEY_CHAR_J:
-			case KEY_CHAR_K:
-			case KEY_CHAR_L:
-			case KEY_CHAR_M:
-			case KEY_CHAR_N:
-			case KEY_CHAR_O:
-			case KEY_CHAR_P:
-			case KEY_CHAR_Q:
-			case KEY_CHAR_R:
-			case KEY_CHAR_S:
-			case KEY_CHAR_T:
-			case KEY_CHAR_U:
-			case KEY_CHAR_V:
-			case KEY_CHAR_W:
-			case KEY_CHAR_X:
-			case KEY_CHAR_Y:
-			case KEY_CHAR_Z:
 			case KEY_CTRL_XTT:
+			case KEY_CHAR_VALR:
+			case KEY_CHAR_THETA:
+			case KEY_CHAR_IMGNRY:
+			case KEY_CHAR_LIST:
+			case KEY_CHAR_MAT:
+			case KEY_CHAR_EQUAL:
 			case KEY_CHAR_FRAC:   //    0xbb
 			case KEY_CHAR_LPAR:   //    0x28
+			case KEY_CHAR_RPAR:   //    0x29
 			case KEY_CHAR_LOG:    //    0x95
 			case KEY_CHAR_LN:     //    0x85
 			case KEY_CHAR_SIN:    //    0x81
@@ -221,6 +196,13 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CHAR_ATAN:   //    0x93
 			case KEY_CHAR_ROOT:   //    0x86
 			case KEY_CHAR_POWROOT: //   0xb8
+			case KEY_CHAR_LBRCKT: // 
+			case KEY_CHAR_RBRCKT: //
+			case KEY_CHAR_LBRACE: //
+			case KEY_CHAR_RBRACE: //
+			case KEY_CHAR_RECIP: //
+			case KEY_CHAR_ANGLE: //
+			case KEY_CHAR_DQUATE: //
 				if ( key == KEY_CTRL_XTT ) key='X';
 //				if ( key == KEY_CHAR_PLUS  )  key='+';
 //				if ( key == KEY_CHAR_MINUS )  key='-';
@@ -911,20 +893,21 @@ int SelectNum4( int n ) {		//
 #define SETUP_ExecTimeDsp	21
 #define SETUP_IfEndCheck	22
 #define SETUP_ACBreak		23
-#define SETUP_Key1sttime	24
-#define SETUP_KeyReptime	25
-#define SETUP_SkipUpDown	26
-#define SETUP_MatDspmode	27
-#define SETUP_Matrixbase	28
-#define SETUP_Pictmode		29
-#define SETUP_DATE			30
-#define SETUP_TIME			31
-#define SETUP_Storagemode	32
-#define SETUP_AutoSaveMode	33
-#define SETUP_Forceg1msave	34
-#define SETUP_RefrshCtlDD	35
-#define SETUP_DefaultWaitcount	36
-#define SETUP_Executemode	37
+#define SETUP_ForceReturnMode	24
+#define SETUP_Key1sttime	25
+#define SETUP_KeyReptime	26
+#define SETUP_SkipUpDown	27
+#define SETUP_MatDspmode	28
+#define SETUP_Matrixbase	29
+#define SETUP_Pictmode		30
+#define SETUP_DATE			31
+#define SETUP_TIME			32
+#define SETUP_Storagemode	33
+#define SETUP_AutoSaveMode	34
+#define SETUP_Forceg1msave	35
+#define SETUP_RefrshCtlDD	36
+#define SETUP_DefaultWaitcount	37
+#define SETUP_Executemode	38
 
 int SetupG(int select){		// ----------- Setup 
     const char *onoff[]   ={"off","on"};
@@ -943,6 +926,7 @@ int SetupG(int select){		// ----------- Setup
     const char *Stragemode[]  ={"S.Mem","SDcard "};
     const char *DDmode[]    ={"off","Grph","All"};
     const char *ListChar[]    ={"List"," \xE5\xB7"," \xFF\xE0"};
+    const char *Returnmode[]    ={"None","F1","EXE","F1&EXE"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
@@ -967,8 +951,8 @@ int SetupG(int select){		// ----------- Setup
 		
 		DateToStr(DateStr);
 		TimeToStr(TimeStr);
-		DateCursorY+=0x909;
-		TimeCursorY+=0x909;
+		DateCursorY = 0x909;
+		TimeCursorY = 0x909;
 		
 		cnt=1;
 		if ( scrl <=(cnt-1) ) {
@@ -1079,67 +1063,71 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 24
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 24
+			locate(14,cnt-scrl); Print((unsigned char*)Returnmode[ForceReturnMode]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 25
 			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 25
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 26
 			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 26
+			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 27
 			sprintf((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 27
+			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 28
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 28
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 29
 			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 29
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 30
 			locate(14,cnt-scrl); if ( StorageMode ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 30
-			DateCursorY=cnt-scrl+0x900;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 31
+			DateCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 31
-			TimeCursorY=cnt-scrl+0x900;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 32
+			TimeCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 32
+			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 33
 			locate(14,cnt-scrl); Print((unsigned char*)Stragemode[StorageMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 33
+			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 34
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[AutoSaveMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 34
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 35
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 35
+			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 36
 			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 36
+			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 37
 			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
 			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 37
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 38
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -1261,6 +1249,12 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( FKeyNo3, " \xFF\xE0");
 				ML_vertical_line( 2*21+4+4, 7*8+2, 7*8+6, ML_BLACK);
 				break;
+			case SETUP_ForceReturnMode:
+				Fkey_dispN( FKeyNo1, "None");
+				Fkey_dispN( FKeyNo2, " F1");
+				Fkey_dispN( FKeyNo3, "EXE");
+				Fkey_dispN( FKeyNo4, "Both");
+				break;
 			default:
 				break;
 		}
@@ -1268,10 +1262,10 @@ int SetupG(int select){		// ----------- Setup
 		Fkey_Icon( FKeyNo6, 991 );	//	Fkey_dispN( FKeyNo6, "Ver.");
 //		Bdisp_PutDisp_DD();
 		
-		DateCursorY+=(select-scrl)*0x100-0x900;
-		TimeCursorY+=(select-scrl)*0x100-0x900;
+		DateCursorY = y*0x100+(DateCursorY&0xFF);
+		TimeCursorY = y*0x100+(TimeCursorY&0xFF);
 		TimePrintSetMode( 1 ) ;			// Date/Time print IRQ on
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		TimePrintSetMode( 0 ) ;			// Date/Time print IRQ off
 		DateToStr(DateStr);
 		TimeToStr(TimeStr);
@@ -1376,6 +1370,9 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_ACBreak: // ACBreak
 						ACBreak = 1 ; // on
+						break;
+					case SETUP_ForceReturnMode:
+						ForceReturnMode = 0;
 						break;
 					case SETUP_Key1sttime: // Key Repeat First Count *ms
 						KeyRepeatFirstCount += 1 ;
@@ -1515,6 +1512,9 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_BreakStop: // Break
 						BreakCheck = 0 ; // off
 						break;
+					case SETUP_ForceReturnMode:
+						ForceReturnMode = 1;
+						break;
 					case SETUP_ExecTimeDsp: // TimeDsp
 						TimeDsp = 0 ; // off
 						break;
@@ -1603,6 +1603,9 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_EditListChar:
 						EditListChar=2;		// reverse L
 						break;
+					case SETUP_ForceReturnMode:
+						ForceReturnMode = 2;
+						break;
 					case SETUP_SkipUpDown: // Skipup/down count init
 						PageUpDownNum = SelectNum3( PageUpDownNum );
 						break;
@@ -1651,10 +1654,15 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_ExtendPict:		// Max Pict
 						ExtendPict=0;
+						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_ExtendList:		// Max List
 						ExtendList=0;
 						ExtListMax=0;
+						HiddenRAM_MatAryInit();
+						break;
+					case SETUP_ForceReturnMode:
+						ForceReturnMode = 3;
 						break;
 					case SETUP_Key1sttime: // Key Repeat First Count *ms
 						KeyRepeatFirstCount = 20 ;

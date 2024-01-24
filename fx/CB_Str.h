@@ -70,7 +70,6 @@ int CB_StrInv( char *SRC ) ;
 int CB_StrShift( char *SRC ) ;
 int CB_StrRotate( char *SRC ) ;
 int CB_Sprintf( char *SRC ) ;	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
-int CB_EvalToStr( char *SRC ) ;
 
 int CB_StrDMS( char *SRC ) ;
 
@@ -80,3 +79,12 @@ int DateToStr( char *buffer ) ;	// -> "2017/01/17 TUE"
 int TimeToStr( char *buffer ) ;	// -> "23:59:59"
 int CB_DateToStr() ;	// -> "2017/01/17 TUE"
 int CB_TimeToStr() ;	// -> "23:59:59"
+
+int CB_StrChar( char *SRC ) ;	// StrChar("*"[,n])
+int CB_StrCenter( char *SRC );	// StrCenter( Str1,max[,"SpaceChar"])
+int CB_EvalToStr( char *SRC );	// Str( n 
+int CB_Hex( char *SRC );		// Hex(
+int CB_Bin( char *SRC );		// Bin(
+int CB_StrBase( char *SRC );	// StrBase( Str1,base1,base2 )->str2
+int CB_StrRepl( char *SRC );	// StrRepl( Str1,Str2,Str3,n )->str4
+

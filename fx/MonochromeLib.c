@@ -1785,41 +1785,76 @@ void ML_bmp_zoom(const unsigned char *bmp, int x, int y, int width, int height, 
     if (y+height_z > 64) end_y = 64-y;
     else end_y = height_z;
 
-    for (iz=begin_x; iz<end_x; iz++)
-    {
-        i = (iz << 14) / zoom_w14;
-        i3 = i >> 3;
-        bit = 0x80 >> (i & 7);
-        x_screen = x+iz;
+	switch ( color ){
+		case ML_BLACK:
+            for (iz=begin_x; iz<end_x; iz++)
+            {
+                i = (iz << 14) / zoom_w14;
+                i3 = i >> 3;
+                bit = 0x80 >> (i & 7);
+                x_screen = x+iz;
 
-        for (jz=begin_y; jz<end_y; jz++)
-        {
-            j = (jz << 14) / zoom_h14;
-            pixel = bmp[i3 + nb_width * j] & bit;
+                for (jz=begin_y; jz<end_y; jz++)
+                {
+                    j = (jz << 14) / zoom_h14;
+                    pixel = bmp[i3 + nb_width * j] & bit;
 
-			if (pixel != 0) {
-				vram[(y+jz<<4)+(x_screen>>3)] |= 128>>(x_screen&7);
-				switch(color)
-				{
-					case ML_BLACK:
-					  black:
-						vram[(y+jz<<4)+(x_screen>>3)] |= 128>>(x_screen&7);
-						break;
-					case ML_WHITE:
-					  white:
-						vram[(y+jz<<4)+(x_screen>>3)] &= ~(128>>(x_screen&7));
-						break;
-					case ML_XOR:
-					  xor:
-						vram[(y+jz<<4)+(x_screen>>3)] ^= 128>>(x_screen&7);
-						break;
-					default:
-						ML_pixel(x_screen, y+jz, color);
-					break;
-				}
-			}
-        }
-    }
+					if (pixel != 0) vram[(y+jz<<4)+(x_screen>>3)] |= 128>>(x_screen&7);
+                }
+            }
+            break;
+		case ML_WHITE:
+            for (iz=begin_x; iz<end_x; iz++)
+            {
+                i = (iz << 14) / zoom_w14;
+                i3 = i >> 3;
+                bit = 0x80 >> (i & 7);
+                x_screen = x+iz;
+
+                for (jz=begin_y; jz<end_y; jz++)
+                {
+                    j = (jz << 14) / zoom_h14;
+                    pixel = bmp[i3 + nb_width * j] & bit;
+
+					if (pixel != 0) vram[(y+jz<<4)+(x_screen>>3)] &= ~(128>>(x_screen&7));
+                }
+            }
+            break;
+		case ML_XOR:
+            for (iz=begin_x; iz<end_x; iz++)
+            {
+                i = (iz << 14) / zoom_w14;
+                i3 = i >> 3;
+                bit = 0x80 >> (i & 7);
+                x_screen = x+iz;
+
+                for (jz=begin_y; jz<end_y; jz++)
+                {
+                    j = (jz << 14) / zoom_h14;
+                    pixel = bmp[i3 + nb_width * j] & bit;
+
+					if (pixel != 0) vram[(y+jz<<4)+(x_screen>>3)] ^= 128>>(x_screen&7);
+                }
+            }
+            break;
+		default:
+            for (iz=begin_x; iz<end_x; iz++)
+            {
+                i = (iz << 14) / zoom_w14;
+                i3 = i >> 3;
+                bit = 0x80 >> (i & 7);
+                x_screen = x+iz;
+
+                for (jz=begin_y; jz<end_y; jz++)
+                {
+                    j = (jz << 14) / zoom_h14;
+                    pixel = bmp[i3 + nb_width * j] & bit;
+
+					if (pixel != 0) ML_pixel(x_screen, y+jz, color);
+                }
+            }
+			break;
+	}
 }
 #endif
 
@@ -1847,44 +1882,84 @@ void ML_bmp_rotate(const unsigned char *bmp, int x, int y, int width, int height
     }
     nb_width = width + 7 >> 3;
 
-    for (i=0; i<width; i++)
-    {
-        bit = 0x80 >> (i & 7);
-        i3 = i >> 3;
-        dx = x + i - ox;
-        for (j=0; j<height; j++)
-        {
-            dy = y + j - oy;
-            xr = ox + (dx * cosinus - dy * sinus >> 14);
-            yr = oy + (dx * sinus + dy * cosinus >> 14);
-            if (!(xr < 0 || xr > 127 || yr < 0 || yr > 63))
+	switch ( color ){
+		case ML_BLACK:
+            for (i=0; i<width; i++)
             {
-                pixel = bmp[i3 + nb_width * j] & bit;
-//              if (pixel != 0) vram[(yr<<4)+(xr>>3)] |= 128>>(xr&7);
-				if (pixel != 0) {
-					switch(color)
-					{
-						case ML_BLACK:
-						  black:
-							vram[(yr<<4)+(xr>>3)] |= 128>>(xr&7);
-							break;
-						case ML_WHITE:
-						  white:
-							vram[(yr<<4)+(xr>>3)] &= ~(128>>(xr&7));
-							break;
-						case ML_XOR:
-						  xor:
-							vram[(yr<<4)+(xr>>3)] ^= 128>>(xr&7);
-							break;
-						default:
-							ML_pixel(xr, yr, color);
-						break;
-					}
-				}
-                
+                bit = 0x80 >> (i & 7);
+                i3 = i >> 3;
+                dx = x + i - ox;
+                for (j=0; j<height; j++)
+                {
+                    dy = y + j - oy;
+                    xr = ox + (dx * cosinus - dy * sinus >> 14);
+                    yr = oy + (dx * sinus + dy * cosinus >> 14);
+                    if (!(xr < 0 || xr > 127 || yr < 0 || yr > 63))
+                    {
+                        pixel = bmp[i3 + nb_width * j] & bit;
+						if (pixel != 0) vram[(yr<<4)+(xr>>3)] |= 128>>(xr&7);
+                    }
+                }
             }
-        }
-    }
+			break;
+		case ML_WHITE:
+            for (i=0; i<width; i++)
+            {
+                bit = 0x80 >> (i & 7);
+                i3 = i >> 3;
+                dx = x + i - ox;
+                for (j=0; j<height; j++)
+                {
+                    dy = y + j - oy;
+                    xr = ox + (dx * cosinus - dy * sinus >> 14);
+                    yr = oy + (dx * sinus + dy * cosinus >> 14);
+                    if (!(xr < 0 || xr > 127 || yr < 0 || yr > 63))
+                    {
+                        pixel = bmp[i3 + nb_width * j] & bit;
+						if (pixel != 0) vram[(yr<<4)+(xr>>3)] &= ~(128>>(xr&7));
+                    }
+                }
+            }
+            break;
+		case ML_XOR:
+            for (i=0; i<width; i++)
+            {
+                bit = 0x80 >> (i & 7);
+                i3 = i >> 3;
+                dx = x + i - ox;
+                for (j=0; j<height; j++)
+                {
+                    dy = y + j - oy;
+                    xr = ox + (dx * cosinus - dy * sinus >> 14);
+                    yr = oy + (dx * sinus + dy * cosinus >> 14);
+                    if (!(xr < 0 || xr > 127 || yr < 0 || yr > 63))
+                    {
+                        pixel = bmp[i3 + nb_width * j] & bit;
+						if (pixel != 0) vram[(yr<<4)+(xr>>3)] ^= 128>>(xr&7);
+                    }
+                }
+            }
+            break;
+		default:
+            for (i=0; i<width; i++)
+            {
+                bit = 0x80 >> (i & 7);
+                i3 = i >> 3;
+                dx = x + i - ox;
+                for (j=0; j<height; j++)
+                {
+                    dy = y + j - oy;
+                    xr = ox + (dx * cosinus - dy * sinus >> 14);
+                    yr = oy + (dx * sinus + dy * cosinus >> 14);
+                    if (!(xr < 0 || xr > 127 || yr < 0 || yr > 63))
+                    {
+                        pixel = bmp[i3 + nb_width * j] & bit;
+						if (pixel != 0) ML_pixel(xr, yr, color);
+                    }
+                }
+            }
+			break;
+	}
 }
 #endif
 

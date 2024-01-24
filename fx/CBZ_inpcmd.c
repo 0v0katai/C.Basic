@@ -202,7 +202,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 377 );	//	Fkey_dspRB( FKeyNo2, "Len");
 					Fkey_Icon( FKeyNo3, 378 );	//	Fkey_dspRB( FKeyNo3, "Cmp");
 					Fkey_Icon( FKeyNo4, 379 );	//	Fkey_dspRB( FKeyNo4, "Src");
-					FkeyClear( FKeyNo5 );
+					Fkey_dspRB( FKeyNo5, "Repl");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
@@ -288,7 +288,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 183 );	//	Fkey_dispR( FKeyNo2, "PICT");
 					Fkey_Icon( FKeyNo3, 147 );	//	Fkey_dispR( FKeyNo3, "fMEM");
 					Fkey_Icon( FKeyNo4, 148 );	//	Fkey_dispR( FKeyNo4, "LOGIC");
-					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo5,  45 );	//	Fkey_dispR( FKeyNo5, "CAPT");
+//					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
@@ -522,6 +523,18 @@ void DispGenuineCmdMenu(){
 					break;
 			}
 			break;
+		case CMD_OPTN_CAPT:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 699 );	//	Fkey_dspRB( FKeyNo1, "Sto ");
+					Fkey_Icon( FKeyNo2, 700 );	//	Fkey_dspRB( FKeyNo2, "Rcl ");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
 		case CMD_OPTN_EXT:
 			switch ( CommandPage ) {
 				case 0:
@@ -675,7 +688,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 638 );	//	Fkey_dspRB( FKeyNo1, "Cls");
 					Fkey_dispN( FKeyNo2, "Extd");
 					Fkey_dispN( FKeyNo3, " ML ");
-					FkeyClear( FKeyNo4 );
+					Fkey_dispN( FKeyNo4, "BMP ");
+//					FkeyClear( FKeyNo4 );
 					Fkey_Icon(FKeyNo5, 1 );		// Fkey_dispR( FKeyNo5, "GRPH");
 					Fkey_Icon(FKeyNo6, 6 );		//Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
@@ -817,17 +831,29 @@ void DispGenuineCmdMenu(){
 				case 4:
 					Fkey_dspRB( FKeyNo1, "Hscrl");
 					Fkey_dspRB( FKeyNo2, "Vscrl");
-					Fkey_dspRB( FKeyNo3, "Bmp");
-					Fkey_dspRB( FKeyNo4, "Bm8");
-					Fkey_dspRB( FKeyNo5, "Bm16");
-					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
-					break;
-				case 5:
-					Fkey_dspRB( FKeyNo1, "BmpZ");
-					Fkey_dspRB( FKeyNo2, "BmpR");
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
 					Fkey_dspRB( FKeyNo5, "Contr");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+			}
+			break;
+		case CMD_SHIFT_SKTCH_BMP:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_dspRB( FKeyNo1, "Bmp");
+					Fkey_dspRB( FKeyNo2, "Bm8");
+					Fkey_dspRB( FKeyNo3, "Bm16");
+					Fkey_dspRB( FKeyNo4, "Zoom");
+					Fkey_dspRB( FKeyNo5, "Rota");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 1:
+					Fkey_dspRB( FKeyNo1, "Save");
+					Fkey_dspRB( FKeyNo2, "Load");
+					Fkey_dspRB( FKeyNo3, "Draw");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}

@@ -23,6 +23,22 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 
 #endif
 
+#define FILENAMEMAX 13
+#define FOLDERMAX 9
+#define N_LINE 6
+
+#define FOLDER_FLAG       0xFFFF
+#define FOLDER_SEPALATOR  0xFFFE
+
+typedef struct{
+	char filename[FILENAMEMAX];
+	char folder[FOLDERMAX];
+	unsigned short filesize;
+}Files;
+
+#define FavoritesMAX 7
+
+
 extern char FileListUpdate;
 extern char StorageMode;		// 0:Storage memory   1:SD
 
@@ -31,6 +47,7 @@ extern char AutoSaveMode;		//    1: Auto save ( not pop up )
 
 #define FileCMD_Prog   10000
 #define FileCMD_RUN    10001
+#define FileCMD_RUN_F1 100011
 #define FileCMD_DebugRUN    10002
 #define FileCMD_EDIT   10003
 #define FileCMD_NEW    10004
@@ -52,6 +69,9 @@ int SaveProgfile(int progNo );
 int SavePicture( char *filebase, int pictNo );
 char * LoadPicture( int pictNo );
 
+int SaveCapture( char *filebase, int pictNo );
+char * LoadCapture( int pictNo );
+
 int  RenameFile(char *name) ;
 void DeleteFile(char *name) ;
 void DeleteFileFav(char *sname, int yesno) ;
@@ -69,6 +89,9 @@ void SaveConfig();
 void LoadConfig();
 
 int CB_IsExist( char *SRC ) ;	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
+char * CB_SaveLoadOprand( char *SRC , int *reg, int *matsize ) ;
+void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname ) ;
+char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) ;
 void CB_Save( char *SRC ) ; //	Save "TEST",Mat A[1,3]
 void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3] 
 void CB_Delete( char *SRC ) ;	// Delete "ABC.bin"[,Q]
@@ -82,3 +105,10 @@ int CheckSD();	// SD model  return : 1
 
 int MakeDirectory();
 int RenameDirectory();
+
+//-----------------------------------------------------------------------------
+int DecodeBmp2Vram( char *filebase );	//	bmp -> vram
+char * LoadBmp( char *filebase );
+int SaveBmp( char *filebase, char *sname, int width, int height );
+void CB_BmpSave( char *SRC ) ; //	BmpSave "TEST"[,x][,y][,x2][,y2][,Q]
+void CB_BmpLoad( char *SRC ) ; //	BmpLoad("TEST" [, Ptr])->Mat A[1,3] 

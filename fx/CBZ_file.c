@@ -21,21 +21,6 @@
 //-------------------------------------------------------------- source code refer to (WSC) file.c
 //---------------------------------------------------------------------------------------------
 
-#define FILENAMEMAX 13
-#define FOLDERMAX 9
-#define N_LINE 6
-
-#define FOLDER_FLAG       0xFFFF
-#define FOLDER_SEPALATOR  0xFFFE
-
-typedef struct{
-	char filename[FILENAMEMAX];
-	char folder[FOLDERMAX];
-	unsigned short filesize;
-}Files;
-
-#define FavoritesMAX 7
-
 static Files *files = NULL;
 static int index = 0;
 
@@ -118,7 +103,7 @@ static int IsFileNeeded( FONTCHARACTER *find_name )
 {
 	char str[13];
 	FontToChar(find_name,str);
-	return ( (strcmp(str + strlen(str) - 4, ".g1m") == 0) || (strcmp(str + strlen(str) - 4, ".txt") == 0) );
+	return ( (strcmp(str + strlen(str) - 4, ".g1m") == 0) || (strcmp(str + strlen(str) - 4, ".txt") == 0) || (strcmp(str + strlen(str) - 4, ".bmp") == 0)  );
 }
 
 static int FileCmp( const void *p1, const void *p2 )
@@ -628,7 +613,7 @@ unsigned int Explorer( int size, char *folder )
 				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
-						key=FileCMD_RUN;
+						key=FileCMD_RUN_F1;
 						cont =0 ;
 						break;
 					case 1:
@@ -1151,6 +1136,7 @@ void NewPassWord( char *fname ){	// New Password command
 }
 
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 void ConvertToOpcode( char *filebase, char *sname, int editsize){
 	int size,i,j;
 	char *text;
@@ -1172,11 +1158,22 @@ void ConvertToOpcode( char *filebase, char *sname, int editsize){
 
 int CheckG1M( char *filebase ){	// Check G1M Basic file
 	unsigned int key;
-	int	fsize = 0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
-	int size  = SrcSize( filebase ) ;
-	if ( ( fsize != size ) || ( filebase[0x20] != 'P' ) || ( filebase[0x21] != 'R' ) ){ 
+	int fsize,size;
+	if ( ( filebase[0x00] == 'B' ) && ( filebase[0x01] == 'M' ) ) {	// bmp ?
+		if ( DecodeBmp2Vram( filebase ) ==0 ) return 1; // not bmp
+		GetKey( &key );
+		return 1;
+	}
+	fsize = 0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
+	size  = SrcSize( filebase ) ;
+	if ( ( fsize != size ) || ( filebase[0x20] != 'P' ) || ( filebase[0x21] != 'R' ) ) { 
 		if ( ( filebase[0x20] == 'P' ) && ( filebase[0x21] == 'I' ) && ( filebase[0x22] == 'C' ) ) {
 			memcpy( PictAry[0], filebase+0x4C, 1024 );	// Pict display
+			GetKey( &key );
+			return 1;
+		} else 
+		if ( ( filebase[0x20] == 'C' ) && ( filebase[0x21] == 'A' ) && ( filebase[0x22] == 'P' ) ) {
+			memcpy( PictAry[0], filebase+0x50, 1024 );	// Capt display
 			GetKey( &key );
 			return 1;
 		} else {
@@ -1352,6 +1349,7 @@ int NewProg(){
 	return 0;	// ok
 }
 
+//----------------------------------------------------------------------------------------------
 int SavePicture( char *filebase, int pictNo ){
 	int handle;
 	FONTCHARACTER filename[50];
@@ -1367,7 +1365,8 @@ int SavePicture( char *filebase, int pictNo ){
  	
 	for (i=0; i<0x4C; i++) filebase[i]=0x00;	// header clear
 
-	size=0x800+0x4C;
+//	size=0x800+0x4C;	// 2KB Pict
+	size=0x400+0x4C;	// 1KB Pict
 	G1M_header( filebase, &size );	// G1M header set
 	
 	filebase[0x20]='P';			// G1M Pict header set
@@ -1449,6 +1448,107 @@ char * LoadPicture( int pictNo ){
 	return pict;
 }
 
+int SaveCapture( char *filebase, int pictNo ){
+	int handle;
+	FONTCHARACTER filename[50];
+	FONTCHARACTER buffer[50];
+	FILE_INFO info;
+	char folder2[FILENAMEMAX];
+	int r,s;
+	char fname[32],basname[16];
+	int size,i;
+ 	unsigned char c,d;
+ 	c=pictNo/10+'0'; if ( c=='0' ) c=' ';
+ 	d=pictNo%10+'0';
+ 	
+	for (i=0; i<0x50; i++) filebase[i]=0x00;	// header clear
+
+	size=0x800+0x50;
+	G1M_header( filebase, &size );	// G1M header set
+	
+	filebase[0x20]='C';			// G1M Capt header set
+	filebase[0x21]='A';
+	filebase[0x22]='P';
+	filebase[0x23]='T';
+	filebase[0x24]=' ';
+ 	if ( c==' ' ) { c=d; d=0; }
+	filebase[0x25]= c;
+	filebase[0x26]= d;
+	filebase[0x33]=0x01;
+	filebase[0x34]='@';
+	filebase[0x35]='R';
+	filebase[0x36]='E';
+	filebase[0x37]='V';
+	filebase[0x38]='2';
+	filebase[0x3C]='C';
+	filebase[0x3D]='A';
+	filebase[0x3E]='P';
+	filebase[0x3F]='T';
+	filebase[0x40]= c;
+	filebase[0x41]= d;
+	filebase[0x44]=0x0A;	// Capture
+	filebase[0x45]=0x00;
+	filebase[0x46]=0x00;
+	filebase[0x47]=0x04;
+	filebase[0x48]=0x04;
+	filebase[0x4C]=0x80;	// width
+	filebase[0x4E]=0x40;	// height
+
+	for (i=0;i<FILENAMEMAX;i++) folder2[i]=folder[i];	// backup folder
+	folder[0x00]='C';
+	folder[0x01]='a';
+	folder[0x02]='p';
+	folder[0x03]='t';
+	folder[0x04]='\0';
+
+	sprintf( fname, "\\\\%s\\%s", root[StorageMode], folder );
+	CharToFont( fname, filename );
+	r = Bfile_FindFirst( filename, &handle, buffer, &info );
+	s = Bfile_FindClose( handle );
+	if( r != 0 ) {
+		handle = Bfile_CreateDirectory( filename );
+		if( handle < 0 ) { 
+//			ErrorMSG( "Can't create Dir", handle );
+			return handle ; }
+		r = Bfile_CloseFile( handle );
+	}
+	
+	r = SaveG1M( filebase );
+	for (i=0;i<FILENAMEMAX;i++) folder[i]=folder2[i];	// restore folder
+	
+	return r ;
+}
+
+char * LoadCapture( int pictNo ){
+	char *filebase,*pict;
+	char fname[32],pictname[16];
+	int i;
+ 	unsigned char c,d;
+ 	c=pictNo/10+'0';
+ 	d=pictNo%10+'0'; if ( c=='0' ) { c=d; d=0; }
+
+	pictname[0]='C';
+	pictname[1]='A';
+	pictname[2]='P';
+	pictname[3]='T';
+	pictname[4]= c;
+	pictname[5]= d;
+	pictname[6]='\0';
+
+	if( strlen(folder) == 0 )		// current folder 1st
+		sprintf( fname, "\\\\%s\\%s.g1m", root[StorageMode], pictname );
+	else
+		sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], folder, pictname);
+		
+	pict = loadFile( fname, 0, 0, 0 );					// no hidden load
+	if ( pict != NULL ) return pict;
+
+	ErrorNo=0;	// error cancel
+	sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], "Capt", pictname );	// Capt folder 2nd
+	pict = loadFile( fname, 0, 0, 0 );					// no hidden load
+	return pict;
+}
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
 void DeleteFile(char *fname) {
@@ -1647,19 +1747,15 @@ void Restorefolder() {
 }
 
 
-void SetFullfilenameBin( char *fname, char *sname ) {
-	char extname[4]={0,0,0,0};
+void SetFullfilenameBin( char *fname, char *sname, char *extname ) {
 	char *cptr;
 	int i;
 	cptr=strstr(sname,".");
-	if ( cptr==NULL ) {
-		extname[0]='b';
-		extname[1]='i';
-		extname[2]='n';
-	} else {
+	if ( cptr!=NULL ) {
 		strncpy( extname, cptr+1, 3 );
 		*cptr='\0';
 	}
+	extname[3]='\0';
 	if( strlen(folder) == 0 )
 		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
 	else
@@ -1672,31 +1768,43 @@ int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exi
 	char* FilePtr;
 	int r;
 
-	c =SRC[ExecPtr];
-	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	CB_GetLocateStr(SRC, sname,22);
+//	c =SRC[ExecPtr];
+//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return 0;	// error
 //	c =SRC[ExecPtr];
 //	if ( c == ')' ) ExecPtr++;
 	Getfolder( sname );
-	SetFullfilenameBin( fname, sname );
+	SetFullfilenameBin( fname, sname, "bin" );
 	r=GetFileSize( fname );
 	Restorefolder();
 	return r;
 }
 
-char * CB_SaveLoadOprand( char *SRC , int *matsize ) {
-	int reg,dimA,dimB,base;
+char * CB_SaveLoadOprand( char *SRC , int *reg, int *matsize ) {
+	int dimA,dimB,base;
 	char *ptr;
-	MatrixOprand( SRC, &reg, &dimA, &dimB );
-	ptr = (char *)MatrixPtr( reg, dimA, dimB );
-	base = 1-MatAry[reg].Base;
-	*matsize = MatrixSize( reg, MatAry[reg].SizeA, MatAry[reg].SizeB ) - MatrixSize( reg, dimA+base, dimB+base ) + MatrixSize( reg, 1, 1 );
+	MatrixOprand( SRC, &(*reg), &dimA, &dimB );
+	ptr = (char *)MatrixPtr( (*reg), dimA, dimB );
+	base = 1-MatAry[(*reg)].Base;
+	*matsize = MatrixSize( (*reg), MatAry[(*reg)].SizeA, MatAry[(*reg)].SizeB ) - MatrixSize( (*reg), dimA+base, dimB+base ) + MatrixSize( (*reg), 1, 1 );
 	return ptr;
 }
 
+void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname ) {
+	char fname[32];
+	Getfolder( sname );
+	SetFullfilenameBin( fname, sname, extname );
+	if ( ExistFile( fname ) == 0 ) { // ==0 existed 
+		if ( check ) if ( YesNoOverwrite() ) goto exit; // cancel
+		Bdisp_PutDisp_DD();
+	}
+	if ( storeFile( fname, (unsigned char*)FilePtr, size )!=0 ) CB_Error(FileERR);
+	exit:
+	Restorefolder();
+}
 void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	char fname[32],sname[16];
-	int c,i,matsize;
+	int c,i,reg,matsize;
 	char* FilePtr;
 	int check=0;
 	
@@ -1706,7 +1814,7 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	FilePtr = CB_SaveLoadOprand( SRC, &matsize);
+	FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
 	if ( ErrorNo ) return; // error
 
 	c =SRC[ExecPtr];
@@ -1715,26 +1823,47 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
 		ExecPtr++;
 	}
-	Getfolder( sname );
-	SetFullfilenameBin( fname, sname );
-	if ( ExistFile( fname ) == 0 ) { // ==0 existed 
-		if ( check ) if ( YesNoOverwrite() ) goto exit; // cancel
-		Bdisp_PutDisp_DD();
-	}
-	if ( storeFile( fname, (unsigned char*)FilePtr, matsize )!=0 ) CB_Error(FileERR);
-	exit:
-	Restorefolder();
+	
+	CB_SaveSub( sname, FilePtr, matsize, check, "bin" );
 }
 
+char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {
+	char fname[32];
+	int handle;
+	FONTCHARACTER filename[50];
+	char *buffer;
+
+	Getfolder( sname );
+	SetFullfilenameBin( fname, sname, extname );
+	CharToFont( fname, filename );
+	
+	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
+	if( handle < 0 ) {
+		CB_Error(CantFindFileERR);  goto exit;
+	}
+	
+	(*size) = Bfile_GetFileSize( handle ) -(ptr) ;
+	
+	buffer = ( char *)malloc( (*size)*sizeof(char)+4 );
+	if( buffer == NULL ) Abort();
+	memset( buffer, 0x00,     (*size)*sizeof(char)+4 );
+
+	Bfile_ReadFile( handle, buffer, (*size), ptr );
+	Bfile_CloseFile( handle );
+	if ( buffer == NULL ) { CB_Error(FileERR); }
+	exit:
+	Restorefolder();
+	return buffer;
+}
 void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3] 
 	char fname[32],sname[16];
-	int c,i,matsize;
+	int c,i,reg,matsize;
 	char* FilePtr;
-	int ptr=0;
+	char* matptr;
+	int ptr=0,size;
 
 	int handle;
 	FONTCHARACTER filename[50];
-	int size;
 
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -1750,27 +1879,14 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	c =SRC[ExecPtr];
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	FilePtr = CB_SaveLoadOprand( SRC, &matsize);
+	matptr = CB_SaveLoadOprand( SRC, &reg, &matsize );
 	if ( ErrorNo ) return ; // error
 
-	Getfolder( sname );
-	SetFullfilenameBin( fname, sname );
-	CharToFont( fname, filename );
-	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
-	if( handle < 0 ) {
-//		ErrorMSGfile( "Can't Load file", fname, handle);
-		CB_Error(CantFindFileERR);  goto exit;
-	}
-	
-	size = Bfile_GetFileSize( handle ) -(ptr) ;
-
+	FilePtr=CB_LoadSub( sname, ptr, &size, "bin" ) ;
+	if ( ErrorNo ) return ; // error
 	if ( size > matsize ) size=matsize;
-
-	Bfile_ReadFile( handle, FilePtr, size, ptr );
-	Bfile_CloseFile( handle );
-//	if ( FilePtr == NULL ) { ErrorMSGfile( "Load Error", fname, 0 ); CB_Error(FileERR); }
-	exit:
-	Restorefolder();
+	memcpy( matptr, FilePtr, size );
+	free( FilePtr );	// free
 }
 
 void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
@@ -1789,7 +1905,7 @@ void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
 	if ( ErrorNo ) return ; // error
 
 	Getfolder( sname );
-	SetFullfilenameBin( fname, sname );
+	SetFullfilenameBin( fname, sname, "bin" );
 	DeleteFileFav( fname , yesno );	// with yesno
 	Restorefolder();
 }
@@ -1962,17 +2078,17 @@ typedef struct {
 
 	buffer[ 12] =ExtendPict;		buffer[ 13]=UseHiddenRAM;		buffer[ 14]=ExtendList;		buffer[ 15]=CB_INTDefault;
 	bufshort[ 8]=RefreshCtrl;										buffer[ 18]=EditListChar;	buffer[ 19]=DrawType;
-	bufshort[11]=Coord;				bufshort[10]=Refreshtime;
-	bufshort[13]=Grid;				bufshort[12]=ENG;
-	bufshort[15]=Axes;				bufshort[14]=CB_Round.MODE;
-	bufshort[17]=Label;				bufshort[16]=CB_Round.DIGIT-1;
-	bufshort[19]=Derivative;		bufshort[18]=DefaultWaitcount;
-	bufshort[21]=S_L_Style;			bufshort[20]=CommandInputMethod;
-	bufshort[23]=Angle;				bufshort[22]=ForceG1Msave;
-	bufshort[25]=BreakCheck;		bufshort[24]=StorageMode;
-	bufshort[27]=TimeDsp;			bufshort[26]=PageUpDownNum;
-	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
-	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
+	buffer[ 22] =ForceReturnMode;	buffer[22+1]=Coord;				bufshort[10]=Refreshtime;
+	bufshort[13]=Grid;												bufshort[12]=ENG;
+	bufshort[15]=Axes;												bufshort[14]=CB_Round.MODE;
+	bufshort[17]=Label;												bufshort[16]=CB_Round.DIGIT-1;
+	bufshort[19]=Derivative;										bufshort[18]=DefaultWaitcount;
+	bufshort[21]=S_L_Style;											bufshort[20]=CommandInputMethod;
+	bufshort[23]=Angle;												bufshort[22]=ForceG1Msave;
+	bufshort[25]=BreakCheck;										bufshort[24]=StorageMode;
+	bufshort[27]=TimeDsp;											bufshort[26]=PageUpDownNum;
+	bufshort[29]=MatXYmode;											bufshort[28]=1-MatBaseDefault;
+	bufshort[31]=PictMode;											bufshort[30]=CheckIfEnd;
 
 	bufdbl[ 8]=Xfct;
 	bufdbl[ 9]=Yfct;
@@ -2051,19 +2167,19 @@ void LoadConfig(){
 									// load config & memory
 		ExtendPict    =buffer[ 12];			UseHiddenRAM  =buffer[ 13];		ExtendList  =buffer[ 14];	CB_INTDefault=buffer[ 15];
 		RefreshCtrl   =bufshort[8];											EditListChar=buffer[ 18];	DrawType     =buffer[ 19];
-		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =bufshort[6];
-		DrawType      =bufshort[ 9];        RefreshCtrl   =bufshort[8];
-		Coord         =bufshort[11];        Refreshtime   =bufshort[10];
-		Grid          =bufshort[13];        ENG           =bufshort[12];
-		Axes          =bufshort[15];        CB_Round.MODE =bufshort[14];
-		Label         =bufshort[17];        CB_Round.DIGIT=bufshort[16]+1;
-		Derivative    =bufshort[19];        DefaultWaitcount=bufshort[18];
-		S_L_Style     =bufshort[21];        CommandInputMethod=bufshort[20];
-		Angle         =bufshort[23];        ForceG1Msave   =bufshort[22];
-		BreakCheck    =bufshort[25];        StorageMode    =bufshort[24];
+		CB_INTDefault =bufshort[ 7];										UseHiddenRAM  =bufshort[6];
+		DrawType      =bufshort[ 9];        								RefreshCtrl   =bufshort[8];
+		ForceReturnMode=buffer[22];			Coord         =buffer[22+1];	Refreshtime   =bufshort[10];
+		Grid          =bufshort[13];        								ENG           =bufshort[12];
+		Axes          =bufshort[15];        								CB_Round.MODE =bufshort[14];
+		Label         =bufshort[17];        								CB_Round.DIGIT=bufshort[16]+1;
+		Derivative    =bufshort[19];        								DefaultWaitcount=bufshort[18];
+		S_L_Style     =bufshort[21];        								CommandInputMethod=bufshort[20];
+		Angle         =bufshort[23];        								ForceG1Msave   =bufshort[22];
+		BreakCheck    =bufshort[25];        								StorageMode    =bufshort[24];
 		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
-		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
-		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
+		MatXYmode     =bufshort[29];        								MatBaseDefault=1-bufshort[28];
+		PictMode      =bufshort[31];        								CheckIfEnd    =bufshort[30];
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];
@@ -2334,14 +2450,14 @@ int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
@@ -2352,6 +2468,7 @@ int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2400,7 +2517,6 @@ void FavoritesDowndummy3( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy4( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

@@ -122,6 +122,10 @@ void GetGenuineCmdF1( unsigned int *code ){
 				case 0: (*code)=0x7FB0;return;	// And
 				case 1: (*code)=0x00BA;return;	// and
 			} break;
+		case CMD_OPTN_CAPT:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF79D;return;	// StoCapt
+			} break;
 		case CMD_OPTN_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF90F;return;	// AliasVar
@@ -207,7 +211,11 @@ void GetGenuineCmdF1( unsigned int *code ){
 				case 2: (*code)=0xF9CA;return;	// _Rect 
 				case 3: (*code)=0xF9CF;return;	// _Elips 
 				case 4: (*code)=0xF9D3;return;	// _Hscroll
-				case 5: (*code)=0xF9D9;return;	// _BmpZoom
+			} break;
+		case CMD_SHIFT_SKTCH_BMP:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF9D5;return;	// _Bmp 
+				case 1: (*code)=0xF9DB;return;	// BmpSave
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F1

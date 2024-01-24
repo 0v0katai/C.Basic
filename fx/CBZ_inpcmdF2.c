@@ -121,6 +121,10 @@ void GetGenuineCmdF2( unsigned int *code ){
 				case 0: (*code)=0x7FB1;return;	// Or
 				case 1: (*code)=0x00AA;return;	// or
 			} break;
+		case CMD_OPTN_CAPT:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF79F;return;	// StoCapt
+			} break;
 		case CMD_OPTN_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)='~';return;	// '~'
@@ -198,7 +202,11 @@ void GetGenuineCmdF2( unsigned int *code ){
 				case 2: (*code)=0xF9CB;return;	// _Polygon
 				case 3: (*code)=0xF9D0;return;	// _Felips 
 				case 4: (*code)=0xF9D4;return;	// _Vscroll 
-				case 5: (*code)=0xF9DA;return;	// _BmpRatate
+			} break;
+		case CMD_SHIFT_SKTCH_BMP:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF9D6;return;	// _Bmp8
+				case 1: (*code)=0xF9DC;return;	// BmpLoad
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F2

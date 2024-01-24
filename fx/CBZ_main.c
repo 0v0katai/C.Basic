@@ -58,6 +58,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	
 	HiddenRAM();	// Check HiddenRAM
 //	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
+	HiddenRAM_MatAryInit();	// HiddenRAM Initialize
 
 	TVRAM = (char *)malloc( 2048+4 );
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
@@ -65,7 +66,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	GVRAM = TVRAM+1024;;
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
-	ClipBuffer = (char *)malloc( ClipMax+1+4 );
+	ClipBuffer = (char *)malloc( ClipMax+1+4 );		// normal heap
 //	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
 	traceAry = (double *)malloc( 130*8+4 );
@@ -73,10 +74,10 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
 	
-	HiddenRAM_MatAryInit();	// HiddenRAM Initialize
-	
 	PictAry[0]=GetVRAMAddress();
-	
+
+	InitOpcodeRecent();
+
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
@@ -90,6 +91,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		DebugMode=0;
 		DebugScreen=0;
 		ForceDebugMode=0;
+		ForceReturn=0;
 		
 		PictbasePtr=-1;
 		PictbaseCount=PictbaseCountMAX;
@@ -103,8 +105,12 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 				ForceDebugMode=1;
-			case KEY_CTRL_EXE:
+			case FileCMD_RUN_F1:
+				if ( ForceReturnMode & 1 ) ForceReturn=1;
+				goto runjp;
 			case FileCMD_RUN:
+//			case KEY_CTRL_EXE:
+				if ( ForceReturnMode & 2 ) ForceReturn=1;
 		runjp:
 				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 				if ( i==0 )	{

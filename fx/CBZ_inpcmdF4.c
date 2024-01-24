@@ -132,7 +132,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			} break;
 		case CMD_SHIFT_SKTCH:
 			switch ( CommandPage ) {
-				case 0: CommandType=CMD_SHIFT_SKTCH_GRPH;CommandPage=0;break;
+				case 0: CommandType=CMD_SHIFT_SKTCH_BMP;CommandPage=0;break;
 				case 1: (*code)=0xF7A3;return;	// Vertical
 				case 2: (*code)=0xF7AF;return;	// PxlTest(
 			} break;
@@ -156,7 +156,10 @@ void GetGenuineCmdF4( unsigned int *code ){
 				case 1: (*code)=0xF9C8;return;	// _Horizontal
 				case 2: (*code)=0xF9CD;return;	// _Circle
 				case 3: (*code)=0xF9D2;return;	// _FelipsInRct 
-				case 4: (*code)=0xF9D6;return;	// _Bmp8
+			} break;
+		case CMD_SHIFT_SKTCH_BMP:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF9D9;return;	// _BmpZoom
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F4
