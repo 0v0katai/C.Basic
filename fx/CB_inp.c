@@ -339,7 +339,7 @@ const short oplistOPTN[]={
 		0x23,	// #
 //		0x24,	// $
 		0x25,	// %
-//		0x26,	// &
+		0x26,	// &
 //		0x27,	// '
 		0x97,	// Abs
 		0xA6,	// Int
@@ -458,6 +458,7 @@ const short oplistPRGM[]={
 		0xF70C,	// Return
 		0xF70D,	// Break
 		0xF70E,	// Stop
+		0xF717,	// ACBreak
 
 		0xF718,	// ClrText
 		0xF719,	// ClrGraph
@@ -787,7 +788,7 @@ const short oplistCMD[]={
 		0x7FB1,	// Or			7
 		0x7FB3,	// Not			8
 		0x7FB4,	// Xor			9
-		0xFFFF,	// 				-
+		0x26,	// &
 		0x23,	// #
 		0x25,	// %
 		
@@ -815,7 +816,7 @@ const short oplistCMD[]={
 		0xF7EB,	// Case
 		0xF7EC,	// Default
 		0xF7ED,	// SwitchEnd
-		0xFD,	// Eval(
+		0xF717,	// ACBreak
 		0xF7F1,	// Local
 		0xFE,	// Gosub
 
@@ -841,7 +842,7 @@ const short oplistCMD[]={
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
-		0xFFFF,	// 				-
+		0x26,	// &
 		0x23,	// #
 		0x25,	// %
 
@@ -854,8 +855,8 @@ const short oplistCMD[]={
 		0xF71D,	// S-L-Thick
 		0xF71E,	// S-L-Broken
 		0xF71F,	// S-L-Dot
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
+		0x20,	// 				-
+		0x26,	// &
 		0x23,	// #
 		0x25,	// %
 
@@ -890,7 +891,7 @@ const short oplistCMD[]={
 		0xB6,	// frac
 		0xAB,	// !
 		0x7F3A,	// MOD(
-		0xFFFF,	// 				-
+		0x0FD,	// Eval(
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
@@ -922,7 +923,7 @@ const short oplistCMD[]={
 		0x09,	// Tera
 		0x0A,	// Peta
 		0x0B,	// Exa
-		0xFFFF,	// 				-
+		0x20,	// 				-
 
 		0xF73F,	// DotGet(
 		0xF94B,	// DotPut(
@@ -931,7 +932,7 @@ const short oplistCMD[]={
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
 		0xF7E3,	// LocateYX
-		0xFFFF,	// 				-
+		0x20,	// 				-
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
 //		0xF797,	// StoV-Win
@@ -1159,6 +1160,16 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[4]='u';
 		string[5]='t';
 		string[6]='(';
+		string[7]='\0';
+	} else
+	if ( opcode == 0xF717 ) {	// ACBreak
+		string[0]='A';
+		string[1]='C';
+		string[2]='B';
+		string[3]='r';
+		string[4]='e';
+		string[5]='a';
+		string[6]='k';
 		string[7]='\0';
 	} else
 	if ( opcode == 0xF73F ) {	// DotGet(
@@ -1964,10 +1975,12 @@ double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_m
 unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
-
+	
+	SaveDisp(SAVEDISP_PAGE1);
 	buffer[width]='\0';
 	csrX=strlenOp(buffer);
 	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	RestoreDisp(SAVEDISP_PAGE1);
 	return ( key );
 }
 

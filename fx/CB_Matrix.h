@@ -26,9 +26,10 @@ void EditMatrix(int reg);		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
 
 int ElementSizeSelect( char *SRC, int reg ) ;
-void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB ) ; 	// 1-
+void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize ) ; 	// 1-
 void CB_MatrixInit( char *SRC ) ; //	{n,m}->Dim Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2( char *SRC ) ; //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
+void CB_MatrixInit2Str( char *SRC ) ; //	["ABCD","12345","XYZ"]->Mat A[.B]
 void CB_ClrMat( char *SRC ) ; //	ClrMat A
 void CB_MatCalc( char *SRC ) ; //	Mat A -> Mat B  etc
 void CB_MatFill( char *SRC ) ; //	Fill(value, Mat A)
