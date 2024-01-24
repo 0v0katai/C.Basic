@@ -39,6 +39,7 @@ extern char Refreshtime;	// Refresh time  n/128
 
 extern short DefaultWaitcount;	// wait control
 extern short Waitcount;			// current wait control
+extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------

@@ -1655,6 +1655,148 @@ void CB_MatSwap( char *SRC ) {	// Swap Mat A,2,3
 	}
 }
 
+void CB_MatxRow( char *SRC ) {	// *Row 5,A,2
+	int c,d;
+	int dimA,dimB,m,n;
+	int reg;
+	int base;
+	int ElementSize;
+	int a,b;
+	double dbl_k;
+	int  int_k;
+
+	if ( CB_INT) int_k = CB_EvalInt( SRC ); else dbl_k = CB_EvalDbl( SRC ); 
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+
+	MatrixOprandreg( SRC, &reg);
+	if ( reg>=0 ) {
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+
+	ElementSize=MatAry[reg].ElementSize;
+	base       =MatAry[reg].Base;
+	dimA       =MatAry[reg].SizeA+base;
+	dimB       =MatAry[reg].SizeB+base;
+	
+	a = CB_EvalInt( SRC );
+	if ( ( a < base ) || ( dimA < a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+
+	switch ( ElementSize ) {
+		case 64:
+			for ( n=base; n<dimB; n++ ) {
+				WriteMatrix( reg, a, n, ReadMatrix( reg, a, n )*dbl_k );
+			}
+			break;
+		default:
+			for ( n=base; n<dimB; n++ ) {
+				WriteMatrixInt( reg, a, n, ReadMatrixInt( reg, a, n )*int_k );
+			}
+			break;
+	}
+}
+
+void CB_MatxRowPlus( char *SRC ) {	// *Row+ 5,A,2,3
+	int c,d;
+	int dimA,dimB,m,n;
+	int reg;
+	int base;
+	int ElementSize;
+	int a,b;
+	double dbl_k;
+	int  int_k;
+
+	if ( CB_INT) int_k = CB_EvalInt( SRC ); else dbl_k = CB_EvalDbl( SRC ); 
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+
+	MatrixOprandreg( SRC, &reg);
+	if ( reg>=0 ) {
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+
+	ElementSize=MatAry[reg].ElementSize;
+	base       =MatAry[reg].Base;
+	dimA       =MatAry[reg].SizeA+base;
+	dimB       =MatAry[reg].SizeB+base;
+	
+	a = CB_EvalInt( SRC );
+	if ( ( a < base ) || ( dimA < a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	b = CB_EvalInt( SRC );
+	if ( ( b < base ) || ( dimA < b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+
+	if ( a == b ) return;
+
+	switch ( ElementSize ) {
+		case 64:
+			for ( n=base; n<dimB; n++ ) {
+				WriteMatrix( reg, b, n, ReadMatrix( reg, a, n )*dbl_k + ReadMatrix( reg, b, n )  );
+			}
+			break;
+		default:
+			for ( n=base; n<dimB; n++ ) {
+				WriteMatrixInt( reg, b, n, ReadMatrixInt( reg, a, n )*int_k + ReadMatrixInt( reg, b, n )  );
+			}
+			break;
+	}
+}
+
+void CB_MatRowPlus( char *SRC ) {	// Row+ A,2,3
+	int c,d;
+	int dimA,dimB,m,n;
+	int reg;
+	int base;
+	int ElementSize;
+	int a,b;
+	
+	MatrixOprandreg( SRC, &reg);
+	if ( reg>=0 ) {
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+
+	ElementSize=MatAry[reg].ElementSize;
+	base       =MatAry[reg].Base;
+	dimA       =MatAry[reg].SizeA+base;
+	dimB       =MatAry[reg].SizeB+base;
+	
+	a = CB_EvalInt( SRC );
+	if ( ( a < base ) || ( dimA < a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	b = CB_EvalInt( SRC );
+	if ( ( b < base ) || ( dimA < b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+
+	if ( a == b ) return;
+
+	switch ( ElementSize ) {
+		case 64:
+			for ( n=base; n<dimB; n++ ) {
+				WriteMatrix( reg, b, n, ReadMatrix( reg, a, n ) + ReadMatrix( reg, b, n )  );
+			}
+			break;
+		default:
+			for ( n=base; n<dimB; n++ ) {
+				WriteMatrixInt( reg, b, n, ReadMatrixInt( reg, a, n ) + ReadMatrixInt( reg, b, n )  );
+			}
+			break;
+	}
+}
 //-----------------------------------------------------------------------------
 void CB_MatTrn( char *SRC ) { //	Trn Mat A -> Mat Ans
 	int c,d;

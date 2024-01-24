@@ -49,13 +49,6 @@ char	S_L_Style   = S_L_Normal;
 char	tmp_Style   = S_L_Normal;
 char	Angle       = 1;	// 0:deg   1:rad  2:grad
 
-double Previous_X=1e308 ;	// Plot Previous X
-double Previous_Y=1e308 ;	// Plot Previous Y
-int    Previous_PX=-1   ;	// Plot Previous PX
-int    Previous_PY=-1   ;	// Plot Previous PY
-double Plot_X    =1e308 ;	// Plot Current X
-double Plot_Y    =1e308 ;	// Plot Current Y
-
 char PxlMode=1;		// Pxl  1:set  0:clear
 
 char BreakCheck=1;	// Break Stop on/off
@@ -66,11 +59,20 @@ char MatXYmode=0;		// 0: normal  1:reverse
 char PictMode=1;	// StoPict/RclPict  StrageMem:0  heap:1
 char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
 
+char CommandInputMethod=0;	//	0:C.Basic  1:Genuine
+
 char  RefreshCtrl=1;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
 char  Refreshtime=2;	// Refresh time  (Refreshtime+1)/128s
 
 short DefaultWaitcount=0;	// wait control
 short Waitcount=0;	// current wait control
+
+double Previous_X=1e308 ;	// Plot Previous X
+double Previous_Y=1e308 ;	// Plot Previous Y
+int    Previous_PX=-1   ;	// Plot Previous PX
+int    Previous_PY=-1   ;	// Plot Previous PY
+double Plot_X    =1e308 ;	// Plot Current X
+double Plot_Y    =1e308 ;	// Plot Current Y
 
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
@@ -525,12 +527,20 @@ int CB_interpreter_sub( char *SRC ) {
 						Label=1;
 						dspflag=0;
 						break;
+					case 0xFFFFFFC5:	// DerivOn
+						Derivative=1;
+						dspflag=0;
+						break;
 					case 0xFFFFFFD2:	// AxesOff
 						Axes=0;
 						dspflag=0;
 						break;
 					case 0xFFFFFFD3:	// CoordOff
 						Coord=0;
+						dspflag=0;
+						break;
+					case 0xFFFFFFD5:	// DerivOff
+						Derivative=0;
 						dspflag=0;
 						break;
 					case 0xFFFFFFD4:	// LabelOff
@@ -648,8 +658,17 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflagtmp=CB_ListCalc(SRC);
 						if ( dspflagtmp ) goto Evalexit2;
 						break;
-					case 0x45 :				// Swap Mat A,2,3
+					case 0x45 :				// Swap A,2,3
 						CB_MatSwap( SRC );
+						break;
+					case 0x42 :				// *Row 5,A,2
+						CB_MatxRow( SRC );
+						break;
+					case 0x43 :				// *Row+ 5,A,2,3
+						CB_MatxRowPlus( SRC );
+						break;
+					case 0x44 :				// Row+ A,2,3
+						CB_MatRowPlus( SRC );
 						break;
 					default:
 						goto Evalexit2;

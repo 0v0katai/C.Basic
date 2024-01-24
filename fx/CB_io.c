@@ -5,6 +5,7 @@
 #include <fxlib.h>
 
 #include "CB_io.h"
+#include "CB_Kana.h"
 #include "CB_Matrix.h"
 #include "CB_glib.h"
 #include "KeyScan.h"
@@ -209,31 +210,27 @@ void PrintXYR(int x,int y,char *buffer,int rev){
 void Fkey_Clear(int n) {
 	int y;
 	for (y=0; y<8; y++){
-		Bdisp_ClearLineVRAM(n*21+2,7*8+y,n*21+20,7*8+y);
+		Bdisp_ClearLineVRAM(n*21+1,7*8+y,n*21+22,7*8+y);
 	}
 }
 void Fkey_dispN(int n,char *buffer) {
 	Fkey_Clear(n);
-	PrintMini(n*21+4,7*8+2,(unsigned char *)buffer, MINI_OVER);
+	CB_PrintMini(n*21+4,7*8+2,(unsigned char *)buffer, MINI_OVER);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
 //	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
 }
-void Fkey_dispR(int n,char *buffer) {
+void Fkey_dspRB(int n,char *buffer) {
+	int i;
 	Fkey_Clear(n);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+1,n*21+20,7*8+1);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+2,n*21+20,7*8+2);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+3,n*21+20,7*8+3);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+4,n*21+20,7*8+4);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+5,n*21+19,7*8+5);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+6,n*21+18,7*8+6);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+7,n*21+17,7*8+7);
-	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+ 2,7*8+7);
-	PrintMini(n*21+3,7*8+2     ,(unsigned char *)buffer, MINI_REV);
+	for (i=0;i<8;i++) Bdisp_DrawLineVRAM(n*21+2,7*8+i,n*21+20,7*8+i);
+	CB_PrintMini(n*21+3,7*8+2     ,(unsigned char *)buffer, MINI_REV);
 	Bdisp_ClearLineVRAM(n*21+21,7*8+0,n*21+21,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+22,7*8+0,n*21+22,7*8+7);
+}
+void Fkey_dispR(int n,char *buffer) {
+	Fkey_dspRB(n,buffer);
 	Bdisp_ClearLineVRAM(n*21+20,7*8+5,n*21+20,7*8+5);
 	Bdisp_ClearLineVRAM(n*21+19,7*8+6,n*21+20,7*8+6);
 	Bdisp_ClearLineVRAM(n*21+18,7*8+7,n*21+20,7*8+7);
