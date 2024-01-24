@@ -117,13 +117,13 @@ int EndOfSrc( char *SRC, int ptr ) {
 }
 
 //---------------------------------------------------------------------------------------------
-void EditPaste( char *filebase, int *ptr ){
+void EditPaste( char *filebase, char *Buffer, int *ptr ){
 	int len,i,j;
 	char *srcbase;
 
-	if ( ClipBuffer[0]=='\0' ) return ;	// no clip data
+	if ( Buffer[0]=='\0' ) return ;	// no clip data
 		
-	len=strlenOp(ClipBuffer);
+	len=strlenOp(Buffer);
 	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
 		ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
 		CB_ErrMsg(ErrorNo);
@@ -133,7 +133,7 @@ void EditPaste( char *filebase, int *ptr ){
 	for ( i=ProgfileMax[ProgNo]; i>=j; i-- ) filebase[i]=filebase[i-len];
 		 
 	srcbase=filebase+0x56+(*ptr);
-	for ( i=0; i<len; i++ ) srcbase[i]=ClipBuffer[i];	// copy from ClipBuffer
+	for ( i=0; i<len; i++ ) srcbase[i]=Buffer[i];	// copy from Buffer
 			
 	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
@@ -141,7 +141,7 @@ void EditPaste( char *filebase, int *ptr ){
 	(*ptr)=(*ptr)+len;
 }
 
-void EditCopy( char *filebase, int ptr, int startp, int endp ){
+void EditCopy( char *filebase, char *Buffer, int ptr, int startp, int endp ){
 	int len,i,j;
 	char *srcbase;
 
@@ -154,33 +154,32 @@ void EditCopy( char *filebase, int ptr, int startp, int endp ){
 	}
 	
 	srcbase=filebase+0x56+(startp);
-	for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];	// copy to ClipBuffer
-	ClipBuffer[i]='\0';
+	for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i];	// copy to Buffer
+	Buffer[i]='\0';
 }
 
-void EditCutDel( char *filebase, int *ptr, int startp, int endp, int del ){	// del:1 delete
+void EditCutDel( char *filebase, char *Buffer, int *ptr, int startp, int endp, int del ){	// del:1 delete
 	int len,i;
 	char *srcbase;
 
 	i=OpcodeLen( GetOpcode(filebase+0x56, *ptr) );
 	len=(endp)-(startp)+i;
-	if ( len > ClipMax ) {
-		ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
-		CB_ErrMsg(ErrorNo);
-		return ;
-	}
-
 	if ( del == 0 ) {
+		if ( len > ClipMax ) {
+			ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
+			CB_ErrMsg(ErrorNo);
+			return ;
+		}
 		srcbase=filebase+0x56+(startp);
-		for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];	// copy to ClipBuffer
-		ClipBuffer[i]='\0';
+		for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i];	// copy to Buffer
+		Buffer[i]='\0';
 	}
 	for ( i=(startp)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
 
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
 
-	(*ptr)=(startp);
+	(*ptr)-=(endp-startp);
 }
 
 //---------------------------------------------------------------------------------------------
@@ -195,12 +194,13 @@ void MiniCursorFlashing() {		// timer IRQ handler
 	unsigned char CsrDATA[]={ 0xFF,0xFF,0xFF,0xFF,0xFF };
 	DISPGRAPH minicsr;
 
-	if ( ( 0<=MiniCursorX ) && ( MiniCursorX<128 ) && ( 0<=MiniCursorY ) && ( MiniCursorY<64 ) ) {
+	if ( ( 0<=MiniCursorX ) && ( MiniCursorX<126 ) && ( 0<=MiniCursorY ) && ( MiniCursorY<60 ) ) {
 		switch (MiniCursorflag) {
 			case 0:
 				minicsr.x = MiniCursorX;
 				minicsr.y = MiniCursorY;
 				minicsr.GraphData.width =  2; if  ( CursorStyle >= 0x06 ) minicsr.GraphData.width = 4;
+				if ( MiniCursorX + minicsr.GraphData.width > 127 ) minicsr.GraphData.width =2;
 				minicsr.GraphData.height = 5;
 				minicsr.GraphData.pBitmap = CsrDATA; 	// mini cursor pattern
 				minicsr.WriteModify = IMB_WRITEMODIFY_NORMAL; 
@@ -398,57 +398,7 @@ void PrevLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
 		PrevLinePhy( SrcBase, &(*offset), &(*offset_y) );
 	}
 }
-/*
-int PrintOpcodeLine1( int csry, int n, char *buffer, int ofst, int csrPtr, int *pcx, int *cy, int ClipStartPtr, int ClipEndPtr) {
-	char tmpbuf[18];
-	unsigned char *tmpb;
-	int i,len,px=1,y=0,cont=1,rev;
-	int opcode;
-	int  c=1;
-	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-//	if ( csry>7 ) return ofst;
-	while ( cont ) {
-		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
-		if ( y == n ) if (ofst==csrPtr) { *pcx=px; *cy=csry; }
-		opcode = GetOpcode( buffer, ofst );
-		if ( opcode=='\0' ) break;
-		ofst += OpcodeLen( opcode );
-		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
-		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
-		tmpb=(unsigned char*)&tmpbuf[0];
-		i=0;
-		while ( i < len ) {
-			if ( y == n ) {
-				if ( EditFontSize == 0 ) {
-					CB_PrintXYC( px-1, (csry-1)*8, tmpb, rev ) ;
-					px+=6;
-				} else {
-					if ( rev )	px+=CB_PrintMiniC( px, (csry-1)*6+2, tmpb, MINI_REV  ) ;
-					else		px+=CB_PrintMiniC( px, (csry-1)*6+2, tmpb, MINI_OVER ) ;
-					MiniCursorflag=0;		// mini cursor initialize
-					MiniCursorFlashing();
-//					Bdisp_PutDisp_DD();
-				}
-			} else {
-				if ( EditFontSize == 0 ) {
-					px+=6;
-				} else {
-					px+=CB_PrintMiniLength( tmpb );
-				}
-			}
-			if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) { (y)++; px=1; }
-			c=(char)*tmpb & 0xFF;
-			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) { tmpb++; i++; }
-			tmpb++; i++;
-		}
-//		Bdisp_PutDisp_DD();
-		if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) break ;
-		if ( y > n ) break ;
-	}
-	if ( y == n+1 ) if (ofst==csrPtr) { *pcx=px; *cy=csry+1; }
-	return ofst;
-}
-*/
+
 int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int ofst, int csrPtr, int *pcx, int *cy, int ClipStartPtr, int ClipEndPtr) {
 	char tmpbuf[18];
 	unsigned char *tmpb;
@@ -575,7 +525,7 @@ void editmenu(){
 	Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 }
 
-int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr){
+int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr, int next){
 	int csrbkup=(*csrptr);
 	int sptr=0,cptr;
 	int opcode=1,srccode;
@@ -584,7 +534,7 @@ int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr){
 	Bdisp_PutDisp_DD_DrawBusy();
 	opcode =GetOpcode( SrcBase, *csrptr ) ;
 	srccode=GetOpcode( searchstr, sptr ) ;
-	if ( opcode == srccode ) NextOpcode( SrcBase, &(*csrptr) );
+	if ( next ) if ( opcode == srccode ) NextOpcode( SrcBase, &(*csrptr) );
 	while ( (*csrptr)<size ) {
 		sptr=0;
 		opcode =GetOpcode( SrcBase, *csrptr ) ;
@@ -614,46 +564,51 @@ void srcmenu(){
 	FkeyClear( FKeyNo2 );
 }
 
-int SearchForText( char *SrcBase, char *searchstr, int *csrptr ){
+int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	// SRC repstr:NULL 
 	unsigned int key;
 	int i=0,sptr;
-	int csrp;
+	int srcmode=1;	// 1:SRC  2:Replace
 	
+	repstr[0]='\0';
+  loop:
 	Bdisp_AllClr_DDVRAM();
-	
 	locate(1,1); Print((unsigned char*)"Search For Text");
-	locate(1,3); Print((unsigned char*)"---------------------");
-	locate(1,5); Print((unsigned char*)"---------------------");
-
+	locate(1,2); Print((unsigned char*)"----------------------");
+	locate(1,4); Print((unsigned char*)"----------------------");
 	Bdisp_PutDisp_DD_DrawBusy();
-		
 	KeyRecover(); 
 	do {
 		srcmenu();
-		key= InputStrSub( 1, 4, 21, strlenOp(searchstr), searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+		Fkey_dispN( FKeyNo2, "REPL");
+		key= InputStrSub( 1, 3, 21, strlenOp(searchstr), searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( key == KEY_CTRL_AC ) ;	// AC
 	if ( key == KEY_CTRL_EXIT ) return 0;	// exit
-
-	while ( i==0 ) {	//  not found loop
-		csrp=*csrptr;
-		i=SearchOpcodeEdit( SrcBase, searchstr, &csrp);
-		if ( i    ) break;
-		if ( i==0 ) ErrorMSGstr1(" Not Found ");
-		sptr=strlenOp(searchstr);
+	if ( strlenOp(searchstr) == 0 ) goto loop;
+	if ( key == KEY_CTRL_F2 ) {
+		locate(1,1); Print((unsigned char*)"Replacement Text");
+		locate(1,6); Print((unsigned char*)"----------------------");
+		Bdisp_PutDisp_DD_DrawBusy();
+		KeyRecover(); 
 		do {
 			srcmenu();
-			key= InputStrSub( 1, 4, 21, sptr, searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+			key= InputStrSub( 1, 5, 21, strlenOp(repstr), repstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 		} while ( key == KEY_CTRL_AC ) ;	// AC
 		if ( key == KEY_CTRL_EXIT ) return 0;	// exit
+		srcmode=2;	// replace
 	}
-	*csrptr=csrp;
-	return 1;	// ok
+
+	i = SearchOpcodeEdit( SrcBase, searchstr, &(*csrptr), 0 );
+	if ( i ) return srcmode;	// ok
+	ErrorMSGstr1(" Not Found ");
+	goto loop;	//  not found loop
 }
 
 //---------------------------------------------------------------------------------------------
 void jumpmenu(){
-	Fkey_Icon( FKeyNo1, 393 );	//	Fkey_dispN( FKeyNo1, "TOP ");
-	Fkey_Icon( FKeyNo2, 394 );	//	Fkey_dispN( FKeyNo2, "BTM");
+//	Fkey_Icon( FKeyNo1, 393 );	//	Fkey_dispN( FKeyNo1, "TOP ");
+//	Fkey_Icon( FKeyNo2, 394 );	//	Fkey_dispN( FKeyNo2, "BTM");
+	Fkey_Icon( FKeyNo1, 965 );	//	Fkey_dispN( FKeyNo1, "TOP ");
+	Fkey_Icon( FKeyNo2, 967 );	//	Fkey_dispN( FKeyNo2, "BTM");
 	Fkey_dispN( FKeyNo3, "GOTO");
 	Fkey_dispN_aA( FKeyNo5, "Skp\xE6\x92");
 	Fkey_dispN_aA( FKeyNo6, "Skp\xE6\x93");
@@ -716,6 +671,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char buffer[32];
 	char buffer2[32];
 	char searchbuf[64]="";
+	char replacebuf[64]="";
 	unsigned char c;
 	int i,j,n,d,x,y,pcx,cx,cy,ptr,ptr2,tmpkey=0;
 	int 	offset=0;
@@ -792,6 +748,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		}
 		
 		if ( ( DebugScreen == 0 ) && ( run != 1 ) ) {
+   			
 			Bdisp_AllClr_VRAM();
 			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 			buffer2[8]='\0';
@@ -801,6 +758,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
 			} else 			sprintf(buffer, "==%-8s==%08X", buffer2, SrcBase);
 			
+
 			locate (1,1); Print(    (unsigned char*)buffer );
 			if ( DebugMode >=1 ) // debug mode
 				Bdisp_AreaReverseVRAM(0, 0, 127,7);	// reverse top line 
@@ -816,7 +774,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							}
 						}
 						if ( DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &pcx, &cy, ClipStartPtr, ClipEndPtr) ) csrPtr=0; //return KEY_CTRL_EXIT;
-
+    
 //						Bdisp_AreaReverseVRAM(127, 8-8*EditTopLine, 127,55);		// reverse thumb line 
 						d = SrcEndPtr( filebase );					// Csr thumb point display
 						if ( d ) {									//
@@ -838,14 +796,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						}
 						DumpMix( SrcBase, offset );
 						break;
-//				case 16:		// Ascii dump
-//						DumpAsc( SrcBase, offset );
-//						break;
 				default:
 						break;
 			}
+			
 		}
-		
 		
 		if ( DebugScreen ) {	// screen debug mode
 //				Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -854,13 +809,23 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		
 		if ( ( DebugScreen != 1 ) && ( run != 1 ) ) {
 			locate(1,8); PrintLine((unsigned char*)" ",21);
-			if (SearchMode ) {
-					Fkey_Icon( FKeyNo1, 391 );	//	Fkey_dispN( FKeyNo1, "SRC ");
+			if ( SearchMode ) {
+					Fkey_Icon( FKeyNo1, 391 );	//	Fkey_dispR( FKeyNo1, "SRC ");
+					switch ( SearchMode ) {
+						case 1:
+							break;
+						case 2:
+							Fkey_dispN( FKeyNo2, "REPL");
+							Fkey_dispN( FKeyNo4, "ALL");
+							break;
+					}
+					if ( SearchMode == 3 ) locate (12,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode
 			} else {
 			if ( ClipStartPtr>=0 ) {
 					Fkey_Icon( FKeyNo1,  52 );	//	Fkey_dispN( FKeyNo1, "COPY ");
 					Fkey_Icon( FKeyNo2, 105 );	//	Fkey_dispN( FKeyNo2, "CUT ");
 					Fkey_Icon( FKeyNo3,   9 );	//	Fkey_dispN( FKeyNo2, "DEL ");
+					Fkey_Icon( FKeyNo4, 165 );	//	Fkey_dispN( FKeyNo1, "SRC ");
 				} else {
 					ClipEndPtr   = -1 ;		// ClipMode cancel
 					if ( DebugMode >=1 ) {  // debug mode
@@ -898,6 +863,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //		Bdisp_PutDisp_DD();
 
 		if ( run != 1 ) {
+			if ( SearchMode == 3 ) {	//  replace all mode
+				if ( KeyScanDownAC() == 0 ) {
+					PutKey( KEY_CTRL_F2, 1 );
+				} else SearchMode = 2;
+			}
+
 			if ( dumpflg == 2 ) {
 					locate((pcx-1)/6+1,cy); 
 			} else	locate(cx,cy);
@@ -998,12 +969,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_F1:
 			case 0x7553:		// ClipMode F1
 					if ( SearchMode ) {		//	Next Search
-						i=SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr);
+						i=SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 1 );
 						if ( i==0 ) SearchMode=0;
 					} else {
-						if ( ClipEndPtr >= 0 ) {
+						if ( ClipStartPtr >= 0 ) {
+							if ( ClipEndPtr < 0 ) goto F1j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCopy( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
+							EditCopy( filebase, ClipBuffer, csrPtr, ClipStartPtr, ClipEndPtr );
 						} else {
 							if ( CommandType ) { GetGenuineCmdF1( &key ); goto F1j; }
 							else {
@@ -1039,45 +1011,46 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F2:
 			case 0x7563:		// ClipMode F2
-					if ( SearchMode ) break;;
-					if ( ClipEndPtr >= 0 ) {
-						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-						EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 0 );	// cut
+					if ( SearchMode >= 2 ) {	// replace one
+							i = strlenOp(searchbuf)-1;
+							csrPtr+=i;
+							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
+							EditPaste( filebase, replacebuf, &csrPtr);	// insert
+							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
+							if ( i==0 ) SearchMode=0; 
+							KeyRecover(); 
 					} else {
-						if ( CommandType ) { GetGenuineCmdF2( &key ); goto F2j; }
-						else {
-							if ( DebugMenuSw ) {		// ====== Debug Mode ======
-									cont=0;
-									ExecPtr=csrPtr;
-									BreakPtr=-1;
-									DebugMode=2;		// trace into mode
-							} else {
-								if ( JumpMenuSw ) {		// ====== Jump Mode
-									offset=EndOfSrc( SrcBase, offset );
-									csrPtr=offset;
-									offset_y=0;
-									switch (dumpflg) {
-										case 2: 		// Opcode
-											PrevLinePhyN( ymax, SrcBase, &offset, &offset_y ) ;
-											break;
-										case 4: 		// hex dump
-											cx=6; cy=2;
-											break;
-										default:
-											break;
-									}
-								} else {	// Search for text
-									if ( ClipEndPtr >= 0 ) {
-										if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-										EditCopy( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
-										ClipBuffer[63]='\0';
-										i=SearchForText(  SrcBase, ClipBuffer, &csrPtr ) ;
-									} else {
+						if ( ClipStartPtr >= 0 ) {
+							if ( ClipEndPtr < 0 ) goto F2j;
+							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+							EditCutDel( filebase, ClipBuffer, &csrPtr, ClipStartPtr, ClipEndPtr, 0 );	// cut
+						} else {
+							if ( CommandType ) { GetGenuineCmdF2( &key ); goto F2j; }
+							else {
+								if ( DebugMenuSw ) {		// ====== Debug Mode ======
+										cont=0;
+										ExecPtr=csrPtr;
+										BreakPtr=-1;
+										DebugMode=2;		// trace into mode
+								} else {
+									if ( JumpMenuSw ) {		// ====== Jump Mode
+										offset=EndOfSrc( SrcBase, offset );
+										csrPtr=offset;
+										offset_y=0;
+										switch (dumpflg) {
+											case 2: 		// Opcode
+												PrevLinePhyN( ymax, SrcBase, &offset, &offset_y ) ;
+												break;
+											case 4: 		// hex dump
+												cx=6; cy=2;
+												break;
+											default:
+												break;
+										}
+									} else {	// Search for text
 //										searchbuf[0]='\0';
-										i=SearchForText(  SrcBase, searchbuf, &csrPtr ) ;
+										SearchMode = SearchForText(  SrcBase, searchbuf, &csrPtr, replacebuf ) ;
 									}
-									if ( i ) SearchMode=1; 
-									else	 SearchMode=0;
 								}
 							}
 						}
@@ -1087,63 +1060,89 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F3:
-					if ( SearchMode ) break;;
-					if ( ClipEndPtr >= 0 ) {
-						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-						EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 1 );	// delete
+					if ( SearchMode == 2 ) {	// replace all
+						break;
 					} else {
-						if ( CommandType ) GetGenuineCmdF3( &key );
-						else {
-							if ( DebugMenuSw ) {		// ====== Debug Mode ======
-										cont=0;
-										ExecPtr=csrPtr;
-										BreakPtr=-1;
-										DebugMode=3;		// step over mode
-								key=0;
-							} else {
-								if ( JumpMenuSw ) {		// ====== Jump Mode
-									i=JumpGoto( SrcBase, &offset, &offset_y, cy );					// Goto
-									if ( i>0 ) { 
-										offset=0; offset_y=0;
-										NextLinePhyN( i-1, SrcBase, &offset, &offset_y );
-										csrPtr=offset;
-										if ( SrcBase[csrPtr]==0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
-									}
-								} else {	// command select
-									if ( CommandInputMethod ) {
-										CommandType=CMD_MENU; CommandPage=0;
-									} else {
-										key=SelectOpcode5800P( 0 );
-										if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+						if ( ClipStartPtr >= 0 ) {
+							if ( ClipEndPtr < 0 ) goto F3j;
+							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+							EditCutDel( filebase, ClipBuffer, &csrPtr, ClipStartPtr, ClipEndPtr, 1 );	// delete
+						} else {
+							if ( CommandType ) GetGenuineCmdF3( &key );
+							else {
+								if ( DebugMenuSw ) {		// ====== Debug Mode ======
+											cont=0;
+											ExecPtr=csrPtr;
+											BreakPtr=-1;
+											DebugMode=3;		// step over mode
+									key=0;
+								} else {
+									if ( JumpMenuSw ) {		// ====== Jump Mode
+										i=JumpGoto( SrcBase, &offset, &offset_y, cy );					// Goto
+										if ( i>0 ) { 
+											offset=0; offset_y=0;
+											NextLinePhyN( i-1, SrcBase, &offset, &offset_y );
+											csrPtr=offset;
+											if ( SrcBase[csrPtr]==0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
+										}
+									} else {	// command select
+										if ( CommandInputMethod ) {
+											CommandType=CMD_MENU; CommandPage=0;
+										} else {
+											key=SelectOpcode5800P( 0 );
+											if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+										}
 									}
 								}
 							}
 						}
 					}
+				  F3j:
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F4:
-					if ( SearchMode ) break;;
-					if ( CommandType ) GetGenuineCmdF4( &key );
-					else {
-						if ( DebugMenuSw ) {		// ====== Debug Mode ======
-									cont=0;
-									ExecPtr=csrPtr;
-									BreakPtr=0;
-									DebugMode=4;		// step out mode
+					if ( SearchMode == 2 ) {
+						if ( YesNo( "Replace All Ok?" ) == 0 ) break;
+						SearchMode = 3; //	Replace All
+//						while ( 1 ) {
+//							i = strlenOp(searchbuf)-1;
+//							csrPtr+=i;
+//							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
+//							EditPaste( filebase, replacebuf, &csrPtr);	// insert
+//							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
+//							if ( i==0 ) { SearchMode=0; break; }
+//						}
+					} else {
+						if ( ClipStartPtr >= 0 ) {	// Clip -> Search for text
+							if ( ClipEndPtr < 0 ) goto F4j;
+							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+							EditCopy( filebase, ClipBuffer, csrPtr, ClipStartPtr, ClipEndPtr );
+							ClipBuffer[63]='\0';
+							SearchMode = SearchForText(  SrcBase, ClipBuffer, &csrPtr, replacebuf ) ;
 						} else {
-							if ( JumpMenuSw ) {		// ====== Jump Mode
-							} else {
-								lowercase=1-lowercase;
-								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+							if ( CommandType ) GetGenuineCmdF4( &key );
+							else {
+								if ( DebugMenuSw ) {		// ====== Debug Mode ======
+											cont=0;
+											ExecPtr=csrPtr;
+											BreakPtr=0;
+											DebugMode=4;		// step out mode
+								} else {
+									if ( JumpMenuSw ) {		// ====== Jump Mode
+									} else {
+										lowercase=1-lowercase;
+										if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+									}
+								}
+								key=0;
 							}
 						}
-						key=0;
 					}
+				  F4j:
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F5:
-					if ( SearchMode ) break;;
+					if ( SearchMode ) break;
 					if ( CommandType ) { GetGenuineCmdF5( &key );
 						if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); key=0; CommandType=0; }
 					} else {
@@ -1493,7 +1492,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							key=0;
 							break;
 					case KEY_CTRL_PASTE:
-							EditPaste( filebase, &csrPtr);
+							EditPaste( filebase, ClipBuffer, &csrPtr);
 							key=0;
 							break;
 							

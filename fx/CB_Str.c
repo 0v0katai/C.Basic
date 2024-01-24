@@ -239,7 +239,7 @@ int StrInv( char *str1, char *str2 ) {	// mirror$(str2) -> str1
 	slen=StrLen( str2 ,&oplen );
 	if ( slen < 2 ) return;
 	opptr1=0;
-	opptr2=StrOpcodePtr( str2, slen-1 ); 		// strptr -> opptr2
+	opptr2=StrOpcodePtr( str2, slen ); 		// strptr -> opptr2
 	for (i=0; i<slen; i++ ) {
 		opcode =StrGetOpcode( str2, opptr2 ) ;
 		StrPrevOpcode( str2, &opptr2 ) ;
@@ -1522,7 +1522,7 @@ int CB_TimeToStr() {	// "23:59:59"
 
 
 //----------------------------------------------------------------------------------------------
-//int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
