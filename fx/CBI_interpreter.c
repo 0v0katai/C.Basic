@@ -31,17 +31,6 @@
 #include "CBI_Eval.h"
 #include "CBI_interpreter.h"
 
-//-----------------------------------------------------------------------------
-// Casio Basic inside
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
-// Casio Basic Gloval variable
-//-----------------------------------------------------------------------------
-int  REGINT[59];
-
-int CBint_CurrentValue=0;	// Ans
-
 //----------------------------------------------------------------------------------------------
 //		Interpreter
 //----------------------------------------------------------------------------------------------
@@ -54,10 +43,6 @@ int RangeErrorCKint( char *SRC ) {
 	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { ErrorNo=RangeERR; PrevOpcode( SRC, &ExecPtr ); ErrorPtr=ExecPtr; return ErrorNo; }	// Range error
 	return 0;
 }
-//-----------------------------------------------------------------------------
-#define CBint_Eval  EvalIntsubTop
-#define CBint_Eval1 EvalIntsub1
-
 //----------------------------------------------------------------------------------------------
 void CBint_Store( char *SRC ){	// ->
 	int	st,en,i,j;
@@ -68,13 +53,13 @@ void CBint_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	
 	int c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <='Z' ) ) {
 		st=c-'A';
 		ExecPtr++;
 		if ( SRC[ExecPtr] == 0x7E ) {		// '~'
 			ExecPtr++;
 			c=SRC[ExecPtr];
-			if ( ( 'A' <= c ) && ( c <='z' ) ) {
+			if ( ( 'A' <= c ) && ( c <='Z' ) ) {
 				en=c-'A';
 				if ( en<st ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[++ExecPtr];
@@ -89,6 +74,30 @@ void CBint_Store( char *SRC ){	// ->
 			else {
 				if ( c=='%' ) ExecPtr++;
 				REGINT[ st ] = CBint_CurrentValue;
+			}
+		}
+	} else
+	if ( ( 'a' <= c ) && ( c <='z' ) ) {
+		st=c-'a';
+		ExecPtr++;
+		if ( SRC[ExecPtr] == 0x7E ) {		// '~'
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( ( 'a' <= c ) && ( c <='z' ) ) {
+				en=c-'a';
+				if ( en<st ) { CB_Error(SyntaxERR); return; }	// Syntax error
+				c=SRC[++ExecPtr];
+				if ( c=='#' ) { ExecPtr++;  for ( i=st; i<=en; i++) LocalDbl[ i ] = CBint_CurrentValue; }
+				else
+				if ( c=='%' ) ExecPtr++;
+				for ( i=st; i<=en; i++) LocalInt[ i ] = CBint_CurrentValue;
+			}
+		} else {
+			c=SRC[ExecPtr];
+			if ( c=='#' ) { ExecPtr++;  LocalDbl[st] = CBint_CurrentValue ; }
+			else {
+				if ( c=='%' ) ExecPtr++;
+				LocalInt[ st ] = CBint_CurrentValue;
 			}
 		}
 	} else
@@ -158,25 +167,29 @@ void CBint_Store( char *SRC ){	// ->
 //-----------------------------------------------------------------------------
 void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	int c;
-	CBint_CurrentValue = CBint_Eval( SRC );
+	CBint_CurrentValue = EvalIntsubTop( SRC );
 	c=SRC[ExecPtr];
 	if ( c == 0x0E ) {	// ->
 		ExecPtr++;
 		c=SRC[ExecPtr];
-		if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
-		StackFor->Var[StackFor->Ptr]=c-'A';
-		CBint_Store(SRC);
+		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+			StackFor->Var[StackFor->Ptr]=&REGINT[c-'A'];
+			CBint_Store(SRC);
+		} else
+		if ( ( 'a' <= c ) && ( c <= 'z' ) ) {
+			StackFor->Var[StackFor->Ptr]=&LocalInt[c-'a'];
+			CBint_Store(SRC);
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
 	}
 	if ( StackFor->Ptr >= StackForMax-1 ) { CB_Error(NestingERR); return; } //  nesting error
 	c=SRC[ExecPtr];
 	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr+=2;
-	StackFor->IntEnd[StackFor->Ptr] = CBint_Eval( SRC );
+	StackFor->IntEnd[StackFor->Ptr] = EvalIntsubTop( SRC );
 	c=SRC[ExecPtr];
 	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 		ExecPtr+=2;
-		StackFor->IntStep[StackFor->Ptr] = CBint_Eval( SRC );
+		StackFor->IntStep[StackFor->Ptr] = EvalIntsubTop( SRC );
 	} else {
 		StackFor->IntStep[StackFor->Ptr] = 1;
 	}
@@ -187,20 +200,23 @@ void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 }
 void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	int step,end;
+	int i;
+	int *iptr;
 	if ( StackFor->Ptr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
 	StackFor->Ptr--;
 	CurrentStruct->CNT--;
 	step = StackFor->IntStep[StackFor->Ptr];
-	REGINT[StackFor->Var[StackFor->Ptr]]+=step;
+	iptr=StackFor->Var[StackFor->Ptr];
+	*iptr += step;
 	if ( step > 0 ) { 	// step +
-		if ( REGINT[StackFor->Var[StackFor->Ptr]] > StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
+		if ( *iptr > StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
 		ExecPtr = StackFor->Adrs[StackFor->Ptr];
 		(StackFor->Ptr)++;		// continue
 	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
 	CurrentStruct->CNT++;
 	}
 	else {									// step -
-		if ( REGINT[StackFor->Var[StackFor->Ptr]] < StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
+		if ( *iptr < StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
 		ExecPtr = StackFor->Adrs[StackFor->Ptr];
 		StackFor->Ptr++;		// continue
 	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
@@ -217,7 +233,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -229,6 +245,20 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			if ( c=='%' ) ExecPtr++;
 			REGINT[reg] --;
 			CBint_CurrentValue = REGINT[reg] ;
+		}
+	} else 
+	if ( ( 'a' <= c ) && ( c <= 'z' ) ) {
+		ExecPtr++;
+		reg=c-'a';
+		c=SRC[ExecPtr];
+		if ( c=='#' ) {
+			ExecPtr++;
+			LocalDbl[reg] --;
+			CBint_CurrentValue = LocalDbl[reg] ;
+		} else {
+			if ( c=='%' ) ExecPtr++;
+			LocalInt[reg] --;
+			CBint_CurrentValue = LocalInt[reg] ;
 		}
 	} else 
 	if ( c==0x7F ) {
@@ -246,7 +276,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
-	c=SRC[ExecPtr++];
+	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		if ( CBint_CurrentValue ) return ;
 		else { ExecPtr++;
@@ -270,7 +300,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -282,6 +312,20 @@ void CBint_Isz( char *SRC ) { //	Isz
 			if ( c=='%' ) ExecPtr++;
 			REGINT[reg] ++;
 			CBint_CurrentValue = REGINT[reg] ;
+		}
+	} else 
+	if ( ( 'a' <= c ) && ( c <= 'z' ) ) {
+		ExecPtr++;
+		reg=c-'a';
+		c=SRC[ExecPtr];
+		if ( c=='#' ) {
+			ExecPtr++;
+			LocalDbl[reg] ++;
+			CBint_CurrentValue = LocalDbl[reg] ;
+		} else {
+			if ( c=='%' ) ExecPtr++;
+			LocalInt[reg] ++;
+			CBint_CurrentValue = LocalInt[reg] ;
 		}
 	} else 
 	if ( c==0x7F ) {
@@ -299,7 +343,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
-	c=SRC[ExecPtr++];
+	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		if ( CBint_CurrentValue ) return ;
 		else { ExecPtr++;
@@ -319,12 +363,12 @@ void CBint_Isz( char *SRC ) { //	Isz
 
 void CBint_PxlOprand( char *SRC, int *py, int *px) {
 	int x,y;
-	y = (CBint_Eval( SRC ));
+	y = (EvalIntsubTop( SRC ));
 	*py=y;
 	if ( ( (*py)<1 ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	x = (CBint_Eval( SRC ));
+	x = (EvalIntsubTop( SRC ));
 	*px=x;
 	if ( ( (*px)<1 ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
 	CB_SelectGraphVRAM();	// Select Graphic Screen

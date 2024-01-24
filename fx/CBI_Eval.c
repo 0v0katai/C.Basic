@@ -30,6 +30,12 @@
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> int
 //----------------------------------------------------------------------------------------------
+int CB_EvalInt( char *SRC ) {
+	int value;
+	if (CB_INT) value=EvalIntsubTop( SRC ); else value=EvalsubTop( SRC ); 
+	return value;
+}
+
 int EvalIntsubTop( char *SRC ) {	// eval 1
 	int c;
 	int excptr=ExecPtr;
@@ -180,13 +186,26 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		ExecPtr++;
 		return - EvalIntsub1( SRC );
 	}
-	if ( ( 'A' <= c )&&( c <= 'Z' ) || ( 'a' <= c )&&( c <= 'z' ) )  {
+//	if ( c == '@' ) {
+//			c=SRC[++ExecPtr];
+//			ExecPtr++;
+//			if  ( ( '1'<= c ) && ( c<='9' ) ) return LocalInt[c-'1'];
+//	}
+	if ( ( 'A' <= c )&&( c <= 'Z' ) )  {
 			reg=c-'A';
 			c=SRC[++ExecPtr];
 			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
 			else
 			if ( c=='%' ) ExecPtr++;
 			return REGINT[reg] ;
+	}
+	if ( ( 'a' <= c )&&( c <= 'z' ) )  {
+			reg=c-'a';
+			c=SRC[++ExecPtr];
+			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg] ; }
+			else
+			if ( c=='%' ) ExecPtr++;
+			return LocalInt[reg] ;
 	}
 	if ( ( '0' <= c )&&( c <= '9' ) ) return  Eval_atod( SRC, c );
 	
@@ -369,6 +388,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFDD :	// Eng
 			ExecPtr++;
 			return ENG ;
+		case 0xFFFFFFFD:	//  Eval(
+			ExecPtr++; 
+			return CBint_CurrentValue = CBint_EvalStr(SRC);
 		default:
 			break;
 	}
@@ -618,6 +640,7 @@ int EvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+
 int CBint_BinaryEval( char *SRC ) {	// eval 2
 	int c,op;
 	int reg,mptr,opPtr;
@@ -628,7 +651,7 @@ int CBint_BinaryEval( char *SRC ) {	// eval 2
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -656,7 +679,7 @@ int CBint_BinaryEval( char *SRC ) {	// eval 2
 	opPtr=ExecPtr;
 	op=SRC[ExecPtr++];	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -724,7 +747,7 @@ int CBint_UnaryEval( char *SRC ) {	// eval 1
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];

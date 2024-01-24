@@ -21,6 +21,7 @@
 #include "CB_glib.h"
 #include "CB_Eval.h"
 #include "CB_interpreter.h"
+#include "CBI_Eval.h"
 #include "CBI_interpreter.h"
 #include "CB_error.h"
 #include "CB_Matrix.h"
@@ -31,6 +32,12 @@
 char ExpBuffer[ExpMax+1];
 
 //----------------------------------------------------------------------------------------------
+double CB_EvalDbl( char *SRC ) {
+	double value;
+	if (CB_INT) value=EvalIntsubTop( SRC ); else value=EvalsubTop( SRC ); 
+	return value;
+}
+
 double EvalsubTop( char *SRC ) {	// eval 1
 	int c;
 	int excptr=ExecPtr;
@@ -289,13 +296,21 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		result = - Evalsub1( SRC );
 		return result;
 	}
-	if ( ( 'A' <= c )&&( c <= 'Z' ) || ( 'a' <= c )&&( c <= 'z' ) )  {
+	if ( ( 'A' <= c )&&( c <= 'Z' ) )  {
 			reg=c-'A';
 			c=SRC[++ExecPtr];
 			if ( c=='%' ) { ExecPtr++; return REGINT[reg] ; }
 			else
 			if ( c=='#' ) ExecPtr++;
 			return REG[reg] ;
+	}
+	if ( ( 'a' <= c )&&( c <= 'z' ) )  {
+			reg=c-'a';
+			c=SRC[++ExecPtr];
+			if ( c=='%' ) { ExecPtr++; return LocalInt[reg] ; }
+			else
+			if ( c=='#' ) ExecPtr++;
+			return LocalDbl[reg] ;
 	}
 	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
 		return Eval_atof( SRC );
@@ -606,6 +621,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFDD :	// Eng
 			ExecPtr++;
 			return ENG ;
+		case 0xFFFFFFFD:	//  Eval(
+			ExecPtr++; 
+			return CB_EvalStr(SRC);
 		default:
 			break;
 	}
@@ -946,6 +964,7 @@ double EvalsubTop14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+
 double CB_BinaryEval( char *SRC ) {	// eval 2
 	int c,op;
 	int reg,mptr,opPtr;

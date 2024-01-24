@@ -409,8 +409,8 @@ const short oplistOPTN[]={
 //		0xF74C,	// Sum
 		0x0FB,	// ProbP(
 		0x0FC,	// ProbQ(
-//		0x0FD,	// ProbR(
-//		0x0FE,	// Probt(
+		0x0FD,	// ProbR(
+		0x0FE,	// Probt(
 		0x7FE9,	// CellSum(
 		0};
 							
@@ -453,6 +453,7 @@ const short oplistPRGM[]={
 		0xF7ED,	// SwitchEnd
 		
 		0xED,	// Prog
+		0xFE,	// Gosub
 		0xF70C,	// Return
 		0xF70D,	// Break
 		0xF70E,	// Stop
@@ -466,6 +467,8 @@ const short oplistPRGM[]={
 		0x7F8F,	// Getkey
 
 		0xF720,	// DrawGraph
+		0xF7EE,	// Save
+		0xF7EF,	// Load(
 		0};
 		
 const short oplistVARS[]={
@@ -769,8 +772,8 @@ const short oplistCMD[]={
 		0xFFFF,	// 				-
 //		0xF71A,	// ClrList	
 		0xF91E,	// ClrMat	
-		0x23,	// #
-		0x25,	// %
+		0xF7EE,	// Save
+		0xF7EF,	// Load(
 		
 		0xE8,	// Dsz			1
 		0xE9,	// Isz			2
@@ -809,9 +812,9 @@ const short oplistCMD[]={
 		0xF7EB,	// Case
 		0xF7EC,	// Default
 		0xF7ED,	// SwitchEnd
-		0xDA,	// Deg
-		0xDB,	// Rad
-		0xDC,	// Grad
+		0xFFFF,	// 				-
+		0xFE,	// Gosub
+		0xFD,	// Eval(
 
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
@@ -875,9 +878,9 @@ const short oplistCMD[]={
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
 		0XF921,	// Xdot
-		0xFFFF,	// 				-
-		0x23,	// #
-		0x25,	// %
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
 
 		0x97,	// Abs
 		0xA6,	// Int
@@ -1287,6 +1290,22 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[9]=' ';
 		string[10]='\0';
 	} else
+	if ( opcode == 0xF7EE ) {	// Save
+		string[0]='S';
+		string[1]='a';
+		string[2]='v';
+		string[3]='e';
+		string[4]=' ';
+		string[5]='\0';
+	} else
+	if ( opcode == 0xF7EF ) {	// Load(
+		string[0]='L';
+		string[1]='o';
+		string[2]='a';
+		string[3]='d';
+		string[4]='(';
+		string[5]='\0';
+	} else
 	if ( opcode == 0xF7F0 ) {
 		string[0]='D';
 		string[1]='o';
@@ -1299,7 +1318,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[8]='(';
 		string[9]='\0';
 	} else
-	if ( opcode == 0xFB ) { // P(
+/*	if ( opcode == 0xFB ) { // P(
 		string[0]='E';
 		string[1]='v';
 		string[2]='1';
@@ -1313,6 +1332,23 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[3]='(';
 		string[4]='\0';
 	} else {
+*/	if ( opcode == 0xFD ) { // Eval(
+		string[0]='E';
+		string[1]='v';
+		string[2]='a';
+		string[3]='l';
+		string[4]='(';
+		string[5]='\0';
+	} else {
+	if ( opcode == 0xFE ) { // t(
+		string[0]='G';
+		string[1]='o';
+		string[2]='s';
+		string[3]='u';
+		string[4]='b';
+		string[5]=' ';
+		string[6]='\0';
+	} else
 		return OpcodeToStr( (short)opcode, (unsigned char *)string ) ; // SYSCALL
 	}
 }

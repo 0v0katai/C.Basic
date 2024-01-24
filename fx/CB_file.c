@@ -11,6 +11,8 @@
 #include "CB_edit.h"
 #include "CB_interpreter.h"
 #include "CBI_interpreter.h"
+#include "CB_Eval.h"
+#include "CBI_Eval.h"
 #include "CB_Matrix.h"
 #include "CB_setup.h"
 
@@ -800,7 +802,7 @@ int SaveG1M( char *filebase ){
 
 int SaveProgfile( int progNo ){
 	char *filebase;
-	char fname[32],basname[16],msg[32];
+	char fname[32],basname[16];
 	int size,i;
 	
 	filebase=ProgfileAdrs[progNo];
@@ -823,7 +825,7 @@ int SavePicture( char *filebase, int pictNo ){
 	FILE_INFO info;
 	char folder2[FILENAMEMAX];
 	int r,s;
-	char fname[32],basname[16],msg[32];
+	char fname[32],basname[16];
 	int size,i;
  	unsigned char c,d;
  	c=pictNo/10+'0'; if ( c=='0' ) c=' ';
@@ -932,7 +934,7 @@ void DeleteFileFav(char *sname ) {
 //----------------------------------------------------------------------------------------------
 int RenameFile( char *sname ) {
 	char *filebase;
-	char fname[32],basname[16],msg[32];
+	char fname[32],basname[16];
 	int size,i,j;
 
 	if ( LoadProgfile( sname ) ) return 1 ; // error
@@ -1034,9 +1036,11 @@ void SaveConfig(){
 
 	bufdbl[ 8]=Xfct;
 	bufdbl[ 9]=Yfct;
-	for ( i= 10; i<  10+58 ; i++ ) bufdbl[i]=REG[i-10];
+	for ( i= 10; i<  10+26 ; i++ ) bufdbl[i]=REG[i-10];
+	for ( i= 42; i<  42+26 ; i++ ) bufdbl[i]=REGsmall[i-42];
 	for ( i= 68; i<  68+11 ; i++ ) bufdbl[i]=REGv[i-68];
-	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
+	for ( i=160; i< 160+26 ; i++ ) bufint[i]=REGINT[i-160];
+	for ( i=192; i< 192+26 ; i++ ) bufint[i]=REGINTsmall[i-192];
 
 	bufshort[218*2  ]=(short)KeyRepeatFirstCount;
 	bufshort[218*2+2]=(short)KeyRepeatNextCount;
@@ -1111,9 +1115,11 @@ void LoadConfig(){
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];
-		for ( i= 10; i<  10+58 ; i++ ) REG[i-10] =bufdbl[i];
+		for ( i= 10; i<  10+26 ; i++ ) REG[i-10]   =bufdbl[i];
+		for ( i= 42; i<  42+26 ; i++ ) REGsmall[i-42] =bufdbl[i];
 		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]=bufdbl[i];
-		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
+		for ( i=160; i< 160+26 ; i++ ) REGINT[i-160]=bufint[i];
+		for ( i=192; i< 192+26 ; i++ ) REGINTsmall[i-192]=bufint[i];
 
 		KeyRepeatFirstCount=bufshort[218*2  ]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=20;
 		KeyRepeatNextCount =bufshort[218*2+2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount =5;
@@ -1135,7 +1141,7 @@ void LoadConfig(){
 //----------------------------------------------------------------------------------------------
 int NewProg(){
 	char *filebase;
-	char fname[32],basname[16],msg[32];
+	char fname[32],basname[16];
 	int size,i;
 	
 	basname[0]='\0';
@@ -1168,6 +1174,102 @@ int NewProg(){
 	ProgNo=0;
 	ExecPtr=0;
 	return 0;
+}
+
+//----------------------------------------------------------------------------------------------
+
+void SetFullfilenameBin( char *fname, char *sname ) {
+	if( strlen(folder) == 0 )
+		sprintf( fname, "\\\\"ROOT"\\%s.bin", sname );
+	else
+		sprintf( fname, "\\\\"ROOT"\\%s\\%s.bin", folder, sname );
+}
+
+void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
+	char fname[32],sname[16];
+	int c,i,matsize;
+	char* FilePtr;
+	int reg,dimA,dimB;
+	int check=0;
+
+	c =SRC[ExecPtr];
+	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	GetLocateStr(SRC, sname,8);
+	SetFullfilenameBin( fname, sname );
+	c =SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	i=MatrixOprand( SRC, &reg, &dimA, &dimB );
+	if ( ErrorNo ) return ; // error
+	if ( i ) { dimA=1; dimB=1; }	// no element
+	FilePtr=MatrixPtr( reg, dimA, dimB );
+	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA, dimB ) + MatrixSize( reg, 1, 1 );
+
+	c =SRC[ExecPtr];
+	if ( c == ',' ) {
+		c =SRC[++ExecPtr];
+		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
+		ExecPtr++;
+	}
+	if ( ExistFile( fname ) == 0 ) { // ==0 existed 
+		if ( check ) if ( YesNo( "Overwrite OK?" ) == 0 ) return  ; // cancel
+		Bdisp_PutDisp_DD();
+	}
+	if ( storeFile( fname, (unsigned char*)FilePtr, matsize )==0 ) return ;	// 0:ok
+	CB_Error(FileERR);
+}
+
+
+void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3] 
+	char fname[32],sname[16];
+	int c,i,matsize;
+	char* FilePtr;
+	int ptr=0;
+	int reg,dimA,dimB;
+
+	int handle;
+	FONTCHARACTER filename[50];
+	int size;
+
+	c =SRC[ExecPtr];
+	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	GetLocateStr(SRC, sname,8);
+	SetFullfilenameBin( fname, sname );
+	c =SRC[ExecPtr];
+	if ( c == ',' ) {
+		ExecPtr++;
+		ptr=CB_EvalInt( SRC );
+		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
+	}
+	c =SRC[ExecPtr];
+	if ( c != ')' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	c =SRC[ExecPtr];
+	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	i=MatrixOprand( SRC, &reg, &dimA, &dimB );
+	if ( ErrorNo ) return ; // error
+	if ( i ) { dimA=1; dimB=1; }	// no element
+	FilePtr=MatrixPtr( reg, dimA, dimB );	
+	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA, dimB ) + MatrixSize( reg, 1, 1 );
+
+	CharToFont( fname, filename );
+	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
+	if( handle < 0 ) {
+		ErrorMSGfile( "Can't find file", fname);
+		CB_Error(FileERR); return ;
+	}
+	
+	size = Bfile_GetFileSize( handle ) -(ptr) ;
+
+	if ( size > matsize ) size=matsize;
+
+	Bfile_ReadFile( handle, FilePtr, size, ptr );
+	Bfile_CloseFile( handle );
+	if ( FilePtr == NULL ) { ErrorMSGfile( "Load Error", fname ); CB_Error(FileERR); return ; }
+
 }
 
 //----------------------------------------------------------------------------------------------

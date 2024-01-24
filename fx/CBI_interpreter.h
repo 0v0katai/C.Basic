@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-extern int  REGINT[59];
+extern int  REGINT[26];
 
 #define regintA REGINT[ 0]
 #define regintB REGINT[ 1]
