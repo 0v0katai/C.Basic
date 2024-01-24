@@ -2503,9 +2503,11 @@ void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) { //	Prog "...
 	char StepOutProgNo=0;
 
 	c=SRC[ExecPtr];
-	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }	// Syntax error
-	ExecPtr++;
-	CB_GetQuotOpcode(SRC, buffer,32-1);	// Prog name
+	if ( c == 0x22 ) {
+		ExecPtr++;
+		CB_GetQuotOpcode(SRC, buffer,32-1);	// Prog name
+	} else CB_GetLocateStr(SRC, buffer,32-1); 
+	if ( ErrorNo ) return ;	// error
 
 	c=SRC[ExecPtr];
 	if ( c == ',' ) {	// arg
@@ -3191,10 +3193,14 @@ int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
