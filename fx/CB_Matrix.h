@@ -1,3 +1,4 @@
+int DimMatrixDefaultElementSize( int reg ) ;
 int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) ;
 int DimMatrix( int reg, int dimA, int dimB ) ;
 double ReadMatrix( int reg, int dimA, int dimB);

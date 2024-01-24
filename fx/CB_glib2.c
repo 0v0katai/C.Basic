@@ -891,7 +891,7 @@ unsigned int MathKey( unsigned int  key) {
 
 
 int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no change  -1 : change
-	unsigned char buffer[22];
+	unsigned char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int select=0;
@@ -1114,7 +1114,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 
 //-----------------------------------------------------------------------------
 void SetFactor(){
-	unsigned char buffer[22];
+	unsigned char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int select=0;
@@ -1191,9 +1191,53 @@ void SetFactor(){
 }
 
 //-----------------------------------------------------------------------------
+void InitVar( double value, int VarMode ) {
+	unsigned char buffer[32];
+	unsigned int key;
+	int	cont=1;
+	int i,reg;
+	PopUpWin(3);
+
+	while (cont) {
+		locate( 3,3); Print((unsigned char *)"Init All Variable");
+		locate( 3,5); Print((unsigned char *)"value:           ");
+		sprintG(buffer,value,  10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
+		locate(1,8); PrintLine((unsigned char *)" ",21);
+		locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
+//		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
+		switch (key) {
+			case KEY_CTRL_EXIT:
+				return ;
+				break;
+			case KEY_CTRL_EXE:
+				cont=0;
+				break;
+			case KEY_CTRL_RIGHT:
+				value  =InputNumD_full( 9, 5, 10, value);	// 
+				break;
+			default:
+				break;
+		}
+		key=MathKey( key );
+		if ( key ) {
+			value  =InputNumD_Char( 9, 5, 10, value, key);	// 
+		}
+	}
+
+	if ( YesNo("Initialize Ok?") ) {
+		if ( VarMode ) {
+			for ( i=32; i<32+26; i++) REGINT[i]=value;
+		} else {
+			for ( i= 0; i<  +26; i++) REG[i]=value;
+		}
+	}
+}
+
 
 int SetVar(int select){		// ----------- Set Variable
-	unsigned char buffer[22];
+	unsigned char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int scrl=0;
@@ -1202,6 +1246,7 @@ int SetVar(int select){		// ----------- Set Variable
 	int selectreplay=-1;
 	int opNum=25;
 	int small=0;
+	double value=0;
 	int VarMode=CB_INT;	// 0:double  1:int
 
 	if (select>25) { small=32; select-=32; }
@@ -1224,10 +1269,10 @@ int SetVar(int select){		// ----------- Set Variable
 			locate(3,1+i); Print(buffer);
 		}
 		Fkey_dispN( 0, "A<>a");
-		Fkey_dispN( 1, "DBL");
-		Fkey_dispN( 2, "INT");
+		Fkey_dispN( 1, "Init");
+		if ( VarMode ) Fkey_dispN_aA( 2, "D<>I"); else Fkey_dispN_Aa( 2, "D<>I");
 
-		locate(11,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
+		locate(12,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
 
 		y = (select-seltop) ;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
@@ -1244,10 +1289,10 @@ int SetVar(int select){		// ----------- Set Variable
 				small=32-small;
 				break;
 			case KEY_CTRL_F2:
-				VarMode=0;
+				InitVar(value,VarMode);
 				break;
 			case KEY_CTRL_F3:
-				VarMode=1;
+				VarMode=1-VarMode;
 				break;
 			case KEY_CTRL_UP:
 				select--;

@@ -627,7 +627,7 @@ void CBint_PxlChg( unsigned char *SRC ) { //	PxlChg
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int CBint_BinaryEval( unsigned char *SRC ) {
+int CBint_BinaryEval( unsigned char *SRC ) {	// eval 2
 	unsigned int c,op;
 	int reg,mptr,opPtr;
 	int src,dst;
@@ -639,7 +639,14 @@ int CBint_BinaryEval( unsigned char *SRC ) {
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		src = REGINT[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='#' ) {
+			ExecPtr++;
+			src = REG[reg] ;
+		} else {
+			if ( c=='%' ) ExecPtr++;
+			src = REGINT[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
@@ -673,7 +680,14 @@ int CBint_BinaryEval( unsigned char *SRC ) {
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		dst = REGINT[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='#' ) {
+			ExecPtr++;
+			dst = REG[reg] ;
+		} else {
+			if ( c=='%' ) ExecPtr++;
+			dst = REGINT[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
@@ -734,7 +748,7 @@ int CBint_BinaryEval( unsigned char *SRC ) {
 	}
 }
 
-int CBint_UnaryEval( unsigned char *SRC ) {
+int CBint_UnaryEval( unsigned char *SRC ) {	// eval 1
 	unsigned int c,op;
 	int reg,mptr,opPtr;
 	int src,dst;
@@ -746,7 +760,14 @@ int CBint_UnaryEval( unsigned char *SRC ) {
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		return REGINT[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='#' ) {
+			ExecPtr++;
+			return REG[reg] ;
+		} else {
+			if ( c=='%' ) ExecPtr++;
+			return REGINT[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 

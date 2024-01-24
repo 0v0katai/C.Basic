@@ -2336,7 +2336,7 @@ void CB_Prog( unsigned char *SRC ) { //	Prog "..."
 }
 
 //----------------------------------------------------------------------------------------------
-double CB_BinaryEval( unsigned char *SRC ) {
+double CB_BinaryEval( unsigned char *SRC ) {	// eval 2
 	unsigned int c,op;
 	int reg,mptr,opPtr;
 	double src,dst;
@@ -2348,7 +2348,14 @@ double CB_BinaryEval( unsigned char *SRC ) {
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		src    = REG[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
+			src = REGINT[reg] ;
+		} else {
+			if ( c=='#' ) ExecPtr++;
+			src = REG[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
@@ -2382,7 +2389,14 @@ double CB_BinaryEval( unsigned char *SRC ) {
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		dst = REG[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
+			dst = REGINT[reg] ;
+		} else {
+			if ( c=='#' ) ExecPtr++;
+			dst = REG[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
@@ -2443,7 +2457,7 @@ double CB_BinaryEval( unsigned char *SRC ) {
 	}
 }
 
-double CB_UnaryEval( unsigned char *SRC ) {
+double CB_UnaryEval( unsigned char *SRC ) {	// eval 1
 	unsigned int c,op;
 	int reg,mptr,opPtr;
 	double src,dst;
@@ -2455,7 +2469,14 @@ double CB_UnaryEval( unsigned char *SRC ) {
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		return REG[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
+			return REGINT[reg] ;
+		} else {
+			if ( c=='#' ) ExecPtr++;
+			return REG[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
