@@ -7,6 +7,7 @@ extern int selectMatrix;
 #define PageUpDownNumDefault 1
 extern short PageUpDownNum;		// Pageup/down count
 //------------------------------------------------------------------------------
+void VerDispSub() ;
 void VerDisp() ;
 unsigned int MathKey( unsigned int  key) ;
 

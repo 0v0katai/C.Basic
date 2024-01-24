@@ -54,7 +54,6 @@ char FileListUpdate=1;
 char StorageMode=0;						// 0:Storage memory   1:SD
 char redrawsubfolder=0;
 int recentsize=0;
-
 char ForceG1Msave;		//    1: force g1m save
 
 const char root[][5]={"fls0","crd0"};
@@ -355,7 +354,7 @@ void FavoritesDown( int *index ) {
 
 //--------------------------------------------------------------
 
-int GetMediaFree( int *high, int *low) {
+int GetMediaFree( unsigned int *high, unsigned int *low) {
 	int freespace[2];
 	switch ( StorageMode ) {	
 		case 0:		// Strage memory
@@ -382,13 +381,17 @@ int GetMediaFree( int *high, int *low) {
 	return (*low);
 }
 void GetMediaFreeStr10( char *buffer ) {
-	int high,low;
+	unsigned int high,low;
+	unsigned int k;
 	GetMediaFree( &high, &low);
-	if ( ( high == 0 ) && ( low < 1000000 ) ) {
+	k=low/0x400+ high*0x400000;
+	if ( k < 1000*1024 ) {
 		sprintf(buffer,"%10d",low );
+//	} else
+//	if ( k < 1000*1024*1024 ) {
+//		sprintf(buffer,"%10dK",k);
 	} else {
-		low = low/0x400+ high*0x400000;
-		sprintf(buffer,"%9.3fM",(double)low/1024.0);
+		sprintf(buffer,"%9.3fM",(double)k/1024.0);
 	}
 }
 
@@ -717,7 +720,7 @@ unsigned int Explorer( int size, char *folder )
 							i = StorageMode ;
 							selectSetup=SetupG(selectSetup);
 							SaveFavorites();
-							if ( i != StorageMode ) goto update;
+							if ( i != StorageMode ) { index = 0; goto update; }
 							break;
 					case KEY_CTRL_F1:
 							selectVar=SetVar(selectVar);		// A - 
@@ -812,7 +815,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	int handle;
 	FONTCHARACTER filename[50];
 	int r,s;
-	int freehigh,freelow;
+	unsigned int freehigh,freelow;
 
 	/* disable, just for call "Bfile_FindFirst" */
 	FONTCHARACTER buffer[50];
@@ -1404,14 +1407,14 @@ void DeleteFile(char *fname) {
 	FileListUpdate=1;
 }
 
-void DeleteFileFav(char *fname ) {
+void DeleteFileFav(char *fname, int yesno ) {
 	char sname[16];
 	int i;
 	
-	if ( YesNo( "Delete file?" ) == 0 ) return ;
+	SetShortName( sname, fname);		//
+	if ( yesno ) if ( YesNo2( sname,"Delete file?" ) == 0 ) return ;
 	DeleteFile( fname );
 	
-	SetShortName( sname, fname);		//
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
 		if ( strcmp( Favoritesfiles[i].filename,  sname )== 0 ) 
@@ -1480,186 +1483,6 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 	return 0;
 }
 
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-#define ConfigMAX 1080
-//--------------------------------------------------------------
-
-void SaveFavorites(){
-	int i;
-	for( i=0; i<FavoritesMAX; i++){			//	backup Favorites list
-		if ( files[i].filesize == 0 ) {
-			memset(  Favoritesfiles[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
-			Favoritesfiles[i].filesize = 0;
-		} else {
-			strncpy( Favoritesfiles[i].filename, files[i].filename, FILENAMEMAX );
-			strncpy( Favoritesfiles[i].folder,   files[i].folder,   FOLDERMAX );
-			Favoritesfiles[i].filesize = files[i].filesize;
-		}
-	}
-	SaveConfig();
-}
-//------------------------------------------------------------------------ main memory version
-void SaveConfig(){
-	const unsigned char fname[]="CBasic1";
-	unsigned char buffer[ConfigMAX];
-	unsigned char *sbuf;
-	short  *bufshort=(short*)buffer;
-	int    *bufint =(int*)buffer;
-	double *bufdbl =(double*)buffer;
-	int size,i,r;
-	int handle,state;
-
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle >= 0) {		// Already Exists
-		Bfile_CloseFile(handle);
-	}
-	
-	if (handle==IML_FILEERR_ENTRYNOTFOUND) {
-		handle=Bfile_CreateMainMemory(fname);
-		if (handle<0) {ErrorMSG("Create Error",handle); return;}
-		state=Bfile_CloseFile(handle);
-		if (state<0)  {ErrorMSG("Close Error",state); return;}
-	}
-
-	if (handle<0) {ErrorMSG("Open Error",handle); return;}
-	
-	memset( buffer, 0x00, ConfigMAX );
-	buffer[ 0]='C';
-	buffer[ 1]='B';
-	buffer[ 2]='.';
-	buffer[ 3]='c';
-	buffer[ 4]='o';
-	buffer[ 5]='n';
-	buffer[ 6]='f';
-	buffer[ 7]='i';
-	buffer[ 8]='g';
-	buffer[ 9]='9';
-	buffer[10]='9';
-	buffer[11]='n';
-
-	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=UseHiddenRAM;
-	bufshort[ 9]=DrawType;			bufshort[ 8]=RefreshCtrl;
-	bufshort[11]=Coord;				bufshort[10]=Refreshtime;
-	bufshort[13]=Grid;				bufshort[12]=ENG;
-	bufshort[15]=Axes;				bufshort[14]=CB_Round.MODE;
-	bufshort[17]=Label;				bufshort[16]=CB_Round.DIGIT-1;
-	bufshort[19]=Derivative;		bufshort[18]=0;
-	bufshort[21]=S_L_Style;			bufshort[20]=0;
-	bufshort[23]=Angle;				bufshort[22]=ForceG1Msave;
-	bufshort[25]=BreakCheck;		bufshort[24]=StorageMode;
-	bufshort[27]=TimeDsp;			bufshort[26]=PageUpDownNum;
-	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
-	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
-
-	bufdbl[ 8]=Xfct;
-	bufdbl[ 9]=Yfct;
-	for ( i= 10; i<  10+58 ; i++ ) bufdbl[i]=REG[i-10];
-	for ( i= 68; i<  68+11 ; i++ ) bufdbl[i]=REGv[i-68];
-	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
-
-	bufshort[218*2]=(short)KeyRepeatFirstCount;
-	bufshort[219*2]=(short)KeyRepeatNextCount;
-	
-	for ( i=0; i<FavoritesMAX; i++ ) {
-		bufint[i+220]=Favoritesfiles[i].filesize;
-	}
-	sbuf=buffer+(220+FavoritesMAX)*4;
-
-	strncpy( (char*)sbuf, folder, FILENAMEMAX);
-	sbuf+=FILENAMEMAX;
-	for ( i=0; i<FavoritesMAX; i++ ) {
-		strncpy( (char*)sbuf, Favoritesfiles[i].filename, FILENAMEMAX );
-		sbuf+=FILENAMEMAX;
-		strncpy( (char*)sbuf, Favoritesfiles[i].folder,   FOLDERMAX );
-		sbuf+=FOLDERMAX;
-	}
-
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle<0) {ErrorMSG("Open Error",handle); return;}
-	state=Bfile_WriteFile(handle,buffer,ConfigMAX);
-	if (state<0)  {ErrorMSG("Write Error",state); return;}
-	state=Bfile_CloseFile(handle);
-	if (state<0)  {ErrorMSG("Close Error",state); return;}
-}
-
-
-void LoadConfig(){
-	const unsigned char fname[]="CBasic1";
-	unsigned char buffer[ConfigMAX];
-	unsigned char *sbuf;
-	short  *bufshort;
-	int    *bufint;
-	double *bufdbl;
-	int size,i;
-	int handle,state;
-
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle<0)  { // Open Error
-		return;
-	}
-	state=Bfile_ReadFile(handle, buffer, ConfigMAX, 0);
-	if (state<0)  {ErrorMSG("Read Error",state); return;}
-	state=Bfile_CloseFile(handle);
-	if (state<0)  {ErrorMSG("Close Error",state); return;}
-
-	bufshort=(short*)buffer;
-	bufint=(int*)buffer;
-	bufdbl=(double*)buffer;
-	
-	if ( ( buffer[ 0]=='C' ) &&	// file check
-		 ( buffer[ 1]=='B' ) &&
-		 ( buffer[ 2]=='.' ) &&
-		 ( buffer[ 3]=='c' ) &&
-		 ( buffer[ 4]=='o' ) &&
-		 ( buffer[ 5]=='n' ) &&
-		 ( buffer[ 6]=='f' ) &&
-		 ( buffer[ 7]=='i' ) &&
-		 ( buffer[ 8]=='g' ) &&
-		 ( buffer[ 9]=='9' ) &&
-		 ( buffer[10]=='9' ) &&
-		 ( buffer[11]=='n' ) ) {
-									// load config & memory
-		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =bufshort[6];
-		DrawType      =bufshort[ 9];        RefreshCtrl   =bufshort[8];
-		Coord         =bufshort[11];        Refreshtime   =bufshort[10];
-		Grid          =bufshort[13];        ENG           =bufshort[12];
-		Axes          =bufshort[15];        CB_Round.MODE =bufshort[14];
-		Label         =bufshort[17];        CB_Round.DIGIT=bufshort[16]+1;
-		Derivative    =bufshort[19];        
-		S_L_Style     =bufshort[21];        
-		Angle         =bufshort[23];        ForceG1Msave   =bufshort[22];
-		BreakCheck    =bufshort[25];        StorageMode    =bufshort[24];
-		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
-		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
-		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
-
-		Xfct=bufdbl[ 8];
-		Yfct=bufdbl[ 9];
-		for ( i= 10; i<  10+58 ; i++ ) REG[i-10]   =bufdbl[i];
-		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]=bufdbl[i];
-		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
-
-		KeyRepeatFirstCount=bufshort[218*2]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount = 20;
-		KeyRepeatNextCount =bufshort[219*2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount  =  5;
-
-		for ( i=0; i<FavoritesMAX; i++ ) {
-			Favoritesfiles[i].filesize=bufint[i+220];
-		}
-		sbuf=buffer+(220+FavoritesMAX)*4;
-
-		strncpy( folder, (char*)sbuf, FILENAMEMAX);
-		sbuf+=FILENAMEMAX;
-		for ( i=0; i<FavoritesMAX; i++ ) {
-			strncpy( Favoritesfiles[i].filename, (char*)sbuf, FILENAMEMAX );
-			sbuf+=FILENAMEMAX;
-			strncpy( Favoritesfiles[i].folder,   (char*)sbuf, FOLDERMAX );
-			sbuf+=FOLDERMAX;
-		}
-	} else {
-		Bfile_DeleteMainMemory(fname);
-	}
-}
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -1832,6 +1655,29 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	exit:
 	Restorefolder();
 }
+
+void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
+	char fname[32],sname[16];
+	int c;
+	int yesno=0;
+
+	c =SRC[ExecPtr];
+	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	CB_GetLocateStr(SRC, sname,22);
+	c =SRC[ExecPtr];
+	if ( c == ',' ) {
+		ExecPtr++;
+		yesno = CB_EvalInt( SRC );
+	}
+	if ( ErrorNo ) return ; // error
+
+	Getfolder( sname );
+	SetFullfilenameBin( fname, sname );
+	DeleteFileFav( fname , yesno );	// with yesno
+	Restorefolder();
+}
+
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void ConvertToText( char *fname ){
 	char *filebase;
@@ -1882,6 +1728,186 @@ void ConvertToText( char *fname ){
 	strncpy( renamefolder, folder, FOLDERMAX);
 }
 
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+#define ConfigMAX 1080
+//--------------------------------------------------------------
+
+void SaveFavorites(){
+	int i;
+	for( i=0; i<FavoritesMAX; i++){			//	backup Favorites list
+		if ( files[i].filesize == 0 ) {
+			memset(  Favoritesfiles[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
+			Favoritesfiles[i].filesize = 0;
+		} else {
+			strncpy( Favoritesfiles[i].filename, files[i].filename, FILENAMEMAX );
+			strncpy( Favoritesfiles[i].folder,   files[i].folder,   FOLDERMAX );
+			Favoritesfiles[i].filesize = files[i].filesize;
+		}
+	}
+	SaveConfig();
+}
+//------------------------------------------------------------------------ main memory version
+void SaveConfig(){
+	const unsigned char fname[]="CBasic1";
+	unsigned char buffer[ConfigMAX];
+	unsigned char *sbuf;
+	short  *bufshort=(short*)buffer;
+	int    *bufint =(int*)buffer;
+	double *bufdbl =(double*)buffer;
+	int size,i,r;
+	int handle,state;
+
+	handle=Bfile_OpenMainMemory(fname);
+	if (handle >= 0) {		// Already Exists
+		Bfile_CloseFile(handle);
+	}
+	
+	if (handle==IML_FILEERR_ENTRYNOTFOUND) {
+		handle=Bfile_CreateMainMemory(fname);
+		if (handle<0) {ErrorMSG("Create Error",handle); return;}
+		state=Bfile_CloseFile(handle);
+		if (state<0)  {ErrorMSG("Close Error",state); return;}
+	}
+
+	if (handle<0) {ErrorMSG("Open Error",handle); return;}
+	
+	memset( buffer, 0x00, ConfigMAX );
+	buffer[ 0]='C';
+	buffer[ 1]='B';
+	buffer[ 2]='.';
+	buffer[ 3]='c';
+	buffer[ 4]='o';
+	buffer[ 5]='n';
+	buffer[ 6]='f';
+	buffer[ 7]='i';
+	buffer[ 8]='g';
+	buffer[ 9]='9';
+	buffer[10]='9';
+	buffer[11]='n';
+
+	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=UseHiddenRAM;
+	bufshort[ 9]=DrawType;			bufshort[ 8]=RefreshCtrl;
+	bufshort[11]=Coord;				bufshort[10]=Refreshtime;
+	bufshort[13]=Grid;				bufshort[12]=ENG;
+	bufshort[15]=Axes;				bufshort[14]=CB_Round.MODE;
+	bufshort[17]=Label;				bufshort[16]=CB_Round.DIGIT-1;
+	bufshort[19]=Derivative;		bufshort[18]=Waitcount;
+	bufshort[21]=S_L_Style;			bufshort[20]=0;
+	bufshort[23]=Angle;				bufshort[22]=ForceG1Msave;
+	bufshort[25]=BreakCheck;		bufshort[24]=StorageMode;
+	bufshort[27]=TimeDsp;			bufshort[26]=PageUpDownNum;
+	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
+	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
+
+	bufdbl[ 8]=Xfct;
+	bufdbl[ 9]=Yfct;
+	for ( i= 10; i<  10+58 ; i++ ) bufdbl[i]=REG[i-10];
+	for ( i= 68; i<  68+11 ; i++ ) bufdbl[i]=REGv[i-68];
+	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
+
+	bufshort[218*2]=(short)KeyRepeatFirstCount;
+	bufshort[219*2]=(short)KeyRepeatNextCount;
+	
+	for ( i=0; i<FavoritesMAX; i++ ) {
+		bufint[i+220]=Favoritesfiles[i].filesize;
+	}
+	sbuf=buffer+(220+FavoritesMAX)*4;
+
+	strncpy( (char*)sbuf, folder, FILENAMEMAX);
+	sbuf+=FILENAMEMAX;
+	for ( i=0; i<FavoritesMAX; i++ ) {
+		strncpy( (char*)sbuf, Favoritesfiles[i].filename, FILENAMEMAX );
+		sbuf+=FILENAMEMAX;
+		strncpy( (char*)sbuf, Favoritesfiles[i].folder,   FOLDERMAX );
+		sbuf+=FOLDERMAX;
+	}
+
+	handle=Bfile_OpenMainMemory(fname);
+	if (handle<0) {ErrorMSG("Open Error",handle); return;}
+	state=Bfile_WriteFile(handle,buffer,ConfigMAX);
+	if (state<0)  {ErrorMSG("Write Error",state); return;}
+	state=Bfile_CloseFile(handle);
+	if (state<0)  {ErrorMSG("Close Error",state); return;}
+}
+
+
+void LoadConfig(){
+	const unsigned char fname[]="CBasic1";
+	unsigned char buffer[ConfigMAX];
+	unsigned char *sbuf;
+	short  *bufshort;
+	int    *bufint;
+	double *bufdbl;
+	int size,i;
+	int handle,state;
+
+	handle=Bfile_OpenMainMemory(fname);
+	if (handle<0)  { // Open Error
+		return;
+	}
+	state=Bfile_ReadFile(handle, buffer, ConfigMAX, 0);
+	if (state<0)  {ErrorMSG("Read Error",state); return;}
+	state=Bfile_CloseFile(handle);
+	if (state<0)  {ErrorMSG("Close Error",state); return;}
+
+	bufshort=(short*)buffer;
+	bufint=(int*)buffer;
+	bufdbl=(double*)buffer;
+	
+	if ( ( buffer[ 0]=='C' ) &&	// file check
+		 ( buffer[ 1]=='B' ) &&
+		 ( buffer[ 2]=='.' ) &&
+		 ( buffer[ 3]=='c' ) &&
+		 ( buffer[ 4]=='o' ) &&
+		 ( buffer[ 5]=='n' ) &&
+		 ( buffer[ 6]=='f' ) &&
+		 ( buffer[ 7]=='i' ) &&
+		 ( buffer[ 8]=='g' ) &&
+		 ( buffer[ 9]=='9' ) &&
+		 ( buffer[10]=='9' ) &&
+		 ( buffer[11]=='n' ) ) {
+									// load config & memory
+		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =bufshort[6];
+		DrawType      =bufshort[ 9];        RefreshCtrl   =bufshort[8];
+		Coord         =bufshort[11];        Refreshtime   =bufshort[10];
+		Grid          =bufshort[13];        ENG           =bufshort[12];
+		Axes          =bufshort[15];        CB_Round.MODE =bufshort[14];
+		Label         =bufshort[17];        CB_Round.DIGIT=bufshort[16]+1;
+		Derivative    =bufshort[19];        Waitcount     =bufshort[18];
+		S_L_Style     =bufshort[21];        
+		Angle         =bufshort[23];        ForceG1Msave   =bufshort[22];
+		BreakCheck    =bufshort[25];        StorageMode    =bufshort[24];
+		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
+		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
+		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
+
+		Xfct=bufdbl[ 8];
+		Yfct=bufdbl[ 9];
+		for ( i= 10; i<  10+58 ; i++ ) REG[i-10]   =bufdbl[i];
+		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]=bufdbl[i];
+		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
+
+		KeyRepeatFirstCount=bufshort[218*2]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount = 20;
+		KeyRepeatNextCount =bufshort[219*2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount  =  5;
+
+		for ( i=0; i<FavoritesMAX; i++ ) {
+			Favoritesfiles[i].filesize=bufint[i+220];
+		}
+		sbuf=buffer+(220+FavoritesMAX)*4;
+
+		strncpy( folder, (char*)sbuf, FILENAMEMAX);
+		sbuf+=FILENAMEMAX;
+		for ( i=0; i<FavoritesMAX; i++ ) {
+			strncpy( Favoritesfiles[i].filename, (char*)sbuf, FILENAMEMAX );
+			sbuf+=FILENAMEMAX;
+			strncpy( Favoritesfiles[i].folder,   (char*)sbuf, FOLDERMAX );
+			sbuf+=FOLDERMAX;
+		}
+	} else {
+		Bfile_DeleteMainMemory(fname);
+	}
+}
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 // C.Basic Pre process
@@ -2085,7 +2111,7 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
@@ -2108,6 +2134,7 @@ int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2140,5 +2167,4 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 */

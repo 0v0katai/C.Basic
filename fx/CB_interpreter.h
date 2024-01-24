@@ -37,6 +37,7 @@ extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
 extern char RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
 extern char Refreshtime;	// Refresh time  n/128
 
+extern short Waitcount;	// wait control
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
@@ -71,10 +72,10 @@ extern double  REGv[11];
 #define regZ REG[25]
 #define reg_r 		REG[26]	// [	<r>
 #define reg_Theta	REG[27]	// \	Theta
-#define reg28 REG[28]	// ]
+#define reg_Ans		REG[28]	// ]	Ans
 #define reg29 REG[29]	// ^
 #define reg30 REG[30]	// _
-#define reg31 REG[31]	// `
+#define reg31 REG[31]	//
 
 
 #define Xmin REGv[ 0]
@@ -100,16 +101,16 @@ extern	int		*LocalInt[26+6+26];		// local var ptr
 
 extern double	traceAry[130];		// Graph trace array
 
-#define GraphStrMAX 32
+#define GraphStrMAX 64
 extern char *GraphY;
-extern char GraphY1[];
-extern char GraphY2[];
-extern char GraphY3[];
+extern char *GraphX;
 
 #define PI 3.1415926535897932
 
 #define PictMax 20
 extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
+
+extern char BG_Pict_No;
 
 //------------------------------------------------------------------------------
 extern int  REGINT[26+6+26];
@@ -140,12 +141,12 @@ extern int  REGINT[26+6+26];
 #define regintX REGINT[23]
 #define regintY REGINT[24]
 #define regintZ REGINT[25]
-#define regint_r 		REG[26]	// [	<r>
-#define regint_Theta	REG[27]	// \	Theta
-#define regint28 REG[28]	// ]
-#define regint29 REG[29]	// ^
-#define regint30 REG[30]	// _
-#define regint31 REG[31]	// `
+#define regint_r 		REGINT[26]	// [	<r>
+#define regint_Theta	REGINT[27]	// \	Theta
+#define regint_Ans		REGINT[28]	// ]	Ans
+#define regint29 REGINT[29]	// ^
+#define regint30 REGINT[30]	// _
+#define regint31 REGINT[31]	//
 
 //------------------------------------------------------------------------------
 extern int	CB_TicksStart;
@@ -271,6 +272,9 @@ void CB_SelectGraphVRAM() ;
 void CB_SelectGraphDD() ;
 void Scrl_Y();
 
+void CB_ChangeViewWindow() ;
+int CB_ChangeGraphicMode( char *SRC ) ;
+
 void CB_Dsz( char *SRC ) ; //	Dsz
 void CB_Isz( char *SRC ) ; //	Isz
 void CB_Store( char *SRC );	// ->
@@ -304,10 +308,16 @@ void CB_PlotSub( char *SRC, int mode ); //	mode  1:PlotOn  0:PlotOff  2:PlotChg
 void CB_Circle( char *SRC ) ; //	Circle
 void CB_PxlSub( char *SRC, int mode ) ; //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 
+void StoPict( int pictNo);
+void RclPict( int pictNo);
 void CB_DrawGraph(  char *SRC );
 void CB_GraphY( char *SRC );
+int  CB_GraphXYEval( char *SRC ) ;
+void CB_GraphXY( char *SRC );
 void CB_StoPict( char *SRC ) ; //	StoPict
 void CB_RclPict( char *SRC ) ; //	RclPict
+void CB_BG_None( char *SRC ) ; //	BG_None
+void CB_BG_Pict( char *SRC ) ; //	BG_Pict
 
 void CB_Locate( char *SRC ) ;
 void CB_LocateYX( char *SRC );
@@ -334,7 +344,7 @@ typedef struct {		// 4 bytes
 	short	alias;
 } ALIAS_VAR;
 
-#define AliasVarMAX 10
+#define AliasVarMAX 26
 extern	ALIAS_VAR	AliasVarCode[AliasVarMAX];
 
 void CB_AliasVarClr();

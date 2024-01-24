@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 1.00 
+ Casio Basic Interpreter (& Compiler) ver 1.10 
 
  copyright(c)2015/2016 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -60,7 +60,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 	ClipBuffer = (char *)malloc( ClipMax+1 );
 //	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-
+	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
+	
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
@@ -111,7 +112,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				RenameCopyFile(filename, 0);
 				break;
 			case FileCMD_DEL:
-				DeleteFileFav(filename);
+				DeleteFileFav(filename, 1);
 				break;
 			case FileCMD_COPY:
 				RenameCopyFile(filename, 1);

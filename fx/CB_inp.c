@@ -665,6 +665,17 @@ const short oplistOPTN[]={
 		0x7FE9,	// CellSum(
 
 		0xFFFF,	// 				-
+		0x7F2C,	// Seq(
+		0x7F49,	// Argument(
+		0x7F20,	// Max
+		0x7F2D,	// Min	
+		0x7F4C,	// Sum(
+		0x7F4D,	// Prod(
+		0x7FB0,	// SortA(
+		0x7FB1,	// SortB(
+		0x7F29,	// Sigma( 
+
+		0xFFFF,	// 				-
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
@@ -683,6 +694,8 @@ const short oplistOPTN[]={
 		0xFFFF,	// 				-
 		0x8C,	// dms
 		0xF905,	// >DMS
+		0x80,	// Pol(
+		0xA0,	// Rec(
 		0xF941,	// DATE
 		0xF942,	// TIME
 		0x7F5F,	// Ticks
@@ -766,6 +779,7 @@ const short oplistPRGM[]={
 		0x7F9F,	// KeyRow(
 		0xF90F,	// AliasVar
 		0x7FF5,	// IsExist(
+		0xF7DF,	// Delete 
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
 		0xF7F4,	// SysCall
@@ -854,9 +868,13 @@ const short oplistVARS[]={
 		0x7F06,	// Yscl
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
+		0x7F08,	// TThetamin
+		0x7F09,	// TThetamax
+		0x7F0A,	// TThetaptch
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
+		0xF5,	// Graph(X,Y)=(
 		
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
@@ -939,8 +957,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF718,	// ClrText	
 		0xF719,	// ClrGraph	
 		0xF91E,	// ClrMat	
-//		0xF71A,	// ClrList	
-		0xF79E,	// Menu
+		0xF71A,	// ClrList	
 		0x23,	// #
 		0x25,	// %
 		
@@ -967,7 +984,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF709,	// WhileEnd		6
 		0xF70A,	// Do			7
 		0xF70B,	// LpWhile		8
-		0x7F46,	// Dim	
+		0xF79E,	// Menu
 		0x7E,	// ~
 		0x23,	// #
 		0x25,	// %
@@ -980,14 +997,28 @@ const short oplistCMD[]={		// 5800P like
 		0x7F8F,	// Getkey		4
 		0xED,	// Prog			5
 		0xFA,	// Gosub
+		0xF7F1,	// Local
+		0xF717,	// ACBreak
 		0xF7EA,	// Switch
 		0xF7EB,	// Case
 		0xF7EC,	// Default
 		0xF7ED,	// SwitchEnd
-		0xF7F1,	// Local
-		0xF717,	// ACBreak
 
-//											5	GR
+//											5
+		0x7F46,	// Dim	
+		0x7F29,	// Sigma( 
+		0x7F41,	// Trn 
+		0x7F47,	// Fill(
+		0x7F2C,	// Seq(
+		0x7F49,	// Argument(
+		0x7F20,	// Max
+		0x7F2D,	// Min	
+		0x7F4C,	// Sum(
+		0x7F4D,	// Prod(
+		0xF7B0,	// SortA(
+		0xF7B1,	// SortB(
+
+//											6	GR
 		0xD1,	// Cls		
 		0xF719,	// ClrGraph
 		0xEB,	// ViewWindow
@@ -1000,21 +1031,21 @@ const short oplistCMD[]={		// 5800P like
 		0xF7A7,	// F-Line
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
-//											6
+//											7
 		0xF7AB,	// PxlOn
 		0xF7AC,	// PxlOff
 		0xF7AD,	// PxlChg
 		0xF7AF,	// PxlTest(
 		0xF7A5,	// Text
 		0xF7E3,	// LocateYX
-		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
+		0xF5,	// Graph(X,Y)=(
+		0xF720,	// DrawGraph
 		0x7FF0,	// GraphY
-		0xFFFF,	// 				-
-		0xF793,	// StoPict
-		0xF794,	// RclPict
+		0x23,	// #
+		0x25,	// %
 
-//											7
+//											8
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF78E,	// SketchBroken
@@ -1023,11 +1054,12 @@ const short oplistCMD[]={		// 5800P like
 		0xF71D,	// S-L-Thick
 		0xF71E,	// S-L-Broken
 		0xF71F,	// S-L-Dot
-		0x5C,	// 
-		0x7E,	// ~
-		0x23,	// #
-		0x25,	// %
-//											8
+		0xF778,	// BG-None
+		0xF779,	// BG-Pict
+		0xF793,	// StoPict
+		0xF794,	// RclPict
+
+//											9
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
 		0xF7C3,	// CoordOn
@@ -1041,7 +1073,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 		
-//											9
+//											10
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
 		0x7F01,	// Xmax
@@ -1050,12 +1082,12 @@ const short oplistCMD[]={		// 5800P like
 		0x7F06,	// Yscl
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
-		0XF921,	// Xdot
-		0x7E,	// ~
-		0x23,	// #
-		0x25,	// %
+		0xF921,	// Xdot
+		0x7F08,	// TThetamin
+		0x7F09,	// TThetamax
+		0x7F0A,	// TThetaptch
 
-//											10	FN
+//											11	FN
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -1069,7 +1101,7 @@ const short oplistCMD[]={		// 5800P like
 		0xB2,	// arccosh
 		0xB3,	// arctanh
 
-//											11
+//											12
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 		0xD3,	// Rnd
@@ -1083,7 +1115,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											12
+//											13
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
@@ -1094,10 +1126,10 @@ const short oplistCMD[]={		// 5800P like
 		0xDB,	// Rad
 		0xDC,	// Grad
 		0x7E,	// ~
-		0x23,	// #
-		0x25,	// %	
+		0x80,	// Pol(
+		0xA0,	// Rec(
 
-//											13
+//											14
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -1109,9 +1141,9 @@ const short oplistCMD[]={		// 5800P like
 		0x09,	// Tera
 		0x0A,	// Peta
 		0x0B,	// Exa
-		0x5C,	// 
+		0x25,	// %	
 
-//											14	STR
+//											15	STR
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -1139,32 +1171,32 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %	
 
-//											16	EX
+//											17	EX
 		0xF90F,	// AliasVar
-		0x7F58,	// ElemSize(
-		0x7F59,	// ColSize(
-		0x7F5A,	// RowSize(
-		0x7F5B,	// MatBase(
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
+		0x7F5F,	// Ticks
 		0xF941,	// DATE
 		0xF942,	// TIME
-		0x7F5F,	// Ticks
+		0x7FF5,	// IsExist(
+		0xF7DF,	// Delete 
+		0xF7EE,	// Save
+		0xF7EF,	// Load(
+		0xF7FB,	// Screen
+		0xF7FC,	// PutDispDD
 		0x23,	// #
-		0x25,	// %	
+		0x25,	// %
 		
-		0xF73E,	// DotGet(
-		0xF73B,	// DotPut(
-		0xF73D,	// DotTrim(
-		0xF7E0,	// DotLife(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
-		0xF7FB,	// Screen
-		0xF7FC,	// PutDispDD
+		0xF73E,	// DotGet(
+		0xF73B,	// DotPut(
+		0xF73D,	// DotTrim(
+		0xF7E0,	// DotLife(
+		0x7FE9,	// CellSum(
+		0xFFFF,	// 
 		0x23,	// #
-		0x25,	// %	
+		0x25,	// %
 
 		0xF7F4,	// SysCall
 		0xF7F5,	// Call
@@ -1180,15 +1212,15 @@ const short oplistCMD[]={		// 5800P like
 		0x25,	// %
 		
 		0xF7FD, // FKey(
-		0xF7FE,	// BackLight
+		0xF7F2,	// PopUpWin(
 		0xF7F8,	// RefreshCtrl
 		0xF7FA,	// RefreshTime
 		0x7F9F,	// KeyRow(
-		0xF7F2,	// PopUpWin(
-		0x7FE9,	// CellSum(
-		0x7FF5,	// IsExist(
-		0xF7EE,	// Save
-		0xF7EF,	// Load(
+		0xF7FE,	// BackLight
+		0x7F58,	// ElemSize(
+		0x7F59,	// ColSize(
+		0x7F5A,	// RowSize(
+		0x7F5B,	// MatBase(
 		0x23,	// #
 		0x25,	// %
 		
@@ -1235,10 +1267,10 @@ void FkeyRel(){
 }
 
 #define CMD_STD  0
-#define CMD_GR   5
-#define CMD_FN  10
-#define CMD_STR 14
-#define CMD_EX  16
+#define CMD_GR   6
+#define CMD_FN  11
+#define CMD_STR 15
+#define CMD_EX  17
 
 int SelectOpcode5800P() {
 	int *select=&selectCMD;
@@ -1653,6 +1685,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF73D, "DotTrim(" }, 
 	{ 0xF73E, "DotGet(" }, 
 	{ 0xF79E, "Menu " },		// SDK emu not support
+	{ 0xF7DF, "Delete " }, 
 	{ 0xF7E0, "DotLife(" }, 
 	{ 0xF7E1, "Rect " }, 
 	{ 0xF7E2, "FillRect " }, 
@@ -1757,8 +1790,20 @@ int CB_MB_ElementCount( char *str ) {
 	}
 	return len;
 }
-
-
+int CB_MB_strlen( char *str ) {
+	int ptr=0,len=0;
+	int c;
+	while ( 1 ) {
+		c=str[ptr];
+		if (c==0x00) break;
+		else 
+		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) {
+			ptr++;
+		}
+		ptr++;
+	}
+	return ptr;
+}
 
 //----------------------------------------------------------------------------------------------
 

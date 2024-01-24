@@ -148,6 +148,9 @@ void CB_ErrMsg(int ErrNo) {
 		case CantFindFileERR:
 			ERROR("Can't find file");
 			break;
+		case ElementSizeERR:
+			ERROR("Illegal Element");
+			break;
 			
 		default:
 			break;

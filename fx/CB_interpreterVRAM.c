@@ -212,8 +212,8 @@ int CB_GotoEndPtr( char *SRC ) {		// goto Program End Ptr
 void CB_Cls( char *SRC ){
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	Bdisp_AllClr_VRAM();
-//	ML_clear_vram();
+//	Bdisp_AllClr_VRAM();
+	ML_clear_vram();
 //	GraphAxesGrid();
 	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
 //	CB_SelectTextVRAM();	// Select Text Screen
@@ -223,8 +223,8 @@ void CB_ClrText( char *SRC ){
 	CB_SelectTextVRAM();	// Select Text Screen
 	CursorX=1;
 	CursorY=1;
-	Bdisp_AllClr_VRAM();
-//	ML_clear_vram();
+//	Bdisp_AllClr_VRAM();
+	ML_clear_vram();
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
 void CB_ClrGraph( char *SRC ){
@@ -290,22 +290,29 @@ void CB_Locate( char *SRC ){
 
 //-----------------------------------------------------------------------------
 
+void CB_ChangeViewWindow() {
+	int scrmode=ScreenMode;
+	if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
+	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+	if ( scrmode == 0 )	CB_SelectTextVRAM();	// Select Text Screen
+}
 int CB_ChangeGraphicMode( char *SRC ) {
 	int c=SRC[ExecPtr];
 	if ( c == '@' ) {	// Only Vram Operation
 		ExecPtr++;
 		return 1 ;
 	} else {
-		if ( UseGraphic == 0 ) {
+		if ( ( UseGraphic == 0 ) ) {
 			if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
-			Bdisp_AllClr_VRAM();
-//			ML_clear_vram();
+//			Bdisp_AllClr_VRAM();
+			ML_clear_vram();
 			GraphAxesGrid();
 		}
 		CB_SelectGraphVRAM();	// Select Graphic Screen
 	}
 	return 0;
 }
+
 int RangeErrorCK( char *SRC ) {
 	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { CB_Error(RangeERR); PrevOpcode( SRC, &ExecPtr ); return ErrorNo; }	// Range error
 	return 0;
@@ -409,10 +416,10 @@ void CB_ViewWindow( char *SRC ) { //	ViewWindow
 		ExecPtr++;
 		reg++;
 	}
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	CB_SelectTextVRAM();	// Select Text Screen
-//	Bdisp_PutDisp_DD_DrawBusy_skip();
+//	CB_SelectGraphVRAM();	// Select Graphic Screen
+//	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+//	CB_SelectTextVRAM();	// Select Text Screen
+	CB_ChangeViewWindow() ;
 }
 
 int CB_SetPointMode( char *SRC) {
@@ -595,20 +602,6 @@ void CB_Circle( char *SRC ) { //	Circle
 	tmp_Style = -1;
 }
 
-//----------------------------------------------------------------------------------------------
-void CB_DrawGraph(  char *SRC ){
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
-	Graph_Draw();
-}
-
-void CB_GraphY( char *SRC ){
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_Str( SRC );				// graph text print
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
-	GraphY=CB_CurrentStr;
-	Graph_Draw();
-}
 
 //----------------------------------------------------------------------------------------------
 void ReadVram( unsigned char *pDATA ){
@@ -627,17 +620,16 @@ void WriteVram( unsigned char *pDATA ){
 	Bdisp_WriteGraph_VRAM(&Gpict);
 }
 
-int StoPict( int pictNo){
+void StoPictSmem( int pictNo){
 	unsigned char pict[2048+0x4C+4];
 	int i,stat;
 	ReadVram(pict+0x4C);
 	for(i=1024+0x4c; i<2048+0x4c+2; i++) pict[i]=0;
 	stat=SavePicture( (char *)pict, pictNo );
 	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
-	return stat;
 }
 
-void RclPict( int pictNo){
+void RclPictSmem( int pictNo){
 	unsigned char *pict;
 	int i;
 	pict=(unsigned char *)LoadPicture( pictNo );
@@ -646,11 +638,13 @@ void RclPict( int pictNo){
 	free(pict);
 }
 
-void StoPictM( int pictNo){
+void StoPict( int pictNo){
 	int i,stat;
 	unsigned char *pict;
 	
-	if ( PictAry[pictNo] != NULL ) { // already exist
+	if ( PictMode == 0 ) { StoPictSmem(pictNo); return; }	// strage memory mode
+	
+	if ( PictAry[pictNo] != NULL ) { // already exist heap mode
 		pict = PictAry[pictNo] ;						// Matrix array ptr*
 	} else {
 		pict = (unsigned char *) malloc( 1024 );
@@ -660,11 +654,13 @@ void StoPictM( int pictNo){
 	ReadVram(pict);
 }
 
-void RclPictM( int pictNo){
+void RclPict( int pictNo){
 	unsigned char *pict;
 	int i;
+	if ( PictMode == 0 ) { RclPictSmem(pictNo); return; }	// strage memory mode
+	
 	if ( PictAry[pictNo] == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
-	pict=PictAry[pictNo];
+	pict=PictAry[pictNo];	//  heap mode
 	WriteVram( pict );
 }
 
@@ -673,7 +669,7 @@ void CB_StoPict( char *SRC ) { //	StoPict
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	if ( PictMode ) StoPictM(n); else StoPict(n);
+	StoPict(n);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 void CB_RclPict( char *SRC ) { //	RclPict
@@ -681,10 +677,19 @@ void CB_RclPict( char *SRC ) { //	RclPict
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	if ( PictMode ) RclPictM(n); else RclPict(n);
+	RclPict(n);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 
+void CB_BG_None( char *SRC ) { //	BG_None
+	BG_Pict_No=0;
+}
+void CB_BG_Pict( char *SRC ) { //	BG_Pict
+	int n;
+	n=CB_EvalInt( SRC );
+	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	BG_Pict_No=n;
+}
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -843,7 +848,7 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 			box.top   =py1;
 			box.bottom=py2;
 			
-			ElementSize=ElementSizeSelect( SRC, reg, &base );
+			ElementSize=ElementSizeSelect( SRC, &base );
 			if ( ( px1 == 0 ) || ( py1 == 0 ) ) base=0;
 			if ( ( ElementSize <= 4 ) || ( ElementSize > 0x100 ) ) ElementSize=1;	// 1 bit matrix
 			ElementSize &= 0xFF;
@@ -1477,18 +1482,15 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 		CursorX=21;
 		scrmode=ScreenMode;
 	} else
-	if ( dspflag == 3 ) { 	// Matrix display		Mat A 
-		ExecPtr-=3;
-		if ( SRC[ExecPtr]==0x40 ) ExecPtr++;	// Mat  0x7F40
-		reg=RegVarAliasEx(SRC);
-		if ( reg>=0 ) {
-			CB_SelectTextVRAM();	// Select Text Screen
-			CB_SaveTextVRAM();
-			EditMatrix( reg );
-			CB_RestoreTextVRAM();	// Resotre Graphic screen
-			if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
-			scrmode=ScreenMode;
-		}
+	if ( dspflag >= 3 ) { 	// Matrix List display		Mat A  List 1
+		CB_SelectTextVRAM();	// Select Text Screen
+		CB_SaveTextVRAM();
+		EditMatrix( 28, 1);	// Ans
+		CB_RestoreTextVRAM();	// Resotre Graphic screen
+		PrintDone();
+		if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
+		scrmode=ScreenMode;
+		goto exitj;
 	}
 	if (scrmode) {	// Graphic mode
 		CB_SelectTextVRAM();	// Select Text Screen
@@ -1512,7 +1514,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	locate( CursorX, CursorY); Print((unsigned char*)"                     ");
 	CursorX=1;
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
-
+  exitj:
 	if ( UseGraphic == 1 ) PlotXYtoPrevPXY(); // Plot
 	if ( UseGraphic ) UseGraphic=(UseGraphic | 0x100);  // 
 	Bdisp_PutDisp_DD_DrawBusy();
@@ -1539,16 +1541,11 @@ void CB_end( char *SRC ){
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
 		CursorX=21;
 	} else
-	if ( dspflag == 3 ) { 	// Matrix display		Mat A 
-		ExecPtr-=3;
-		if ( SRC[ExecPtr]==0x40 ) ExecPtr++;	// Mat  0x7F40
-		reg=RegVarAliasEx(SRC);
-		if ( reg>=0 ) {
-			CB_SaveTextVRAM();
-			EditMatrix( reg );
-			CB_RestoreTextVRAM();	// Resotre Graphic screen
-			CB_Done();
-		}
+	if ( dspflag >= 3 ) { 	// Matrix List display		Mat A  List 1
+		CB_SaveTextVRAM();
+		EditMatrix( 28, 1 );	// Ans
+		CB_RestoreTextVRAM();	// Resotre Graphic screen
+		CB_Done();
 	}
 	if ( dspflag == 0 ) CB_Done();
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -1565,7 +1562,8 @@ void CB_end( char *SRC ){
 	CB_SelectTextVRAM();	// Select Text Screen
 	if ( TimeDsp ) {
 		if ( CursorX >1 ) Scrl_Y();
-		sprintGRS(buffer, (double)(CB_TicksEnd-CB_TicksStart)/128.0, 8,RIGHT_ALIGN, Fix, 2);  // Fix:2
+		t=CB_TicksEnd-CB_TicksStart; if ( t<0 ) t+=11059200;
+		sprintGRS(buffer, (double)(t)/128.0, 8,RIGHT_ALIGN, Fix, 2);  // Fix:2
 		locate(  1, CursorY); Print((unsigned char*)"Execute Time=");
 		locate( 14, CursorY); Print((unsigned char*)buffer);
 		while ( 1 ) {
@@ -1753,6 +1751,69 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 	} else  ExecPtr = ptr ;
 }
 
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+void CB_DrawGraph(  char *SRC ){
+	if ( RangeErrorCK( SRC ) ) return;
+	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	Graph_Draw();
+}
+
+void CB_GraphY( char *SRC ){
+	if ( RangeErrorCK( SRC ) ) return;
+	CB_Str( SRC );				// graph text print
+	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	GraphY=CB_CurrentStr;
+	Graph_Draw();
+}
+
+int CB_GraphXYEval( char *SRC ) {
+	double result;
+	int excptr=ExecPtr;
+	int Ansreg=CB_MatListAnsreg;
+	dspflag=0;
+	result=CB_EvalDbl( SRC );
+	if ( dspflag>=3 ) {
+		CB_MatListAnsreg=Ansreg;
+		ExecPtr=excptr; ListEvalsubTop(SRC);	// List calc
+		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		return CB_MatListAnsreg;	// List
+	}
+	return 0;
+}
+
+void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
+	int listreg1,listreg2;
+	int errflag=0;
+	double regTback=regT;
+	
+	if ( RangeErrorCK( SRC ) ) return;
+	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	
+	GraphX=SRC+ExecPtr;
+	regT=TThetamin;
+	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
+	listreg1=CB_GraphXYEval( SRC );
+	regT=regTback;
+    ErrorPtr= 0;
+	errflag=ErrorNo;	// error cancel
+
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+
+	GraphY=SRC+ExecPtr;
+	regT=TThetamin;
+	listreg2=CB_GraphXYEval( SRC );
+	regT=regTback;
+    ErrorPtr= 0;
+	ErrorNo = 0;	// error cancel
+
+	Graph_Draw_XY_List( listreg1, listreg2 );
+
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
+	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
+}
 //----------------------------------------------------------------------------------------------
 //int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte

@@ -126,7 +126,7 @@
 int CheckKeyRow( int row );
 int CheckKeyRow7305( int row );
 int KeyScanDown(int keyscan_code);
-
+int KeyScanDownAC();
 
 int KeyCheckAC();
 int KeyCheckEXE();

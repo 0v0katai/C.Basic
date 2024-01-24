@@ -34,14 +34,18 @@ int selectMatrix=0;
 
 //---------------------------------------------------------------------------------------------
 
-void VerDisp() {
-	unsigned int key;
+void VerDispSub() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v1.00\xE6\x41\x37" );
+	locate( 3, 4 ); Print( (unsigned char*)"          v1.10\xE6\x41\x31" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
+	Bdisp_PutDisp_DD();
+}
+void VerDisp() {
+	unsigned int key;
+	VerDispSub();
 	GetKey(&key);
 }
 
@@ -96,38 +100,38 @@ void SetLineStyle() {
 void SetVeiwWindowInit(){	// Initialize	return 0: no change  -1 : change
 		Xmin  =-6.3;
 		Xmax  = 6.3;
-		Xscl= 1;
+		Xscl  = 1.0;
 		Xdot  = 0.1;
 		Ymin  =-3.1;
 		Ymax  = 3.1;
-		Yscl= 1;
-		Ydot = (Ymax-Ymin)/ 62.0;
+		Yscl  = 1.0;
+		Ydot  = 0.1;
 		TThetamin = 0;
 		TThetamax = 6.2831853071796;
 		TThetaptch= 0.062831853071796;
 }
 void SetVeiwWindowTrig(){	// trig Initialize
-		Xmin  =-9.4247779607694;
-		Xmax  = 9.4247779607694;
-		Xscl= 1.5707963267949;
-		Xdot  = 0.149599650170942;
+		Xmin  = finvdegree(-540);
+		Xmax  = finvdegree( 540);
+		Xscl  = finvdegree(  90);
+		Xdot  = (Xmax-Xmin)/126.0;
 		Ymin  =-1.6;
 		Ymax  = 1.6;
-		Yscl= 0.5;
-		Ydot = (Ymax-Ymin)/ 62.0;
+		Yscl  = 0.5;
+		Ydot  = (Ymax-Ymin)/ 62.0;
 		TThetamin = 0;
-		TThetamax = 6.2831853071796;
-		TThetaptch= 0.062831853071796;
+		TThetamax = finvdegree( 360);
+		TThetaptch= TThetamax/1000;
 }
 void SetVeiwWindowSTD(){	// STD Initialize
 		Xmin  =-10;
 		Xmax  = 10;
-		Xscl= 1;
+		Xscl  =  1;
 		Xdot  =  0.158730158730159;
 		Ymin  =-10;
 		Ymax  = 10;
-		Yscl= 1;
-		Ydot = (Ymax-Ymin)/ 62.0;
+		Yscl  =  1;
+		Ydot  = (Ymax-Ymin)/ 62.0;
 		TThetamin = 0;
 		TThetamax = 6.2831853071796;
 		TThetaptch= 0.062831853071796;
@@ -263,7 +267,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 			sprintG(buffer,Yscl,10,LEFT_ALIGN); locate( 8, 8-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl >=2 ) {
-			locate( 1, 9-scrl); Print((unsigned char*)"Temin :");
+			locate( 1, 9-scrl); Print((unsigned char*)"T\xE6\x47min :");
 			sprintG(buffer,TThetamin,  10,LEFT_ALIGN); locate( 8, 9-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl >=3 ) {
@@ -583,12 +587,13 @@ int CmpAliasVar( int reg, short *alias_code ) {	// AliasVar ?
 }
 
 int SetVarChar( char *buffer, int c ) {
-	int ptr=0;
+	int ptr=0,i;
 	short alias_code;
+	char buffer2[32];
 	if ( CmpAliasVar( c, &alias_code ) ) {	// 	Alias variable
-		CB_OpcodeToStr( alias_code, buffer ) ;		// SYSCALL+
-		buffer[8]='\0';
-		ptr=strlen( buffer ) ;
+		CB_OpcodeToStr( alias_code, buffer2 ) ;		// SYSCALL+
+		StrMid( buffer, buffer2, 1, 8 );
+		ptr=CB_MB_strlen( buffer );
 	} else
 	if ( ( c == 26 ) || ( c == 26+32 ) ) {	// <r>
 		buffer[ptr++]=0xCD;	//	'r'
@@ -596,6 +601,11 @@ int SetVarChar( char *buffer, int c ) {
 	if ( ( c == 27 ) || ( c == 27+32 ) ) { // Theta
 		buffer[ptr++]=0xE6;		// Theta
 		buffer[ptr++]=0x47;
+	} else
+	if ( ( ( 28 <= c ) && ( c <= 31 ) ) || ( ( 28+32 <= c ) && ( c <= 31+32 ) ) ) { // Ans
+		buffer[ptr++]='A';		//
+		buffer[ptr++]='n';
+		buffer[ptr++]='s';
 	} else { 
 		buffer[ptr++]='A'+c;
 	}
@@ -608,7 +618,7 @@ int SetVarCharStr( char *buffer, int VarMode, int k) {
 	}
 	j+=SetVarChar( buffer+j, k );
 
-	if ( ( k == 26+32 ) || ( k == 27+32 ) ) k=k-32;
+	if ( ( k == 26+32 ) || ( k == 27+32 ) || ( k == 28+32 ) ) k=k-32;
 	if ( VarMode ) {		// Int variable
 		f=( LocalInt[k] == &REGINT[k] );
 	} else {				// Double variable
@@ -622,7 +632,7 @@ int SetVarCharStr( char *buffer, int VarMode, int k) {
 	}
 	
 	buffer[j++]='\0';
-	return CB_MB_ElementCount(buffer)+1;
+	return CB_MB_ElementCount( buffer )+1;
 }
 
 int SetVar(int select){		// ----------- Set Variable
@@ -633,7 +643,7 @@ int SetVar(int select){		// ----------- Set Variable
 	int seltop=select;
 	int i,j,k,f,y,x;
 	int selectreplay=-1;
-	int opNum=25+2;
+	int opNum=25+3;
 	int small=0;
 	double value=0;
 	int VarMode=CB_INT;	// 0:double  1:int
@@ -654,7 +664,8 @@ int SetVar(int select){		// ----------- Set Variable
 			k=seltop+i+small;
 			x=SetVarCharStr( buffer, VarMode, k);
 			CB_Print( 1, 1+i, (unsigned char*)buffer);
-			
+
+			if ( k >=26+6+26 ) k-=32;
 			if ( VarMode ) {
 				locate(x, 1+i);		// int
 				if ( hex )	sprintf(buffer,"0x%08X        ",(int)LocalInt[k][0]);
@@ -713,7 +724,7 @@ int SetVar(int select){		// ----------- Set Variable
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
 				selectreplay = select; 
-				if ( ( 0 <= select ) && ( select <=25+2 ) ) {	// regA to regZ
+				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
 					if ( VarMode ) 
 						LocalInt[k][0]= InputNumD_fullhex( x, y, 18, (double)LocalInt[k][0], hex);
 					else
@@ -729,7 +740,7 @@ int SetVar(int select){		// ----------- Set Variable
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
 				selectreplay = select; 
-				if ( ( 0 <= select ) && ( select <=25+2 ) ) {	// regA to regZ
+				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
 					if ( VarMode ) 
 						LocalInt[k][0]= InputNumD_replay( x, y, 18, (double)LocalInt[k][0]);
 					else
@@ -747,7 +758,7 @@ int SetVar(int select){		// ----------- Set Variable
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
 				selectreplay = select; 
-				if ( ( 0 <= select ) && ( select <=25+2 ) ) {	// regA to regZ
+				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
 					if ( VarMode ) 
 						LocalInt[k][0]= InputNumD_Char( x, y, 18, (double)LocalInt[k][0], key);
 					else
@@ -767,7 +778,7 @@ int SetVar(int select){		// ----------- Set Variable
 int DateCursorY;
 int TimeCursorY;
 
-void DateTimePrint(){		// timer IRQ handler
+void DateTimePrintSub(){		// timer IRQ handler
 	char buffer[32];
 	char DateStr[16];
 	char TimeStr[16];
@@ -788,16 +799,23 @@ void DateTimePrint(){		// timer IRQ handler
 			locate( 1, cy); Print((unsigned char*)buffer);
 			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 	}
+}
+void DateTimePrint(){		// timer IRQ handler
+	DateTimePrintSub();
 	Bdisp_PutDisp_DD();
 }
 
 void TimePrintSetMode(int set){	// 1:on  0:off
+//	int dy,ty;
+//	dy=DateCursorY & 0xFF;
+//	ty=TimeCursorY & 0xFF;
 	switch (set) {
 		case 0:
 			KillTimer(ID_USER_TIMER1);
 			break;
 		case 1:
-			SetTimer(ID_USER_TIMER1, 1000, (void*)&DateTimePrint);
+//			if ( ( (0<=dy)&&(dy<=7) ) || ( (0<=ty)&&(ty<=7) ) )
+				SetTimer(ID_USER_TIMER1, 1000, (void*)&DateTimePrint);
 			break;
 		default:
 			break;
@@ -849,6 +867,34 @@ int SelectNum4( int n ) {		//
 
 //--------------------------------------------------------------
 
+#define SETUP_DrawType		0
+#define SETUP_Coord			1
+#define SETUP_Grid			2
+#define SETUP_Axes			3
+#define SETUP_Label			4
+#define SETUP_Derivative	5
+#define SETUP_Sketch		6
+#define SETUP_Angle			7
+#define SETUP_Display		8
+#define SETUP_UseHidnRam	9
+#define SETUP_BreakStop		10
+#define SETUP_ExecTimeDsp	11
+#define SETUP_IfEndCheck	12
+#define SETUP_ACBreak		13
+#define SETUP_Key1sttime	14
+#define SETUP_KeyReptime	15
+#define SETUP_SkipUpDown	16
+#define SETUP_MatDspmode	17
+#define SETUP_Matrixbase	18
+#define SETUP_Pictmode		19
+#define SETUP_DATE			20
+#define SETUP_TIME			21
+#define SETUP_Storagemode	22
+#define SETUP_Forceg1msave	23
+#define SETUP_RefrshCtlDD	24
+#define SETUP_Waitcount		25
+#define SETUP_Executemode	26
+
 int SetupG(int select){		// ----------- Setup 
     const char *onoff[]   ={"off","on"};
     const char *draw[]    ={"Connect","Plot"};
@@ -871,7 +917,7 @@ int SetupG(int select){		// ----------- Setup
 	char DateStr[16];
 	char TimeStr[16];
 	int year,month,day,hour,min,sec;
-	int listmax=25;
+	int listmax=26;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -879,13 +925,16 @@ int SetupG(int select){		// ----------- Setup
 	if ( select < scrl ) scrl-=1;
 	if ( scrl < 0 ) scrl=0;
 
+	DateCursorY=-1;
+	TimeCursorY=-1;
+
 	while (cont) {
 		Bdisp_AllClr_VRAM();
 		
 		DateToStr(DateStr);
 		TimeToStr(TimeStr);
-		DateCursorY=-1;
-		TimeCursorY=-1;
+		DateCursorY+=0x909;
+		TimeCursorY+=0x909;
 		
 		cnt=1;
 		if ( scrl <=(cnt-1) ) {
@@ -916,11 +965,11 @@ int SetupG(int select){		// ----------- Setup
 			locate( 1, cnt-scrl); Print((unsigned char*)"Sketch Line :");		// 6
 			locate(14, cnt-scrl); Print((unsigned char*)style[S_L_Style]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1, cnt-scrl); Print((unsigned char*)"Angle       :");		// 7
 			locate(14, cnt-scrl); Print((unsigned char*)degrad[Angle]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1, cnt-scrl); Print((unsigned char*)"Display     :");		// 8
 			locate(14, cnt-scrl); Print((unsigned char*)display[CB_Round.MODE]);
 			buffer[0]='\0';
@@ -929,166 +978,173 @@ int SetupG(int select){		// ----------- Setup
 			locate(19, cnt-scrl); 
 			Print((unsigned char*)ENGmode[ENG]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 9
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[UseHiddenRAM]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 10
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[BreakCheck]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 11
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[TimeDsp]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 12
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[CheckIfEnd]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 13
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 13
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 14
 			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 14
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 15
 			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 15
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 16
 			sprintf((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 16
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 17
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 17
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 18
 			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 18
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 19
 			locate(14,cnt-scrl); if ( StorageMode ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 19
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 20
+			DateCursorY=cnt-scrl+0x900;
+			DateTimePrintSub();
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 20
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 21
+			TimeCursorY=cnt-scrl+0x900;
+			DateTimePrintSub();
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 22
+			locate(14,cnt-scrl); Print((unsigned char*)Stragemode[StorageMode]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 23
+			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 24
 			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){							// 21
-			DateCursorY=cnt-scrl;
-			DateTimePrint();
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 25
+			if ( Waitcount == 0 )	sprintf((char*)buffer,"No Wait");
+			else					sprintf((char*)buffer,"%d",Waitcount);
+			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){							// 22
-			TimeCursorY=cnt-scrl;
-			DateTimePrint();
-		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 23
-			locate(14,cnt-scrl); Print((unsigned char*)Stragemode[StorageMode]);
-		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 24
-			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
-		} cnt++;
-		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 25
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 26
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		switch (select) {
-			case 0: // Draw Type
+			case SETUP_DrawType: // Draw Type
 				Fkey_dispN( 0, "Con");
 				Fkey_dispN( 1, "Plot");
 				Fkey_Clear( 2 );
 				Fkey_Clear( 3 );
 				break;
-			case 1: // Coord
-			case 2: // Grid	
-			case 3: // Axes
-			case 4: // Label
-			case 5: // Derivative
-			case 9: // UseHiddenRAM
-			case 10: // BreakCheck
-			case 11: // TimeDsp
-			case 12: // IfEnd Check
-			case 19: // ACBreak Check
-			case 24: // Force g1m save
+			case SETUP_Coord: // Coord
+			case SETUP_Grid: // Grid	
+			case SETUP_Axes: // Axes
+			case SETUP_Label: // Label
+			case SETUP_Derivative: // Derivative
+			case SETUP_UseHidnRam: // UseHiddenRAM
+			case SETUP_BreakStop: // BreakCheck
+			case SETUP_ExecTimeDsp: // TimeDsp
+			case SETUP_IfEndCheck: // IfEnd Check
+			case SETUP_ACBreak: // ACBreak Check
+			case SETUP_Forceg1msave: // Force g1m save
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
 				Fkey_Clear( 3 );
 				break;
-			case 6: // S_L_ Line	normal
+			case SETUP_Sketch: // S_L_ Line	normal
 				FkeyS_L_();
 				break;
-			case 7: // Angle
+			case SETUP_Angle: // Angle
 				Fkey_dispN( 0, "Deg ");
 				Fkey_dispN( 1, "Rad ");
 				Fkey_dispN( 2, "Grad");
 				Fkey_Clear( 3 );
 				break;
-			case 8: // Display
+			case SETUP_Display: // Display
 				Fkey_dispR( 0, "Fix ");
 				Fkey_dispR( 1, "Sci ");
 				Fkey_dispR( 2, "Nrm ");
 				Fkey_dispN( 3, "Eng ");
 				break;
-			case 13: // Key Repeat mode
-			case 14: // Key Repeat mode
+			case SETUP_Key1sttime: // Key Repeat mode
+			case SETUP_KeyReptime: // Key Repeat mode
 				Fkey_DISPN( 0," +");
 				Fkey_DISPN( 1," -");
 				Fkey_dispN( 3, "Init");
 				break;
-			case 15: // RollUp/Down number
+			case SETUP_SkipUpDown: // SkipUp/Down number
+			case SETUP_Waitcount: // Wait count number
 				Fkey_DISPN( 0," +");
 				Fkey_DISPN( 1," -");
-				Fkey_dispN( 2, "Num");
+				Fkey_dispR( 2, "Num");
 				Fkey_dispN( 3, "Init");
 				break;
-			case 16: // Mat display mode
+			case SETUP_MatDspmode: // Mat display mode
 				Fkey_dispN( 0, "m.n ");
 				Fkey_dispN( 1, "X,Y ");
 				break;
-			case 17: // Mat base
+			case SETUP_Matrixbase: // Mat base
 				Fkey_dispN( 0, " 0 ");
 				Fkey_dispN( 1, " 1 ");
 				break;
-			case 18: // Pict mode
+			case SETUP_DATE: // DATE
+				Fkey_dispR( 0, "Year");
+				Fkey_dispR( 1, "Mth");
+				Fkey_dispR( 2, "Day");
+				break;
+			case SETUP_TIME: // TIME
+				Fkey_dispR( 0, "Hour");
+				Fkey_dispR( 1, "Min");
+				Fkey_dispR( 2, "Sec");
+				break;
+			case SETUP_Pictmode: // Pict mode
 				if ( StorageMode ) Fkey_dispN( 0, " SD "); else Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
-			case 20: // Refresh Ctrl DD Mode
-				Fkey_dispN( 0, "off ");
-				Fkey_dispN( 1, "Grph");
-				Fkey_dispN( 2, "All ");
-				if ( RefreshCtrl ) Fkey_dispN( 3, "time");
-				Fkey_dispN( 4, "Init");
-				break;
-			case 21: // DATE
-				Fkey_dispN( 0, "Year");
-				Fkey_dispN( 1, "Mth");
-				Fkey_dispN( 2, "Day");
-				break;
-			case 22: // TIME
-				Fkey_dispN( 0, "Hour");
-				Fkey_dispN( 1, "Min");
-				Fkey_dispN( 2, "Sec");
-				break;
-			case 23: // Strage mode
+			case SETUP_Storagemode: // Strage mode
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, " SD ");
 				break;
-			case 25: // Execute Mode
+			case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
+				Fkey_dispN( 0, "off ");
+				Fkey_dispN( 1, "Grph");
+				Fkey_dispN( 2, "All ");
+				if ( RefreshCtrl ) Fkey_dispR( 3, "time");
+				Fkey_dispN( 4, "Init");
+				break;
+			case SETUP_Executemode: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -1097,10 +1153,10 @@ int SetupG(int select){		// ----------- Setup
 		}
 		
 		Fkey_dispN( 5, "Ver.");
-		Bdisp_PutDisp_DD();
+//		Bdisp_PutDisp_DD();
 		
-		DateCursorY+=(select-scrl)*0x100;
-		TimeCursorY+=(select-scrl)*0x100;
+		DateCursorY+=(select-scrl)*0x100-0x900;
+		TimeCursorY+=(select-scrl)*0x100-0x900;
 		TimePrintSetMode( 1 ) ;			// Date/Time print IRQ on
 		GetKey( &key );
 		TimePrintSetMode( 0 ) ;			// Date/Time print IRQ off
@@ -1128,74 +1184,68 @@ int SetupG(int select){		// ----------- Setup
 			case KEY_CTRL_F1:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
-					case 0: // Draw Type connect
+					case SETUP_DrawType: // Draw Type connect
 						DrawType = 0 ;
 						break;
-					case 1: // Coord	on
+					case SETUP_Coord: // Coord	on
 						Coord = 1 ;
 						break;
-					case 2: // Grid		on
+					case SETUP_Grid: // Grid		on
 						Grid = 1 ;
 						break;
-					case 3: // Axes		on
+					case SETUP_Axes: // Axes		on
 						Axes = 1 ;
 						break;
-					case 4: // Label	on
+					case SETUP_Label: // Label	on
 						Label = 1 ;
 						break;
-					case 5: // 	Derivative on
+					case SETUP_Derivative: // 	Derivative on
 						Derivative = 1 ;
 						break;
-					case 6: // Sketch Line	normal
+					case SETUP_Sketch: // Sketch Line	normal
 						S_L_Style = 0 ;
 						break;
-					case 7: // Angle
+					case SETUP_Angle: // Angle
 						Angle = 0 ; // Deg
 						break;
-					case 8: // Display
+					case SETUP_Display: // Display
 						CB_Round.DIGIT=SelectNum2("Fix",CB_Round.DIGIT,0,15);
 						CB_Round.MODE =Fix;
 						break;
-					case 9: // Hidden RAM
+					case SETUP_UseHidnRam: // Hidden RAM
 						if ( IsHiddenRAM ) UseHiddenRAM = 1 ; // on
 						break;
-					case 10: // Break
+					case SETUP_BreakStop: // Break
 						BreakCheck = 1 ; // on
 						break;
-					case 11: // TimeDsp
+					case SETUP_ExecTimeDsp: // TimeDsp
 						TimeDsp = 1 ; // on
 						break;
-					case 12: // IfEnd Check
+					case SETUP_IfEndCheck: // IfEnd Check
 						CheckIfEnd = 1 ; // on
 						break;
-					case 13: // Key Repeat First Count *ms
+					case SETUP_ACBreak: // ACBreak
+						ACBreak = 1 ; // on
+						break;
+					case SETUP_Key1sttime: // Key Repeat First Count *ms
 						KeyRepeatFirstCount += 1 ;
 						if ( KeyRepeatFirstCount > 40 ) KeyRepeatFirstCount=40;
 						break;
-					case 14: // Key Repeat Next Count *ms
+					case SETUP_KeyReptime: // Key Repeat Next Count *ms
 						KeyRepeatNextCount += 1 ;
 						if ( KeyRepeatNextCount > 20 ) KeyRepeatNextCount=20;
 						break;
-					case 15: // Roolup/down count +
+					case SETUP_SkipUpDown: // Skipup/down count +
 						PageUpDownNum++; if ( PageUpDownNum > 9999 ) PageUpDownNum = 9999;
 						break;
-					case 16: // Matrix Display mode
+					case SETUP_MatDspmode: // Matrix Display mode
 						MatXYmode = 0 ; // m,n
 						break;
-					case 17: // Matrix base
+					case SETUP_Matrixbase: // Matrix base
 						MatBaseDefault = 0 ; // 
 						MatBase = MatBaseDefault;
 						break;
-					case 18: // Pict mode
-						PictMode = 0 ; // Memory mode
-						break;
-					case 19: // ACBreak
-						ACBreak = 1 ; // on
-						break;
-					case 20: // Refresh Ctrl DD Mode
-						RefreshCtrl = 0 ; // off
-						break;
-					case 21: // DATE year
+					case SETUP_DATE: // DATE year
 						year = (DateStr[0]-'0')*1000+(DateStr[1]-'0')*100+(DateStr[2]-'0')*10+(DateStr[3]-'0');
 						year = SelectNum2("Year",year,0,9999);
 						DateStr[0]=(year/1000)+'0';
@@ -1204,20 +1254,29 @@ int SetupG(int select){		// ----------- Setup
 						DateStr[3]=(year)%10+'0';
 						StorDATE( DateStr );
 						break;
-					case 22: // Time hour
+					case SETUP_TIME: // Time hour
 						hour = (TimeStr[0]-'0')*10+(TimeStr[1]-'0');
 						hour = SelectNum2("Hour",hour,0,23);
 						TimeStr[0]=(hour/10)%10+'0';
 						TimeStr[1]=(hour)%10+'0';
 						StorTIME( TimeStr );
 						break;
-					case 23: // Strage mode
+					case SETUP_Pictmode: // Pict mode
+						PictMode = 0 ; // Memory mode
+						break;
+					case SETUP_Storagemode: // Strage mode
 						StorageMode = 0 ; // Memory mode
 						break;
-					case 24: // Force g1m save
+					case 23: // Force g1m save
 						ForceG1Msave = 1 ; // g1m or text
 						break;
-					case 25: // CB mode
+					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
+						RefreshCtrl = 0 ; // off
+						break;
+					case SETUP_Waitcount: // Wait count +
+						Waitcount+=100; if ( Waitcount > 9999 ) Waitcount = 9999;
+						break;
+					case SETUP_Executemode: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
 						break;
@@ -1228,94 +1287,97 @@ int SetupG(int select){		// ----------- Setup
 			case KEY_CTRL_F2:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
-					case 0: // Draw Type Plot
+					case SETUP_DrawType: // Draw Type Plot
 						DrawType = 1 ;
 						break;
-					case 1: // Coord	off
+					case SETUP_Coord: // Coord	off
 						Coord = 0 ;
 						break;
-					case 2: // Grid		off
+					case SETUP_Grid: // Grid		off
 						Grid = 0 ;
 						break;
-					case 3: // Axes		off
+					case SETUP_Axes: // Axes		off
 						Axes = 0 ;
 						break;
-					case 4: // Label	off
+					case SETUP_Label: // Label	off
 						Label = 0 ;
 						break;
-					case 5: // 	Derivative off
+					case SETUP_Derivative: // 	Derivative off
 						Derivative = 0 ;
 						break;
-					case 6: // Sketch Line	Thick
+					case SETUP_Sketch: // Sketch Line	Thick
 						S_L_Style = 1 ; 
 						break;
-					case 7: // Angle
+					case SETUP_Angle: // Angle
 						Angle = 1 ; // Rad
 						break;
-					case 8: // Display
+					case SETUP_Display: // Display
 						CB_Round.DIGIT=SelectNum2("Sci",CB_Round.DIGIT,0,15);
 						CB_Round.MODE =Sci;
 						break;
-					case 9: // Hidden RAM
+					case SETUP_UseHidnRam: // Hidden RAM
 						UseHiddenRAM = 0 ; // off
 						break;
-					case 10: // Break
+					case SETUP_BreakStop: // Break
 						BreakCheck = 0 ; // off
 						break;
-					case 11: // TimeDsp
+					case SETUP_ExecTimeDsp: // TimeDsp
 						TimeDsp = 0 ; // off
 						break;
-					case 12: // IfEnd Check
+					case SETUP_IfEndCheck: // IfEnd Check
 						CheckIfEnd = 0 ; // off
 						break;
-					case 13: // Key Repeat First Count *ms
+					case SETUP_ACBreak: // ACBreak
+						ACBreak = 0 ; // off
+						break;
+					case SETUP_Key1sttime: // Key Repeat First Count *ms
 						KeyRepeatFirstCount -= 1 ;
 						if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=1;
 						break;
-					case 14: // Key Repeat Next Count *ms
+					case SETUP_KeyReptime: // Key Repeat Next Count *ms
 						KeyRepeatNextCount -= 1 ;
 						if ( KeyRepeatNextCount < 1 ) KeyRepeatNextCount=1;
 						break;
-					case 15: // Roolup/down count -
+					case SETUP_SkipUpDown: // Skipup/down count -
 						PageUpDownNum--; if ( PageUpDownNum < PageUpDownNumDefault ) PageUpDownNum = PageUpDownNumDefault;
 						break;
-					case 16: // Matrix display mode
+					case SETUP_MatDspmode: // Matrix display mode
 						MatXYmode = 1 ; // x,y
 						break;
-					case 17: // Matrix base
+					case SETUP_Matrixbase: // Matrix base
 						MatBaseDefault = 1 ; // base
 						MatBase = MatBaseDefault;
 						break;
-					case 18: // Pict mode
+					case SETUP_Pictmode: // Pict mode
 						PictMode = 1 ; // heap mode
 						break;
-					case 19: // ACBreak
-						ACBreak = 0 ; // off
-						break;
-					case 20: // Refresh Ctrl DD Mode
+					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 1 ; // graphics
 						break;
-					case 21: // DATE month
+					case SETUP_DATE: // DATE month
 						month = (DateStr[5]-'0')*10+(DateStr[6]-'0');
 						month = SelectNum2("Month",month,1,12);
 						DateStr[5]=(month/10)%10+'0';
 						DateStr[6]=(month)%10+'0';
 						StorDATE( DateStr );
 						break;
-					case 22: // Time min
+					case SETUP_TIME: // Time min
 						min = (TimeStr[3]-'0')*10+(TimeStr[4]-'0');
 						min = SelectNum2("Min",min,0,59);
 						TimeStr[3]=(min/10)%10+'0';
 						TimeStr[4]=(min)%10+'0';
 						StorTIME( TimeStr );
 						break;
-					case 23: // Strage mode
+					case SETUP_Storagemode: // Strage mode
 						StorageMode = CheckSD() ; // SD mode
 						break;
-					case 24: // Force g1m save
+					case SETUP_Forceg1msave: // Force g1m save
 						ForceG1Msave = 0 ; // g1m and text
 						break;
-					case 25: // CB mode
+					case SETUP_Waitcount: // Wait count -
+						Waitcount-=100; if ( Waitcount < 0 ) Waitcount = 0;
+						break;
+					case SETUP_Executemode: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
 						break;
@@ -1326,35 +1388,38 @@ int SetupG(int select){		// ----------- Setup
 			case KEY_CTRL_F3:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
-					case 6: // Sketch Line	Broken
+					case SETUP_Sketch: // Sketch Line	Broken
 						S_L_Style = 2 ; 
 						break;
-					case 7: // Angle
+					case SETUP_Angle: // Angle
 						Angle = 2 ; // Grad
 						break;
-					case 8: // Display
+					case SETUP_Display: // Display
 						CB_Round.DIGIT=SelectNum2("Nrm",CB_Round.DIGIT,0,15);
 						CB_Round.MODE =Norm;
 						break;
-					case 15: // Roolup/down count init
+					case SETUP_SkipUpDown: // Skipup/down count init
 						PageUpDownNum = SelectNum3( PageUpDownNum );
 						break;
-					case 20: // Refresh Ctrl DD Mode
+					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 2 ; // graphics+text
 						break;
-					case 21: // DATE day
+					case SETUP_DATE: // DATE day
 						day = (DateStr[8]-'0')*10+(DateStr[9]-'0');
 						day = SelectNum2("Day",day,1,31);
 						DateStr[8]=(day/10)%10+'0';
 						DateStr[9]=(day)%10+'0';
 						StorDATE( DateStr );
 						break;
-					case 22: // Time sec
+					case SETUP_TIME: // Time sec
 						sec = (TimeStr[6]-'0')*10+(TimeStr[7]-'0');
 						sec = SelectNum2("Min",sec,0,59);
 						TimeStr[6]=(sec/10)%10+'0';
 						TimeStr[7]=(sec)%10+'0';
 						StorTIME( TimeStr );
+						break;
+					case SETUP_Waitcount: // Wait count set
+						Waitcount =  SelectNum2( "Wait", Waitcount, 0, 9999);
 						break;
 					default:
 						break;
@@ -1363,25 +1428,28 @@ int SetupG(int select){		// ----------- Setup
 			case KEY_CTRL_F4:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
-					case 6: // Sketch  Line	Dot
+					case SETUP_Sketch: // Sketch  Line	Dot
 						S_L_Style = 3 ; 
 						break;
-					case 8: // Display
+					case SETUP_Display: // Display
 						ENG++;
 						if ( ENG>3 ) ENG=0;
 						if ( ENG>1 ) ENG=3;
 						break;
-					case 13: // Key Repeat First Count *ms
+					case SETUP_Key1sttime: // Key Repeat First Count *ms
 						KeyRepeatFirstCount = 20 ;
 						break;
-					case 14: // Key Repeat Next Count *ms
+					case SETUP_KeyReptime: // Key Repeat Next Count *ms
 						KeyRepeatNextCount  = 5 ;
 						break;
-					case 15: // Roolup/down count init
+					case SETUP_SkipUpDown: // Skipup/down count init
 						PageUpDownNum = PageUpDownNumDefault ;
 						break;
-					case 20: // Refresh Ctrl DD Mode
+					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
+						break;
+					case SETUP_Waitcount: // Wait count init
+						Waitcount = 0;
 						break;
 					default:
 						break;
@@ -1390,7 +1458,7 @@ int SetupG(int select){		// ----------- Setup
 			case KEY_CTRL_F5:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
-					case 20: // Refresh Ctrl DD Mode init
+					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode init
 						RefreshCtrl = 1 ; // graphics only
 						Refreshtime = 3-1 ; // 3/128
 						break;

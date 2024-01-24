@@ -114,26 +114,24 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
-	if ( ( 'A'<=c )&&( c<='z' ) )  return LocalInt[c-'A'][0] ;
+	if ( ( ( 'A'<=c )&&( c<='z' ) ) && ( c != '[' ) ) return LocalInt[c-'A'][0] ;
+	if ( c == 0xFFFFFFC0 ) return c-0xFFFFFFC0+28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) return LocalInt[c-0xFFFFFFCD+26][0] ;	// <r> or Theta
 	CB_Error(SyntaxERR);
 	return -1 ; 	// Syntax error
 }
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-    base:1 1-
-	int c,d;
-	int base=MatAry[reg].Base;
-	(*dimB)=-1;
+void MatOprandInt1sub( char *SRC, int reg, int *dimA ){ 	// base:0  0-    base:1 1-
+	int c,d,e;
 	c=SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
-	if ( ( d == ',' ) || ( d == ']' ) ) {							// [a,
+	if ( (d==',')||(d==']')||(d==0x0E)||(d==0x13)||(d==0x0D)||(d==0) )  {		// [a,
 		ExecPtr++ ;
 		(*dimA) = MatOperandIntSub( c );
 	} else
 	if ( d == 0xFFFFFF89 ) { 										// [a+1,
-		d=SRC[ExecPtr+3];
-		if ( ( d == ',' ) || ( d == ']' ) ) {
+		e=SRC[ExecPtr+3];
+		if ( (e==',')||(e==']')||(e==0x0E)||(e==0x13)||(e==0x0D)||(e==0) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandIntSub( c );
 			c=SRC[ExecPtr++];
@@ -141,8 +139,8 @@ void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 		} else goto L1;
 	} else
 	if ( d == 0xFFFFFF99 ) { 										// [a-1,
-		d=SRC[ExecPtr+3];
-		if ( ( d == ',' ) || ( d == ']' ) ) {
+		e=SRC[ExecPtr+3];
+		if ( (e==',')||(e==']')||(e==0x0E)||(e==0x13)||(e==0x0D)||(e==0) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandIntSub( c );
 			c=SRC[ExecPtr++];
@@ -151,39 +149,35 @@ void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	} else {
   L1:	(*dimA) = (EvalIntsubTop( SRC ));
 	}
+}
+void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-    base:1 1-
+	int c,d;
+	int base=MatAry[reg].Base;
+	MatOprandInt1sub( SRC, reg, &(*dimA) );
 	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	c=SRC[ExecPtr];
-	if ( c == ']' ) { ExecPtr++ ; (*dimB)=base; return; }
-	else 
-	if ( c != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
-	c=SRC[++ExecPtr];
-	d=SRC[ExecPtr+1];
-	if ( d == ']' ) {										//    b]
+	if ( SRC[ExecPtr] == ',' ) {
 		ExecPtr++ ;
-		(*dimB) = MatOperandIntSub( c );
-	} else
-	if ( d == 0xFFFFFF89 ) { 										//      b+1]
-		if ( SRC[ExecPtr+3] == ']' ) {
-			ExecPtr+=2 ;
-			(*dimB) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
-			(*dimB) += MatOperandIntSub( c );
-		} else goto L2;
-	} else
-	if ( d == 0xFFFFFF99 ) { 										//      b-1]
-		if ( SRC[ExecPtr+3] == ']' ) {
-			ExecPtr+=2 ;
-			(*dimB) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
-			(*dimB) -= MatOperandIntSub( c );
-		} else goto L2;
+		MatOprandInt1sub( SRC, reg, &(*dimB) );
+		if ( ( (*dimB) < base ) || ( MatAry[reg].SizeB-1+base < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 	} else {
-  L2:	(*dimB) = (EvalIntsubTop( SRC ));
+		(*dimB)=base;
 	}
-	if ( ( (*dimB) < base ) || ( MatAry[reg].SizeB-1+base < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 }
-
+void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-    base:1 1-
+	int c,d;
+	int base;
+	MatOprandInt1sub( SRC, reg, &(*dimA) );
+	if ( MatAry[reg].SizeA == 0 ) { 
+		DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+		if ( ErrorNo ) return ; // error
+	}
+	base=MatAry[reg].Base;
+	(*dimB)=base;
+	if ( ( (*dimA) < base+9 ) && ( MatAry[reg].SizeA-1+base < (*dimA) ) ) MatElementPlus( reg, (*dimA)-1+base, MatAry[reg].SizeB-1+base );	// List element+
+	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
+}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int CB_EvalInt( char *SRC ) {
@@ -191,79 +185,79 @@ int CB_EvalInt( char *SRC ) {
 	if (CB_INT) value=EvalIntsubTop( SRC ); else value=EvalsubTop( SRC ); 
 	return value;
 }
-
+/*
+int EvalIntEndCheck( int c ) {
+	if ( c==':' ) return c;
+	if ( c==0x0E ) return c;	// ->
+	if ( c==0x13 ) return c;	// =>
+	if ( c==',' ) return c;
+	if ( c==')' ) return c;
+	if ( c==']' ) return c;
+	if ( c==0x0D ) return c;	// <CR>
+	return ( c==0 );
+}
+*/
 int EvalIntsubTop( char *SRC ) {	// eval 1
+	int  result,dst;
 	int c;
 	int excptr=ExecPtr;
-	int  result,dst;
+	int ansreg=CB_MatListAnsreg;
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
 	result=EvalIntsub1(SRC);
-	c=SRC[ExecPtr];
-	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result;
+	c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
 	else 
 	if ( c==0xFFFFFF89 ) { // +
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result+dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result+dst;
 	} else
 	if ( c==0xFFFFFF99 ) { // -
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result-dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result-dst;
 	} else
 	if ( c=='=') { // ==
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result == dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result == dst;
 	} else
 	if ( c=='>') { // >
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result > dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result > dst;
 	} else
 	if ( c=='<') { // <
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result < dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result < dst;
 	} else
 	if ( c==0x11) { // !=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result != dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result != dst;
 	} else
 	if ( c==0x12) { // >=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result >= dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result >= dst;
 	} else
 	if ( c==0x10) { // <=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result <= dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result <= dst;
 	} else
 	if ( c==0xFFFFFFA9 ) { // *
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result*dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
 	} else
 	if ( c==0xFFFFFFB9 ) { // /
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result/dst;
+		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result/dst;
 	} else
 	if ( c==0xFFFFFF8B ) { // ^2
-		c=SRC[++ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result*result;
+		ExecPtr++;
+		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*result;
 	} else
 	if ( c==0x7F ) { // 
 		c=SRC[++ExecPtr];
 		if ( c==0xFFFFFFB0 ) { // And
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result & (int)dst;
+			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result & (int)dst;
 		} else
 		if ( c==0xFFFFFFB1 ) { // Or
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result | (int)dst;
+			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result | (int)dst;
 		} else
 		if ( c==0xFFFFFFB4 ) { // Xor
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result ^ (int)dst;
+			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result ^ (int)dst;
 		}
 	}
 
 	ExecPtr=excptr;
+	CB_MatListAnsreg=ansreg;
 	result = EvalIntsub13( SRC );
 	while ( 1 ) {
 		c = SRC[ExecPtr];
@@ -343,18 +337,18 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
 		return - EvalIntsub1( SRC );
 	}
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='z' ) ) && ( c != '[' ) )  {
 		reg=c-'A';
 	  regj:
 		c=SRC[ExecPtr];
 		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
 		else
-		if ( c=='[' )  { goto Matrix; }
+		if ( c=='[' ) { goto Matrix; }
 		else
 		if ( ( '0'<=c )&&( c<='9' ) ) { 
 				ExecPtr++;
 				dimA=c-'0';
-				MatOprand1( SRC, reg, &dimA, &dimB );
+				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 		} else
 		if ( c=='%' ) ExecPtr++;
@@ -367,26 +361,37 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
 			c = SRC[ExecPtr++];
-			if ( c == 0x40 ) {	// Mat A[a,b]
-				c=SRC[ExecPtr];
-				if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
-				else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
-				Matrix1:
-				if ( SRC[ExecPtr] == '[' ) {
-				Matrix:
-					ExecPtr++;
-					MatOprandInt2( SRC, reg, &dimA, &dimB );
-				Matrix2:
-					if ( ErrorNo ) return 1 ; // error
-				} else { dspflag=3; dimA=MatAry[reg].Base; dimB=dimA; }	// Mat A
-				return ReadMatrixInt( reg, dimA, dimB);
-
-			} else if ( c == 0x51 ) {	// List 1
-				c = SRC[ExecPtr];
-				reg=ListRegVar( SRC,  c );
-				goto Matrix1;
+			switch ( c ) {
+				case 0x40 :	// Mat A[a,b]
+					c=SRC[ExecPtr];
+					if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+					else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+					Matrix1:
+					if ( SRC[ExecPtr] == '[' ) {
+					Matrix:
+						ExecPtr++;
+						MatOprandInt2( SRC, reg, &dimA, &dimB );
+					Matrix2:
+						if ( ErrorNo ) return 1 ; // error
+					} else { dspflag=3;	// Mat A
+							dimA=MatAry[reg].Base; dimB=dimA;
+							CopyMatList2Ans( reg );
+					}
+					return ReadMatrixInt( reg, dimA, dimB);
 					
-			} else if ( c == 0x3A ) {	// MOD(a,b)
+				case 0x51 :		// List 1~26
+					reg=ListRegVar( SRC );
+					if ( SRC[ExecPtr] == '[' ) {
+						ExecPtr++;
+						MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
+						if ( ErrorNo ) return 1 ; // error
+					} else { dspflag=4;	// List 1
+							dimA=MatAry[reg].Base; dimB=dimA;
+							CopyMatList2Ans( reg );
+					}
+					return ReadMatrixInt( reg, dimA, dimB);
+						
+				case 0x3A :		// MOD(a,b)
 					tmp = EvalIntsubTop( SRC );
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
@@ -401,9 +406,12 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 					
-			} else if ( c == 0xFFFFFF9F ) {	// KeyRow(
+				case 0xFFFFFFB3 :		// Not
+					return ( EvalIntsubTop(SRC) == 0 ) ;
+						
+				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
-			} else if ( c == 0xFFFFFF8F ) {	// Getkey
+				case 0xFFFFFF8F :		// Getkey
 					c = SRC[ExecPtr];
 					if ( ( '0'<=c )&&( c<='3' )) {	ExecPtr++ ;
 						switch ( c ) {
@@ -419,7 +427,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					else	result = CB_Getkey() ;
 					return	result ;
 					
-			} else if ( c == 0xFFFFFF87 ) {	// RanInt#(st,en)
+				case 0xFFFFFF87 :		// RanInt#(st,en)
 					x=(EvalIntsubTop( SRC ));
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
@@ -430,62 +438,91 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					result= rand()*(y-x+1)/(RAND_MAX+1) +x ;
 					return result ;
 					
-			} else if ( c == 0xFFFFFFE9 ) {	// CellSum(Mat A[x,y])
+				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
 					if ( ErrorNo ) return ; // error
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return Cellsum( reg, x, y );
 
-			}else if ( c == 0x5F ) {	// 1/128 Ticks
+				case 0x5F :				// 1/128 Ticks
 					return RTC_GetTicks()-CB_TicksAdjust;	// 
-					
-			} else if ( c == 0xFFFFFFF5 ) {	// IsExist(
+						
+				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC );
-			} else if ( c == 0xFFFFFFF6 ) {	// Peek
-					return  CB_PeekInt( SRC, EvalIntsubTop( SRC ) );
-			} else if ( c == 0xFFFFFFF8 ) {	// VarPtr(
+				case 0xFFFFFFF6 :		// Peek(
+					return  CB_Peek( SRC, EvalsubTop( SRC ) );
+				case 0xFFFFFFF8 :		// VarPtr(
 					return  CB_VarPtr( SRC );
-			} else if ( c == 0xFFFFFFFA ) {	// ProgPtr(
+				case 0xFFFFFFFA :		// ProgPtr(
 					return  CB_ProgPtr( SRC );
-			} else if ( c == 0x00 ) {	// Xmin
+				case 0x00 :				// Xmin
 					return Xmin;
-			} else if ( c == 0x01 ) {	// Xmax
+				case 0x01 :				// Xmax
 					return Xmax;
-			} else if ( c == 0x02 ) {	// Xscl
+				case 0x02 :				// Xscl
 					return Xscl;
-			} else if ( c == 0x04 ) {	// Ymin
+				case 0x04 :				// Ymin
 					return Ymin;
-			} else if ( c == 0x05 ) {	// Ymax
+				case 0x05 :				// Ymax
 					return Ymax;
-			} else if ( c == 0x06) {	// Yscl
+				case 0x06 :				// Yscl
 					return Yscl;
-			} else if ( c == 0x0B ) {	// Xfct
+				case 0x08 :				// Thetamin
+					return TThetamin;
+				case 0x09 :				// Thetamax
+					return TThetamax;
+				case 0x0A :				// Thetaptch
+					return TThetaptch;
+				case 0x0B :				// Xfct
 					return Xfct;
-			} else if ( c == 0x0C ) {	// Yfct
+				case 0x0C :				// Yfct
 					return Yfct;
-			} else if ( c == 0x58 ) {	// ElemSize( Mat A )
+	
+				case 0x29 :				// Sigma( X, X, 1, 1000)
+					return CB_Sigma( SRC );
+				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
+					return CB_Max( SRC );
+				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
+					return CB_Min( SRC );
+				case 0x4C :				// Sum( List 1)
+					return CB_Sum( SRC );
+				case 0x4D :				// Prod( List 1)
+					return CB_Prod( SRC );
+				
+				case 0x46 :				// Dim
+					if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// Dim List
+						ExecPtr+=2;
+						goto ColSizej;
+					}
+				case 0x58 :				// ElemSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					i=MatAry[reg].ElementSize;
 					if (i <= 4 ) i=1;
 					return i;
-			} else if ( c == 0x59 ) {	// ColSize( Mat A )
+				case 0x59 :				// ColSize( Mat A )
+					ColSizej:
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeA;
-			} else if ( c == 0x5A ) {	// RowSize( Mat A )
+				case 0x5A :				// RowSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeB;
-			} else if ( c == 0x5B ) {	// MatBase( Mat A )
+				case 0x5B :				// MatBase( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].Base;
-			} else ExecPtr--;	// error
+				default:
+					ExecPtr--;	// error
+					break;
+			}
 			break;
 			
-		case 0xFFFFFFC0 :	// Ans
-			return CBint_CurrentValue ;
+//		case 0xFFFFFFC0 :	// Ans
+//			return CBint_CurrentValue ;
+		case '&' :	// & VarPtr
+			return CB_VarPtr( SRC ) ;
 		case 0xFFFFFFD0 :	// PI
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
@@ -506,10 +543,18 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFA7 :	// Not
 			result = ! (int) ( EvalIntsub5( SRC ) );
 			return result ;
+			
 		case '%' :	// 1/128 Ticks
 			return RTC_GetTicks()-CB_TicksAdjust;	// 
 		case '*' :	// peek
 			return CB_PeekInt( SRC, EvalIntsub1( SRC ) );	// 
+
+		case '{':	// { 1,2,3,4,5... }->List Ans
+			CB_List(SRC);
+			return 0;
+		case '[':	// [ [0,1,2][2,3,4] ]->Mat Ans
+			CB_Matrix(SRC);
+			return 0;
 			
 		case 0xFFFFFF86 :	// sqr
 			tmp=EvalIntsub5( SRC ) ;
@@ -535,62 +580,56 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			
 		case 0xFFFFFFF7:	// F7..
 			c = SRC[ExecPtr++];
-			if ( c == 0xFFFFFFAF ) {	// PxlTest(y,x)
+			switch ( c ) {
+				case 0xFFFFFFAF:	// PxlTest(y,x)
 					y=(EvalIntsubTop( SRC ));
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
 					x=(EvalIntsubTop( SRC ));
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					result = Bdisp_GetPoint_VRAM(x, y) ;			// 
+					result = PxlTest(y, x) ;			// 
 					return result ;
-			} else
-			if ( c == 0xFFFFFFF4 ) {	// SysCall(
+				case 0xFFFFFFF4:	// SysCall(
 					return  CB_SysCall( SRC );
-			} else
-			if ( c == 0xFFFFFFF5 ) {	// Call(
+				case 0xFFFFFFF5:	// Call(
 					return  CB_Call( SRC );
-			} else
-			if ( c == 0xFFFFFFF8 ) {	// RefreshCtrl
+				case 0xFFFFFFF8:	// RefreshCtrl
 					return  RefreshCtrl;
-			} else
-			if ( c == 0xFFFFFFFA ) {	// RefreshTime
+				case 0xFFFFFFFA:	// RefreshTime
 					return  Refreshtime+1;
-			} else
-			if ( c == 0xFFFFFFFB ) {	// Screen
+				case 0xFFFFFFFB:	// Screen
 					return  ScreenMode;
-			} else
-			if ( c == 0xFFFFFFFE ) {	// BackLight
-				return	BackLight(-1);
-			} else ExecPtr--;	// error
+				case 0xFFFFFFFE:	// BackLight
+					return	BackLight(-1);
+				default:
+					ExecPtr--;	// error
+					break;
+			}
 			break;
 		case 0xFFFFFFF9:	// F9..
 			c = SRC[ExecPtr++];
-			if ( c == 0x56 ) {	// M_PixelTest(
+			switch ( c ) {
+				case 0x56:	// M_PixelTest(
 					return CB_ML_PixelTest( SRC );
-			} else
-//			if ( c == 0x53 ) {	// M_Contrast(
+//				case 0x53:	// M_Contrast(
 //					return CB_ML_GetContrast( SRC );
-//			} else
-			if ( c == 0x31 ) {	// StrLen(
+				case 0x31:	// StrLen(
 					return CB_StrLen( SRC );
-			} else
-			if ( c == 0x32 ) {	// StrCmp(
+				case 0x32:	// StrCmp(
 					return CB_StrCmp( SRC );
-			} else
-			if ( c == 0x33 ) {	// StrSrc(
+				case 0x33:	// StrSrc(
 					return CB_StrSrc( SRC );
-			} else
-			if ( c == 0x38 ) {	// Exp(
-					return CBint_EvalStr(SRC);
-			} else
-			if ( c == 0x21 ) {	// Xdot
+				case 0x38:	// Exp(
+					return CB_EvalStr(SRC);
+				case 0x21:	// Xdot
 					return Xdot;
-			} else ExecPtr-=2;	// error
+				default:
+					ExecPtr--;	// error
+					break;
+			}
 			break;
 		case 0xFFFFFFDD :	// Eng
 			return ENG ;
-		case '&' :	// & VarPtr
-			return CB_VarPtr( SRC ) ;
 		default:
 			break;
 	}
@@ -657,9 +696,9 @@ int EvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 	 }
 	return result;
 }
-int EvalIntsub5(char *SRC) {	//  5th Priority
+int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 	int result,tmp;
-	int c;
+	int c,execptr;
 	int dimA,dimB,reg,x,y;
 	result = EvalIntsub4( SRC );
 	while ( 1 ) {
@@ -675,9 +714,11 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x40:	// Mat A[a,b]
+				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
 				case 0xFFFFFF8F:	// Getkey
 				case 0xFFFFFF87:	// RanInt#(st,en)
+				case 0xFFFFFFB3 :	// Not
 				case 0xFFFFFFF0:	// GraphY
 				case 0x00:	// Xmin
 				case 0x01:	// Xmax
@@ -685,10 +726,15 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 				case 0x04:	// Ymin
 				case 0x05:	// Ymax
 				case 0x06:	// Yscl
+				case 0x08:	// Thetamin
+				case 0x09:	// Thetamax
+				case 0x0A:	// Thetaptch
+				case 0x0B:	// Xfct
+				case 0x0C:	// Yfct
 					result *= EvalIntsub4( SRC ) ;
 					break;
 				default:
-					return result;
+					goto exitj;
 					break;
 			}
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
@@ -698,7 +744,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 					result *= EvalIntsub4( SRC ) ;
 					break;
 				default:
-					return result;
+					goto exitj;
 					break;
 			}
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
@@ -708,7 +754,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 					result *= EvalIntsub4( SRC ) ;
 					break;
 				default:
-					return result;
+					goto exitj;
 					break;
 			}
 //		} else if ( c == 0xFFFFFFE7 ) { // E7..
@@ -718,10 +764,16 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 //					return result;
 //					break;
 //			}
-		} else return result;
+		} else {
+		  exitj:
+			execptr=ExecPtr;
+			c=RegVarAliasEx(SRC);
+			if (c>0) { ExecPtr=execptr; result *= Evalsub4( SRC ) ; }
+			else return result;
+		}
 	 }
 }
-int EvalIntsub7(char *SRC) {	//  7th Priority
+int EvalIntsub7(char *SRC) {	//  7th Priority abbreviated multiplication type A/C
 	int result,tmp;
 	int c;
 	result = EvalIntsub5( SRC );
@@ -901,6 +953,15 @@ int CB_KeyRow( char *SRC ) {		// Row Keyscan
 	else {
 		return ( CheckKeyRow7305(row) ) ;		//SH4A
 	}
+}
+
+//----------------------------------------------------------------------------------------------
+
+void CB_Wait( char *SRC ) {
+	int n;
+	n = CB_EvalInt( SRC );
+	if ( n < 0 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	Waitcount = n ;
 }
 
 //----------------------------------------------------------------------------------------------

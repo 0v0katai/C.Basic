@@ -962,15 +962,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 							}
 					} else {
-						if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
-							if ( DebugScreen == 1 ) { DebugMenuSw = 1; DebugScreen = 2; }
-							else
-							DebugMenuSw = 1-DebugMenuSw;
+						if ( JumpMenuSw ) {		// ====== Jump Mode
+							NextLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );	// Skip Down
+							csrPtr=offset;
+							if ( SrcBase[offset] == 0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 						} else {
-							if ( JumpMenuSw ) {		// ====== Jump Mode
-								NextLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );	// Skip Down
-								csrPtr=offset;
-								if ( SrcBase[offset] == 0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
+							if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
+								if ( DebugScreen == 1 ) { DebugMenuSw = 1; DebugScreen = 2; }
+								else
+								DebugMenuSw = 1-DebugMenuSw;
 							} else {
 								if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
 								ProgEntryN=1;
@@ -1170,7 +1170,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_PAGEUP:
 							switch (dumpflg) {
 								case 2: 		// Opcode
-									PrevLinePhyN( 6, SrcBase, &offset, &offset_y );	// Page Up
+									PrevLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );	// Page Up
 									csrPtr=offset;
 									break;
 								case 4: 		// hex dump
@@ -1188,7 +1188,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_PAGEDOWN:
 							switch (dumpflg) {
 								case 2: 		// Opcode
-									NextLinePhyN( 6, SrcBase, &offset, &offset_y );	// Page Down
+									NextLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );	// Page Down
 									csrPtr=offset;
 									if ( SrcBase[offset] == 0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 									break;

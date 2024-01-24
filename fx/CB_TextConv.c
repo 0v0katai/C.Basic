@@ -176,7 +176,7 @@ const char ConvList0080[][16]={
 "Norm ",	  	// D9
 "Deg",		   	// DA
 "Rad",		   	// DB
-"Gra",		   	// DC
+"Gra ",		   	// DC
 "Eng",		   	// DD
 "Intg ",		// DE
 "Sigmaxy",		// DF
@@ -729,7 +729,7 @@ const char ConvListF700[][17]={
 "DrawOff",			// F7DC
 "@F7DD",			// F7DD
 "@F7DE",			// F7DE
-"@F7DF",			// F7DF
+"Delete ",				// F7DF
 
 "DotLife(",				// F7E0
 "Rect ",				// F7E1
@@ -1352,6 +1352,7 @@ const tcnvopcodes ConvOpCodeStrList[] = {
 	{ 0x0082, "cos"},
 	{ 0x0083, "tan"},
 	
+	{ 0x00DC, "Gra"},
 	{ 0x00E0, "Plot"},
 	{ 0x00ED, "Prog"},
 

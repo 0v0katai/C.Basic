@@ -27,6 +27,7 @@
 #include "CB_Eval.h"
 #include "CB_Time.h"
 #include "CB_Matrix.h"
+#include "CB_Str.h"
 
 #include "CBI_Eval.h"
 #include "CBI_interpreter.h"
@@ -68,7 +69,7 @@ void CBint_Store( char *SRC ){	// ->
 			if ( ( '0'<=c )&&( c<='9' ) ) {
 				ExecPtr++;
 				dimA=c-'0';
-				MatOprand1( SRC, reg, &dimA, &dimB );
+				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 			} else {
 				if ( c=='%' ) ExecPtr++;
@@ -83,10 +84,10 @@ void CBint_Store( char *SRC ){	// ->
 			c=SRC[ExecPtr];
 			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
-			MatrixList:
 			if ( SRC[ExecPtr] != '[' ) { 
+				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; dspflag=0; return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
-				InitMatIntSub( reg, CBint_CurrentValue);
+				InitMatSub( reg, CBint_CurrentValue);		// 10 -> Mat A
 			} else {
 			Matrix:
 				ExecPtr++;
@@ -98,25 +99,33 @@ void CBint_Store( char *SRC ){	// ->
 				}
 				WriteMatrixInt( reg, dimA, dimB, CBint_CurrentValue);
 			}
-		} else if ( c == 0x5F ) {	// Ticks
-				ExecPtr+=2;
-				goto StoreTicks;
 		} else if ( c == 0x51 ) {	// List
+			ExecPtr+=2;
+			reg=ListRegVar( SRC );
+			if ( SRC[ExecPtr] != '[' ) { 
+				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; dspflag=0; return ; }	// ListAns -> List 1
+				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+				InitMatSub( reg, CBint_CurrentValue);		// 10 -> List 1
+			} else {
+				ExecPtr++;
+				MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
+				goto Matrix2;
+			}
+			
+		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
-				c=SRC[ExecPtr];
-				reg=ListRegVar( SRC, c );
-				goto MatrixList;
-		} else if ( c == 0x46 ) {	// ->DimZ
-				ExecPtr+=2;
-				if ( ( SRC[ExecPtr]==0x7F ) || ( SRC[ExecPtr+1]==0x51 ) ) {	// -> Dim List
+				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// n -> Dim List
 					ExecPtr+=2;
 					if ( CBint_CurrentValue ) 
 							CB_ListInitsub( SRC,  &reg, CBint_CurrentValue, 0 );
 					else {
-						c=SRC[ExecPtr];
-						reg=ListRegVar( SRC, c );
+						reg=ListRegVar( SRC );
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
+				} else
+				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// {10,5} -> Dim Mat A
+					CB_MatrixInit( SRC );
+					return ;
 				} else {
 					if ( CBint_CurrentValue ) 
 							CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
@@ -126,34 +135,48 @@ void CBint_Store( char *SRC ){	// ->
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				}
-		} else if ( c == 0x00 ) {	// Xmin
+		} else if ( c == 0x5F ) {	// Ticks
 				ExecPtr+=2;
+				goto StoreTicks;
+		} else if ( c == 0x00 ) {	// Xmin
 				Xmin = CBint_CurrentValue ;
 				Xdot = (Xmax-Xmin)/126.0;
+				goto Graphj;
 		} else if ( c == 0x01 ) {	// Xmax
-				ExecPtr+=2;
 				Xmax = CBint_CurrentValue ;
 				Xdot = (Xmax-Xmin)/126.0;
+				goto Graphj;
 		} else if ( c == 0x02 ) {	// Xscl
-				ExecPtr+=2;
 				Xscl = CBint_CurrentValue ;
+				goto Graphj;
 		} else if ( c == 0x04 ) {	// Ymin
-				ExecPtr+=2;
 				Ymin = CBint_CurrentValue ;
 				Ydot = (Ymax-Ymin)/62.0;
+				goto Graphj;
 		} else if ( c == 0x05 ) {	// Ymax
-				ExecPtr+=2;
 				Ymax = CBint_CurrentValue ;
 				Ydot = (Ymax-Ymin)/62.0;
+				goto Graphj;
 		} else if ( c == 0x06) {	// Yscl
-				ExecPtr+=2;
 				Yscl = CBint_CurrentValue ;
+				goto Graphj;
+		} else if ( c == 0x08) {	// Thetamin
+				TThetamin = CBint_CurrentValue ;
+				goto Graphj;
+		} else if ( c == 0x09) {	// Thetamax
+				TThetamax = CBint_CurrentValue ;
+				goto Graphj;
+		} else if ( c == 0x0A) {	// Thetaptch
+				TThetaptch = CBint_CurrentValue ;
+				goto Graphj;
 		} else if ( c == 0x0B ) {	// Xfct
-				ExecPtr+=2;
 				Xfct = CBint_CurrentValue ;
+				goto Graphj;
 		} else if ( c == 0x0C ) {	// Yfct
-				ExecPtr+=2;
 				Yfct = CBint_CurrentValue ;
+			Graphj:
+				ExecPtr+=2;
+				CB_ChangeViewWindow() ;
 		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF7 ) {
@@ -218,7 +241,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		if ( ( '0'<=c )&&( c<='9' ) ) {
 			ExecPtr++;
 			dimA=c-'0';
-			MatOprand1( SRC, reg, &dimA, &dimB );
+			MatOprand1num( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
 			if ( c=='%' ) ExecPtr++;
@@ -226,7 +249,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {
+	if ( ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) || ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -250,7 +273,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		}
 	} else if ( c==0x0C ) {  // dsps
 		ExecPtr++;
-		CB_Disps( SRC ,2);
+		if ( CB_Disps(SRC, 2) ) { BreakPtr=ExecPtr ; return ; }  // [AC] break
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
@@ -284,7 +307,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 		if ( ( '0'<=c )&&( c<='9' ) ) {
 			ExecPtr++;
 			dimA=c-'0';
-			MatOprand1( SRC, reg, &dimA, &dimB );
+			MatOprand1num( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
 			if ( c=='%' ) ExecPtr++;
@@ -292,7 +315,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {
+	if ( ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) || ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -316,7 +339,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 		}
 	} else if ( c==0x0C ) {  // dsps
 		ExecPtr++;
-		CB_Disps( SRC ,2);
+		if ( CB_Disps(SRC, 2) ) { BreakPtr=ExecPtr ; return ; }  // [AC] break
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
@@ -356,3 +379,329 @@ void CBint_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn   0:PxlOff   2:PxlCh
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+int WordSizeSelect( char *SRC ) {
+	int c,d;
+	int WordSize=8;
+	c =SRC[ExecPtr];
+	if ( c=='.' ) {
+		c =SRC[++ExecPtr];
+		if ( ( c=='B' ) || ( c=='b' ) ) { ExecPtr++; }
+		else
+		if ( ( c=='W' ) || ( c=='w' ) ) { ExecPtr++; WordSize=16; }
+		else
+		if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; WordSize=32; }
+		else
+		if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; WordSize=64; }
+	}
+	return WordSize;
+}
+
+double CB_Peek( char *SRC, int adrs ) {	// Peek(123456).f
+	int wsize;
+	char *cptr;
+	short *sptr;
+	int *iptr;
+	double *dptr;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	wsize=WordSizeSelect( SRC );
+	switch ( wsize ) {
+		case 64:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			dptr=(double *)adrs;
+			return *dptr;
+		case 32:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			iptr=(int *)adrs;
+			return *iptr;
+		case 16:
+			if ( adrs & 1 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			sptr=(short *)adrs;
+			return *sptr;
+		default:
+			cptr=(char *)adrs;
+			return *cptr;
+	}
+}
+int CB_PeekInt( char *SRC, int adrs ) {	// Peek(123456).w
+	int wsize;
+	char *cptr;
+	short *sptr;
+	int *iptr;
+	double *dptr;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	wsize=WordSizeSelect( SRC );
+	switch ( wsize ) {
+		case 64:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			dptr=(double *)adrs;
+			return *dptr;
+		case 32:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			iptr=(int *)adrs;
+			return *iptr;
+		case 16:
+			if ( adrs & 1 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			sptr=(short *)adrs;
+			return *sptr;
+		default:
+			cptr=(char *)adrs;
+			return *cptr;
+	}
+}
+
+void CB_PokeSub( char *SRC, double data, int adrs ) {	// Poke(123456).f
+	int wsize;
+	char *cptr;
+	short *sptr;
+	int *iptr;
+	double *dptr;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	wsize=WordSizeSelect( SRC );
+	switch ( wsize ) {
+		case 64:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			dptr=(double *)adrs;
+			*dptr=data;
+			break;
+		case 32:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			iptr=(int *)adrs;
+			*iptr=data;
+			break;
+		case 16:
+			if ( adrs & 1 ) { CB_Error(ArgumentERR); return; }  // Argument error
+			sptr=(short *)adrs;
+			*sptr=data;
+			break;
+		default:
+			cptr=(char *)adrs;
+			*cptr=data;
+			break;
+	}
+}
+void CB_PokeSubInt( char *SRC, int data, int adrs ) {	// Poke(123456).w
+	int wsize;
+	char *cptr;
+	short *sptr;
+	int *iptr;
+	double *dptr;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	wsize=WordSizeSelect( SRC );
+	switch ( wsize ) {
+		case 64:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			dptr=(double *)adrs;
+			*dptr=data;
+			break;
+		case 32:
+			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			iptr=(int *)adrs;
+			*iptr=data;
+			break;
+		case 16:
+			if ( adrs & 1 ) { CB_Error(ArgumentERR); return; }  // Argument error
+			sptr=(short *)adrs;
+			*sptr=data;
+			break;
+		default:
+			cptr=(char *)adrs;
+			*cptr=data;
+			break;
+	}
+}
+
+void CB_Poke( char *SRC ) {	// Poke(123456).w,123,...
+	int adrs=CB_EvalInt( SRC );
+	int wsize;
+	char *cptr;
+	short *sptr;
+	int *iptr;
+	double *dptr;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	wsize=WordSizeSelect( SRC );
+	if ( SRC[ExecPtr]!=',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	do {
+		ExecPtr++;
+		switch ( wsize ) {
+			case 64:
+				if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+				dptr=(double *)adrs;
+				*dptr=CB_EvalDbl( SRC );
+				adrs+=8;
+				break;
+			case 32:
+				if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+				iptr=(int *)adrs;
+				*iptr=CB_EvalInt( SRC );
+				adrs+=4;
+				break;
+			case 16:
+				if ( adrs & 1 ) { CB_Error(ArgumentERR); return; }  // Argument error
+				sptr=(short *)adrs;
+				*sptr=CB_EvalInt( SRC );
+				adrs+=2;
+				break;
+			default:
+				cptr=(char *)adrs;
+				*cptr=CB_EvalInt( SRC );
+				adrs++;
+				break;
+		}
+	} while ( SRC[ExecPtr] == ',' );
+}
+
+int CB_EvalIntStrPtr( char *SRC ) {
+	int c;
+	int result;
+	int maxoplen;
+	char *buffer;
+	c=CB_IsStr( SRC, ExecPtr );
+	if ( c ) {	// string
+		buffer = CB_GetOpStr( SRC, &maxoplen );	
+		if ( ErrorNo ) return ;			// error
+		return (int)buffer;	//  return buffer ptr
+	} else {	// expression
+		return CB_EvalInt( SRC );
+	}
+}
+
+int CB_SysCall( char *SRC ) {	// SysCall( No,r4,r5,r6,r7 )
+	int callNo=CB_EvalInt( SRC );
+	int r4=0,r5=0,r6=0,r7=0;
+	unsigned int ur4,ur5,ur6,ur7;
+	if ( SRC[ExecPtr]==',' ) { 
+		ExecPtr++;
+		r4=CB_EvalIntStrPtr( SRC );
+		if ( SRC[ExecPtr]==',' ) { 
+			ExecPtr++;
+			r5=CB_EvalIntStrPtr( SRC );
+			if ( SRC[ExecPtr]==',' ) {
+				ExecPtr++;
+				r6=CB_EvalIntStrPtr( SRC );
+				if ( SRC[ExecPtr]==',' ) {
+					ExecPtr++;
+					r7=CB_EvalIntStrPtr( SRC );
+				}
+			}
+		}
+	}
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	return SysCalljmp(r4,r5,r6,r7,callNo);	//		CallNo -> SysCallNo
+}
+int CB_Call( char *SRC ) {	// Call( adrs,r5,r6,r7 )
+	int adrs=CB_EvalInt( SRC );
+	int r4=0,r5=0,r6=0,r7=0;
+	if ( adrs & 1 ) CB_Error(ArgumentERR);  // Argument error
+	if ( SRC[ExecPtr]==',' ) { 
+		ExecPtr++;
+		r4=CB_EvalIntStrPtr( SRC );
+		if ( SRC[ExecPtr]==',' ) { 
+			ExecPtr++;
+			r5=CB_EvalIntStrPtr( SRC );
+			if ( SRC[ExecPtr]==',' ) {
+				ExecPtr++;
+				r6=CB_EvalIntStrPtr( SRC );
+				if ( SRC[ExecPtr]==',' ) {
+					ExecPtr++;
+					r7=CB_EvalIntStrPtr( SRC );
+				}
+			}
+		}
+	}
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	return Calljmp(r4,r5,r6,r7,adrs);
+}
+
+int CB_VarPtr( char *SRC ) {
+	int c;
+	int reg,dimA,dimB;
+	int result;
+	int maxoplen;
+	char *buffer;
+	
+	c=SRC[ExecPtr];
+	if ( ( 'A'<=c )&&( c<='z' ) ) {	// variable
+		ExecPtr++;
+		reg=c-'A';
+	  regj:
+		c=SRC[ExecPtr];
+		if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; }
+		else
+		if ( c=='[' ) { goto Matrix; }		// A[1]
+		else
+		if ( ( '0'<=c )&&( c<='9' ) ) {		// A1
+				ExecPtr++;
+				dimA=c-'0';
+				MatOprand1num( SRC, reg, &dimA, &dimB );
+				goto Matrix2;
+		} else
+		if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; }
+		else
+		if (CB_INT)	result=(int)&LocalInt[reg][0]; else result=(int)&LocalDbl[reg][0];
+	} else
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat
+		ExecPtr+=2;
+		c=SRC[ExecPtr];
+		if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+		else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+		if ( SRC[ExecPtr] == '[' ) {
+		Matrix:	
+			ExecPtr++;
+			MatOprand2( SRC, reg, &dimA, &dimB );	// Mat A[a,b]
+		Matrix2:	
+			if ( ErrorNo ) return 1 ; // error
+			result=(int)MatrixPtr( reg, dimA, dimB );
+		} else {
+			result=(int)MatAry[reg].Adrs;	// Mat A
+		}
+	} else
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
+		ExecPtr+=2;
+		c=SRC[ExecPtr];
+		reg=ListRegVar( SRC );
+		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
+		if ( SRC[ExecPtr] == '[' ) {
+			ExecPtr++;
+			MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
+			if ( ErrorNo ) return 1 ; // error
+			result=(int)MatrixPtr( reg, dimA, dimB );
+		} else {
+			result=(int)MatAry[reg].Adrs;	// List 1
+		}
+	} else
+	if ( ( c == 0x22 ) || ( (c==0xFFFFFFF9)&&(SRC[ExecPtr+1]==0x3F) ) || ( (c==0x7F)&&(SRC[ExecPtr+1]==0xFFFFFFF0) ) ) {	// string "" str graphy
+		buffer = CB_GetOpStr( SRC, &maxoplen );	
+		if ( ErrorNo ) return ;			// error
+		result=(int)buffer;	//  return buffer ptr
+	} else {
+		reg=RegVarAliasEx(SRC); if ( reg>=0 ) goto regj;
+		CB_Error(SyntaxERR) ; return 0; // Syntax error 
+	}
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	return result;
+}
+
+int CB_ProgPtr( char *SRC ) { //	ProgPtr(
+	int c;
+	char buffer[32],folder16[21];
+	int progno;
+
+	c=SRC[ExecPtr];
+	if ( c != 0x22 ) { 
+		if ( c != ')' ) { ExecPtr++; return 0; }	// ProgPtr()
+		ExecPtr++;
+		return (int)ProgfileAdrs[ProgNo];
+	}
+	ExecPtr++;
+	CB_GetQuotOpcode(SRC, buffer,32);	// Prog name
+	
+	Setfoldername16( folder16, buffer );
+	progno = CB_SearchProg( folder16 );
+	if ( progno < 0 ) { CB_Error(NotfoundProgERR); return 0 ; }  // Not found Prog
+
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	return  (int)ProgfileAdrs[progno];
+}
