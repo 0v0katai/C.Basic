@@ -265,7 +265,7 @@ int Search_ExceptTryEnd( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x27:	// ' rem
-				Skip_rem(SRC);
+				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				c=SRC[ExecPtr++];
