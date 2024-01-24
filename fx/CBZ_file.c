@@ -3653,12 +3653,13 @@ int CB_BatteryStatus( char *SRC ){
 
 //----------------------------------------------------------------------------------------------
 int Emu_check() {
-	int i,t,s=RTC_GetTicks();
-	for(i=0;i<140;i++){
-		Bdisp_PutDisp_DD();
-	}
-	t=RTC_GetTicks()-s;
-	if ( t<6) IsEmu=1;
+//	int i,t,s=RTC_GetTicks();
+//	for(i=0;i<140;i++){
+//		Bdisp_PutDisp_DD();
+//	}
+//	t=RTC_GetTicks()-s;
+//	if ( t<6) IsEmu=1;
+	if ( *(int*)0x8000FFD0 == 0 ) IsEmu=1;	// is emulator
 }
 
 void WaitKeyAC(){
@@ -3712,21 +3713,21 @@ int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4AA( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4BB( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4CC( unsigned int n ){ return n; }	// align +4byte
