@@ -1027,6 +1027,11 @@ int SaveG1M( char *filebase ){
 	return storeFile( fname, (unsigned char*)filebase, size );	// 0:ok
 }
 
+int SaveBasG1M( char *filebase ){
+	G1M_Basic_header( filebase );	// G1M Basic header set
+	return SaveG1M( filebase );
+}	
+
 int SaveProgfile( int progNo ){
 	char *filebase;
 	char fname[32],sname[16],basname[32];
@@ -1046,8 +1051,7 @@ int SaveProgfile( int progNo ){
 	
 	strncpy( tmpfolder, folder, FOLDERMAX );
 	strncpy( folder, filebase+0x3C-8, 8 );
-	G1M_Basic_header( filebase );	// G1M Basic header set
-	r=SaveG1M( filebase );
+	r=SaveBasG1M( filebase );
 	
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
@@ -1213,7 +1217,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		if ( strcmp(name,fname)==0 ) return 0; // no rename
 		basname8ToG1MHeader( filebase, basname);
 		if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) return 1 ; // cancel
-		if ( SaveG1M( filebase ) == 0 ) { 
+		if ( SaveBasG1M( filebase ) == 0 ) { 
 			if ( select == 0 ) DeleteFile( fname ) ;	// (rename) delete original file
 		} else return 1;
 	}
@@ -1650,7 +1654,7 @@ void ConvertToText( char *fname ){
 		SetFullfilenameExt( fname, basname, "g1m" );
 		basname8ToG1MHeader( filebase, basname);
 		if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) return  ; // cancel	
-		if ( SaveG1M( filebase ) ) return ;
+		if ( SaveBasG1M( filebase ) ) return ;
 		
 	} else {	// G1M file -> Text
 		buffersize=files[index].filesize /2;	// buffersize 50% up
@@ -1848,7 +1852,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 }
 
 //----------------------------------------------------------------------------------------------
-//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
