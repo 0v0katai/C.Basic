@@ -1586,7 +1586,8 @@ void CB_end( char *SRC ){
 		CB_RestoreTextVRAM();	// Resotre Graphic screen
 		CB_Done();
 	}
-	if ( ( dspflag == 0 ) && ( BreakPtr == 0 ) ) CB_Done();
+//	if ( ( dspflag == 0 ) && ( BreakPtr == 0 ) ) CB_Done();
+	if ( ( dspflag == 0 ) ) CB_Done();
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
 	if ( UseGraphic ) if ( ( UseGraphic != 1 ) &&( UseGraphic != 2 ) && ( UseGraphic != 9 ) ) { UseGraphic=UseGraphic&0xF; CB_SelectTextVRAM(); }
 	Bdisp_PutDisp_DD();
@@ -2000,9 +2001,9 @@ void CB_RclVWin( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-//int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

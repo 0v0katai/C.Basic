@@ -169,7 +169,7 @@ void MatOprand1num( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 e
 	base=MatAry[reg].Base;
 	(*dimB)=base;
 	if ( ( (*dimA) < (*dimB) ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { 
-		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// List element +
+		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// Mat element +
 		else
 		{ CB_Error(DimensionERR); return ; }	// Dimension error
 	}
@@ -226,7 +226,6 @@ int MatOperandSub( int c ) {
 }
 void MatOprand1sub( char *SRC, int reg, int *dimA ){	// base:0  0-    base:1 1-
 	int c,d,e;
-	int base=MatBase;
 	c=SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( (d==',')||(d==']')||(d==0x0E)||(d==0x13)||(d==0x0D)||(d==0) )  {		// [a,
@@ -279,8 +278,8 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 	base=MatAry[reg].Base;
 	(*dimB)=base;
 	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) {
-		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// List element +
-		else 
+//		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// List element +
+//		else 
 		if ( (MatAry[reg].SizeA+1)==((*dimA)-1+base) ) MatElementPlus( reg, (*dimA)-1+base, 1 );	// List element +
 		else
 		{ CB_Error(DimensionERR); return ; }	// Dimension error
@@ -289,8 +288,11 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 }
 
 //----------------------------------------------------------------------------------------------
-//int EvalObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
