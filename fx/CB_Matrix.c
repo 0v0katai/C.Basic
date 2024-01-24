@@ -169,6 +169,7 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
 	} else {	// 1 bit matrix
 			matsize=( ((m-1)>>3)+1 )*n;
 	}
+	matsize = (matsize+7) & 0xFFFFFFF8;	// 8byte align
 	if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].Maxbyte >= matsize ) && ( MatAry[reg].ElementSize!=2 ) ) { // already exist
 		dptr = MatAry[reg].Adrs ;							// Matrix array ptr*
 		MatAry[reg].SizeA       = m;						// Matrix array size
@@ -1886,8 +1887,8 @@ int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte

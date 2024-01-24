@@ -65,9 +65,10 @@ void * HiddenRAM_mallocProg( size_t size ){
 	char * ptr;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		ptr = HiddenRAM_ProgNextPtr;
-		HiddenRAM_ProgNextPtr += ( (size&0xFFFFFFF4) +4);
-		if ( HiddenRAM_ProgNextPtr >= HiddenRAM_MatTopPtr ) return NULL;
-		return ptr;
+		HiddenRAM_ProgNextPtr += ( (size+3) & 0xFFFFFFFC );	// 4byte align
+		if ( HiddenRAM_ProgNextPtr < HiddenRAM_MatTopPtr ) return ptr;
+		HiddenRAM_ProgNextPtr = ptr;
+		return malloc( size );
 	} else {
 		return malloc( size );
 	}
@@ -77,8 +78,8 @@ void * HiddenRAM_mallocMat( size_t size ){
 	char * ptr;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		ptr = HiddenRAM_MatTopPtr;
-		ptr -= ( (size&0xFFFFFFF0) +16);
-		if ( ptr < HiddenRAM_ProgNextPtr ) return NULL;
+		ptr -= ( (size+7) & 0xFFFFFFF8 );	// 8byte align
+		if ( ptr < HiddenRAM_ProgNextPtr ) return malloc( size );
 		HiddenRAM_MatTopPtr = ptr;
 		return ptr;
 	} else {
@@ -92,11 +93,11 @@ void HiddenRAM_freeProg( void *ptr ){
 		HiddenRAM_ProgNextPtr=HiddenRAM_Top;	// Hidden RAM Prog next ptr
 }
 void HiddenRAM_freeMat( int reg ){
-	char *ptr = MatAry[reg].Adrs;
+	char *ptr = (char *)MatAry[reg].Adrs;
 	int	size = MatAry[reg].Maxbyte; 
 	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
 	else {
-		if ( (int)HiddenRAM_MatTopPtr == (int)ptr ) HiddenRAM_MatTopPtr += ( (size&0xFFFFFFF0) +16);
+		if ( (int)HiddenRAM_MatTopPtr == (int)ptr ) HiddenRAM_MatTopPtr += ( (size+7) & 0xFFFFFFF8 );
 	}
 }
 
@@ -371,7 +372,7 @@ int IObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int IObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int IObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int IObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int IObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int IObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
