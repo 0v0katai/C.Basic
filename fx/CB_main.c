@@ -138,7 +138,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				SaveConfig();
 				break;
 			case FileCMD_RENAME:
-				RenameFile(filename);
+				RenameCopyFile(filename, 0);
 				run=0;
 				SaveConfig();
 				break;
@@ -148,7 +148,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				SaveConfig();
 				break;
 			case FileCMD_COPY:
-				CopyFile(filename);
+				RenameCopyFile(filename, 1);
 				run=0;
 				SaveConfig();
 				break;

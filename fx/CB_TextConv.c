@@ -1317,6 +1317,54 @@ const char ConvListE700[][13]={
 
 };
 
+//-----------------------------------------------------------------------------
+typedef struct {
+	short code;
+	char str[16];
+} tcnvopcodes;
+
+const tcnvopcodes ConvOpCodeStrList[] = {
+	{ 0x00DE, "Intg"},
+	{ 0x00A6, "Int"},
+	{ 0x0086, "Sqrt"},
+	{ 0x0095, "log"},
+	{ 0x0097, "Abs"},
+	{ 0x00B6, "Frac"},
+	{ 0x0085, "ln"},
+	
+	{ 0x00B1, "sinh^-1"},
+	{ 0x00B2, "cosh^-1"},
+	{ 0x00B3, "tanh^-1"},
+	{ 0x00B1, "asinh"},
+	{ 0x00B2, "acosh"},
+	{ 0x00B3, "atanh"},
+	{ 0x00A1, "sinh"},
+	{ 0x00A2, "cosh"},
+	{ 0x00A3, "tanh"},
+	
+	{ 0x0091, "sin^-1"},
+	{ 0x0092, "cos^-1"},
+	{ 0x0093, "tan^-1"},
+	{ 0x0091, "asin"},
+	{ 0x0092, "acos"},
+	{ 0x0093, "atan"},
+	{ 0x0081, "sin"},
+	{ 0x0082, "cos"},
+	{ 0x0083, "tan"},
+	
+	{ 0x00E0, "Plot"},
+	{ 0x00ED, "Prog"},
+
+	{ 0xF701, "Then" }, 
+	{ 0xF70F, "ElseIf" }, 
+	{ 0xF702, "Else" }, 
+	{ 0xF700, "If" }, 
+
+	{ 0xF7EC, "Default" }, 
+	{ 0xF7EE, "Save" }, 
+
+	{ 0, "" }
+};
 
 //-----------------------------------------------------------------------------
 const char cbasicstr[]="'ProgramMode:RUN\r\n";
@@ -1389,8 +1437,15 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			}
 		}
 		
-		if ( ( code == 0x0D ) || ( code == 0x0C ) ) { //
+		if ( code == 0x0D ) { //
 			flag=0;
+		}
+		if ( code == 0x0C ) { //
+			flag=0;
+			if ( GetOpcode( srcbase, ofst ) != 0x0D ) {;
+				text[textofst++] ='\r';
+				text[textofst++] ='\n';
+			}
 		}
 		if ( textofst > maxsize-16 ) return -1; // text buffer overflow
 	}
@@ -1433,113 +1488,139 @@ int codecnv7F00( char *srcbase, char *text, int *ofst, int *textofst ) {
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-		for ( code=0x0000; code<=0x00FF; code++) {		// 0x7F00 - 0x7FFF
-			opstr=ConvList7F00[code];
-			if ( c == opstr[0] ) {
-				len = strlen( opstr );
-				if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
-					srcbase[(*ofst)++] = 0x7F;
-					srcbase[(*ofst)++] = code ;
-					(*textofst) += len;
-					return 0;	 	// matching
-				}
+	for ( code=0x0000; code<=0x00FF; code++) {		// 0x7F00 - 0x7FFF
+		opstr=ConvList7F00[code];
+		if ( c == opstr[0] ) {
+			len = strlen( opstr );
+			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+				srcbase[(*ofst)++] = 0x7F;
+				srcbase[(*ofst)++] = code ;
+				(*textofst) += len;
+				return 0;	 	// matching
 			}
 		}
-		return c;	// no matching
+	}
+	return c;	// no matching
 }
 int codecnvF700( char *srcbase, char *text, int *ofst, int *textofst ) {
 	char *opstr;
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-		for ( code=0x0000; code<=0x00FF; code++) {		// 0xF700 - 0xF7FF
-			opstr=ConvListF700[code];
-			if ( c == opstr[0] ) {
-				len = strlen( opstr );
-				if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
-					srcbase[(*ofst)++] = 0xF7;
-					srcbase[(*ofst)++] = code ;
-					(*textofst) += len;
-					return 0;	 	// matching
-				}
+	for ( code=0x0000; code<=0x00FF; code++) {		// 0xF700 - 0xF7FF
+		opstr=ConvListF700[code];
+		if ( c == opstr[0] ) {
+			len = strlen( opstr );
+			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+				srcbase[(*ofst)++] = 0xF7;
+				srcbase[(*ofst)++] = code ;
+				(*textofst) += len;
+				return 0;	 	// matching
 			}
 		}
-		return c;	// no matching
+	}
+	return c;	// no matching
 }
 int codecnvF900( char *srcbase, char *text, int *ofst, int *textofst ) {
 	char *opstr;
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-		for ( code=0x0000; code<=0x00FF; code++) {		// 0xF900 - 0xF9FF
-			opstr=ConvListF900[code];
-			if ( c == opstr[0] ) {
-				len = strlen( opstr );
-				if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
-					srcbase[(*ofst)++] = 0xF9;
-					srcbase[(*ofst)++] = code ;
-					(*textofst) += len;
-					return 0;	 	// matching
-				}
+	for ( code=0x0000; code<=0x00FF; code++) {		// 0xF900 - 0xF9FF
+		opstr=ConvListF900[code];
+		if ( c == opstr[0] ) {
+			len = strlen( opstr );
+			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+				srcbase[(*ofst)++] = 0xF9;
+				srcbase[(*ofst)++] = code ;
+				(*textofst) += len;
+				return 0;	 	// matching
 			}
 		}
-		return c;	// no matching
+	}
+	return c;	// no matching
 }
 int codecnvE700( char *srcbase, char *text, int *ofst, int *textofst ) {
 	char *opstr;
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-		for ( code=0x0000; code<=0x00FF; code++) {		// 0xF900 - 0xF9FF
-			opstr=ConvListE700[code];
-			if ( c == opstr[0] ) {
-				len = strlen( opstr );
-				if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
-					srcbase[(*ofst)++] = 0xE7;
-					srcbase[(*ofst)++] = code ;
-					(*textofst) += len;
-					return 0;	 	// matching
-				}
+	for ( code=0x0000; code<=0x00FF; code++) {		// 0xF900 - 0xF9FF
+		opstr=ConvListE700[code];
+		if ( c == opstr[0] ) {
+			len = strlen( opstr );
+			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+				srcbase[(*ofst)++] = 0xE7;
+				srcbase[(*ofst)++] = code ;
+				(*textofst) += len;
+				return 0;	 	// matching
 			}
 		}
-		return c;	// no matching
+	}
+	return c;	// no matching
 }
 int codecnv0000( char *srcbase, char *text, int *ofst, int *textofst ) {
 	char *opstr;
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-		for ( code=0x0001; code<=0x002F; code++) {		// 0x0001 - 0x002F
-			opstr=ConvList0000[code];
-			if ( c == opstr[0] ) {
-				len = strlen( opstr );
-				if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
-					srcbase[(*ofst)++] = code ;
-					(*textofst) += len;
-					return 0;	 	// matching
-				}
+	for ( code=0x0001; code<=0x002F; code++) {		// 0x0001 - 0x002F
+		opstr=ConvList0000[code];
+		if ( c == opstr[0] ) {
+			len = strlen( opstr );
+			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+				srcbase[(*ofst)++] = code ;
+				(*textofst) += len;
+				return 0;	 	// matching
 			}
 		}
-		return c;	// no matching
+	}
+	return c;	// no matching
 }
 int codecnv0080( char *srcbase, char *text, int *ofst, int *textofst ) {
 	char *opstr;
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-		for ( code=0x0000; code<=0x007E; code++) {		// 0x0080 - 0x00FE
-			opstr=ConvList0080[code];
-			if ( c == opstr[0] ) {
-				len = strlen( opstr );
-				if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
-					srcbase[(*ofst)++] = code +0x0080;
-					(*textofst) += len;
-					return 0;	 	// matching
-				}
+	for ( code=0x0000; code<=0x007E; code++) {		// 0x0080 - 0x00FE
+		opstr=ConvList0080[code];
+		if ( c == opstr[0] ) {
+			len = strlen( opstr );
+			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+				srcbase[(*ofst)++] = code +0x0080;
+				(*textofst) += len;
+				return 0;	 	// matching
 			}
 		}
-		return c;	// no matching
+	}
+	return c;	// no matching
 }
+
+
+int ex_codecnv( char *srcbase, char *text, int *ofst, int *textofst ) {
+	char *opstr;
+	unsigned short code;
+	int i,len;
+	int c=text[(*textofst)];
+	i=0;
+	do {
+		opstr=ConvOpCodeStrList[i].str;
+		code = ConvOpCodeStrList[i].code ;
+		if ( code == 0 ) break;
+		i++;
+		len = strlen( opstr );
+		if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
+			if ( code > 0x100 ) {
+				srcbase[(*ofst)++] = code >> 8;
+			}
+			srcbase[(*ofst)++] = code ;
+			(*textofst) += len;
+			return 0;	 	// matching
+		}
+	} while ( code ) ;
+	return c;	// no matching
+}
+
 
 int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	char *srcbase;
@@ -1617,6 +1698,9 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 			}
 		}
 		c=codecnv0080( srcbase, text, &ofst, &textofst ) ;	// 0x0080 - 0x00FE
+		if ( c==0 ) goto tokenloop;
+		
+		c=ex_codecnv( srcbase, text, &ofst, &textofst ) ;	// ext
 		if ( c==0 ) goto tokenloop;
 
 	  tokenskip:
