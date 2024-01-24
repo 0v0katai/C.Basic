@@ -778,13 +778,16 @@ int CB_interpreter_sub( char *SRC ) {
 			dspflagtmp=0;
 			if (CB_INT==1)	{ 
 				if ( CBint_CurrentValue   == 0 ) Skip_block(SRC);	// false
-			} else
-			if (CB_INT==0)	{	// double
-				if ( CB_CurrentValue.real == 0 ) Skip_block(SRC);	// false
-			} else {   //	complex
-				if ( CB_CurrentValue.imag != 0 ) { CB_Error(NonRealERR) ; }	// Input value must be a real number
-				else
-				if ( CB_CurrentValue.real == 0 ) Skip_block(SRC); 	// false
+				CBint_CurrentValue = regint_Ans;
+			} else {
+				if (CB_INT==0)	{	// double
+					if ( CB_CurrentValue.real == 0 ) Skip_block(SRC);	// false
+				} else {   //	complex
+					if ( CB_CurrentValue.imag != 0 ) { CB_Error(NonRealERR) ; }	// Input value must be a real number
+					else
+					if ( CB_CurrentValue.real == 0 ) Skip_block(SRC); 	// false
+				}
+				CB_CurrentValue.real = reg_Ans.real; 
 			}
 		}
 	  inext3:
@@ -2765,7 +2768,7 @@ int CB_interpreter( char *SRC ) {
 	Bdisp_PutDisp_DD_DrawBusy();
 	KeyRecover(); 
 	Argc = 0;	// 
-	CB_AliasVarClr();
+//	CB_AliasVarClr();
 	DeleteMatListAnsAll();	// Ans init	
 	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
 
