@@ -615,16 +615,15 @@ int SetVarChar( char *buffer, int c ) {
 }
 int SetVarCharStr( char *buffer, int VarMode, int k) {
 	int f,j=0;
-	if ( VarMode ) {		// Int variable
-		buffer[j++]='%';
-	}
 	j+=SetVarChar( buffer+j, k );
-
 	if ( ( k == 26+32 ) || ( k == 27+32 ) || ( k == 28+32 ) ) k=k-32;
 	if ( VarMode ) {		// Int variable
 		f=( LocalInt[k] == &REGINT[k] );
 	} else {				// Double variable
 		f=( LocalDbl[k] == &REG[k] );
+	}
+	if ( VarMode ) {		// Int variable
+		buffer[j++]='%';
 	}
 	if ( f ) {
 		buffer[j++]='=';

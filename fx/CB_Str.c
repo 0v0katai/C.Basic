@@ -747,7 +747,7 @@ char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String
 }
 
 //----------------------------------------------------------------------------------------------
-void StorStrMat( char *SRC ) {	// "String" -> &Mat A
+void StorStrMat( char *SRC ) {	// "String" -> $Mat A
 	int reg,dimA,dimB;
 	char *MatAryC;
 	MatrixOprand( SRC, &reg, &dimA, &dimB );
@@ -863,7 +863,7 @@ void CB_StorStr( char *SRC ) {
 	int c;
 	c=CB_IsStr( SRC, ExecPtr );
 	switch ( c ) {
-		case 2:	// &Mat
+		case 2:	// $Mat
 			ExecPtr++;
 			StorStrMat( SRC ) ;
 			break;
@@ -942,7 +942,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 	}
 }
 
-void CB_Str( char *SRC ){		// "" "" or &Mat or Str1-20 or StrFunction
+void CB_Str( char *SRC ){		// "" "" or $Mat or Str1-20 or StrFunction
 	int maxoplen;
 	
 	CB_CurrentStr = CB_GetOpStr( SRC, &maxoplen );	

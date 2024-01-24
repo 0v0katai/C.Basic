@@ -2624,7 +2624,7 @@ void  CB_Input( char *SRC ){
 			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
 			CB_StorStr( SRC );
 			break;
-		case 3:	// ?&Mat  ?Str1-20
+		case 3:	// ?$Mat  ?Str1-20
 			MatAryC=MatrixPtr( reg, dimA, dimB );
 			OpcodeStringToAsciiString(buffer, MatAryC, 255);
 			CB_CurrentStr=MatAryC;

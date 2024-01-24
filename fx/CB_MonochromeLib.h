@@ -89,3 +89,5 @@ void CB_ML_BmpRotate( char *SRC ) ; // ML_BmpZoom( &Mat A,  x, y, width, height,
 void CB_ML_DrawMat( char *SRC ) ; // ML_DrawMat( x, y, width, height, &Mat A,mx1,my1,mx2,my2, ML_Color color)
 int CB_MLTest( char *SRC) ; // MLTest_command
 void CB_ML_command( char *SRC, int c ) ; // ML_command
+void CB_GetOprand2( char *SRC, int *px, int *py) ;
+void CB_GetOprand4( char *SRC, int *px, int *py, int *px2, int *py2) ;

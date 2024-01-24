@@ -107,7 +107,7 @@ int MakeDirectory();
 int RenameDirectory();
 
 //-----------------------------------------------------------------------------
-int DecodeBmp2Vram( char *filebase );	//	bmp -> vram
+int DecodeBmp2Vram( char *filebase, int px, int py );	//	bmp -> vram
 char * LoadBmp( char *filebase );
 int SaveBmp( char *filebase, char *sname, int width, int height );
 void CB_BmpSave( char *SRC ) ; //	BmpSave "TEST"[,x][,y][,x2][,y2][,Q]

@@ -2641,6 +2641,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	if ( alpha_mode ) { FkeyClear( FKeyNo4 ); FkeyClear( FKeyNo5 ); FkeyClear( FKeyNo6 );}
 	
 	buffer[length]='\0';
+	memcpy( GetVRAMAddress()+16*8*7, fnbuf, 16*8);		// fn key image restore
 	return key ;	// EXE:0
 }
 
