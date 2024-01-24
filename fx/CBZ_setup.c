@@ -32,7 +32,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.50\xE6\x41";
+const char VerMSG[]="C.Basic  v1.51\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -58,16 +58,16 @@ void VerDisp() {
 void FkeyS_L_(){
 	int temp;
 	temp=S_L_Style;
-	Fkey_Clear( 0 );
-	Fkey_dispN( 0, ""); Linesub(0*21+5,7*8+4,0*21+18,7*8+4, S_L_Normal,1);	// -----
-	Fkey_Clear( 1 );
-	Fkey_dispN( 1, ""); Linesub(1*21+5,7*8+4,1*21+18,7*8+4, S_L_Thick,1);	// =====
-	Fkey_Clear( 2 );
-	Fkey_dispN( 2, ""); Linesub(2*21+5,7*8+4,2*21+18,7*8+4, S_L_Broken,1);	// : : : :
-	Fkey_Clear( 3 );
-	Fkey_dispN( 3, ""); Linesub(3*21+5,7*8+4,3*21+18,7*8+4, S_L_Dot,1);	// . . . .
-	Fkey_Clear( 4 );
-	Fkey_Clear( 5 );
+//	FkeyClear( FKeyNo1 );
+	Fkey_Icon( FKeyNo1, 977 );	//	Fkey_dispN( FKeyNo1, ""); Linesub(0*21+5,7*8+4,0*21+18,7*8+4, S_L_Normal,1);	// -----
+//	FkeyClear( FKeyNo2 );
+	Fkey_Icon( FKeyNo2, 978 );	//	Fkey_dispN( FKeyNo2, ""); Linesub(1*21+5,7*8+4,1*21+18,7*8+4, S_L_Thick,1);	// =====
+//	FkeyClear( FKeyNo3 );
+	Fkey_Icon( FKeyNo3, 979 );	//	Fkey_dispN( FKeyNo3, ""); Linesub(2*21+5,7*8+4,2*21+18,7*8+4, S_L_Broken,1);	// : : : :
+//	FkeyClear( FKeyNo4 );
+	Fkey_Icon( FKeyNo4, 982 );	//	Fkey_dispN( FKeyNo4, ""); Linesub(3*21+5,7*8+4,3*21+18,7*8+4, S_L_Dot,1);	// . . . .
+	FkeyClear( FKeyNo5 );
+	FkeyClear( FKeyNo6 );
 	S_L_Style=temp;
 }
 
@@ -284,9 +284,9 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 		y = select-scrl+1;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		
-		Fkey_dispN(0,"Init");
-		Fkey_dispN(1,"Trig");
-		Fkey_dispN(2,"STD");
+		Fkey_Icon( FKeyNo1,  95 );	//	Fkey_dispN( FKeyNo1, "Init");
+		Fkey_Icon( FKeyNo2,  96 );	//	Fkey_dispN( FKeyNo2, "Trig");
+		Fkey_Icon( FKeyNo3,  97 );	//	Fkey_dispN( FKeyNo3, "STD");
 
 		Bdisp_PutDisp_DD();
 
@@ -324,9 +324,9 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 			
 			case KEY_CTRL_RIGHT:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				Fkey_Clear( 0 );
-				Fkey_Clear( 1 );
-				Fkey_Clear( 2 );
+				FkeyClear( FKeyNo1 );
+				FkeyClear( FKeyNo2 );
+				FkeyClear( FKeyNo3 );
 				y++;
 				switch (select) {
 					case 0: // Xmin
@@ -374,9 +374,9 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 		key=MathKey( key );
 		if ( key ) {
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				Fkey_Clear( 0 );
-				Fkey_Clear( 1 );
-				Fkey_Clear( 2 );
+				FkeyClear( FKeyNo1 );
+				FkeyClear( FKeyNo2 );
+				FkeyClear( FKeyNo3 );
 				y++;
 				switch (select) {
 					case 0: // Xmin
@@ -679,10 +679,10 @@ int SetVar(int select){		// ----------- Set Variable
 			}
 			Print((unsigned char*)buffer);
 		}
-		Fkey_dispN( 0, "A<>a");
-		Fkey_dispN( 1, "Init");
+		Fkey_Icon( FKeyNo1, 775 );	//	Fkey_dispN( FKeyNo1, "A<>a");
+		Fkey_Icon( FKeyNo2,  95 );	//	Fkey_dispN( FKeyNo2, "Init");
 		if ( VarMode ) Fkey_dispN_aA( 2, "D<>I"); else Fkey_dispN_Aa( 2, "D<>I");
-		if ( hex ) Fkey_dispN( 5, "\xE6\x91\x44\x65\x63"); else Fkey_dispN( 5, "\xE6\x91Hex");
+		if ( hex ) Fkey_dispN( FKeyNo6, "\xE6\x91\x44\x65\x63"); else Fkey_dispN( FKeyNo6, "\xE6\x91Hex");
 
 		locate(12,8); SetVarDsp(VarMode);
 
@@ -1084,10 +1084,10 @@ int SetupG(int select){		// ----------- Setup
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		switch (select) {
 			case SETUP_DrawType: // Draw Type
-				Fkey_dispN( 0, "Con");
-				Fkey_dispN( 1, "Plot");
-				Fkey_Clear( 2 );
-				Fkey_Clear( 3 );
+				Fkey_Icon( FKeyNo1, 357 );	//	Fkey_dispN( FKeyNo1, "Con");
+				Fkey_Icon( FKeyNo2, 358 );	//	Fkey_dispN( FKeyNo2, "Plot");
+				FkeyClear( FKeyNo3 );
+				FkeyClear( FKeyNo4 );
 				break;
 			case SETUP_Coord: // Coord
 			case SETUP_Grid: // Grid	
@@ -1101,89 +1101,89 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_IfEndCheck: // IfEnd Check
 			case SETUP_ACBreak: // ACBreak Check
 			case SETUP_Forceg1msave: // Force g1m save
-				Fkey_dispN( 0, " On ");
-				Fkey_dispN( 1, " Off");
-				Fkey_Clear( 2 );
-				Fkey_Clear( 3 );
+				Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
+				Fkey_Icon( FKeyNo2, 18 );	//	Fkey_dispN( FKeyNo2, " Off");
+				FkeyClear( FKeyNo3 );
+				FkeyClear( FKeyNo4 );
 				break;
 			case SETUP_Background: // BG pict
-				Fkey_dispN( 0, "None");
-				Fkey_dispR( 1, "Pict");
+				Fkey_Icon( FKeyNo1, 362 );	//	Fkey_dispN( FKeyNo1, "None");
+				Fkey_Icon( FKeyNo2, 183 );	//	Fkey_dispR( FKeyNo2, "PICT");
 				break;
 			case SETUP_CMDINPUT: // Command input method
-				Fkey_dispN( 0, "CBas");
-				Fkey_dispN( 1, "Std");
+				Fkey_dispN( FKeyNo1, "CBas");
+				Fkey_dispN( FKeyNo2, "Std");
 				break;
 			case SETUP_Sketch: // S_L_ Line	normal
 				FkeyS_L_();
 				break;
 			case SETUP_Angle: // Angle
-				Fkey_dispN( 0, "Deg ");
-				Fkey_dispN( 1, "Rad ");
-				Fkey_dispN( 2, "Grad");
-				Fkey_Clear( 3 );
+				Fkey_Icon( FKeyNo1, 359 );	//	Fkey_dispN( FKeyNo1, "Deg ");
+				Fkey_Icon( FKeyNo2, 360 );	//	Fkey_dispN( FKeyNo2, "Rad ");
+				Fkey_Icon( FKeyNo3, 361 );	//	Fkey_dispN( FKeyNo3, "Grad");
+				FkeyClear( FKeyNo4 );
 				break;
 			case SETUP_Display: // Display
-				Fkey_dispR( 0, "Fix ");
-				Fkey_dispR( 1, "Sci ");
-				Fkey_dispR( 2, "Nrm ");
-				Fkey_dispN( 3, "Eng ");
+				Fkey_Icon( FKeyNo1, 372 );	//	Fkey_dispR( FKeyNo1, "Fix ");
+				Fkey_Icon( FKeyNo2, 373 );	//	Fkey_dispR( FKeyNo2, "Sci ");
+				Fkey_Icon( FKeyNo3, 374 );	//	Fkey_dispR( FKeyNo3, "Norm ");
+				Fkey_Icon( FKeyNo4, 375 );	//	Fkey_dispN( FKeyNo4, "Eng ");
 				break;
 			case SETUP_Key1sttime: // Key Repeat mode
 			case SETUP_KeyReptime: // Key Repeat mode
-				Fkey_DISPN( 0," +");
-				Fkey_DISPN( 1," -");
-				Fkey_dispN( 3, "Init");
+				Fkey_DISPN( FKeyNo1," +");
+				Fkey_DISPN( FKeyNo2," -");
+				Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispN( FKeyNo4, "Init");
 				break;
 			case SETUP_SkipUpDown: // SkipUp/Down number
 			case SETUP_DefaultWaitcount: // Wait count number
-				Fkey_DISPN( 0," +");
-				Fkey_DISPN( 1," -");
-				Fkey_dispR( 2, "Num");
-				Fkey_dispN( 3, "Init");
+				Fkey_DISPN( FKeyNo1," +");
+				Fkey_DISPN( FKeyNo2," -");
+				Fkey_dispR( FKeyNo3, "Num");
+				Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispN( FKeyNo4, "Init");
 				break;
 			case SETUP_MatDspmode: // Mat display mode
-				Fkey_dispN( 0, "m.n ");
-				Fkey_dispN( 1, "X,Y ");
+				Fkey_dispN( FKeyNo1, "m.n ");
+				Fkey_dispN( FKeyNo2, "X,Y ");
 				break;
 			case SETUP_Matrixbase: // Mat base
-				Fkey_dispN( 0, " 0 ");
-				Fkey_dispN( 1, " 1 ");
+				Fkey_dispN( FKeyNo1, " 0 ");
+				Fkey_dispN( FKeyNo2, " 1 ");
 				break;
 			case SETUP_DATE: // DATE
-				Fkey_dispR( 0, "Year");
-				Fkey_dispR( 1, "Mth");
-				Fkey_dispR( 2, "Day");
+				Fkey_dispR( FKeyNo1, "Year");
+				Fkey_dispR( FKeyNo2, "Mth");
+				Fkey_dispR( FKeyNo3, "Day");
 				break;
 			case SETUP_TIME: // TIME
-				Fkey_dispR( 0, "Hour");
-				Fkey_dispR( 1, "Min");
-				Fkey_dispR( 2, "Sec");
+				Fkey_dispR( FKeyNo1, "Hour");
+				Fkey_dispR( FKeyNo2, "Min");
+				Fkey_dispR( FKeyNo3, "Sec");
 				break;
 			case SETUP_Pictmode: // Pict mode
-				if ( StorageMode ) Fkey_dispN( 0, " SD "); else Fkey_dispN( 0, "MEM ");
-				Fkey_dispN( 1, "Heap");
+				if ( StorageMode ) Fkey_dispN( FKeyNo1, " SD "); else Fkey_dispN( FKeyNo1, "MEM ");
+				Fkey_dispN( FKeyNo2, "Heap");
 				break;
 			case SETUP_Storagemode: // Strage mode
-				Fkey_dispN( 0, "MEM ");
-				Fkey_dispN( 1, " SD ");
+				Fkey_dispN( FKeyNo1, "MEM ");
+				Fkey_dispN( FKeyNo2, " SD ");
 				break;
 			case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
-				Fkey_dispN( 0, "off ");
-				Fkey_dispN( 1, "Grph");
-				Fkey_dispN( 2, "All ");
-				if ( RefreshCtrl ) Fkey_dispR( 3, "time");
-				Fkey_dispN( 4, "Init");
+				Fkey_Icon( FKeyNo1, 18 );	//	Fkey_dispN( FKeyNo1, "off ");
+				Fkey_dispN( FKeyNo2, "Grph");
+				Fkey_dispN( FKeyNo3, "All ");
+				if ( RefreshCtrl ) Fkey_dispR( FKeyNo4, "time");
+				Fkey_Icon( FKeyNo5,  95 );	//	Fkey_dispN( FKeyNo5, "Init");
 				break;
 			case SETUP_Executemode: // Execute Mode
-				Fkey_dispN( 0, "DBL ");
-				Fkey_dispN( 1, "Int ");
+				Fkey_dispN( FKeyNo1, "Dbl#");
+				Fkey_dispN( FKeyNo2, "Int%");
 				break;
 			default:
 				break;
 		}
 		
-		Fkey_dispN( 5, "Ver.");
+		Fkey_Icon( FKeyNo6, 991 );	//	Fkey_dispN( FKeyNo6, "Ver.");
 //		Bdisp_PutDisp_DD();
 		
 		DateCursorY+=(select-scrl)*0x100-0x900;

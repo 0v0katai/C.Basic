@@ -59,7 +59,7 @@ char MatXYmode=0;		// 0: normal  1:reverse
 char PictMode=1;	// StoPict/RclPict  StrageMem:0  heap:1
 char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
 
-char CommandInputMethod=0;	//	0:C.Basic  1:Genuine
+char CommandInputMethod=1;	//	0:C.Basic  1:Genuine
 
 char  RefreshCtrl=1;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
 char  Refreshtime=2;	// Refresh time  (Refreshtime+1)/128s

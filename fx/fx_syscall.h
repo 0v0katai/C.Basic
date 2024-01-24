@@ -35,6 +35,9 @@ char * MB_GetSecondElemPtr(char *str) ;
 short int MB_GetElement(char *str) ;
 char * MB_CopyToHeap(char *src) ;
 
+void GetFKeyIconPointer( int FKeyNo, unsigned char *pBitmap );
+void DisplayFKeyIcon( int FKeyPos, unsigned char *pBitmap );
+
 //------------------------------------------------------- MCS
 typedef struct {
   unsigned char name[8];
