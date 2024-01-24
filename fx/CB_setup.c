@@ -36,7 +36,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.99e" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.99f" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
 	GetKey(&key);
@@ -592,14 +592,28 @@ int SetVar(int select){		// ----------- Set Variable
 			buffer[0]='A'+seltop+i+small;
 			if ( VarMode ) {
 				buffer[1]='%';
-				buffer[2]='=';
+				buffer[2]='='; 
 				buffer[3]='\0';
-				
+				if ( small ) {
+					if ( LocalInt[seltop+i] != &REGINTsmall[seltop+i] ) { 
+						buffer[2]=0xE5;
+						buffer[3]=0xB8;
+						buffer[4]='\0';
+					}
+				}
 			} else {
 				buffer[1]='=';
 				buffer[2]='\0';
+				if ( small ) {
+					if ( LocalDbl[seltop+i] != &REGsmall[seltop+i] ) { 
+						buffer[1]=0xE5;
+						buffer[2]=0xB8;
+						buffer[3]='\0';
+					}
+				}
 			}
 			locate(1,1+i); Print((unsigned char*)buffer);
+
 			if ( VarMode ) {
 				locate(4 ,1+i);
 				if ( small )	sprintG(buffer, (double)LocalInt[seltop+i][0], 18,LEFT_ALIGN);

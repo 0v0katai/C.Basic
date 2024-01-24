@@ -1465,7 +1465,7 @@ int IsHex( char c ){
 }
 
 int str2hex4( char *buffer ,int *ofst) {
-	char hex[16]="0123456789AB";		// only align use
+//	char hex[16]="0123456789AB";		// only align use
 	int a,b,c,d;
 	a=buffer[(*ofst)];
 	a=IsHex(a);
