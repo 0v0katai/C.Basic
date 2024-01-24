@@ -1784,7 +1784,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 
 //----------------------------------------------------------------------------------------------
 
-int	StrSplit( char *str1, char *buffer, char *srcstr, int ptr, int maxlen ){	// ptr:1-	->MatAns
+int	StrSplit( char *buffer, char *srcstr, int ptr, int maxlen ){	// ptr:1-	->MatAns
 	int buflen,srclen,bufptr,ptrorg=ptr,byteptr,bytebufptr,bytesrclen;
 	int oplen,r,max=0,i;
 	char tmp[256];
@@ -1793,7 +1793,6 @@ int	StrSplit( char *str1, char *buffer, char *srcstr, int ptr, int maxlen ){	// 
 	buflen=StrLen( buffer, &oplen );	// multi byte length
 	srclen=StrLen( srcstr, &oplen );	// multi byte length
 	bytesrclen=oplen;
-	str1[0]='\0';
 	bufptr=ptr;	// multi byte ptr
 	byteptr=StrOpcodePtr( buffer, ptr ); 	// ptr -> byteptr
 	i=1;
@@ -1809,6 +1808,7 @@ int	StrSplit( char *str1, char *buffer, char *srcstr, int ptr, int maxlen ){	// 
 	
 	dimA=i;
 	dimB=max+1;
+	CB_MatListAnsreg=27;
 	NewMatListAns( dimA, dimB, base, element );
 
 	ptr=ptrorg;
@@ -1817,18 +1817,19 @@ int	StrSplit( char *str1, char *buffer, char *srcstr, int ptr, int maxlen ){	// 
 	while ( 1 ) {
 		r=StrSrc( buffer, srcstr, &ptr, maxlen );
 		if ( r==0 ) break;
-		if ( ptr-bufptr > 0 ) {
-			StrMid( MatrixPtr( CB_MatListAnsreg, i++, 1 ), buffer, bufptr, ptr-bufptr);
+		r = ptr-bufptr;
+		if ( r >= 0 ) {
+			if ( r > 0 ) StrMid( MatrixPtr( CB_MatListAnsreg, i++, 1 ), buffer, bufptr, ptr-bufptr);
+			else WriteMatrixInt( CB_MatListAnsreg, i++, 1, 0x00);
 		}
 		ptr   = ptr+srclen;
 		bufptr= ptr;
 	}
 	StrMid( MatrixPtr( CB_MatListAnsreg, i++, 1 ), buffer, bufptr, buflen-ptr+1);
-	str1=MatrixPtr( CB_MatListAnsreg, 1, 1 );
 	return 1;
 }
 
-int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232]["4567"]["89"]]
+int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89",","[,n]) -> MatAns[["1232]["4567"]["89"]]
 	int sptr=1,slen,maxoplen;
 	int	buffercnt=CB_StrBufferCNT;
 	char *buffer, *srcstr;
@@ -1846,10 +1847,11 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232
 		if ( sptr > slen ) sptr=slen;
 	}
 	
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+//	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	StrSplit( CB_CurrentStr, buffer, srcstr, sptr, CB_StrBufferMax-1 );
+	StrSplit( buffer, srcstr, sptr, CB_StrBufferMax-1 );
 	dspflag=3;	// Mat ans
+	CB_CurrentStr=MatrixPtr( CB_MatListAnsreg, 1, 1 );
 	return CB_StrBufferMax-1;
 }
 
@@ -2018,5 +2020,7 @@ int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

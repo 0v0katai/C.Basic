@@ -29,7 +29,7 @@
 
 void delay( void ){
 int i;
-  for (i=0;i<5;i++){};
+  for (i=0;i<20;i++){};
 }
 
 //
@@ -158,7 +158,7 @@ int KeyConvert2Slim( int code ) {
 		{KEYS_MENU,	KEYS_XTT,	KEYS_SHIFT,	KEYS_ALPHA,	0,			0			},
 		{KEYS_F1,	KEYS_LOG,	KEYS_SQUARE,KEYS_POW,	KEYS_LEFT,	KEYS_UP	 	},
 		{KEYS_F2,	KEYS_LN,	KEYS_COMMA,	KEYS_OPTN,	KEYS_DOWN,	KEYS_RIGHT	},
-		{KEYS_F3,	KEYS_SIN,	KEYS_STORE,	KEYS_VARS,	31,			21			},
+		{KEYS_F3,	KEYS_SIN,	KEYS_STORE,	KEYS_VARS,	11,			21			},
 		{KEYS_F4,	KEYS_COS,	KEYS_7,		KEYS_4,		KEYS_1,		KEYS_0		},
 		{KEYS_F5,	KEYS_TAN,	KEYS_8,		KEYS_5,		KEYS_2,		KEYS_DP	 	},
 		{KEYS_F6,	KEYS_FRAC,	KEYS_9,		KEYS_6,		KEYS_3,		KEYS_EXP	},

@@ -53,18 +53,6 @@ int receive_data( unsigned char *buffer, int n ){
 }
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-//  Send(/ Recv(  format
-//	"C"+"B"+ type + type2 + sizeL + sizeH + size3 + size4 + data........
-//  type: 0:bin  1:byte 2:short  4:int  8:double  99:str
-#define SERIAL_BIN    0
-#define SERIAL_BIT    1
-#define SERIAL_BYTE   8
-#define SERIAL_WORD   16
-#define SERIAL_LONG   32
-#define SERIAL_DOUBLE 64
-#define SERIAL_CPLX  128
-#define SERIAL_STRING 99
-//------------------------------------------------------------------------------
 int send_formatdata( unsigned char *buffer, int type, int n ){
 	int r;
 	unsigned char header[8];
@@ -171,7 +159,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
 			ExecPtr++;
-			MatOprand2( SRC, reg, &dimA, &dimB );	// List 1[a]
+			MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
 			if ( ErrorNo ) return 0 ; // error
 			result=(int)MatrixPtr( reg, dimA, dimB );
 			goto Matrix3;

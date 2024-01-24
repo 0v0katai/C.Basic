@@ -451,6 +451,8 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 					return	Int2Cplx( BackLight(-1) );
 				case 0xFFFFFFF2:	// PopUpWin(
 					return Int2Cplx( CB_PopUpWin(SRC) );
+				case 0xFFFFFFDE:	// BatteryStatus
+					return Int2Cplx( CB_BatteryStatus(SRC) );
 				default:
 					ExecPtr--;	// error
 					break;
