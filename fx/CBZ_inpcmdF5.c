@@ -170,6 +170,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_SETUP_LABL;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_BACK;CommandPage=0;break;
+				case 2: CommandType=CMD_SETUP_TVAR;CommandPage=0;break;
 				case 3: (*code)=0xF94F;return;	// Wait
 				case 4: (*code)=0x7FDF;return;	// Version
 			} break;

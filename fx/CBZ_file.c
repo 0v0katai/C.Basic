@@ -953,7 +953,7 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F4:	// Copy file
-				if ( strlen(search) ) {
+				if ( searchmode ) {
 					lowercase=1-lowercase;
 					if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 					key = 0;
@@ -982,7 +982,7 @@ unsigned int Explorer( int size, char *folder )
 					key=SelectChar( &ContinuousSelect);
 					if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 					break;
-				} 
+				}
 				switch ( filemode ) {
 					case 0:
 						if ( nofile ) break;

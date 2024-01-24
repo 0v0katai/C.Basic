@@ -367,6 +367,10 @@ void GetGenuineCmdF1( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF91C;return;	// File
 			} break;
+		case CMD_SETUP_TVAR:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF788;return;	// VarRange
+			} break;
 
 		default:
 			break;

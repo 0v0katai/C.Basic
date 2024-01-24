@@ -154,7 +154,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 540 );	//	Fkey_dspRB( FKeyNo1, "Stat");		// DrawStat
 					Fkey_Icon( FKeyNo2, 541 );	//	Fkey_dspRB( FKeyNo2, "Grph");		// DrawGraph
 					FkeyClear( FKeyNo3 );
-					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo4, 545 );	//	Fkey_dspRB( FKeyNo4, "Table");		// DispF-Tbl
 					FkeyClear( FKeyNo5 );
 					Fkey_dspRB( FKeyNo6, "Disp");		// Disp
 					break;
@@ -547,7 +547,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1,  69 );	//	Fkey_dspRB( FKeyNo1, "STORE");
 					Fkey_Icon( FKeyNo2,  70 );	//	Fkey_dspRB( FKeyNo2, "RECALL");
 					Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dspRB( FKeyNo3, " fn ");
-					Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
+//					Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
+					Fkey_Icon( FKeyNo4, 389 );	//	Fkey_dispR( FKeyNo4,"EDIT");
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );
 					break;
@@ -698,7 +699,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 627 );	//	Fkey_dspRB( FKeyNo1, "Start");
 					Fkey_Icon( FKeyNo2, 628 );	//	Fkey_dspRB( FKeyNo2, "End");
 					Fkey_Icon( FKeyNo3, 629 );	//	Fkey_dspRB( FKeyNo3, "Pitch");
-//					Fkey_Icon( FKeyNo4, 630 );	//	Fkey_dspRB( FKeyNo3, "Result");
+					Fkey_Icon( FKeyNo4, 630 );	//	Fkey_dspRB( FKeyNo3, "Result");
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );
@@ -1159,7 +1160,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 180 );	//	Fkey_dispR( FKeyNo2, "CPLX");
 					Fkey_Icon( FKeyNo3, 762 );	//	Fkey_dispR( FKeyNo3, "SWin");
 					Fkey_Icon( FKeyNo4, 178 );	//	Fkey_dispR( FKeyNo3, "LIST");
-					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo5, 764 );	//	Fkey_dispR( FKeyNo5, "TBL-VAR");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:
@@ -1293,6 +1294,18 @@ void DispGenuineCmdMenu(){
 				case 0:
 					Fkey_Icon( FKeyNo1,  43 );	//	Fkey_dspRB( FKeyNo1, "File");
 					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
+		case CMD_SETUP_TVAR:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 500 );	//	Fkey_dspRB( FKeyNo1, "Range");
+					Fkey_Icon( FKeyNo2, 162 );	//	Fkey_dspRB( FKeyNo2, "List");
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );

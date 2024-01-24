@@ -169,3 +169,12 @@ int CB_SigmaInt( char *SRC ) ; //	Sigma(X^2,X,1.10)
 double CB_Integral( char *SRC );	// Integral( FX, start, end, sci )
 double CB_Differ( char *SRC );	// Differ( FX, start, end, sci )
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+extern short VarListRange;
+
+
+void CB_VarList( char *SRC ) ;
+void CB_VarRange( char *SRC ) ;
+void CB_F_Result( char *SRC ) ;
+void CB_DispF_Tbl( char *SRC ) ;

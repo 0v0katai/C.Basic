@@ -114,7 +114,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 	int resultreg;
 	int resultflag;
 
-	dspflag=2;		// 2:value		3:list    4:mat
+	dspflag=2;		// 2:value		3:Mat    4:List
 
 	c = SRC[ExecPtr++];
   topj:
@@ -285,6 +285,10 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 					return result ;
 					
 				case 0xFFFFFFF0 :		// GraphY str
+				case 0xFFFFFFF1:		// Graphr
+				case 0xFFFFFFF2:		// GraphXt
+				case 0xFFFFFFF3:		// GraphYt
+				case 0xFFFFFFF4:		// GraphX
 					return CB_Cplx_GraphYStr( SRC, 1 );
 					
 				case 0xFFFFFFF5 :		// IsExist(
@@ -390,7 +394,8 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFDF :				// Version
 					return Int2Cplx( CB_Version() );		//
 
-//				case 0xFFFFFF90 :				// F Result
+				case 0xFFFFFF90 :				// F Result
+					CB_F_Result( SRC );
 				case 0xFFFFFF91 :				// F Start
 				case 0xFFFFFF92 :				// F End
 				case 0xFFFFFF93 :				// F pitch
@@ -779,66 +784,9 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 			 ( c == 0xFFFFFF8D )) { // integral
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
-			c = SRC[ExecPtr+1];
-			switch ( c ) {
-				case 0x40:	// Mat A[a,b]
-				case 0xFFFFFF84 :	// Vct A[a,b]
-				case 0x50:	// i
-				case 0x51:	// List 1[a]
-				case 0x3A:	// MOD(a,b)
-				case 0x3C:	// GCD(a,b)
-				case 0x3D:	// LCM(a,b)
-				case 0xFFFFFF8F:	// Getkey
-				case 0xFFFFFF85:	// logab(a,b)
-				case 0xFFFFFF86:	// RndFix(n,digit)
-				case 0xFFFFFF87:	// RanInt#(st,en)
-				case 0xFFFFFF88 :	// RanList#(n) ->ListAns
-				case 0xFFFFFF89 :	// RanBin#(n,p[,m]) ->ListAns
-				case 0xFFFFFF8A :	// RanNorm#(sd,mean[,n]) ->ListAns
-				case 0xFFFFFFB3 :	// Not
-				case 0xFFFFFFF0:	// GraphY
-				case 0x00:	// Xmin
-				case 0x01:	// Xmax
-				case 0x02:	// Xscl
-				case 0x04:	// Ymin
-				case 0x05:	// Ymax
-				case 0x06:	// Yscl
-				case 0x08:	// Thetamin
-				case 0x09:	// Thetamax
-				case 0x0A:	// Thetaptch
-				case 0x0B:	// Xfct
-				case 0x0C:	// Yfct
-				case 0x20 :			// Max( List 1 )	Max( { 1,2,3,4,5 } )
-				case 0x21 :			// Det Mat A
-				case 0x29 :			// Sigma( X, X, 1, 1000)
-				case 0x2D :			// Min( List 1 )	Min( { 1,2,3,4,5 } )
-				case 0x2E :			// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-				case 0x47 :			// Fill(
-				case 0x4A :			// List>Mat( List 1, List 2,..) -> List 5
-				case 0x4B :			// Mat>List( Mat A, m) -> List n
-				case 0x4C :			// Sum List 1
-				case 0x4D :			// Prod List 1
-				case 0x58 :			// ElemSize( Mat A )
-				case 0x59 :			// RowSize( Mat A )
-				case 0x5A :			// ColSize( Mat A )
-				case 0x5B :			// MatBase( Mat A )
-				case 0x22 :				// Arg
-				case 0x23 :				// Conjg
-				case 0x24 :				// ReP
-				case 0x25 :				// ImP
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-				case 0x26 :				// dx/dy
+				c = SRC[ExecPtr+1];
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) ) goto exitj;	// And Or Not xor
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
-					break;
-				default:
-					goto exitj;
-					break;
-			}
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
