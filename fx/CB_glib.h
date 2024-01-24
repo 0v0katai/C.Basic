@@ -6,8 +6,8 @@ void Text(int y, int x, unsigned char*str);
 void DrawBusy();		// BusyInd=0: running indicator off,  BusyInd=1: on
 void Bdisp_PutDisp_DD_DrawBusy();
 void Bdisp_PutDisp_DD_DrawBusy_skip();
-void Bdisp_PutDisp_DD_DrawBusy_through( unsigned char * SRC ) ;
-void Bdisp_PutDisp_DD_DrawBusy_skip_through( unsigned char * SRC ) ;
+void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) ;
+void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) ;
 
 //-----------------------------------------------------------------------------
 int VWtoPXY(double x, double y, int *px, int *py);	// ViewWwindow(x,y) -> pixel(x,y)

@@ -23,21 +23,21 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 #endif
 
 
-unsigned char *loadFile( const char *name , int editMax);
+char *loadFile( const char *name , int editMax);
 int  storeFile( const char *name, unsigned char* codes, int size);
 int LoadProgfile( char *name ) ;
-int SaveG1M( unsigned char *filebase );
+int SaveG1M( char *filebase );
 int SaveProgfile(int progNo );
 
-int SavePicture( unsigned char *filebase, int pictNo );
-unsigned char * LoadPicture( int pictNo );
+int SavePicture( char *filebase, int pictNo );
+char * LoadPicture( int pictNo );
 
 int  RenameFile(char *name) ;
 void DeleteFile(char *name) ;
 void DeleteFileFav(char *sname) ;
 
 int NewProg();
-void CB_ProgEntry( unsigned char *SRC ) ; //	Prog "..." into memory
+void CB_ProgEntry( char *SRC ) ; //	Prog "..." into memory
 
 void SaveFavorites();
 void SaveConfig();

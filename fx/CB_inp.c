@@ -35,7 +35,7 @@ void Fkey_dispN_aA(int n, char *buffer) {
 }
 
 //----------------------------------------------------------------------------------------------
-unsigned short CharMATH[]= {
+short CharMATH[]= {
 	0x002B,0x002D,0x00A9,0x00B9,0x005E,0x002A,0x002F,0x003D,0x0011,0x003C,0x003E,0x0010,0x0012,0x0087,0xE5BE,0xE5BF,0xE6B0,0xE6B1,0xE5A3,
 	0xE5A4,0x7F50,0xE5B0,0x000F,0xE64F,0x7F53,0xE542,0x0086,0xE551,0xE54F,0xE6BB,0xE6B7,0xE6B8,0xE6B9,0xE5C0,0xE5C1,0xE5C2,0xE5C3,0xE5C4,
 	0xE5C5,0xE5C6,0xE5C7,0xE5C8,0xE5C9,0xE5CA,0xE5CB,0xE5CC,0xE5CD,0xE5CE,0xE5CF,0xE5D0,0xE5D1,0xE5D2,0xE5D3,0xE5D4,0xE5D5,0xE5D6,0xE5D7,
@@ -44,14 +44,14 @@ unsigned short CharMATH[]= {
 	0xE6D0,0xE6D1,0xE6D2,0xE6D3,0xE6D4,0xE6D5,0xE6B2,0xE6B3,0xE6B4,0xE6B5,0xE6BC,0xE6B6,0xE6D7,0xE6D8,0xE6D9,0xE6DA,0xE6DB,0xE6DC,0xE6DD,
 	0xE6DE,0x0000 };
 	
-unsigned short CharSYBL[]= {
+short CharSYBL[]= {
 	0x0021,0x0022,0x0023,0x0024,0x0025,0x0026,0x0027,0x0028,0x0029,0x002C,0x002E,0x003A,0x003B,0x003F,0x0040,0x005B,0x005C,0x005D,0x005F,
 	0x0060,0x007B,0x007C,0x007D,0x007E,0x0013,0x00B5,0x00BB,0xE594,0xE595,0xE596,0xE597,0xE598,0xE590,0xE591,0xE592,0xE593,0xE599,0xE59A,
 	0xE59B,0xE59C,0xE59D,0xE59E,0xE5A1,0xE59F,0xE5A2,0xE5A0,0xE5A5,0xE5A6,0xE5A7,0xE5B5,0xE5B6,0xE5B8,0xE5B9,0xE5BA,0xE5BB,0xE5BC,0xE690,
 	0xE691,0xE692,0xE693,0xE694,0xE695,0xE696,0xE697,0xE698,0xE699,0xE69A,0xE69B,0xE69C,0xE69D,0xE69E,0xE69F,0xE6A0,0xE6A1,0xE6A2,0xE6A3,
 	0xE6A4,0xE6A5,0xE6A6,0xE6A7,0xE6A8,0xE6A9,0xE6AA,0x0000 };
 
-unsigned short CharABT[]= {
+short CharABT[]= {
 	0xE540,0xE541,0xE542,0xE543,0xE544,0xE545,0xE546,0xE547,0xE548,0xE549,0xE54A,0xE54B,0xE54C,0xE54D,0xE54E,0xE54F,0xE550,0xE551,0xE553,
 	0xE554,0xE555,0xE556,0xE557,0xE558,0xE501,0xE502,0xE503,0xE504,0xE505,0xE506,0xE507,0xE508,0xE509,0xE50A,0xE50B,0xE50C,0xE50D,0xE50E,
 	0xE50F,0xE510,0xE511,0xE512,0xE513,0xE514,0xE515,0xE516,0xE517,0xE518,0xE519,0xE51A,0xE51B,0xE51C,0xE51D,0xE51E,0xE520,0xE521,0xE522,
@@ -59,7 +59,7 @@ unsigned short CharABT[]= {
 	0xE560,0xE561,0xE562,0xE563,0xE564,0xE565,0xE566,0xE567,0xE568,0xE569,0xE56A,0xE56B,0xE56C,0xE56D,0xE56E,0xE56F,0xE570,0xE571,0xE572,
 	0xE573,0xE574,0xE575,0xE576,0xE577,0xE578,0xE579,0xE57A,0xE57B,0xE57C,0xE57D,0xE57E,0xE580,0xE581,0xE582,0x0000 };
 
-unsigned short Charabr[]= {
+short Charabr[]= {
 	0xE640,0xE641,0xE642,0xE643,0xE644,0xE645,0xE646,0xE647,0xE648,0xE649,0xE64A,0xE64B,0xE64C,0xE64D,0xE64E,0xE64F,0xE650,0xE651,0xE652,
 	0xE653,0xE654,0xE655,0xE656,0xE657,0xE658,0xE601,0xE602,0xE603,0xE604,0xE605,0xE606,0xE607,0xE608,0xE609,0xE60A,0xE60B,0xE60C,0xE60D,
 	0xE60E,0xE60F,0xE610,0xE611,0xE612,0xE613,0xE614,0xE615,0xE616,0xE617,0xE618,0xE619,0xE61A,0xE61B,0xE61C,0xE61D,0xE61E,0xE61F,0xE620,
@@ -67,28 +67,27 @@ unsigned short Charabr[]= {
 	0xE634,0xE635,0xE660,0xE661,0xE662,0xE663,0xE664,0xE665,0xE666,0xE667,0xE668,0xE669,0xE66A,0xE66B,0xE66C,0xE66D,0xE66E,0xE66F,0xE670,
 	0xE671,0xE672,0xE673,0xE674,0xE675,0xE676,0xE677,0xE678,0xE679,0xE67A,0xE67B,0xE67C,0xE67D,0xE67E,0xE680,0xE681,0xE682,0x0000 };
 
-unsigned short CharABC[]= {
+short CharABC[]= {
 	0xE741,0xE742,0xE743,0xE744,0xE745,0xE746,0xE747,0xE748,0xE749,0xE74A,0xE74B,0xE74C,0xE74D,0xE74E,0xE74F,0xE750,0xE751,0xE752,0xE753,
 	0xE754,0xE755,0xE756,0xE757,0xE758,0xE759,0xE75A,0xE761,0xE762,0xE763,0xE764,0xE765,0xE766,0xE767,0xE768,0xE769,0xE76A,0xE76B,0xE76C,
 	0xE76D,0xE76E,0xE76F,0xE770,0xE771,0xE772,0xE773,0xE774,0xE775,0xE776,0xE777,0xE778,0xE779,0xE77A,0x0000 };
 
-unsigned short CharKANA[]= {
+short CharKANA[]= {
 	0xFFA0,0xFFA1,0xFFA2,0xFFA3,0xFFA4,0xFFA5,0xFFA6,0xFFA7,0xFFA8,0xFFA9,0xFFAA,0xFFAB,0xFFAC,0xFFAD,0xFFAE,0xFFAF,0xFFB0,0xFFB1,0xFFB2,
 	0xFFB3,0xFFB4,0xFFB5,0xFFB6,0xFFB7,0xFFB8,0xFFB9,0xFFBA,0xFFBB,0xFFBC,0xFFBD,0xFFBE,0xFFBF,0xFFC0,0xFFC1,0xFFC2,0xFFC3,0xFFC4,0xFFC5,
 	0xFFC6,0xFFC7,0xFFC8,0xFFC9,0xFFCA,0xFFCB,0xFFCC,0xFFCD,0xFFCE,0xFFCF,0xFFD0,0xFFD1,0xFFD2,0xFFD3,0xFFD4,0xFFD5,0xFFD6,0xFFD7,0xFFD8,
 	0xFFD9,0xFFDA,0xFFDB,0xFFDC,0xFFDD,0xFFDE,0xFFDF,0x0000 };
 	
-unsigned short *oplist=CharMATH;
+
+short *oplist=CharMATH;
 int CharPtr=0;
-
-
 
 unsigned int SelectChar() {
 
 	int cont=1, x,y,cx,cy,ptr,scrl=0;
 	unsigned int key;
 	char tmpbuf[18];
-	unsigned short opcode;
+	short opcode;
 	int opNum=0 ;
 
 	SaveDisp(SAVEDISP_PAGE1);		// --------
@@ -107,7 +106,7 @@ unsigned int SelectChar() {
 		while ( opcode ) {
 			ptr=(y-2+scrl)*19+x-2 ;
 			opcode=oplist[ ptr ];
-			CB_OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ; // SYSCALL
+			CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
 			if ( CharPtr == ptr ) CB_PrintRevC( x, y, (unsigned char*)tmpbuf ); else CB_PrintC( x, y, (unsigned char*)tmpbuf );
 			x++;
 			if (x>20) { x=2; y++; if ( y>7 ) break ; }
@@ -191,7 +190,7 @@ unsigned int SelectChar() {
 }
 
 //----------------------------------------------------------------------------------------------
-int SelectOpcode(unsigned short *oplist, int *select) {
+int SelectOpcode( short *oplist, int *select) {
 	int opNum=0 ;
 	char buffer[22];
 	char tmpbuf[18];
@@ -214,10 +213,10 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 		if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
 		for ( i=0; i<6; i++ ) {
 			CB_Print(8,2+i,(unsigned char *)"            ");
-			CB_OpcodeToStr( oplist[seltop+i], (unsigned char*)tmpbuf ) ; // SYSCALL
+			CB_OpcodeToStr( oplist[seltop+i], tmpbuf ) ; // SYSCALL
 			tmpbuf[12]='\0'; 
 			j=0; if ( tmpbuf[0]==' ' ) j++;
-			sprintf(buffer,"%04X:%-12s",oplist[seltop+i],tmpbuf+j ) ;
+			sprintf(buffer,"%04X:%-12s",(unsigned short)oplist[seltop+i],tmpbuf+j ) ;
 			CB_Print(3,2+i,(unsigned char *)buffer);
 		}
 		Bdisp_PutDisp_DD();	
@@ -260,7 +259,7 @@ int SelectOpcode(unsigned short *oplist, int *select) {
 	return oplist[(*select)];
 }
 
-const unsigned short oplistInp[]={
+const short oplistInp[]={
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -311,7 +310,7 @@ const unsigned short oplistInp[]={
 
 //----------------------------------------------------------------------------------------------
 
-const unsigned short oplistOPTN[]={
+const short oplistOPTN[]={
 		0x23,	// #
 //		0x24,	// $
 		0x25,	// %
@@ -387,7 +386,7 @@ const unsigned short oplistOPTN[]={
 		0x7FE9,	// CellSum(
 		0};
 							
-const unsigned short oplistPRGM[]={	
+const short oplistPRGM[]={	
 		0x0C,	// dsps
 		0x3A,	// :
 		0x3F,	// ?
@@ -435,7 +434,7 @@ const unsigned short oplistPRGM[]={
 		0xF720,	// DrawGraph
 		0};
 		
-const unsigned short oplistVARS[]={
+const short oplistVARS[]={
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
 		0xE0,	// Plot
@@ -487,7 +486,7 @@ const unsigned short oplistVARS[]={
 		0x7F00,	// Xmin
 		0x7F01,	// Xmax
 		0x7F02,	// Xscl
-		0XF921,	// Xdot
+		0xF921,	// Xdot
 		0x7F04,	// Ymin
 		0x7F05,	// Ymax
 		0x7F06,	// Yscl
@@ -503,7 +502,7 @@ const unsigned short oplistVARS[]={
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
-int SelectOpcode5800P(unsigned short *oplist, int *select) {
+int SelectOpcode5800P( short *oplist, int *select) {
 	int opNum=0 ;
 	char buffer[22];
 	char tmpbuf[18];
@@ -530,7 +529,7 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 			n=oplist[(*select)+i];
 			tmpbuf[0]='\0'; 
 			if ( n == 0xFFFF ) n=' ';
-			else CB_OpcodeToStr( n, (unsigned char*)tmpbuf ) ; // SYSCALL
+			else CB_OpcodeToStr( n, tmpbuf ) ; // SYSCALL
 			tmpbuf[8]='\0'; 
 			n=i+1; if (n>9) n=0;
 			j=0; if ( tmpbuf[0]==' ' ) j++;
@@ -675,7 +674,7 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 }
 
 							
-const unsigned short oplistCMD[]={	
+const short oplistCMD[]={	
 		0x3F,	// ?			1
 		0x0E,	// ->			2
 		0xF700,	// If			3
@@ -855,7 +854,7 @@ const unsigned short oplistCMD[]={
 
 //----------------------------------------------------------------------------------------------
 
-int OpcodeLen( unsigned short opcode ){
+int OpcodeLen( int opcode ){
 	switch ( (opcode&0xFF00) >> 8 ) {
 		case 0x7F:		// 
 		case 0xF7:		// 
@@ -871,70 +870,70 @@ int OpcodeLen( unsigned short opcode ){
 }
 
 int OpcodeStrlen(int c) {
-	unsigned char tmpbuf[18];
+	char tmpbuf[18];
 	int len;
 	unsigned short opcode;
 		opcode = c & 0xFFFF ;
-		CB_OpcodeToStr( opcode, (unsigned char*)tmpbuf ) ;	// SYSCALL
+		CB_OpcodeToStr( opcode, tmpbuf ) ;	// SYSCALL
 		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 	return len;
 }
 
-int OpcodeStrLenBuf(unsigned char *SRC, int offset) {
-		unsigned short opcode;
-		unsigned int c,d;
+int OpcodeStrLenBuf(char *SRC, int offset) {
+		int opcode;
+		int c,d;
 		c=SRC[offset];
 		d=SRC[offset+1];
 		switch ( c ) {
 				case 0x7F:		// 
-				case 0xF7:		// 
-				case 0xF9:		// 
-				case 0xE5:		// 
-				case 0xE6:		// 
-				case 0xE7:		// 
-				case 0xFF:	// 
-						opcode= (c&0xFF)*0x100+(d&0xFF);
+				case 0xFFFFFFF7:		// 
+				case 0xFFFFFFF9:		// 
+				case 0xFFFFFFE5:		// 
+				case 0xFFFFFFE6:		// 
+				case 0xFFFFFFE7:		// 
+				case 0xFFFFFFFF:	// 
+						opcode= ((unsigned char)c<<8)+(unsigned char)d;
 						break;
 				default:
-						opcode= (c&0xFF);
+						opcode= (unsigned char)c;
 						break;
 		}
-		return OpcodeStrlen( opcode) ;
+		return OpcodeStrlen( opcode ) ;
 }
 
-unsigned short GetOpcode( unsigned char *SRC, int ptr ){
-	unsigned short c=SRC[ptr]&0xFF;
+int GetOpcode( char *SRC, int ptr ){
+	int c=SRC[ptr];
 	switch ( c ) {
 		case 0x00:		// <EOF>
 			return 0 ;
 			break;
 		case 0x7F:		// 
-		case 0xF7:		// 
-		case 0xF9:		// 
-		case 0xE5:		// 
-		case 0xE6:		// 
-		case 0xE7:		// 
-		case 0xFF:	// 
-			return (c<<8)+(SRC[ptr+1]&0xFF);
+		case 0xFFFFFFF7:		// 
+		case 0xFFFFFFF9:		// 
+		case 0xFFFFFFE5:		// 
+		case 0xFFFFFFE6:		// 
+		case 0xFFFFFFE7:		// 
+		case 0xFFFFFFFF:	// 
+			return ((unsigned char)c<<8)+(unsigned char)SRC[ptr+1];
 			break;
 	}
-	return c ;
+	return (unsigned char)c ;
 }
 
 
-int NextOpcode( unsigned char *SRC, int *offset ){
+int NextOpcode( char *SRC, int *offset ){
 	switch ( SRC[(*offset)++] ) {
 		case 0x00:		// <EOF>
 			(*offset)--;
 			return 0 ;
 			break;
 		case 0x7F:		// 
-		case 0xF7:		// 
-		case 0xF9:		// 
-		case 0xE5:		// 
-		case 0xE6:		// 
-		case 0xE7:		// 
-		case 0xFF:	// 
+		case 0xFFFFFFF7:		// 
+		case 0xFFFFFFF9:		// 
+		case 0xFFFFFFE5:		// 
+		case 0xFFFFFFE6:		// 
+		case 0xFFFFFFE7:		// 
+		case 0xFFFFFFFF:	// 
 			(*offset)++;
 			return 2 ;
 			break;
@@ -942,8 +941,8 @@ int NextOpcode( unsigned char *SRC, int *offset ){
 	return 1 ;
 }
 
-int NextLine( unsigned char *SRC, int *offset ){
-	unsigned int c;
+int NextLine( char *SRC, int *offset ){
+	int c;
 	int ofst=*offset,ofst2;
 	int n;
 	while (1) {
@@ -961,19 +960,19 @@ int NextLine( unsigned char *SRC, int *offset ){
 	return (*offset)-ofst ;
 }
 
-int PrevOpcode( unsigned char *SRC, int *offset ){
-	unsigned int c;
+int PrevOpcode( char *SRC, int *offset ){
+	int c;
 	if ( *offset <= 0 ) return 0;
 		(*offset)-=2;
 		c=SRC[*offset];
 		switch ( c ) {
 			case 0x7F:		// 
-			case 0xF7:		// 
-			case 0xF9:		// 
-			case 0xE5:		// 
-			case 0xE6:		// 
-			case 0xE7:		// 
-			case 0xFF:	// 
+			case 0xFFFFFFF7:		// 
+			case 0xFFFFFFF9:		// 
+			case 0xFFFFFFE5:		// 
+			case 0xFFFFFFE6:		// 
+			case 0xFFFFFFE7:		// 
+			case 0xFFFFFFFF:	// 
 				return 2 ;
 				break;
 		}
@@ -981,8 +980,8 @@ int PrevOpcode( unsigned char *SRC, int *offset ){
 	return 1 ;
 }
 
-int PrevLine( unsigned char *SRC, int *offset ){
-	unsigned int c,d;
+int PrevLine( char *SRC, int *offset ){
+	int c,d;
 	int ofst=*offset,ofst2;
 	while (1) {
 		PrevOpcode( SRC, &(*offset) );
@@ -1019,10 +1018,11 @@ int PrevLine( unsigned char *SRC, int *offset ){
 }
 
 //---------------------------------------------------------------------------------------------
-int CB_OpcodeToStr( unsigned short opcode, unsigned char *string  ) {
+int CB_OpcodeToStr( int opcode, char *string  ) {
+	opcode &= 0xFFFF;
 	if ( opcode >= 0xFF00 ) {
 		string[0]=0xFF;
-		string[1]=opcode & 0xFF;
+		string[1]=opcode&0xFF;
 		string[2]='\0';
 	} else
 	if ( opcode == 0x7F87 ) {
@@ -1082,41 +1082,38 @@ int CB_OpcodeToStr( unsigned short opcode, unsigned char *string  ) {
 		string[7]='(';
 		string[8]='\0';
 	} else
-	if ( opcode == 0x00FB ) { // P(
+	if ( opcode == 0xFB ) { // P(
 		string[0]='E';
 		string[1]='v';
-		string[2]='a';
-		string[3]='l';
-		string[4]='1';
-		string[5]='(';
-		string[6]='\0';
+		string[2]='1';
+		string[3]='(';
+		string[4]='\0';
 	} else
-	if ( opcode == 0x00FC ) { // Q(
+	if ( opcode == 0xFC ) { // Q(
 		string[0]='E';
 		string[1]='v';
-		string[2]='a';
-		string[3]='l';
-		string[4]='2';
-		string[5]='(';
-		string[6]='\0';
+		string[2]='2';
+		string[3]='(';
+		string[4]='\0';
 	} else {
-		return OpcodeToStr( opcode, string ) ; // SYSCALL
+		return OpcodeToStr( (short)opcode, (unsigned char *)string ) ; // SYSCALL
 	}
 }
 
-int CB_MB_ElementCount( unsigned char *str ) {
+int CB_MB_ElementCount( char *str ) {
 	int ptr=0,len=0;
-	unsigned int c;
+	int c;
 	while ( 1 ) {
 		c=str[ptr++];
 		if (c==0x00) break;
 		else 
-		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) {
+		if ( (c==0xFFFFFF7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) {
 			ptr++; }
 		len++;
 	}
 	return len;
 }
+
 
 void CB_PrintC( int x, int y,const unsigned char *c ){
 	if ( *c == 0xFF ) {
@@ -1178,16 +1175,15 @@ void CB_PrintXY( int px, int py, const unsigned char *str){
 
 //----------------------------------------------------------------------------------------------
 
-int strlenOp( unsigned char *buffer ) {
+int strlenOp( char *buffer ) {
 	int	i=0,len;
-	unsigned int c;
 	while ( 1 ) {
 		if ( NextOpcode( buffer, &i ) == 0x00 ) break;
 	}
 	return i;
 }
 
-int InsertOpcode1( unsigned char *buffer, int Maxstrlen, int ptr, unsigned short opcode ){
+int InsertOpcode1( char *buffer, int Maxstrlen, int ptr, int opcode ){
 	int len,i,j;
 	int opH,opL;
 	len=OpcodeLen( opcode );
@@ -1209,7 +1205,7 @@ int InsertOpcode1( unsigned char *buffer, int Maxstrlen, int ptr, unsigned short
 	}
 	return 0;
 }
-void DeleteOpcode1( unsigned char *buffer, int Maxstrlen, int *ptr){
+void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr){
 	int len,i;
 	int opH,opL;
 	unsigned short opcode;
@@ -1224,12 +1220,12 @@ void DeleteOpcode1( unsigned char *buffer, int Maxstrlen, int *ptr){
 }
 
 //----------------------------------------------------------------------------------------------
-int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char SPC) {
-	unsigned char tmpbuf[18],*tmpb;
+int PrintOpcode(int x, int y, char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char SPC) {
+	char tmpbuf[18],*tmpb;
 	char spcbuf[2];
 	int i,len,xmax=x+width;
-	unsigned short opcode=1;
-	unsigned char  c=1;
+	int opcode=1;
+	int  c=1;
 	while ( 1 ) {
 		if (ofst==ptrX) *csrX=x;
 		opcode = GetOpcode( buffer, ofst );
@@ -1246,7 +1242,7 @@ int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int pt
 					else        CB_PrintC(    x,y, (unsigned char*)(tmpb+i) ) ;
 				x++ ;
 			}
-			c=tmpb[i];
+			c=tmpb[i]&0xFF;
 			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) tmpb++;
 			i++ ;
 		}
@@ -1271,10 +1267,11 @@ int selectOPTN=0;
 int selectVARS=0;
 int selectPRGM=0;
 
-int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
-	unsigned char buffer2[128];
-	unsigned char buf[22];
-	unsigned int key=0,keyH,keyL;
+int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
+	char buffer2[128];
+	char buf[22];
+	unsigned int key=0;
+	int keyH,keyL;
 	int cont=1;
 	int i,j,k;
 	int csrX=ptrX;	// ptrX:  current buffer ptr      csrX: ccursor X
@@ -1581,12 +1578,12 @@ double Round( double num, int round_mode, int digit){
 	return num;
 }
 
-void sprintGRS(unsigned char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
+void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
 	int i,j,w,adj,minus=0,p,digit=round_digit;
 	char buffer2[32],fstr[16],tmp[16];
 	double fabsnum,pw;
 	unsigned char c;
-	unsigned char *nptr;
+	char *nptr;
 	char *dptr,*eptr;
 	double dpoint=0.01;
 
@@ -1694,7 +1691,7 @@ void sprintGRS(unsigned char* buffer, double num, int width, int align_mode, int
 	return ;
 }
 
-void sprintGR(unsigned char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
+void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
 	unsigned char c,d=0;
 	if (ENG) { 
 		if ( ( 1e-15 <= num  ) && ( num < 1e21 ) ) {
@@ -1722,13 +1719,13 @@ void sprintGR(unsigned char* buffer, double num, int width, int align_mode, int 
 	sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
 }
 
-void sprintG(unsigned char* buffer, double num, int width, int align_mode) {
+void sprintG( char* buffer, double num, int width, int align_mode) {
 	sprintGRS(buffer, num, width, align_mode, Norm, 15); // + round
 }
 
 //----------------------------------------------------------------------------------------------
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
-	unsigned char buffer[32];
+	char buffer[32];
 	int csrX=0;
 	unsigned int key;
 
@@ -1742,7 +1739,7 @@ double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_m
 	return atof( (char*)buffer );
 }
 
-unsigned int InputStr(int x, int y, int width, unsigned char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
+unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
 

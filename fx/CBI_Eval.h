@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME EvalInt library for fx-9860G series      v0.40
+ Casio Basic RUNTIME EvalInt library for fx-9860G series      v0.80
 
 ===============================================================================
 */
@@ -15,10 +15,10 @@ int InputNumI_replay(int x, int y, int width, int defaultNum) ;
 int InputNumI_CB(int x, int y, int width, int defaultNum) ;
 int InputNumI_CB1(int x, int y, int width, int defaultNum) ;
 int InputNumI_CB2(int x, int y, int width, int defaultNum) ;
-int EvalInt(unsigned char *expbuf);
-int EvalIntsub1(unsigned char *expbuf);
-int EvalIntsub5(unsigned char *expbuf);
-int EvalIntsub6(unsigned char *expbuf);
-int EvalIntsub7(unsigned char *expbuf);
-int EvalIntsubTop(unsigned char *expbuf);
+int EvalInt(char *SRC);
+int EvalIntsub1(char *SRC);
+int EvalIntsub5(char *SRC);
+int EvalIntsub6(char *SRC);
+int EvalIntsub7(char *SRC);
+int EvalIntsubTop(char *SRC);
 

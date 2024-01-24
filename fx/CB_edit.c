@@ -15,17 +15,17 @@
 #include "CB_setup.h"
 
 //----------------------------------------------------------------------------------------------
-unsigned char ClipBuffer[ClipMax+1];
+char ClipBuffer[ClipMax+1];
 int Contflag=0;	// Continue mode    0:disable  1:enable
 //----------------------------------------------------------------------------------------------
 
-int SrcSize( unsigned char *src ) {
+int SrcSize( char *src ) {
 	int size ;
 	if ( src[0]=='\0' ) return 0 ;
 	size = (src[0x47]&0xFF)*256+(src[0x48]&0xFF)+0x4C;
 	return size;
 }
-void SetSrcSize( unsigned char *src, int size ) {
+void SetSrcSize( char *src, int size ) {
 	int sizeH,sizeL ;
 	size=size-0x4C;
 	sizeH = (size&0xFF00) >> 8 ;
@@ -33,53 +33,16 @@ void SetSrcSize( unsigned char *src, int size ) {
 	src[0x47]=sizeH;
 	src[0x48]=sizeL;
 }
-int SrcEndPtr( unsigned char *src ) {
+int SrcEndPtr( char *src ) {
 	return ( SrcSize( src ) - 0x56 - 1 ) ;
 }	
 
-//---------------------------------------------------------------------------------------------
-void CB_PreProcess(unsigned char *SRC) {
-	unsigned int c;
-	int ofst=0;
-
-	return ;
-	
-	while (1) {
-		c=SRC[ofst++];
-//		if	( (c=0x0C) || (c=0x0D) || (c=':') ) c=SRC[ofst++];
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				return;
-			case 0x3A:	// <:>
-			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
-				break;
-			case 0x0F:	// exp
-				ofst--;
-				SRC[ofst++]='e';
-				if (SRC[ofst] == 0x87 ) SRC[ofst++]='-';
-				break;
-			case 0x7F:	// 
-			case 0xF7:	// 
-			case 0xF9:	// 
-			case 0xE5:	// 
-			case 0xE6:	// 
-			case 0xE7:	// 
-			case 0xFF:	// 
-				ofst++;
-				break;
-			default:
-				break;
-		}
-	}
-}
-
 //----------------------------------------------------------------------------------------------
 
-void InsertOpcode( unsigned char *filebase, int ptr, unsigned short opcode ){
+void InsertOpcode( char *filebase, int ptr, int opcode ){
 	int len,i,j;
 	int opH,opL;
-	unsigned char *srcbase;
+	char *srcbase;
 	len=OpcodeLen( opcode );
 	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
 		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
@@ -106,10 +69,10 @@ void InsertOpcode( unsigned char *filebase, int ptr, unsigned short opcode ){
 	ProgfileEdit[ProgNo]=1;	// edit program
 }
 
-void DeleteOpcode( unsigned char *filebase, int *ptr){
+void DeleteOpcode( char *filebase, int *ptr){
 	int len,i;
 	int opH,opL;
-	unsigned short opcode;
+	int opcode;
 	opcode=GetOpcode( filebase+0x56, *ptr );
 	if ( opcode == 0 ) {
 		PrevOpcode( filebase+0x56, &(*ptr) );
@@ -123,8 +86,8 @@ void DeleteOpcode( unsigned char *filebase, int *ptr){
 	ProgfileEdit[ProgNo]=1;	// edit program
 }
 
-int EndOfSrc( unsigned char *SRC, int ptr ) {
-	unsigned char *filebase,*srcbase;
+int EndOfSrc( char *SRC, int ptr ) {
+	char *filebase,*srcbase;
 	int endPtr;
 	filebase=ProgfileAdrs[ProgNo];
 	srcbase=filebase+0x56;
@@ -138,9 +101,9 @@ int EndOfSrc( unsigned char *SRC, int ptr ) {
 }
 
 //---------------------------------------------------------------------------------------------
-void EditPaste( unsigned char *filebase, int *ptr ){
+void EditPaste( char *filebase, int *ptr ){
 	int len,i,j;
-	unsigned char *srcbase;
+	char *srcbase;
 
 	if ( ClipBuffer[0]=='\0' ) return ;	// no clip data
 		
@@ -162,9 +125,9 @@ void EditPaste( unsigned char *filebase, int *ptr ){
 	(*ptr)=(*ptr)+len;
 }
 
-void EditCopy( unsigned char *filebase, int ptr, int startp, int endp ){
+void EditCopy( char *filebase, int ptr, int startp, int endp ){
 	int len,i,j;
-	unsigned char *srcbase;
+	char *srcbase;
 
 	i=OpcodeLen( GetOpcode(filebase+0x56, ptr) );
 	len=(endp)-(startp)+i;
@@ -179,9 +142,9 @@ void EditCopy( unsigned char *filebase, int ptr, int startp, int endp ){
 	ClipBuffer[i]='\0';
 }
 
-void EditCut( unsigned char *filebase, int *ptr, int startp, int endp ){
+void EditCut( char *filebase, int *ptr, int startp, int endp ){
 	int len,i;
-	unsigned char *srcbase;
+	char *srcbase;
 
 	i=OpcodeLen( GetOpcode(filebase+0x56, *ptr) );
 	len=(endp)-(startp)+i;
@@ -205,10 +168,10 @@ void EditCut( unsigned char *filebase, int *ptr, int startp, int endp ){
 
 //---------------------------------------------------------------------------------------------
 
-void OpcodeLineN(unsigned char *buffer, int *ofst, int *x, int *y) {
-	unsigned char tmpbuf[18];
+void OpcodeLineN( char *buffer, int *ofst, int *x, int *y ) {
+	char tmpbuf[18];
 	int i,len,xmax=21,cont=1;
-	unsigned short opcode;
+	int opcode;
 	(*x)=1;
 	while ( cont ) {
 		opcode = GetOpcode( buffer, *ofst );
@@ -227,10 +190,10 @@ void OpcodeLineN(unsigned char *buffer, int *ofst, int *x, int *y) {
 	return ;
 }
 
-int OpcodeLineYptr(int n, unsigned char *buffer, int ofst, int *x) {
-	unsigned char tmpbuf[18];
+int OpcodeLineYptr(int n, char *buffer, int ofst, int *x ) {
+	char tmpbuf[18];
 	int i,len,y=0,xmax=21,cont=1;
-	unsigned short opcode;
+	int opcode;
 	(*x)=1;
 	if ( y==n ) return ofst;
 	while ( cont ) {
@@ -251,10 +214,10 @@ int OpcodeLineYptr(int n, unsigned char *buffer, int ofst, int *x) {
 	return ofst;
 }
 
-int OpcodeLineSrcXendpos(int n, unsigned char *buffer, int ofst) {
-	unsigned char tmpbuf[18];
+int OpcodeLineSrcXendpos(int n, char *buffer, int ofst) {
+	char tmpbuf[18];
 	int i,len,x0,x=1,y=0,xmax=21,cont=1;
-	unsigned short opcode;
+	int opcode;
 	while ( cont ) {
 		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
@@ -272,10 +235,10 @@ int OpcodeLineSrcXendpos(int n, unsigned char *buffer, int ofst) {
 	}
 	return x0;
 }
-int OpcodeLineSrcYpos(unsigned char *buffer, int ofst, int csrptr ) {
-	unsigned char tmpbuf[18];
+int OpcodeLineSrcYpos( char *buffer, int ofst, int csrptr ) {
+	char tmpbuf[18];
 	int i,len=0,x=1,y=0,xmax=21,cont=1;
-	unsigned short opcode;
+	int opcode;
 	if ( ofst==csrptr ) return y;
 	while ( cont ) {
 		opcode = GetOpcode( buffer, ofst );
@@ -295,7 +258,7 @@ int OpcodeLineSrcYpos(unsigned char *buffer, int ofst, int csrptr ) {
 	return y;
 }
 
-void NextLinePhy( unsigned char *buffer, int *ofst, int *ofst_y ) {
+void NextLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 	int ofst2,x,y;
 	if ( *ofst_y == 0 ) {
 		ofst2= *ofst;
@@ -320,7 +283,7 @@ void NextLinePhy( unsigned char *buffer, int *ofst, int *ofst_y ) {
 	}
 }
 
-void PrevLinePhy( unsigned char *buffer, int *ofst, int *ofst_y ) {
+void PrevLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 	int ofst2,x,y;
 	if ( *ofst_y == 0 ) {
 		PrevLine( buffer, &(*ofst));
@@ -337,11 +300,11 @@ void PrevLinePhy( unsigned char *buffer, int *ofst, int *ofst_y ) {
 	}
 }
 
-int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
-	unsigned char tmpbuf[18],*tmpb;
+int PrintOpcodeLine1(int csry, int n, char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
+	char tmpbuf[18],*tmpb;
 	int i,len,x=1,y=0,xmax=21,cont=1,rev;
-	unsigned short opcode;
-	unsigned char  c=1;
+	int opcode;
+	int  c=1;
 	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 	if ( csry>7 ) return ofst;
 	while ( cont ) {
@@ -363,7 +326,7 @@ int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPt
 			}
 			x++;
 			if ( ( x > xmax ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) { (y)++; x=1; }
-			c=tmpb[i];
+			c=tmpb[i]&0xFF;
 			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) tmpb++;
 			i++;
 		}
@@ -376,7 +339,7 @@ int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPt
 
 //---------------------------------------------------------------------------------------------
 
-void DumpOpcode(unsigned char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr){
+void DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr){
 	int i,n,x,y,ynum;
 	int ofst,ofst2,ofstYptr;
 
@@ -431,7 +394,7 @@ void DumpOpcode(unsigned char *SrcBase, int *offset, int *offset_y, int csrPtr, 
 
 //---------------------------------------------------------------------------------------------
 
-void DumpMix(unsigned char *SrcBase, int offset){
+void DumpMix( char *SrcBase, int offset){
 	int 	i,j;
 	for (j=0; j<6 ; j++){
 		Hex4PrintXY( 1, j+2, "", ((int)offset+j*4)&0xFFFF);
@@ -445,7 +408,7 @@ void DumpMix(unsigned char *SrcBase, int offset){
 	}
 }
 
-void DumpAsc(unsigned char *SrcBase, int offset){
+void DumpAsc( char *SrcBase, int offset){
 	int 	i,j;
 	for (j=0; j<6 ; j++){
 		Hex4PrintXY( 1, j+2, "", ((int)offset+j*16)&0xFFFF);
@@ -458,10 +421,10 @@ void DumpAsc(unsigned char *SrcBase, int offset){
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
-int SearchOpcode( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr){
+int SearchOpcode( char *SrcBase, char *searchstr, int *csrptr){
 	int csrbkup=(*csrptr);
 	int sptr=0,cptr;
-	unsigned int opcode=1,srccode;
+	int opcode=1,srccode;
 	int size=SrcEndPtr(SrcBase-0x56);
 
 	Bdisp_PutDisp_DD_DrawBusy();
@@ -490,7 +453,7 @@ int SearchOpcode( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr)
 	{ *csrptr=csrbkup; return 0; }	// No search
 }
 
-int SearchForText( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr){
+int SearchForText( char *SrcBase, char *searchstr, int *csrptr){
 	unsigned int key;
 	int i=0,sptr;
 	int csrp;
@@ -526,12 +489,13 @@ int SearchForText( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr
 
 //---------------------------------------------------------------------------------------------
 unsigned int EditRun(int run){		// run:1 exec      run:2 edit
-	unsigned char *FileBase,*SrcBase;
-	unsigned int key=0,keyH,keyL;
+	char *FileBase,*SrcBase;
+	unsigned int key=0;
+	int keyH,keyL;
 	int cont=1,stat;
 	char buffer[32];
 	char buffer2[32];
-	unsigned char searchbuf[64];
+	char searchbuf[64];
 	unsigned char c;
 	int i,j,n,d,x,y,cx,cy,ptr,ptr2,tmpkey=0;
 	int 	offset=0;
@@ -1053,7 +1017,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 							
 					case KEY_CHAR_POWROOT:
-							CB_test();
+							if ( CB_INTDefault ) CBint_test(); else CB_test();
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
