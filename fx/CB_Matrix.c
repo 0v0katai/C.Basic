@@ -1025,7 +1025,10 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 	int dotedit=0;
 	int list=0;
 	int toolflag=0;
+	int bk_CB_INT = CB_INT;
+	char bk_ENG = ENG;
 
+	CB_INT=2;	//	CPLX mode
 	if ( reg >= 0x1000 ) { 
 		if ( reg >=0x2000 ) {
 			list=2;
@@ -1036,7 +1039,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 	}
 	base=MatAry[reg].Base;
 	ElementSize=MatAry[reg].ElementSize;
-	if (MatAry[reg].SizeA==0) return;
+	if (MatAry[reg].SizeA==0) goto exit;
 //	if ( ( ( 28 <= reg ) && ( reg <= 31 ) ) || ( ( 28+32 <= reg ) && ( reg <= 31+32 ) ) ) ans=1; // Ans
 
 	while (cont) {
@@ -1132,7 +1135,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				adjX=2;
 			}
 		} else
-		if ( ElementSize == 64 ) {
+		if ( ( ElementSize == 64 ) || ( ElementSize == 128 ) ){
 			MaxDX=4; if (MaxDX>dimA) MaxDX=dimA;
 			dx=27;
 			MaxX=3;
@@ -1143,31 +1146,44 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				MaxX=0;
 				adjX=0;
 			}
-		} else
-		if ( ElementSize == 128 ) {
-			MaxDX=3; if (MaxDX>dimA) MaxDX=dimA;
-			dx=36;
-			MaxX=2;
-			adjX=3;
-			if ( bit==64 ) {	// 16hex
-				MaxDX=0;
-				dx=69;
-				MaxX=0;
-				adjX=0;
-			}
 		}
+
+
+		Bdisp_AllClr_VRAM();
+
+		if ( ( strdisp ) && ( ElementSize > 4 ) )  {
+			if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectY+base, selectX+base), 64-1 );
+			else				OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectX+base, selectY+base), 64-1 );
+			locate(1,7); Print((unsigned char *)buffer);
+		} else {
+			if ( MatXYmode ) value=Cplx_ReadMatrix( reg, selectX+base, selectY+base);
+			else			 value=Cplx_ReadMatrix( reg, selectY+base, selectX+base);
+			Cplx_sprintGR2(buffer, buffer2, value, 21, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+			OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
+			if ( buffer2[0] != '\0' ) {
+				locate(1,6); Print((unsigned char*)buffer3);	// real(+img)
+				OpcodeStringToAsciiString( buffer3, buffer2, 64-1 );
+				if ( ( dotedit==0 ) && ( strdisp==0 ) && ( MaxDY>=4 ) ) {
+					MaxDY=4; if ( MaxDY==4 ) MaxY=3;
+				}
+			}
+			if ( list==1 ) {
+				if ( MatXYmode ) locate(1,6); else locate(13,1);
+				Print((unsigned char*)MatAry[reg].name);
+			}
+			locate(1,7); Print((unsigned char*)buffer3);	// real or (real+)img
+		}
+
 
 		if (  selectY<seltopY ) seltopY = selectY;
 		if ( (selectY-seltopY) > MaxY ) seltopY = selectY-MaxY;
 		if ( (dimB -seltopY) < MaxY ) seltopY = dimB -MaxY; 
 		if ( seltopY < 0 ) seltopY=0;
-	  dspjp:
 		if (  selectX<seltopX ) seltopX = selectX;
 		if ( (selectX-seltopX) > MaxX ) seltopX = selectX-MaxX;
 		if ( (dimA -seltopX) < MaxX ) seltopX = dimA -MaxX; 
 		if ( seltopX < 0 ) seltopX=0;
 
-		Bdisp_AllClr_VRAM();
 		j=0;
 		if ( reg<110 ) {
 			switch( list ) {
@@ -1217,10 +1233,11 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				else 			sprintf((char*)buffer,"%3d",seltopX+x+base);
 				PrintMini(x*dx+16+(dx-5)/2,1,(unsigned char*)buffer,MINI_OVER);
 			}
-			Bdisp_DrawLineVRAM( 16,8,16,14+MaxDY*8);
+			i=14+(MaxDY-(dimB>MaxY))*8;
+			Bdisp_DrawLineVRAM( 16, 8, 16, i);
 			x=(dimA+1)*dx+20-adjX/2 ;
 			if ( dimA == seltopX+MaxX ) x=(MaxX+1)*dx+20-adjX/2 ;
-			if ( x < 128 ) Bdisp_DrawLineVRAM( x, 8, x, 14+MaxDY*8);
+			if ( x < 128 ) Bdisp_DrawLineVRAM( x, 8, x, i);
 		}
 
 		if ( dotedit ) {
@@ -1247,7 +1264,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			MiniDotCursorflag=0;		// mini cursor initialize
 			MatDotEditCursorFlashing();
 		} else {
-			for ( y=0; y<=MaxDY; y++ ) {
+			for ( y=0; y<=MaxDY-(dimB>MaxY); y++ ) {
 				sprintf((char*)buffer,"%4d",seltopY+y+base);
 				PrintMini(0,y*8+10,(unsigned char*)buffer,MINI_OVER);
 				x=(dimA+1)*dx+20-adjX/2 ;
@@ -1269,46 +1286,34 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 						if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
 							if ( MatXYmode ) value=Cplx_ReadMatrix( reg, seltopX+x+base, seltopY+y+base);
 							else			 value=Cplx_ReadMatrix( reg, seltopY+y+base, seltopX+x+base);
-							if ( ( bit==0 ) && ( MaxX==7 ) ) {	sprintG(buffer, value.real, 2,RIGHT_ALIGN);
-										PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							
+							i=0;ENG=0;
+							if ( ( bit==0 ) && ( MaxX==3 ) && ( ElementSize == 128 ) ) {	Cplx_sprintGR1cutlim( buffer, value, -6, RIGHT_ALIGN, Norm, 6 );
 							} else 
 							if ( ( bit==0 ) && ( MaxX==3 ) ) {	sprintG(buffer, value.real, 6,RIGHT_ALIGN);
-										PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
 							} else 
-							if ( ( bit==0 ) && ( MaxX==2 ) ) {
-										Cplx_sprintGR1cutlim( buffer, value, 8, RIGHT_ALIGN, Norm, 8 );
-//										sprintG(buffer, value.real, 6,RIGHT_ALIGN);
-//										OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
-//										if ( value.imag ) sprintGi(buffer, value.imag, 7,RIGHT_ALIGN); else buffer[0]='\0';
-//										OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
-//										strcat(buffer2,buffer3);
-										PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							if ( ( bit==0 ) && ( MaxX==7 ) ) {	sprintG(buffer, value.real, 2,RIGHT_ALIGN);
 							} else 
-							if ( bit== 1 ) {	NumToBin(buffer, value.real, 8);
-										PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							if ( bit== 1 ) {	NumToBin(buffer, value.real, 8);	i=1;
 							} else 
-							if ( bit== 2 ) {	NumToBin(buffer, value.real, 16);
-										PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							if ( bit== 2 ) {	NumToBin(buffer, value.real, 16);	i=1;
 							} else 
-							if ( bit== 4 ) {	NumToBin(buffer, value.real, 4);
-										PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							if ( bit== 4 ) {	NumToBin(buffer, value.real, 4);	i=1;
 							} else 
 							if ( bit== 8 ) {	
 								if ( ElementSize == 4 ) NumToHex(buffer, value.real, 1);
 								else					NumToHex(buffer, value.real, 2);
-										PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+								i=1;
 							} else 
-							if ( bit==16 ) {	NumToHex(buffer, value.real, 4);
-										PrintMini(x*dx+22,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							if ( bit==16 ) {	NumToHex(buffer, value.real, 4);	i=2;
 							} else 
-							if ( bit==32 ) {	NumToHex(buffer, value.real, 8);
-										PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							if ( bit==32 ) {	NumToHex(buffer, value.real, 8);	i=1;
 							} else 
-							if ( bit==64 ) {	DNumToHex(buffer, value.real, 16);
-										PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
-							} else { 	sprintG(buffer, value.real, 4,RIGHT_ALIGN);
-										PrintMini(x*dx+23-adjX,y*8+10,(unsigned char*)buffer,MINI_OVER);
+							if ( bit==64 ) {	DNumToHex(buffer, value.real, 16);	i=1;
+							} else { 	sprintG(buffer, value.real, 4,RIGHT_ALIGN);	i=3-adjX;
 							}
+							ENG=bk_ENG;
+							PrintMini(x*dx+20+i,y*8+10,(unsigned char*)buffer,MINI_OVER);
 //							Bdisp_PutDisp_DD();
 						}
 					}
@@ -1318,42 +1323,21 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 
 		if ( ( seltopX ) ) 				PrintMini( 16,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
 		if ( ( seltopX+MaxX < dimA ) )	PrintMini(122,1,(unsigned char*)"\xE6\x91",MINI_OR);		// ->
-
-		if ( ( strdisp ) && ( ElementSize > 4 ) )  {
-			if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectY+base, selectX+base), 64-1 );
-			else				OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectX+base, selectY+base), 64-1 );
-			locate(1,7); PrintLine((unsigned char *)" ",21);
-			locate(1,7); Print((unsigned char *)buffer);
-		} else {
-			if ( MatXYmode ) value=Cplx_ReadMatrix( reg, selectX+base, selectY+base);
-			else			 value=Cplx_ReadMatrix( reg, selectY+base, selectX+base);
-			Cplx_sprintGR2(buffer, buffer2, value, 21, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-			OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
-			if ( buffer2[0] != '\0' ) {
-				locate(1,6); Print((unsigned char*)buffer3);
-				OpcodeStringToAsciiString( buffer3, buffer2, 64-1 );
-				if ( (selectY-seltopY)==4 ) { seltopY++; goto dspjp; }
-			}
-			if ( list==1 ) {
-				if ( MatXYmode ) locate(1,6); else locate(13,1);
-				Print((unsigned char*)MatAry[reg].name);
-			}
-			locate(1,7); Print((unsigned char*)buffer3);
-		}
-		y = (selectY-seltopY) ;
-		x = (selectX-seltopX) ;
-		if ( dotedit == 0 ) Bdisp_AreaReverseVRAM(x*dx+20, y*8+9, x*dx+20+dx-5, y*8+15);	// reverse select element
-
+		
 		if ( ans==0 ) {
 			if ( dotedit ) 	Fkey_dispN( FKeyNo1, "0<>1");
 			else			Fkey_Icon( FKeyNo1,  42 );	//	Fkey_dispN( FKeyNo1, "Edit");
 		}
 		Fkey_Icon( FKeyNo2, 964 );	//	Fkey_dispN( FKeyNo2, "GOTO");
 		if ( ans==0 ) Fkey_Icon( FKeyNo3,  95 );	//	Fkey_dispR( FKeyNo3, "Init");
-		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "x,y"); else Fkey_dispN( FKeyNo4, "m,n"); 
+//		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "X,Y"); else Fkey_dispN( FKeyNo4, "m,n"); 
+		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "\xE6\x91m,n"); else Fkey_dispN( FKeyNo4, "\xE6\x91x,y"); 
 		locate(16, 8); MatAryElementSizePrint( ElementSize ) ;
 
-		
+		y = (selectY-seltopY) ;
+		x = (selectX-seltopX) ;
+		if ( dotedit == 0 ) Bdisp_AreaReverseVRAM(x*dx+20, y*8+9, x*dx+20+dx-5, y*8+15);	// reverse select element
+
 		if ( dotedit  ) {
 			MiniDotCursorX = x*dx+20;
 			MiniDotCursorY = y*dy+9;
@@ -1570,6 +1554,8 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				}
 		}
 	}
+ exit:
+ 	CB_INT = bk_CB_INT;
 }
 
 //-----------------------------------------------------------------------------
