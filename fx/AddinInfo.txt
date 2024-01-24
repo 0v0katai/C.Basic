@@ -5,7 +5,7 @@
 [BINDATA]    : "FXADDINror.bin"
 [DISPNAME]   : "CBASIC"
 [APPNAME]    : "@CBASIC"
-[VERSION]    : "02.45.0300"
+[VERSION]    : "02.45.0600"
 [APL_ICON]   : "MainIcon.bmp"
 [MODULE_NUM] : 0
 [MOD1_TITLE] : "CBASIC"
