@@ -244,9 +244,11 @@ typedef struct {		// 10 bytes
 	int		Value[StackSwitchMax];
 } StkSwitch;
 
-typedef struct {		// 16 bytes
+typedef struct {		// 16+8 bytes
 	short	CNT;
 	char	TYPE[14];
+//	int		TopAdrs[14];
+//	int		EndAdrs[14];
 } CurrentStk;
 
 //-----------------------------------------------------------------------------
@@ -264,7 +266,7 @@ void Skip_block( char *SRC );
 void Skip_rem( char *SRC );	// skip '...
 void CB_Rem( char *SRC, CchIf *CacheRem );
 void CB_Lbl( char *SRC, int *StackGotoAdrs );
-void CB_Goto( char *SRC, int *StackGotoAdrs );
+void CB_Goto( char *SRC, int *StackGotoAdrs, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
 void CB_If( char *SRC, CchIf *CacheIf );
 void CB_Else( char *SRC, CchIf *CacheElse );
 void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );

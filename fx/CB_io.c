@@ -187,7 +187,7 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	MatAryMax=MATARY_MAX +ExtendList*52;
 	Mattmpreg=MatAryMax-1;
-	ExtListMax=MatAryMax-33-26;
+	ExtListMax=MatAryMax-33-26-3;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {		// hidden RAM init
 		EditMaxfree = EDITMAXFREE2;
 		EditMaxProg = EDITMAXPROG2;

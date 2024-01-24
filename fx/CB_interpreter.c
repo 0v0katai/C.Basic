@@ -210,7 +210,7 @@ int CB_interpreter_sub( char *SRC ) {
 
 		switch (c) {
 			case 0xFFFFFFEC:	// Goto
-				CB_Goto(SRC, StackGotoAdrs );
+				CB_Goto(SRC, StackGotoAdrs, &StackFor, &StackWhileDo, &StackSwitch, &CurrentStruct );
 				break;
 			case 0xFFFFFFE8:	// Dsz
 				CB_Dsz(SRC) ;
@@ -1320,10 +1320,15 @@ int Search_Lbl( char *SRC, int lc ){
 	return 0;
 }
 
-void CB_Goto( char *SRC, int *StackGotoAdrs ){
+void CB_Goto( char *SRC, int *StackGotoAdrs, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
 	int c;
 	int label;
 	int ptr;
+	int count=0;
+	while ( ( SRC[ExecPtr]==0xFFFFFF87 ) || ( SRC[ExecPtr]==0xFFFFFF99 ) ) {	// (-)		// Goto -A	// Goto --A
+		ExecPtr++;
+		count++;
+	}
 	label = CB_CheckLbl( SRC );
 	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 	
@@ -1333,6 +1338,30 @@ void CB_Goto( char *SRC, int *StackGotoAdrs ){
 		ExecPtr++;
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
+
+	if ( count==0 ) return;	// out of loop count == 0
+	
+	if ( CurrentStruct->CNT <= 0 ) return;  // Not in Loop
+	do {
+		CurrentStruct->CNT--;
+		switch ( CurrentStruct->TYPE[CurrentStruct->CNT] ) {
+			case TYPE_For_Next:			// For Next
+				StackFor->Ptr--;
+				break ;
+			case TYPE_While_WhileEnd:	// While WhileEnd
+				StackWhileDo->WhilePtr--;
+				break ;
+			case TYPE_Do_LpWhile:		// DO LpWhile
+				StackWhileDo->DoPtr--;
+				break ;
+			case TYPE_Switch_Case:		// Switch
+				StackSwitch->Ptr--;
+				break ;
+			default:
+				break;
+		}
+		count--;
+	} while ( ( count > 0 ) && ( CurrentStruct->CNT > 0 ) );
 }
 
 //-----------------------------------------------------------------------------
