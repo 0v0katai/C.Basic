@@ -62,8 +62,8 @@ char ACBreak=1;		// AC Break on/off
 
 char TimeDsp=0;		// Execution Time Display  0:off 1:on
 char MatXYmode=0;		// 0: normal  1:reverse
-char PictMode=0;	// StoPict/RclPict  StrageMem:0  heap:1
-char CheckIfEnd=1;	// If...IfEnd check  1:off  0:on
+char PictMode=1;	// StoPict/RclPict  StrageMem:0  heap:1
+char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
@@ -480,7 +480,12 @@ int CB_interpreter_sub( char *SRC ) {
 						Skip_block(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFFE:	// Local
+					case 0xFFFFFFFD:	// Fkey(
+						CB_Fkey( SRC );
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFFE:	// BackLight
 						BackLight( CB_EvalInt( SRC ) );
 						dspflag=0;
 						break;
@@ -527,10 +532,6 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0xFFFFFFF0:	// graphY
 						goto strjp;
-//						ExecPtr-=2;
-//						CB_Str(SRC) ;
-//						dspflag=0;
-//						break;
 //					case 0x51:	// List
 //						dspflagtmp=CB_ListCalc(SRC);
 //						dspflag=0;
@@ -1082,15 +1083,15 @@ void CB_If( char *SRC, CchIf *CacheIf ){
 	
 	for ( i=0; i<CacheIf->CNT; i++ ) {
 		if ( CacheIf->Ptr[i]==ExecPtr ) { ExecPtr=CacheIf->Adrs[i]; return ; }	// adrs ok
-	}
+	} 
 	CacheIf->Ptr[CacheIf->CNT]=ExecPtr;
 	stat=Search_ElseIfEnd( SRC );
+	if ( stat == 3 ) { CacheIf->Ptr[CacheIf->CNT]++; goto loop; }	// ElseIf
+	
 	if ( CacheIf->CNT < IfCntMax ) {
 		CacheIf->Adrs[CacheIf->CNT]=ExecPtr;
 		CacheIf->CNT++;
 	} else CacheIf->CNT=0;	// over reset
-
-	if ( stat == 3 ) goto loop;	// ElseIf
 }
 
 void CB_Else( char *SRC, CchIf *CacheElse ){
@@ -1523,7 +1524,10 @@ void CB_Dsz( char *SRC ) { //	Dsz
 	if ( c==0x7F ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( ErrorNo ) return ; // error
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+				return ;
+			}
 			CB_CurrentValue = ReadMatrix( reg, dimA,dimB ) ;
 			CB_CurrentValue --;
 			WriteMatrix( reg, dimA,dimB, CB_CurrentValue ) ;
@@ -1595,7 +1599,10 @@ void CB_Isz( char *SRC ) { //	Isz
 	if ( c==0x7F ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( ErrorNo ) return ; // error
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+				return ;
+			}
 			CB_CurrentValue = ReadMatrix( reg, dimA,dimB ) ;
 			CB_CurrentValue ++;
 			WriteMatrix( reg, dimA,dimB, CB_CurrentValue ) ;
@@ -1685,15 +1692,17 @@ void CB_Store( char *SRC ){	// ->
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
 			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
-			if ( SRC[ExecPtr] != '[' ) { // -> Mat A
+			if ( SRC[ExecPtr] != '[' ) { 
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatSub( reg, CB_CurrentValue);
 			} else {
 			Matrix:
-				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				ExecPtr++;
 				MatOprand2( SRC, reg, &dimA, &dimB);
-				if ( ErrorNo ) return ; // error
+				if ( ErrorNo ) {  // error
+					if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+					return ;
+				}
 				WriteMatrix( reg, dimA, dimB, CB_CurrentValue);
 			}
 		} else if ( c == 0x5F ) {	// Ticks
@@ -1843,8 +1852,10 @@ int  CB_Input( char *SRC ){
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( ErrorNo ) return ; // error
-			if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+				return ;
+			}
 			DefaultValue = ReadMatrix( reg, dimA, dimB);
 			flag=1;
 			ExecPtr=bptr;
@@ -1959,7 +1970,8 @@ int  CB_Input( char *SRC ){
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+/*
 int ObjectAlign4h( unsigned int n ){ 	// align +16 
 	switch ( n ) {
 		case 1:		// +4byte
@@ -1972,6 +1984,7 @@ int ObjectAlign4h( unsigned int n ){ 	// align +16
 		default: return 0;
 	}
 }
+*/
 //----------------------------------------------------------------------------------------------
 /*
 int GetCmmOpcode(char *SRC, char *buffer, int Maxlen) {		// dummy
@@ -2046,16 +2059,16 @@ int CB_SearchProg( char *name ) { //	Prog search
 	int j,i=1;
 	char *ptr;
 	while ( ProgfileAdrs[i] ) {
-		ptr=ProgfileAdrs[i]+0x3C;
-		for (j=0;j<8;j++) if ( ptr[j] != name[j] ) break;
-		if ( j==8 )	return i ; // ok
+		ptr=ProgfileAdrs[i]+0x3C-8;
+		for (j=0;j<16;j++) if ( ptr[j] != name[j] ) break;
+		if ( j==16 )	return i ; // ok
 		i++;
 	}
 	return -1; // fault
 }
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	int c,i,j;
-	char buffer[32]="\0\0\0\0\0\0\0\0";
+	char buffer[32],folder16[17];
 	char *src;
 	char *StackProgSRC;
 	int StackProgExecPtr;
@@ -2063,16 +2076,11 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	char ProgNo_bk;
 	char BreakPtr_bk; 
 	char StepOutProgNo=0;
-	int maxoplen;
 
-	CB_CurrentStr=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
-	OpcodeStringToAsciiString( buffer, CB_CurrentStr, 16 );	// Prog name
-
-//	c=SRC[ExecPtr];
-//	if ( c == 0x22 ) {	// String
-//		ExecPtr++;
-//		CB_GetQuotOpcode(SRC, buffer,16);	// Prog name
-//	}
+	c=SRC[ExecPtr];
+	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	ExecPtr++;
+	CB_GetQuotOpcode(SRC, buffer,32);	// Prog name
 
 	c=SRC[ExecPtr];
 	if ( c == ',' ) {	// arg
@@ -2084,7 +2092,8 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	StackProgExecPtr = ExecPtr;
 	ProgNo_bk = ProgNo;
 	
-	ProgNo = CB_SearchProg( buffer );
+	Setfoldername16( folder16, buffer );
+	ProgNo = CB_SearchProg( folder16 );
 	if ( ProgNo < 0 ) { ProgNo=ProgNo_bk; ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
 
 	src = ProgfileAdrs[ProgNo];
@@ -2603,8 +2612,7 @@ void CB_Locate( char *SRC ){
 	
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_CurrentStr=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
-		OpcodeStringToAsciiString( buffer, CB_CurrentStr, 63 );
+		CB_GetLocateStr( SRC, buffer, 63 );		// String -> buffer	return 
 	} else {	// expression
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, 22-lx,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
@@ -2651,8 +2659,7 @@ void CB_Text( char *SRC ) { //	Text
 	if ( ( c == 0xFFFFFF87 )||( c == 0xFFFFFF99 ) ) { ExecPtr++; kanamini=0; }
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_CurrentStr=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
-		OpcodeStringToAsciiString( buffer, CB_CurrentStr, 127 );
+		CB_GetLocateStr( SRC, buffer, 127 );		// String -> buffer	return 
 	} else {	// expression
 		d=(128-px)/4;
 		if (d>24) d=24;	// digit max
@@ -2694,8 +2701,7 @@ void CB_LocateYX( char *SRC ){
 	ExecPtr++;
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_CurrentStr=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
-		OpcodeStringToAsciiString( buffer, CB_CurrentStr, 63 );
+		CB_GetLocateStr( SRC, buffer, 63 );		// String -> buffer	return 
 	} else {	// expression
 		d=(128-px)/6;
 		if (d>21) d=21;	// digit max

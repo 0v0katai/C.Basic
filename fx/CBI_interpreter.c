@@ -109,16 +109,18 @@ void CBint_Store( char *SRC ){	// ->
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
-			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='Z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatIntSub( reg, CBint_CurrentValue);
 			} else {
 			Matrix:
-				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				ExecPtr++;
 				MatOprandInt2( SRC, reg, &dimA, &dimB);
-				if ( ErrorNo ) return ; // error
+				if ( ErrorNo ) {  // error
+					if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+					return ;
+				}
 				WriteMatrixInt( reg, dimA, dimB, CBint_CurrentValue);
 			}
 		} else if ( c == 0x5F ) {	// Ticks
@@ -295,7 +297,10 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	if ( c==0x7F ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( ErrorNo ) return ; // error
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+				return ;
+			}
 			CBint_CurrentValue = ReadMatrixInt( reg, dimA,dimB ) ;
 			CBint_CurrentValue --;
 			WriteMatrixInt( reg, dimA,dimB, CBint_CurrentValue ) ;
@@ -367,7 +372,10 @@ void CBint_Isz( char *SRC ) { //	Isz
 	if ( c==0x7F ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( ErrorNo ) return ; // error
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+				return ;
+			}
 			CBint_CurrentValue = ReadMatrixInt( reg, dimA,dimB ) ;
 			CBint_CurrentValue ++;
 			WriteMatrixInt( reg, dimA,dimB, CBint_CurrentValue ) ;
