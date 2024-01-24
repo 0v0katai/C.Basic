@@ -127,6 +127,7 @@ void GetGenuineCmdF1( unsigned int *code ){
 			} break;
 		case CMD_OPTN_FMEM:
 			switch ( CommandPage ) {
+				case 0: (*code)=0x1F91B;return;	// STORE
 			} break;
 		case CMD_OPTN_LOGIC:
 			switch ( CommandPage ) {

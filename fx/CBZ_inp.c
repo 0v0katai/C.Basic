@@ -2784,6 +2784,8 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
 
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 	if ( ( float_mode == 0 ) && ( exp_mode == 0 ) && ( alpha_mode ) ) {
 		PutKey( KEY_CTRL_SHIFT, 1 );
 		PutKey( KEY_CTRL_ALPHA, 1 );

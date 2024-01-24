@@ -544,10 +544,10 @@ void DispGenuineCmdMenu(){
 		case CMD_OPTN_FMEM:
 			switch ( CommandPage ) {
 				case 0:
-					FkeyClear( FKeyNo1 );
-					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo1,  69 );	//	Fkey_dspRB( FKeyNo1, "STORE");
+					Fkey_Icon( FKeyNo2,  70 );	//	Fkey_dspRB( FKeyNo2, "RECALL");
 					Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dspRB( FKeyNo3, " fn ");
-					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );
 					break;
