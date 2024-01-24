@@ -15,6 +15,7 @@
 #include "CBI_Eval.h"
 #include "CB_Matrix.h"
 #include "CB_setup.h"
+#include "CB_TextConv.h"
 
 #include "CB_test.h"
 
@@ -376,7 +377,7 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispR( 2, "V-W");
 				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
 				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
-				Fkey_dispN( 5, "ver.");
+				Fkey_dispN( 5, "Text");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CHAR_POWROOT:
@@ -425,8 +426,9 @@ unsigned int Explorer( int size, char *folder )
 							SaveFavorites();
 							break;
 					case KEY_CTRL_F6:
-							VerDisp();
-							redraw = 1;
+//							VerDisp();
+//							redraw = 1;
+							cont=0;
 							break;
 					case KEY_CHAR_ASIN:
 							if ( CB_INTDefault ) CBint_test(); else CB_test();
@@ -602,11 +604,11 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	return 0 ;
 }
 
-void SetFullfilenameG1M( char *fname, char *sname ) {
+void SetFullfilenameExt( char *fname, char *sname, char *extname ) {
 	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\"ROOT"\\%s.g1m", sname );
+		sprintf( fname, "\\\\"ROOT"\\%s.%s", sname, extname );
 	else
-		sprintf( fname, "\\\\"ROOT"\\%s\\%s.g1m", folder, sname );
+		sprintf( fname, "\\\\"ROOT"\\%s\\%s.%s", folder, sname, extname );
 }
 
 int GetFileSize( const char *fname ) {
@@ -670,7 +672,7 @@ int ExistG1M( const char *sname ) {
 	/* end */
 	char fname[32];
 
-	SetFullfilenameG1M( fname, sname );
+	SetFullfilenameExt( fname, sname, "g1m" );
 	return ExistFile( fname ); // r==0 existed 
 }
 
@@ -788,10 +790,12 @@ void G1M_Basic_header( char *filebase ) {
 }
 
 
-int LoadProgfile( char *name ) {
+int LoadProgfile( char *name, int searchProg ) {
 	char *filebase;
 	int fsize,size;
-	filebase = loadFile( name , EditMaxfree );
+	int plus=0;
+	if ( searchProg ) plus=EditMaxfree;
+	filebase = loadFile( name , plus );
 	if ( filebase == NULL ) { ErrorMSGfile( "Not enough memory", name ); return 1 ; }
 
 	fsize=0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
@@ -799,17 +803,18 @@ int LoadProgfile( char *name ) {
 	if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize );
 		 return 1;
 	}
-	
+
 	ProgEntryN=0;						// Main program
 	ProgfileAdrs[ProgEntryN]= filebase;
 	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
 	ProgfileEdit[ProgEntryN]= 0;
 	ProgEntryN++;
 	ErrorNo=0;
-	CB_ProgEntry( filebase + 0x56 ) ;		// sub program search
+	if ( searchProg ) CB_ProgEntry( filebase + 0x56 ) ;		// sub program search
 	if ( ErrorNo ) return ErrorNo; // error
 	ProgNo=0;
 	ExecPtr=0;
+
 	return 0;
 }
 
@@ -819,7 +824,7 @@ int SaveG1M( char *filebase ){
 
 	SnameTofilename8( filebase, basname);
 
-	SetFullfilenameG1M( fname, basname );
+	SetFullfilenameExt( fname, basname, "g1m" );
 
 	size = SrcSize(filebase);
 	filebase[size+1]=0x00;
@@ -967,13 +972,13 @@ int RenameFile( char *sname ) {
 	char fname[32],basname[16];
 	int size,i,j;
 
-	if ( LoadProgfile( sname ) ) return 1 ; // error
-	
-	filebase=ProgfileAdrs[0] ;
+	if ( LoadProgfile( sname, 0) ) return 1 ; // error
+
+	filebase = ProgfileAdrs[0];
 	SnameTofilename8( filebase, basname);
 
 	if ( InputFilename( basname, "Rename File Name?" ) ) return 1 ; // cancel
-	SetFullfilenameG1M( fname, basname );
+	SetFullfilenameExt( fname, basname, "g1m" );
 	if ( strcmp(sname,fname)==0 ) return 0; // no rename
 	
 	filename8ToSname( filebase, basname);
@@ -1177,8 +1182,8 @@ int NewProg(){
 	basname[0]='\0';
 	if ( InputFilename( basname, "New File Name?" ) ) return 1 ;
 	if ( ExistG1M( basname ) == 0 ) { // existed file
-		SetFullfilenameG1M( fname, basname );
-		LoadProgfile( fname );
+		SetFullfilenameExt( fname, basname, "g1m" );
+		LoadProgfile( fname, 1);
 		return 0;
 	}
 	
@@ -1207,12 +1212,63 @@ int NewProg(){
 }
 
 //----------------------------------------------------------------------------------------------
+void ConvertToText( char *sname ){
+	char *filebase;
+	char fname[32],basname[16];
+	int size,i,j;
+	char *text;
+	int textptr;
+	int textsize;
+
+	if ( LoadProgfile( sname, 0) ) return ; // error
+
+	filebase = ProgfileAdrs[0];
+	SnameTofilename8( filebase, basname);
+
+	size=SrcSize( filebase ) *3/2 ;
+	text = (char *)malloc( size*sizeof(char) +4 );
+	if ( text == NULL )  { CB_ErrMsg(MemoryERR); return ; }
+	memset( text, 0x00,   size );
+	
+	textsize=OpcodeToText( filebase+0x56, text, size );
+	if ( textsize<0 ) { CB_ErrMsg(MemoryERR); goto retend; }
+	
+	filename8ToSname( filebase, basname);
+	SetFullfilenameExt( fname, basname, "txt" );
+	
+	if ( ExistFile( fname ) == 0 ) { // ==0 existed 
+		if ( YesNo( "Overwrite OK?" ) == 0 ) goto retend; // cancel
+		Bdisp_PutDisp_DD();
+	}
+	storeFile( fname, (unsigned char*)text, textsize );
+	FileListUpdate=0;	// 
+	ErrorMSGfile( "Convert Complete!", fname);
+  retend:
+	free(text);	//
+}
+//----------------------------------------------------------------------------------------------
 
 void SetFullfilenameBin( char *fname, char *sname ) {
+	char extname[4];
+	char *cptr;
+	int i;
+	extname[0]='\0';
+	extname[1]='\0';
+	extname[2]='\0';
+	extname[3]='\0';
+	cptr=strstr(sname,".");
+	if ( cptr==NULL ) {
+		extname[0]='b';
+		extname[1]='i';
+		extname[2]='n';
+	} else {
+		strncpy( extname, cptr+1, 3 );
+		*cptr='\0';
+	}
 	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\"ROOT"\\%s.bin", sname );
+		sprintf( fname, "\\\\"ROOT"\\%s.%s", sname, extname );
 	else
-		sprintf( fname, "\\\\"ROOT"\\%s\\%s.bin", folder, sname );
+		sprintf( fname, "\\\\"ROOT"\\%s\\%s.%s", folder, sname, extname );
 }
 
 int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
@@ -1224,7 +1280,7 @@ int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exi
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	GetLocateStr(SRC, sname,8);
+	GetLocateStr(SRC, sname,12);
 	c =SRC[ExecPtr];
 	if ( c == ')' ) ExecPtr++;
 	SetFullfilenameBin( fname, sname );
@@ -1242,7 +1298,7 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	GetLocateStr(SRC, sname,8);
+	GetLocateStr(SRC, sname,12);
 	SetFullfilenameBin( fname, sname );
 	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -1281,7 +1337,7 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	GetLocateStr(SRC, sname,8);
+	GetLocateStr(SRC, sname,12);
 	SetFullfilenameBin( fname, sname );
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
@@ -1386,7 +1442,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 //				locate( 1, 3); PrintLine(" ",21); GetKey(&key);			//
 				srcPrg = CB_SearchProg( buffer );
 				if ( srcPrg < 0 ) { 				// undefined Prog
-					SetFullfilenameG1M( filename, (char*)buffer );
+					SetFullfilenameExt( filename, (char*)buffer, "g1m" );
 					src = loadFile( filename ,EditMaxfree);
 //					locate( 1, 3); Print(filename);						//
 //					locate( 1, 4); PrintLine(" ",21);					//

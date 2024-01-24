@@ -26,7 +26,7 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 
 char *loadFile( const char *name , int editMax);
 int  storeFile( const char *name, unsigned char* codes, int size);
-int LoadProgfile( char *name ) ;
+int LoadProgfile( char *name, int searchProg ) ;
 int SaveG1M( char *filebase );
 int SaveProgfile(int progNo );
 
@@ -36,6 +36,8 @@ char * LoadPicture( int pictNo );
 int  RenameFile(char *name) ;
 void DeleteFile(char *name) ;
 void DeleteFileFav(char *sname) ;
+
+void ConvertToText( char *sname );
 
 int NewProg();
 void CB_Local( char *SRC ) ;

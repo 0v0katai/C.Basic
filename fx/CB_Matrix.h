@@ -21,6 +21,7 @@ int DimMatrix( int reg, int dimA, int dimB ) ;						// 1-
 void DeleteMatrix( int reg ) ;
 void InitMatSub( int reg, double value );
 void InitMatIntSub( int reg, int value );
+void NumToHex( char *buffer, unsigned int n, int digit) ;
 void EditMatrix(int reg);		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
 

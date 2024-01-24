@@ -32,6 +32,162 @@ double *MatAry[MatAryMax];					// Matrix array ptr*
 double MatDefaultValue=0;
 
 //-----------------------------------------------------------------------------
+//int MatrixObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+int MatOperandIntSub( int c ) {
+	if  ( ( '1'<= c ) && ( c<='9' ) ) return c-'0';
+	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REGINT[c-'A'];
+	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalInt[c-'a'][0];
+}
+//-----------------------------------------------------------------------------
+void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// 0-
+	int c,d;
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( d == ',' ) {										// [a,
+		ExecPtr++ ;
+		(*dimA) = MatOperandIntSub( c );
+	} else
+	if ( d == '+' ) { 										// [a+1,
+		if ( SRC[ExecPtr+3] == ',' ) {
+			ExecPtr+=2 ;
+			(*dimA) = MatOperandIntSub( c );
+			c=SRC[ExecPtr++];
+			(*dimA) += MatOperandIntSub( c );
+		}
+	} else
+	if ( d == '-' ) { 										// [a-1,
+		if ( SRC[ExecPtr+3] == ',' ) {
+			ExecPtr+=2 ;
+			(*dimA) = MatOperandIntSub( c );
+			c=SRC[ExecPtr++];
+			(*dimA) -= MatOperandIntSub( c );
+		}
+	} else {
+		(*dimA) = (EvalIntsubTop( SRC ));
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
+	}
+	if ( ( (*dimA) < 1 ) || ( MatArySizeA[(reg)] < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	(*dimA)--;
+	c=SRC[++ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( d == ']' ) {										//    b]
+		ExecPtr++ ;
+		(*dimB) = MatOperandIntSub( c );
+	} else
+	if ( d == '+' ) { 										//      b+1]
+		if ( SRC[ExecPtr+3] == ']' ) {
+			ExecPtr+=2 ;
+			(*dimB) = MatOperandIntSub( c );
+			c=SRC[ExecPtr++];
+			(*dimB) += MatOperandIntSub( c );
+		}
+	} else
+	if ( d == '-' ) { 										//      b-1]
+		if ( SRC[ExecPtr+3] == ']' ) {
+			ExecPtr+=2 ;
+			(*dimB) = MatOperandIntSub( c );
+			c=SRC[ExecPtr++];
+			(*dimB) -= MatOperandIntSub( c );
+		}
+	} else {
+		(*dimB) = (EvalIntsubTop( SRC ));
+		if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
+	}
+	if ( ( (*dimB) < 1 ) || ( MatArySizeB[(reg)] < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	(*dimB)--;
+	ExecPtr++ ;
+}
+//-----------------------------------------------------------------------------
+int MatOperandSub( int c ) {
+	if  ( ( '1'<= c ) && ( c<='9' ) ) return c-'0';
+	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REG[c-'A'];
+	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalDbl[c-'a'][0];
+}
+//-----------------------------------------------------------------------------
+void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
+	int dst;
+	int c,d;
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( d == ',' ) {										// [a,
+		ExecPtr++ ;
+		(*dimA) = MatOperandSub( c );
+	} else
+	if ( d == '+' ) { 										// [a+1,
+		if ( SRC[ExecPtr+3] == ',' ) {
+			ExecPtr+=2 ;
+			(*dimA) = MatOperandSub( c );
+			c=SRC[ExecPtr++];
+			(*dimA) += MatOperandSub( c );
+		}
+	} else
+	if ( d == '-' ) { 										// [a-1,
+		if ( SRC[ExecPtr+3] == ',' ) {
+			ExecPtr+=2 ;
+			(*dimA) = MatOperandSub( c );
+			c=SRC[ExecPtr++];
+			(*dimA) -= MatOperandSub( c );
+		}
+	} else {
+		(*dimA)=(EvalsubTop( SRC ));
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
+	}
+	if ( ( (*dimA) < 1 ) || ( MatArySizeA[(reg)] < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	(*dimA)--;
+	c=SRC[++ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( d == ']' ) {										//    b]
+		ExecPtr++ ;
+		(*dimB) = MatOperandSub( c );
+	} else
+	if ( d == '+' ) { 										//      b+1]
+		if ( SRC[ExecPtr+3] == ']' ) {
+			ExecPtr+=2 ;
+			(*dimB) = MatOperandSub( c );
+			c=SRC[ExecPtr++];
+			(*dimB) += MatOperandSub( c );
+		}
+	} else
+	if ( d == '-' ) { 										//      b-1]
+		if ( SRC[ExecPtr+3] == ']' ) {
+			ExecPtr+=2 ;
+			(*dimB) = MatOperandSub( c );
+			c=SRC[ExecPtr++];
+			(*dimB) -= MatOperandSub( c );
+		}
+	} else {
+		(*dimB)=(EvalsubTop( SRC ));
+		if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
+	}
+	if ( ( (*dimB) < 1 ) || ( MatArySizeB[(reg)] < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	(*dimB)--;
+	ExecPtr++ ;
+}
+
+int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB ) {	// 0-
+	int c;
+	if ( ( SRC[ExecPtr] != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return 0 ; }	// Syntax error
+	ExecPtr+=2;
+	c =SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+		ExecPtr++;
+		*reg=c-'A';
+		if ( MatArySizeA[*reg] == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
+	} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
+	c =SRC[ExecPtr];
+	if ( SRC[ExecPtr] != '[' ) { (*dimA)=0; (*dimB)=0; return -1 ; }	// no element
+	ExecPtr++;
+	if ( CB_INT ) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
+	return 1;
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 int ReadMatrixInt( int reg, int dimA, int dimB){	// 0-
 	char*	MatAryC;
 	short*	MatAryW;
@@ -659,8 +815,6 @@ double InitMatrix( int reg, double value ,int ElementSize ) {
 }
 
 //-----------------------------------------------------------------------------
-
-//int MatrixObjectAlign4( unsigned int n ) return n;	// align +4byte
 
 void NumToBin( char *buffer, unsigned int n, int digit) {
 	unsigned int i,j,k=pow(2,(digit-1));
@@ -1481,155 +1635,4 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A
 
 	TransposeMatirx( reg );
 }
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-int MatOperandIntSub( int c ) {
-	if  ( ( '1'<= c ) && ( c<='9' ) ) return c-'0';
-	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REGINT[c-'A'];
-	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalInt[c-'a'][0];
-}
-//-----------------------------------------------------------------------------
-void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// 0-
-	int c,d;
-	c=SRC[ExecPtr];
-	d=SRC[ExecPtr+1];
-	if ( d == ',' ) {										// [a,
-		ExecPtr++ ;
-		(*dimA) = MatOperandIntSub( c );
-	} else
-	if ( d == '+' ) { 										// [a+1,
-		if ( SRC[ExecPtr+3] == ',' ) {
-			ExecPtr+=2 ;
-			(*dimA) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
-			(*dimA) += MatOperandIntSub( c );
-		}
-	} else
-	if ( d == '-' ) { 										// [a-1,
-		if ( SRC[ExecPtr+3] == ',' ) {
-			ExecPtr+=2 ;
-			(*dimA) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
-			(*dimA) -= MatOperandIntSub( c );
-		}
-	} else {
-		(*dimA) = (EvalIntsubTop( SRC ));
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
-	}
-	if ( ( (*dimA) < 1 ) || ( MatArySizeA[(reg)] < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	(*dimA)--;
-	c=SRC[++ExecPtr];
-	d=SRC[ExecPtr+1];
-	if ( d == ']' ) {										//    b]
-		ExecPtr++ ;
-		(*dimB) = MatOperandIntSub( c );
-	} else
-	if ( d == '+' ) { 										//      b+1]
-		if ( SRC[ExecPtr+3] == ']' ) {
-			ExecPtr+=2 ;
-			(*dimB) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
-			(*dimB) += MatOperandIntSub( c );
-		}
-	} else
-	if ( d == '-' ) { 										//      b-1]
-		if ( SRC[ExecPtr+3] == ']' ) {
-			ExecPtr+=2 ;
-			(*dimB) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
-			(*dimB) -= MatOperandIntSub( c );
-		}
-	} else {
-		(*dimB) = (EvalIntsubTop( SRC ));
-		if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
-	}
-	if ( ( (*dimB) < 1 ) || ( MatArySizeB[(reg)] < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	(*dimB)--;
-	ExecPtr++ ;
-}
-//-----------------------------------------------------------------------------
-int MatOperandSub( int c ) {
-	if  ( ( '1'<= c ) && ( c<='9' ) ) return c-'0';
-	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REG[c-'A'];
-	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalDbl[c-'a'][0];
-}
-//-----------------------------------------------------------------------------
-void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
-	int dst;
-	int c,d;
-	c=SRC[ExecPtr];
-	d=SRC[ExecPtr+1];
-	if ( d == ',' ) {										// [a,
-		ExecPtr++ ;
-		(*dimA) = MatOperandSub( c );
-	} else
-	if ( d == '+' ) { 										// [a+1,
-		if ( SRC[ExecPtr+3] == ',' ) {
-			ExecPtr+=2 ;
-			(*dimA) = MatOperandSub( c );
-			c=SRC[ExecPtr++];
-			(*dimA) += MatOperandSub( c );
-		}
-	} else
-	if ( d == '-' ) { 										// [a-1,
-		if ( SRC[ExecPtr+3] == ',' ) {
-			ExecPtr+=2 ;
-			(*dimA) = MatOperandSub( c );
-			c=SRC[ExecPtr++];
-			(*dimA) -= MatOperandSub( c );
-		}
-	} else {
-		(*dimA)=(EvalsubTop( SRC ));
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
-	}
-	if ( ( (*dimA) < 1 ) || ( MatArySizeA[(reg)] < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	(*dimA)--;
-	c=SRC[++ExecPtr];
-	d=SRC[ExecPtr+1];
-	if ( d == ']' ) {										//    b]
-		ExecPtr++ ;
-		(*dimB) = MatOperandSub( c );
-	} else
-	if ( d == '+' ) { 										//      b+1]
-		if ( SRC[ExecPtr+3] == ']' ) {
-			ExecPtr+=2 ;
-			(*dimB) = MatOperandSub( c );
-			c=SRC[ExecPtr++];
-			(*dimB) += MatOperandSub( c );
-		}
-	} else
-	if ( d == '-' ) { 										//      b-1]
-		if ( SRC[ExecPtr+3] == ']' ) {
-			ExecPtr+=2 ;
-			(*dimB) = MatOperandSub( c );
-			c=SRC[ExecPtr++];
-			(*dimB) -= MatOperandSub( c );
-		}
-	} else {
-		(*dimB)=(EvalsubTop( SRC ));
-		if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
-	}
-	if ( ( (*dimB) < 1 ) || ( MatArySizeB[(reg)] < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	(*dimB)--;
-	ExecPtr++ ;
-}
-
-int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB ) {	// 0-
-	int c;
-	if ( ( SRC[ExecPtr] != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return 0 ; }	// Syntax error
-	ExecPtr+=2;
-	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
-		ExecPtr++;
-		*reg=c-'A';
-		if ( MatArySizeA[*reg] == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
-	} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
-	c =SRC[ExecPtr];
-	if ( SRC[ExecPtr] != '[' ) { (*dimA)=0; (*dimB)=0; return -1 ; }	// no element
-	ExecPtr++;
-	if ( CB_INT ) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
-	return 1;
-}
-
 

@@ -15,7 +15,7 @@
 #include "CB_setup.h"
 
 //----------------------------------------------------------------------------------------------
-char *ClipBuffer;
+char ClipBuffer[ClipMax];
 int Contflag=0;	// Continue mode    0:disable  1:enable
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ int PP_Search_IfEnd( char *SRC ){
 			case 0xFFFFFFE5:	// 
 			case 0xFFFFFFE6:	// 
 			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFFF:	// 
 				ExecPtr++;
 				break;
 		}

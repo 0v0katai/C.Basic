@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.95 
+ Casio Basic Interpreter (& Compiler) ver 0.96 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -32,8 +32,8 @@ int LoadFileSDK( char *src ) {	// test source to SDK
 	size=(src[0x47]&0xFF)*256+(src[0x48]&0xFF)+0x4C;
 	locate( 1, 1);
 	buffer = (char *)malloc( size*sizeof(char)+EditMaxfree +4 );
-	memset( buffer, 0x00,             size*sizeof(char)+EditMaxfree +4 );
 	if ( buffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+	memset( buffer, 0x00,             size*sizeof(char)+EditMaxfree +4 );
 
 	for (i=0;i<size;i++) buffer[i]=src[i];
 
@@ -75,8 +75,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	LoadConfig();
 	CB_INT=0;	// double mode default
 	
-	ClipBuffer = (char *)malloc( ClipMax+1 );
-	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+//	ClipBuffer = (char *)malloc( ClipMax+1 );
+//	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -111,7 +111,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case KEY_CTRL_F1:
 				Contflag=0;
 				ExecPtr=0;
-				i=LoadProgfile( filename ) ;
+				i=LoadProgfile( filename, 1 ) ;
 				if ( i==0 )	EditRun(1);			// Program run
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
@@ -120,7 +120,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case KEY_CTRL_F2:
 				Contflag=0;
 				ExecPtr=0;
-				i=LoadProgfile( filename ) ;
+				i=LoadProgfile( filename, 1 ) ;
 				if ( i==0 )	EditRun(2);			// Program listing & edit
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
@@ -139,6 +139,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				break;
 			case KEY_CTRL_F5:
 				DeleteFileFav(filename);
+				run=0;
+				SaveConfig();
+				break;
+			case KEY_CTRL_F6:
+				ConvertToText(filename);
 				run=0;
 				SaveConfig();
 				break;
