@@ -617,7 +617,7 @@ void SetShortName( char *sname, char *name) {	// fullpath name -> short name
 	c=name[ptr++];
 	while( c=='\\' ) c=name[ptr++];	//
 	while( c!='\\' ) c=name[ptr++];	// ROOT skip
-	if ( strchr(name+ptr,'\\') != NULL ) { name=strchr(name+ptr,'\\'); ptr=0;}
+	if ( strchr(name+ptr,'\\') != NULL ) { name=strchr(name+ptr,'\\')+1; ptr=0;}
 	c=name[ptr];
 	i=0;
 	while ( c ) {
@@ -627,10 +627,16 @@ void SetShortName( char *sname, char *name) {	// fullpath name -> short name
 	sname[i]='\0';
 }
 
-void ErrorMSGfile( char *buffer, char *name){
+void ErrorMSGfile( char *buffer, char *name, int err){
 	char sname[32];
+	char buf[32];
 	SetShortName( sname, name);
-	ErrorMSGstr( buffer, sname);
+	if ( err ) {
+		sprintf(buf, "%s (%d)", sname, err);
+		ErrorMSGstr( buffer, buf);
+	} else {
+		ErrorMSGstr( buffer, sname);
+	}
 }
 
 //----------------------------------------------------------------------------------------------
@@ -647,7 +653,7 @@ char * loadFile( const char *name , int editMax)
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 )
 	{
-		ErrorMSGfile( "Can't find file", name);
+		ErrorMSGfile( "Can't find file", name, handle);
 		CB_Error(FileERR); 
 		return NULL;
 	}
@@ -657,8 +663,9 @@ char * loadFile( const char *name , int editMax)
 	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
 	if( buffer == NULL )
 	{
-		ErrorMSGfile( "Not enough memory", name );
+		ErrorMSGfile( "Not enough memory", name, 0 );
 		CB_Error(FileERR); 
+		Bfile_CloseFile( handle );
 		return NULL;
 	}
 	memset( buffer, 0x00,     size*sizeof(char)+editMax+4 );
@@ -698,7 +705,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	}
 	FileListUpdate=1;
 	handle = Bfile_CreateFile( filename, size );
-	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name ); return 1 ; }
+	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name, handle ); return 1 ; }
 	r = Bfile_CloseFile( handle );
 
 	handle = Bfile_OpenFile( filename, _OPENMODE_WRITE );
@@ -1077,7 +1084,7 @@ void DeleteFile(char *fname) {
 	CharToFont( fname, filename );
 
 	r = Bfile_DeleteFile( filename );
-	if( r < 0 ) { ErrorMSGfile( "Can't delete file", fname ); return ; }
+	if( r < 0 ) { ErrorMSGfile( "Can't delete file", fname, r ); return ; }
 	FileListUpdate=1;
 }
 
@@ -1459,7 +1466,7 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	CharToFont( fname, filename );
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
-		ErrorMSGfile( "Can't Load file", fname);
+		ErrorMSGfile( "Can't Load file", fname, handle);
 		CB_Error(FileERR); return ;
 	}
 	
@@ -1469,7 +1476,7 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 
 	Bfile_ReadFile( handle, FilePtr, size, ptr );
 	Bfile_CloseFile( handle );
-	if ( FilePtr == NULL ) { ErrorMSGfile( "Load Error", fname ); CB_Error(FileERR); return ; }
+	if ( FilePtr == NULL ) { ErrorMSGfile( "Load Error", fname, 0 ); CB_Error(FileERR); return ; }
 
 }
 //----------------------------------------------------------------------------------------------
@@ -1515,7 +1522,7 @@ void ConvertToText( char *fname ){
 	}
 
 	FileListUpdate=1;	// 
-	ErrorMSGfile( "Convert Complete!", fname);
+	ErrorMSGfile( "Convert Complete!", fname, 0);
 	SetShortName( sname, fname);
 	strncpy( rename, sname, FILENAMEMAX);
 }
@@ -1526,31 +1533,19 @@ void ConvertToText( char *fname ){
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void CB_Local( char *SRC ) {
-	int c=1,i,j,st,en;
+	int c=1,i;
 	i=0;
 	while ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
 		c=SRC[ExecPtr];
 		if ( ( 'a' <= c ) && ( c <='z' ) ) {
-			st=c-'a';
-			c=SRC[++ExecPtr];
-			if ( c == 0x7E ) {		// '~'
-				c=SRC[++ExecPtr];
-				if ( ( 'a' <= c ) && ( c <='z' ) ) {
-					ExecPtr++;
-					en=c-'a';
-					if ( en<st ) { CB_Error(SyntaxERR); return; }	// Syntax error
-					c=SRC[++ExecPtr];
-					if ( i+st > 25 ) st=25-i;
-					if ( i+en > 25 ) en=25-i;
-					for ( j=st; j<=en; j++) ProgLocalVar[ProgEntryN-1][i+j] = st+j ;
-				}
-			} else ProgLocalVar[ProgEntryN-1][i] = st;	// local var set
+			ExecPtr++;
+			ProgLocalVar[ProgEntryN-1][i] = c-'a';	// local var set
 		} 
 		i++;
 		c=SRC[ExecPtr];
 		if ( c != ',' ) break; 	// 
 		ExecPtr++;
-		if ( i > 26 ) { CB_Error(TooMuchData); break; }	// too much error
+		if ( i > ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
 	}
 	ProgLocalN[ProgEntryN-1] = i;
 }
