@@ -25,6 +25,7 @@
 #include "CB_interpreter.h"
 #include "CBI_interpreter.h"
 #include "CB_error.h"
+#include "CB_Matrix.h"
 
 //-----------------------------------------------------------------------------
 void BdispSetPointVRAM2( int px, int py, int mode){
@@ -44,7 +45,7 @@ void BdispSetPointVRAM2( int px, int py, int mode){
 	}
 }
 //-----------------------------------------------------------------------------
-int BdispGetPointVRAM2( int px, int py){
+int BdispGetPointVRAM2( char px, char py){
 	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
 	int m=(128>>(px&0x7));
 	if ( ( (*VRAM) & m ) == 0 ) return 0; 
@@ -127,7 +128,7 @@ int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(
 	*py =  63 - ( (y-Ymin)/Ydot - 0.49999999999999 ) ;
 //	if ( Ymax >  Ymin )		*py =  62 - (y-Ymin)/Ydot  +1.49999999999999 ;
 //	if ( Ymax <  Ymin )		*py =       (y-Ymax)/-Ydot +1.5 ;
-	if ( (*px<1) || (*px>127) || (*py<1) || (*py> 63) ) { return -1; }	// 
+	if ( (*px<MatBase) || (*px>127) || (*py<MatBase) || (*py> 63) ) { return -1; }	// 
 	return 0;
 }
 
@@ -136,8 +137,8 @@ void PlotGrid(double x, double y){
 	int px,py;
 	if ( ( x==0 ) && ( y==0 ) ) return;
 	if ( VWtoPXY( x,y, &px, &py) ) return;
-	if ( (px<1) || (px>127) ) return ;
-	if ( (py<1) || (py> 63) ) return ;
+	if ( (px<MatBase) || (px>127) ) return ;
+	if ( (py<MatBase) || (py> 63) ) return ;
 	Bdisp_SetPoint_VRAM( px, py, 1);
 }
 
@@ -373,7 +374,7 @@ void PxlChg_VRAM(int py, int px){
 
 //------------------------------------------------------------------------------ LINE
 void LinesubSetPoint(int px, int py, int mode) {
-	if ( ( px <   1 ) || ( px > 127 ) || ( py <   1 ) || ( py >  63 ) ) return;
+	if ( ( px <  MatBase ) || ( px > 127 ) || ( py < MatBase ) || ( py >  63 ) ) return;
 //	if ( mode == 2 ) {
 //		if (Bdisp_GetPoint_VRAM(px, py)) 
 //			Bdisp_SetPoint_VRAM(px, py, 0);
@@ -703,14 +704,14 @@ void Vertical(double x, int style, int mode) {
 	VWtoPXY( x, 0, &px, &py);
 	if ( px<  0 ) return;
 	if ( px>127 ) return;
-	Linesub( px, 1, px, 63, style, mode);
+	Linesub( px, MatBase, px, 63, style, mode);
 }
 void Horizontal(double y, int style, int mode) {
 	int px,py;
 	VWtoPXY( 0, y, &px, &py);
 	if ( py<  0 ) return;
 	if ( py> 63 ) return;
-	Linesub( 1, py, 127, py, style, mode);
+	Linesub( MatBase, py, 127, py, style, mode);
 }
 
 void Circle(double x, double y, double r, int style, int drawflag, int mode ) {

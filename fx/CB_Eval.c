@@ -35,8 +35,77 @@ char ExpBuffer[ExpMax+1];
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int MatrixObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4b( unsigned int n ){ return n+n; }	// align +6byte
+//int MatrixObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+double ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int		base=MatAry[reg].Base;
+	dimA-=base;
+	dimB-=base;
+	switch ( MatAry[reg].ElementSize ) {
+		case 64:
+			return MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array doubl
+		case  2:		// Vram
+			dimA+=base;
+			dimB+=base;
+		case  1:
+			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 1 bit
+			return ( MatAryC[dimB*(((MatAry[reg].SizeA-1)>>3)+1)+(dimA>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+		case  8:
+			MatAryC=(char*)MatAry[reg].Adrs;
+			return MatAryC[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array char
+		case 16:
+			MatAryW=(short*)MatAry[reg].Adrs;
+			return MatAryW[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array word
+		case 32:
+			MatAryI=(int*)MatAry[reg].Adrs;
+			return MatAryI[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array int
+	}
+}
+
+void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    base:1 1-
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int tmp;
+	int mptr;
+	int		base=MatAry[reg].Base;
+	dimA-=base;
+	dimB-=base;
+	switch ( MatAry[reg].ElementSize ) {
+		case 64:
+			MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB]  = (double)value ;	// Matrix array double
+			break;
+		case  2:	// Vram
+			dimA+=base;
+			dimB+=base;
+		case  1:
+			MatAryC=(char*)MatAry[reg].Adrs;					// Matrix array 1 bit
+			tmp=( 128>>(dimA&7) );
+			mptr=dimB*(((MatAry[reg].SizeA-1)>>3)+1)+((dimA)>>3);
+			if ( value ) 	MatAryC[mptr] |= tmp ;
+			else	 		MatAryC[mptr] &= ~tmp ;
+			break;
+		case  8:
+			MatAryC=(char*)MatAry[reg].Adrs;
+			MatAryC[dimA*MatAry[reg].SizeB+dimB] = (char)value ;	// Matrix array char
+			break;
+		case 16:
+			MatAryW=(short*)MatAry[reg].Adrs;
+			MatAryW[dimA*MatAry[reg].SizeB+dimB] = (short)value ;	// Matrix array word
+			break;
+		case 32:
+			MatAryI=(int*)MatAry[reg].Adrs;
+			MatAryI[dimA*MatAry[reg].SizeB+dimB] = (int)value ;		// Matrix array int
+			break;
+	}
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
@@ -45,9 +114,10 @@ int MatOperandSub( int c ) {
 	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalDbl[c-'a'][0];
 }
 //-----------------------------------------------------------------------------
-void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
+void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    base:1 1-
 	int dst;
 	int c,d;
+	int base=MatAry[reg].Base;
 	(*dimB)=-1;
 	c=SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
@@ -73,13 +143,12 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
 	} else {
   L1:	(*dimA)=(EvalsubTop( SRC ));
 		c=SRC[ExecPtr];
-		if ( c == ']' ) { ExecPtr++ ; (*dimB)=0; }
+		if ( c == ']' ) { ExecPtr++ ; (*dimB)=base; }
 		else 
 		if ( c != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
 	}
-	if ( ( (*dimA) < 1 ) || ( MatArySizeA[(reg)] < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	(*dimA)--;
-	if ( (*dimB)==0 ) return ;
+	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	if ( (*dimB)==base ) return ;
 	c=SRC[++ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( d == ']' ) {										//    b]
@@ -105,8 +174,7 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
   L2:	(*dimB)=(EvalsubTop( SRC ));
 		if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
 	}
-	if ( ( (*dimB) < 1 ) || ( MatArySizeB[(reg)] < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	(*dimB)--;
+	if ( ( (*dimB) < base ) || ( MatAry[reg].SizeB-1+base < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 	ExecPtr++ ;
 }
 
@@ -118,16 +186,16 @@ int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		*reg=c-'A';
-		if ( MatArySizeA[*reg] == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
+		if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 	} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	return 1;
 }
 
-int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// 0-
+int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// base:0  0-    base:1 1-
 	int c;
 	if ( MatrixOprandreg( SRC, &(*reg)) == 0 ) return 0 ;
 	c =SRC[ExecPtr];
-	if ( SRC[ExecPtr] != '[' ) { (*dimA)=0; (*dimB)=0; return -1 ; }	// no element
+	if ( SRC[ExecPtr] != '[' ) { (*dimA)=MatAry[(*reg)].Base; (*dimB)=(*dimA); return -1 ; }	// no element
 	ExecPtr++;
 	if ( CB_INT ) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
 	return 1;
@@ -148,9 +216,9 @@ double CB_EvalDbl( char *SRC ) {
 }
 
 double EvalsubTop( char *SRC ) {	// eval 1
+	double  result,dst;
 	int c;
 	int excptr=ExecPtr;
-	double  result,dst;
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
 	result=Evalsub1(SRC);
@@ -383,6 +451,7 @@ double Eval_atof(char *SRC, int c) {
 
 double Evalsub1(char *SRC) {	// 1st Priority
 	double result=0,tmp,tmp2;
+	double sign=1;
 	int c,d;
 	char *pt;
 	int dimA,dimB,reg,x,y;
@@ -391,7 +460,6 @@ double Evalsub1(char *SRC) {	// 1st Priority
 	short*	MatAryW;
 	int*	MatAryI;
 	double*	MatAryF;
-	double sign=1;
 
 	c = SRC[ExecPtr++];
 	if ( c == '(') {
@@ -432,7 +500,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					ExecPtr++;
 					MatOprand2( SRC, reg, &dimA, &dimB );
 					if ( ErrorNo ) return 1 ; // error
-				} else { dspflag=3; dimA=0; dimB=0; }	// Mat A
+				} else { dspflag=3; dimA=MatAry[reg].Base; dimB=dimA; }	// Mat A
 				return ReadMatrix( reg, dimA, dimB);
 					
 			} else if ( c == 0x3A ) {	// MOD(a,b)
@@ -496,10 +564,10 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			} else if ( c == 0xFFFFFFF0 ) {	// GraphY
 					reg='y'-'A';
 					dimA=SRC[ExecPtr++]-'0';
-					if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+					if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
 					ptr=ExecPtr;
 					ExecPtr= 0;
-					result= EvalsubTop( MatrixPtr( reg, dimA-1, 0 ) );
+					result= EvalsubTop( MatrixPtr( reg, dimA, 1 ) );
 					ExecPtr=ptr;
 					return result ;
 					
@@ -524,15 +592,15 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			} else if ( c == 0x58 ) {	// ElemSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAryElementSize[reg];
+					return MatAry[reg].ElementSize;
 			} else if ( c == 0x59 ) {	// ColSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatArySizeA[reg];
+					return MatAry[reg].SizeA;
 			} else if ( c == 0x5A ) {	// RowSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatArySizeB[reg];
+					return MatAry[reg].SizeB;
 			} else ExecPtr--;	// error
 			break;
 			
@@ -567,8 +635,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
 					x=(EvalsubTop( SRC ));
-					if ( SRC[ExecPtr] != ')' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++ ;
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result = PxlTest(y, x) ;			// 
 					return result ;
 			} else

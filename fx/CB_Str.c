@@ -496,17 +496,17 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 			if ( ErrorNo ) return 0 ;			// error
 			buffer=MatrixPtr( reg, dimA, dimB );
-			(*maxlen)=MatArySizeB[reg];
+			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0x3F:	// Str 1-20
 			reg=defaultStrAry;
 	str1:	ExecPtr+=2;
-			if ( MatArySizeA[reg] == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
+			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
 			if ( CB_INT ) dimA = EvalIntsub1( SRC ); else dimA = Evalsub1( SRC );	// str no : Mat s[n,len]
-			if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
-			dimB=0;
-			buffer=MatrixPtr( reg, dimA-1, dimB );
-			(*maxlen)=MatArySizeB[reg];
+			if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+			dimB=1;
+			buffer=MatrixPtr( reg, dimA, dimB );
+			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0xFFFFFFF0:	// GraphY
 			reg=defaultGraphAry;
@@ -595,40 +595,38 @@ void StorStrMat( char *SRC ) {	// ->&Mat A
 	char *MatAryC;
 	MatrixOprand( SRC, &reg, &dimA, &dimB );
 	if ( ErrorNo ) return ; // error
-	if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
-	if ( MatAryElementSize[reg] != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
+	if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+	if ( MatAry[reg].ElementSize != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
 	MatAryC=MatrixPtr( reg, dimA, dimB );
-	OpcodeCopy( MatAryC, CB_CurrentStr, MatArySizeB[reg]-1 );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
 void StorStrStr( char *SRC ) {	// ->Sto 1-20
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultStrAry;
-	if ( MatArySizeA[reg] == 0 ) {
-		DimMatrixSub( reg, 8, defaultStrAryN, defaultStrArySize );	// byte matrix
+	if ( MatAry[reg].SizeA == 0 ) {
+		DimMatrixSub( reg, 8, defaultStrAryN, defaultStrArySize, 1 );	// byte matrix
 		if ( ErrorNo ) return ; // error
 	}
 	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-	if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	dimA--;
-	MatAryC=MatrixPtr( reg, dimA, 0 );
-	OpcodeCopy( MatAryC, CB_CurrentStr, MatArySizeB[reg]-1 );
+	if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	MatAryC=MatrixPtr( reg, dimA, 1 );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
 void StorStrGraphY( char *SRC ) {	// GraphY 1-5
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultGraphAry;
-	if ( MatArySizeA[reg] == 0 ) {
-		DimMatrixSub( reg, 8, defaultGraphAryN, defaultGraphArySize );	// byte matrix
+	if ( MatAry[reg].SizeA == 0 ) {
+		DimMatrixSub( reg, 8, defaultGraphAryN, defaultGraphArySize, 1 );	// byte matrix
 		if ( ErrorNo ) return ;
 	}
 	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-	if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	dimA--;
-	MatAryC=MatrixPtr( reg, dimA, 0 );
-	OpcodeCopy( MatAryC, CB_CurrentStr, MatArySizeB[reg]-1 );
+	if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	MatAryC=MatrixPtr( reg, dimA, 1 );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
 void CB_StorStr( char *SRC ) {

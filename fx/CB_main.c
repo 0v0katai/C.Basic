@@ -163,11 +163,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		}
 		
 //		for ( reg=0; reg<26; reg++){
-//			ptr = MatAry[reg] ;							// Matrix array ptr*
+//			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
 //			if (ptr != NULL ) free(ptr);		
-//			MatArySizeA[reg]=0;							// Matrix array size
-//			MatArySizeB[reg]=0;							// Matrix array size
-//			MatAry[reg]=NULL ;							// Matrix array ptr*		
+//			MatAry[reg].SizeA=0;						// Matrix array size
+//			MatAry[reg].SizeB=0;						// Matrix array size
+//			MatAry[reg].Adrs =NULL ;					// Matrix array ptr*		
 //		}
 		for (i=ProgMax; i>=0; i--) {			// memory free
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
