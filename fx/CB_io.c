@@ -299,22 +299,29 @@ void Hex2PrintXY(int x, int y, char *str, unsigned int hex){
 	locate(x,y); Print((unsigned char *)str); Print((unsigned char *)buffer);
 }
 
-int YesNo( char*buffer){
+int YesNo2sub( char*buffer, char*buffer2){
 	unsigned int key;
+	int y;
 
 	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(4);
-	locate(3,2); Print((unsigned char *)buffer);
-	locate(3,4); Print((unsigned char *) "   Yes:[F1]");
-	locate(3,5); Print((unsigned char *) "   No :[F6]");
-//	Bdisp_PutDisp_DD();
+	if ( buffer2[0]=='\0' ) {
+		PopUpWin(4); 
+		y=4;
+	} else { 
+		PopUpWin(5);
+		CB_Print( 3, 3, (unsigned char *)buffer2);
+		y=5;
+	}
+	CB_Print( 3, 2,  (unsigned char *)buffer);
+	CB_Print( 3, y,  (unsigned char *) "   Yes:[F1]");
+	CB_Print( 3, y+1,(unsigned char *) "   No :[F6]");
 
 	KeyRecover(); 
 	while ( 1 ) {
 		GetKey(&key);	
 		if ( key == KEY_CTRL_F1  ) break ;
 		if ( key == KEY_CTRL_F6  ) break ;
-		if ( key == KEY_CTRL_EXIT) break ;
+		if ( key == KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; break ; }
 		if ( key == KEY_CTRL_AC  ) break ;
 		if ( key == KEY_CTRL_EXE ) break ;
 	}
@@ -325,31 +332,43 @@ int YesNo( char*buffer){
 	return 0 ; // No
 }
 
-int YesNo2( char*buffer, char*buffer2){
+int YesNo( char*buffer){
+	int r;
+	r=YesNo2sub( buffer, "" );
+	return r;
+}
+int YesNo2( char*buffer, char*buffer2 ){
+	int r;
+	r=YesNo2sub( buffer, buffer2 );
+	return r;
+}
+
+void OkMSGstr2(char*buffer,char*buffer2){
 	unsigned int key;
+	char buf[20];
+	int y;
 
 	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(5);
-	locate(3,2); Print((unsigned char *)buffer);
-	locate(3,3); Print((unsigned char *)buffer2);
-	locate(3,5); Print((unsigned char *) "   Yes:[F1]");
-	locate(3,6); Print((unsigned char *) "   No :[F6]");
-//	Bdisp_PutDisp_DD();
-
-	KeyRecover(); 
-	while ( 1 ) {
-		GetKey(&key);	
-		if ( key == KEY_CTRL_F1  ) break ;
-		if ( key == KEY_CTRL_F6  ) break ;
-		if ( key == KEY_CTRL_EXIT) break ;
-		if ( key == KEY_CTRL_AC  ) break ;
-		if ( key == KEY_CTRL_EXE ) break ;
+	if ( buffer2[0]=='\0' ) {
+		PopUpWin(4); 
+		y=5;
+	} else { 
+		PopUpWin(5);
+		CB_Print( 3, 4, (unsigned char *)buffer2);
+		y=6;
 	}
+	CB_Print( 3, 8-y, (unsigned char *)buffer);
+	CB_Print( 3, y, (unsigned char *) "   Press:[EXIT]");
+
+	GetKey(&key);	
 	RestoreDisp(SAVEDISP_PAGE1);
-	if ( key == KEY_CTRL_F1  ) return 1 ; // Yes
-	if ( key == KEY_CTRL_EXE ) return 1 ; // Yes
-//	Bdisp_PutDisp_DD();
-	return 0 ; // No
+}
+
+void ErrorMSGstr1( char*buffer){
+	OkMSGstr2( buffer, "" );
+}
+void ErrorMSGstr( char*buffer, char*buffer2 ){
+	OkMSGstr2( buffer, buffer2 );
 }
 
 void ErrorMSG(char*buffer,int err){
@@ -362,30 +381,6 @@ void ErrorMSG(char*buffer,int err){
 	locate(3,2); Print((unsigned char *)buffer);
 	locate(3,4); Print((unsigned char *)buf);
 	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
-
-	GetKey(&key);	
-	RestoreDisp(SAVEDISP_PAGE1);
-}
-void ErrorMSGstr(char*buffer,char*buffer2){
-	unsigned int key;
-	char buf[20];
-
-	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(5);
-	locate(3,2); Print((unsigned char *)buffer);
-	locate(3,4); Print((unsigned char *)buffer2);
-	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
-
-	GetKey(&key);	
-	RestoreDisp(SAVEDISP_PAGE1);
-}
-void ErrorMSGstr1(char*buffer){
-	unsigned int key;
-
-	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(4);
-	locate(3,3); Print((unsigned char *)buffer);
-	locate(3,5); Print((unsigned char *) "   Press:[EXIT]");
 
 	GetKey(&key);	
 	RestoreDisp(SAVEDISP_PAGE1);

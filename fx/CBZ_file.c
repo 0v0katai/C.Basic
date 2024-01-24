@@ -960,7 +960,7 @@ int InputFilename( char * buffer, char* msg) {		//
 	key=InputStrFilename( 5, 4, 12, 18, buffer ) ;
 //	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
-	if (key==KEY_CTRL_EXIT) return 1;
+	if (key==KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; return 1; }
 	Getfolder( buffer );
 	return 0; // ok
 }
@@ -1075,7 +1075,7 @@ int InputPassname( int y, char* inputpassname, char *msg) {		// password input
 	FkeyClear( FKeyNo3 );
 	key=InputStrFilename( 2, y+1, 8, 8, inputpassname ) ;
 	if (key==KEY_CTRL_AC) return 1;
-	if (key==KEY_CTRL_EXIT) return 1;
+	if (key==KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; return 1; }
 	return 0; // ok
 }
 
@@ -1126,7 +1126,7 @@ int InputFilenamePassname( char *filebase, char *basname, char* msg) {		//
 	FkeyClear( FKeyNo3 );
 	key=InputStrFilename( 2, 2, 8, 8, basname ) ;
 	if (key==KEY_CTRL_AC) return 1;
-	if (key==KEY_CTRL_EXIT) return 1;
+	if (key==KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; return 1; }
 	if (key==KEY_CTRL_F1) {	// password input
 		if ( SetPassWord( 3, filebase, basname, "Password?" ) ) return 1 ; // cancel
 	}
@@ -2447,32 +2447,32 @@ int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte

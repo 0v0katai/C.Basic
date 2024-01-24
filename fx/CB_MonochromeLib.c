@@ -1035,10 +1035,10 @@ int isin( int angle, int x ){
 	return ((int)sintable1024[angle]*x+512) >>10;
 }
 int icos( int angle, int x ){
-	if ( angle < 0 ) angle=-angle;
-	angle-=90;
-	if ( angle < 0 ) angle+=360;
-	return isin( angle, x );
+//	if ( angle < 0 ) angle=-angle;
+//	angle-=90;
+//	if ( angle < 0 ) angle+=360;
+	return isin( 90-angle, x );
 }
 
 void ML_circle2(int x, int y, int radius, ML_Color color, int start, int end, int n ) {	// start:end  0~360

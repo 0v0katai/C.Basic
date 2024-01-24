@@ -317,7 +317,7 @@ const char ConvList7F00[][16]={
 "MatBase(",				// 7F5B
 "ListCmp(",				// 7F5C
 "@7F5D",			// 7F5D
-"@7F5E",			// 7F5E
+"RGB(",				// 7F5E
 "Ticks",				// 7F5F
 					
 "Sim Coef", 		// 7F60
@@ -933,7 +933,7 @@ const char ConvListF900[][17]={
 "Plot/Line-Color ",	// F999
 "AxesScale",		// F99A
 "Black ",			// F99B
-"@F99C",			// F99C
+"White ",			// F99C
 "Magenta ",			// F99D
 "Cyan ",			// F99E
 "Yellow ",			// F99F
@@ -969,7 +969,7 @@ const char ConvListF900[][17]={
 "PeriodsAnnual",	// F9BB
 "PeriodsSemi",		// F9BC
 "Days_Prd(",		// F9BD
-"@F9BE",			// F9BE
+"Back-Color ",			// F9BE
 "@F9BF",			// F9BF
 
 "_ClrVram",				// F9C0

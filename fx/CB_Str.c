@@ -731,7 +731,7 @@ char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String
 		if ( c == ')' ) ExecPtr++;	
 		return CB_CurrentStr; //
 	}
-	CB_StrAddBuffer=NewStrBuffer(); if ( buffer==NULL ) return 0;
+	CB_StrAddBuffer=NewStrBuffer(); if ( ErrorNo ) return 0;
 	OpcodeCopy( CB_StrAddBuffer, CB_CurrentStr, CB_StrBufferMax-1 );		//
 	while (1) {
 		ExecPtr++;
@@ -911,22 +911,32 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		ExecPtr++;
 		CB_StorStr( SRC );
 		dspflag=0;
-		if ( ErrorNo ) return ;  // error
 	} else {			// display str
 		OpcodeStringToAsciiString( buffer, CB_CurrentStr, CB_StrBufferMax-1 );
 		CB_SelectTextVRAM();	// Select Text Screen
-		if ( CursorX >1 ) Scrl_Y();
+		if ( ( CursorX >1 ) ) Scrl_Y();
 		CursorX+=csrX;
 		while ( buffer[i] ) {
+			if ( ( CursorX > 21 ) ) Scrl_Y();
 			CB_PrintC( CursorX, CursorY, (unsigned char*)buffer+i );
-			CursorX++; if ( ( CursorY < 7 ) && ( CursorX > 21 ) ) Scrl_Y();
+			CursorX++;
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
 			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
 			i++;
+			Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		}
-//		if ( buffer[0]==NULL ) CursorX=22;
-		if ( ( CursorY < 7 ) && ( CursorX == 1 ) ) Scrl_Y();
+		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
+		if ( CursorX == 22 ) {
+			if ( CursorY < 7 ) {
+				Scrl_Y();
+				CursorX=22;
+				if ( SRC[ExecPtr] != '?' ) CursorX=23;
+			} else {	// CursorY == 7 
+				CursorX=23;
+			}
+		}
+		if ( ( buffer[0]==0 ) && ( SRC[ExecPtr] != '?' ) ) CursorX=23;
 		dspflag=1;
 		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 	}
@@ -1509,7 +1519,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 			} break;
 		default: i=0; break;
 	}
-	if ( i=0 ) { CB_Error(ArgumentERR); return 0; }	// Argument error
+	if ( i==0 ) { CB_Error(ArgumentERR); return 0; }	// Argument error
 
 	i=-1;
 	while ( i < CB_StrBufferMax ) {

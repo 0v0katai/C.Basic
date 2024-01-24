@@ -423,6 +423,8 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return  ScreenMode;
 				case 0xFFFFFFFE:	// BackLight
 					return	BackLight(-1);
+				case 0xFFFFFFF2:	// PopUpWin(
+					return CB_PopUpWin(SRC);
 				default:
 					ExecPtr--;	// error
 					break;

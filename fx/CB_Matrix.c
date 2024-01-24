@@ -998,10 +998,10 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 					else			 value=ReadMatrix( reg, seltopY+y+base, seltopX+x+base);
 					if ( value )	ML_point( x*dx+21, y*dy+10, 3, ML_BLACK );
 					else			ML_point( x*dx+21, y*dy+10, 1, ML_BLACK );
-					MiniDotCursorflag=0;		// mini cursor initialize
-					MatDotEditCursorFlashing();
 				}
 			}
+			MiniDotCursorflag=0;		// mini cursor initialize
+			MatDotEditCursorFlashing();
 		} else {
 			for ( y=0; y<=MaxDY; y++ ) {
 				sprintf((char*)buffer,"%4d",seltopY+y+base);
@@ -2280,17 +2280,17 @@ void CB_List2Mat( char *SRC ) {	// List>Mat( List 1, List 2,..) -> Mat Ans
 	int ansreg=CB_MatListAnsreg;
 
 	c=1;
-	reg = ListEvalsubTop(SRC) +31;
+	reg = ListRegVar( SRC );
 	if ( dspflag >= 3 ) reg = CB_MatListAnsreg;
 
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
-		reg2 = ListEvalsubTop(SRC) +31;
+		reg2 = ListRegVar( SRC );
 		if ( dspflag >= 3 ) reg2 = CB_MatListAnsreg;
 		c++;
 		if ( SRC[ExecPtr] == ',' ) { 
 			ExecPtr++;
-			reg3 = ListEvalsubTop(SRC) +31;
+			reg3 = ListRegVar( SRC );
 			if ( dspflag >= 3 ) reg3 = CB_MatListAnsreg;
 			c++;
 		}
