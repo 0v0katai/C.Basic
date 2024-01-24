@@ -222,6 +222,13 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFB6 :	// frac
 			ExecPtr++; result = 0;
 			return result ;
+		case 0xFFFFFFA7 :	// Not
+			ExecPtr++; result = ! (int) ( EvalIntsub5( SRC ) );
+			return result ;
+		case '%' :	// 1/128 Ticks
+			ExecPtr++;
+			return RTC_GetTicks()-CB_TicksAdjust;	// 
+			
 		case 0xFFFFFF86 :	// sqr
 			ExecPtr++; tmp=EvalIntsub5( SRC ) ;
 			if ( tmp<=0 ) CB_Error(MathERR) ; // Math error
@@ -240,12 +247,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFA5 :	// expn
 			ExecPtr++; result = exp( EvalIntsub5( SRC ) );
 			return result ;
-		case 0xFFFFFFA7 :	// Not
-			ExecPtr++; result = ! (int) ( EvalIntsub5( SRC ) );
-			return result ;
 		case 0xFFFFFF96 :	// cuberoot
 			ExecPtr++; result = pow( EvalIntsub5( SRC ), 1.0/3.0 );
 			return result ;
+			
 		case 0xFFFFFFF7:	// F7..
 			c = SRC[ExecPtr+1];
 			if ( c == 0xFFFFFFAF ) {	// PxlTest(y,x)
@@ -267,9 +272,6 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return Xdot;
 			}
 			break;
-		case '%' :	// 1/128 Ticks
-			ExecPtr++;
-			return RTC_GetTicks() ;
 		case 0xFFFFFFDD :	// Eng
 			ExecPtr++;
 			return ENG ;

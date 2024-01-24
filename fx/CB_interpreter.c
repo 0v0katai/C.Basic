@@ -24,6 +24,7 @@
 #include "CB_file.h"
 #include "CB_edit.h"
 #include "CB_setup.h"
+#include "CB_Time.h"
 
 #include "CB_interpreter.h"
 #include "CBI_interpreter.h"
@@ -82,6 +83,7 @@ double *MatAry[26];		// Matrix array ptr*
 //----------------------------------------------------------------------------------------------
 int	CB_TicksStart;
 int	CB_TicksEnd;
+int	CB_TicksAdjust;
 
 int CB_INT=0;		// current mode  0:normal  1: integer mode
 int ExecPtr=0;		// Basic execute ptr
@@ -570,6 +572,10 @@ void CB_Store( char *SRC ){	// ->
 				Xdot = CB_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
 		}
+	} else
+	if ( c=='%' ) {
+		SetRtc( CB_CurrentValue );
+		CB_TicksAdjust=RTC_GetTicks()-CB_CurrentValue ;	// 
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
@@ -1995,137 +2001,6 @@ void CB_PxlChg( char *SRC ) { //	PxlChg
 	PxlChg_VRAM(y,x);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
-//----------------------------------------------------------------------------------------------
-void CB_Circle( char *SRC ) { //	Circle
-	int c;
-	double x,y,r;
-	int style=S_L_Style;
-	if ( tmp_Style >= 0 ) style=tmp_Style;
-	if ( RangeErrorCK(SRC) ) return;
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	if (CB_INT)	x=CBint_Eval( SRC );
-	else		x=CB_Eval( SRC );
-	c=SRC[ExecPtr];
-	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	if (CB_INT)	y=CBint_Eval( SRC );
-	else		y=CB_Eval( SRC );
-	c=SRC[ExecPtr];
-	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	if (CB_INT)	r=CBint_Eval( SRC );
-	else		r=CB_Eval( SRC );
-	c=SRC[ExecPtr];
-	if ( c==':' ) 	Circle(x, y, r, style, 0);
-		else 		Circle(x, y, r, style, 1);
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-	tmp_Style = -1;
-}
-
-
-//----------------------------------------------------------------------------------------------
-void GetGraphStr(  char *SRC ) {
-	int ptr;
-	int len,i;
-	int c,d;
-	ptr=ExecPtr;
-	c=SRC[ExecPtr];
-	d=SRC[ExecPtr+1];
-	if ( ( c == 0x7F ) && ( d == 0xFFFFFFF0 ) ) { // GraphY
-		ExecPtr+=2;
-		c=SRC[ExecPtr++];
-		switch (c) {
-			case '1':
-				GraphY=GraphY1;
-				break;
-			case '2':
-				GraphY=GraphY2;
-				break;
-			case '3':
-				GraphY=GraphY3;
-				break;
-			default:
-				{ CB_Error(ArgumentERR); return; }	// Argument error
-				break;
-		}
-	} else {
-		CB_Eval( SRC );
-		len=(int)(ExecPtr-ptr);
-		if ( len >= GraphStrMAX-1 ) { CB_Error(StringTooLongERR); return; }	// String too Long error
-		GraphY=GraphY1;
-		for (i=0; i<len; i++ ) GraphY[i]=SRC[ptr+i];
-		GraphY[i]='\0';
-	}
-}
-
-void CB_DrawGraph(  char *SRC ){
-	if ( RangeErrorCK(SRC) ) return;
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	Graph_Draw();
-}
-
-void CB_GraphY( char *SRC ){
-	if ( RangeErrorCK(SRC) ) return;
-	GetGraphStr(SRC);
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	Graph_Draw();
-}
-
-//----------------------------------------------------------------------------------------------
-void ReadVram( unsigned char *pDATA ){
-	Bdisp_GetDisp_VRAM( pDATA ) ;
-}
-void WriteVram( unsigned char *pDATA ){
-	DISPGRAPH Gpict;
-	
-	Gpict.x =   0; 
-	Gpict.y =   0; 
-	Gpict.GraphData.width   = 128;
-	Gpict.GraphData.height  = 64;
-	Gpict.GraphData.pBitmap = pDATA;
-	Gpict.WriteModify = IMB_WRITEMODIFY_NORMAL; 
-	Gpict.WriteKind   = IMB_WRITEKIND_OR;
-	Bdisp_WriteGraph_VRAM(&Gpict);
-}
-
-int StoPict( int pictNo){
-	unsigned char pict[2048+0x4C+4];
-	int i,stat;
-	ReadVram(pict+0x4C);
-	for(i=1024+0x4c; i<2048+0x4c+2; i++) pict[i]=0;
-	stat=SavePicture( (char *)pict, pictNo );
-	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
-	return stat;
-}
-
-void RclPict( int pictNo){
-	unsigned char *pict;
-	int i;
-	pict=(unsigned char *)LoadPicture( pictNo );
-	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
-	WriteVram( pict+0x4C );
-	free(pict);
-}
-
-void CB_StoPict( char *SRC ) { //	StoPict
-	int n;
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	Bdisp_PutDisp_DD_DrawBusy();
-	if (CB_INT)	n=CBint_Eval( SRC );
-	else		n=CB_Eval( SRC );
-	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	StoPict(n);
-}
-void CB_RclPict( char *SRC ) { //	RclPict
-	int n;
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	if (CB_INT)	n=CBint_Eval( SRC );
-	else		n=CB_Eval( SRC );
-	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	RclPict(n);
-	Bdisp_PutDisp_DD_DrawBusy();
-}
-
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -2384,7 +2259,7 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x01:	// Then
 						ExecPtr-=2;
-						CB_Error(ThenWithoutIfERR); // not Then error 					
+						CB_Error(ThenWithoutIfERR); // not Then error 
 						break;
 					case 0x0E:	// Stop
 						BreakPtr=ExecPtr;
@@ -2643,6 +2518,136 @@ void CB_Prog( char *SRC ) { //	Prog "..."
 	SRC     = StackProgSRC ;
 	ExecPtr = StackProgExecPtr ;
 	ProgNo  = ProgNo_bk;
+}
+
+//----------------------------------------------------------------------------------------------
+void CB_Circle( char *SRC ) { //	Circle
+	int c;
+	double x,y,r;
+	int style=S_L_Style;
+	if ( tmp_Style >= 0 ) style=tmp_Style;
+	if ( RangeErrorCK(SRC) ) return;
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	if (CB_INT)	x=CBint_Eval( SRC );
+	else		x=CB_Eval( SRC );
+	c=SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	if (CB_INT)	y=CBint_Eval( SRC );
+	else		y=CB_Eval( SRC );
+	c=SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	if (CB_INT)	r=CBint_Eval( SRC );
+	else		r=CB_Eval( SRC );
+	c=SRC[ExecPtr];
+	if ( c==':' ) 	Circle(x, y, r, style, 0);
+		else 		Circle(x, y, r, style, 1);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
+	tmp_Style = -1;
+}
+
+//----------------------------------------------------------------------------------------------
+void GetGraphStr(  char *SRC ) {
+	int ptr;
+	int len,i;
+	int c,d;
+	ptr=ExecPtr;
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( ( c == 0x7F ) && ( d == 0xFFFFFFF0 ) ) { // GraphY
+		ExecPtr+=2;
+		c=SRC[ExecPtr++];
+		switch (c) {
+			case '1':
+				GraphY=GraphY1;
+				break;
+			case '2':
+				GraphY=GraphY2;
+				break;
+			case '3':
+				GraphY=GraphY3;
+				break;
+			default:
+				{ CB_Error(ArgumentERR); return; }	// Argument error
+				break;
+		}
+	} else {
+		CB_Eval( SRC );
+		len=(int)(ExecPtr-ptr);
+		if ( len >= GraphStrMAX-1 ) { CB_Error(StringTooLongERR); return; }	// String too Long error
+		GraphY=GraphY1;
+		for (i=0; i<len; i++ ) GraphY[i]=SRC[ptr+i];
+		GraphY[i]='\0';
+	}
+}
+
+void CB_DrawGraph(  char *SRC ){
+	if ( RangeErrorCK(SRC) ) return;
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	Graph_Draw();
+}
+
+void CB_GraphY( char *SRC ){
+	if ( RangeErrorCK(SRC) ) return;
+	GetGraphStr(SRC);
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	Graph_Draw();
+}
+
+//----------------------------------------------------------------------------------------------
+void ReadVram( unsigned char *pDATA ){
+	Bdisp_GetDisp_VRAM( pDATA ) ;
+}
+void WriteVram( unsigned char *pDATA ){
+	DISPGRAPH Gpict;
+	
+	Gpict.x =   0; 
+	Gpict.y =   0; 
+	Gpict.GraphData.width   = 128;
+	Gpict.GraphData.height  = 64;
+	Gpict.GraphData.pBitmap = pDATA;
+	Gpict.WriteModify = IMB_WRITEMODIFY_NORMAL; 
+	Gpict.WriteKind   = IMB_WRITEKIND_OR;
+	Bdisp_WriteGraph_VRAM(&Gpict);
+}
+
+int StoPict( int pictNo){
+	unsigned char pict[2048+0x4C+4];
+	int i,stat;
+	ReadVram(pict+0x4C);
+	for(i=1024+0x4c; i<2048+0x4c+2; i++) pict[i]=0;
+	stat=SavePicture( (char *)pict, pictNo );
+	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
+	return stat;
+}
+
+void RclPict( int pictNo){
+	unsigned char *pict;
+	int i;
+	pict=(unsigned char *)LoadPicture( pictNo );
+	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
+	WriteVram( pict+0x4C );
+	free(pict);
+}
+
+void CB_StoPict( char *SRC ) { //	StoPict
+	int n;
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	Bdisp_PutDisp_DD_DrawBusy();
+	if (CB_INT)	n=CBint_Eval( SRC );
+	else		n=CB_Eval( SRC );
+	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	StoPict(n);
+}
+void CB_RclPict( char *SRC ) { //	RclPict
+	int n;
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	if (CB_INT)	n=CBint_Eval( SRC );
+	else		n=CB_Eval( SRC );
+	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	RclPict(n);
+	Bdisp_PutDisp_DD_DrawBusy();
 }
 
 //----------------------------------------------------------------------------------------------

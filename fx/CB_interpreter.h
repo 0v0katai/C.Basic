@@ -101,6 +101,7 @@ extern double *MatAry[MatAryMax];			// Matrix array ptr*
 //------------------------------------------------------------------------------
 extern int	CB_TicksStart;
 extern int	CB_TicksEnd;
+extern int	CB_TicksAdjust;
 
 extern int CB_INT;		// current mode  0:normal  1: integer mode
 extern int ExecPtr;

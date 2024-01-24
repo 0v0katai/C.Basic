@@ -30,6 +30,7 @@
 //----------------------------------------------------------------------------------------------
 char ExpBuffer[ExpMax+1];
 //-----------------------------------------------------------------------------
+void CheckMathERR( double *result ) ;
 //-----------------------------------------------------------------------------
 /*
 int lastrandom=0x12345678;
@@ -72,25 +73,51 @@ double floor2( double x ) {
 	return ( result ); 
 }
 */
+/*
+double frac( double x ) {
+	double sign=1,tmp,d;
+	int k;
+	if ( x <0 ) { sign=-1; x=-x; }
+	k=(int)log10(x);
+	if ( k<1 ) d= 1e15;
+	else if ( k==1 ) d= 1e14;
+	else if ( k==2 ) d= 1e13;
+	else if ( k==3 ) d= 1e12;
+	else if ( k==4 ) d= 1e11;
+	else if ( k==5 ) d= 1e10;
+	else if ( k==6 ) d= 1e9;
+	else if ( k==7 ) d= 1e8;
+	else if ( k==8 ) d= 1e7;
+	else if ( k==9 ) d= 1e6;
+	else if ( k==10 ) d= 1e5;
+	else if ( k==11 ) d= 1e4;
+	else if ( k==12 ) d= 1e3;
+	else if ( k==13 ) d= 1e2;
+	else if ( k==14 ) d= 1e1;
+	else if ( k>=15 ) d= 1;
+	tmp=x-floor(x);
+	return (floor(tmp*d+.5)/d*sign) ;
+}
+*/
 double frac( double x ) {
 	double sign=1,tmp,d;
 	if ( x <0 ) { sign=-1; x=-x; }
 	if ( x<1e1 ) d= 1e15;
-	if ( x>=1e1 ) d= 1e14;
-	if ( x>=1e2 ) d= 1e13;
-	if ( x>=1e3 ) d= 1e12;
-	if ( x>=1e4 ) d= 1e11;
-	if ( x>=1e5 ) d= 1e10;
-	if ( x>=1e6 ) d= 1e9;
-	if ( x>=1e7 ) d= 1e8;
-	if ( x>=1e8 ) d= 1e7;
-	if ( x>=1e9 ) d= 1e6;
-	if ( x>=1e10 ) d= 1e5;
-	if ( x>=1e11 ) d= 1e4;
-	if ( x>=1e12 ) d= 1e3;
-	if ( x>=1e13 ) d= 1e2;
-	if ( x>=1e14 ) d= 1e1;
-	if ( x>=1e15 ) d= 1;
+	else if ( x>=1e15 ) d= 1;
+	else if ( x>=1e14 ) d= 1e1;
+	else if ( x>=1e13 ) d= 1e2;
+	else if ( x>=1e12 ) d= 1e3;
+	else if ( x>=1e11 ) d= 1e4;
+	else if ( x>=1e10 ) d= 1e5;
+	else if ( x>=1e9 ) d= 1e6;
+	else if ( x>=1e8 ) d= 1e7;
+	else if ( x>=1e7 ) d= 1e8;
+	else if ( x>=1e6 ) d= 1e9;
+	else if ( x>=1e5 ) d= 1e10;
+	else if ( x>=1e4 ) d= 1e11;
+	else if ( x>=1e3 ) d= 1e12;
+	else if ( x>=1e2 ) d= 1e13;
+	else if ( x>=1e1 ) d= 1e14;
 	tmp=x-floor(x);
 	return (floor(tmp*d+.5)/d*sign) ;
 }
@@ -107,6 +134,10 @@ double atanh( double x ) {
 	return ( (ep-em)/(ep+em) );
 }
 
+void CheckMathERR( double *result ) {
+	char * pt;
+	pt=(char *)(result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
+}
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
@@ -352,147 +383,13 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFB6 :	// frac
 			ExecPtr++; result = frac( Evalsub5( SRC ) );
 			return result ;
-		case 0xFFFFFF86 :	// sqr
-			ExecPtr++; result = sqrt( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF95 :	// log10
-			ExecPtr++; result = log10( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFB5 :	// 10^
-			ExecPtr++; result = pow(10, Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF85 :	// ln
-			ExecPtr++; result = log( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFA5 :	// expn
-			ExecPtr++; result = exp( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
 		case 0xFFFFFFA7 :	// Not
 			ExecPtr++; result = ! (int) ( Evalsub5( SRC ) );
 			return result ;
-		case 0xFFFFFF96 :	// cuberoot
-			ExecPtr++; result = pow( Evalsub5( SRC ), 1.0/3.0 );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF81 :	// sin
+
+		case '%' :	// 1/128 Ticks
 			ExecPtr++;
-			switch ( Angle ) { 
-				case 0:	// Deg
-					result = sin( Evalsub5( SRC )*PI/180.);
-					break;
-				case 1:	// Rad
-					result = sin( Evalsub5( SRC ));
-					break;
-				case 2:	// Grad
-					result = sin( Evalsub5( SRC )*PI/200. );
-					break;
-			}
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF82 :	// cos
-			ExecPtr++;
-			switch ( Angle ) { 
-				case 0:	// Deg
-					result = cos( Evalsub5( SRC )*PI/180.);
-					break;
-				case 1:	// Rad
-					result = cos( Evalsub5( SRC ));
-					break;
-				case 2:	// Grad
-					result = cos( Evalsub5( SRC )*PI/200. );
-					break;
-			}
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF83 :	// tan
-			ExecPtr++;
-			switch ( Angle ) { 
-				case 0:	// Deg
-					result = tan( Evalsub5( SRC )*PI/180.);
-					break;
-				case 1:	// Rad
-					result = tan( Evalsub5( SRC ));
-					break;
-				case 2:	// Grad
-					result = tan( Evalsub5( SRC )*PI/200. );
-					break;
-			}
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF91 :	// asin
-			ExecPtr++;
-			switch ( Angle ) { 
-				case 0:	// Deg
-					result = asin( Evalsub5( SRC ) )*180./PI ;
-					break;
-				case 1:	// Rad
-					result = asin( Evalsub5( SRC ) ) ;
-					break;
-				case 2:	// Grad
-					result = asin( Evalsub5( SRC ) )*299./PI ;
-					break;
-			}
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF92 :	// acos
-			ExecPtr++;
-			switch ( Angle ) { 
-				case 0:	// Deg
-					result = acos( Evalsub5( SRC ) )*180./PI ;
-					break;
-				case 1:	// Rad
-					result = acos( Evalsub5( SRC ) ) ;
-					break;
-				case 2:	// Grad
-					result = acos( Evalsub5( SRC ) )*299./PI ;
-					break;
-			}
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFF93 :	// atan
-			ExecPtr++;
-			switch ( Angle ) { 
-				case 0:	// Deg
-					result = atan( Evalsub5( SRC ) )*180./PI ;
-					break;
-				case 1:	// Rad
-					result = atan( Evalsub5( SRC ) ) ;
-					break;
-				case 2:	// Grad
-					result = atan( Evalsub5( SRC ) )*299./PI ;
-					break;
-			}
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFA1 :	// sinh
-			ExecPtr++; result = sinh( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFA2 :	// cosh
-			ExecPtr++; result = cosh( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFA3 :	// tanh
-			ExecPtr++; result = tanh( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFB1 :	// asinh
-			ExecPtr++; result = asinh( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFB2 :	// acosh
-			ExecPtr++; result = acosh( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
-		case 0xFFFFFFB3 :	// atanh
-			ExecPtr++; result = atanh( Evalsub5( SRC ) );
-			pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-			return result ;
+			return RTC_GetTicks()-CB_TicksAdjust;	// 
 		case 0xFFFFFFF7:	// F7..
 			c = SRC[ExecPtr+1];
 			if ( c == 0xFFFFFFAF ) {	// PxlTest(y,x)
@@ -507,6 +404,146 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return result ;
 			}
 			break;
+
+		case 0xFFFFFF86 :	// sqr
+			ExecPtr++; result = sqrt( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF95 :	// log10
+			ExecPtr++; result = log10( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFB5 :	// 10^
+			ExecPtr++; result = pow(10, Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF85 :	// ln
+			ExecPtr++; result = log( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFA5 :	// expn
+			ExecPtr++; result = exp( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF96 :	// cuberoot
+			ExecPtr++; result = pow( Evalsub5( SRC ), 1.0/3.0 );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+
+		case 0xFFFFFF81 :	// sin
+			ExecPtr++;
+			switch ( Angle ) { 
+				case 0:	// Deg
+					result = sin( Evalsub5( SRC )*PI/180.);
+					break;
+				case 1:	// Rad
+					result = sin( Evalsub5( SRC ));
+					break;
+				case 2:	// Grad
+					result = sin( Evalsub5( SRC )*PI/200. );
+					break;
+			}
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF82 :	// cos
+			ExecPtr++;
+			switch ( Angle ) { 
+				case 0:	// Deg
+					result = cos( Evalsub5( SRC )*PI/180.);
+					break;
+				case 1:	// Rad
+					result = cos( Evalsub5( SRC ));
+					break;
+				case 2:	// Grad
+					result = cos( Evalsub5( SRC )*PI/200. );
+					break;
+			}
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF83 :	// tan
+			ExecPtr++;
+			switch ( Angle ) { 
+				case 0:	// Deg
+					result = tan( Evalsub5( SRC )*PI/180.);
+					break;
+				case 1:	// Rad
+					result = tan( Evalsub5( SRC ));
+					break;
+				case 2:	// Grad
+					result = tan( Evalsub5( SRC )*PI/200. );
+					break;
+			}
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF91 :	// asin
+			ExecPtr++;
+			switch ( Angle ) { 
+				case 0:	// Deg
+					result = asin( Evalsub5( SRC ) )*180./PI ;
+					break;
+				case 1:	// Rad
+					result = asin( Evalsub5( SRC ) ) ;
+					break;
+				case 2:	// Grad
+					result = asin( Evalsub5( SRC ) )*299./PI ;
+					break;
+			}
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF92 :	// acos
+			ExecPtr++;
+			switch ( Angle ) { 
+				case 0:	// Deg
+					result = acos( Evalsub5( SRC ) )*180./PI ;
+					break;
+				case 1:	// Rad
+					result = acos( Evalsub5( SRC ) ) ;
+					break;
+				case 2:	// Grad
+					result = acos( Evalsub5( SRC ) )*299./PI ;
+					break;
+			}
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFF93 :	// atan
+			ExecPtr++;
+			switch ( Angle ) { 
+				case 0:	// Deg
+					result = atan( Evalsub5( SRC ) )*180./PI ;
+					break;
+				case 1:	// Rad
+					result = atan( Evalsub5( SRC ) ) ;
+					break;
+				case 2:	// Grad
+					result = atan( Evalsub5( SRC ) )*299./PI ;
+					break;
+			}
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFA1 :	// sinh
+			ExecPtr++; result = sinh( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFA2 :	// cosh
+			ExecPtr++; result = cosh( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFA3 :	// tanh
+			ExecPtr++; result = tanh( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFB1 :	// asinh
+			ExecPtr++; result = asinh( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFB2 :	// acosh
+			ExecPtr++; result = acosh( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
+		case 0xFFFFFFB3 :	// atanh
+			ExecPtr++; result = atanh( Evalsub5( SRC ) );
+			CheckMathERR(&result); // Math error ?
+			return result ;
 		case 0xFFFFFFF9:	// F9..
 			c = SRC[ExecPtr+1];
 			if ( c == 0x21 ) {	// Xdot
@@ -514,9 +551,6 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return Xdot;
 			}
 			break;
-		case '%' :	// 1/128 Ticks
-			ExecPtr++;
-			return RTC_GetTicks() ;
 		case 0xFFFFFFDD :	// Eng
 			ExecPtr++;
 			return ENG ;
@@ -527,6 +561,18 @@ double Evalsub1(char *SRC) {	// 1st Priority
 	return 0 ;
 }
 
+/*
+double Evaldummy1(char *SRC, int c, int *num){
+	double a=.1,result;
+	while ( ('0'<=c)&&(c<='9') ) {
+		(*num) = (*num) + (double)(c-'0')*a;
+		a*=.1;
+		c=SRC[++ExecPtr];
+	}
+	result = sin( Evalsub1( SRC )*PI/180.);
+	return c+result;
+}
+*/
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
 	double result,tmp;
@@ -600,11 +646,11 @@ double Evalsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = pow( result, Evalsub2( SRC ) );
-				pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
+				CheckMathERR(&result); // Math error ?
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = pow( Evalsub2( SRC ), 1/result );
-				pt=(char *)(&result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
+				CheckMathERR(&result); // Math error ?
 				break;
 			default:
 				ExecPtr--;
