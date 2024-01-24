@@ -2860,6 +2860,8 @@ void  CB_Input( char *SRC ){
 	int		width=255,length=ExpMax-1,option=0,rev=REV_OFF;
 	char	spcchr[]={0x20,0,0};
 	char buffer2[64];
+	int aryN,aryS;
+	char *StrFnPtr;
 
 	KeyRecover();
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
@@ -3012,28 +3014,29 @@ void  CB_Input( char *SRC ){
 				DefaultValue.real = Yfct ;
 				flag=1;
 		} else if ( c == 0xFFFFFFF0 ) {	// GraphY
-			reg=defaultGraphAry;
+			reg =defaultGraphAry;
+			aryN=defaultGraphAryN;
+			aryS=defaultGraphArySize;
 			goto strj;
 		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x3F ) {	// Str 1-20
-			reg=defaultStrAry;
+			reg =defaultStrAry;
+			aryN=defaultStrAryN;
+			aryS=defaultStrArySize;
 		  strj:
 			ExecPtr+=2;
-			if ( MatAry[reg].SizeA == 0 ) { 	//	CB_Error(MemoryERR); return; }	// Memory error
-				DimMatrixSub( reg, 8, defaultStrAryN+1-MatBase, defaultStrArySize, MatBase );	// byte matrix
-			}
-			dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-			base = MatAry[reg].Base;
-			if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-			dimB=1;
+			StrFnPtr = GetStrYFnPtr( SRC, reg, aryN+1-MatBase, aryS );
+			if ( ErrorNo ) return ;			// error
 			flag=3;
 			ExecPtr=bptr;
 		} else
 		if ( c == 0x1B ) {	// fn
 			reg=defaultFnAry;
+			aryN=defaultFnAryN;
+			aryS=defaultFnArySize;
 			goto strj;
 		} else
 		if ( c == 0x41 ) {	// DATE
@@ -3110,11 +3113,8 @@ void  CB_Input( char *SRC ){
 			CB_StorStr( SRC );
 			break;
 		case 3:	// ?$Mat  ?Str1-20
-			MatAryC=MatrixPtr( reg, dimA, dimB );
-			OpcodeStringToAsciiString(buffer, MatAryC, 255);
-			CB_CurrentStr=MatAryC;
-//			CB_Print(CursorX, CursorY, (unsigned char*)buffer);
-//			Scrl_Y();
+			CB_CurrentStr=buffer;
+			OpcodeStringToAsciiString(buffer, StrFnPtr, 255);
 			if ( width > MatAry[reg].SizeB-1 ) width=MatAry[reg].SizeB-1;
 			key=InputStr( CursorX, CursorY, width,  CB_CurrentStr, length, spcchr, rev);
 			ErrorNo=0; // error cancel
@@ -3140,15 +3140,25 @@ void  CB_Input( char *SRC ){
 }
 //----------------------------------------------------------------------------------------------
 int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

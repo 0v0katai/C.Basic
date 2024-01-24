@@ -1526,6 +1526,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 											ProgNo=0;
 											ExecPtr=0;
 											stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
+											if ( ( stat==-7 ) && ( ProgEntryN <= 1 ) ) DebugMode=0;
 										}
 										SaveConfig();
 										filebase = ProgfileAdrs[ProgNo];
@@ -2114,7 +2115,7 @@ int CB_BreakStop() {
 	if ( dbgmode  ) key=EditRun(2);	// Program listing & edit
 
 	if ( ( dbgmode == 0 ) ||  ( key == KEY_CTRL_EXIT ) ) { 
-		if ( ProgEntryN == 0 ) DebugMode=0;
+		if ( ProgEntryN <= 1 ) DebugMode=0;
 		if ( BreakPtr != -7 ) BreakPtr=-999;
 		r = BreakPtr;
 	}
