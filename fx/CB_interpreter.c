@@ -1983,14 +1983,17 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0xFFFFFFE1:	// Rect
 						CB_Rect(SRC);
 						dspflag=0;
+						UseGraphic=99;
 						break;
 					case 0xFFFFFFE2:	// FillRect
 						CB_FillRect(SRC);
 						dspflag=0;
+						UseGraphic=99;
 						break;
 					case 0xFFFFFFF0:	// DotShape(
 						CB_DotShape(SRC);
 						dspflag=0;
+						UseGraphic=99;
 						break;
 					case 0xFFFFFF94:	// RclPict
 						CB_RclPict(SRC);
@@ -3162,10 +3165,12 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 	reg2=c-'A';
 	ExecPtr++;
 	
+	if ( ( startx > endx ) || ( starty > endy ) ) { dimA=0; dimB=0; startx=0; starty=0; goto dottret; }
+
 	dimA=endx-startx+1;
 	dimB=endy-starty+1;
 	DimMatrixSub( reg2, ElementSize, dimA, dimB ) ;
-	if ( ErrorNo==NotEnoughMemoryERR )  return ; 	// Not enough memory error
+	if ( ErrorNo )  return ; 	// error
 	
 	px1=startx;
 	py1=starty;
@@ -3173,8 +3178,6 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 	py2=endy;
 	x=0;
 	y=0;
-
-	if ( ( startx > endx ) || ( starty > endy ) ) { dimA=0; dimB=0; goto dottret; }
 
 	if ( reg >= 0 ) {
 		switch ( ElementSize ) {
@@ -3246,8 +3249,8 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 		}
 	}
 
-	dottret:
 	startx++; starty++;
+	dottret:
 	REGINT[23+32]=startx;	// regint x
 	REGINT[24+32]=starty;	// regint y
 	regintX=dimA;			// regint X

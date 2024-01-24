@@ -30,6 +30,7 @@ int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
 	double	*dptr;
 	int i;
 	int matsize=dimA*dimB*ElementSize;
+	if ( ( dimA<1 ) || ( dimB<1 ) ) { CB_Error(ArgumentERR); return ErrorNo; }	// Argument error
 	
 	if ( ( MatAry[reg] != NULL ) && ( MatAryMaxbyte[reg] >= matsize ) ) { // already exist
 		dptr = MatAry[reg] ;						// Matrix array ptr*
@@ -39,7 +40,7 @@ int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
 	} else {
 		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
 		dptr = malloc( matsize );
-		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
+		if( dptr == NULL ) { CB_Error(NotEnoughMemoryERR); return ErrorNo; }	// Not enough memory error
 		MatArySizeA[reg]=dimA;						// Matrix array size
 		MatArySizeB[reg]=dimB;						// Matrix array size
 		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize

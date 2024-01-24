@@ -20,7 +20,10 @@
 #include "CB_error.h"
 #include "CB_setup.h"
 
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------
+int KeyRepeatFirstCount=20;		// pointer to repeat time of first repeat (20:default)
+int KeyRepeatNextCount = 5;		// pointer to repeat time of second repeat( 5:default)
+
 int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
@@ -32,7 +35,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.87a" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.87b" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -505,6 +508,9 @@ void SetFactor(){
 }
 
 //-----------------------------------------------------------------------------
+void SetVarDsp(int VarMode) {
+	if ( VarMode ) Print((unsigned char*)"(int%)"); else Print((unsigned char*)"(double)");
+}
 void InitVar( double value, int VarMode, int vartop ) {
 	char buffer[32];
 	unsigned int key;
@@ -518,7 +524,7 @@ void InitVar( double value, int VarMode, int vartop ) {
 		locate( 3,5); Print((unsigned char *)"value:           ");
 		sprintG(buffer,value,  10,LEFT_ALIGN); locate( 9, 5); Print((unsigned char*)buffer);
 		locate(1,8); PrintLine((unsigned char *)" ",21);
-		locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
+		locate(1,8); SetVarDsp(VarMode);
 //		Bdisp_PutDisp_DD();
 
 		GetKey( &key );
@@ -550,6 +556,11 @@ void InitVar( double value, int VarMode, int vartop ) {
 	}
 }
 
+void SetVarSel(int VarMode, int y) {
+	Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+	locate(1,8); PrintLine((unsigned char *)" ",21);
+	locate(1,8); SetVarDsp(VarMode);
+}
 
 int SetVar(int select){		// ----------- Set Variable
 	char buffer[32];
@@ -576,20 +587,30 @@ int SetVar(int select){		// ----------- Set Variable
 		if ( (opNum -seltop) < 6 ) seltop = opNum -6; 
 		for ( i=0; i<7; i++ ) {
 			buffer[0]='A'+seltop+i+small;
-			buffer[1]='=';
-			buffer[2]='\0';
+			if ( VarMode ) {
+				buffer[1]='%';
+				buffer[2]='=';
+				buffer[3]='\0';
+				
+			} else {
+				buffer[1]='=';
+				buffer[2]='\0';
+			}
 			locate(1,1+i); Print((unsigned char*)buffer);
-			if ( VarMode )
-				sprintG(buffer, (double)REGINT[seltop+i+small], 19,LEFT_ALIGN);
-			else
+			if ( VarMode ) {
+				locate(4 ,1+i);
+				sprintG(buffer, (double)REGINT[seltop+i+small], 18,LEFT_ALIGN);
+			} else {
+				locate(3 ,1+i);
 				sprintG(buffer, REG[seltop+i+small], 19,LEFT_ALIGN);
-			locate(3,1+i); Print((unsigned char*)buffer);
+			}
+			Print((unsigned char*)buffer);
 		}
 		Fkey_dispN( 0, "A<>a");
 		Fkey_dispN( 1, "Init");
 		if ( VarMode ) Fkey_dispN_aA( 2, "D<>I"); else Fkey_dispN_Aa( 2, "D<>I");
 
-		locate(12,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
+		locate(12,8); SetVarDsp(VarMode);
 
 		y = (select-seltop) ;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
@@ -623,14 +644,12 @@ int SetVar(int select){		// ----------- Set Variable
 				break;
 				
 			case KEY_CTRL_RIGHT:
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				locate(1,8); PrintLine((unsigned char *)" ",21);
-				locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
+				SetVarSel(VarMode,y);
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						REGINT[select+small]= InputNumD_full( 3, y, 19, (double)REGINT[select+small]);
+						REGINT[select+small]= InputNumD_full( 4, y, 18, (double)REGINT[select+small]);
 					else
 						REG[select+small]   = InputNumD_full( 3, y, 19, REG[select+small]);
 				} else {
@@ -640,14 +659,12 @@ int SetVar(int select){		// ----------- Set Variable
 				
 			case KEY_CTRL_LEFT:
 				if (selectreplay<0) break;
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				locate(1,8); PrintLine((unsigned char *)" ",21);
-				locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
+				SetVarSel(VarMode,y);
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						REGINT[select+small]= InputNumD_replay( 3, y, 19, (double)REGINT[select+small]);
+						REGINT[select+small]= InputNumD_replay( 4, y, 18, (double)REGINT[select+small]);
 					else
 						REG[select+small]= InputNumD_replay( 3, y, 19, REG[select+small]);
 				} else {
@@ -659,14 +676,12 @@ int SetVar(int select){		// ----------- Set Variable
 		}
 		key=MathKey( key );
 		if ( key ) {
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				locate(1,8); PrintLine((unsigned char *)" ",21);
-				locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
+				SetVarSel(VarMode,y);
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						REGINT[select+small]= InputNumD_Char( 3, y, 19, (double)REGINT[select+small], key);
+						REGINT[select+small]= InputNumD_Char( 4, y, 18, (double)REGINT[select+small], key);
 					else
 						REG[select+small]   = InputNumD_Char( 3, y, 19, REG[select+small], key);
 				} else {
@@ -708,7 +723,7 @@ int SetupG(int select){		// ----------- Setup
 	int	cont=1;
 	int scrl=select-6;
 	int y;
-	int listmax=13;
+	int listmax=15;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -767,17 +782,27 @@ int SetupG(int select){		// ----------- Setup
 			locate( 1,11-scrl); Print((unsigned char*)"TimeDsp     :");
 			locate(14,11-scrl); Print((unsigned char*)onoff[TimeDsp]);
 		}
-		if ( ( scrl >=5 ) && (12-scrl > 0 ) ){
-			locate( 1,12-scrl); Print((unsigned char*)"Matrix  mode:");
-			locate(14,12-scrl); Print((unsigned char*)Matmode[MatXYmode]);
+		if ( ( scrl >=5 ) && (14-scrl > 0 ) ){
+			locate( 1,12-scrl); Print((unsigned char*)"Key 1st time:");
+			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
+			locate(14,12-scrl); Print((unsigned char*)buffer);
 		}
-		if ( ( scrl >=6 ) && (13-scrl > 0 ) ){
-			locate( 1,13-scrl); Print((unsigned char*)"Pict    mode:");
-			locate(14,13-scrl); Print((unsigned char*)Pictmode[PictMode]);
+		if ( ( scrl >=6 ) && (15-scrl > 0 ) ){
+			locate( 1,13-scrl); Print((unsigned char*)"Key Rep time:");
+			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
+			locate(14,13-scrl); Print((unsigned char*)buffer);
 		}
-		if ( ( scrl >=7 ) && (14-scrl > 0 ) ){
-			locate( 1,14-scrl); Print((unsigned char*)"Execute mode:");
-			locate(14,14-scrl); Print((unsigned char*)mode[CB_INTDefault]);
+		if ( ( scrl >=7 ) && (12-scrl > 0 ) ){
+			locate( 1,14-scrl); Print((unsigned char*)"Matrix  mode:");
+			locate(14,14-scrl); Print((unsigned char*)Matmode[MatXYmode]);
+		}
+		if ( ( scrl >=8 ) && (13-scrl > 0 ) ){
+			locate( 1,15-scrl); Print((unsigned char*)"Pict    mode:");
+			locate(14,15-scrl); Print((unsigned char*)Pictmode[PictMode]);
+		}
+		if ( ( scrl >=9 ) && (16-scrl > 0 ) ){
+			locate( 1,16-scrl); Print((unsigned char*)"Execute mode:");
+			locate(14,16-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 
 		y = select-scrl;
@@ -816,15 +841,21 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispR( 2, "Nrm ");
 				Fkey_dispN( 3, "Eng ");
 				break;
-			case 11: // Mat mode
+			case 11: // Key Repeat mode
+			case 12: // Key Repeat mode
+				Fkey_DISPN( 0," +");
+				Fkey_DISPN( 1," -");
+				Fkey_dispN( 3, "Init");
+				break;
+			case 13: // Mat mode
 				Fkey_dispN( 0, "m.n ");
 				Fkey_dispN( 1, "X,Y ");
 				break;
-			case 12: // Mat mode
+			case 14: // Mat mode
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
-			case 13: // Execute Mode
+			case 15: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -892,13 +923,21 @@ int SetupG(int select){		// ----------- Setup
 					case 10: // TimeDsp
 						TimeDsp = 1 ; // on
 						break;
-					case 11: // Matrix mode
+					case 11: // Key Repeat First Count *ms
+						KeyRepeatFirstCount += 1 ;
+						if ( KeyRepeatFirstCount > 40 ) KeyRepeatFirstCount=40;
+						break;
+					case 12: // Key Repeat Next Count *ms
+						KeyRepeatNextCount += 1 ;
+						if ( KeyRepeatNextCount > 20 ) KeyRepeatNextCount=20;
+						break;
+					case 13: // Matrix mode
 						MatXYmode = 0 ; // m,n
 						break;
-					case 12: // Pict mode
+					case 14: // Pict mode
 						PictMode = 0 ; // Memory mode
 						break;
-					case 13: // CB mode
+					case 15: // CB mode
 						CB_INTDefault = 0 ; // normal
 						break;
 					default:
@@ -942,13 +981,21 @@ int SetupG(int select){		// ----------- Setup
 					case 10: // TimeDsp
 						TimeDsp = 0 ; // off
 						break;
-					case 11: // Matrix mode
+					case 11: // Key Repeat First Count *ms
+						KeyRepeatFirstCount -= 1 ;
+						if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=1;
+						break;
+					case 12: // Key Repeat Next Count *ms
+						KeyRepeatNextCount -= 1 ;
+						if ( KeyRepeatNextCount < 1 ) KeyRepeatNextCount=1;
+						break;
+					case 13: // Matrix mode
 						MatXYmode = 1 ; // x,y
 						break;
-					case 12: // Pict mode
+					case 14: // Pict mode
 						PictMode = 1 ; // heap mode
 						break;
-					case 13: // CB mode
+					case 15: // CB mode
 						CB_INTDefault = 1 ; // int
 						break;
 					default:
@@ -981,6 +1028,12 @@ int SetupG(int select){		// ----------- Setup
 					case 8: // Display
 						ENG=1-ENG;
 						break;
+					case 11: // Key Repeat First Count *ms
+						KeyRepeatFirstCount = 20 ;
+						break;
+					case 12: // Key Repeat Next Count *ms
+						KeyRepeatNextCount  = 5 ;
+						break;
 					default:
 						break;
 				}
@@ -991,6 +1044,7 @@ int SetupG(int select){		// ----------- Setup
 			default:
 				break;
 		}
+		Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 	}
 	SaveConfig();
 	return select;
