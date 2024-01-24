@@ -133,7 +133,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
-				case 0: (*code)=0xF942;return;	// TIME
+				case 0: (*code)=0xF941;return;	// DATE
 			} break;
 
 		case CMD_SHIFT:		//	-----------------------------------------------------------SHIFT_F3
@@ -211,7 +211,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 				case 0: CommandType=CMD_SETUP_GRID;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_DRAW;CommandPage=0;break;
 				case 2: CommandType=CMD_SETUP_SWIN;CommandPage=0;break;
-				case 3: (*code)=0xF7FA;return;	// RefreshTime
+				case 3: (*code)=0xF941;return;	// DATE
 			} break;
 		case CMD_SETUP_ANGL:
 			switch ( CommandPage ) {

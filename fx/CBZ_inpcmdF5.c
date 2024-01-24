@@ -103,7 +103,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
-				case 0: (*code)=0xF7F8;return;	// RefreshCtrl
+				case 0: (*code)=0xF7FE;return;	// BackLight
 			} break;
 
 		case CMD_SHIFT:		//	-----------------------------------------------------------SHIFT_F5

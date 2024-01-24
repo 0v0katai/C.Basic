@@ -119,7 +119,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
-				case 0: (*code)=0xF7FE;return;	// BackLight
+				case 0: (*code)=0xF942;return;	// TIME
 			} break;
 
 		case CMD_SHIFT:		//	-----------------------------------------------------------SHIFT_F4
@@ -182,7 +182,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_SETUP_AXES;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_DERV;CommandPage=0;break;
-				case 3: (*code)=0xF7FA;return;	// RefreshTime
+				case 3: (*code)=0xF942;return;	// TIME
 			} break;
 		case CMD_SETUP_DISP:
 			switch ( CommandPage ) {

@@ -2729,8 +2729,8 @@ int CB_SigmaInt( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte

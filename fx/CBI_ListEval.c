@@ -276,7 +276,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return Cellsum( reg, x, y );
 	
 				case 0x5F :				// 1/128 Ticks
-					return RTC_GetTicks()-CB_TicksAdjust;	// 
+					return CB_Ticks( SRC );	// 
 						
 				case 0xFFFFFFF0 :		// GraphY str
 					return CBint_GraphYStr( SRC, 1 );
@@ -398,7 +398,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 			return EvalFxInt( &fNotint, ListEvalIntsub5( SRC ) ) ; 
 
 		case '%' :	// 1/128 Ticks
-			return RTC_GetTicks()-CB_TicksAdjust;	// 
+			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
 			return CB_Peek( SRC, ListEvalIntsub1( SRC ) );	// 
 

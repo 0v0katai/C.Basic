@@ -32,7 +32,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.55\xE6\x41";
+const char VerMSG[]="C.Basic  v1.56\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -858,10 +858,10 @@ int SelectNum4( int n ) {		//
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 3,3); Print((unsigned char *)"RefrshTime n/128s");
-	locate( 6,5); Print((unsigned char *)"[1~128]:");
+	locate( 4,5); Print((unsigned char *)"[0=\x7F\x53,1~128]:");
 	while (1) {
-		n=InputNumD(14, 5, 3, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
-		if ( (1<=n)&&(n<=128) ) break;
+		n=InputNumD(16, 5, 3, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		if ( (0<=n)&&(n<=128) ) break;
 		n=n0;
 	}
 	return n ; // ok
