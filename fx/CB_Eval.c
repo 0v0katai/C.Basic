@@ -104,12 +104,6 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int RegVar( int c ) {
-	if ( ( 'A'<=c )&&( c<='z' ) )  return c-'A' ;
-	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
-	return -1;	// no variable
-}
-//-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
 	if ( ( 'A'<=c )&&( c<='z' ) )  return LocalDbl[c-'A'][0] ;
@@ -184,14 +178,17 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 
 int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 	int c;
-//	if ( ( SRC[ExecPtr] != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return 0 ; }	// Syntax error
-//	ExecPtr+=2;
 	if ( ( SRC[ExecPtr] == 0x7F ) && ( SRC[ExecPtr+1] == 0x40 ) ) ExecPtr+=2;	// skip 'Mat '
 	c =SRC[ExecPtr];
-	*reg=RegVar(c); if ( *reg>=0 ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
+		*reg=c-'A';
 		if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
-	} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
+	} else {
+		*reg=RegVarAliasEx(SRC); if ( *reg>=0 ) {
+			if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
+		} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
+	}
 	return 1;
 }
 
@@ -226,6 +223,13 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 etc.
 }
 
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+int RegVar( int c ) {
+	if ( ( 'A'<=c )&&( c<='z' ) )  return c-'A' ;
+	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
+	return -1;
+}
+
 int ListRegVar( char *SRC, int c ) {	// return reg no
 	int	reg=Eval_atod( SRC, c );
 	if ( ( reg<1 ) || ( 26<reg ) ) { CB_Error(DimensionERR); return -1; }	// Dimension error
@@ -391,8 +395,8 @@ void CheckMathERR( double *result ) {
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4f( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4f( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
@@ -490,13 +494,14 @@ double Evalsub1(char *SRC) {	// 1st Priority
 	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
 		ExecPtr--; return Eval_atof( SRC , c );
 	}
-	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) { reg=c-0xFFFFFFCD+26 ; goto regj; }	// <r> or Theta
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
 			c = SRC[ExecPtr++];
 			if ( c == 0x40 ) {	// Mat A[a,b]
-				c=SRC[ExecPtr]; reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+				c=SRC[ExecPtr];
+				if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+				else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 				Matrix1:	
 				if ( SRC[ExecPtr] == '[' ) {
 				Matrix:	
@@ -509,9 +514,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					
 			} else if ( c == 0x51 ) {	// List 1~26
 				c = SRC[ExecPtr];
-				reg=Eval_atod( SRC, c );
-				if ( ( reg<1 ) || ( 26<reg ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-				reg+=31;
+				reg=ListRegVar( SRC,  c );
 				goto Matrix1;
 					
 			} else if ( c == 0x3A ) {	// MOD(a,b)
@@ -859,22 +862,29 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		return result;
 	}
 	ExecPtr--;
+	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
 	CB_Error(SyntaxERR) ; // Syntax error 
 	return 0 ;
 }
 
-/*
-double Evaldummy1(char *SRC, int c, int *num){
-	double a=.1,result;
-	while ( ( '0'<=c )&&( c<='9' ) ) {
-		(*num) = (*num) + (double)(c-'0')*a;
-		a*=.1;
-		c=SRC[++ExecPtr];
+int RegVarAliasEx( char *SRC ) {	// 
+	int i;
+	int alias_code, org_reg;
+	int exptr=ExecPtr;
+	int c =SRC[ExecPtr++];
+	if ( ( 'A'<=c )&&( c<='z' ) )  return c-'A' ;
+	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
+	ExecPtr--;
+	ExecPtr += GetOpcodeLen( SRC, ExecPtr ,&alias_code );
+	for ( i=0; i<AliasVarMAX; i++ ) {
+		if ( AliasVarCode[i].alias==(short)alias_code ) return AliasVarCode[i].org;
+		if ( AliasVarCode[i].org<0 ) break;
 	}
-	result = sin( Evalsub1( SRC )*PI/180.);
-	return c+result;
+	ExecPtr = exptr;
+	return -1;
 }
-*/
+
+
 double DmsToDec( char *SRC, double h ) {
 	double m,s,f=1;
 	if ( h<0 ) { f=-1; h=-h; }

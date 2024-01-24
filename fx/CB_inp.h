@@ -42,6 +42,7 @@ unsigned int SelectChar( int *ContinuousSelect ) ;
 int SelectOpcode( int listselect ) ;
 int SelectOpcode5800P() ;
 
+int GetOpcodeLen( char *SRC, int ptr, int *opcode );
 int OpcodeLen( int opcode );
 int OpcodeStrlen(int c);
 int OpcodeStrLenBuf(char *SRC, int offset) ;

@@ -46,16 +46,15 @@ void CBint_Store( char *SRC ){	// ->
 	int c=SRC[ExecPtr];
 	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		reg=c-'A';
-	  regj:
 		ExecPtr++;
+	  aliasj:
 		c=SRC[ExecPtr];
 		if ( c == 0x7E ) {		// '~'
 			ExecPtr++;
-			c=SRC[ExecPtr];
-			en=RegVar(c);
+			en=RegVarAliasEx(SRC);
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				c=SRC[++ExecPtr];
+				c=SRC[ExecPtr];
 				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) LocalDbl[ i ][0] = CBint_CurrentValue; }
 				else
 				if ( c=='%' ) ExecPtr++;
@@ -77,13 +76,14 @@ void CBint_Store( char *SRC ){	// ->
 			}
 		}
 	} else
-	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) { reg=c-0xFFFFFFCD+26 ; goto regj;	// <r> or Theta
-	} else
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
-			c=SRC[ExecPtr]; reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+			c=SRC[ExecPtr];
+			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+			else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+			MatrixList:
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatIntSub( reg, CBint_CurrentValue);
@@ -101,25 +101,29 @@ void CBint_Store( char *SRC ){	// ->
 		} else if ( c == 0x5F ) {	// Ticks
 				ExecPtr+=2;
 				goto StoreTicks;
+		} else if ( c == 0x51 ) {	// List
+				ExecPtr+=2;
+				c=SRC[ExecPtr];
+				reg=ListRegVar( SRC, c );
+				goto MatrixList;
 		} else if ( c == 0x46 ) {	// ->DimZ
 				ExecPtr+=2;
 				if ( ( SRC[ExecPtr]==0x7F ) || ( SRC[ExecPtr+1]==0x51 ) ) {	// -> Dim List
 					ExecPtr+=2;
-					c=SRC[ExecPtr];
-					reg=ListRegVar( SRC, c );
 					if ( CBint_CurrentValue ) 
 							CB_ListInitsub( SRC,  &reg, CBint_CurrentValue, 0 );
-					else 	DeleteMatrix( reg );
+					else {
+						c=SRC[ExecPtr];
+						reg=ListRegVar( SRC, c );
+						if ( reg>=0 ) DeleteMatrix( reg );
+					}
 				} else {
 					if ( CBint_CurrentValue ) 
 							CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
 					else {
 						c = SRC[ExecPtr];
-						reg=RegVar(c);
-						if ( reg>=0 ) {
-							ExecPtr++;
-							DeleteMatrix( reg );
-						}
+						reg=RegVarAliasEx(SRC);
+						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				}
 		} else if ( c == 0x00 ) {	// Xmin
@@ -150,14 +154,14 @@ void CBint_Store( char *SRC ){	// ->
 		} else if ( c == 0x0C ) {	// Yfct
 				ExecPtr+=2;
 				Yfct = CBint_CurrentValue ;
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF7 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
 			ExecPtr+=2;
 			CB_PokeSubInt( SRC, CBint_CurrentValue, EvalIntsubTop( SRC ) );
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
 	} else
 	if ( c=='*' ) { ExecPtr++;
 			CB_PokeSubInt( SRC, CBint_CurrentValue, EvalIntsub1( SRC ) );
@@ -178,8 +182,11 @@ void CBint_Store( char *SRC ){	// ->
 				ExecPtr+=2;
 				Xdot = CBint_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
+	} else {
+	  exitj:
+		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto aliasj;	// variable alias
+		CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
 //-----------------------------------------------------------------------------
@@ -193,9 +200,10 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	reg=RegVar(c);
-	if ( reg>=0 ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
+		reg=c-'A';
+	  regj:
 		c=SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
@@ -218,7 +226,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( c==0x7F ) {
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -228,7 +236,10 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			CBint_CurrentValue = ReadMatrixInt( reg, dimA,dimB ) ;
 			CBint_CurrentValue --;
 			WriteMatrixInt( reg, dimA,dimB, CBint_CurrentValue ) ;
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else {
+		reg=RegVarAliasEx(SRC);	if ( reg>=0 ) goto regj;
+		{ CB_Error(SyntaxERR); return; }	// Syntax error
+	}
 
 	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
@@ -255,9 +266,10 @@ void CBint_Isz( char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	reg=RegVar(c);
-	if ( reg>=0 ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
+		reg=c-'A';
+	  regj:
 		c=SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
@@ -280,7 +292,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( c==0x7F ) {
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -290,8 +302,11 @@ void CBint_Isz( char *SRC ) { //	Isz
 			CBint_CurrentValue = ReadMatrixInt( reg, dimA,dimB ) ;
 			CBint_CurrentValue ++;
 			WriteMatrixInt( reg, dimA,dimB, CBint_CurrentValue ) ;
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
-
+	} else {
+		reg=RegVarAliasEx(SRC);	if ( reg>=0 ) goto regj;
+		{ CB_Error(SyntaxERR); return; }	// Syntax error
+	}
+	
 	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		ExecPtr++;

@@ -326,3 +326,17 @@ void CB_DotLife( char *SRC ) ;
 void CB_FkeyMenu( char *SRC) ;
 void CB_PopUpWin( char *SRC );	//
 void CB_Menu( char *SRC, short *StackGotoAdrs) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
+
+
+//-----------------------------------------------------------------------------
+typedef struct {		// 4 bytes
+	short	org;
+	short	alias;
+} ALIAS_VAR;
+
+#define AliasVarMAX 10
+extern	ALIAS_VAR	AliasVarCode[AliasVarMAX];
+
+void CB_AliasVarClr();
+int CB_GetAliasRegVar( char *SRC ) ;	// AliasVar ?
+void CB_AliasVar( char *SRC ) ;	// AliasVar A=ƒ¿

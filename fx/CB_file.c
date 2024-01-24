@@ -1891,10 +1891,8 @@ void CB_Local( char *SRC ) {
 	int c=1,i,reg;
 	i=0;
 	while ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
-		c=SRC[ExecPtr];
-		reg=RegVar(c);
+		reg=RegVarAliasEx(SRC);
 		if ( reg>=0 ) {
-			ExecPtr++;
 			ProgLocalVar[ProgEntryN-1][i] = reg;	// local var set
 		} 
 		i++;
@@ -2063,8 +2061,10 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 			case 0xFFFFFFF7:	// 
 				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
 				break;
-			case 0x7F:	// 
 			case 0xFFFFFFF9:	// 
+				if ( SRC[ExecPtr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
+				break;
+			case 0x7F:	// 
 			case 0xFFFFFFE5:	// 
 			case 0xFFFFFFE6:	// 
 			case 0xFFFFFFE7:	// 
@@ -2082,10 +2082,10 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 //---------------------------------------------------------------------------------------------- align dummy
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

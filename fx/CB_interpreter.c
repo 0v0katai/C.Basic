@@ -611,6 +611,10 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=1;
 						CB_StrDMS(SRC);
 						break;
+					case 0x0F:	// AliasVar
+						CB_AliasVar(SRC);
+						dspflag=0;
+						break;
 					case 0x0B:	// EngOn
 						ENG=1;
 						if ( SRC[ExecPtr]=='3' ) { ExecPtr++; ENG=3; } // 3 digit separate
@@ -811,6 +815,7 @@ int CB_interpreter( char *SRC ) {
 	Bdisp_PutDisp_DD_DrawBusy();
 	KeyRecover(); 
 	Argc = 0;	// 
+	CB_AliasVarClr();
 	stat = CB_interpreter_sub( SRC );
 	KeyRecover(); 
 //	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
@@ -904,8 +909,7 @@ remloop:
 		if ( c==0xFFFFFFF9 ) {
 			c=SRC[ExecPtr++];
 			if ( c==0x3F ) {	// Str
-				c=SRC[ExecPtr++];
-				reg=RegVar(c);
+				reg=RegVarAliasEx(SRC);
 				if ( reg>=0 ) {
 					defaultStrAry= reg;
 					if ( SRC[ExecPtr] == ',') {
@@ -922,8 +926,7 @@ remloop:
 		if ( c==0x7F ) {
 			c=SRC[ExecPtr++];
 			if ( c==0xFFFFFFF0 ) {	// Graph
-				c=SRC[ExecPtr++];
-				reg=RegVar(c);
+				reg=RegVarAliasEx(SRC);
 				if ( reg>=0 ) {
 					defaultGraphAry= reg;
 					if ( SRC[ExecPtr] == ',') {
@@ -1195,15 +1198,15 @@ int Search_Next( char *SRC ){
 }
 
 void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
-	int c,reg;
+	int c,reg,expbuf;
 	if (CB_INT) {		//					------------ INT mode
 		CBint_CurrentValue = EvalIntsubTop( SRC );
 		c=SRC[ExecPtr];
 		if ( c == 0x0E ) {	// ->
 			ExecPtr++;
-			c=SRC[ExecPtr];
-			reg=RegVar(c);
-			if ( reg>=0 ) {
+			expbuf=ExecPtr;
+			reg=RegVarAliasEx(SRC);
+			if ( reg>=0 ) { ExecPtr=expbuf;
 				StackFor->Var[StackFor->Ptr]=LocalInt[reg];
 				CBint_Store(SRC);
 			} else { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -1229,9 +1232,9 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		c=SRC[ExecPtr];
 		if ( c == 0x0E ) {	// ->
 			ExecPtr++;
-			c=SRC[ExecPtr];
-			reg=RegVar(c);
-			if ( reg>=0 ) {
+			expbuf=ExecPtr;
+			reg=RegVarAliasEx(SRC);
+			if ( reg>=0 ) { ExecPtr=expbuf;
 				StackFor->Var[StackFor->Ptr]=(int*)LocalDbl[reg];
 				CB_Store(SRC);
 			} else { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -1593,9 +1596,10 @@ void CB_Dsz( char *SRC ) { //	Dsz
 	int*	MatAryI;
 	if (CB_INT) { CBint_Dsz(SRC) ; return; }
 	c=SRC[ExecPtr];
-	reg=RegVar(c);
-	if ( reg>=0 ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
+		reg=c-'A';
+	  regj:
 		c=SRC[ExecPtr];
 		if ( c=='%' ) {
 			ExecPtr++;
@@ -1618,7 +1622,7 @@ void CB_Dsz( char *SRC ) { //	Dsz
 			CB_CurrentValue = LocalDbl[reg][0] ;
 		}
 	} else 
-	if ( c==0x7F ) {
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -1628,7 +1632,10 @@ void CB_Dsz( char *SRC ) { //	Dsz
 			CB_CurrentValue = ReadMatrix( reg, dimA,dimB ) ;
 			CB_CurrentValue --;
 			WriteMatrix( reg, dimA,dimB, CB_CurrentValue ) ;
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else {
+		reg=RegVarAliasEx(SRC);	if ( reg>=0 ) goto regj;
+		{ CB_Error(SyntaxERR); return; }	// Syntax error
+	}
 
 	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
@@ -1656,9 +1663,10 @@ void CB_Isz( char *SRC ) { //	Isz
 	int*	MatAryI;
 	if (CB_INT) { CBint_Isz(SRC) ; return; }
 	c=SRC[ExecPtr];
-	reg=RegVar(c);
-	if ( reg>=0 ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
+		reg=c-'A';
+	  regj:
 		c=SRC[ExecPtr];
 		if ( c=='%' ) {
 			ExecPtr++;
@@ -1681,7 +1689,7 @@ void CB_Isz( char *SRC ) { //	Isz
 			CB_CurrentValue = LocalDbl[reg][0] ;
 		}
 	} else 
-	if ( c==0x7F ) {
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -1691,7 +1699,10 @@ void CB_Isz( char *SRC ) { //	Isz
 			CB_CurrentValue = ReadMatrix( reg, dimA,dimB ) ;
 			CB_CurrentValue ++;
 			WriteMatrix( reg, dimA,dimB, CB_CurrentValue ) ;
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else {
+		reg=RegVarAliasEx(SRC);	if ( reg>=0 ) goto regj;
+		{ CB_Error(SyntaxERR); return; }	// Syntax error
+	}
 
 	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
@@ -1722,16 +1733,15 @@ void CB_Store( char *SRC ){	// ->
 	int c=SRC[ExecPtr];
 	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		reg=c-'A';
-	  regj:
 		ExecPtr++;
+	  aliasj:
 		c=SRC[ExecPtr];
 		if ( c == 0x7E ) {		// '~'
 			ExecPtr++;
-			c=SRC[ExecPtr];
-			en=RegVar(c);
+			en=RegVarAliasEx(SRC);
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				c=SRC[++ExecPtr];
+				c=SRC[ExecPtr];
 				if ( c=='%' ) { ExecPtr++;  for ( i=reg; i<=en; i++) LocalInt[ i ][0] = CB_CurrentValue; }
 				else
 				if ( c=='#' ) ExecPtr++;
@@ -1753,13 +1763,14 @@ void CB_Store( char *SRC ){	// ->
 			}
 		}
 	} else
-	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) { reg=c-0xFFFFFFCD+26 ; goto regj;	// <r> or Theta
-	} else
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
-			c=SRC[ExecPtr]; reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+			c=SRC[ExecPtr];
+			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+			else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+			MatrixList:
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatSub( reg, CB_CurrentValue);
@@ -1777,25 +1788,28 @@ void CB_Store( char *SRC ){	// ->
 		} else if ( c == 0x5F ) {	// Ticks
 				ExecPtr+=2;
 				goto StoreTicks;
+		} else if ( c == 0x51 ) {	// List
+				ExecPtr+=2;
+				c=SRC[ExecPtr];
+				reg=ListRegVar( SRC, c );
+				goto MatrixList;
 		} else if ( c == 0x46 ) {	// -> Dim Z
 				ExecPtr+=2;
 				if ( ( SRC[ExecPtr]==0x7F ) || ( SRC[ExecPtr+1]==0x51 ) ) {	// -> Dim List
 					ExecPtr+=2;
-					c=SRC[ExecPtr];
-					reg=ListRegVar( SRC, c );
 					if ( CB_CurrentValue ) 
 							CB_ListInitsub( SRC, &reg, CB_CurrentValue, 0 );
-					else 	DeleteMatrix( reg );
+					else {
+						c=SRC[ExecPtr];
+						reg=ListRegVar( SRC, c );
+						if ( reg>=0 ) DeleteMatrix( reg );
+					}
 				} else {
 					if ( CB_CurrentValue ) 
 							CB_MatrixInitsubNoMat( SRC, &reg, CB_CurrentValue, 1, 0 );
 					else {
-						c = SRC[ExecPtr];
-						reg=RegVar(c);
-						if ( reg>=0 ) {
-							ExecPtr++;
-							DeleteMatrix( reg );
-						}
+						reg=RegVarAliasEx(SRC);
+						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				}
 		} else if ( c == 0x00 ) {	// Xmin
@@ -1826,14 +1840,14 @@ void CB_Store( char *SRC ){	// ->
 		} else if ( c == 0x0C ) {	// Yfct
 				ExecPtr+=2;
 				Yfct = CB_CurrentValue ;
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF7 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
 			ExecPtr+=2;
 			CB_PokeSub( SRC, CB_CurrentValue, EvalsubTop( SRC ) );
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
 	} else
 	if ( c=='*' ) { ExecPtr++;
 			CB_PokeSub( SRC, CB_CurrentValue, Evalsub1( SRC ) );
@@ -1847,12 +1861,6 @@ void CB_Store( char *SRC ){	// ->
 		CB_TicksStart+=(i-1);	// 
 		skip_count=0;
 	} else
-	if ( c == 0xFFFFFFCD ) {	// <r>
-		reg_r = CB_CurrentValue;
-	} else
-	if ( c == 0xFFFFFFCE ) {	// Theta
-		reg_Theta = CB_CurrentValue;
-	} else
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
@@ -1860,8 +1868,11 @@ void CB_Store( char *SRC ){	// ->
 				ExecPtr+=2;
 				Xdot = CB_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
+	} else { 
+	  exitj:
+		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto aliasj;	// variable alias
+		CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1892,6 +1903,7 @@ int  CB_Input( char *SRC ){
 		if ( ( c==2 ) || ( c==0x3F ) || ( c==0x41 ) || ( c==0x42 ) ) flag=2;
 	} else 
 	if ( reg>=0 ) {
+	  regj:
 		flag=1;
 		c=SRC[ExecPtr+1];
 		if ( CB_INT ) {
@@ -1973,7 +1985,7 @@ int  CB_Input( char *SRC ){
 			dimB=1;
 			flag=3;
 			ExecPtr=bptr;
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
@@ -2000,7 +2012,7 @@ int  CB_Input( char *SRC ){
 		if ( c == 0x21 ) {	// Xdot
 				DefaultValue = Xdot ;
 				flag=1;
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		} else goto exitj;
 	} else
 	if ( c=='$' ) {
 		ExecPtr++;
@@ -2010,7 +2022,10 @@ int  CB_Input( char *SRC ){
 		if ( MatAry[reg].ElementSize != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
 		flag=3;
 		ExecPtr=bptr;
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else {
+	  exitj:
+		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
+		CB_Error(SyntaxERR); return; }	// Syntax error
 
 	switch ( flag ) {
 		case 0:	// ? -> A value
@@ -2266,6 +2281,47 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 	CB_Goto( SRC, &(*StackGotoAdrs) );	// Goto Sub label
 	
 }
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+ALIAS_VAR	AliasVarCode[AliasVarMAX];
+
+void CB_AliasVarClr(){
+	int i;
+	for ( i=0; i<AliasVarMAX; i++ ) AliasVarCode[i].org = -1 ;
+}
+
+void CB_AliasVar( char *SRC ) {	// AliasVar A=ƒ¿
+	int c,i,reg,len;
+	int alias_code, org_reg;
+	
+	c=SRC[ExecPtr];
+	reg=RegVar(c);
+	org_reg=reg;
+	if ( reg>=0 ) {
+		ExecPtr++;
+		c=SRC[ExecPtr];
+		if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		ExecPtr++;
+		c=SRC[ExecPtr];
+		i=RegVar(c); if ( i>=0 ) { CB_Error(ArgumentERR); return; }  // Argument error	 ( = default built-in variable )
+		len = GetOpcodeLen( SRC, ExecPtr ,&alias_code );
+		if ( len == 1 ) alias_code &=0xFF;
+		ExecPtr += len;
+		for ( i=0; i<AliasVarMAX; i++ ) {
+			if ( AliasVarCode[i].org<0 ) break;
+			if ( AliasVarCode[i].alias==(short)alias_code ) {
+				if ( AliasVarCode[i].org==org_reg ) return; 	// same : alias cancel
+				break;
+			}
+		}
+		if ( i >= AliasVarMAX ) { CB_Error(TooMuchData); return; }
+		AliasVarCode[i].org  =org_reg;
+		AliasVarCode[i].alias=alias_code;
+	}
+}
+
+
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

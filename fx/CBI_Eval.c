@@ -363,13 +363,14 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	if ( ( '0'<=c )&&( c<='9' ) ) {
 		ExecPtr--; return  Eval_atod( SRC, c );
 	}
-	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) { reg=c-0xFFFFFFCD+26 ; goto regj; }	// <r> or Theta
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
 			c = SRC[ExecPtr++];
 			if ( c == 0x40 ) {	// Mat A[a,b]
-				c=SRC[ExecPtr]; reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+				c=SRC[ExecPtr];
+				if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+				else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 				Matrix1:
 				if ( SRC[ExecPtr] == '[' ) {
 				Matrix:
@@ -382,9 +383,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 
 			} else if ( c == 0x51 ) {	// List 1
 				c = SRC[ExecPtr];
-				reg=Eval_atod( SRC, c );
-				if ( ( reg<1 ) || ( 26<reg ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-				reg+=31;
+				reg=ListRegVar( SRC,  c );
 				goto Matrix1;
 					
 			} else if ( c == 0x3A ) {	// MOD(a,b)
@@ -601,6 +600,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		return result;
 	}
 	ExecPtr--;
+	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
 	CB_Error(SyntaxERR) ; // Syntax error 
 	return 0 ;
 }
