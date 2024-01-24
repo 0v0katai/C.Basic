@@ -345,8 +345,20 @@ const short oplistOPTN[]={
 		0xA6,	// Int
 		0xB6,	// frac
 		0xAB,	// !
+		0x7FB0,	// And
+		0x7FB1,	// Or
+		0x7FB3,	// Not
+		0x7FB4,	// Xor
+		
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
+		
+		0x7F3A,	// MOD(
+		0x7F46,	// Dim
+		0x7F40,	// Mat	
+		0x7F41,	// Trn 
+		0x7F47,	// Fill(
+
 //		0x81,	// sin
 //		0x82,	// cos
 //		0x83,	// tan
@@ -356,6 +368,7 @@ const short oplistOPTN[]={
 //		0x85,	// ln
 //		0x86,	// sqrt
 //		0x95,	// log
+
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
@@ -365,16 +378,6 @@ const short oplistOPTN[]={
 		0xB1,	// arcsinh
 		0xB2,	// arccosh
 		0xB3,	// arctanh
-
-		0x7F3A,	// MOD(
-		0x7F46,	// Dim
-		0x7F40,	// Mat	
-		0x7F47,	// Fill(
-
-		0x7FB0,	// And
-		0x7FB1,	// Or
-		0x7FB3,	// Not
-		0x7FB4,	// Xor
 
 		0xD3,	// Rnd
 		0x7F86,	// RndFix(
@@ -791,9 +794,10 @@ const short oplistCMD[]={
 		0xF70A,	// Do			7
 		0xF70B,	// LpWhile		8
 		0x7F46,	// Dim	
-		0x7F40,	// Mat	
+		0x7F41,	// Trn 
 		0x7F47,	// Fill(
 		0x7FE9,	// CellSum(
+//		0x7F40,	// Mat	
 
 		
 		0xF70D,	// Break		1

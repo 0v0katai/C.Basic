@@ -605,7 +605,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			Bdisp_AllClr_VRAM();
 			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 			buffer2[8]='\0';
-			if (dumpflg==2)	sprintf(buffer,"==%-8s==%s",buffer2, CB_INTDefault?" [ INT ]":" [Double]");
+			if (dumpflg==2)	sprintf(buffer,"==%-8s==%s",buffer2, CB_INTDefault?" [INT%] ":" [Double]");
 			else 			sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
 			locate (1,1); Print( (unsigned char*)buffer );
 			if (SearchMode ) {

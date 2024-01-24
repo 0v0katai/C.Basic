@@ -94,13 +94,6 @@ extern char GraphY3[];
 
 #define PI 3.1415926535897932
 
-#define MatAryMax 26
-extern int		MatAryMaxbyte[MatAryMax];	// Matrix array max memory size
-extern short	MatArySizeA[MatAryMax];		// Matrix array size m Y
-extern short	MatArySizeB[MatAryMax];		// Matrix array size n X
-extern char		MatAryElementSize[MatAryMax];		// Matrix array word size
-extern double *MatAry[MatAryMax];			// Matrix array ptr*
-
 #define PictMax 20
 extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
 
@@ -132,8 +125,8 @@ extern double CB_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
 #define StackGotoMax 10+26+6+26+2
-#define IfCntMax 16
-#define RemCntMax 16
+#define IfCntMax 32
+#define RemCntMax 32
 #define StackForMax 8
 #define StackWhileMax 8
 #define StackDoMax 8
@@ -183,6 +176,29 @@ typedef struct {
 //------------------------------------------------------------------------------
 #define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
 
+int CB_interpreter( char *SRC) ;
+int CB_interpreter_sub( char *SRC ) ;
+void CB_Prog( char *SRC ) ; //	Prog "..."
+
+void Skip_quot( char *SRC ); // skip "..."
+void Skip_block( char *SRC );
+void Skip_rem( char *SRC );	// skip '...
+void CB_Rem( char *SRC, CchRem *CacheRem );
+void CB_Lbl( char *SRC, short *StackGotoAdrs );
+void CB_Goto( char *SRC, short *StackGotoAdrs);
+void CB_If( char *SRC, CchIf *CacheIf );
+void CB_Else( char *SRC, CchIf *CacheElse );
+void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
+void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
+void CB_While( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
+void CB_WhileEnd( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
+void CB_Do( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
+void CB_LpWhile( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
+void CB_Switch( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ,CchIf *CacheSwitch ) ;
+void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
+void CB_Default( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
+void CB_SwitchEnd( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
+void CB_Break( char *SRC, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
 
 void CB_SaveTextVRAM() ;
 void CB_RestoreTextVRAM() ;
@@ -193,33 +209,11 @@ void CB_RestoreGraphVRAM() ;
 void CB_SelectGraphVRAM() ;
 void CB_SelectGraphDD() ;
 void Scrl_Y();
-void CB_Cls( char *SRC );
-void CB_ClrText( char *SRC );
-void CB_ClrGraph( char *SRC );
-int RangeErrorCK( char *SRC ) ;
-
-void Skip_quot( char *SRC ); // skip "..."
-void Skip_rem( char *SRC );	// skip '...
-void CB_Rem( char *SRC, CchRem *CacheRem );
-
-void PlotXYtoPrevPXY() ;
-void PlotPreviousPXY() ;
-void PlotCurrentXY();
-
-int CB_interpreter( char *SRC) ;
-
-double CB_BinaryEval( char *SRC ) ;	// eval 2
-double CB_UnaryEval( char *SRC ) ;	// eval 1
-
-void CB_Prog( char *SRC ) ; //	Prog "..."
 
 void CB_Dsz( char *SRC ) ; //	Dsz
 void CB_Isz( char *SRC ) ; //	Isz
 void CB_Store( char *SRC );	// ->
 int  CB_Input( char *SRC );
-void CB_Cls( char *SRC );
-void CB_ClrText( char *SRC );
-void CB_ClrGraph( char *SRC );
 int CB_Fix( char *SRC );
 int CB_Sci( char *SRC );
 int CB_Norm( char *SRC );
@@ -227,6 +221,16 @@ void CB_Rnd();
 void CB_Quot( char *SRC );		// "" ""
 int CB_Disps( char *SRC ,short dspflag);
 void CB_end( char *SRC );
+
+void CB_Cls( char *SRC );
+void CB_ClrText( char *SRC );
+void CB_ClrGraph( char *SRC );
+int RangeErrorCK( char *SRC ) ;
+
+void PlotXYtoPrevPXY() ;
+void PlotPreviousPXY() ;
+void PlotCurrentXY();
+
 void CB_ViewWindow( char *SRC ) ; //	ViewWindow
 void CB_FLine( char *SRC) ; //	F-Line
 void CB_Line( char *SRC ) ; //	Line
@@ -258,4 +262,7 @@ void CB_DotGet( char *SRC );	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
 void CB_DotPut( char *SRC );	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 void CB_DotTrim( char *SRC );	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 void CB_DotLife( char *SRC ) ;
+
+double CB_BinaryEval( char *SRC ) ;	// eval 2
+double CB_UnaryEval( char *SRC ) ;	// eval 1
 

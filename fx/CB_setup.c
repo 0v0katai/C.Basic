@@ -35,7 +35,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.92 " );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.93 " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -509,7 +509,7 @@ void SetFactor(){
 
 //-----------------------------------------------------------------------------
 void SetVarDsp(int VarMode) {
-	if ( VarMode ) Print((unsigned char*)"(int%)"); else Print((unsigned char*)"(double)");
+	if ( VarMode ) Print((unsigned char*)"[int%]"); else Print((unsigned char*)"[double]");
 }
 void InitVar( double value, int VarMode, int vartop ) {
 	char buffer[32];
