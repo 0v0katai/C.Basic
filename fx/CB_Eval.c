@@ -445,7 +445,9 @@ int ListRegVar( char *SRC ) {	// return reg no
 	} else {	
 		c=CB_IsStr( SRC, ExecPtr );
 		if ( c ) {
-			return SearchListname( SRC );	// string
+			reg=SearchListname( SRC );	// string
+			if (reg<0 ) { CB_Error(UndefinedLabelERR); }	// undefined label error
+			return reg;
 		} else {
 			c=SRC[ExecPtr];
 		  NUM:

@@ -144,7 +144,7 @@ int CB_interpreter_sub( char *SRC ) {
 	int dspflagtmp2;
 	int c,j;
 	int excptr;
-	int breakcount=BREAKCOUNT;
+	int breakcount=0;
 
 	int StackGosubAdrs[StackGosubMax];
 	
@@ -1681,6 +1681,7 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 	int stepint;
 	int i;
 	int *iptr;
+	int exitPtr;
 //	if ( CurrentStruct->ForPtr <= 0 ) { CB_Error(NextWithoutForERR); return; } // Next without for error
 	if ( CurrentStruct->ForPtr <= 0 ) { return; } // Next without for through (no error)
 	CurrentStruct->ForPtr--;
@@ -1690,20 +1691,26 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 		iptr=CurrentStruct->Var[CurrentStruct->ForPtr];
 		(*iptr) += stepint;
 		if ( stepint > 0 ) { 	// step +
-			if ( *iptr > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; return ;} // exit
+			if ( *iptr > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; goto exit;} // exit
 		}
 		else {					// step -
-			if ( *iptr < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; return ;} // exit
+			if ( *iptr < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; goto exit;} // exit
 		}
 	} else {			//					------------ Double mode
 		step = CurrentStruct->Step[CurrentStruct->ForPtr];
 		dptr=(double*)CurrentStruct->Var[CurrentStruct->ForPtr];
 		(*dptr) += step;
 		if ( step > 0 ) { 		// step +
-			if ( (*dptr) > CurrentStruct->End[CurrentStruct->ForPtr] ) { (*dptr) -= step; return ;} // exit
+			if ( (*dptr) > CurrentStruct->End[CurrentStruct->ForPtr] ) { (*dptr) -= step; goto exit;} // exit
 		}
 		else {					// step -
-			if ( (*dptr) < CurrentStruct->End[CurrentStruct->ForPtr] ) { (*dptr) -= step; return ;} // exit
+			if ( (*dptr) < CurrentStruct->End[CurrentStruct->ForPtr] ) { (*dptr) -= step;
+		  exit:
+		  	if ( SRC[ExecPtr-3] == 0x13 ) {	// =>
+				exitPtr=ExecPtr;
+				if ( Search_Next(SRC) == 0 ) ExecPtr=exitPtr;	// For without Next
+			}
+			return ;} // exit
 		}
 	}
 	CurrentStruct->NextAdrs[CurrentStruct->ForPtr] = ExecPtr;
@@ -1714,7 +1721,7 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 }
 
 //----------------------------------------------------------------------------------------------
-int ObjectAligni4( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAligni4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAligni6a( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAligni4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAligni4c( unsigned int n ){ return n; }	// align +4byte
@@ -1828,6 +1835,9 @@ void CB_WhileEnd( char *SRC, CurrentStk *CurrentStruct ) {
 	ExecPtr = CurrentStruct->WhileAdrs[CurrentStruct->WhilePtr] ;
 	if ( CB_EvalCheckZero( SRC ) == 0 ) {		// false
 		ExecPtr=exitPtr;
+		if ( SRC[ExecPtr-3] == 0x13 ) {	// =>
+			if ( Search_WhileEnd(SRC) == 0 ) ExecPtr=exitPtr;  // While without WhileEnd
+		}
 		return ; // exit
 	}
 	CurrentStruct->WhilePtr++;
@@ -1847,11 +1857,18 @@ void CB_Do( char *SRC, CurrentStk *CurrentStruct ) {
 }
 
 void CB_LpWhile( char *SRC, CurrentStk *CurrentStruct ) {
+	int exitPtr;
 //	if ( CurrentStruct->DoPtr <= 0 ) { CB_Error(LpWhileWithoutDoERR); return; }  // LpWhile without Do error
 	if ( CurrentStruct->DoPtr <= 0 ) { return; }  // LpWhile without Do  through (no error)
 	CurrentStruct->DoPtr--;
 	CurrentStruct->CNT--;
-	if ( CB_EvalCheckZero( SRC ) == 0  ) return ; // exit
+	if ( CB_EvalCheckZero( SRC ) == 0  ) {
+		if ( SRC[ExecPtr-3] == 0x13 ) {	// =>
+			exitPtr=ExecPtr;
+			if ( Search_LpWhile(SRC) == 0 )  ExecPtr=exitPtr;  // Do without LpWhile
+		}
+		return ; // exit
+	}
 	CurrentStruct->LpWhileAdrs[CurrentStruct->DoPtr] = ExecPtr;
 	ExecPtr = CurrentStruct->DoAdrs[CurrentStruct->DoPtr] ;				// true
 	CurrentStruct->DoPtr++;
@@ -2887,8 +2904,7 @@ void  CB_Input( char *SRC ){
 	reg=RegVar(c);
 	if ( c==0x0E ) {	// ->
 		flag=0;
-		c=CB_IsStr( SRC, ExecPtr+1 );
-		if ( ( c==2 ) || ( c==0x3F ) || ( c==0x41 ) || ( c==0x42 ) ) flag=2;
+		if ( CB_IsStr( SRC, ExecPtr+1 ) ) flag=2;
 	} else 
 	if ( reg>=0 ) {
 	  regj:
@@ -3102,10 +3118,10 @@ void  CB_Input( char *SRC ){
 }
 //----------------------------------------------------------------------------------------------
 int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
