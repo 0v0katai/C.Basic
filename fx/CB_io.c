@@ -353,6 +353,15 @@ int YesNo2( char*buffer, char*buffer2 ){
 	return r;
 }
 
+void ExitKey(){
+	unsigned int key;
+	KeyRecover(); 
+	while ( 1 ) {
+		GetKey(&key);	
+		if ( key == KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; break ; }
+		if ( key == KEY_CTRL_AC  ) break ;
+	}
+}
 void OkMSGstr2(char*buffer,char*buffer2){
 	unsigned int key;
 	char buf[20];
@@ -370,7 +379,7 @@ void OkMSGstr2(char*buffer,char*buffer2){
 	CB_Print( 3, 8-y, (unsigned char *)buffer);
 	CB_Print( 3, y, (unsigned char *) "   Press:[EXIT]");
 
-	GetKey(&key);	
+	ExitKey();
 	RestoreDisp(SAVEDISP_PAGE1);
 }
 
@@ -392,7 +401,7 @@ void ErrorMSG(char*buffer,int err){
 	locate(3,4); Print((unsigned char *)buf);
 	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
 
-	GetKey(&key);	
+	ExitKey();
 	RestoreDisp(SAVEDISP_PAGE1);
 }
 
@@ -406,7 +415,7 @@ void ErrorADRS(char*buffer,int err){
 	Hex8PrintXY(3,4,"addres:",err);
 	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
 
-	GetKey(&key);	
+	ExitKey();
 	RestoreDisp(SAVEDISP_PAGE1);
 }
 

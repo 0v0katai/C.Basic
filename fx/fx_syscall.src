@@ -86,6 +86,7 @@
 
  .EXPORT _Calljmp
  .EXPORT _SysCalljmp
+ .EXPORT _SysCalljmp12
 
  .ALIGN	4
 
@@ -536,6 +537,14 @@ _SysCalljmp:
 	mov.l	@r15,r0
 	jmp	@r1
 	nop
+
+_SysCalljmp12:
+	mov.l	@(32,R15),r0
+	mov.l	SYSCALL,r1
+	jmp	@r1
+	nop
+
+
 
  .ALIGN	4
 SYSCALL: .DATA.L H'80010070

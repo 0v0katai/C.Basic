@@ -17,6 +17,8 @@
 #include "mathf.h"
 
 #include "fx_syscall.h"
+extern  char *TVRAM;
+extern  char *GVRAM;
 
 /******************************/
 /** Dependencies management  **/
@@ -488,7 +490,22 @@ ML_Color ML_pixel_test(int x, int y)
 	vram = ML_vram_adress();
 	byte = 1<<(7-(x&7));
 	return (vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
-	
+}
+ML_Color ML_pixel_test_TVRAM(int x, int y)
+{
+	char *vram, byte;
+	if(x&~127 || y&~63) return ML_TRANSPARENT;
+	vram = TVRAM;
+	byte = 1<<(7-(x&7));
+	return (vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
+}
+ML_Color ML_pixel_test_GVRAM(int x, int y)
+{
+	char *vram, byte;
+	if(x&~127 || y&~63) return ML_TRANSPARENT;
+	vram = GVRAM;
+	byte = 1<<(7-(x&7));
+	return (vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
 }
 #endif
 

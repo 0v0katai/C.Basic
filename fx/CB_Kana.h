@@ -28,7 +28,7 @@ void KPrintRevChar( int px, int py, unsigned char *c) ; //カナ一文字表示
 
 int KPrintCharMini( int px, int py, unsigned char *str, int mode ) ; // カナ対応 PrintMini
 
-void CB_GetFont( char *SRC );		// DotChar(0xFFA0)->Mat C
-void CB_GetFontMini( char *SRC );	// DotChar(0xFFA0)->Mat C
+int CB_GetFont( char *SRC );		// DotChar(0xFFA0)->Mat C
+int CB_GetFontMini( char *SRC );	// DotChar(0xFFA0)->Mat C
 void CB_SetFont( char *SRC );		// SetFont 0xFFA0,Mat C
 void CB_SetFontMini( char *SRC );	// SetFont 0xFFA0,Mat C

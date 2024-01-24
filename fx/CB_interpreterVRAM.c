@@ -304,8 +304,10 @@ void CB_Locate( char *SRC ){
 	double value;
 	int mode;
 	int maxoplen;
+	int extAnkfont=0x1;
 	
 	CB_ChangeTextMode( SRC );	// Select Text Mode
+	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// OS PrintMini
 	lx = CB_EvalInt( SRC );
 	if ( ( lx < 1 ) || ( lx > 21 ) ) { CB_Error(ArgumentERR); return; }	// Argument error
 	c=SRC[ExecPtr];
@@ -324,8 +326,8 @@ void CB_Locate( char *SRC ){
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, 22-lx,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 	}
-	if ( CB_LocateMode( SRC ) )	CB_PrintRev_ext( lx,ly, (unsigned char*)buffer, 1 );	// ext
-	else 		   			  	CB_Print_ext(    lx,ly, (unsigned char*)buffer, 1 );	// ext
+	if ( CB_LocateMode( SRC ) )	CB_PrintRev_ext( lx,ly, (unsigned char*)buffer, extAnkfont );	// ext
+	else 		   			  	CB_Print_ext(    lx,ly, (unsigned char*)buffer, extAnkfont );	// ext
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
 
@@ -543,8 +545,10 @@ void CB_LocateYX( char *SRC ){
 	double value;
 	int mode;
 	int maxoplen;
+	int extAnkfont=0x100;
 
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// OS PrintMini
 	CB_TextOprand( SRC, &py, &px);
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -558,7 +562,7 @@ void CB_LocateYX( char *SRC ){
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, d,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 	}
-	CB_PrintXY(  px,py, (unsigned char*)buffer, CB_LocateMode( SRC ) | 0x100 );		// ext
+	CB_PrintXY(  px,py, (unsigned char*)buffer, CB_LocateMode( SRC ) | extAnkfont );		// ext
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 
 }

@@ -580,6 +580,7 @@ unsigned int Explorer( int size, char *folder )
 		else{
 			char buf[22],buf2[22];
 			relist:
+			if ( index == FavoritesMAX ) index++;
 			if( index < StartLine )
 				index = StartLine;
 			if( top > index )
@@ -2554,11 +2555,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 					}
 					Restorefolder();
 					if ( ErrorNo ) {	// Can't find Prog
-						ErrorPtr=ExecPtr;
-						ProgNo=progno;
-						ErrorProg=ProgNo;
-						CB_ErrMsg(ErrorNo);
-						return;
+						goto err;
 					}
 					if ( r== 0 ) {	// Prog load Ok
 						filebase=ProgfileAdrs[ProgEntryN];
@@ -2593,6 +2590,14 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 			default:
 				break;
 		}
+		if ( ErrorNo ) {	// error
+		 err:
+			ErrorPtr=ExecPtr;
+			ProgNo=progno;
+			ErrorProg=ProgNo;
+			CB_ErrMsg(ErrorNo);
+			return;
+		}
 	}
 
 	SetSrcSize( SRC-0x56 , ExecPtr+0x56+1 );
@@ -2606,7 +2611,7 @@ int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte

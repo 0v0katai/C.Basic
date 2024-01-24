@@ -1408,6 +1408,7 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
 int CB_GetFontSub( char *SRC, char *cstr, int *orgflag ) {
 	int opcode;
 	int c=SRC[ExecPtr];
+	if ( c == ')' ) { ExecPtr++; return -1; }
 	*orgflag=0; if ( c == '@' ) { ExecPtr++; *orgflag=1; }
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
@@ -1426,7 +1427,7 @@ int CB_GetFontSub( char *SRC, char *cstr, int *orgflag ) {
 	}
 	return opcode & 0xFFFF;
 }
-void CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
+int CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	int c;
 	int x,y,px,py;
 	int reg,i;
@@ -1439,7 +1440,7 @@ void CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	unsigned char cstr[32];
 	int orgflag;
 
-	CB_GetFontSub( SRC, (char*)cstr, &orgflag);
+	if ( CB_GetFontSub( SRC, (char*)cstr, &orgflag) == -1 ) goto exit;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
@@ -1464,9 +1465,11 @@ void CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 			}
 			memcpy( vram, vbuf, 16*8);
 	} else { CB_Error(SyntaxERR);}	// Syntax error
+  exit:
+	return (ExtCharKanaFX!=0)*4 + (ExtCharGaijiFX!=0)*2 + (ExtCharAnkFX!=0);
 }
 
-void CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
+int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	int c;
 	int x,y,px,py;
 	int reg,i;
@@ -1479,7 +1482,7 @@ void CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	unsigned char cstr[32];
 	int orgflag;
 
-	CB_GetFontSub( SRC, (char*)cstr, &orgflag );
+	if ( CB_GetFontSub( SRC, (char*)cstr, &orgflag) == -1 ) goto exit;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
@@ -1509,6 +1512,8 @@ void CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 			}
 			memcpy( vram, vbuf, 16*8 );
 	} else { CB_Error(SyntaxERR); }	// Syntax error
+  exit:
+	return (ExtCharKanaMiniFX!=0)*4 + (ExtCharGaijiMiniFX!=0)*2 + (ExtCharAnkMiniFX!=0);
 }
 
 
@@ -1642,6 +1647,7 @@ int LoadExtFontKana_sub( char* name, char *font, int line ){		// LFONTK.bmp -> f
 	char buf[32],buf2[32];
 
 	FilePtr = Load1st2nd( name, "Font", "bmp" );
+	if ( ErrorNo == CantFindFileERR ) ErrorNo=0; 	// Cancel CantFindFileERR
 	if ( FilePtr == NULL ) return 0;
 
 	bit=ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );
@@ -1674,6 +1680,7 @@ int LoadExtFontKanaMini_sub( char* name, char *font, int line ){			// MFONTK.bmp
 	char buf[32],buf2[32];
 
 	FilePtr = Load1st2nd( name, "Font", "bmp" );
+	if ( ErrorNo == CantFindFileERR ) ErrorNo=0; 	// Cancel CantFindFileERR
 	if ( FilePtr == NULL ) return 0;
 
 	bit=ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );

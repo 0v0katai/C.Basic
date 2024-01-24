@@ -95,6 +95,7 @@ void Bdisp_ShapeToVRAM( TShape *p );
 
 int Calljmp(    int r4, int r5, int r6, int r7, int adrs );
 int SysCalljmp( int r4, int r5, int r6, int r7, int no );
+int SysCalljmp12( int r1, int r2, int r3, int r4, int r5, int r6, int r7, int r8, int r9, int r10, int r11, int r12, int No);
 
 //------------------------------------------------------- Serial
 int Serial_Open2( unsigned short parameters );	//0x02AB

@@ -200,9 +200,11 @@ int AddComment( char *filebase, int ptr, int startp, int endp ){
 	int len,i,j,plus=0;
 	char *srcbase=filebase+0x56;
 	int c; 
+	int flag=0;
+	if ( startp==0 ) flag=1;
 	PrevLine( srcbase, &startp );
 	ptr=startp;
-	if ( ptr==0 ) { 
+	if ( (flag) && ( ptr==0 ) ) { 
 		InsertOpcode( filebase, ptr, 0x27 );
 		plus++;
 	}
@@ -652,7 +654,9 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *pcx,
 	*pcx=0; *cy=0;
 	while ( 1 ) {
 		NumOfset=0;	// line number offset
-		for ( y=ymin; y<8; y++ ) { locate(1,y); PrintLine((unsigned char*)" ",21); }
+//		for ( y=ymin; y<8; y++ ) { locate(1,y); PrintLine((unsigned char*)" ",21); }
+//		ML_rectangle( 0, 8*(ymin-1), 127, 55, 0, 0, 0);
+		ML_clear_vram(); 
 		y=ymin; ofst=(*offset);
 		ofst2=ofst;
 		px=1; ynum=0;
@@ -940,24 +944,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		
 		if ( ( DebugScreen == 0 ) && ( run != 1 ) ) {
    			
-			Bdisp_AllClr_VRAM();
-			if ( mini ) {
+//			Bdisp_AllClr_VRAM();
+//			ML_clear_vram(); 
+			if ( ( dumpflg!=4 ) && ( mini ) ) {
 				MiniCursorflag=0;		// mini cursor initialize
 				MiniCursorFlashing();
 			}
-			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
-			buffer2[8]='\0';
-			if (dumpflg==2) {
-				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
-					else             { i=CB_INTDefault; j=MatBaseDefault; }
-							sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
-			} else 			sprintf(buffer, "==%-8s==%08X", buffer2, SrcBase);
-			
 
-			locate (1,1); Print(    (unsigned char*)buffer );
-			if ( DebugMode >=1 ) // debug mode
-				Bdisp_AreaReverseVRAM(0, 0, 127,7);	// reverse top line 
-				
 			switch (dumpflg) {
 				case 2: 		// Opcode listing
 						if ( SearchMode ) {
@@ -994,7 +987,20 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				default:
 						break;
 			}
-			
+			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
+			buffer2[8]='\0'; 
+			if (dumpflg==2) {
+				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
+					else             { i=CB_INTDefault; j=MatBaseDefault; }
+					sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
+			} else 	{
+					sprintf(buffer, "==%-8s==%08X", buffer2, SrcBase);
+			}
+			if ( (dumpflg!=2) || (ymin==2) ) {
+					locate (1,1); Print(    (unsigned char*)buffer );
+				if ( DebugMode >=1 ) // debug mode
+					Bdisp_AreaReverseVRAM(0, 0, 127,7);	// reverse top line 
+			}
 		}
 		
 		if ( DebugScreen ) {	// screen debug mode
@@ -1134,6 +1140,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								SrcBase[ptr] = d;
 								key=KEY_CTRL_RIGHT;
 						}
+						ProgfileEdit[ProgNo]=1;	// edit program
 						DebugScreen = 0;
 				}
 				break;
@@ -1417,6 +1424,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
 										ProgEntryN=1;
 										MSG1("Prog Loading.....");
+										CB_AliasVarClr();
 										CB_ProgEntry( SrcBase ) ;		// sub program search
 										if ( ErrorNo ) { 
 											ProgNo=ErrorProg; 
@@ -1556,19 +1564,25 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							c=SrcBase[csrPtr];
 							if ( c==0x00 ) break ;
 							if ( ( c==0x0C ) || ( c==0x0D ) ) {
-//								NextOpcode( SrcBase, &csrPtr );
 								x=1;
+								d=SrcBase[csrPtr+1];
+								if ( ( d==0x0C ) || ( d==0x0D ) ) { csrPtr++; goto DOWNexit; }
 							} else {
 								x=pcx;
 								while ( 1 ) {
 									x += OpcodeStrLenBufpx( SrcBase, csrPtr);
-									if ( x > EDITpxMAX ) { x-=(EDITpxMAX); NextOpcode( SrcBase, &csrPtr ); break ; }
+									if ( x > EDITpxMAX ) { x=1; NextOpcode( SrcBase, &csrPtr ); break ; }
 									NextOpcode( SrcBase, &csrPtr );
 									c=SrcBase[csrPtr];
-									if ( ( c==0x0C ) || ( c==0x0D ) || ( c==0x00 ) ) { x=1; break; }
+									if ( ( c==0x0C ) || ( c==0x0D ) || ( c==0x00 ) ) {
+										x=1; 
+										d=SrcBase[csrPtr+1];
+										if ( ( d==0x0C ) || ( d==0x0D ) ) { csrPtr++; goto DOWNexit; }
+										break;
+									}
 								}
 							}
-							c=SrcBase[csrPtr];
+							c=SrcBase[csrPtr]; 
 							if ( c==0x00 )  break;
 							if ( ( c==0x0C ) || ( c==0x0D ) ) csrPtr++;
 							while ( x < pcx ) {
@@ -1588,11 +1602,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					default:
 							break;
 				}
+			  DOWNexit:
 				key=0;
 				if ( ClipStartPtr>=0 ) ClipEndPtr=csrPtr;
 				SearchMode=0;
 				break;
-				
 				
 			case KEY_CTRL_SHIFT:
 				if ( SearchMode ) break;;
@@ -1612,8 +1626,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_dispN( FKeyNo5, buffer);
 				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 				GetKey_DisableMenu(&key);
-				if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
-				if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
+				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
+				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
 				KeyRecover();
 				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				switch (key) {
@@ -1963,8 +1977,8 @@ int CB_BreakStop() {
 
 //----------------------------------------------------------------------------------------------
 int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte

@@ -112,6 +112,8 @@ unsigned char ML_get_contrast();
 void ML_pixel(int x, int y, ML_Color color);
 void ML_point(int x, int y, int width, ML_Color color);
 ML_Color ML_pixel_test(int x, int y);
+ML_Color ML_pixel_test_TVRAM(int x, int y);
+ML_Color ML_pixel_test_GVRAM(int x, int y);
 
 void ML_line(int x1, int y1, int x2, int y2, ML_Color color);
 void ML_horizontal_line(int y, int x1, int x2, ML_Color color);
