@@ -107,46 +107,49 @@ static int ReadFile( char *folder )
 	FONTCHARACTER find_name[50];
 	FILE_INFO file_info;
 	int find_h;
-	int size, i;
+	int size, i, r;
 
-	size = 0;
+	size = FavoritesMAX + 1 ;
 	FilePath( folder, find_path );
 
 /*				Get File Num			*/
 
-	Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
-	if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) )
-		size++;
-	while(Bfile_FindNext(find_h, find_name, &file_info)==0){
-		if( file_info.type == DT_DIRECTORY || IsFileNeeded( find_name ) )
+	r = Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
+	if ( r == 0 ) {
+		if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) )
 			size++;
+		while(Bfile_FindNext(find_h, find_name, &file_info)==0){
+			if( file_info.type == DT_DIRECTORY || IsFileNeeded( find_name ) )
+				size++;
+		}
+		Bfile_FindClose(find_h);
 	}
-	Bfile_FindClose(find_h);
-
-	size += (FavoritesMAX + 1) ;
-
+	
 /*				Get Name & Size			*/
 	i = FavoritesMAX ;
 	files = (Files *)malloc( size*sizeof(Files) );
 	memset( files, 0, size*sizeof(Files) );
-	
-	Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
-	if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) ){
-		FontToChar(find_name,str);
-		strncpy( files[i].filename, str, FILENAMEMAX);
-		files[i].filesize = (file_info.type == DT_DIRECTORY ? -1 : file_info.dsize);
-		++i;
-	}
-	while(Bfile_FindNext(find_h, find_name, &file_info)==0)
-	{
+
+	r =	Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
+	if ( r == 0 ) {
 		if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) ){
 			FontToChar(find_name,str);
 			strncpy( files[i].filename, str, FILENAMEMAX);
 			files[i].filesize = (file_info.type == DT_DIRECTORY ? -1 : file_info.dsize);
 			++i;
 		}
+		while(Bfile_FindNext(find_h, find_name, &file_info)==0)
+		{
+			if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) ){
+				FontToChar(find_name,str);
+				strncpy( files[i].filename, str, FILENAMEMAX);
+				files[i].filesize = (file_info.type == DT_DIRECTORY ? -1 : file_info.dsize);
+				++i;
+			}
+		}
+		Bfile_FindClose( find_h );
 	}
-	Bfile_FindClose( find_h );
+
 	return size;
 }
 
@@ -312,7 +315,7 @@ unsigned int Explorer( int size, char *folder )
 		}
 		locate(1, 1);Print((unsigned char*)"File List  [        ]");
 		locate(13, 1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"Root");
-		if( size < 1 ){
+		if( size < 1+FavoritesMAX+1 ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
 		}

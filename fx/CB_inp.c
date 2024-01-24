@@ -267,6 +267,13 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 }
 
 //----------------------------------------------------------------------------------------------
+void DMS_Opcode( char * buffer, short code ) {
+	if ( code == 0x9C ) { strcat( buffer,"(deg)"); }
+	if ( code == 0xAC ) { strcat( buffer,"(rad)"); }
+	if ( code == 0xBC ) { strcat( buffer,"(gra)"); }
+}
+
+
 int SelectOpcode( short *oplist, int *select) {
 	int opNum=0 ;
 	char buffer[22];
@@ -290,8 +297,10 @@ int SelectOpcode( short *oplist, int *select) {
 		if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
 		for ( i=0; i<6; i++ ) {
 			CB_Print(8,2+i,(unsigned char *)"            ");
-			CB_OpcodeToStr( oplist[seltop+i], tmpbuf ) ; // SYSCALL
+			j=oplist[seltop+i];
+			CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
 			tmpbuf[12]='\0'; 
+			DMS_Opcode( tmpbuf, j);
 			j=0; if ( tmpbuf[0]==' ' ) j++;
 			sprintf(buffer,"%04X:%-12s",(unsigned short)oplist[seltop+i],tmpbuf+j ) ;
 			CB_Print(3,2+i,(unsigned char *)buffer);
@@ -476,7 +485,7 @@ const short oplistOPTN[]={
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
-//		0x8C,	// dms
+		0x8C,	// dms
 		0xF905,	// >DMS
 		0x7F5F,	// Ticks
 		0};
@@ -674,6 +683,7 @@ int SelectOpcode5800P( short *oplist, int *select) {
 			if ( n == 0xFFFF ) n=' ';
 			else CB_OpcodeToStr( n, tmpbuf ) ; // SYSCALL
 			tmpbuf[8]='\0'; 
+			DMS_Opcode( tmpbuf, n);
 			n=i+1; if (n>9) n=0;
 			j=0; if ( tmpbuf[0]==' ' ) j++;
 			if ( i< 10 ) sprintf(buffer,"%d:%-9s",n,tmpbuf+j ) ;
