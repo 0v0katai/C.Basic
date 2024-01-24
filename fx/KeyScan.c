@@ -275,6 +275,11 @@ int KeyCheckF1() {		// [F1]
 //	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
 	return Bkey_GetKeyWait_sub( 7, 10 ); // [F1] is down
 }
+int KeyCheckDEL() {		// [DEL]
+	if (IsSH3 ) return IsKeyDown(KEY_CTRL_DEL);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
+	return Bkey_GetKeyWait_sub( 4, 5 ); // [DEL] is down
+}
 
 void KeyRecover() {
 //	CB_Getkey();

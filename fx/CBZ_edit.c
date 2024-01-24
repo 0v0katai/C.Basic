@@ -69,6 +69,60 @@ int FixSrcSize( char *filebase ) {
 }
 
 //----------------------------------------------------------------------------------------------
+int ProgMoveMem( char *src, int sptr, int eptr, int len ) {
+	int i,c;
+	for ( i=sptr; i<=eptr; i++ ) {
+		c=src[i]; src[i]=src[i+len]; src[i+len]=c; }
+	return i;
+}
+
+// ******---ABCDEF0
+// ******123ABCDEF0  ->
+// ******A231BCDEF0  ->
+// ******AB312CDEF0  ->
+// ******ABC123DEF0  ->
+// ******ABCD231EF0  ->
+// ******ABCDE312F0  ->
+// ******ABCDEF1230  ->
+// ******ABCDEF0231
+void ProgDeleteSub( char *filebase, int ptr, int len, cUndo *Undo ) {
+	int i,c;
+	i = ProgMoveMem( filebase, ptr+0x56, SrcSize(filebase), len );
+	Undo->enable = 1;	// delete flag
+	Undo->sPtr   = ptr+0x56;	//
+	Undo->ePtr   = i;	//
+	Undo->Len    = len;	//
+}
+
+// ******++++0...  ->  ******...++++0
+// ******ABCDEF0231  ->
+// ******ABCDEF1230  ->
+// ******ABCDE312F0  ->
+// ******ABCD231EF0  ->
+// ******ABC123DEF0  ->
+// ******AB312CDEF0  ->
+// ******A231BCDEF0  ->
+// ******123ABCDEF0
+void ProgUndo( char *filebase, int *ptr, cUndo *Undo ) {
+	int i,c;
+	int sptr = Undo->sPtr;
+	int eptr = Undo->ePtr;
+	int len = Undo->Len;
+	if ( Undo->enable == 0 ) return ;
+	if ( Undo->enable == 3 ) {	// paste
+		ProgDeleteSub( filebase, sptr, len ,Undo );
+		*ptr = sptr;
+		len = -len;
+	} else {
+		for ( i=eptr-1; i>=sptr; i-- ) {
+			c=filebase[i+len]; filebase[i+len]=filebase[i]; filebase[i]=c; }
+		*ptr = sptr-0x56;
+		NextOpcode( filebase+0x56, ptr );
+	}
+	Undo->enable = 0;	// clear Undo
+	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
+}
+
 
 void InsertOpcode( char *filebase, int ptr, int opcode ){
 	int len,i,j;
@@ -101,7 +155,7 @@ void InsertOpcode( char *filebase, int ptr, int opcode ){
 	AddOpcodeRecent( opcode ) ;
 }
 
-void DeleteOpcode( char *filebase, int *ptr){
+void DeleteOpcode( char *filebase, int *ptr ){
 	int len,i;
 	int opH,opL;
 	int opcode;
@@ -113,7 +167,27 @@ void DeleteOpcode( char *filebase, int *ptr){
 	}
 	len=OpcodeLen( opcode );
 //	if ( len == 0 ) return ;
-	for ( i=(*ptr)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
+//	for ( i=(*ptr)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
+	ProgMoveMem( filebase+0x56, (*ptr), SrcSize(filebase), len );
+
+	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
+	ProgfileEdit[ProgNo]=1;	// edit program
+}
+
+void DeleteOpcodeUndo( char *filebase, int *ptr, cUndo *Undo ){
+	int len,i;
+	int opH,opL;
+	int opcode;
+	opcode=GetOpcode( filebase+0x56, *ptr );
+	if ( opcode == 0 ) {
+		if ( *ptr == 0 ) return ;
+		PrevOpcode( filebase+0x56, &(*ptr) );
+		opcode=GetOpcode( filebase+0x56, *ptr );
+	}
+	len=OpcodeLen( opcode );
+//	if ( len == 0 ) return ;
+//	for ( i=(*ptr)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
+	ProgDeleteSub( filebase, (*ptr), len, Undo  );
 
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
@@ -155,7 +229,7 @@ char* NewclipBuffer( int *size ){	// size:-1  max
 	return buffer;
 }
 
-void EditPaste( char *filebase, char *Buffer, int *ptr ){
+void EditPaste( char *filebase, char *Buffer, int *ptr, cUndo *Undo ){
 	int len,i,j;
 	char *srcbase;
 	if ( ( Buffer== 0 ) || ( Buffer[0] =='\0' ) ) return ;	// no clip data
@@ -172,7 +246,12 @@ void EditPaste( char *filebase, char *Buffer, int *ptr ){
 		 
 	srcbase=filebase+0x56+(*ptr);
 	for ( i=0; i<len; i++ ) srcbase[i]=Buffer[i];	// copy from Buffer
-			
+
+	Undo->enable = 3;	// pasetelete flag
+	Undo->sPtr   = (*ptr);	//
+	Undo->ePtr   = (*ptr)+len;	//
+	Undo->Len    = len;	//
+
 	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
 	
@@ -195,7 +274,7 @@ void EditCopy( char *filebase, int ptr, int startp, int endp ){
 	Buffer[i]='\0';
 }
 
-void EditCutDel( char *filebase, int *ptr, int startp, int endp, int del ){	// del:1 delete
+void EditCutDel( char *filebase, int *ptr, int startp, int endp, int del, cUndo *Undo ){	// del:1 delete
 	int len,i;
 	char *srcbase;
 	char *Buffer;
@@ -211,7 +290,8 @@ void EditCutDel( char *filebase, int *ptr, int startp, int endp, int del ){	// d
 		for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i];	// copy to Buffer
 		Buffer[i]='\0';
 	}
-	for ( i=(startp)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
+//	for ( i=(startp)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
+	ProgDeleteSub( filebase, (startp), len, Undo );
 
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
@@ -929,6 +1009,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int help_code=0;
 	int indent;
 
+	cUndo Undo;
+
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
 
@@ -939,7 +1021,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	CursorStyle=0;	// insert mode
 	EditLineNum=0;
 	UpdateLineNum=0;
-	
+
+	Undo.enable = 0;	// clear Undo
+
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
@@ -1227,6 +1311,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		}
 
 		UpdateLineNum=0;
+		
+		if ( alphastatus == 1 ) if ( KeyCheckDEL() ) {
+			key=30045;		// KEY_CTRL_UNDO:
+			alphastatus = 0;
+			alphalock = 0 ; 
+		}
+		
 		switch (key) {
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel
@@ -1327,8 +1418,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( SearchMode >= 2 ) {	// replace one
 							i = strlenOp(searchbuf);
 							csrPtr+=i;
-							EditCutDel( filebase, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
-							EditPaste( filebase, replacebuf, &csrPtr);	// insert
+							EditCutDel( filebase, &csrPtr, csrPtr-i, csrPtr, 1, &Undo );	// delete
+							Undo.enable = 0;
+							EditPaste( filebase, replacebuf, &csrPtr, &Undo );	// insert
 							UpdateLineNum=1;
 							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
 							if ( i==0 ) SearchMode=0; 
@@ -1338,7 +1430,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( ClipStartPtr >= 0 ) {
 							if ( ClipEndPtr < 0 ) goto F2j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 0 );	// cut
+							EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 0, &Undo );	// cut
 							UpdateLineNum=1;
 						} else {
 							if ( CommandType ) { GetGenuineCmdF2( &key ); goto F2j; }
@@ -1385,7 +1477,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						  F3del:					// clip delete
 							if ( ClipEndPtr < 0 ) goto F3j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 1 );	// delete
+							EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 1, &Undo );	// delete
 							UpdateLineNum=1;
 						} else {
 							if ( CommandType ) GetGenuineCmdF3( &key );
@@ -1469,8 +1561,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						while ( KeyScanDownAC() == 0 ) {
 							i = strlenOp(searchbuf);
 							csrPtr+=i;
-							EditCutDel( filebase, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
-							EditPaste( filebase, replacebuf, &csrPtr);	// insert
+							EditCutDel( filebase, &csrPtr, csrPtr-i, csrPtr, 1, &Undo );	// delete
+							EditPaste( filebase, replacebuf, &csrPtr, &Undo );	// insert
+							Undo.enable = 0;
 							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
 							if ( i==0 ) { SearchMode=0; break; }
 						}
@@ -1913,7 +2006,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case KEY_CTRL_PASTE:
 							if ( ClipBuffer != NULL ) {
-								EditPaste( filebase, ClipBuffer, &csrPtr);
+								EditPaste( filebase, ClipBuffer, &csrPtr, &Undo );
 								x=1; y=0; ptr=0;
 								OpcodeLineN( ClipBuffer, &ptr, &x, &y );
 								if ( ( y >= (ymax-cy) ) || ( y >= ymax ) ) {
@@ -1951,7 +2044,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							GetKey_DisableMenu(&key);
 							MSGpop();
 							sprintf(buffer,"%d",CB_KeyCodeCnvt( key ) );
-							EditPaste( filebase, buffer, &csrPtr);
+							EditPaste( filebase, buffer, &csrPtr, &Undo );
 							key=0;
 							break;
 					default:
@@ -1966,7 +2059,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( CursorStyle < 0x6 ) {		// insert mode
 						PrevOpcode( SrcBase, &csrPtr );
 					}
-					DeleteOpcode( filebase, &csrPtr);
+					DeleteOpcodeUndo( filebase, &csrPtr, &Undo);
 					key=0;
 				}
 				SearchMode=0;
@@ -2008,6 +2101,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				}
 				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
+//		case KEY_CHAR_POW:
+			case 30045:		// KEY_CTRL_UNDO:
+				ProgUndo( filebase, &csrPtr, &Undo );
+				key=0;
+				ClipStartPtr = -1 ;		// ClipMode cancel
+				break;
+
 			default:
 				break;
 		}
@@ -2051,6 +2152,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					key=0;
 					SearchMode=0;
 					DebugScreen = 0;
+					UpdateLineNum=1;
+					Undo.enable = 0;
 					break;
 				default:
 					break;
@@ -2103,6 +2206,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					key=0;
 					SearchMode=0;
 					DebugScreen = 0;
+					UpdateLineNum=1;
+					Undo.enable = 0;
 				}
 			} else {
 				if ( key == KEY_CTRL_AC ) SearchMode=0;

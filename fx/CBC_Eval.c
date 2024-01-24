@@ -1618,7 +1618,7 @@ complex Cplx_Eval2(char *SRC, int *ptr) {		// Eval temp mat
 	if ( oplen == 0 ) return Int2Cplx(0);
 	ExecPtr= *ptr;
 	CB_StrBufferCNT=0;			// Quot String buffer clear
-	result = Cplx_EvalsubTop( SRC );
+	result = Cplx_ListEvalsubTop( SRC );
 	if ( ( EvalEndCheck( SRC[ExecPtr] ) == 0 ) && ( ExecPtr < oplen ) ) CB_Error(SyntaxERR) ; // Syntax error 
 //	if ( ( ComplexMode==0 ) && ( result.imag != 0 ) ) CB_Error(NonRealERR) ; // Non Real error 
 	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }

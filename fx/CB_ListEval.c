@@ -45,7 +45,7 @@ void CopyMatList2AnsTop( int reg ) {	// List 1 -> ListAns top
 }
 void CopyAns2MatList( char* SRC, int reg ) {	// ListAns -> List 1
 	int sizeA,sizeB;
-	int ElementSize;
+	int ElementSize,ElementSize2;
 	int base;
 	
 	sizeA        = MatAry[CB_MatListAnsreg].SizeA;
@@ -54,10 +54,17 @@ void CopyAns2MatList( char* SRC, int reg ) {	// ListAns -> List 1
 	ElementSize  = MatAry[CB_MatListAnsreg].ElementSize;
 	if ( sizeA == 0 ) { CB_Error(ArgumentERR); return ; } // Argument error
 	
-	ElementSize=ElementSizeSelect( SRC, &base, ElementSize) & 0xFF;
-	DimMatrixSub( reg, ElementSize, sizeA, sizeB, base);	//
+	ElementSize2 = ElementSizeSelect( SRC, &base, ElementSize) & 0xFF;
+	if ( ( ElementSize == ElementSize2 ) && ( MatAry[reg].SizeA == 0 ) ) {
+		memcpy( &MatAry[reg], &MatAry[CB_MatListAnsreg], sizeof( MatAry[reg] ) ); 	// Ans -> reg
+		MatAry[CB_MatListAnsreg].SizeA      = 0;						// Ans Matrix array delete
+		MatAry[CB_MatListAnsreg].Adrs       = NULL; 					// Ans Matrix array delete
+		goto exit;
+	}
+	DimMatrixSub( reg, ElementSize2, sizeA, sizeB, base);	//
 	if ( ErrorNo ) return ; // error
 	CopyMatrix( reg, CB_MatListAnsreg );
+  exit:
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 }
 int CheckAnsMatList( int reg ) {	// ListAns <-> List 1
