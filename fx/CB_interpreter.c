@@ -559,6 +559,10 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x4B:	// DotPut(Z,x,y)
 						CB_DotPut(SRC);
 						break;
+					case 0x05:	// >DMS
+						dspflag=1;
+						CB_StrDMS(SRC);
+						break;
 					case 0x0B:	// EngOn
 						ENG=1;
 						dspflag=0;
@@ -1943,7 +1947,7 @@ int  CB_Input( char *SRC ){
 		case 3:	// ?&Mat  ?Str1-20
 			MatAryC=MatrixPtr( reg, dimA, dimB );
 			OpcodeStringToAsciiString(buffer, MatAryC, 31);
-			locate( CursorX, CursorY); Print((unsigned char*)buffer);
+			CB_Print(CursorX, CursorY, (unsigned char*)buffer);
 			Scrl_Y();
 			CB_CurrentStr=MatAryC;
 			key=InputStr( 1, CursorY, MatAry[reg].SizeB-1,  CB_CurrentStr, ' ', REV_OFF);
@@ -2046,12 +2050,16 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	char ProgNo_bk;
 	char BreakPtr_bk; 
 	char StepOutProgNo=0;
+	int maxoplen;
 
-	c=SRC[ExecPtr];
-	if ( c == 0x22 ) {	// String
-		ExecPtr++;
-		CB_GetQuotOpcode(SRC, buffer,16);	// Prog name
-	}
+	CB_CurrentStr=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
+	OpcodeStringToAsciiString( buffer, CB_CurrentStr, 16 );	// Prog name
+
+//	c=SRC[ExecPtr];
+//	if ( c == 0x22 ) {	// String
+//		ExecPtr++;
+//		CB_GetQuotOpcode(SRC, buffer,16);	// Prog name
+//	}
 
 	c=SRC[ExecPtr];
 	if ( c == ',' ) {	// arg

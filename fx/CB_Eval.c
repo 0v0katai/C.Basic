@@ -833,6 +833,21 @@ double Evaldummy1(char *SRC, int c, int *num){
 	return c+result;
 }
 */
+double DmsToDec( char *SRC, double h ) {
+	double m,s,f=1;
+	if ( h<0 ) { f=-1; h=-h; }
+	m=Evalsub1(SRC);
+	if ( SRC[ExecPtr] != 0xFFFFFF8C ) return (h + m/60)*f;
+	ExecPtr++;
+	s=Evalsub1(SRC);
+	if ( SRC[ExecPtr] == 0xFFFFFF8C ) ExecPtr++;
+	return (h + m/60 + s/3600)*f ;
+}
+//-----------------------------------------------------------------------------
+int MatrixObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+//int MatrixObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
+//-----------------------------------------------------------------------------
+
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
 	double result,tmp;
@@ -886,6 +901,47 @@ double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				break;
 			case  0x1B  :	//  Exa
 				result *= 1e18 ;
+				break;
+				
+			case  0xFFFFFF8C  :	//  dms
+				result = DmsToDec( SRC, result );
+				break;
+				
+			case  0xFFFFFF9C  :	//  Deg
+				switch ( Angle ) { 
+					case 0:	// Deg
+						break;
+					case 1:	// Rad
+						result = result *(PI/180.);
+						break;
+					case 2:	// Grad
+						result = result *(200./180.);
+						break;
+				}
+				break;
+			case  0xFFFFFFAC  :	//  Rad
+				switch ( Angle ) { 
+					case 0:	// Deg
+						result = result *(180./PI);
+						break;
+					case 1:	// Rad
+						break;
+					case 2:	// Grad
+						result = result *(200./PI);
+						break;
+				}
+				break;
+			case  0xFFFFFFBC  :	//  Grad
+				switch ( Angle ) { 
+					case 0:	// Deg
+						result = result *(180./200.);
+						break;
+					case 1:	// Rad
+						result = result *(PI/200.);
+						break;
+					case 2:	// Grad
+						break;
+				}
 				break;
 				
 			default:

@@ -652,14 +652,10 @@ void CB_StorStr( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 
-
-void CB_Str( char *SRC ){		// "" "" or &Mat or Str1-20 or StrFunction
+void CB_StrPrint( char *SRC , int csrX ) {
 	char buffer[CB_StrBufferMax];
-	int c,d;
-	int execptr,maxoplen,i=0;
+	int c,d,i=0;
 	
-	CB_CurrentStr = CB_GetOpStr( SRC, &maxoplen );	
-	if ( ErrorNo ) return ;  // error
 	c = SRC[ExecPtr] ; 
 	if ( c == 0x0E ) {	// -> store str
 		ExecPtr++;
@@ -669,8 +665,9 @@ void CB_Str( char *SRC ){		// "" "" or &Mat or Str1-20 or StrFunction
 		OpcodeStringToAsciiString( buffer, CB_CurrentStr, CB_StrBufferMax-1 );
 		CB_SelectTextVRAM();	// Select Text Screen
 		if ( CursorX >1 ) Scrl_Y();
+		CursorX+=csrX;
 		while ( buffer[i] ) {
-			CB_PrintC( CursorX,CursorY, (unsigned char*)buffer+i );
+			CB_PrintC( CursorX, CursorY, (unsigned char*)buffer+i );
 			CursorX++; if (CursorX > 21) Scrl_Y();
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
@@ -680,6 +677,15 @@ void CB_Str( char *SRC ){		// "" "" or &Mat or Str1-20 or StrFunction
 		if ( buffer[0]=='\0' ) CursorX=22;
 		Bdisp_PutDisp_DD_DrawBusy_through( SRC );
 	}
+}
+
+void CB_Str( char *SRC ){		// "" "" or &Mat or Str1-20 or StrFunction
+	int maxoplen;
+	
+	CB_CurrentStr = CB_GetOpStr( SRC, &maxoplen );	
+	if ( ErrorNo ) return ;  // error
+
+	CB_StrPrint(SRC, 0);
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1056,5 +1062,45 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 	return CB_StrBufferMax-1;
 }
 
+
+int CB_StrDMS( char *SRC ) {
+	double a,b,c,d;
+	int i=0,j=3,f=1;
+	
+	if (CB_INT)	a = CBint_CurrentValue ;
+	else		a = CB_CurrentValue    ;
+
+	if ( a<0 ) { f=-1; a=-a; }
+	b=floor(a);
+	b=(a-b)*60.;
+	c=floor(b);
+	d=(b-c)*60.;
+	
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+
+	sprintf(CB_CurrentStr, "%d %02d  %05.2f", (int)a*f, (int)c, d);
+
+	i=floor(log10(a));
+	if ( i<0 ) i=0;
+	if ( f<0 ) i++;
+
+	if ( CB_CurrentStr[0] == '-' ) CB_CurrentStr[0]=0x87;	// (-)
+
+	CB_CurrentStr[i+1]=0x9C;
+	
+	CB_CurrentStr[i+4]=0xE5;
+	CB_CurrentStr[i+5]=0x96;
+
+	if ( CB_CurrentStr[i+10] == '0' ) {
+		j--;
+		if ( CB_CurrentStr[i+9] == '0' ) j-=2;
+	}
+
+	CB_CurrentStr[ 8+i+j]=0xE5;
+	CB_CurrentStr[ 9+i+j]=0x98;
+	CB_CurrentStr[10+i+j]='\0';
+
+	CB_StrPrint(SRC, 23-(10+i+j) );
+}
 
 
