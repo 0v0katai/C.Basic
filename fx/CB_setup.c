@@ -32,7 +32,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.86 " );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.87 " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -46,13 +46,13 @@ void FkeyS_L_(){
 	int temp;
 	temp=S_L_Style;
 	Fkey_Clear( 0 );
-	Fkey_dispN( 0, ""); Linesub(0*21+5,7*8+4,0*21+18,7*8+4, S_L_Normal);	// -----
+	Fkey_dispN( 0, ""); Linesub(0*21+5,7*8+4,0*21+18,7*8+4, S_L_Normal,1);	// -----
 	Fkey_Clear( 1 );
-	Fkey_dispN( 1, ""); Linesub(1*21+5,7*8+4,1*21+18,7*8+4, S_L_Thick);	// =====
+	Fkey_dispN( 1, ""); Linesub(1*21+5,7*8+4,1*21+18,7*8+4, S_L_Thick,1);	// =====
 	Fkey_Clear( 2 );
-	Fkey_dispN( 2, ""); Linesub(2*21+5,7*8+4,2*21+18,7*8+4, S_L_Broken);	// : : : :
+	Fkey_dispN( 2, ""); Linesub(2*21+5,7*8+4,2*21+18,7*8+4, S_L_Broken,1);	// : : : :
 	Fkey_Clear( 3 );
-	Fkey_dispN( 3, ""); Linesub(3*21+5,7*8+4,3*21+18,7*8+4, S_L_Dot);	// . . . .
+	Fkey_dispN( 3, ""); Linesub(3*21+5,7*8+4,3*21+18,7*8+4, S_L_Dot,1);	// . . . .
 	Fkey_Clear( 4 );
 	Fkey_Clear( 5 );
 	S_L_Style=temp;
@@ -702,12 +702,13 @@ int SetupG(int select){		// ----------- Setup
     char *display[] ={"Nrm","Fix","Sci"};
     char *mode[]    ={"Double","Int"};
     char *Matmode[]    ={"[m,n]","[X,Y]"};
+    char *Pictmode[]    ={"S.Mem","Heap"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int scrl=select-6;
 	int y;
-	int listmax=12;
+	int listmax=13;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -771,8 +772,12 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,12-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		}
 		if ( ( scrl >=6 ) && (13-scrl > 0 ) ){
-			locate( 1,13-scrl); Print((unsigned char*)"Execute mode:");
-			locate(14,13-scrl); Print((unsigned char*)mode[CB_INTDefault]);
+			locate( 1,13-scrl); Print((unsigned char*)"Pict    mode:");
+			locate(14,13-scrl); Print((unsigned char*)Pictmode[PictMode]);
+		}
+		if ( ( scrl >=7 ) && (14-scrl > 0 ) ){
+			locate( 1,14-scrl); Print((unsigned char*)"Execute mode:");
+			locate(14,14-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 
 		y = select-scrl;
@@ -815,7 +820,11 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 0, "m.n ");
 				Fkey_dispN( 1, "X,Y ");
 				break;
-			case 12: // Execute Mode
+			case 12: // Mat mode
+				Fkey_dispN( 0, "MEM ");
+				Fkey_dispN( 1, "Heap");
+				break;
+			case 13: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -886,7 +895,10 @@ int SetupG(int select){		// ----------- Setup
 					case 11: // Matrix mode
 						MatXYmode = 0 ; // m,n
 						break;
-					case 12: // CB mode
+					case 12: // Pict mode
+						PictMode = 0 ; // Memory mode
+						break;
+					case 13: // CB mode
 						CB_INTDefault = 0 ; // normal
 						break;
 					default:
@@ -933,7 +945,10 @@ int SetupG(int select){		// ----------- Setup
 					case 11: // Matrix mode
 						MatXYmode = 1 ; // x,y
 						break;
-					case 12: // CB mode
+					case 12: // Pict mode
+						PictMode = 1 ; // heap mode
+						break;
+					case 13: // CB mode
 						CB_INTDefault = 1 ; // int
 						break;
 					default:

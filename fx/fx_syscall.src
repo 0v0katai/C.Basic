@@ -46,6 +46,8 @@
  .EXPORT _MCS_GetCapa
  .EXPORT _MCS_GetMainMemoryStart
 
+ .EXPORT _GetVRAMAddress
+ .EXPORT _Bdisp_ShapeToVRAM
 
  .ALIGN	4
 
@@ -281,6 +283,18 @@ _MCS_GetCapa:
 _MCS_GetMainMemoryStart:
 	mov.l SYSCALL,r1
 	mov.l #H'392,r0
+	jmp @r1
+	nop
+
+_GetVRAMAddress:
+	mov.l SYSCALL,r1
+	mov.l #H'135,r0
+	jmp @r1
+	nop
+
+_Bdisp_ShapeToVRAM:
+	mov.l SYSCALL,r1
+	mov.l #H'02F,r0
 	jmp @r1
 	nop
 

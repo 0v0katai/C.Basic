@@ -519,10 +519,13 @@ const short oplistVARS[]={
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
+		0xF7F0,	// DotShape(
 		0xF73F,	// DotGet(
 		0xF94B,	// DotPut(
 		0xF74F,	// DotTrim(
 		0xF7E0,	// DotLife(
+		0xF7E1,	// Rect(
+		0xF7E2,	// FillRect(
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -890,6 +893,8 @@ const short oplistCMD[]={
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
 		0xFFFF,	// 				-
+		0xF7E1,	// Rect(
+		0xF7E2,	// FillRect(
 		0xF73F,	// DotGet(
 		0xF94B,	// DotPut(
 		0xF74F,	// DotTrim(
@@ -899,8 +904,6 @@ const short oplistCMD[]={
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
-		0x23,	// #
-		0x25,	// %
 
 		0};
 
@@ -1145,6 +1148,38 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[6]='e';
 		string[7]='(';
 		string[8]='\0';
+	} else
+	if ( opcode == 0xF7E1 ) {
+		string[0]='R';
+		string[1]='e';
+		string[2]='c';
+		string[3]='t';
+		string[4]=' ';
+		string[5]='\0';
+	} else
+	if ( opcode == 0xF7E2 ) {
+		string[0]='F';
+		string[1]='i';
+		string[2]='l';
+		string[3]='l';
+		string[4]='R';
+		string[5]='e';
+		string[6]='c';
+		string[7]='t';
+		string[8]=' ';
+		string[9]='\0';
+	} else
+	if ( opcode == 0xF7F0 ) {
+		string[0]='D';
+		string[1]='o';
+		string[2]='t';
+		string[3]='S';
+		string[4]='h';
+		string[5]='a';
+		string[6]='p';
+		string[7]='e';
+		string[8]='(';
+		string[9]='\0';
 	} else
 	if ( opcode == 0xFB ) { // P(
 		string[0]='E';

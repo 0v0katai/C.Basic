@@ -359,8 +359,9 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispN( 5, "ver.");
 				GetKey(&key);
 				switch (key) {
-					case KEY_CTRL_EXIT:
 					case KEY_CHAR_POWROOT:
+					case KEY_CTRL_EXIT:
+					case KEY_CTRL_QUIT:
 							cont =0 ;
 							break;
 					case KEY_CTRL_SETUP:
@@ -407,6 +408,11 @@ unsigned int Explorer( int size, char *folder )
 							VerDisp();
 							redraw = 1;
 							break;
+					case KEY_CHAR_ASIN:
+							if ( CB_INTDefault ) CBint_test(); else CB_test();
+							redraw = 1;
+							break;
+							
 					default:
 						break;
 				}
@@ -1121,7 +1127,7 @@ void SaveConfig(){
 	bufint[12]=BreakCheck;
 	bufint[13]=TimeDsp;
 	bufint[14]=MatXYmode;
-	bufint[15]=0;
+	bufint[15]=PictMode;
 
 	bufdbl[ 8]=Xfct;
 	bufdbl[ 9]=Yfct;
@@ -1193,6 +1199,7 @@ void LoadConfig(){
 		BreakCheck=bufint[12];
 		TimeDsp   =bufint[13];
 		MatXYmode =bufint[14];
+		PictMode =bufint[15];
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];

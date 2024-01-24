@@ -31,6 +31,7 @@ extern char BreakCheck;	// Break Stop on/off
 
 extern char TimeDsp;
 extern char MatXYmode;
+extern char PictMode;	// StoPict/RclPict  StrageMem:0  heap:1
 
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
@@ -93,10 +94,14 @@ extern char GraphY3[];
 #define PI 3.1415926535897932
 
 #define MatAryMax 26
-extern short	MatArySizeA[MatAryMax];		// Matrix array size
-extern short	MatArySizeB[MatAryMax];		// Matrix array size
+extern int		MatAryMaxbyte[MatAryMax];	// Matrix array max memory size
+extern short	MatArySizeA[MatAryMax];		// Matrix array size m Y
+extern short	MatArySizeB[MatAryMax];		// Matrix array size n X
 extern char		MatAryElementSize[MatAryMax];		// Matrix array word size
 extern double *MatAry[MatAryMax];			// Matrix array ptr*
+
+#define PictMax 20
+extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
 
 //------------------------------------------------------------------------------
 extern int	CB_TicksStart;
@@ -214,6 +219,9 @@ void CB_GraphY( char *SRC );
 void CB_StoPict( char *SRC ) ; //	StoPict
 void CB_RclPict( char *SRC ) ; //	RclPict
 
+void CB_Rect( char *SRC ) ; 	// Rect x1,y1,x2,y2,mode 
+void CB_FillRect( char *SRC ) ; // FillRect x1,y1,x2,y2,mode 
+void CB_DotShape( char *SRC ) ; // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern1,pattern2)
 void CB_DotGet( char *SRC );	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
 void CB_DotPut( char *SRC );	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 void CB_DotTrim( char *SRC );	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]

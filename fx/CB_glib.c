@@ -119,8 +119,8 @@ void GraphAxesGrid(){
 	double x,y;
 
 	if ( Axes ) {
-		Horizontal(0, S_L_Normal);
-		Vertical(0, S_L_Normal);
+		Horizontal(0, S_L_Normal,1);
+		Vertical(0, S_L_Normal,1);
 			if ( Yscl > 0 ) {
 				if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(Xdot,y);
 				if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(Xdot,y);
@@ -345,18 +345,24 @@ void PxlChg_VRAM(int py, int px){
 }
 
 //------------------------------------------------------------------------------ LINE
-void LinesubSetPoint(int px, int py) {
+void LinesubSetPoint(int px, int py, int mode) {
 	if ( ( px <   1 ) || ( px > 127 ) || ( py <   1 ) || ( py >  63 ) ) return;
-	Bdisp_SetPoint_VRAM(px, py, 1);
+	if ( mode == 2 ) {
+		if (Bdisp_GetPoint_VRAM(px, py)) 
+			Bdisp_SetPoint_VRAM(px, py, 0);
+		else
+			Bdisp_SetPoint_VRAM(px, py, 1);
+	} else
+	Bdisp_SetPoint_VRAM(px, py, mode);
 }
-void LinesubSetPointThick(int px, int py) {
-		LinesubSetPoint(px  , py  );
-		LinesubSetPoint(px  , py-1);
-		LinesubSetPoint(px-1, py  );
-		LinesubSetPoint(px-1, py-1);
+void LinesubSetPointThick(int px, int py, int mode) {
+		LinesubSetPoint(px  , py  , mode);
+		LinesubSetPoint(px  , py-1, mode);
+		LinesubSetPoint(px-1, py  , mode);
+		LinesubSetPoint(px-1, py-1, mode);
 }
 
-void Linesub(int px1, int py1, int px2, int py2, int style) {
+void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 	int i, j;
 	int x, y;
 	int dx, dy; // delta x,y
@@ -379,23 +385,25 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 			if (wx==0) {	// vertical line
 					x=px1; y=py1;
 					while( wy>=0 ) {
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
 					}
+				break;
 			}
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
 					}
-			}
+				break;
+			} 
 			
 			if (wx>=wy) {
 				if (dy>0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y++; }
 					}
@@ -403,7 +411,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dy<0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y--; }
 					}
@@ -413,7 +421,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dx>0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x++; }
 					}
@@ -421,7 +429,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dx<0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x--; }
 					}
@@ -434,19 +442,21 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1;
 					while( wy>=0 ) {
 						if (Styleflag)
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
 						Styleflag = 1-Styleflag;
 					}
+				break;
 			}
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
 						if (Styleflag)
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
 						Styleflag = 1-Styleflag;
 					}
+				break;
 			}
 			
 			if (wx>wy) {
@@ -454,7 +464,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						if (Styleflag)
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y++; }
 						Styleflag = 1-Styleflag;
@@ -464,7 +474,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						if (Styleflag)
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y--; }
 						Styleflag = 1-Styleflag;
@@ -476,7 +486,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						if (Styleflag)
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x++; }
 						Styleflag = 1-Styleflag;
@@ -486,7 +496,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						if (Styleflag)
-						LinesubSetPoint(x, y);
+						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x--; }
 						Styleflag = 1-Styleflag;
@@ -499,23 +509,25 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 			if (wx==0) {	// vertical line
 					x=px1; y=py1;
 					while( wy>=0 ) {
-						LinesubSetPointThick(x  , y  );
+						LinesubSetPointThick(x, y, mode);;
 						wy--; y+=dy;
 					}
+				break;
 			}
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
-						LinesubSetPointThick(x  , y  );
+						LinesubSetPointThick(x, y, mode);;
 						wx--; x+=dx;
 					}
+				break;
 			}
 			
 			if (wx>=wy) {
 				if (dy>0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
-						LinesubSetPointThick(x  , y  );
+						LinesubSetPointThick(x, y, mode);;
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y++; }
 					}
@@ -523,7 +535,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dy<0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
-						LinesubSetPointThick(x  , y  );
+						LinesubSetPointThick(x, y, mode);;
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y--; }
 					}
@@ -533,7 +545,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dx>0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
-						LinesubSetPointThick(x  , y  );
+						LinesubSetPointThick(x, y, mode);;
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x++; }
 					}
@@ -541,7 +553,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 				if (dx<0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
-						LinesubSetPointThick(x  , y  );
+						LinesubSetPointThick(x, y, mode);;
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x--; }
 					}
@@ -554,21 +566,23 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1;
 					while( wy>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPointThick(x  , y  );
+							LinesubSetPointThick(x, y, mode);;
 						}
 						wy--; y+=dy;
 						Styleflag++; if (Styleflag>2) Styleflag=0;
 					}
+				break;
 			}
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPointThick(x  , y  );
+							LinesubSetPointThick(x, y, mode);;
 						}
 						wx--; x+=dx;
 						Styleflag++; if (Styleflag>2) Styleflag=0;
 					}
+				break;
 			}
 			
 			if (wx>=wy) {
@@ -576,7 +590,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPointThick(x  , y  );
+							LinesubSetPointThick(x, y, mode);;
 						}
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y++; }
@@ -587,7 +601,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPointThick(x  , y  );
+							LinesubSetPointThick(x, y, mode);;
 						}
 						wx--; x+=dx;
 						j-=wy; if (j<0) { j+=i; y--; }
@@ -600,7 +614,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPointThick(x  , y  );
+							LinesubSetPointThick(x, y, mode);;
 						}
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x++; }
@@ -611,7 +625,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						if (Styleflag==1) {
-							LinesubSetPointThick(x  , y  );
+							LinesubSetPointThick(x, y, mode);;
 						}
 						wy--; y+=dy;
 						j-=wx; if (j<0) { j+=i; x--; }
@@ -628,7 +642,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style) {
 }
 
 
-void Line(int style) {
+void Line(int style, int mode) {
 	int px1,px2,py1,py2;
 	int i,j;
 	if ( Previous_X > 1e307 ) { 
@@ -644,35 +658,35 @@ void Line(int style) {
 	Previous_PY = py2;
 	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
 	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
-	Linesub( px1, py1, px2, py2, style);
+	Linesub( px1, py1, px2, py2, style, mode);
 }
 
-void F_Line(double x1, double y1, double x2, double y2, int style) {
+void F_Line(double x1, double y1, double x2, double y2, int style, int mode) {
 	int px1,px2,py1,py2;
 	int i,j;
 	i = VWtoPXY( x1, y1, &px1, &py1) ;
 	j = VWtoPXY( x2, y2, &px2, &py2) ;
 	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
 	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
-	Linesub( px2, py2, px1, py1 ,style);
+	Linesub( px2, py2, px1, py1 ,style, mode);
 }
 
-void Vertical(double x, int style) {
+void Vertical(double x, int style, int mode) {
 	int px,py;
 	VWtoPXY( x, 0, &px, &py);
 	if ( px<  0 ) return;
 	if ( px>127 ) return;
-	Linesub( px, 1, px, 63, style);
+	Linesub( px, 1, px, 63, style, mode);
 }
-void Horizontal(double y, int style) {
+void Horizontal(double y, int style, int mode) {
 	int px,py;
 	VWtoPXY( 0, y, &px, &py);
 	if ( py<  0 ) return;
 	if ( py> 63 ) return;
-	Linesub( 1, py, 127, py, style);
+	Linesub( 1, py, 127, py, style, mode);
 }
 
-void Circle(double x, double y, double r, int style, int drawflag ) {
+void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 	double	angle, k, x0,y0,x1,y1;
 	int px,py;
 	int	i,n;
@@ -691,11 +705,11 @@ void Circle(double x, double y, double r, int style, int drawflag ) {
 			switch ( style ) {
 				case S_L_Normal:
 				case S_L_Dot:
-					LinesubSetPoint(px, py);
+					LinesubSetPoint(px, py, mode);
 					break;
 				case S_L_Thick:
 				case S_L_Broken:
-					LinesubSetPointThick(px, py);
+					LinesubSetPointThick(px, py, mode);
 					break;
 			}
 		}

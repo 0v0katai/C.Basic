@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.80.00 
+ Casio Basic Interpreter (& Compiler) ver 0.87.00 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -21,6 +21,7 @@
 #include "CB_interpreter.h"
 #include "CB_error.h"
 #include "CB_sample.h"
+#include "fx_syscall.h"
 
 //----------------------------------------------------------------------------------------------
 int LoadFileSDK( char *src ) {
@@ -79,6 +80,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
 			ProgfileEdit[i]=0;		// Prog Edit flag clear
 		}
+		for (i=1; i<=PictMax; i++) {
+			PictAry[i]=NULL;		// Pict ptr clear
+		}
+		PictAry[0]=GetVRAMAddress();
+		
 		key =( SelectFilefree( filename ) ) ;
 		switch ( key ) {
 			case KEY_CHAR_POWROOT:				// -- test for SDK (internal sample program)
@@ -146,6 +152,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			ptr=ProgfileAdrs[i];
 			if ( ptr != NULL ) free(ptr);
 			ProgfileAdrs[i]=0;
+		}
+		for (i=PictMax; i>=1; i--) {			// memory free
+			ptr=PictAry[i];
+			if ( ptr != NULL ) free(ptr);
+			PictAry[i]=0;
 		}
 	}
 }

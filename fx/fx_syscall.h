@@ -66,3 +66,18 @@ void MCS_GetDirectoryEntryAddress( void*directory_entry_address );
 void MCS_GetCurrentBottomAddress( void*current_bottom_address );
 int MCS_GetCapa( int*current_bottom );
 int MCS_GetMainMemoryStart( void );
+
+//------------------------------------------------------- Bdisp
+unsigned char* GetVRAMAddress();
+
+typedef struct{
+    unsigned int x1;
+    unsigned int y1;
+    unsigned int x2;
+    unsigned int y2;
+    unsigned char f[4];
+    unsigned int on_bits;
+    unsigned int off_bits;
+} TShape;
+
+void Bdisp_ShapeToVRAM( TShape *p ); 
