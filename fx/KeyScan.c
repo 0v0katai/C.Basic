@@ -42,6 +42,8 @@ int CheckKeyRow( int row ){
   char*PORTA=(void*)0xA4000120;
   short smask;
   char cmask;
+  char PORTBtmp = *PORTB;
+  char PORTMtmp = *PORTM;
 
   smask = 0x0003 << ((row%8)*2);
   cmask = ~( 1 << (row%8) );
@@ -64,13 +66,14 @@ int CheckKeyRow( int row ){
   delay();
   result = ~(*PORTA);   // a pressed key in the row-to-check draws the corresponding bit to 0
   delay();
-  *PORTB_CTRL = 0xAAAA;  
-  *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
-  delay();
+//  *PORTB_CTRL = 0xAAAA;  
+//  *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
+//  delay();
   *PORTB_CTRL = 0x5555;
   *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x0055;
   delay();
-
+  *PORTB = PORTBtmp;
+  *PORTM = PORTMtmp;
   return result;
 }
 

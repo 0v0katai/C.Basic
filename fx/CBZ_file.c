@@ -13,7 +13,7 @@ unsigned int Explorer( int size, char *folder );
 static int FileCmp( const void *p1, const void *p2 );
 
 static int size=0;
-char folder[FILENAMEMAX] = "", tmpfolder[FILENAMEMAX] = "", name[FILENAMEMAX] = "";
+char folder[FOLDERMAX] = "", tmpfolder[FOLDERMAX] = "", name[FILENAMEMAX] = "";
 static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 static Files Favoritesfiles[FavoritesMAX];
@@ -58,8 +58,9 @@ unsigned int SelectFile (char *filename)
 			}
 			MSG2(VerMSG,"File Reading.....");
 			Bdisp_PutDisp_DD();
+			if ( StorageMode & 2 ) folder[0]='\0';
 			if ( StorageMode & 2 ) size = MCS_ReadFileList() ;
-			else 					size = ReadFile( folder );
+			else                   size = ReadFile( folder );
 			qsort( files+(FavoritesMAX), size-FavoritesMAX-1, sizeof(Files), FileCmp );
 			memcpy( files+FavoritesMAX+1, files+(FavoritesMAX), sizeof(Files)*(size-(FavoritesMAX+1)) );
 		}
@@ -115,8 +116,12 @@ void ToLower( char *str ){
 
 void GetExtName( char *sname, char *ext ){	// sname -> sname.ext
 	char *cptr;
+	int i;
 	cptr=(char*)strstr(sname,".");
 	if ( cptr!=NULL ) {
+		i=strlen(sname);
+		while ( sname[i]!='.' ) i--;
+		cptr=sname+i;
 		strncpy( ext, cptr+1, 3 );
 		*cptr='\0';
 	} else ext[0]='\0';
@@ -308,10 +313,9 @@ static int IsFileNeeded2( FONTCHARACTER *find_name, char *ext )
 	char str[64];
 	char ext2[8];
 	FontToChar(find_name,str);
-	ToLower(str);
 	ToLower(ext);
-	sprintf( ext2, ".%s", ext );
-	return ( (strcmp(str + strlen(str) - 4, ext2 ) == 0)  );
+	GetExtName( str, ext2 );
+	return ( (strcmp( ext, ext2 ) == 0)  );
 }
 static int ReadFile2( char *folder, char *ext, int maxsize )
 {
@@ -359,7 +363,7 @@ void DeleteFavorites( int i ) {	// i:index
 		}
 		i--;
 	}
-	SaveFavorites();
+	CopyFilesToFavorites();
 }
 
 int FavoritesFunc( int index ) {
@@ -395,7 +399,7 @@ int FavoritesFunc( int index ) {
 			strncpy( files[i].filename, files[(index)].filename, FILENAMEMAX );
 			strncpy( files[i].folder,   files[(index)].folder,   FOLDERMAX );
 			(index)=i;
-			SaveFavorites();
+			CopyFilesToFavorites();
 		}
 	}
 	return index;
@@ -414,7 +418,7 @@ void FavoritesUpDown( int *index, int updw ) {	// up:-1	down:1
 	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
 	files[(*index)].filesize=tmp;
 	(*index)=(*index)+updw;
-	SaveFavorites();
+	CopyFilesToFavorites();
 }
 
 //--------------------------------------------------------------
@@ -539,7 +543,8 @@ unsigned int Explorer( int size, char *folder )
 
 	if ( index > size - 1 ) index = size - 1;
 	if ( size == FavoritesMAX+1 ) index = 0;
-	top = index ;
+//	top = index ;
+	top = 0;
 
 	if ( FileListUpdate ) {
 		for( i=0; i<FavoritesMAX; i++){			//	set  Favorites list
@@ -567,6 +572,7 @@ unsigned int Explorer( int size, char *folder )
 	
 	while( cont && (FileListUpdate==0) )
 	{
+		if ( StorageMode >= 2 ) memset( folder, 0, 9 );
 		FavCount=0;
 		for( i=0; i<FavoritesMAX; i++){			//	count Favorites list
 			if ( files[i].filesize ) FavCount++;
@@ -589,7 +595,8 @@ unsigned int Explorer( int size, char *folder )
 				break;
 			case 1:
 				strcpy(buffer,files[index].filename);
-				if ( (strcmp(buffer + strlen(buffer) - 4, ".g1m") == 0 ) ) Fkey_dispN( FKeyNo1,">txt"); else Fkey_dispN( FKeyNo1,">g1m");
+				GetExtName( buffer, ext );
+				if ( (strcmp(ext, "g1m") == 0 ) ) Fkey_dispN( FKeyNo1,">txt"); else Fkey_dispN( FKeyNo1,">g1m");
 				Fkey_Icon( FKeyNo2, 392 );	//	Fkey_dispR( FKeyNo2,"REN");
 //				FkeyClear( FKeyNo3 );
 //				FkeyClear( FKeyNo4 );
@@ -720,7 +727,21 @@ unsigned int Explorer( int size, char *folder )
 		if ( KEY_CHAR_PLUS == key ) key='X';
 		if ( KEY_CHAR_MINUS== key ) key='Y';
 		if ( KEY_CHAR_0    == key ) key='Z';
-		if ( ( 'A' <= key ) && ( key <= 'Z' ) ) {
+		if ( KEY_CHAR_DP   == key ) key='~';
+		if ( KEY_CHAR_EXP  == key ) key='@';
+		if ( ( '@' == key ) ) {
+			i=FavoritesMAX;
+			while ( i<size ) {
+				if ( files[i].filesize == FOLDER_FLAG ) {
+						index = i;
+						top = index;
+					break;
+				}
+				i++;
+			}
+			
+		} else 
+		if ( ( ( 'A' <= key ) && ( key <= 'Z' ) ) || ( key == '~' ) ) {
 			i=FavoritesMAX;
 			while ( i<size ) {
 				if ( files[i].filesize == FOLDER_FLAG ) i++;
@@ -813,7 +834,7 @@ unsigned int Explorer( int size, char *folder )
 //						FavoritesFunc( index );
 						break;
 					case 2:	// ->SD
-						StorageMode = CheckSD() ; // SD mode
+						ChangeStorageMode( CheckSD() ) ; // SD mode
 						FileListUpdate = 1;
 						cont=0;
 						break;
@@ -831,7 +852,7 @@ unsigned int Explorer( int size, char *folder )
 						goto fav_up;
 						break;
 					case 2:	// ->Storage
-						StorageMode = 0 ;	// -> storage memory 
+						ChangeStorageMode( 0 );	// -> storage memory 
 						FileListUpdate = 1;
 						cont=0;
 						break;
@@ -902,19 +923,16 @@ unsigned int Explorer( int size, char *folder )
 					case KEY_CTRL_SETUP:
 							i = StorageMode ;
 							selectSetup=SetupG(selectSetup, 0);
-							SaveFavorites();
 							if ( ( FileListUpdate ) || ( i != StorageMode ) ) { key = KEY_CTRL_EXIT; goto update; }
 							break;
 					case KEY_CTRL_F1:
 							selectVar=SetVar(selectVar);		// A - 
-							SaveFavorites();
 							break;
 					case KEY_CTRL_F2:
 							selectMatrix=SetMatrix(selectMatrix);		//
 							break;
 					case KEY_CTRL_F3:
 							SetViewWindow();
-							SaveFavorites();
 							break;
 					case KEY_CTRL_F4:	//
 							key=FileCMD_PASS;
@@ -923,12 +941,12 @@ unsigned int Explorer( int size, char *folder )
 					case KEY_CTRL_F5:	//
 						  ChangeStorageMode:
 							if ( StorageMode == 0 ) {
-								StorageMode = 2 ;	// -> main memory
+								ChangeStorageMode( 2 );	// -> main memory
 							} else
 							if ( StorageMode == 1 ) {
-								StorageMode = 3 ;	// -> main memory
+								ChangeStorageMode( 3 );	// -> main memory
 							} else {
-								StorageMode &= 1 ;	// -> storage/SD memory 
+								ChangeStorageMode( StorageMode & 1 );	// -> storage/SD memory 
 							}
 							FileListUpdate = 1;
 							cont=0;
@@ -1238,10 +1256,11 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 	PutKey( KEY_CTRL_SHIFT, 1 );
 	PutKey( KEY_CTRL_ALPHA, 1 );
   loop:
-	sprintf( msg, "%s %s Name?", pmsg, ext );
+  	if ( ext[0]=='M' )	sprintf( msg, "%s MainM Name?", pmsg );
+  	else sprintf( msg, "%s %s Name?  ", pmsg, ext );
 	locate(3,3); Print((unsigned char *)msg);
 	locate(3,4); Print((unsigned char *)" [             ]");
-	Fkey_dispN( FKeyNo1, "MCS");
+	Fkey_dispN( FKeyNo1, "Main");
 	Fkey_dispN( FKeyNo2, "g1m");
 	FkeyClear( FKeyNo3 );
 	Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
@@ -1447,10 +1466,11 @@ int InputFilenamePassname( char *filebase, char *basname, char* msg) {		//
 void NewPassWord( char *fname ){	// New Password command
 	char *filebase;
 	int fsize,size;
-	char sname[16],basname[16];
+	char sname[16],basname[16],ext[8];
 
 	SetShortName( sname, fname);
-	if ( strcmp( sname + strlen(sname) - 4, ".g1m") != 0 ) return ;	// not g1mfile
+	GetExtName( sname, ext );
+	if ( strcmp( ext, "g1m") != 0 ) return ;	// not g1mfile
 	if ( LoadProgfile( fname, 0, 0, 1 ) ) return ; // error
 	filebase = ProgfileAdrs[0];
 	if ( CheckG1M( filebase ) ) return ; // not support g1m
@@ -1619,22 +1639,19 @@ int SaveProgfile( int progNo ){
 		if ( AutoSaveMode == 0 ) {
 			if ( InputFilenameG1MorG3M( basname, "Save", ext ) ) if ( CurrentFileMode == 1 ) goto loop2; else return 1 ;
 			strcpy( basname2, basname) ;
+			if ( ext[0]=='M' ) ChangeStorageMode( StorageMode | 2); else ChangeStorageMode( StorageMode & 0xFD);
 			if ( ExistG1Mext( basname2, ext ) ==0 ) if ( YesNoOverwrite() ) goto loop;
 		}
-		basname[8]='\0';
 		basname8ToG1MHeader( filebase, basname);
 		sprintf(sname, "%s.g1m", basname );
 		r=SaveBasG1MorG3M( filebase, ext );	// S.mem / MCS
-//		if ( ext[0] != ext2[0] ) { FileListUpdate = 0 ; return 1; }	// no refesh list
-		if ( ext[0]=='M' ) StorageMode |= 2; else StorageMode &= 0xFD;
-
+	  	FileListUpdate = 1;
 	} else
 	if ( CurrentFileMode == 1 ) {	// text save
 	  loop2:
 		if ( AutoSaveMode == 0 ) {
 			if ( InputFilename( basname, "Save Text Name?" ) ) return 1 ;
 		}
-		basname[8]='\0';
 		SetFullfilenameExt( fname, basname, "txt" );
 		strcpy( fname2, fname) ;
 		
@@ -2018,7 +2035,9 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		} else {
 			if ( InputFilenameG1MorG3M( basname, "Copy", ext ) ) return 1 ; // cancel
 		}
-//		basname[8]='\0';
+		if ( ext[0]=='M' ) {	// MCS
+			ChangeStorageMode( StorageMode | 2 ); 
+		} else ChangeStorageMode( StorageMode & 0xFD );
 		SetFullfilenameExt( name, basname, ext );
 		if ( ( strcmp( name, fname)==0 ) && ( strcmp(ext,ext2)==0 ) ) return 0; // no rename
 		basname8ToG1MHeader( filebase, basname);
@@ -2031,11 +2050,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		if ( SaveBasG1MorG3M( filebase, ext ) == 0 ) { 
 		} else return 1;
 	  	FileListUpdate = 1;
-//		if ( ext[0] != ext2[0] ) { FileListUpdate = 0 ; return 1; }	// no refesh list
-		if ( ext[0]=='M' ) {	// MCS
-			SetFullfilenameExt( name, basname, "g1m" );
-			StorageMode |= 2; 
-		} else StorageMode &= 0xFD;
+		if ( ext[0]=='M' ) SetFullfilenameExt( name, basname, "g1m" );	// MCS
 	} else {
 		filebase=CB_LoadSub( basname, 0, &size, ext ) ;
 		if ( filebase ==NULL ) return 1 ; // error
@@ -2356,22 +2371,20 @@ void ConvertToText( char *fname ){
 	char ext[8],ext2[8];
 
 	SetShortName( sname, fname);
-	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file -> G1M
+	GetExtName( sname, ext );
+	if ( strcmp( ext, "txt") == 0 ) {	// text file -> G1M
 	  	SetExt( ext );	// set ext ( g1m,g3m,MCS )
 		if ( LoadProgfile( fname, 0, EditMaxfree, 1 ) ) return ; // error
 		filebase = ProgfileAdrs[0];
 		G1MHeaderTobasname8( filebase, basname);
 		if ( InputFilenameG1MorG3M( basname, "Convert", ext ) ) return ; // cancel
-		basname[8]='\0';
+		if ( ext[0]=='M' ) ChangeStorageMode( StorageMode |  2); else ChangeStorageMode( StorageMode & 0xFD );
 		SetFullfilenameExt( fname, basname, (char*)ext );
 		basname8ToG1MHeader( filebase, basname);
 		if ( ExistG1Mext( basname, ext ) ==0 ) if ( YesNoOverwritefile(fname) ) return ; // cancel
 		if ( SaveBasG1MorG3M( filebase, ext ) ) return ;
 	  	FileListUpdate = 1;
-		if ( ext[0]=='M' ) {
-			SetFullfilenameExt( fname, basname, "g1m" );
-			StorageMode |= 2; 
-		} else StorageMode &= 0xFD;
+		if ( ext[0]=='M' ) SetFullfilenameExt( fname, basname, "g1m" );
 		
 	} else {	// G1M file -> Text
 		MSG1("Wait a moment...");
@@ -2388,16 +2401,14 @@ void ConvertToText( char *fname ){
 		textsize=OpcodeToText( filebase+buffersize+0x56, text, size );
 		if ( textsize<0 ) { CB_ErrMsg(MemoryERR); return ; } // error
 		
+		if ( StorageMode == 2 ) ChangeStorageMode( StorageMode & 0xFD );	// MCS->text
 		SetFullfilenameExt( fname, basname, "txt" );
 		if ( ExistFile( fname, 0 ) == 0 ) { // ==0 existed 
 			if ( YesNoOverwritefile(fname) ) { return ; } // cancel
 			Bdisp_PutDisp_DD();
 		}
 		storeFile( fname, (unsigned char*)text, textsize );
-		if ( StorageMode == 2 ) {	// MCS->text
-			StorageMode &= 0xFD;
-		  	FileListUpdate = 1;
-		}
+		FileListUpdate = 1;
 	}
 
 	ErrorMSGfile( "Convert Complete!", fname, 0);
@@ -2410,9 +2421,10 @@ void ConvertToText( char *fname ){
 //----------------------------------------------------------------------------------------------
 #define ConfigMAX  1080
 #define ConfigMAX2  512
+#define ConfigMAX3  588+32
 //--------------------------------------------------------------
 
-void SaveFavorites(){
+void CopyFilesToFavorites(){
 	int i;
 	for( i=0; i<FavoritesMAX; i++){			//	backup Favorites list
 		if ( files[i].filesize == 0 ) {
@@ -2424,7 +2436,28 @@ void SaveFavorites(){
 			Favoritesfiles[i].filesize = files[i].filesize;
 		}
 	}
+}
+
+void SaveFavorites(){
+	int i;
+	if ( MaxMemMode==0 ) CopyFilesToFavorites();
 	SaveConfig();
+}
+
+void CopyFavoritesToFiles(){
+	int i;
+	if ( MaxMemMode==0 ){
+		for( i=0; i<FavoritesMAX; i++){			//	restore Favorites list
+			if ( Favoritesfiles[i].filesize == 0 ) {
+				memset(  files[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
+				files[i].filesize = 0;
+			} else {
+				strncpy( files[i].filename, Favoritesfiles[i].filename, FILENAMEMAX );
+				strncpy( files[i].folder,   Favoritesfiles[i].folder,   FOLDERMAX );
+				files[i].filesize = Favoritesfiles[i].filesize;
+			}
+		}
+	}
 }
 
 int SaveConfigWriteFile( unsigned char *buffer, const unsigned char *fname, int size ) {
@@ -2597,9 +2630,98 @@ void SaveConfig2(){
 	SaveConfigWriteFile( buffer, fname, ConfigMAX2 ) ;
 }
 
+
+void InitConfig3(){
+	const unsigned char fname[]="CBasic3";
+	unsigned char buffer[ConfigMAX3];
+	unsigned char *sbuf;
+	short  *bufshort=(short*)buffer;
+	int    *bufint =(int*)buffer;
+	double *bufdbl =(double*)buffer;
+	int size,i,r;
+
+	memset( buffer, 0x00, ConfigMAX3 );
+	SaveConfigWriteFile( buffer, fname, ConfigMAX3 ) ;
+}
+
 void SaveConfig(){
 	SaveConfig1();
 	SaveConfig2();
+}
+
+#define FavoritesSIZE	sizeof(Files)*FavoritesMAX
+
+void ChangeFavorites( int oldStorageMode, int newStorageMode ){	// old <> new favorite
+	const unsigned char fname[]="CBasic3";
+	unsigned char buffer[ConfigMAX3];
+	unsigned char *sbuf;
+	short  *bufshort=(short*)buffer;
+	int    *bufint =(int*)buffer;
+	double *bufdbl =(double*)buffer;
+	int size,i,r;
+
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX3 ) < 0 ) { 
+		InitConfig3();
+		if  ( LoadConfigReadFile( buffer, fname, ConfigMAX3 ) < 0 ) return ;
+	} 
+	switch ( oldStorageMode ) {
+		case 0:	// storage
+			memcpy( buffer, folder, 9 );
+			memcpy( buffer+32+FavoritesSIZE*0, Favoritesfiles, FavoritesSIZE );		// Favorites -> storage(0)
+			switch ( newStorageMode ) {
+				case 1:	// SD
+					memcpy( Favoritesfiles, buffer+32+FavoritesSIZE*1, FavoritesSIZE );	// SD(1)     -> Favorites
+					memcpy( folder, buffer+10, 9 );
+					break;
+				case 2:	// MCS(storage)
+				case 3:	// MCS(SD)
+					memcpy( Favoritesfiles, buffer+32+FavoritesSIZE*2, FavoritesSIZE );	// MCS(2)     -> Favorites
+					memset( folder, 0, 9 );
+					break;
+			}
+			break;
+		case 1:	// SD
+			memcpy( buffer+10, folder, 9 );
+			memcpy( buffer+32+FavoritesSIZE*1, Favoritesfiles, FavoritesSIZE );		// Favorites -> SD(1)
+			switch ( newStorageMode ) {
+				case 0:	// storage
+					memcpy( Favoritesfiles, buffer+32+FavoritesSIZE*0, FavoritesSIZE );	// storage(0 -> Favorites
+					memcpy( folder, buffer, 9 );
+					break;
+				case 2:	// MCS(storage)
+				case 3:	// MCS(SD)
+					memcpy( Favoritesfiles, buffer+32+FavoritesSIZE*2, FavoritesSIZE );	// MCS(2)     -> Favorites
+					memset( folder, 0, 9 );
+					break;
+			}
+			break;
+		case 2:	// MCS(storage)
+		case 3:	// MCS(SD)
+			memcpy( buffer+32+FavoritesSIZE*2, Favoritesfiles, FavoritesSIZE );		// Favorites -> MCS(2)
+			switch ( newStorageMode ) {
+				case 0:	// storage
+					memcpy( Favoritesfiles, buffer+32+FavoritesSIZE*0, FavoritesSIZE );	// storage(0 -> Favorites
+					memcpy( folder, buffer, 9 );
+					index = 8;
+					if ( MaxMemMode==0 ) strcpy( files[index].folder, folder );
+					break;
+				case 1:	// SD
+					memcpy( Favoritesfiles, buffer+32+FavoritesSIZE*1, FavoritesSIZE );	// SD(1)     -> Favorites
+					memcpy( folder, buffer+10, 9 );
+					index = 8;
+					if ( MaxMemMode==0 ) strcpy( files[index].folder, folder );
+					break;
+			}
+			break;
+			
+	}
+	SaveConfigWriteFile( buffer, fname, ConfigMAX3 ) ;
+	CopyFavoritesToFiles();
+}
+
+void ChangeStorageMode( int newMode ) {
+	ChangeFavorites( StorageMode, newMode );	// old -> new favorites
+	StorageMode = newMode;
 }
 
 //------------------------------------------------------------------------ load from main memory
@@ -2870,6 +2992,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 				Setfoldername16( folder16, basname );
 				srcPrg = CB_SearchProg( folder16 );
 				if ( srcPrg < 0 ) { 				// undefined Prog
+					MSG2("Prog Loading.....",buffer);
 					Getfolder( buffer );
 					SetFullfilenameExt( filename, buffer, "g1m" ) ;		// g1m 1st reading
 					r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
@@ -2952,15 +3075,15 @@ int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
@@ -3096,6 +3219,54 @@ void FavoritesDowndummy7( int *index ) {
 	SaveFavorites();
 }
 void FavoritesDowndummy8( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
+}
+void FavoritesDowndummy9( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
+}
+void FavoritesDowndummyA( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
+}
+void FavoritesDowndummyB( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
 	char tmpfolder[FOLDERMAX];

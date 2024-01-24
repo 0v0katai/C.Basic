@@ -986,6 +986,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							BdispSetPointVRAM2( 127, y  , 2);		//
 							BdispSetPointVRAM2( 127, y+1, 2);		//
 						}											//
+
+						CB_Help( help_code, cy>(ymax/2+1) );	// help display
+						help_code = 0;
+					
 						break;
 				case 4: 		// hex dump
 						i = csrPtr-offset;
@@ -1108,9 +1112,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			}
 
 			if ( dumpflg == 2 ) {
-					CB_Help( help_code, cy>(ymax/2+1) );	// help display
-					help_code = 0;
-					
 					locate((pcx-1+EDITpxNum)/6+1,cy); 
 			} else	locate(cx,cy);
 			
@@ -1516,7 +1517,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									} else {
 										if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
 										ProgEntryN=1;
-										MSG1("Prog Loading.....");
+//										MSG1("Prog Loading.....");
 										CB_AliasVarClr();
 										CB_ProgEntry( SrcBase ) ;		// sub program search
 										if ( ErrorNo ) { 
@@ -1526,7 +1527,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 											ProgNo=0;
 											ExecPtr=0;
 											stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
-											if ( ( stat==-7 ) && ( ProgEntryN <= 1 ) ) DebugMode=0;
+											if ( ( stat==-7 ) && ( ProgEntryN == 0 ) ) DebugMode=0;
 										}
 										SaveConfig();
 										filebase = ProgfileAdrs[ProgNo];
@@ -2115,7 +2116,7 @@ int CB_BreakStop() {
 	if ( dbgmode  ) key=EditRun(2);	// Program listing & edit
 
 	if ( ( dbgmode == 0 ) ||  ( key == KEY_CTRL_EXIT ) ) { 
-		if ( ProgEntryN <= 1 ) DebugMode=0;
+		if ( ProgEntryN == 0 ) DebugMode=0;
 		if ( BreakPtr != -7 ) BreakPtr=-999;
 		r = BreakPtr;
 	}

@@ -30,7 +30,7 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 #define FOLDER_FLAG       -1
 #define FOLDER_SEPALATOR  -2
 
-typedef struct{
+typedef struct{	// 13+9+4=26
 	char filename[FILENAMEMAX];
 	char folder[FOLDERMAX];
 	int filesize;
@@ -39,7 +39,7 @@ typedef struct{
 #define FavoritesMAX 7
 
 extern Files *files;
-extern char folder[FILENAMEMAX];
+extern char folder[FOLDERMAX];
 
 extern char FileListUpdate;
 extern char StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
@@ -89,9 +89,14 @@ int NewProg();
 void CB_Local( char *SRC ) ;
 void CB_ProgEntry( char *SRC ) ; //	Prog "..." into memory
 
+void CopyFilesToFavorites();
+void CopyFavoritesToFiles();
 void SaveFavorites();
 void SaveConfig();
 void LoadConfig();
+
+void ChangeStorageMode( int newMode ) ;
+void ChangeFavorites( int oldStorageMode, int newStorageMode );	// old <> new favorite
 
 int CB_IsExist( char *SRC, int calcflag ) ;	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
 char * CB_SaveLoadOprand( char *SRC , int *reg, int *matsize ) ;

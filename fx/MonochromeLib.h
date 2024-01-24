@@ -121,16 +121,19 @@ void ML_vertical_line(int x, int y1, int y2, ML_Color color);
 
 void ML_rectangle(int x1, int y1, int x2, int y2, int border_width, ML_Color border_color, ML_Color fill_color);
 
+void ML_polygon_Rotate( int *x, int *y, int nb_vertices, ML_Color color, int angle , int center_x, int center_y, int percent, int fill ) ;	// flag 1:fill
+void ML_rectangle_Rotate(int x1, int y1, int x2, int y2, int border_width, ML_Color border_color, ML_Color fill_color, int angle, int center_x, int center_y, int percent ) ;
+
 void ML_polygon(const int *x, const int *y, int nb_vertices, ML_Color color);
 void ML_filled_polygon(const int *x, const int *y, int nb_vertices, ML_Color color);
 
 void ML_circle(int x, int y, int radius, ML_Color color);
 void ML_filled_circle(int x, int y, int radius, ML_Color color);
 
-void ML_ellipse(int x, int y, int radius1, int radius2, ML_Color color);
-void ML_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color);
-void ML_filled_ellipse(int x, int y, int radius1, int radius2, ML_Color color);
-void ML_filled_ellipse_in_rect(int x, int y, int radius1, int radius2, ML_Color color);
+void ML_ellipse(int x, int y, int radius1, int radius2, ML_Color color, int angle);
+void ML_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color, int angle);
+void ML_filled_ellipse(int x, int y, int radius1, int radius2, ML_Color color, int angle);
+void ML_filled_ellipse_in_rect(int x, int y, int radius1, int radius2, ML_Color color, int angle);
 
 void ML_horizontal_scroll(int scroll);
 void ML_horizontal_scroll2(int scroll, int x1, int y1, int x2, int y2);

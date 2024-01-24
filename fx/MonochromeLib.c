@@ -212,6 +212,7 @@ unsigned char ML_get_contrast()
 void ML_pixel(int x, int y, ML_Color color)
 {
 	char* vram = ML_vram_adress();
+//	if ((x<0)||(127<x)||(y<0)||(63<y)) return;
 	if(x&~127 || y&~63) return;
 	switch(color)
 	{
@@ -521,8 +522,8 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 	dy = y2 - y1;
 	sx = sgn(dx);
 	sy = sgn(dy);
-	dx = abs(dx);
-	dy = abs(dy);
+	dx = abs(dx); if ( dx>127 ) dx=127;
+	dy = abs(dy); if ( dy> 63 ) dy= 63;
 	ML_pixel(x, y, color);
 	if(dx > dy)
 	{
@@ -932,6 +933,151 @@ void ML_rectangle(int x1, int y1, int x2, int y2, int border_width, ML_Color bor
 			ML_horizontal_line(i, x1+border_width, x2-border_width, fill_color);
 	}
 }
+
+//------------------------------------------------------------------- Rotate process
+void ML_angle( int angle, int *sinus, int *cosinus ) {
+	/*
+    angle %= 360;
+    if (angle < 0) angle += 360;
+    if (angle < 0) angle += 360;
+    if (angle == 0) { *cosinus = 16384*4; *sinus = 0;}
+    else if (angle == 90) { *cosinus = 0; *sinus = -16384*4;}
+    else if (angle == 180) { *cosinus = -16384*4; *sinus = 0;}
+    else if (angle == 270) { *cosinus = 0; *sinus = 16384*4;}
+    else
+    {
+        *cosinus = (cos(-3.14159265359 * (double)angle / 180.0) ) * 16384*4;
+        *sinus   = (sin(-3.14159265359 * (double)angle / 180.0) ) * 16384*4;
+    }
+    */
+    *cosinus = icos( angle, 1024 ) << 6;
+    *sinus   = isin( angle, 1024 ) << 6;
+}
+void ML_pixel_Rotate( int x, int y, int dx, int dy, int sinus, int cosinus, ML_Color color ){
+//x' = x*cos(ƒÆ) - y*sin(ƒÆ) 
+//y' = x*sin(ƒÆ) + y*cos(ƒÆ) 
+	int nx,ny;
+	nx = ( dx*cosinus - dy*sinus ) >>16;
+	ny = ( dx*sinus + dy*cosinus ) >>16;
+	ML_pixel( x+nx, y+ny, color);
+}
+
+void ML_horizontal_line_Rotate( int y, int dy, int x, int dx,  int sinus, int cosinus, ML_Color color ){
+//x' = x*cos(ƒÆ) - y*sin(ƒÆ) 
+//y' = x*sin(ƒÆ) + y*cos(ƒÆ) 
+	int nx1,ny1,nx2,ny2;
+	nx1 = ( ( -dx*cosinus - dy*sinus ) >>16 ) + x;
+	ny1 = ( ( -dx*sinus + dy*cosinus ) >>16 ) + y;
+	nx2 = ( ( +dx*cosinus - dy*sinus ) >>16 ) + x;
+	ny2 = ( ( +dx*sinus + dy*cosinus ) >>16 ) + y;
+	ML_line( nx1, ny1, nx2, ny2, color);
+}
+
+void ML_Rotate( int x, int y, int *dx, int *dy, int sinus, int cosinus ){
+//x' = x*cos(ƒÆ) - y*sin(ƒÆ) 
+//y' = x*sin(ƒÆ) + y*cos(ƒÆ) 
+	int nx,ny;
+	nx = ( ( (*dx)*cosinus - (*dy)*sinus ) >>16) + x;
+	ny = ( ( (*dx)*sinus + (*dy)*cosinus ) >>16) + y;
+	*dx = nx;
+	*dy = ny;
+}
+
+void ML_polygon_Rotate( int *x, int *y, int nb_vertices, ML_Color color, int angle , int center_x, int center_y, int percent, int fill ) {	// flag 1:fill
+    int i,sx,sy;
+	int ax[128],ay[128];
+    int cosinus, sinus;
+	if ( nb_vertices>(128-1) ) return ;
+	if ( nb_vertices < 1 ) return;
+	if ( percent == 0 ) return ;
+	ML_angle( angle, &sinus, &cosinus );
+	if ( ( center_x==-2147483648 ) || ( center_y==-2147483648 ) ) {
+		sx=0; sy=0;
+		for(i=0 ; i<nb_vertices ; i++) { sx+=x[i]; sy+=y[i]; }
+		center_x=sx/nb_vertices;
+		center_y=sy/nb_vertices;
+	}
+	for(i=0 ; i<nb_vertices ; i++) {
+		ax[i]=x[i]-center_x;
+		ay[i]=y[i]-center_y;
+		if ( percent != 100 ) {
+			ax[i] = ax[i]*percent/100;
+			ay[i] = ay[i]*percent/100;
+		}
+		ML_Rotate( center_x, center_y, &ax[i], &ay[i], sinus, cosinus );
+	}
+	if ( fill ) ML_filled_polygon( (const int *)ax, (const int *)ay, nb_vertices, color);
+	else 		       ML_polygon( (const int *)ax, (const int *)ay, nb_vertices, color);
+}
+void ML_box_Rotate( int x1, int y1, int x2, int y2, int center_x, int center_y, int sinus, int cosinus, ML_Color color, int fill ) {	// flag 1:fill
+    int ax[4],ay[4];
+	ax[0]=x1-center_x;
+	ay[0]=y1-center_y;
+	ML_Rotate( center_x, center_y, &ax[0], &ay[0], sinus, cosinus );
+	ax[1]=x2-center_x;
+	ay[1]=y1-center_y;
+	ML_Rotate( center_x, center_y, &ax[1], &ay[1], sinus, cosinus );
+	ax[2]=x2-center_x;
+	ay[2]=y2-center_y;
+	ML_Rotate( center_x, center_y, &ax[2], &ay[2], sinus, cosinus );
+	ax[3]=x1-center_x;
+	ay[3]=y2-center_y;
+	ML_Rotate( center_x, center_y, &ax[3], &ay[3], sinus, cosinus );
+	if ( fill ) ML_filled_polygon( (const int *)ax, (const int *)ay, 4, color);
+	else 		       ML_polygon( (const int *)ax, (const int *)ay, 4, color);
+}
+
+void ML_rectangle_Rotate(int x1, int y1, int x2, int y2, int border_width, ML_Color border_color, ML_Color fill_color, int angle , int center_x, int center_y, int percent ){
+	int i;
+
+	int x,y;
+    int cosinus, sinus;
+
+	ML_angle( angle, &sinus, &cosinus );
+
+	if(x1 > x2)
+	{
+		i = x1;
+		x1 = x2;
+		x2 = i;
+	}
+	if(y1 > y2)
+	{
+		i = y1;
+		y1 = y2;
+		y2 = i;
+	}
+
+	if ( ( center_x==-2147483648 ) || ( center_y==-2147483648 ) ) {
+		center_x=(x1+x2)/2;
+		center_y=(y1+y2)/2;
+	}
+	
+	if ( percent != 100 ) {
+			if ( percent == 0 ) return ;
+			x1 = (x1-center_x)*percent/100 +center_x;
+			x2 = (x2-center_x)*percent/100 +center_x;
+			y1 = (y1-center_y)*percent/100 +center_y;
+			y2 = (y2-center_y)*percent/100 +center_y;
+	}
+	
+	if(border_width > (x2-x1)/2+1) border_width = (x2-x1)/2+1;
+	if(border_width > (y2-y1)/2+1) border_width = (y2-y1)/2+1;
+	if(border_color != ML_TRANSPARENT && border_width > 0) {
+		if ( border_width == 1 ) {
+			ML_box_Rotate( x1, y1, x2, y2, center_x, center_y, sinus, cosinus, border_color, 0 );	//	BOX
+		} else {
+			ML_box_Rotate( x1, y1, x2, y1+border_width, center_x, center_y, sinus, cosinus, border_color, 1 );	// filled		// upper
+			ML_box_Rotate( x1, y2, x2, y2-border_width, center_x, center_y, sinus, cosinus, border_color, 1 );	// filled		// down
+			ML_box_Rotate( x1, y1, x1+border_width, y2, center_x, center_y, sinus, cosinus, border_color, 1 );	// filled		// left
+			ML_box_Rotate( x2, y1, x2-border_width, y2, center_x, center_y, sinus, cosinus, border_color, 1 );	// filled		// right
+
+		}
+	}
+	if(fill_color != ML_TRANSPARENT) {
+		ML_box_Rotate( x1+border_width, y1+border_width, x2-border_width, y2-border_width, center_x, center_y, sinus, cosinus, fill_color, 1 );	// filled
+	}
+}
 #endif
 
 #ifdef ML_POLYGON
@@ -1102,6 +1248,7 @@ void ML_filled_circle(int x, int y, int radius, ML_Color color)
 #endif
 
 #ifdef ML_ELLIPSE
+/*
 void ML_ellipse(int x, int y, int radius1, int radius2, ML_Color color)
 {
 	int plot_x, plot_y;
@@ -1149,10 +1296,64 @@ void ML_ellipse(int x, int y, int radius1, int radius2, ML_Color color)
 		}
 	}
 }
+*/
+
+void ML_ellipse(int x, int y, int radius1, int radius2, ML_Color color, int angle )
+{
+	int plot_x, plot_y;
+	float d1, d2;
+    int cosinus, sinus;
+	if(radius1 < 1 || radius2 < 1) return;
+	plot_x = 0;
+	plot_y = radius2;
+	d1 = radius2*radius2 - radius1*radius1*radius2 + radius1*radius1/4;
+
+	ML_angle( angle, &sinus, &cosinus );
+
+	ML_pixel_Rotate( x, y, 0,  plot_y, sinus, cosinus, color );
+	ML_pixel_Rotate( x, y, 0, -plot_y, sinus, cosinus, color );
+	while(radius1*radius1*(plot_y-.5) > radius2*radius2*(plot_x+1))
+	{
+		if(d1 < 0)
+		{
+			d1 += radius2*radius2*(2*plot_x+3);
+			plot_x++;
+		} else {
+			d1 += radius2*radius2*(2*plot_x+3) + radius1*radius1*(-2*plot_y+2);
+			plot_x++;
+			plot_y--;
+		}
+		ML_pixel_Rotate( x, y,  plot_x,  plot_y, sinus, cosinus, color );
+		ML_pixel_Rotate( x, y, -plot_x,  plot_y, sinus, cosinus, color );
+		ML_pixel_Rotate( x, y,  plot_x, -plot_y, sinus, cosinus, color );
+		ML_pixel_Rotate( x, y, -plot_x, -plot_y, sinus, cosinus, color );
+	}
+	d2 = radius2*radius2*(plot_x+.5)*(plot_x+.5) + radius1*radius1*(plot_y-1)*(plot_y-1) - radius1*radius1*radius2*radius2;
+	while(plot_y > 0)
+	{
+		if(d2 < 0)
+		{
+			d2 += radius2*radius2*(2*plot_x+2) + radius1*radius1*(-2*plot_y+3);
+			plot_y--;
+			plot_x++;
+		} else {
+			d2 += radius1*radius1*(-2*plot_y+3);
+			plot_y--;
+		}
+		ML_pixel_Rotate( x, y,  plot_x,  plot_y, sinus, cosinus, color );
+		ML_pixel_Rotate( x, y, -plot_x,  plot_y, sinus, cosinus, color );
+		if(plot_y > 0)
+		{
+			ML_pixel_Rotate( x, y,  plot_x, -plot_y, sinus, cosinus, color );
+			ML_pixel_Rotate( x, y, -plot_x, -plot_y, sinus, cosinus, color );
+		}
+	}
+}
+
 #endif
 
 #ifdef ML_ELLIPSE_IN_RECT
-void ML_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color)
+void ML_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color, int angle)
 {
 	int radius1, radius2;
 	if(x1 > x2)
@@ -1169,11 +1370,11 @@ void ML_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color)
 	}
 	radius1 = (x2-x1)/2;
 	radius2 = (y2-y1)/2;
-	ML_ellipse(x1+radius1, y1+radius2, radius1, radius2, color);
+	ML_ellipse(x1+radius1, y1+radius2, radius1, radius2, color, angle);
 }
 #endif
-
 #ifdef ML_FILLED_ELLIPSE
+/*
 void ML_filled_ellipse(int x, int y, int radius1, int radius2, ML_Color color)
 {
 	int plot_x, plot_y;
@@ -1215,10 +1416,54 @@ void ML_filled_ellipse(int x, int y, int radius1, int radius2, ML_Color color)
 			ML_horizontal_line(y-plot_y, x-plot_x, x+plot_x, color);
 	}
 }
+*/
+void ML_filled_ellipse(int x, int y, int radius1, int radius2, ML_Color color, int angle)
+{
+	int plot_x, plot_y;
+	float d1, d2;
+    int cosinus, sinus;
+	ML_angle( angle, &sinus, &cosinus );
+	if(radius1 < 1 || radius2 < 1) return;
+	plot_x = 0;
+	plot_y = radius2;
+	d1 = radius2*radius2 - radius1*radius1*radius2 + radius1*radius1/4;
+	while(radius1*radius1*(plot_y-.5) > radius2*radius2*(plot_x+1))
+	{
+		if(d1 < 0)
+		{
+			d1 += radius2*radius2*(2*plot_x+3);
+			plot_x++;
+		} else {
+			d1 += radius2*radius2*(2*plot_x+3) + radius1*radius1*(-2*plot_y+2);
+			ML_horizontal_line_Rotate( y, -plot_y, x, plot_x, sinus, cosinus, color );
+			ML_horizontal_line_Rotate( y, +plot_y, x, plot_x, sinus, cosinus, color );
+			plot_x++;
+			plot_y--;
+		}
+	}
+	ML_horizontal_line_Rotate( y, +plot_y, x, plot_x, sinus, cosinus, color );
+	ML_horizontal_line_Rotate( y, -plot_y, x, plot_x, sinus, cosinus, color );
+	d2 = radius2*radius2*(plot_x+.5)*(plot_x+.5) + radius1*radius1*(plot_y-1)*(plot_y-1) - radius1*radius1*radius2*radius2;
+	while(plot_y > 0)
+	{
+		if(d2 < 0)
+		{
+			d2 += radius2*radius2*(2*plot_x+2) + radius1*radius1*(-2*plot_y+3);
+			plot_y--;
+			plot_x++;
+		} else {
+			d2 += radius1*radius1*(-2*plot_y+3);
+			plot_y--;
+		}
+		ML_horizontal_line_Rotate( y, +plot_y, x, plot_x, sinus, cosinus, color );
+		if(plot_y > 0)
+			ML_horizontal_line_Rotate( y, -plot_y, x, plot_x, sinus, cosinus, color );
+	}
+}
 #endif
 
 #ifdef ML_FILLED_ELLIPSE_IN_RECT
-void ML_filled_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color)
+void ML_filled_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color, int angle)
 {
 	int radius1, radius2;
 	if(x1 > x2)
@@ -1235,7 +1480,7 @@ void ML_filled_ellipse_in_rect(int x1, int y1, int x2, int y2, ML_Color color)
 	}
 	radius1 = (x2-x1)/2;
 	radius2 = (y2-y1)/2;
-	ML_filled_ellipse(x1+radius1, y1+radius2, radius1, radius2, color);
+	ML_filled_ellipse(x1+radius1, y1+radius2, radius1, radius2, color, angle);
 }
 #endif
 

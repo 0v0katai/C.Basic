@@ -14,8 +14,8 @@ char * LoadHelpfile( char *buffer ) {
 	int progno = ProgNo;
 	int storagemode = StorageMode;
 
+	if ( ProgEntryN >= ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return NULL; } // Too Many Prog error
 	ProgEntryN++;
-	if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return NULL; } // Too Many Prog error
 	strcpy( basname, buffer);
 	Setfoldername16( folder16, basname );
 	Getfolder( buffer );
@@ -32,11 +32,12 @@ char * LoadHelpfile( char *buffer ) {
 	Restorefolder();
 	StorageMode = storagemode;
 	ProgNo = progno;
+	ProgEntryN--;
 	if ( ErrorNo ) {	// Can't find
 		ErrorNo=0;	// clear error
 		return NULL;
 	}
-	return ProgfileAdrs[ProgEntryN];
+	return ProgfileAdrs[ProgEntryN+1];
 }
 
 char * LoadHelp(){

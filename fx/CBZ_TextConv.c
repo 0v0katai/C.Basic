@@ -1451,13 +1451,13 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			}
 		}
 		
-//		if ( code == 0x0C ) { // Disps
-//			flag=0;
+		if ( code == 0x0C ) { // Disps
+			flag=0;
 //			if ( GetOpcode( srcbase, ofst ) != 0x0D ) {;
-//				text[textofst++] ='\r';
-//				text[textofst++] ='\n';
+				text[textofst++] ='\r';
+				text[textofst++] ='\n';
 //			}
-//		}
+		}
 		if ( textofst > maxsize-16 ) return -1; // text buffer overflow
 	}
 	text[textofst] ='\0';
@@ -1783,6 +1783,9 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 			if ( c==0 ) goto extvar;
 			c=codecnv0000( srcbase, text, &ofst, &textofst ) ;	// 0x0001 - 0x002F
 			if ( c==0 ) {
+				if ( ( text[textofst]==0x0D ) && ( text[textofst+1]==0x0A ) ) { 	// 0x0D 0x0A
+					textofst+=2;
+				}
 				if ( flag_ == 0 ) goto tokenloop;
 				d = text[textofst];
 				if ( d=='_' ) goto tokenloop;

@@ -199,6 +199,8 @@ extern char  ProgLocalVar[ProgMax+1][ArgcMAX];
 extern  char *HeapRAM;
 extern  char *TVRAM;
 extern  char *GVRAM;
+
+extern char IsDispsMat;
 //------------------------------------------------------------------------------
 #define StackGotoMax 10+26+2+6+26
 #define StackGosubMax 16

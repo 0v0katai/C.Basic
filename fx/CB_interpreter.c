@@ -2797,6 +2797,8 @@ int CB_interpreter( char *SRC ) {
 	ListFileNo  = 0;	// List File No
 	ListFilePtr = 0;	// List File Ptr
 
+	IsDispsMat  = 0;
+
 	defaultStrAry=26;	// <r>
 	defaultFnAry=57;		// z
 	defaultGraphAry=27;		// Theta

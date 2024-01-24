@@ -10,6 +10,8 @@
 */
 #include "CB.h"
 
+char IsDispsMat=0;
+
 //----------------------------------------------------------------------------------------------
 //int VGObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int VGObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
@@ -57,12 +59,15 @@ void CB_RestoreTextVRAM() {
 //	RestoreDisp(SAVEDISP_PAGE2);		// ------ RestoreDisp2 Text screen
 }	
 void CB_SelectTextVRAM() {
+	if ( IsDispsMat == 1 ) goto next;
 	if ( ScreenMode == 0 ) return;
-	SaveVRAM(GVRAM);		// ------ Save Graphic screen 
+	if ( IsDispsMat == 0 ) SaveVRAM(GVRAM);		// ------ Save Graphic screen 
 //	SaveDisp(SAVEDISP_PAGE3);		// ------ SaveDisp3 Graphic screen (NG: damage CATALOG key )
+  next:
 	RestoreVRAM(TVRAM);		// ------ RestoreDisp2 Text screen
 //	RestoreDisp(SAVEDISP_PAGE2);		// ------ RestoreDisp2 Text screen
 	ScreenMode=0;	// Text mode
+	IsDispsMat = 0;
 }
 void CB_SelectTextDD() {
 	CB_SelectTextVRAM();
@@ -75,12 +80,15 @@ void CB_RestoreGraphVRAM() {
 	RestoreVRAM(GVRAM);		// ------ Restore Graphic screen
 }	
 void CB_SelectGraphVRAM() {
+	if ( IsDispsMat == 1 ) goto next;
 	if ( ScreenMode == 1 ) return;
 	SaveVRAM(TVRAM);		// ------ SaveDisp2 Text screen
 //	SaveDisp(SAVEDISP_PAGE2);		// ------ SaveDisp2 Text screen
+  next:
 	RestoreVRAM(GVRAM);		// ------ Restore Graphic screen
 //	RestoreDisp(SAVEDISP_PAGE2);		// ------ RestoreDisp3 Graphic screen (NG: damage CATALOG key )
 	ScreenMode=1;	// Graphic mode
+	IsDispsMat = 0;
 }
 //void CB_SelectGraphDD() {
 //	CB_SelectGraphVRAM();
@@ -558,6 +566,7 @@ void CB_ChangeViewWindow() {
 void CB_ViewWindow( char *SRC ) { //	ViewWindow
 	int c;
 	CB_GetOperandNDbl( SRC, 10, REGv );
+	if ( TThetaptch == 0 ) { CB_Error(RangeERR); return; }	// Range error
 //	CB_SelectGraphVRAM();	// Select Graphic Screen
 //	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 //	CB_SelectTextVRAM();	// Select Text Screen
@@ -999,13 +1008,13 @@ void CB_RectSub( char *SRC , int RectMode ) { // RectMode  0:Rect  1:RectFill
 
 
 void CB_DotShape( char *SRC ) { // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern1,pattern2)
+/*	
 	TShape Shape;
 	int c;
 	int px1,py1,px2,py2;
 	int typ;
 	int mode,mode1,mode2;
 	int pat1,pat2;
-	
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 
 	CB_DotOprandRect( SRC, &px1, &py1);
@@ -1025,13 +1034,13 @@ void CB_DotShape( char *SRC ) { // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern
 	
 	CB_DotOprandRect( SRC, &pat1, &pat2);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-/*
+
 	if ( mode == 0 ) { mode1=2; mode2=1; }	// clear
 	else
 	if ( mode == 1 ) { mode1=1; mode2=1; }	// set
 	else
 	if ( mode == 2 ) { mode1=1; mode2=4; }	// invert
-*/
+
 	Shape.x1=px1;
 	Shape.y1=py1;
 	Shape.x2=px2;
@@ -1040,11 +1049,12 @@ void CB_DotShape( char *SRC ) { // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern
 	Shape.f[1]=typ;
 	Shape.f[2]=mode1;
 	Shape.f[3]=mode2;
-    Shape.on_bits=pat1;
-    Shape.off_bits=pat2;
+	Shape.on_bits=pat1;
+	Shape.off_bits=pat2;
 		
 	Bdisp_ShapeToVRAM( &Shape );
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
+*/
 }
 
 
@@ -1778,10 +1788,10 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	} else
 	if ( dspflag >= 3 ) { 	// Matrix List display		Mat A  List 1
 		CB_SelectTextVRAM();	// Select Text Screen
-		CB_SaveTextVRAM();
-		EditMatrix( MatdspNo, 1);	// Ans
-		CB_RestoreTextVRAM();	// Resotre Graphic screen
 		PrintDone();
+		CB_SaveTextVRAM();
+		IsDispsMat = 1;
+		EditMatrix( MatdspNo, 1);	// Ans
 		if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
 		scrmode=ScreenMode;
 		goto exitj;
@@ -2276,12 +2286,13 @@ void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
 	regT.real=TThetamin;
 	regintT  =TThetamin;
 	listreg2=CB_GraphXYEval( SRC );
-	regT.real=regTback;
-	regintT  =regintTback;
 	ErrorPtr= 0;
 	ErrorNo = 0;	// error cancel
 
 	Graph_Draw_XY_List( listreg1, listreg2 );
+	
+	regT.real=regTback;
+	regintT  =regintTback;
 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
@@ -2428,10 +2439,18 @@ void CB_RclVWin( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

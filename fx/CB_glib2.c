@@ -842,7 +842,7 @@ unsigned int Graph_main(){
 }
 
 //----------------------------------------------------------------------------------------------
-double GraphXYEval( char *buffer ) {
+double GraphXYEval( char *buffer, int *add ) {
 	double result;
 	int excptr=ExecPtr;
 	int Ansreg=CB_MatListAnsreg;
@@ -855,44 +855,61 @@ double GraphXYEval( char *buffer ) {
 		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
 		result=ReadMatrix( CB_MatListAnsreg, regT.real, MatAry[CB_MatListAnsreg].Base );
 	}
+	*add = ExecPtr+1;
 	ExecPtr=excptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
 }
 
 void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 2)
-	double tmpT=regT.real;
 	double tmpX,tmpY;
 	double p_x=Previous_X;
 	double p_y=Previous_Y;
+	char *graphX=GraphX;
+	char *graphY=GraphY;
+	int XlistDirect=0,YlistDirect=0;
 	int sizeA,sizeA2;
-	int base=0,base2=0;
+	int base=1,base2=1;
 	int c;
+	int addX,addY;
 	int at1st;
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
-	if ( xlistreg==0 ) sizeA =1; else { sizeA =MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base; }
-	if ( ylistreg==0 ) sizeA2=1; else { sizeA2=MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base; }
-	if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
-	if ( sizeA > sizeA2 ) sizeA=sizeA2;
+	if ( xlistreg==0 ) {
+		sizeA = 1;
+	} else {
+		sizeA = MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base;
+		if (graphX[0]=='{') { graphX+=1; XlistDirect=1; }
+	}
+	if ( ylistreg==0 ) {
+		sizeA2 = 1;
+	} else {
+		sizeA2 = MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base;
+		if (graphY[0]=='{') { graphY+=1; YlistDirect=1; }
+	}
+	if ( xlistreg && ylistreg ) {
+		if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		if ( sizeA  > sizeA2 )  sizeA = sizeA2 ;
+	} else {
+		if ( ( sizeA < sizeA2  ) && ( xlistreg==0 ) ) sizeA = sizeA2 ;
+	}
 	
 //	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	tmpT=regT.real;
 	c = base;
 	for ( c=base; c<sizeA+base; c++ ) {
 		regT.real=TThetamin;
+		regintT  =TThetamin;
 		at1st=0;
+		if ( TThetaptch == 0 ) return ;
 		while ( regT.real<=TThetamax ) {
 			//-----------------------------
 			if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
-			tmpX=GraphXYEval(GraphX);		// function
-			tmpY=GraphXYEval(GraphY);		// function
+			regX.real = GraphXYEval(graphX, &addX);		// function
+			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( xlistreg, c, base );
+			regY.real = GraphXYEval(graphY, &addY);		// function
+			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( ylistreg, c, base2 );
 			if ( ErrorNo ) return ;
 			//-----------------------------
-			if ( xlistreg )	regX.real=ReadMatrix( xlistreg, c, base );
-			else 			regX.real=tmpX;
-			if ( ylistreg )	regY.real=ReadMatrix( ylistreg, c, base2 );
-			else			regY.real=tmpY;
 			if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
 			if ( fabs(regY.real)*1e10<Ydot ) regY.real=0;	// zero adjust
 			if ( at1st==0 ) { Previous_X = regX.real; Previous_Y = regY.real; at1st=1; }
@@ -904,12 +921,14 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 			}
 //			Bdisp_PutDisp_DD();
 			regT.real += TThetaptch;
+			regintT   += TThetaptch;
 		}
+		if ( XlistDirect )	graphX += addX;
+		if ( YlistDirect )	graphY += addY;
 	}
 	Previous_X=p_x;
 	Previous_Y=p_y;
 	regintX=regX.real; regintY=regY.real;
-	regT.real=tmpT;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 
@@ -948,8 +967,8 @@ void DrawStat_PlotOn_VRAM(double x, double y, int Type){
 				break;
 		}
 	}
-	regX.real=x; regY.real=y;
-	regintX=regX.real; regintY=regY.real;
+	regX.real=x; regintX =x;
+	regY.real=y; regintY =y;
 }
 
 void DrawStat(){	// DrawStat
@@ -1014,10 +1033,10 @@ void DrawStat(){	// DrawStat
 
 //--------------------------------------------------------------
 //---------------------------------------------------------------------------------------------- align dummy
-//int glib2ObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte

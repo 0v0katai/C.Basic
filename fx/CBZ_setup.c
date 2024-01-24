@@ -27,8 +27,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.98\xE6\x41";
-#define VERSION 198
+const char VerMSG[]="C.Basic  v1.99\xE6\x41";
+#define VERSION 199
 
 //---------------------------------------------------------------------------------------------
 
@@ -1778,7 +1778,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						PictMode = 0 ; // Storage Memory mode 
 						break;
 					case SETUP_Storagemode: // Storage mode
-						StorageMode = 0 ; // Memory mode
+						ChangeStorageMode( 0 ); // Memory mode
 						break;
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 0 ; // off  (default)
@@ -1965,7 +1965,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						PictMode = 1 ; // heap mode
 						break;
 					case SETUP_Storagemode: // Storage mode
-						StorageMode = CheckSD() ; // SD mode
+						ChangeStorageMode( CheckSD() ); // SD mode
 						break;
 					case SETUP_DefaultWaitcount: // Wait count -
 						DefaultWaitcount-=10; if ( DefaultWaitcount < 0 ) DefaultWaitcount = 0;
@@ -2037,7 +2037,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						PictMode = 2 ; // Memory(read) & Smem(save) mode
 						break;
 					case SETUP_Storagemode: // Storage mode
-						StorageMode |= 2;	// main memory
+						ChangeStorageMode( StorageMode | 2 );	// main memory
 						break;
 					case SETUP_DefaultWaitcount: // Wait count set
 						DefaultWaitcount =  SelectNum2( "Wait", DefaultWaitcount, 0, 9999);

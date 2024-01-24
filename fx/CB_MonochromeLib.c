@@ -253,6 +253,22 @@ int CB_GetOprand_percent( char *SRC ) {	// 0~100
 	return value;
 }
 
+int CB_GetOprand_angle_center_percent( char *SRC, int *angle, int *center_x, int *center_y, int *percent ) {
+	int r;
+	*angle=0;
+	*center_x=-2147483648;
+	*center_y=-2147483648;
+	*percent=100;
+	r=CB_GetOprand_int1( SRC, &(*angle) );
+	if ( r == 0 ) return 0;
+	r=CB_GetOprand_int1( SRC, &(*center_x) );
+	if ( r == 0 ) return 0;
+	r=CB_GetOprand_int1( SRC, &(*center_y) );
+	if ( r == 0 ) return 0;
+	*percent = CB_GetOprand_percent( SRC );
+	return 1;
+}
+
 void CB_GetOprand_MLcolor( char *SRC, int *color) {
 	double d;
 	int c;
@@ -361,11 +377,12 @@ void CB_ML_Vertical( char *SRC ) { // ML_Vertical x, y1, y2, color
 }
 
 //----------------------------------------------------------------------------------------------
-void CB_ML_Rect( char *SRC ) { // ML_Rectangle x1,y1,x2,y2, border_width, border_color, fill_color
+void CB_ML_Rect( char *SRC ) { // ML_Rectangle x1,y1,x2,y2, border_width, border_color, fill_color[, chance[, angle, center_x, center_y, percent]
 	int x1,y1,x2,y2;
 	int border_width;
 	int border_color;
 	int fill_color;
+	int angle,center_x, center_y, percent;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -374,22 +391,31 @@ void CB_ML_Rect( char *SRC ) { // ML_Rectangle x1,y1,x2,y2, border_width, border
 	ExecPtr++;
 	border_color=CB_EvalInt( SRC );
 	CB_GetOprand_MLcolor( SRC, &fill_color );
+	CB_GetOprand_angle_center_percent( SRC, &angle, &center_x, &center_y, &percent );
+	MLV_width=1;	// line width
 	if ( ErrorNo ) return ;
-	ML_rectangle( x1, y1, x2, y2, border_width, border_color, fill_color);
+	if ( ( angle ) || ( percent!=100 ) ) ML_rectangle_Rotate( x1, y1, x2, y2, border_width, border_color, fill_color, angle, center_x,center_y, percent );
+	else	ML_rectangle( x1, y1, x2, y2, border_width, border_color, fill_color );
 }
 //----------------------------------------------------------------------------------------------
-void CB_ML_Polygon( char *SRC, int fill ) { // ML_Polygon &Mat X, &Mat Y, nb_vertices, color
+void CB_ML_Polygon( char *SRC, int fill ) { // ML_Polygon &Mat X, &Mat Y, nb_vertices[, color, chance[, angle, center_x, center_y, percent]
 	int ary_x,ary_y;
 	int nb_vertices;
 	int color;
+	int angle,center_x, center_y, percent;
 	CB_GetOprand2( SRC, &ary_x, &ary_y );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	nb_vertices=CB_EvalInt( SRC );
 	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_angle_center_percent( SRC, &angle, &center_x, &center_y, &percent );
+	MLV_width=1;	// line width
 	if ( ErrorNo ) return ;
-	if ( fill ) ML_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
-	else		ML_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
+	if ( ( angle ) || ( percent!=100 ) ) ML_polygon_Rotate( (int *)ary_x, (int *)ary_y, nb_vertices, color, angle, center_x, center_y, percent, fill);
+	else {
+		if ( fill ) ML_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
+		else		ML_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
+	}
 }
 
 //----------------------------------------------------------------------------------------------
@@ -411,26 +437,30 @@ void CB_ML_Circle( char *SRC, int fill ) { // ML_Circle x, y, radius, color
 }
 
 //----------------------------------------------------------------------------------------------
-void CB_ML_Ellipse( char *SRC, int fill ) { // ML_Ellipse x, y, radius1, radius2, color
+void CB_ML_Ellipse( char *SRC, int fill ) { // ML_Ellipse x, y, radius1, radius2, color, angle
 	int x,y;
 	int radius1;
 	int radius2;
 	int color;
+	int angle=0;
 	CB_GetOprand4VWR( SRC, &x, &y, &radius1, &radius2);
 	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_int1( SRC, &angle );
 	if ( ErrorNo ) return ;
-	if ( fill ) ML_filled_ellipse( x, y, radius1, radius2, color);
-	else		ML_ellipse( x, y, radius1, radius2, color);
+	if ( fill ) ML_filled_ellipse( x, y, radius1, radius2, color, angle);
+	else		ML_ellipse( x, y, radius1, radius2, color, angle);
 }
 
-void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x2, y2, color
+void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x2, y2, color, angle
 	int x1,y1,x2,y2;
 	int color;
+	int angle=0;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_int1( SRC, &angle );
 	if ( ErrorNo ) return ;
-	if ( fill ) ML_filled_ellipse_in_rect( x1, y1, x2, y2, color);
-	else		ML_ellipse_in_rect( x1, y1, x2, y2, color);
+	if ( fill ) ML_filled_ellipse_in_rect( x1, y1, x2, y2, color, angle);
+	else		ML_ellipse_in_rect( x1, y1, x2, y2, color, angle);
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1087,7 +1117,40 @@ void ML_circle2(int x, int y, int radius, ML_Color color, int start, int end, in
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+int MLObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int MLObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

@@ -45,7 +45,6 @@ void GetNewAry8( int reg, int aryN, int aryMax ) ;
 
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 
-char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) ;
 int CB_IsStr( char *SRC, int execptr ) ;
 char* CB_GetOpStr1( char *SRC ,int *maxlen ) ;		// String -> buffer	return
 char* CB_GetOpStr( char *SRC, int *maxoplen ) ;	// Get opcode String 
