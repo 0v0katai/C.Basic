@@ -404,7 +404,7 @@ unsigned int Explorer( int size, char *folder )
 							PopUpWin( 6 );
 							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.64" );
+							locate( 3, 4 ); Print( (unsigned char*)"            v0.65" );
 							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 							GetKey(&key);
@@ -1100,6 +1100,7 @@ void SaveConfig(){
 	bufint[11]=Angle;
 	bufint[12]=BreakCheck;
 	bufint[13]=TimeDsp;
+	bufint[14]=MatXYmode;
 	bufint[15]=0;
 
 	bufdbl[ 8]=Xfct;
@@ -1171,6 +1172,7 @@ void LoadConfig(){
 		Angle     =bufint[11];
 		BreakCheck=bufint[12];
 		TimeDsp   =bufint[13];
+		MatXYmode =bufint[14];
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];

@@ -130,6 +130,7 @@ extern int	CB_TicksEnd;
 extern int BreakCheck;	// Break Stop on/off
 
 extern int dspflag;
+extern int MatXYmode;
 //------------------------------------------------------------------------------
 void CB_SelectTextVRAM() ;
 void CB_SelectTextDD() ;

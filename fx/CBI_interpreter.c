@@ -219,6 +219,7 @@ void CBint_Store( unsigned char *SRC ){	// ->
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
+/*
 int  CBint_Input( unsigned char *SRC ){
 	unsigned int c;
 	int DefaultValue=0;
@@ -328,6 +329,7 @@ int  CBint_Input( unsigned char *SRC ){
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0 ;
 }
+*/
 //-----------------------------------------------------------------------------
 /*
 void CBint_Locate( unsigned char *SRC ){

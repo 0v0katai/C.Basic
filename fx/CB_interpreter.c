@@ -52,6 +52,7 @@ double Plot_X    =1e308 ;	// Plot Current X
 double Plot_Y    =1e308 ;	// Plot Current Y
 
 int TimeDsp=0;		// Execution Time Display  0:off 1:on
+int MatXYmode=0;		// 0: normal  1:reverse
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
@@ -521,7 +522,7 @@ void CB_Store( unsigned char *SRC ){	// ->
 int  CB_Input( unsigned char *SRC ){
 	unsigned int c;
 	double DefaultValue=0;
-	int flag=0,flag2=0;
+	int flag=0,flagint=0;
 	int reg,bptr,mptr;
 	unsigned char buffer[32];
 	char*	MatAryC;
@@ -536,21 +537,34 @@ int  CB_Input( unsigned char *SRC ){
 
 	c=SRC[ExecPtr];
 	bptr=ExecPtr;
-	if ( c==0x0E ) {
+	if ( c==0x0E ) {	// ->
 		flag=0;
 	} else
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
-		DefaultValue = REG[ c-'A' ];
 		flag=1;
-		c=SRC[ExecPtr];
-		if ( c=='%' ) { ExecPtr++; flag2=1; }
-		if ( c=='#' ) { ExecPtr++; flag2=0; }
+		reg=c-'A';
+		c=SRC[ExecPtr+1];
+		if ( CB_INT ) {
+			if ( c=='#' ) {
+				DefaultValue = REG[reg] ;
+			} else { flagint=1; 
+				if ( c=='%' ) 
+				DefaultValue = REGINT[reg] ;
+			}
+		} else {
+			if ( c=='%' ) {flagint=1; 
+				DefaultValue = REGINT[reg] ;
+			} else { 
+				if ( c=='#' )
+				DefaultValue = REG[reg] ;
+			}
+		}
 	} else
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
-			mptr=MatOprand( SRC, &reg);
+			if ( CB_INT ) mptr=MatOprandInt( SRC, &reg); else mptr=MatOprand( SRC, &reg);
 			if ( ErrorNo ) return ; // error
 			switch ( MatAryElementSize[reg] ) {
 				case 8:
@@ -605,23 +619,21 @@ int  CB_Input( unsigned char *SRC ){
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
-//	if ( flag ) {
-//			CB_CurrentValue = InputNumD_CB2( 1, CursorY, 21, DefaultValue );
-//			CB_Store( SRC );
-//	} else	CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
-
 	if ( flag ) {
 			sprintGR(buffer, DefaultValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 			locate( CursorX, CursorY); Print((unsigned char*)buffer);
 			Scrl_Y();
 			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
-			if ( flag2 ) {
-				CB_Store( SRC );
-			} else {
-				CBint_CurrentValue = CB_CurrentValue;
+			CBint_CurrentValue = CB_CurrentValue ;
+			if ( flagint ) {
 				CBint_Store( SRC );
+			} else {
+				CB_Store( SRC );
 			}
-	} else	CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
+	} else	{
+			CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
+			CBint_CurrentValue = CB_CurrentValue ;
+	}
 	Scrl_Y();
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0 ;
@@ -2817,7 +2829,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				dspflag=1;
 				break;
 			case 0x3F:	// ?
-				if (CB_INT)	CBint_Input(SRC); else CB_Input(SRC);
+				CB_Input(SRC);
 				CB_TicksStart=RTC_GetTicks();	// 
 				dspflag=2;
 				c=SRC[ExecPtr++];
