@@ -5,7 +5,7 @@
 #define	FONTCHARACTER_MAX 0x10A/2
 
 Files *files = NULL;
-static int index = 0;
+int index = 0;
 
 static int ReadFile( char *folder );
 static int IsFileNeeded( FONTCHARACTER *FileName );
@@ -2504,10 +2504,8 @@ void ConvertToText( char *fname ){
 void CopyFilesToFavorites(){
 	int i;
 	for( i=0; i<FavoritesMAX; i++){			//	backup Favorites list
-		if ( files[i].filesize == 0 ) {
-			memset(  Favoritesfiles[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
-			Favoritesfiles[i].filesize = 0;
-		} else {
+		memset(  Favoritesfiles[i].filename, 0x00, sizeof(Files) );
+		if ( files[i].filesize != 0 ) {
 			strncpy( Favoritesfiles[i].filename, files[i].filename, FILENAMEMAX );
 			strncpy( Favoritesfiles[i].folder,   files[i].folder,   FOLDERMAX );
 			Favoritesfiles[i].filesize = files[i].filesize;
@@ -2525,10 +2523,8 @@ void CopyFavoritesToFiles(){
 	int i;
 	if ( MaxMemMode==0 ){
 		for( i=0; i<FavoritesMAX; i++){			//	restore Favorites list
-			if ( Favoritesfiles[i].filesize == 0 ) {
-				memset(  files[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
-				files[i].filesize = 0;
-			} else {
+			memset(  files[i].filename, 0x00, sizeof(Files) );
+			if ( Favoritesfiles[i].filesize != 0 ) {
 				strncpy( files[i].filename, Favoritesfiles[i].filename, FILENAMEMAX );
 				strncpy( files[i].folder,   Favoritesfiles[i].folder,   FOLDERMAX );
 				files[i].filesize = Favoritesfiles[i].filesize;
@@ -2730,18 +2726,16 @@ void SaveConfig(){
 #define FavoritesSIZE	sizeof(Files)*FavoritesMAX
 
 void ChangeFavorites( int oldStorageMode, int newStorageMode ){	// old <> new favorite
-	const unsigned char fname[]="CBasic3";
-	unsigned char buffer[ConfigMAX3];
-	unsigned char *sbuf;
-	short  *bufshort=(short*)buffer;
-	int    *bufint =(int*)buffer;
-	double *bufdbl =(double*)buffer;
+	unsigned char fname[]="CBasic3";
+	unsigned char buffer[ConfigMAX3+FavoritesMAX*4*3];
+	unsigned char *sptr,*dptr;
 	int size,i,r;
 
 	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX3 ) < 0 ) { 
 		InitConfig3();
 		if  ( LoadConfigReadFile( buffer, fname, ConfigMAX3 ) < 0 ) return ;
 	} 
+
 	switch ( oldStorageMode ) {
 		case 0:	// storage
 			memcpy( buffer, folder, 9 );
@@ -2793,6 +2787,7 @@ void ChangeFavorites( int oldStorageMode, int newStorageMode ){	// old <> new fa
 			break;
 			
 	}
+	
 	SaveConfigWriteFile( buffer, fname, ConfigMAX3 ) ;
 	CopyFavoritesToFiles();
 }
@@ -3531,20 +3526,20 @@ int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
@@ -3585,6 +3580,7 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3617,7 +3613,6 @@ void FavoritesDowndummy3( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy4( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

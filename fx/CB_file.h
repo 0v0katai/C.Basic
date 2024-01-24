@@ -30,7 +30,7 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 #define FOLDER_FLAG       -1
 #define FOLDER_SEPALATOR  -2
 
-typedef struct{	// 13+9+4=26
+typedef struct{	// 14(13)+10(9)+4=28
 	char filename[FILENAMEMAX];
 	char folder[FOLDERMAX];
 	int filesize;
@@ -41,6 +41,7 @@ typedef struct{	// 13+9+4=26
 
 extern Files *files;
 extern char folder[FOLDERMAX];
+extern int index;
 
 extern char FileListUpdate;
 extern char StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
