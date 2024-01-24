@@ -21,6 +21,7 @@
 #include "CB_glib.h"
 #include "CB_Eval.h"
 #include "CB_interpreter.h"
+#include "CBI_interpreter.h"
 #include "CB_error.h"
 
 //------------------------------------------------------------------------------
@@ -107,20 +108,17 @@ double atanh( double x ) {
 }
 
 //-----------------------------------------------------------------------------
-unsigned char Eval_atofNumDiv(unsigned char *SRC, double *num ){
-	unsigned int c;
-	double a=10;
-	c = SRC[ExecPtr];
+
+unsigned int Eval_atofNumDiv(unsigned char *SRC, unsigned int c, double *num ){
+	double a=.1;
 	while ( ('0'<=c)&&(c<='9') ) {
-		(*num) = (*num) + (double)(c-'0')/a;
-		a*=10;
+		(*num) = (*num) + (double)(c-'0')*a;
+		a*=.1;
 		c=SRC[++ExecPtr];
 	}
 	return c;
 }
-unsigned char Eval_atofNumMult(unsigned char *SRC, double *num ){
-	unsigned int c;
-	c = SRC[ExecPtr];
+unsigned int Eval_atofNumMult(unsigned char *SRC, unsigned int c, double *num ){
 	while ( ('0'<=c)&&(c<='9') ) {
 		(*num) = (*num)*10 +(c-'0');
 		c=SRC[++ExecPtr];
@@ -128,41 +126,38 @@ unsigned char Eval_atofNumMult(unsigned char *SRC, double *num ){
 	return c;
 }
 double Eval_atof(unsigned char *SRC) {
-	char buffer[64];
-	double temp,mantissa=0,exponent=0,result;
+	double mantissa=0,exponent=0;
 	double sign=1;
-	unsigned int c;
-	c = SRC[ExecPtr];
-	if ( c == '.'  )   {
-			ExecPtr++;
-			c=Eval_atofNumDiv(SRC, &mantissa);	// .123456
-	} else if ( c == 0x0F  ) {  // exp
-			mantissa = 1.0;
-			goto lblexp;
-	} else { 
-			c=Eval_atofNumMult(SRC, &mantissa);	// 123456
-			if ( c == '.'  ) {
-				ExecPtr++;
-				c=Eval_atofNumDiv(SRC, &mantissa);	// 123456.789
-			}
-	}
-	lblexp:
-	if ( c == 0x0F  ) { // exp
-			c=SRC[++ExecPtr];
-			if ( ( c == 0x89 ) || ( c == '+'  ) ) c=SRC[++ExecPtr];
-			if ( ( c == 0x87 ) || ( c == 0x99 ) ) { sign=-1; c=SRC[++ExecPtr]; }	// (-) & -
-			if ( ( '0'<=c )&&( c<='9' ) ) c=Eval_atofNumMult(SRC, &exponent);
-			else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; } //  error 
-		result = mantissa * pow(10,exponent*sign) ;
-		return ( result ) ;
-	} else
-		return ( mantissa ) ;
+	unsigned int c = SRC[ExecPtr];
+		if ( c == '.'  )   {	// .123456
+				c = SRC[++ExecPtr];
+				c=Eval_atofNumDiv(SRC, c, &mantissa);
+		} else if ( c == 0x0F  ) {  // exp
+				mantissa = 1.0;
+				goto lblexp;
+		} else { 	// 123456
+				c=Eval_atofNumMult(SRC, c, &mantissa);	// 123456
+				if ( c == '.'  ) {
+				c = SRC[++ExecPtr];
+					c=Eval_atofNumDiv(SRC, c, &mantissa);	// 123456.789
+				}
+		}
+		lblexp:
+		if ( c == 0x0F  ) { // exp
+				c=SRC[++ExecPtr];
+				if ( ( c == 0x89 ) || ( c == '+'  ) ) c=SRC[++ExecPtr];
+				if ( ( c == 0x87 ) || ( c == 0x99 ) ) { sign=-1; c=SRC[++ExecPtr]; }	// (-) & -
+				if ( ( '0'<=c )&&( c<='9' ) ) c=Eval_atofNumMult(SRC, c, &exponent);
+				else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; } //  error 
+			return mantissa * pow(10,exponent*sign) ;
+		} else
+			return mantissa ;
 }
 
 //-----------------------------------------------------------------------------
 
 double Evalsub1(unsigned char *SRC) {	// 1st Priority
-	double result,tmp,tmp2;
+	double result=0,tmp,tmp2;
 	unsigned char c,d;
 	unsigned char *pt;
 	int dimA,dimB,reg,x,y;
@@ -170,6 +165,8 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	double mantissa=0,exponent=0,a;
+	double sign=1;
 
 	c = SRC[ExecPtr];
 	if ( c == '(') {
@@ -184,13 +181,40 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 		return - Evalsub1( SRC );
 	}
 	if ( ( 'A'<=c )&&( c<='Z' ) || ( 'a'<=c )&&( c<='z' ) )  {
-			ExecPtr++ ;
-			return REG[c-'A'] ;
+			reg=c-'A';
+			c=SRC[++ExecPtr];
+			if ( c=='%' ) { ExecPtr++; return REGINT[reg] ; }
+			else
+			if ( c=='#' ) ExecPtr++;
+			return REG[reg] ;
 	}
 	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
-			result = Eval_atof( SRC );
-			return result ;
-	}
+		return Eval_atof( SRC );
+/*		c = SRC[ExecPtr];
+		if ( c == '.'  )   {	// .123456
+				c = SRC[++ExecPtr]; a=10;
+				while ( ('0'<=c)&&(c<='9') ) { mantissa += (double)(c-'0')/a; a*=10; c=SRC[++ExecPtr]; }
+		} else if ( c == 0x0F  ) {  // exp
+				mantissa = 1.0;
+				goto lblexp;
+		} else { 	// 123456
+				while ( ('0'<=c)&&(c<='9') ) { mantissa = mantissa*10 +(c-'0'); c=SRC[++ExecPtr]; }
+				if ( c == '.'  ) {	// 123456.789
+					c = SRC[++ExecPtr]; a=10;
+					while ( ('0'<=c)&&(c<='9') ) { mantissa += (double)(c-'0')/a; a*=10; c=SRC[++ExecPtr]; }
+				}
+		}
+		lblexp:
+		if ( c == 0x0F  ) { // exp
+				c=SRC[++ExecPtr];
+				if ( ( c == 0x89 ) || ( c == '+'  ) ) c=SRC[++ExecPtr];
+				if ( ( c == 0x87 ) || ( c == 0x99 ) ) { sign=-1; c=SRC[++ExecPtr]; }	// (-) & -
+				if ( ( '0'<=c )&&( c<='9' ) ) while ( ('0'<=c)&&(c<='9') ) { exponent = exponent*10 +(c-'0'); c=SRC[++ExecPtr]; }
+				else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; } //  error 
+			return mantissa * pow(10,exponent*sign) ;
+		} else
+			return mantissa ;
+*/	}
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
 			c = SRC[ExecPtr+1];

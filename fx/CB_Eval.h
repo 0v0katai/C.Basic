@@ -11,6 +11,7 @@
 #define ExpMax 128
 extern unsigned char ExpBuffer[];
 //-----------------------------------------------------------------------------
+double Eval_atof(unsigned char *SRC) ;
 double InputNumD_full(int x, int y, int width, double defaultNum) ;
 double InputNumD_Char(int x, int y, int width, double defaultNum, char code) ;
 double InputNumD_replay(int x, int y, int width, double defaultNum) ;

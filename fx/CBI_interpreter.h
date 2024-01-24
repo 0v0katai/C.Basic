@@ -37,7 +37,22 @@ extern int  REGINT[59];
 extern int CBint_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
+void CBint_Store( unsigned char *SRC );
+int  CBint_Input( unsigned char *SRC );
+void CBint_Locate( unsigned char *SRC );
+void CBint_Text( unsigned char *SRC, int *dspflag ) ; //	Text
+void CBint_For( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *StackForVar, int *StackForEndint, int *StackForStepint, int *CurrentStructCNT, int *CurrentStructloop);
+void CBint_Next( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *StackForVar, int *StackForEndint, int *StackForStepint, int *CurrentStructCNT, int *CurrentStructloop );
+void CBint_Dsz( unsigned char *SRC ) ; //	Dsz
+void CBint_Isz( unsigned char *SRC ) ; //	Isz
+
 void CBint_PxlOprand( unsigned char *SRC, int *py, int *px) ;
+void CBint_PxlOn( unsigned char *SRC ) ; //	PxlOn
+void CBint_PxlOff( unsigned char *SRC ) ; //	PxlOff
+void CBint_PxlChg( unsigned char *SRC ) ; //	PxlChg
+
+int CBint_BinaryEval( unsigned char *SRC ) ;
+int CBint_UnaryEval( unsigned char *SRC ) ;
 
 int CBint_interpreter( unsigned char *SRC) ;
 
