@@ -32,13 +32,15 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
+const char VerMSG[]="C.Basic  v1.10\xE6\x41";
+
 //---------------------------------------------------------------------------------------------
 
 void VerDispSub() {
 	PopUpWin( 6 );
-	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
-	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v1.10\xE6\x41\x31" );
+	locate( 3, 2 ); Print( (unsigned char*)VerMSG );
+	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
+	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
 	Bdisp_PutDisp_DD();
@@ -892,7 +894,7 @@ int SelectNum4( int n ) {		//
 #define SETUP_Storagemode	22
 #define SETUP_Forceg1msave	23
 #define SETUP_RefrshCtlDD	24
-#define SETUP_Waitcount		25
+#define SETUP_DefaultWaitcount		25
 #define SETUP_Executemode	26
 
 int SetupG(int select){		// ----------- Setup 
@@ -1050,8 +1052,8 @@ int SetupG(int select){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 25
-			if ( Waitcount == 0 )	sprintf((char*)buffer,"No Wait");
-			else					sprintf((char*)buffer,"%d",Waitcount);
+			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
+			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
@@ -1105,7 +1107,7 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 3, "Init");
 				break;
 			case SETUP_SkipUpDown: // SkipUp/Down number
-			case SETUP_Waitcount: // Wait count number
+			case SETUP_DefaultWaitcount: // Wait count number
 				Fkey_DISPN( 0," +");
 				Fkey_DISPN( 1," -");
 				Fkey_dispR( 2, "Num");
@@ -1273,8 +1275,9 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 0 ; // off
 						break;
-					case SETUP_Waitcount: // Wait count +
-						Waitcount+=100; if ( Waitcount > 9999 ) Waitcount = 9999;
+					case SETUP_DefaultWaitcount: // Wait count +
+						DefaultWaitcount+=10; if ( DefaultWaitcount > 9999 ) DefaultWaitcount = 9999;
+						Waitcount=DefaultWaitcount;
 						break;
 					case SETUP_Executemode: // CB mode
 						CB_INTDefault = 0 ; // normal
@@ -1374,8 +1377,9 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_Forceg1msave: // Force g1m save
 						ForceG1Msave = 0 ; // g1m and text
 						break;
-					case SETUP_Waitcount: // Wait count -
-						Waitcount-=100; if ( Waitcount < 0 ) Waitcount = 0;
+					case SETUP_DefaultWaitcount: // Wait count -
+						DefaultWaitcount-=10; if ( DefaultWaitcount < 0 ) DefaultWaitcount = 0;
+						Waitcount=DefaultWaitcount;
 						break;
 					case SETUP_Executemode: // CB mode
 						CB_INTDefault = 1 ; // int
@@ -1418,8 +1422,9 @@ int SetupG(int select){		// ----------- Setup
 						TimeStr[7]=(sec)%10+'0';
 						StorTIME( TimeStr );
 						break;
-					case SETUP_Waitcount: // Wait count set
-						Waitcount =  SelectNum2( "Wait", Waitcount, 0, 9999);
+					case SETUP_DefaultWaitcount: // Wait count set
+						DefaultWaitcount =  SelectNum2( "Wait", DefaultWaitcount, 0, 9999);
+						Waitcount=DefaultWaitcount;
 						break;
 					default:
 						break;
@@ -1448,8 +1453,9 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
 						break;
-					case SETUP_Waitcount: // Wait count init
-						Waitcount = 0;
+					case SETUP_DefaultWaitcount: // Wait count init
+						DefaultWaitcount = 0;
+						Waitcount=DefaultWaitcount;
 						break;
 					default:
 						break;

@@ -621,6 +621,8 @@ const short oplistOPTN[]={
 		0xB6,	// frac
 		0xAB,	// !
 		0x7F3A,	// MOD(
+		0x7FBC,	// Int/
+		0x7FBD,	// Rmdr
 		
 		0xFFFF,	// 				-
 		0x7FB0,	// And
@@ -629,6 +631,7 @@ const short oplistOPTN[]={
 		0x7FB4,	// Xor
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(		
+		0x7F88,	// RanList#(		
 		
 		0xFFFF,	// 				-
 		0xD3,	// Rnd
@@ -639,6 +642,38 @@ const short oplistOPTN[]={
 		0xDD,	// Eng
 		0xF90B,	// EngOn
 		0xF90C,	// EngOff
+
+		0xFFFF,	// 				-
+		0x7F46,	// Dim
+		0x7F41,	// Trn 
+		0x7F47,	// Fill(
+		0x7F58,	// ElemSize(
+		0x7F59,	// ColSize(
+		0x7F5A,	// RowSize(
+		0x7F5B,	// MatBase(
+		0x7FE9,	// CellSum(
+
+		0xFFFF,	// 				-
+		0x7F2C,	// Seq(
+		0x7F49,	// Argument(
+		0x7F4A,	// List->Mat(
+		0x7F4B,	// Mat->List(
+		0x7F20,	// Max(
+		0x7F2D,	// Min(
+		0x7F2E,	// Mean(
+		0x7F4C,	// Sum
+		0x7F4D,	// Prod
+		0x7FB0,	// SortA(
+		0x7FB1,	// SortB(
+		0x7F29,	// Sigma(
+
+		0xFFFF,	// 				-
+		0xA1,	// sinh
+		0xA2,	// cosh
+		0xA3,	// tanh
+		0xB1,	// arcsinh
+		0xB2,	// arccosh
+		0xB3,	// arctanh
 
 		0xFFFF,	// 				-
 		0x01,	// femto
@@ -653,36 +688,6 @@ const short oplistOPTN[]={
 		0x0A,	// Peta
 		0x0B,	// Exa
 		
-		0xFFFF,	// 				-
-		0x7F46,	// Dim
-		0x7F40,	// Mat	
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
-		0x7F58,	// ElemSize(
-		0x7F59,	// ColSize(
-		0x7F5A,	// RowSize(
-		0x7F5B,	// MatBase(
-		0x7FE9,	// CellSum(
-
-		0xFFFF,	// 				-
-		0x7F2C,	// Seq(
-		0x7F49,	// Argument(
-		0x7F20,	// Max
-		0x7F2D,	// Min	
-		0x7F4C,	// Sum(
-		0x7F4D,	// Prod(
-		0x7FB0,	// SortA(
-		0x7FB1,	// SortB(
-		0x7F29,	// Sigma( 
-
-		0xFFFF,	// 				-
-		0xA1,	// sinh
-		0xA2,	// cosh
-		0xA3,	// tanh
-		0xB1,	// arcsinh
-		0xB2,	// arccosh
-		0xB3,	// arctanh
-
 		0xFFFF,	// 				-
 		0xDA,	// Deg
 		0xDB,	// Rad
@@ -774,6 +779,7 @@ const short oplistPRGM[]={
 		0xF710,	// Locate
 		0x7F8F,	// Getkey
 		0xF7E4,	// Disp
+		0xF94F,	// Wait 
 		
 		0xFFFF,	// 				-
 		0x7F9F,	// KeyRow(
@@ -871,16 +877,31 @@ const short oplistVARS[]={
 		0x7F08,	// TThetamin
 		0x7F09,	// TThetamax
 		0x7F0A,	// TThetaptch
-		0x7FF0,	// GraphY
-		0xF720,	// DrawGraph
-		0xEE,	// Graph Y=
-		0xF5,	// Graph(X,Y)=(
-		
-//		0xF797,	// StoV-Win
-//		0xF798,	// RclV-Win
+
+		0xFFFF,	// 				-
+		0xF797,	// StoV-Win
+		0xF798,	// RclV-Win
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
+		0xF91B,	// fn
+		0x7FF0,	// GraphY
+		0xF720,	// DrawGraph
+		0xEE,	// Graph Y=
+		
+		0xFFFF,	// 				-
+		0xF5,	// Graph(X,Y)=(
+		0xF723,	// DrawStat
+		0xF7CC,	// DrawOn
+		0xF7DC,	// DrawOff
+		0xF74A,	// S-Gph1
+		0xF74B,	// S-Gph2
+		0xF74C,	// S-Gph3
+		0xF74D,	// Square
+		0xF74E,	// Cross
+		0xF74F,	// Dot
+		0xF750,	// Scatter
+		0xF751,	// xyLine
 
 		0xFFFF,	// 				-
 		0xF7E1,	// Rect(
@@ -954,10 +975,10 @@ const short oplistCMD[]={		// 5800P like
 		0x3C,	// <			4
 		0x12,	// >=			5
 		0x10,	// <=			6
-		0xF718,	// ClrText	
-		0xF719,	// ClrGraph	
-		0xF91E,	// ClrMat	
-		0xF71A,	// ClrList	
+		0x7FB0,	// And			6
+		0x7FB1,	// Or			7
+		0x7FB3,	// Not			8
+		0x7FB4,	// Xor			9
 		0x23,	// #
 		0x25,	// %
 		
@@ -968,10 +989,10 @@ const short oplistCMD[]={		// 5800P like
 		0xF710,	// Locate		4
 		0xD1,	// Cls			5
 		0xF7E4,	// Disp
-		0x7FB0,	// And			6
-		0x7FB1,	// Or			7
-		0x7FB3,	// Not			8
-		0x7FB4,	// Xor			9
+		0xF718,	// ClrText	
+		0xF719,	// ClrGraph	
+		0xF91E,	// ClrMat	
+		0xF71A,	// ClrList	
 		0x23,	// #
 		0x25,	// %
 		
@@ -1006,19 +1027,33 @@ const short oplistCMD[]={		// 5800P like
 
 //											5
 		0x7F46,	// Dim	
-		0x7F29,	// Sigma( 
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
-		0x7F2C,	// Seq(
 		0x7F49,	// Argument(
-		0x7F20,	// Max
-		0x7F2D,	// Min	
-		0x7F4C,	// Sum(
-		0x7F4D,	// Prod(
+		0x7F2C,	// Seq(
+		0x7F4B,	// Mat->List(
 		0xF7B0,	// SortA(
 		0xF7B1,	// SortB(
+		0x7F20,	// Max(
+		0x7F2D,	// Min(
+		0x7F2E,	// Mean(
+		0x7F88,	// RanList#(
+		0x23,	// #
+		0x25,	// %
 
-//											6	GR
+//											6
+		0xF91E,	// ClrMat	
+		0xF71A,	// ClrList	
+		0x7F4A,	// List->Mat(
+		0x7F4B,	// Mat->List(
+		0x7F41,	// Trn 
+		0x7F47,	// Fill(
+		0x7F4C,	// Sum
+		0x7F4D,	// Prod
+		0x7F29,	// Sigma( 
+		0x7E,	// ~
+		0x23,	// #
+		0x25,	// %
+
+//											7	GR
 		0xD1,	// Cls		
 		0xF719,	// ClrGraph
 		0xEB,	// ViewWindow
@@ -1031,21 +1066,35 @@ const short oplistCMD[]={		// 5800P like
 		0xF7A7,	// F-Line
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
-//											7
+//											8
 		0xF7AB,	// PxlOn
 		0xF7AC,	// PxlOff
 		0xF7AD,	// PxlChg
 		0xF7AF,	// PxlTest(
 		0xF7A5,	// Text
 		0xF7E3,	// LocateYX
-		0xEE,	// Graph Y=
 		0xF5,	// Graph(X,Y)=(
+		0xEE,	// Graph Y=
 		0xF720,	// DrawGraph
 		0x7FF0,	// GraphY
 		0x23,	// #
 		0x25,	// %
 
-//											8
+//											9
+		0xF5,	// Graph(X,Y)=(
+		0xF723,	// DrawStat
+		0xF7CC,	// DrawOn
+		0xF7DC,	// DrawOff
+		0xF74A,	// S-Gph1
+		0xF74B,	// S-Gph2
+		0xF74C,	// S-Gph3
+		0xF74D,	// Square
+		0xF74E,	// Cross
+		0xF74F,	// Dot
+		0xF750,	// Scatter
+		0xF751,	// xyLine
+
+//											10
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF78E,	// SketchBroken
@@ -1059,7 +1108,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 
-//											9
+//											11
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
 		0xF7C3,	// CoordOn
@@ -1070,10 +1119,10 @@ const short oplistCMD[]={		// 5800P like
 		0xF7D2,	// AxesOff
 		0xF7C4,	// LabelOn
 		0xF7D4,	// LabelOff
-		0x23,	// #
-		0x25,	// %
+		0xF797,	// StoV-Win
+		0xF798,	// RclV-Win
 		
-//											10
+//											12
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
 		0x7F01,	// Xmax
@@ -1087,7 +1136,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F09,	// TThetamax
 		0x7F0A,	// TThetaptch
 
-//											11	FN
+//											13	FN
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -1101,7 +1150,7 @@ const short oplistCMD[]={		// 5800P like
 		0xB2,	// arccosh
 		0xB3,	// arctanh
 
-//											12
+//											14
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 		0xD3,	// Rnd
@@ -1115,13 +1164,13 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											13
+//											15
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
 		0xF905,	// >DMS
 		0x8C,	// dms
-		0xFFFF,	// 				-
+		0xF91B,	// fn
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
@@ -1129,7 +1178,7 @@ const short oplistCMD[]={		// 5800P like
 		0x80,	// Pol(
 		0xA0,	// Rec(
 
-//											14
+//											16
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -1143,7 +1192,7 @@ const short oplistCMD[]={		// 5800P like
 		0x0B,	// Exa
 		0x25,	// %	
 
-//											15	STR
+//											17	STR
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -1157,7 +1206,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %	
 		
-//											15
+//											18
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
@@ -1171,7 +1220,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %	
 
-//											17	EX
+//											19	EX
 		0xF90F,	// AliasVar
 		0x7F5F,	// Ticks
 		0xF941,	// DATE
@@ -1194,7 +1243,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF73D,	// DotTrim(
 		0xF7E0,	// DotLife(
 		0x7FE9,	// CellSum(
-		0xFFFF,	// 
+		0xF94F,	// Wait 
 		0x23,	// #
 		0x25,	// %
 
@@ -1267,10 +1316,10 @@ void FkeyRel(){
 }
 
 #define CMD_STD  0
-#define CMD_GR   6
-#define CMD_FN  11
-#define CMD_STR 15
-#define CMD_EX  17
+#define CMD_GR   7
+#define CMD_FN  13
+#define CMD_STR 17
+#define CMD_EX  19
 
 int SelectOpcode5800P() {
 	int *select=&selectCMD;
@@ -1668,6 +1717,7 @@ typedef struct {
 const topcodes OpCodeStrList[] = {
 	{ 0x7F3A, "MOD(" }, 		// SDK emu not support
 	{ 0x7F87, "RanInt#(" }, 	// SDK emu not support
+	{ 0x7F88, "RanList#(" }, 	// SDK emu not support
 	{ 0x7F58, "ElemSize(" }, 
 	{ 0x7F59, "ColSize(" }, 
 	{ 0x7F5A, "RowSize(" }, 
@@ -1732,6 +1782,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF941, "DATE" }, 
 	{ 0xF942, "TIME" }, 
 	{ 0xF943, "Sprintf(" }, 
+	{ 0xF94F, "Wait " }, 
 	{ 0xF9C0, "_ClrVram" },
 	{ 0xF9C1, "_ClrScreen" },
 	{ 0xF9C2, "_DispVram" },

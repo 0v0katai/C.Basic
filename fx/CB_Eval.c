@@ -163,7 +163,7 @@ void MatOprand1num( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 e
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int RegVar( int c ) {
-	if ( ( ( 'A'<=c )&&( c<='z' ) ) && ( c != '[' ) )  return c-'A' ;
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  return c-'A' ;
 	if ( c == 0xFFFFFFC0 ) return c-0xFFFFFFC0+28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
 	return -1;
@@ -360,6 +360,14 @@ double EvalsubTop( char *SRC ) {	// eval 1
 		if ( c==0xFFFFFFB4 ) { // Xor
 			ExecPtr++; dst=Evalsub1(SRC);
 			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result ^ (int)dst;
+		} else
+		if ( c==0xFFFFFFBC ) { // Int/
+			ExecPtr++; dst=Evalsub1(SRC);
+			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fIDIV(result,dst);
+		} else
+		if ( c==0xFFFFFFBD ) { // Rmdr
+			ExecPtr++; dst=Evalsub1(SRC);
+			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMOD(result,dst);
 		}
 	}
 	
@@ -484,67 +492,57 @@ double finvradian( double x ) {	//	Rad -> Deg,Grad
 	}
 }
 double fsin( double x ) {
-	double result;
-	result = sin( fradian(x) );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = sin( fradian(x) );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double fcos( double x ) {
-	double result;
-	result = cos( fradian(x) );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = cos( fradian(x) );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double ftan( double x ) {
-	double result;
-	result = tan( fradian(x) );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = tan( fradian(x) );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double fasin( double x ) {
-	double result;
-	result = finvradian( asin(x) );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = finvradian( asin(x) );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double facos( double x ) {
-	double result;
-	result = finvradian( acos(x) );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = finvradian( acos(x) );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double fatan( double x ) {
-	double result;
-	result = finvradian( atan(x) );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = finvradian( atan(x) );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 
 double fpolr( double x, double y ) {	// Pol(x,y) -> r
-	double result;
-	result = sqrt(x*x+y*y);
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = sqrt(x*x+y*y);
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double fpolt( double x, double y ) {	// Pol(x,y) -> Theta
-	double result;
 	if ( ( x==0 ) && ( y==0 ) ) return 0;
-	if ( x != 0 ) result = fatan(y/x);
-	else result = 2*fatan(1);
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	if ( x != 0 ) x = fatan(y/x);
+	else x = 2*fatan(1);
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double frecx( double r, double t ) {	// Rec(r,Theta) -> x
-	double result;
-	result = r*fcos(t);
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	r = r*fcos(t);
+	CheckMathERR(&r); // Math error ?
+	return r ;
 }
 double frecy( double r, double t ) {	// Rec(r,Theta) -> y
-	double result;
-	result = r*fsin(t);
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	r = r*fsin(t);
+	CheckMathERR(&r); // Math error ?
+	return r ;
 }
 
 void CheckMathERR( double *result ) {
@@ -553,26 +551,198 @@ void CheckMathERR( double *result ) {
 }
 
 double asinh( double x ) {
-	double result;
-	result = ( (exp(x)+exp(-x))/2. );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = ( (exp(x)+exp(-x))/2. );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double acosh( double x ) {
-	double result;
-	result = ( (exp(x)-exp(-x))/2. );
-	CheckMathERR(&result); // Math error ?
-	return result ;
+	x = ( (exp(x)-exp(-x))/2. );
+	CheckMathERR(&x); // Math error ?
+	return x ;
 }
 double atanh( double x ) {
-	double result;
 	double ep=exp(x);
 	double em=exp(-x);
-	result = ( (ep-em)/(ep+em) );
+	x = ( (ep-em)/(ep+em) );
+	CheckMathERR(&x); // Math error ?
+	return x ;
+}
+double fint( double x ) {
+	if ( x >= 0 ) return floor(x);
+	return -floor(-x);
+}
+double fnot( double x ) {
+	return ! (int) ( x );
+}
+double fsqrt( double x ) {
+	x = sqrt( x );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double flog10( double x ) {
+	x = log10( x );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fpow10( double x ) {
+	x = pow( 10, x );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fln( double x ) {
+	x = log( x );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fexp( double x ) {
+	x = exp( x );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fcuberoot( double x ) {
+	x = pow( x, 1.0/3.0 );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fsqu( double x ) {
+	return x*x;
+}
+double ffact( double x ) {
+	double tmp;
+	tmp = floor( x );
+	if ( ( tmp < 0 ) || ( 170 < tmp ) ) { CB_Error(MathERR) ; return 0; } // Math error
+	x = 1;
+	while ( tmp > 0 ) { x *= tmp; tmp--; }
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double frecip( double x ) {	// ^(-1) RECIP
+	if ( x == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	return 1 / x ;
+}
+double ffemto( double x ) {	// femto
+	return x * 1e-15 ;
+}
+double fpico( double x ) {	// pico
+	return x * 1e-12 ;
+}
+double fnano( double x ) {	// nano
+	return x * 1e-9 ;
+}
+double fmicro( double x ) {	// micro
+	return x * 1e-6 ;
+}
+double fmilli( double x ) {	// milli
+	return x * 1e-3 ;
+}
+double fKiro( double x ) {	// Kiro
+	return x * 1e3 ;
+}
+double fMega( double x ) {	// Mega
+	return x * 1e6 ;
+}
+double fGiga( double x ) {	// Giga
+	return x * 1e9 ;
+}
+double fTera( double x ) {	// Tera
+	return x * 1e12 ;
+}
+double fPeta( double x ) {	// Peta
+	return x * 1e15 ;
+}
+double fExa( double x ) {	// Exa
+	return x * 1e18 ;
+}
+
+double fsign( double x ) {	// -x
+	return -x;
+}
+double fADD( double x, double y ) {	// x + y
+	return x+y;
+}
+double fSUB( double x, double y ) {	// x - y
+	return x-y;
+}
+double fMUL( double x, double y ) {	// x * y
+	return x*y;
+}
+double fDIV( double x, double y ) {	// x / y
+	if ( y == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	return x/y;
+}
+double fAND( double x, double y ) {	// x and y
+	return (int)x & (int)y;
+}
+double fOR( double x, double y ) {	// x or y
+	return (int)x | (int)y;
+}
+double fXOR( double x, double y ) {	// x xor y
+	return (int)x ^ (int)y;
+}
+double fNot( double x ) {	// Not x
+	return x==0;
+}
+double fcmpEQ( double x, double y ) {	//  x = y
+	return x == y;
+}
+double fcmpGT( double x, double y ) {	//  x > y
+	return x > y;
+}
+double fcmpLT( double x, double y ) {	//  x < y
+	return x < y;
+}
+double fcmpNE( double x, double y ) {	//  x != y
+	return x != y;
+}
+double fcmpGE( double x, double y ) {	//  x >= y
+	return x >= y;
+}
+double fcmpLE( double x, double y ) {	//  x <= y
+	return x <= y;
+}
+
+double fpow( double x, double y ) {	// pow(x,y)
+	x = pow( x, y );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fpowroot( double x, double y ) {	// powroot(x,y)
+	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
+	x = pow( x, 1/y );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fMOD( double x, double y ) {	// fMOD(x,y)
+	double tmp,tmp2,result;
+	tmp  = floor( x +.5);
+	tmp2 = floor( y +.5);
+	if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
+	result= floor(fabs(fmod( tmp, tmp2 ))+.5);
+	if ( result == tmp2  ) result--;
+	if ( tmp < 0 ) {
+		result=fabs(tmp2)-result;
+		if ( result == tmp2  ) result=0;
+	}
+	return result ;
+}
+double fIDIV( double x, double y ) {	// (int)x / (int)y
+	double tmp,tmp2,result;
+	tmp  = floor( x +.5);
+	tmp2 = floor( y +.5);
+	if ( tmp2 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	return floor((tmp/tmp2)+.5);
+}
+double flogab( double x, double y ) {	// flogab(x,y)
+	double base,tmp,result;
+	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
+	base  = log(x);
+	result = log(y)/base;
 	CheckMathERR(&result); // Math error ?
 	return result ;
 }
-
+double frand() {
+	return (double)rand()/(double)(RAND_MAX+1.0);
+}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //int EvalObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
@@ -628,7 +798,6 @@ double Eval_atof(char *SRC, int c) {
 			return mantissa ;
 }
 
-
 //-----------------------------------------------------------------------------
 
 double Evalsub1(char *SRC) {	// 1st Priority
@@ -654,7 +823,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		result = - Evalsub1( SRC );
 		return result;
 	}
-	if ( ( ( 'A'<=c )&&( c<='z' ) ) && ( c != '[' ) )  {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
 	  regj:
 		c=SRC[ExecPtr];
@@ -697,6 +866,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 						
 				case 0x51 :		// List 1~26
 					reg=ListRegVar( SRC );
+				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
 						ExecPtr++;
 						MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
@@ -706,24 +876,35 @@ double Evalsub1(char *SRC) {	// 1st Priority
 							CopyMatList2Ans( reg );
 					}
 					return ReadMatrix( reg, dimA, dimB);
+					
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
+					reg=c+(32-0x6A); goto Listj;
 						
 				case 0x3A :		// MOD(a,b)
-					tmp = floor( EvalsubTop( SRC ) +.5);
+					tmp = EvalsubTop( SRC );
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
-					tmp2 = floor( EvalsubTop( SRC ) +.5);
-					if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-					result= floor(fabs(fmod( tmp, tmp2 ))+.5);
-					if ( result == tmp2  ) result--;
-					if ( tmp < 0 ) {
-						result=fabs(tmp2)-result;
-						if ( result == tmp2  ) result=0;
-					}
+					tmp2 = EvalsubTop( SRC );
+					result = fMOD(tmp,tmp2);
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return result ;
+					
+				case 0xFFFFFF85 :		// logab(a,b)
+					tmp = EvalsubTop( SRC );
+					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					ExecPtr++;
+					tmp2 = EvalsubTop( SRC );
+					result = flogab(tmp,tmp2);
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 					
 				case 0xFFFFFFB3 :		// Not
-					return ( EvalsubTop( SRC ) == 0 ) ;
+					return ( Evalsub5( SRC ) == 0 ) ;
 						
 				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
@@ -751,6 +932,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 //					if ( x>=y ) CB_Error(ArgumentERR);  // Argument error
 					if ( x>y ) { i=x; x=y; y=i; }
 					return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+				case 0xFFFFFF88 :		// RanList(n) ->ListAns
+					CB_RanList( SRC ) ;
+					return 4 ;
 					
 				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
@@ -770,12 +954,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					result=Round( tmp, Fix, i) ;
 					return result ;
 						
-				case 0xFFFFFFF0 :		// GraphY
-					reg=defaultGraphAry;
-					dimA=CB_EvalInt( SRC );
-					if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
-					result=CB_EvalStrDBL( MatrixPtr( reg, dimA, 1 ) );
-					return result ;
+				case 0xFFFFFFF0 :		// GraphY str
+					return CB_GraphYStr( SRC, defaultGraphAry );
 						
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC );
@@ -811,19 +991,41 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x29 :				// Sigma( X, X, 1, 1000)
 					return CB_Sigma( SRC );
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
-					return CB_Max( SRC );
+					return CB_MinMax( SRC, 1 );
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
-					return CB_Min( SRC );
-				case 0x4C :				// Sum( List 1)
+					return CB_MinMax( SRC, 0 );
+				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
+					return CB_Mean( SRC );
+				case 0x4C :				// Sum List 1
 					return CB_Sum( SRC );
-				case 0x4D :				// Prod( List 1)
+				case 0x4D :				// Prod List 1
 					return CB_Prod( SRC );
+				case 0x47:	// Fill(
+					CB_MatFill(SRC);
+					return 3;
+				case 0x49:	// Argument(
+					CB_Argument(SRC);
+					return 3;
+				case 0x2C:	// Seq
+					CB_Seq(SRC);
+					return 4;
+				case 0x41:	// Trn
+					CB_MatTrn(SRC);
+					return 3;
 
 				case 0x46 :				// Dim
-					if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// Dim List
-						ExecPtr+=2;
-						goto ColSizej;
-					}
+					if ( SRC[ExecPtr]==0x7F ) {
+						if ( SRC[ExecPtr+1]==0x40 ) {	// Dim Mat
+							MatrixOprandreg( SRC, &reg );
+							WriteListAns2( MatAry[reg].SizeA, MatAry[reg].SizeB );
+							return MatAry[reg].SizeA;
+						} else
+						if ( SRC[ExecPtr+1]==0x51 ) {	// Dim List
+							goto ColSizej;
+						}
+					} 
+					ExecPtr--;	// error
+					break;
 				case 0x58 :				// ElemSize( Mat A )
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -831,7 +1033,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					if (i <= 4 ) i=1;
 					return i;
 				case 0x59 :				// ColSize( Mat A )
-					ColSizej:
+				  ColSizej:
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeA;
@@ -843,6 +1045,13 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].Base;
+					
+				case 0x4A :				// List>Mat( List 1, List 2,..) -> List 5
+					CB_List2Mat( SRC );
+					return 0;
+				case 0x4B :				// Mat>List( Mat A, m) -> List n
+					CB_Mat2List( SRC );;
+					return 0;
 				default:
 					ExecPtr--;	// error
 					break;
@@ -857,8 +1066,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[ExecPtr];
 			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atod( SRC, c ) );
-			result=(double)rand()/(double)(RAND_MAX+1.0);
-			return result ;
+			return frand() ;
 		case 0xFFFFFF97 :	// abs
 			result = fabs( Evalsub5( SRC ) );
 			return result ;
@@ -873,9 +1081,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFB6 :	// frac
 			result = frac( Evalsub5( SRC ) );
 			return result ;
-		case 0xFFFFFFA7 :	// Not
-			result = ! (int) ( Evalsub5( SRC ) );
-			return result ;
+//		case 0xFFFFFFA7 :	// Not
+//			result = ! (int) ( Evalsub5( SRC ) );
+//			return result ;
 
 		case '%' :	// 1/128 Ticks
 			return RTC_GetTicks()-CB_TicksAdjust;	// 
@@ -918,29 +1126,17 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			}
 			break;
 		case 0xFFFFFF86 :	// sqr
-			result = sqrt( Evalsub5( SRC ) );
-			CheckMathERR(&result); // Math error ?
-			return result ;
+			return fsqrt( Evalsub5( SRC ) );
 		case 0xFFFFFF95 :	// log10
-			result = log10( Evalsub5( SRC ) );
-			CheckMathERR(&result); // Math error ?
-			return result ;
+			return flog10( Evalsub5( SRC ) );
 		case 0xFFFFFFB5 :	// 10^
-			result = pow(10, Evalsub5( SRC ) );
-			CheckMathERR(&result); // Math error ?
-			return result ;
+			return fpow10( Evalsub5( SRC ) );
 		case 0xFFFFFF85 :	// ln
-			result = log( Evalsub5( SRC ) );
-			CheckMathERR(&result); // Math error ?
-			return result ;
+			return fln( Evalsub5( SRC ) );
 		case 0xFFFFFFA5 :	// expn
-			result = exp( Evalsub5( SRC ) );
-			CheckMathERR(&result); // Math error ?
-			return result ;
+			return fexp( Evalsub5( SRC ) );
 		case 0xFFFFFF96 :	// cuberoot
-			result = pow( Evalsub5( SRC ), 1.0/3.0 );
-			CheckMathERR(&result); // Math error ?
-			return result ;
+			return fcuberoot( Evalsub5( SRC ) );
 
 		case 0xFFFFFF81 :	// sin
 			return fsin( Evalsub5( SRC ) );
@@ -973,10 +1169,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=EvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-			WriteMatrix( CB_MatListAnsreg, 1,1, fpolr(tmp,tmp2) ) ;	// r
-			WriteMatrix( CB_MatListAnsreg, 2,1, fpolt(tmp,tmp2) ) ;	// Theta
+			WriteListAns2( fpolr(tmp,tmp2), fpolt(tmp,tmp2) );
 			return 0;
 		case 0xFFFFFFA0 :	// Rec( r, Theta ) -> X,Y
 			tmp=EvalsubTop( SRC );
@@ -984,10 +1177,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=EvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-			WriteMatrix( CB_MatListAnsreg, 1,1, frecx(tmp,tmp2) ) ;	// x
-			WriteMatrix( CB_MatListAnsreg, 2,1, frecy(tmp,tmp2) ) ;	// y
+			WriteListAns2( frecx(tmp,tmp2), frecy(tmp,tmp2) );
 			return 0;
 			
 		case 0xFFFFFFF9:	// F9..
@@ -1007,6 +1197,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return CB_EvalStr(SRC);
 				case 0x21:	// Xdot
 					return Xdot;
+				case 0x1B :		// fn str
+					return CB_GraphYStr( SRC, defaultFnAry );
 				default:
 					ExecPtr--;	// error
 					break;
@@ -1063,9 +1255,7 @@ double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result = 1 / result ;
 				break;
 			case  0xFFFFFFAB  :	//  !
-				tmp = floor( result );
-				result = 1;
-				while ( tmp > 0 ) { result *= tmp; tmp--; }
+				result = ffact( result );
 				break;
 				
 			case  0x01  :	//  femto
@@ -1107,13 +1297,13 @@ double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				break;
 				
 			case  0xFFFFFF9C  :	//  Deg
-				result=fdegree( result );
+				result=finvdegree( result );
 				break;
 			case  0xFFFFFFAC  :	//  Rad
-				result=fradian( result );
+				result=finvradian( result );
 				break;
 			case  0xFFFFFFBC  :	//  Grad
-				result=fgrad( result );
+				result=finvgrad( result );
 				break;
 				
 			default:
@@ -1177,7 +1367,8 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 	result = Evalsub4( SRC );
 	while ( 1 ) {
 		c = SRC[ExecPtr];
-		if ((( 'A'<=c )&&( c<='z' )) ||
+		if ((( 'A'<=c )&&( c<='Z' )) ||
+			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFCD ) || // <r>
 			 ( c == 0xFFFFFFCE ) || // Theta
 			 ( c == 0xFFFFFFD0 ) || // PI
@@ -1305,6 +1496,21 @@ double Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				tmp = Evalsub7( SRC );
 				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 				result /= tmp ;
+				break;
+			case 0x7F:
+				c = SRC[ExecPtr++];
+				switch ( c ) {
+					case 0xFFFFFFBC:	// IntÅÄ
+						result = fIDIV( result, Evalsub7( SRC ) );
+						break;
+					case 0xFFFFFFBD:	// Rmdr
+						result = fMOD( result, Evalsub7( SRC ) );
+						break;
+					default:
+						ExecPtr-=2;
+						return result;
+						break;
+				}
 				break;
 			default:
 				ExecPtr--;

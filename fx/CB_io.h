@@ -20,6 +20,7 @@ extern char * HiddenRAM_End ;			// Hidden RAM END
 extern char * HiddenRAM_ProgNextPtr;	// Hidden RAM Prog next ptr
 extern char * HiddenRAM_MatTopPtr;		// Hidden RAM Mat top ptr
 
+extern char IsSH3;	//	1:SH3   0:SH4
 
 //-----------------------------------------------------------------------------
 

@@ -47,7 +47,9 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	char filename[50];
 	char *src;
 
+	IsSH3=CPU_check();
 	SetVeiwWindowInit();
+	for ( i=0; i<6; i++) VWinflag[i]=0;
 //	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
 //	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
 	LoadConfig();
@@ -60,6 +62,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 	ClipBuffer = (char *)malloc( ClipMax+1 );
 //	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+	traceAry = (double *)malloc( 130*8 );
+//	if ( traceAry == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
 	
 	while (1) {

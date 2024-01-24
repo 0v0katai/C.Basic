@@ -16,7 +16,7 @@ int IntToBcd( int x ) {
 int GetTime() {	// ->   HHMMSS : BCD (0x  235959 etc)
 	int hour,min,sec;
 
-	if ( CPU_check() == 3 ) {	//SH3
+	if ( IsSH3 ) {	//SH3
 		sec  = RTC3.RSECCNT ;
 		min  = RTC3.RMINCNT ;
 		hour = RTC3.RHRCNT  ;
@@ -32,7 +32,7 @@ int GetTime() {	// ->   HHMMSS : BCD (0x  235959 etc)
 int GetDate() {	// -> YYYYMMDD : BCD (0x20161201 etc)
 	int year,month,day;
 	
-	if ( CPU_check() == 3 ) {	//SH3
+	if ( IsSH3 ) {	//SH3
 		day   = RTC3.RDAYCNT ;
 		month = RTC3.RMONCNT ;
 		year  = RTC3.RYRCONT ;

@@ -264,11 +264,11 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 	if(dx > dy)
 	{
 		cumul = dx / 2;
-		for(i=1 ; i<dx ; i++)
+		for(i=1 ; i<=dx ; i++)		// i<dx  ->  i<=dx	(modified)
 		{
 			x += sx;
 			cumul += dy;
-			if(cumul > dx)
+			if(cumul >= dx)		// > dx  ->  >= dx	(modified)
 			{
 				cumul -= dx;
 				y += sy;
@@ -279,11 +279,11 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 	else
 	{
 		cumul = dy / 2;
-		for(i=1 ; i<dy ; i++)
+		for(i=1 ; i<=dy ; i++)		// i<dy  ->  i<=dy	(modified)
 		{
 			y += sy;
 			cumul += dx;
-			if(cumul > dy)
+			if(cumul >= dy)		// > dy  ->  >= dy	(modified)
 			{
 				cumul -= dy;
 				x += sx;

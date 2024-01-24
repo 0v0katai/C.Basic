@@ -33,11 +33,10 @@ HiddenRAM_Top(0x88040000)
 						HiddenRAM_End(0x88080000)
 ----------------------------------------
 */
+char IsSH3;	//	3:SH3   4:SH4
 //---------------------------------------------------------------------------------------------
-int CPU_check(void) {					// SH3:3 SH4A:4
-	if ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) &&
-	     ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) return 4;
-	return 3 ;
+int CPU_check(void) {					// SH3:1 SH4A:0
+	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) ;
 }
 
 //---------------------------------------------------------------------------------------------

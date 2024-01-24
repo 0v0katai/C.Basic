@@ -37,12 +37,15 @@ extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
 extern char RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
 extern char Refreshtime;	// Refresh time  n/128
 
-extern short Waitcount;	// wait control
+extern short DefaultWaitcount;	// wait control
+extern short Waitcount;			// current wait control
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
 extern double  REG[26+6+26];
 extern double  REGv[11];
+extern double  VWIN[6][11];
+extern char VWinflag[6];		// VWin flag
 
 #define regA REG[ 0]
 #define regB REG[ 1]
@@ -99,7 +102,7 @@ extern	double Yfct;
 extern	double 	*LocalDbl[26+6+26];		// local var ptr
 extern	int		*LocalInt[26+6+26];		// local var ptr
 
-extern double	traceAry[130];		// Graph trace array
+extern double	*traceAry;		// Graph trace array
 
 #define GraphStrMAX 64
 extern char *GraphY;
@@ -153,9 +156,10 @@ extern int	CB_TicksStart;
 extern int	CB_TicksEnd;
 extern int	CB_TicksAdjust;
 
-extern int ScreenMode;	//  0:Text  1:Graphic
-extern int UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
-extern int dspflag;
+extern char ScreenMode;	//  0:Text  1:Graphic
+extern char UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
+extern char dspflag;	// 0:nondsp  1:str  2:num  3:mat 4:list
+extern char MatdspNo;	// 
 
 extern int CursorX;	// text cursor X
 extern int CursorY;	// text cursor X
@@ -336,8 +340,10 @@ void CB_DotLife( char *SRC ) ;
 void CB_FkeyMenu( char *SRC) ;
 void CB_PopUpWin( char *SRC );	//
 void CB_Menu( char *SRC, short *StackGotoAdrs) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
+void CB_Wait( char *SRC ) ;
 
-
+double CB_GraphYStr( char *SRC, int reg ) ;	//
+int CBint_GraphYStr( char *SRC, int reg ) ;	// 
 //-----------------------------------------------------------------------------
 typedef struct {		// 4 bytes
 	short	org;
@@ -350,3 +356,25 @@ extern	ALIAS_VAR	AliasVarCode[AliasVarMAX];
 void CB_AliasVarClr();
 int CB_GetAliasRegVar( char *SRC ) ;	// AliasVar ?
 void CB_AliasVar( char *SRC ) ;	// AliasVar A=ƒ¿
+
+//-----------------------------------------------------------------------------
+typedef struct {
+	char Draw;			// 0:off  1:on
+	char GraphType;		// 0;Scatter 1:xyline  2:
+	char xList;			// List 1-26
+	char yList;			// List 1-26
+	char Freq;			// -1:1  1-26:List 1-26
+	char MarkType;		// 0:Square  1:Cross  2:Dot
+} tdrawstat;
+extern	tdrawstat Sgraph[3];
+
+void CB_S_Gph_init( int No ) ;	// S-Gph1 DrawOff,Scatter,List 1,List 2,1,Square
+void CB_S_Gph( char *SRC, int No ) ;
+void CB_S_WindAuto( char *SRC ) ;
+void CB_S_WindMan( char *SRC ) ;
+void CB_DrawStat( char *SRC ) ;
+
+void StoVwin( int n ) ;
+void RclVwin( int n ) ;
+void CB_StoVWin( char *SRC ) ;
+void CB_RclVWin( char *SRC ) ;

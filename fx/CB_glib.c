@@ -101,7 +101,7 @@ void Bdisp_PutDisp_DD_DrawBusy_skip() {
 //}
 void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) {	// Locate text Clrtext ""...
 	char c=SRC[ExecPtr++];
-	if ( c == ':' ) return ;
+	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
 	if ( RefreshCtrl == 2 ) 	// refresh control 
@@ -111,7 +111,7 @@ void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) {	// Locate text C
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) {	// graphics command
 	char c=SRC[ExecPtr++];
-	if ( c == ':' ) return ;
+	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
 	if ( RefreshCtrl == 0 ) 	// refresh control 

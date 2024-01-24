@@ -848,7 +848,7 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 			box.top   =py1;
 			box.bottom=py2;
 			
-			ElementSize=ElementSizeSelect( SRC, &base );
+			ElementSize=ElementSizeSelect( SRC, &base, 0 );
 			if ( ( px1 == 0 ) || ( py1 == 0 ) ) base=0;
 			if ( ( ElementSize <= 4 ) || ( ElementSize > 0x100 ) ) ElementSize=1;	// 1 bit matrix
 			ElementSize &= 0xFF;
@@ -1066,7 +1066,7 @@ void CB_DotPut( char *SRC ){	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 		
 		Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 //		dspflag=0;
-		UseGraphic=99;
+		UseGraphic=9;
 	}
 }
 
@@ -1092,7 +1092,6 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 		ExecPtr+=2;
 		reg=RegVarAliasEx(SRC); if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
-		ExecPtr++;
 		c=SRC[ExecPtr];
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
@@ -1485,7 +1484,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	if ( dspflag >= 3 ) { 	// Matrix List display		Mat A  List 1
 		CB_SelectTextVRAM();	// Select Text Screen
 		CB_SaveTextVRAM();
-		EditMatrix( 28, 1);	// Ans
+		EditMatrix( MatdspNo, 1);	// Ans
 		CB_RestoreTextVRAM();	// Resotre Graphic screen
 		PrintDone();
 		if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
@@ -1501,7 +1500,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	if ( CursorX >1 ) Scrl_Y();
 	locate( CursorX, CursorY); Print((unsigned char*)"             - Disp -");
 	if ( ( scrmode ) && ( UseGraphic != 3 ) ) CB_SelectGraphVRAM();	// Select Graphic Screen	not ( cls )
-	if (UseGraphic>0x100) UseGraphic=UseGraphic&0xFF; 
+	if (UseGraphic>0x10) UseGraphic=UseGraphic&0xF; 
 	Bdisp_PutDisp_DD();
 	
 	while ( 1 ) {
@@ -1516,7 +1515,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
   exitj:
 	if ( UseGraphic == 1 ) PlotXYtoPrevPXY(); // Plot
-	if ( UseGraphic ) UseGraphic=(UseGraphic | 0x100);  // 
+	if ( UseGraphic ) UseGraphic=(UseGraphic | 0x10);  // 
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0;
 }
@@ -1527,7 +1526,6 @@ void CB_end( char *SRC ){
 	unsigned int key=0;
 	int scrmode=ScreenMode;
 
-	if ( ProgEntryN ) return ; //	in sub Prog
 	ExecPtr++;
 	
 	KeyRecover();
@@ -1543,13 +1541,13 @@ void CB_end( char *SRC ){
 	} else
 	if ( dspflag >= 3 ) { 	// Matrix List display		Mat A  List 1
 		CB_SaveTextVRAM();
-		EditMatrix( 28, 1 );	// Ans
+		EditMatrix( MatdspNo, 1 );	// Ans
 		CB_RestoreTextVRAM();	// Resotre Graphic screen
 		CB_Done();
 	}
-	if ( dspflag == 0 ) CB_Done();
+	if ( ( dspflag == 0 ) && ( BreakPtr == 0 ) ) CB_Done();
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
-	if ( UseGraphic ) if ( ( UseGraphic != 1 ) &&( UseGraphic != 2 ) && ( UseGraphic != 99 ) ) { UseGraphic=UseGraphic&0xFF; CB_SelectTextVRAM(); }
+	if ( UseGraphic ) if ( ( UseGraphic != 1 ) &&( UseGraphic != 2 ) && ( UseGraphic != 9 ) ) { UseGraphic=UseGraphic&0xF; CB_SelectTextVRAM(); }
 	Bdisp_PutDisp_DD();
 
 	while ( 1 ) {
@@ -1573,7 +1571,7 @@ void CB_end( char *SRC ){
 			if ( key == KEY_CTRL_AC  ) return ;
 		}
 	}
-	if ( (UseGraphic&0xFF) == 1 ) {	// Plot 
+	if ( (UseGraphic&0xF) == 1 ) {	// Plot 
 		PlotXYtoPrevPXY();
 	}
 }
@@ -1754,9 +1752,18 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void CB_DrawGraph(  char *SRC ){
+	int reg,dimA,base;
+	int i;
 	if ( RangeErrorCK( SRC ) ) return;
 	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
-	Graph_Draw();
+	reg=defaultGraphAry;
+	if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return; }	// Memory error
+	base=MatAry[reg].Base;
+	dimA=MatAry[reg].SizeA;
+	for ( i=base; i<dimA+base; i++ ) {
+		GraphY=MatrixPtr( reg, i, base );
+		if ( GraphY[0] != 0 ) Graph_Draw();
+	}
 }
 
 void CB_GraphY( char *SRC ){
@@ -1814,6 +1821,144 @@ void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+tdrawstat Sgraph[3];
+
+void CB_S_Gph_init( int No ) {	// S-Gph1 DrawOff,Scatter,List 1,List 2,1,Square
+	Sgraph[No].Draw=0;	// DrawOff
+	Sgraph[No].GraphType=0;	// Scatter
+	Sgraph[No].xList=1;
+	Sgraph[No].yList=1;
+	Sgraph[No].Freq=-1;
+	Sgraph[No].MarkType=0;	// Square
+}
+
+int GetListNo( char *SRC ) {
+	int c,d,reg=-1;
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( c==0x7F ) {
+		if ( d==0x51 ) {	// List
+			ExecPtr+=2;
+			reg=ListRegVar( SRC );
+		} else
+		if ( (0x6A<=d) && (d<=0x6F) ) {
+			ExecPtr+=2;
+			reg=d+(32-0x6A);
+		}
+	}
+	return reg;
+}
+
+void CB_S_Gph( char *SRC, int No ) {	// S-Gph1 DrawOn,xyLine,List 1,List 2,1,Square
+	int c,d;
+	int reg;
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( c==0xFFFFFFF7 ) {
+		if ( d==0xFFFFFFCC ) {
+			ExecPtr+=2;
+			Sgraph[No].Draw=1;	// DrawOn
+		} else
+		if ( d==0xFFFFFFDC ) {
+			ExecPtr+=2;
+			Sgraph[No].Draw=0;	// DrawOff
+		}
+	}
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+	
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( c==0xFFFFFFF7 ) {
+		if ( d==0x50 ) {
+			ExecPtr+=2;
+			Sgraph[No].GraphType=0;	// Scatter
+		} else
+		if ( d==0x51 ) {
+			ExecPtr+=2;
+			Sgraph[No].GraphType=1;	// xyLine
+		}
+	}
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+	
+	reg = GetListNo( SRC );
+	if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	Sgraph[No].xList = reg;
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+	
+	reg = GetListNo( SRC );
+	if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	Sgraph[No].yList = reg;
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+	
+	c=SRC[ExecPtr];
+	if ( c=='1' ) {
+		ExecPtr++;
+		Sgraph[No].Freq=-1;
+	} else {
+		reg = GetListNo( SRC );
+		if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		Sgraph[No].Freq=reg;
+	}
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( c==0xFFFFFFF7 ) {
+		if ( d==0x4D ) {
+			ExecPtr+=2;
+			Sgraph[No].MarkType=0;	// Square
+		} else
+		if ( d==0x4E ) {
+			ExecPtr+=2;
+			Sgraph[No].MarkType=1;	// Cross
+		} else
+		if ( d==0x4F ) {
+			ExecPtr+=2;
+			Sgraph[No].MarkType=2;	// Dot
+		}
+	}
+}
+
+void CB_S_WindAuto( char *SRC ) {
+	return;
+}
+void CB_S_WindMan( char *SRC ) {
+	return;
+}
+void CB_DrawStat( char *SRC ) {
+	DrawStat();
+	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
+}
+
+//----------------------------------------------------------------------------------------------
+void StoVwin( int n ) {
+	memcpy( &VWIN[n][0], &REGv[0], 11*8 ) ;
+	VWinflag[n] = 1;
+}
+void RclVwin( int n ) {
+	if ( VWinflag[n] == 0 ) { CB_Error(MemoryERR); return; }	// Memory error
+	memcpy( &REGv[0], &VWIN[n][0], 11*8 ) ;
+}
+
+void CB_StoVWin( char *SRC ) {
+	int n=CB_EvalInt( SRC );
+	if ( ( n<0 ) || ( n>5 ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	StoVwin( n );
+}
+void CB_RclVWin( char *SRC ) {
+	int n=CB_EvalInt( SRC );
+	if ( ( n<0 ) || ( n>5 ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	RclVwin( n );
+	CB_ChangeViewWindow() ;
+}
+
 //----------------------------------------------------------------------------------------------
 //int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
