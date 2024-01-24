@@ -1784,29 +1784,23 @@ int  CB_Input( char *SRC ){
 		c=SRC[ExecPtr+1];
 		if ( CB_INT ) {
 			if ( c=='#' ) {
-				ExecPtr++;
 				DefaultValue = REG[reg] ;
-			} else
-			if ( c=='[' ) {
-				ExecPtr++;
-				MatOprandInt2( SRC, reg, &dimA, &dimB );
-				goto Matrix;
-			} else { flagint=1; 
-				if ( c=='%' ) ExecPtr++;
-				DefaultValue = REGINT[reg] ;
+			} else { flagint=1;
+				if ( c=='[' ) { 
+					ExecPtr+=2;
+					MatOprandInt2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = REGINT[reg] ;
 			}
 		} else {
 			if ( c=='%' ) { flagint=1; 
-				ExecPtr++;
 				DefaultValue = REGINT[reg] ;
-			} else
-			if ( c=='[' ) {
-				ExecPtr++;
-				MatOprand2( SRC, reg, &dimA, &dimB );
-				goto Matrix;
-			} else { 
-				if ( c=='#' ) ExecPtr++;
-				DefaultValue = REG[reg] ;
+			} else {
+				if ( c=='[' ) {
+					ExecPtr+=2;
+					MatOprand2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = REG[reg] ;
 			}
 		}
 	} else
@@ -1816,29 +1810,23 @@ int  CB_Input( char *SRC ){
 		c=SRC[ExecPtr+1];
 		if ( CB_INT ) {
 			if ( c=='#' ) {
-				ExecPtr++;
 				DefaultValue = LocalDbl[reg][0] ;
-			} else
-			if ( c=='[' ) {
-				ExecPtr++;
-				MatOprandInt2( SRC, reg, &dimA, &dimB );
-				goto Matrix;
 			} else { flagint=1; 
-				if ( c=='%' )  ExecPtr++;
-				DefaultValue = LocalInt[reg][0] ;
+				if ( c=='[' ) {
+					ExecPtr+=2;
+					MatOprandInt2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = LocalInt[reg][0] ;
 			}
 		} else {
-			if ( c=='%' ) {flagint=1; 
-				ExecPtr++;
+			if ( c=='%' ) { flagint=1; 
 				DefaultValue = LocalInt[reg][0] ;
-			} else
-			if ( c=='[' ) {
-				ExecPtr++;
-				MatOprand2( SRC, reg, &dimA, &dimB );
-				goto Matrix;
-			} else { 
-				if ( c=='#' ) ExecPtr++;
-				DefaultValue = LocalDbl[reg][0] ;
+			} else {
+				if ( c=='[' ) {
+					ExecPtr+=2;
+					MatOprand2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = LocalDbl[reg][0] ;
 			}
 		}
 	} else
@@ -1962,8 +1950,23 @@ int  CB_Input( char *SRC ){
 }
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4h( unsigned int n ){ 	// align +16 
+	switch ( n ) {
+		case 1:		// +4byte
+		case 100: return 1000;	// +12byte
+		case 101: return 1001;	// +12byte
+		case 102: return 1002;	// +12byte
+		case 103: return 1003;	// +12byte
+		case 104: return 1004;	// +12byte
+		case 0: return 1;
+		default: return 0;
+	}
+}
+//----------------------------------------------------------------------------------------------
 /*
-int GetCmmOpcode(char *SRC, char *buffer, int Maxlen) {
+int GetCmmOpcode(char *SRC, char *buffer, int Maxlen) {		// dummy
 	int c;
 	int ptr=0;
 	while (1){
@@ -1988,6 +1991,7 @@ int GetCmmOpcode(char *SRC, char *buffer, int Maxlen) {
 			case 0xFFFFFFE6:	// 
 			case 0xFFFFFFE7:	// 
 			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFF1:	// 
 				buffer[ptr++]=SRC[ExecPtr++];
 				break;
 			default:
@@ -1997,7 +2001,8 @@ int GetCmmOpcode(char *SRC, char *buffer, int Maxlen) {
 	}
 	return ptr;
 }
-void CB_arg( char *SRC ) {
+
+void CB_arg( char *SRC ) {		// dummy
 	int c=1,i,j;
 	Argc=0;
 
