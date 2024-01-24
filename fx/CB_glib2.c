@@ -1384,12 +1384,13 @@ int SetupG(int select){		// ----------- Setup
     char *degrad[]  ={"Deg","Rad","Grad"};
     char *display[] ={"Nrm","Fix","Sci"};
     char *mode[]    ={"Double","Int"};
+    char *Matmode[]    ={"[m,n]","[X,Y]"};
 	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int scrl=select-6;
 	int y;
-	int listmax=11;
+	int listmax=12;
 	
 	if ( select > listmax ) select=0;
 	if ( select < scrl ) scrl-=1;
@@ -1447,8 +1448,12 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,11-scrl); Print((unsigned char*)onoff[TimeDsp]);
 		}
 		if ( ( scrl >=5 ) && (12-scrl > 0 ) ){
-			locate( 1,12-scrl); Print((unsigned char*)"Execute mode:");
-			locate(14,12-scrl); Print((unsigned char*)mode[CB_INT]);
+			locate( 1,12-scrl); Print((unsigned char*)"Matrix  mode:");
+			locate(14,12-scrl); Print((unsigned char*)Matmode[MatXYmode]);
+		}
+		if ( ( scrl >=6 ) && (13-scrl > 0 ) ){
+			locate( 1,13-scrl); Print((unsigned char*)"Execute mode:");
+			locate(14,13-scrl); Print((unsigned char*)mode[CB_INT]);
 		}
 
 		y = select-scrl;
@@ -1487,7 +1492,11 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispR( 2, "Nrm ");
 				Fkey_dispN( 3, "Eng ");
 				break;
-			case 11: // Display
+			case 11: // Mat mode
+				Fkey_dispN( 0, "m.n ");
+				Fkey_dispN( 1, "X,Y ");
+				break;
+			case 12: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -1554,7 +1563,10 @@ int SetupG(int select){		// ----------- Setup
 					case 10: // TimeDsp
 						TimeDsp = 1 ; // on
 						break;
-					case 11: // CB mode
+					case 11: // Matrix mode
+						MatXYmode = 0 ; // m,n
+						break;
+					case 12: // CB mode
 						CB_INT = 0 ; // normal
 						break;
 					default:
@@ -1598,7 +1610,10 @@ int SetupG(int select){		// ----------- Setup
 					case 10: // TimeDsp
 						TimeDsp = 0 ; // off
 						break;
-					case 11: // CB mode
+					case 11: // Matrix mode
+						MatXYmode = 1 ; // x,y
+						break;
+					case 12: // CB mode
 						CB_INT = 1 ; // int
 						break;
 					default:

@@ -174,9 +174,11 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize){
 
 	while (cont) {
 		locate( 3,2); Print((unsigned char *)"Dimension m\xA9n");
-		locate( 3,3); Print((unsigned char *) "  m  :           ");
+		locate( 3,3); 
+		if ( MatXYmode ) Print((unsigned char *) "  X  :           "); else Print((unsigned char *) "  m  :           ");
 		sprintG(buffer,*dimA,  10,LEFT_ALIGN); locate( 9, 3); Print(buffer);
-		locate( 3,4); Print((unsigned char *) "  n  :           ");
+		locate( 3,4); 
+		if ( MatXYmode ) Print((unsigned char *) "  Y  :           "); else Print((unsigned char *) "  n  :           ");
 		sprintG(buffer,*dimB,  10,LEFT_ALIGN); locate( 9, 4); Print(buffer);
 		locate( 3,5); Print((unsigned char *) " byte:           ");
 		sprintG(buffer,*Elsize,10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
@@ -270,10 +272,13 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){
 
 	while (cont) {
 		locate( 3,3); Print((unsigned char *)"Goto Element");
-		locate( 3,4); sprintf( buffer," m(1~%3d)  ", dimA+1); Print(buffer);
+		if ( MatXYmode ) sprintf( (char*)buffer," X(1~%3d)  ", dimA+1); else sprintf( (char*)buffer," m(1~%3d)  ", dimA+1);
+		locate( 3,4); Print(buffer);
 		locate(13,4); Print((unsigned char *)":     ");
 		sprintG(buffer,*m+1,  5,LEFT_ALIGN); locate(14, 4); Print(buffer);
-		locate( 3,5); sprintf( buffer," n(1~%3d)  ", dimB+1); Print(buffer);
+		if ( MatXYmode ) sprintf( (char*)buffer," Y(1~%3d)  ", dimB+1); else sprintf( (char*)buffer," n(1~%3d)  ", dimB+1);
+		locate( 3,5); Print(buffer);
+		
 		locate(13,5); Print((unsigned char *)":     ");
 		sprintG(buffer,*n+1,  5,LEFT_ALIGN); locate(14, 5); Print(buffer);
 
@@ -408,7 +413,9 @@ int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
 	int i;
 
 	if ( ( ElementSize==MatAryElementSize[reg] ) && ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
-		dptr = MatAry[reg] ;							// Matrix array ptr*
+		dptr = MatAry[reg] ;						// Matrix array ptr*
+		MatArySizeA[reg]=dimA;						// Matrix array size
+		MatArySizeB[reg]=dimB;						// Matrix array size
 	} else {
 		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
 		dptr = malloc( dimA*dimB*ElementSize );
@@ -416,7 +423,7 @@ int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
 		MatArySizeA[reg]=dimA;						// Matrix array size
 		MatArySizeB[reg]=dimB;						// Matrix array size
 		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
-		MatAry[reg] = dptr ;							// Matrix array ptr*
+		MatAry[reg] = dptr ;						// Matrix array ptr*
 	}
 	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
 
@@ -469,12 +476,32 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 	int i,j,dimA,dimB,x,y;
 	int selectX=0, selectY=0;
 	double value;
+	int ElementSize=DimMatrixDefaultElementSize( reg );
+	int dx,MaxX,MaxDX,MaxDY;
 	
 	if (MatArySizeA[reg]==0) return;
-	dimB=MatArySizeA[reg]-1;	//
-	dimA=MatArySizeB[reg]-1;	//
 
 	while (cont) {
+		if ( MatXYmode ) {
+			dimA=MatArySizeA[reg]-1;	//
+			dimB=MatArySizeB[reg]-1;	//
+		} else {
+			dimB=MatArySizeA[reg]-1;	//
+			dimA=MatArySizeB[reg]-1;	//
+		}
+
+		MaxDY=5; if (MaxDY>dimB) MaxDY=dimB;
+		
+		if ( ElementSize == 1 ) {
+			MaxDX=6; if (MaxDX>dimA) MaxDX=dimA;
+			dx=18;
+			MaxX=5;
+		} else {
+			MaxDX=4; if (MaxDX>dimA) MaxDX=dimA;
+			dx=28;
+			MaxX=3;
+		}
+		
 		Bdisp_AllClr_VRAM();
 		
 		if (  selectY<seltopY ) seltopY = selectY;
@@ -483,39 +510,40 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 		if ( seltopY < 0 ) seltopY=0;
 
 		if (  selectX<seltopX ) seltopX = selectX;
-		if ( (selectX-seltopX) > 3 ) seltopX = selectX-3;
-		if ( (dimA -seltopX) < 3 ) seltopX = dimA -3; 
+		if ( (selectX-seltopX) > MaxX ) seltopX = selectX-MaxX;
+		if ( (dimA -seltopX) < MaxX ) seltopX = dimA -MaxX; 
 		if ( seltopX < 0 ) seltopX=0;
 		
 		buffer[0]='A'+reg;
 		buffer[1]='\0';
 		locate( 1, 1); Print(buffer);
 
-		j=5; if (j>dimB) j=dimB;
-		i=4; if (i>dimA) i=dimA;
-		for ( x=0; x<=i; x++ ) { 
-			Bdisp_DrawLineVRAM( x*28+20,7,x*28+43,7);
+		
+		for ( x=0; x<=MaxDX; x++ ) { 
+			Bdisp_DrawLineVRAM( x*dx+20,7,x*dx+20+dx-5,7);
 			sprintf((char*)buffer,"%3d",seltopX+x+1);
-			PrintMini(x*28+24,1,buffer,MINI_OVER);
+			PrintMini(x*dx+27-MaxX,1,buffer,MINI_OVER);
 		}
-		Bdisp_DrawLineVRAM( 16,8,16,14+j*8);
-		for ( y=0; y<=j; y++ ) {
+		Bdisp_DrawLineVRAM( 16,8,16,14+MaxDY*8);
+		for ( y=0; y<=MaxDY; y++ ) {
 				sprintf((char*)buffer,"%4d",seltopY+y+1);
 				PrintMini(0,y*8+10,buffer,MINI_OVER);
 				if ( seltopY   == 0    ) { Bdisp_ClearLineVRAM( 16, 8,    16,10    ); Bdisp_DrawLineVRAM( 16,10,    18,10    ); }
 				if ( seltopY+y == dimB ) { Bdisp_ClearLineVRAM( 16,14+y*8,16,16+y*8); Bdisp_DrawLineVRAM( 16,14+y*8,18,14+y*8); }
-			for ( x=0; x<=i; x++ ) {
+			for ( x=0; x<=MaxDX; x++ ) {
 				if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
-					value=ReadMatrix( reg, seltopY+y, seltopX+x);
-					sprintG(buffer, value, 6,RIGHT_ALIGN);
-//					sprintGRS(buffer, value, 5,RIGHT_ALIGN, Norm, 6);
-					PrintMini(x*28+20,y*8+10,buffer,MINI_OVER);
+					if ( MatXYmode ) value=ReadMatrix( reg, seltopX+x, seltopY+y);
+					else			 value=ReadMatrix( reg, seltopY+y, seltopX+x);
+					if ( MaxX==3 )	sprintG(buffer, value, 6,RIGHT_ALIGN);
+					else 			sprintG(buffer, value, 4,RIGHT_ALIGN);
+					PrintMini(x*dx+23-MaxX,y*8+10,buffer,MINI_OVER);
 //					Bdisp_PutDisp_DD();
 				}
 			}
 		}
-		if ( ( seltopX ) )                PrintMini( 17,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
-		if ( ( seltopX==0 )&&( dimA>3 ) ) PrintMini(122,1,(unsigned char*)"\xE6\x91",MINI_OVER);	// ->
+		
+		if ( ( seltopX ) )               	 PrintMini( 16,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
+		if ( ( seltopX==0 )&&( dimA>MaxX ) ) PrintMini(122,1,(unsigned char*)"\xE6\x91",MINI_OR);	// ->
 
 		value=ReadMatrix( reg, selectY, selectX);
 		sprintG(buffer, value,21,RIGHT_ALIGN);
@@ -523,12 +551,13 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 		
 		y = (selectY-seltopY) ;
 		x = (selectX-seltopX) ;
-		Bdisp_AreaReverseVRAM(x*28+20, y*8+9, x*28+43, y*8+15);	// reverse selectY line 
+		Bdisp_AreaReverseVRAM(x*dx+20, y*8+9, x*dx+20+dx-5, y*8+15);	// reverse selectY line 
 
 		Fkey_dispN(0,"Edit");
 		Fkey_dispN(1,"Goto");
 		Fkey_dispR(2,"Init");
-		locate(12, 8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
+		if ( MatXYmode ) Fkey_dispN(3,"X,Y"); else Fkey_dispN(3,"m,n"); 
+		locate(15, 8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
 
 		Bdisp_PutDisp_DD();
 
@@ -544,18 +573,29 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 			case KEY_CTRL_F1:
 				locate(1,8); PrintLine((unsigned char *)" ",21);
 				locate(1,8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
-				value=ReadMatrix( reg, selectY, selectX);
-				WriteMatrix( reg, selectY, selectX, InputNumD_full( 1, 7, 21, value));
+				if ( MatXYmode ) {
+					value=ReadMatrix( reg, selectX, selectY);
+					WriteMatrix( reg, selectX, selectY, InputNumD_full( 1, 7, 21, value));
+				} else {
+					value=ReadMatrix( reg, selectY, selectX);
+					WriteMatrix( reg, selectY, selectX, InputNumD_full( 1, 7, 21, value));
+				}
 				selectX++;
 				if ( selectX > dimA ) { selectX = dimA;
 					if ( selectY < dimB ) { selectY++; selectX =0; }
 				}
 				break;
 			case KEY_CTRL_F2:
-				GotoMatrixElement( reg, &selectY, &selectX );
+				if ( MatXYmode ) GotoMatrixElement( reg, &selectX, &selectY );
+				else			 GotoMatrixElement( reg, &selectY, &selectX );
 				break;
 			case KEY_CTRL_F3:
 				MatDefaultValue = InitMatrix( reg, MatDefaultValue ,MatAryElementSize[reg] ) ;
+				break;
+			case KEY_CTRL_F4:
+				MatXYmode=1-MatXYmode;
+				i=selectX; selectX=selectY; selectY=i;
+				i=seltopX; seltopX=seltopY; seltopY=i;
 				break;
 			case KEY_CTRL_UP:
 				selectY--;
@@ -590,8 +630,13 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 		if ( key ) {
 				locate(1,8); PrintLine((unsigned char *)" ",21);
 				locate(1,8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
-				value=ReadMatrix( reg, selectY, selectX);
-				WriteMatrix( reg, selectY, selectX, InputNumD_Char( 1, 7, 21, value, key));
+				if ( MatXYmode ) {
+					value=ReadMatrix( reg, selectX, selectY);
+					WriteMatrix( reg, selectX, selectY, InputNumD_Char( 1, 7, 21, value, key));
+				} else {
+					value=ReadMatrix( reg, selectY, selectX);
+					WriteMatrix( reg, selectY, selectX, InputNumD_Char( 1, 7, 21, value, key));
+				}
 				selectX++;
 				if ( selectX > dimA ) { selectX = dimA;
 					if ( selectY < dimB ) { selectY++; selectX =0; }
@@ -628,7 +673,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			if ( MatArySizeA[j] ) {
 				sprintf((char*)buffer,"%3d",MatArySizeA[j]);
 				locate(14,1+i); Print(buffer);
-				len=strlen(buffer)-3;
+				len=strlen((char*)buffer)-3;
 				locate(17+len,1+i); Print((unsigned char*)"\xA9");
 				if (len) sprintf((char*)buffer,"%2d",MatArySizeB[j]);
 				else	 sprintf((char*)buffer,"%3d",MatArySizeB[j]);
@@ -645,6 +690,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 		Fkey_dispR(1,"DelA");
 		Fkey_dispR(2,"DIM");
 		Fkey_dispR(3,"Init");
+		if ( MatXYmode ) Fkey_dispN(4,"X,Y"); else Fkey_dispN(4,"m,n"); 
 
 		Bdisp_PutDisp_DD();
 		
@@ -682,6 +728,9 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				break;
 			case KEY_CTRL_F4:
 				MatDefaultValue = InitMatrix( select, MatDefaultValue ,ElementSize ) ;
+				break;
+			case KEY_CTRL_F5:
+				MatXYmode=1-MatXYmode;
 				break;
 				
 			case KEY_CTRL_UP:

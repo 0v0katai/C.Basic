@@ -37,6 +37,7 @@ extern int  REGINT[59];
 extern int CBint_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
+int MatOprandInt( unsigned char *SRC, int *reg);
 void CBint_Store( unsigned char *SRC );
 int  CBint_Input( unsigned char *SRC );
 void CBint_Locate( unsigned char *SRC );
