@@ -213,10 +213,10 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Goto(SRC, StackGotoAdrs, &CurrentStruct );
 				break;
 			case 0xFFFFFFE8:	// Dsz
-				CB_Dsz(SRC) ;
+				CB_Dsz(SRC, &CurrentStruct ) ;
 				break;
 			case 0xFFFFFFE9:	// Isz
-				CB_Isz(SRC) ;
+				CB_Isz(SRC, &CurrentStruct ) ;
 				break;
 			case 0xFFFFFFE2:	// Lbl
 				CB_Lbl(SRC, StackGotoAdrs );
@@ -2124,8 +2124,44 @@ void CB_Break( char *SRC, CurrentStk *CurrentStruct ) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+int Skip_block_sz( char *SRC ){
+	int c;
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+			case 0x3A:	// <:>
+			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				return 0;
+				break;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0xFFFFFFF7:	// 
+				c=SRC[ExecPtr++];
+				switch ( c ) {
+					case 0x07:	// next
+					case 0x09:	// WhileEnd
+					case 0x0B:	// LpWhile
+						return -1;
+				}
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+//			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+	return 0;
+}
 
-void CB_Dsz( char *SRC ) { //	Dsz
+void CB_Dsz( char *SRC, CurrentStk *CurrentStruct ) { //	Dsz
 	int c;
 	int reg,mptr;
 	int dimA,dimB;
@@ -2180,19 +2216,19 @@ void CB_Dsz( char *SRC ) { //	Dsz
 		ExecPtr++;
 		if ( CB_CurrentValue.real ) return ;
 		else {
-			Skip_block(SRC);
+			if ( Skip_block_sz(SRC) < 0 ) CB_Break( SRC, CurrentStruct );
 		}
 	} else if ( c==0x0C ) {  // dsps
 		ExecPtr++;
 		if ( CB_Disps(SRC, 2) ) { BreakPtr=ExecPtr ; return ; }  // [AC] break
 		if ( CB_CurrentValue.real ) return ;
 		else {
-			Skip_block(SRC);
+			if ( Skip_block_sz(SRC) < 0 ) CB_Break( SRC, CurrentStruct );
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
-void CB_Isz( char *SRC ) { //	Isz
+void CB_Isz( char *SRC, CurrentStk *CurrentStruct ) { //	Isz
 	int c;
 	int reg,mptr;
 	int dimA,dimB;
@@ -2247,14 +2283,14 @@ void CB_Isz( char *SRC ) { //	Isz
 		ExecPtr++;
 		if ( CB_CurrentValue.real ) return ;
 		else {
-			Skip_block(SRC);
+			if ( Skip_block_sz(SRC) < 0 ) CB_Break( SRC, CurrentStruct );
 		}
 	} else if ( c==0x0C ) {  // dsps
 		ExecPtr++;
 		if ( CB_Disps(SRC, 2) ) { BreakPtr=ExecPtr ; return ; }  // [AC] break
 		if ( CB_CurrentValue.real ) return ;
 		else {
-			Skip_block(SRC);
+			if ( Skip_block_sz(SRC) < 0 ) CB_Break( SRC, CurrentStruct );
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
@@ -3105,9 +3141,9 @@ void  CB_Input( char *SRC ){
 	switch ( flag ) {
 		case 0:	// ? -> A value
 			if ( option ) {
-				InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0), 0 );	// zero not disp
+				CB_CurrentValue = InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0), 0 );	// zero not disp
 			} else {
-				CB_CurrentValue = InputNumC_CB( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
+				CB_CurrentValue = InputNumC_CB(  CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
 			}
 			ExecPtr++;
 			if ( CB_INT==1 ) flagint=1;
@@ -3182,12 +3218,12 @@ int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte

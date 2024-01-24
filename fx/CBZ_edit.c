@@ -1235,7 +1235,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					ClipStartPtr = -1 ;		// ClipMode cancel+
 					break;
 			case KEY_CTRL_EXIT:
-					while ( KeyCheckEXIT() ) ;
+					WaitKeyEXIT();
 				  exitjp:
 					if ( SearchMode ) {
 						SearchMode=0;		//	Search mode cancel
@@ -1281,7 +1281,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									ExecPtr=csrPtr;
 									BreakPtr=0;
 									DebugMode=1;		// cont mode
-									while ( KeyCheckF1() ) ;
+									WaitKeyF1() ;
 								} else {
 									if ( JumpMenuSw ) {		// ====== Jump Mode
 										csrPtr=0;
@@ -2153,7 +2153,7 @@ int CB_BreakStop() {
 //		Bdisp_PutDisp_DD();
 		
 		KeyRecover(); 
-		while ( KeyCheckAC() ) ;
+		WaitKeyAC();
 		while ( 1 ) {
 			GetKey(&key);
 			if ( key == KEY_CTRL_EXIT  ) break ;
@@ -2161,11 +2161,11 @@ int CB_BreakStop() {
 			if ( key == KEY_CTRL_RIGHT ) break ;
 			if ( key == KEY_CTRL_LEFT  ) break ;
 			if ( key == KEY_CTRL_F1  ) { 
-				while ( KeyCheckF1() ) ;
+				WaitKeyF1() ;
 				goto cont0;
 			}
 			if ( key == KEY_CTRL_EXE ) { 
-				while ( KeyCheckEXE() ) ;
+				WaitKeyEXE() ;
 			  cont0:
 				DebugMode=0; BreakPtr=0; goto cont;
 			}

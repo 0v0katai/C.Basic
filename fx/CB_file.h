@@ -163,3 +163,9 @@ int MCS_SavePICT( char *pictname, char *filebase  ) ;
 //-----------------------------------------------------------------------------
 int GetMainBatteryVoltage( int battery ) ;
 int CB_BatteryStatus(char *SRC);
+
+//----------------------------------------------------------------------------------------------
+void WaitKeyAC();
+void WaitKeyEXIT();
+void WaitKeyF1();
+void WaitKeyEXE();
