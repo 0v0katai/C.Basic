@@ -74,8 +74,14 @@ char * MCS_LoadG1M( char *fname , int editMax, int disperror, int hiddenflag  ) 
 	char basname[16];
 	SetBasName( basname, fname);
 	r = MCS_SearchDirectoryItem( MCSdir_system, (unsigned char *)basname, &flags_0, (TDirectoryItem *)&tmp, &data_ptr, &data_length );
-	if ( r == 0x30 ) { ErrorMSGfile( "Can't find file", (char*)fname, r); return NULL; }
-	if ( r != 0    ) { ErrorMSGfile( "MCS load error",  (char*)fname, r); return NULL; }
+	if ( r == 0x30 ) { 
+//		ErrorMSGfile( "Can't find file", (char*)fname, r);
+		return NULL; 
+	}
+	if ( r != 0    ) { 
+//		ErrorMSGfile( "MCS load error",  (char*)fname, r); 
+		return NULL; 
+	}
 
 	item = (TDirectoryItem*)tmp[0];
 	srcbase=(char *)data_ptr+10;
