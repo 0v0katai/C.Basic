@@ -35,7 +35,7 @@ int StrUpr( char *str1, char *str2 ) ;		// Upr$(str2, n) -> str1
 int OpcodeCopy(char *buffer, char *SRC, int Maxlen) ;
 void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) ;	// Opcode String  ->  Ascii String
 
-void StrDMSsub( char *buffer, double a ) ;	// 
+void StrDMSsub( char *buffer, double a ) ;	//
 //-----------------------------------------------------------------------------
 // Casio Basic
 //-----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) ;
 int CB_IsStr( char *SRC, int execptr ) ;
 char* CB_GetOpStr1( char *SRC ,int *maxlen ) ;		// String -> buffer	return
-char* CB_GetOpStr( char *SRC, int *maxoplen ) ;	// Get opcode String 
+char* CB_GetOpStr( char *SRC, int *maxoplen ) ;	// Get opcode String
 double CB_EvalStrDBL( char *buffer, int calcflag ); //
 double CB_EvalStr( char *SRC, int calcflag) ;		// Eval str -> complex
 complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ); //
@@ -57,10 +57,12 @@ complex CB_Cplx_EvalStr( char *SRC, int calcflag) ;		// Eval str -> complex
 int CBint_EvalStr( char *SRC, int calcflag) ;		// Eval str -> int
 void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;
 
+int CB_CheckYfn(char *SRC ) ;	// 0:string   1:function
+char* GetStrYFnPtrSub( int reg, int dimA, int dimB ) ;
 double  CB_GraphYStr( char *SRC, int calcflag ) ;	//
-int CBint_GraphYStr( char *SRC, int calcflag ) ;	// 
+int CBint_GraphYStr( char *SRC, int calcflag ) ;	//
 double CB_FnStr( char *SRC, int calcflag ) ;	//
-int CBint_FnStr( char *SRC, int calcflag ) ;	// 
+int CBint_FnStr( char *SRC, int calcflag ) ;	//
 complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) ;	//
 complex CB_Cplx_FnStr( char *SRC, int calcflag ) ;	//
 
@@ -96,7 +98,7 @@ int CB_TimeToStr() ;	// -> "23:59:59"
 
 int CB_StrChar( char *SRC ) ;	// StrChar("*"[,n])
 int CB_StrCenter( char *SRC );	// StrCenter( Str1,max[,"SpaceChar"])
-int CB_EvalToStr( char *SRC );	// Str( n 
+int CB_EvalToStr( char *SRC );	// Str( n
 int CB_Hex( char *SRC );		// Hex(
 int CB_Bin( char *SRC );		// Bin(
 int CB_StrBase( char *SRC );	// StrBase( Str1,base1,base2 )->str2

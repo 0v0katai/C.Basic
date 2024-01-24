@@ -516,6 +516,8 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflagtmp=CB_MatCalc(SRC,c);
 						if ( dspflagtmp ) goto Evalexit2;
 						break;
+					case 0xFFFFFFF0:	// GraphY
+						goto fnjmp;
 					case 0x51:	// List
 					case 0x6A:	// List1
 					case 0x6B:	// List2
@@ -556,6 +558,9 @@ int CB_interpreter_sub( char *SRC ) {
 				else
 				if ( ( 0xFFFFFF98 <= c ) && ( c <= 0xFFFFFF9F ) ) break;	// color command   Black/(White)/Magenta/Cyan/Yellow
 				switch ( c ) {
+					case 0x1B:	// fn
+					  fnjmp:
+						if ( CB_CheckYfn( SRC ) == 0 ) goto Evalexit2;
 					case 0x30:	// StrJoin(
 //					case 0x34:	// StrLeft(
 //					case 0x35:	// StrRight(
