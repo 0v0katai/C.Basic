@@ -179,7 +179,7 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	int base;
 	MatOprandInt1sub( SRC, reg, &(*dimA) );
 	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, DefaultElemetSize(), (*dimA)-1+MatBase, 1, MatBase );	// new matrix
+		DimMatrixSub( reg, DefaultElemetSize(), (*dimA)+1-MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 	base=MatAry[reg].Base;
@@ -658,6 +658,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CB_Ticks( SRC );	// 
 						
 				case 0xFFFFFFF0 :		// GraphY str
+				case 0xFFFFFFF1:		// Graphr
+				case 0xFFFFFFF2:		// GraphXt
+				case 0xFFFFFFF3:		// GraphYt
+				case 0xFFFFFFF4:		// GraphX
 					return CBint_GraphYStr( SRC, 0 );
 						
 				case 0xFFFFFFF5 :		// IsExist(
@@ -750,7 +754,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFDF :				// Version
 					return CB_Version();		//
 
-//				case 0xFFFFFF90 :				// F Result
+				case 0xFFFFFF90 :				// F Result
+					dspflag=4;		// 2:value		3:Mat    4:List
+					return 0;
 				case 0xFFFFFF91 :				// F Start
 				case 0xFFFFFF92 :				// F End
 				case 0xFFFFFF93 :				// F pitch
@@ -984,57 +990,9 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 			 ( c == 0xFFFFFFC1 )) { // Ran#
 				result *= EvalIntsub4( SRC ) ;
 		} else if ( c == 0x7F ) { // 7F..
-			c = SRC[ExecPtr+1];
-			switch ( c ) {
-				case 0x40:	// Mat A[a,b]
-				case 0xFFFFFF84 :	// Vct A[a,b]
-				case 0x51:	// List 1[a]
-				case 0x3A:	// MOD(a,b)
-				case 0x3C:	// GCD(a,b)
-				case 0x3D:	// LCM(a,b)
-				case 0xFFFFFF8F:	// Getkey
-				case 0xFFFFFF85:	// logab(a,b)
-				case 0xFFFFFF86:	// RndFix(n,digit)
-				case 0xFFFFFF87:	// RanInt#(st,en)
-				case 0xFFFFFFB3 :	// Not
-				case 0xFFFFFFF0:	// GraphY
-				case 0x00:	// Xmin
-				case 0x01:	// Xmax
-				case 0x02:	// Xscl
-				case 0x04:	// Ymin
-				case 0x05:	// Ymax
-				case 0x06:	// Yscl
-				case 0x08:	// Thetamin
-				case 0x09:	// Thetamax
-				case 0x0A:	// Thetaptch
-				case 0x0B:	// Xfct
-				case 0x0C:	// Yfct
-				case 0x20 :			// Max( List 1 )	Max( { 1,2,3,4,5 } )
-				case 0x21 :			// Det Mat A
-				case 0x29 :			// Sigma( X, X, 1, 1000)
-				case 0x2D :			// Min( List 1 )	Min( { 1,2,3,4,5 } )
-				case 0x2E :			// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-				case 0x47 :			// Fill(
-				case 0x4A :			// List>Mat( List 1, List 2,..) -> List 5
-				case 0x4B :			// Mat>List( Mat A, m) -> List n
-				case 0x4C :			// Sum List 1
-				case 0x4D :			// Prod List 1
-				case 0x58 :			// ElemSize( Mat A )
-				case 0x59 :			// RowSize( Mat A )
-				case 0x5A :			// ColSize( Mat A )
-				case 0x5B :			// MatBase( Mat A )
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-					result *= EvalIntsub4( SRC ) ;
-					break;
-				default:
-					goto exitj;
-					break;
-			}
+				c = SRC[ExecPtr+1];
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) ) goto exitj;	// And Or Not xor
+				result *= EvalIntsub4( SRC ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {

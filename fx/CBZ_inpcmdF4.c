@@ -29,6 +29,10 @@ void GetGenuineCmdF4( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF91E;return;	// ClrMat
 			} break;
+		case CMD_PRGM_DISP:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF72E;return;	// DispF-Tbl
+			} break;
 		case CMD_PRGM_REL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x3C;return;	// <

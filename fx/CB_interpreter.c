@@ -486,6 +486,13 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_TryEnd();
 						break;
 						
+					case 0x2E:			// DispF-Tbl
+						CB_DispF_Tbl( SRC );
+						break;
+					case 0xFFFFFF88:	// VarRange
+						CB_VarRange( SRC );
+						break;
+					
 					case 0x2B:			// NormalG
 					case 0x2C:			// ThickG
 					case 0x2D:			// BrokenThickG
@@ -699,6 +706,11 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0xFFFFFFF5:	// ThinG
 						CB_GraphFunc(SRC,c);
 						break;
+
+					case 0x10:	// VarList
+						CB_VarList( SRC );
+						break;
+						
 					default:
 						Evalexit2:
 						ExecPtr-=2;

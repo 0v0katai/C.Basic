@@ -2862,18 +2862,18 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 	int base=MatBase;
 	int ElementSize;
 
-	exptr=ExecPtr;
-	c=SkipSpcCR(SRC);
-	n=1;
-	while ( 0 ) {
-		data=CB_Cplx_EvalDbl( SRC );
-		c=SkipSpc(SRC);
-		if ( c != ',' ) break;
-		ExecPtr++;
-		SkipSpcCR(SRC);
-		n++;
-	}
-	ExecPtr=exptr;
+//	exptr=ExecPtr;
+//	c=SkipSpcCR(SRC);
+//	n=1;
+//	while ( 0 ) {
+//		data=CB_Cplx_EvalDbl( SRC );
+//		c=SkipSpc(SRC);
+//		if ( c != ',' ) break;
+//		ExecPtr++;
+//		SkipSpcCR(SRC);
+//		n++;
+//	}
+//	ExecPtr=exptr;
 
 
 	dimA=64;
@@ -2895,7 +2895,7 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 		ExecPtr++;	// "," skip
 		SkipSpcCR(SRC);
 		m++;
-		if ( m >= dimA ) MatElementPlus( reg, m, 1 );	// List element +
+		if ( m > dimA ) MatElementPlus( reg, m+1-base, 1 );	// List element +
 	}
 	if ( c == '}' ) ExecPtr++;
 	MatAry[reg].SizeA = m+1-base;

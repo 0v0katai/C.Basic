@@ -584,11 +584,16 @@ char* GetStrYFnPtrSub( int reg, int dimA, int dimB ) {
 	buffer=MatrixPtr( reg, dimA, dimB );
 	return buffer;
 }
+int GetStrYFnNo( char *SRC, int reg, int aryN, int aryMax ) {	// -> StringNo
+	int dimA,dimB;
+	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
+	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+	return dimA;
+}
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 	int dimA,dimB;
 	char *buffer;
-	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
-	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+	dimA = GetStrYFnNo( SRC, reg, aryN, aryMax );
 	return GetStrYFnPtrSub( reg, dimA, aryMax );
 }
 
@@ -730,7 +735,6 @@ char* CB_GetOpStrSub( char *SRC ,int *maxlen, int c ) {		// String -> buffer	ret
 	int reg,dimA,dimB;
 	int aryN,aryMax;
 	char *buffer;
-	int type;
 
 	switch ( c ) {
 		case 1:	// """"
@@ -765,22 +769,23 @@ char* CB_GetOpStrSub( char *SRC ,int *maxlen, int c ) {		// String -> buffer	ret
 		case 0xFFFFFFF4:	// GraphX
 			reg=defaultGraphAry;
 			ExecPtr+=2;
-			buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize ) +6;
-			type = ( buffer[0]<<8 ) + ( buffer[1] );
+			dimA = GetStrYFnNo( SRC, reg, defaultGraphAryN, defaultGraphArySize );
 			switch ( c ) {
 				case 0xFFFFFFF0:	// GraphY
-					c=0x0108; break;
+					buffer = ReadGraphY( dimA ); break;
 				case 0xFFFFFFF1:	// Graphr
-					c=0x040A; break;
+					buffer = ReadGraphr( dimA ); break;
 				case 0xFFFFFFF2:	// GraphXt
-					c=0x0409; break;
+					buffer = ReadGraphXt( dimA ); break;
 				case 0xFFFFFFF3:	// GraphYt
-					buffer = strstr(buffer,"\xF6\x00");
-					c=0x0409; break;
+					buffer = ReadGraphYt( dimA ); break;
 				case 0xFFFFFFF4:	// GraphX
-					c=0x0208; break;
+					buffer = ReadGraphX( dimA ); break;
+				default:
+					buffer = MatrixPtr( reg, dimA, 7 );
 			}
-			(*maxlen)=MatAry[reg].SizeB;
+			if ( buffer == NULL ) CB_Error(InvalidType);
+			(*maxlen)=MatAry[reg].SizeB-6;
 			break;
 		case 0x30:	// StrJoin(
 			ExecPtr+=2;
@@ -917,6 +922,7 @@ char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String
 char* CB_GetOpStr_noYFn( char *SRC, int *maxoplen ) {	// Get opcode String 
 	return CB_GetOpStrSub1( SRC, &(*maxoplen), 0 );
 }
+
 //----------------------------------------------------------------------------------------------
 void StorStrMat( char *SRC ) {	// "String" -> $Mat A
 	int reg,dimA,dimB;
@@ -938,26 +944,6 @@ void StorStrStr( char *SRC ) {	// "String" -> Sto 1-20
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
-void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
-	int reg,dimA,dimB;
-	char *MatAryC,*ptr;
-	int size;
-	int c = SRC[ExecPtr-1];
-	reg=defaultGraphAry;
-	MatAryC = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize ) +6;
-	if ( ErrorNo ) return ; // error
-	size = MatAry[reg].SizeB-1-6;
-	if ( ( c==0xFFFFFFF2 ) ) {	// Yt
-		ptr=strstr(MatAryC, "\xF6\x00");
-		if ( ptr == NULL ) {
-			MatAryC[0]='\0';
-		} else {
-			
-		}
-	} 
-	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1-6 );
-}
-
 void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	int reg,dimA,dimB;
 	char *MatAryC;
@@ -965,6 +951,30 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	MatAryC = GetStrYFnPtr( SRC, reg, defaultFnAryN, defaultFnArySize );
 	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
+}
+
+void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
+	int reg,dimA,dimB;
+	char *MatAryC,*ptr;
+	int size;
+	int c = SRC[ExecPtr-1];
+	reg=defaultGraphAry;
+	dimA = GetStrYFnNo( SRC, reg, defaultGraphAryN, defaultGraphArySize );
+//	MatAryC = GetStrYFnPtrSub( reg, dimA, defaultGraphArySize ) +6;
+	if ( ErrorNo ) return ; // error
+	switch ( c ) {
+		case 0xFFFFFFF0:	// GraphY
+			StoreGraphY(  CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF1:	// Graphr
+			StoreGraphr(  CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF2:	// GraphXt
+			StoreGraphXt( CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF3:	// GraphYt
+			StoreGraphYt( CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF4:	// GraphX
+			StoreGraphX(  CB_CurrentStr, dimA ); break;
+			break;
+	}
 }
 
 void StorStrList0( char *SRC ) {	// "String" -> List n[0]	->List "ABS"   ->List Str1
@@ -1045,7 +1055,7 @@ int CB_IsStrStor( char *SRC, int execptr ) {
 	} else
 	if ( c == 0x7F ) {
 		c=SRC[execptr+1];
-		if ( c == 0xFFFFFFF0 ) return c;	// GraphY
+		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
@@ -1275,26 +1285,6 @@ double CB_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> double
 	int execptr=ExecPtr;
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = EvalIntsub14( buffer );
-		else
-		if (CB_INT==0)	result = Evalsub14( buffer );
-		else			result = Cplx_Evalsub14( buffer ).real;
-	}
-    else {
-		if (CB_INT==1)	result = ListEvalIntsubTop( buffer );	// List calc
-		else
-		if (CB_INT==0)	result = ListEvalsubTop( buffer );			// List calc
-		else			result = Cplx_ListEvalsubTop( buffer ).real;	// List calc
-	}
-    ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
-	return result;
-}
-double CB_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> double
-	double result;
-	int execptr=ExecPtr;
-	ExecPtr = 0;
-    if ( calcflag == 0 ) {
 		if (CB_INT==1)	result = EvalIntsubTop( buffer );
 		else
 		if (CB_INT==0)	result = EvalsubTop( buffer );
@@ -1316,26 +1306,6 @@ complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> doubl
 	int execptr=ExecPtr;
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = Int2Cplx( EvalIntsub14( buffer ) );
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( Evalsub14( buffer ) );
-		else			result = Cplx_Evalsub14( buffer );
-	}
-    else {
-		if (CB_INT==1)	result = Int2Cplx( ListEvalIntsubTop( buffer ) );	// List calc
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( ListEvalsubTop( buffer ) );	// List calc
-		else			result = Cplx_ListEvalsubTop( buffer );	// List calc
-	}
-    ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return Int2Cplx(0); }
-	return result;
-}
-complex CB_Cplx_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> double
-	complex result;
-	int execptr=ExecPtr;
-	ExecPtr = 0;
-    if ( calcflag == 0 ) {
 		if (CB_INT==1)	result = Int2Cplx( EvalIntsubTop( buffer ) );
 		else
 		if (CB_INT==0)	result = Dbl2Cplx( EvalsubTop( buffer ) );
@@ -1353,20 +1323,6 @@ complex CB_Cplx_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> doub
 }
 
 int CB_EvalStrInt( char *buffer, int calcflag ) {		// Eval str -> Int
-	int result;
-	int execptr=ExecPtr;
-	ExecPtr = 0;
-    if ( calcflag == 0 ) {
-		result = EvalIntsub14( buffer );
-	}
-    else {
-		result = ListEvalIntsubTop( buffer );	// List calc
-	}
-    ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
-	return result;
-}
-int CB_EvalStrInt2( char *buffer, int calcflag ) {		// Eval str -> Int
 	int result;
 	int execptr=ExecPtr;
 	ExecPtr = 0;
@@ -1424,12 +1380,45 @@ int CBint_EvalStr( char *SRC, int calcflag ) {		// Exp(			Eval str -> int
 	return result;
 }
 
-char* CB_GraphYStrSub( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnAry
+int CB_GraphFnStrNo( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnAry
 	int dimA,dimB;
 	int base=MatAry[reg].Base;
-	dimA=EvalIntsub1( SRC );
+	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;
 	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(MemoryERR); }  // Memory error
+	return dimA;
+}
+char* CB_FnStrSub( char *SRC ) {	//  efaultFnAry
+	int dimA,dimB;
+	int reg=defaultFnAry;
+	int base=MatAry[reg].Base;
+	dimA = CB_GraphFnStrNo( SRC, reg );
+	if ( ErrorNo ) return 0;
 	return MatrixPtr( reg, dimA, base )+ ( reg==defaultGraphAry )*6;
+}
+char* CB_GraphStrSub( char *SRC ) {	//  defaultGraphAry
+	int dimA,dimB;
+	int reg=defaultGraphAry;
+	int base=MatAry[reg].Base;
+	int c = SRC[ExecPtr-1];
+	char *ptr;
+	dimA = CB_GraphFnStrNo( SRC, reg );
+	if ( ErrorNo ) return 0;
+	switch ( c ) {
+		case 0xFFFFFFF0:	// GraphY
+			ptr = ReadGraphY( dimA ); break;
+		case 0xFFFFFFF1:	// Graphr
+			ptr = ReadGraphr( dimA ); break;
+		case 0xFFFFFFF2:	// GraphXt
+			ptr = ReadGraphXt( dimA ); break;
+		case 0xFFFFFFF3:	// GraphYt
+			ptr = ReadGraphYt( dimA ); break;
+		case 0xFFFFFFF4:	// GraphX
+			ptr = ReadGraphX( dimA ); break;
+		default:
+			ptr = MatrixPtr( defaultGraphAry, dimA, 7 );
+	}
+	if ( ptr == NULL ) CB_Error(InvalidType);
+	return ptr;
 }
 void GraphFnEQ( char *SRC ){
 	int c=SRC[ExecPtr];
@@ -1437,10 +1426,11 @@ void GraphFnEQ( char *SRC ){
 		if ( SRC[ExecPtr+1] == '=' ) ExecPtr+=2;
 	}
 }
+
 double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	double result;
 	double tmpX = regX.real;
-	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
+	char *ptr = CB_GraphStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
@@ -1452,26 +1442,10 @@ double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	regX.real = tmpX;
 	return result;
 }
-double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
-	double result;
-	double tmpX = regX.real;
-	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
-	if ( ErrorNo ) return 0;
-	if ( SRC[ExecPtr] == '(' ) {
-		ExecPtr++;
-		GraphFnEQ( SRC );
-		regX.real = CB_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	}
-	result = CB_EvalStrDBL2( ptr, calcflag );
-	regX.real = tmpX;
-	return result;
-}
-
 complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	complex result;
 	complex tmpX = regX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
+	char *ptr = CB_GraphStrSub( SRC ) ;
 	if ( ErrorNo ) return Int2Cplx(0);
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
@@ -1483,26 +1457,10 @@ complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	regX = tmpX;
 	return result;
 }
-complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
-	complex result;
-	complex tmpX = regX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
-	if ( ErrorNo ) return Int2Cplx(0);
-	if ( SRC[ExecPtr] == '(' ) {
-		ExecPtr++;
-		GraphFnEQ( SRC );
-		regX = CB_Cplx_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	}
-	result = CB_Cplx_EvalStrDBL2( ptr, calcflag );
-	regX = tmpX;
-	return result;
-}
-
 int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	int result;
 	int tmpintX = regintX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
+	char *ptr = CB_GraphStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
@@ -1514,10 +1472,41 @@ int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	regintX = tmpintX;
 	return result;
 }
+
+double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
+	double result;
+	double tmpX = regX.real;
+	char *ptr = CB_FnStrSub( SRC ) ;
+	if ( ErrorNo ) return 0;
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		GraphFnEQ( SRC );
+		regX.real = CB_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_EvalStrDBL( ptr, calcflag );
+	regX.real = tmpX;
+	return result;
+}
+complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
+	complex result;
+	complex tmpX = regX;
+	char *ptr = CB_FnStrSub( SRC ) ;
+	if ( ErrorNo ) return Int2Cplx(0);
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		GraphFnEQ( SRC );
+		regX = CB_Cplx_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_Cplx_EvalStrDBL( ptr, calcflag );
+	regX = tmpX;
+	return result;
+}
 int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	int result;
 	int tmpintX = regintX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
+	char *ptr = CB_FnStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
 	if ( calcflag == 0 ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
@@ -1526,7 +1515,7 @@ int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 		regintX = CB_EvalInt(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
-	result = CB_EvalStrInt2( ptr, calcflag );
+	result = CB_EvalStrInt( ptr, calcflag );
 	regintX = tmpintX;
 	return result;
 }
