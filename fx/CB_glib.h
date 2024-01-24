@@ -38,10 +38,11 @@ void PxlOff_DDVRAM(int py, int px);
 int PxlTest(int py, int px);
 void PxlChg_VRAM(int py, int px);
 
-void LinesubSetPoint(int px, int py) ;
-void Line(int style);
-void F_Line(double x1, double y1, double x2, double y2, int style);
-void Vertical(double x ,int style);
-void Horizontal(double y, int style);
-void Circle(double x, double y, double r, int style, int drawflag);
+void LinesubSetPoint(int px, int py, int mode) ;
+void Linesub(int px1, int py1, int px2, int py2, int style, int mode) ;
+void Line(int style, int mode);
+void F_Line(double x1, double y1, double x2, double y2, int style, int mode);
+void Vertical(double x ,int style, int mode);
+void Horizontal(double y, int style, int mode);
+void Circle(double x, double y, double r, int style, int drawflag, int mode);
 

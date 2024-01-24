@@ -511,6 +511,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int alphalock = 0 ;
 	int SearchMode=0;
 	int ContinuousSelect=0;
+	int scrmode=ScreenMode;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -601,6 +602,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else { 
 					if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
 				}
+				Cursor_SetFlashMode(1);			// cursor flashing on
 				CursorStyle=Cursor_GetFlashStyle();
 				if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
 				if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
@@ -912,13 +914,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				
 			case KEY_CTRL_SHIFT:
 				if ( SearchMode ) break;;
+				F6loop:
 				alphalock = 0 ;
 				Fkey_dispR( 0, "Var");
 				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
 				Fkey_Clear( 3 );
-				if ( dumpflg==2 ) Fkey_dispR( 4, "Dump"); else Fkey_dispR( 4, "List");
-				Fkey_dispR( 5, "SRC" );
+				if ( dumpflg==2 ) Fkey_dispN( 3, "Dump"); else Fkey_dispN( 3, "List");
+				Fkey_dispR( 4, "SRC" );
+				Fkey_dispN( 5, "G<>T");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
@@ -986,7 +990,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
-					case KEY_CTRL_F5:
+					case KEY_CTRL_F4:
 						if ( SearchMode ) break;;
 							switch (dumpflg) {
 								case 2: 		// Opcode
@@ -1006,7 +1010,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
-					case KEY_CTRL_F6:	// Search for text
+					case KEY_CTRL_F5:	// Search for text
 							if ( ClipEndPtr >= 0 ) {
 								if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 								EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
@@ -1021,12 +1025,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 							
-					case KEY_CHAR_POWROOT:
-							if ( CB_INTDefault ) CBint_test(); else CB_test();
-							key=0;
-							ClipStartPtr = -1 ;			// ClipMode cancel
+					case KEY_CTRL_F6:	// G<>T
+							Cursor_SetFlashMode(0); 		// cursor flashing off
+							if ( scrmode  ) CB_RestoreGraphVRAM();	// Resotre Graphic screen
+							else			CB_RestoreTextVRAM();	// Resotre Text screen
+							scrmode=1-scrmode;
+							GetKey(&key);
+							if ( key == KEY_CTRL_SHIFT) goto F6loop;
 							break;
-							
 					case KEY_CTRL_CLIP:
 							ClipStartPtr=csrPtr;
 							key=0;
@@ -1168,7 +1174,7 @@ int CB_BreakStop() {
 	key=EditRun(2);	// Program listing & edit
 	Contflag=0;	// disable Continue
 	
-	CB_RestoreTextVRAM();	// Resotre Graphic screen
+	CB_RestoreTextVRAM();	// Resotre Text screen
 	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
 
 	if ( key == KEY_CTRL_EXIT  ) { BreakPtr=-999; return BreakPtr; }

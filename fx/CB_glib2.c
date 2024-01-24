@@ -528,7 +528,7 @@ void Graph_Draw(){
 			Plot_X=regX;
 			Plot_Y=regY;
 			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
-				Line( S_L_Default );
+				Line( S_L_Default , 1);
 			}
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 		}

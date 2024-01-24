@@ -22,6 +22,71 @@
 //-----------------------------------------------------------------------------
 double MatDefaultValue=0;
 //-----------------------------------------------------------------------------
+int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	int i;
+	int matsize=dimA*dimB*ElementSize;
+	
+	if ( ( MatAry[reg] != NULL ) && ( MatAryMaxbyte[reg] >= matsize ) ) { // already exist
+		dptr = MatAry[reg] ;						// Matrix array ptr*
+		MatArySizeA[reg]=dimA;						// Matrix array size
+		MatArySizeB[reg]=dimB;						// Matrix array size
+		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
+	} else {
+		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
+		dptr = malloc( matsize );
+		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
+		MatArySizeA[reg]=dimA;						// Matrix array size
+		MatArySizeB[reg]=dimB;						// Matrix array size
+		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
+		MatAry[reg] = dptr ;						// Matrix array ptr*
+		MatAryMaxbyte[reg]=matsize;					// Matrix array max byte
+	}
+	memset( dptr, 0, matsize );	// initialize
+
+	return 0;	// ok
+}
+
+int DimMatrixDefaultElementSize( int reg ) {
+	switch ( reg+'A' ) {
+		case 'B':
+		case 'C':
+			return 1;
+			break;
+		case 'D':
+		case 'W':
+			return 2;
+			break;
+		case 'L':
+		case 'I':
+			return 4;
+			break;
+		case 'E':
+		case 'F':
+			return 8;
+			break;
+		default:
+			return CB_INT?4:8 ;
+			break;
+	}
+}
+
+int DimMatrix( int reg, int dimA, int dimB ) {
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	int i;
+	int ElementSize;
+	
+	ElementSize = DimMatrixDefaultElementSize( reg ) ;
+	return	DimMatrixSub( reg, ElementSize, dimA, dimB );
+}
+
+//-----------------------------------------------------------------------------
 void DeleteMatrix( int reg ) {
 	double *ptr;
 	if ( ( 0 <= reg ) && ( reg <= 25 ) ) {
@@ -31,6 +96,7 @@ void DeleteMatrix( int reg ) {
 			MatArySizeA[reg]=0;							// Matrix array size
 			MatArySizeB[reg]=0;							// Matrix array size
 			MatAry[reg]=NULL ;							// Matrix array ptr*
+			MatAryMaxbyte[reg]=0;						// Matrix array max byte
 	} else {
 		for ( reg=0; reg<26; reg++){
 			ptr = MatAry[reg] ;							// Matrix array ptr*
@@ -39,6 +105,7 @@ void DeleteMatrix( int reg ) {
 			MatArySizeA[reg]=0;							// Matrix array size
 			MatArySizeB[reg]=0;							// Matrix array size
 			MatAry[reg]=NULL ;							// Matrix array ptr*		
+			MatAryMaxbyte[reg]=0;						// Matrix array max byte
 		}
 	}
 }
@@ -403,69 +470,6 @@ double InitMatrix( int reg, double value ,int ElementSize ) {
 	return value;
 }
 
-
-//-----------------------------------------------------------------------------
-int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
-	char	*cptr;
-	short	*wptr;
-	int		*iptr;
-	double	*dptr;
-	int i;
-
-	if ( ( ElementSize==MatAryElementSize[reg] ) && ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
-		dptr = MatAry[reg] ;						// Matrix array ptr*
-		MatArySizeA[reg]=dimA;						// Matrix array size
-		MatArySizeB[reg]=dimB;						// Matrix array size
-	} else {
-		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
-		dptr = malloc( dimA*dimB*ElementSize );
-		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
-		MatArySizeA[reg]=dimA;						// Matrix array size
-		MatArySizeB[reg]=dimB;						// Matrix array size
-		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
-		MatAry[reg] = dptr ;						// Matrix array ptr*
-	}
-	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
-
-	return 0;	// ok
-}
-
-int DimMatrixDefaultElementSize( int reg ) {
-	switch ( reg+'A' ) {
-		case 'B':
-		case 'C':
-			return 1;
-			break;
-		case 'D':
-		case 'W':
-			return 2;
-			break;
-		case 'L':
-		case 'I':
-			return 4;
-			break;
-		case 'E':
-		case 'F':
-			return 8;
-			break;
-		default:
-			return CB_INT?4:8 ;
-			break;
-	}
-}
-
-int DimMatrix( int reg, int dimA, int dimB ) {
-	char	*cptr;
-	short	*wptr;
-	int		*iptr;
-	double	*dptr;
-	int i;
-	int ElementSize;
-	
-	ElementSize = DimMatrixDefaultElementSize( reg ) ;
-	return	DimMatrixSub( reg, ElementSize, dimA, dimB );
-}
-
 //-----------------------------------------------------------------------------
 
 void EditMatrix(int reg){		// ----------- Edit Matrix
@@ -586,11 +590,15 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				locate(1,8); PrintLine((unsigned char *)" ",21);
 				locate(1,8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
 				if ( MatXYmode ) {
-					value=ReadMatrix( reg, selectX, selectY);
-					WriteMatrix( reg, selectX, selectY, InputNumD_full( 1, 7, 21, value));
+					if ( ( selectX <= dimA ) && ( selectY <= dimB ) ) {
+						value=ReadMatrix( reg, selectX, selectY);
+						WriteMatrix( reg, selectX, selectY, InputNumD_full( 1, 7, 21, value));
+					}
 				} else {
-					value=ReadMatrix( reg, selectY, selectX);
-					WriteMatrix( reg, selectY, selectX, InputNumD_full( 1, 7, 21, value));
+					if ( ( selectX <= dimA ) && ( selectY <= dimB ) ) {
+						value=ReadMatrix( reg, selectY, selectX);
+						WriteMatrix( reg, selectY, selectX, InputNumD_full( 1, 7, 21, value));
+					}
 				}
 				selectX++;
 				if ( selectX > dimA ) { selectX = dimA;
