@@ -1042,8 +1042,8 @@ int NextLine( char *SRC, int *offset ){
 
 int PrevOpcode( char *SRC, int *offset ){
 	int c;
-	if ( *offset <= 0 ) return 0;
-		(*offset)-=2;
+	(*offset)-=2; 
+	if ( *offset < 0 ) { (*offset)=0; return 0;}
 		c=SRC[*offset];
 		switch ( c ) {
 			case 0x7F:		// 
@@ -1054,7 +1054,6 @@ int PrevOpcode( char *SRC, int *offset ){
 			case 0xFFFFFFE7:		// 
 			case 0xFFFFFFFF:	// 
 				return 2 ;
-				break;
 		}
 	(*offset)++;
 	return 1 ;

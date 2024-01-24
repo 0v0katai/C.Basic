@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.88 
+ Casio Basic Interpreter (& Compiler) ver 0.90 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -85,7 +85,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		}
 		PictAry[0]=GetVRAMAddress();
 		
-		key =( SelectFilefree( filename ) ) ;
+		key =( SelectFile( filename ) ) ;
 		switch ( key ) {
 			case KEY_CHAR_POWROOT:				// -- test for SDK (internal sample program)
 				ProgEntryN=0;						// Main program
@@ -158,6 +158,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			if ( ptr != NULL ) free(ptr);
 			PictAry[i]=0;
 		}
+		FileListfree();
 	}
 }
 

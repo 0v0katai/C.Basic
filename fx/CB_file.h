@@ -6,6 +6,7 @@
 
 /* return a filename */
 unsigned int SelectFile (char *filename);
+void FileListfree() ;
 
 // #define DEBUG
 // if define DEBUG, the files are in SD card
