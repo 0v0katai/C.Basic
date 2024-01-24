@@ -182,6 +182,8 @@ int NextLine( char *SRC, int *offset );
 int PrevOpcode( char *SRC, int *offset );
 int PrevLine( char *SRC, int *offset );
 int strlenOp( char *buffer ) ;
+int InsertOpcode1( char *buffer, int Maxstrlen, int ptr, int opcode );
+void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr);
 
 int CB_MB_ElementCount( char *str);
 int CB_MB_strlen( char *str ) ;
@@ -200,8 +202,8 @@ int InputStrSub_status(int x, int y, int width, int ptrX, char* buffer, int MaxS
 
 double Round( double num, int round_mode, int digit);
 void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit, int cplx ) ; // + round   + i
-void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ; 
-void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode 
+void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ;
+void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode
 void sprintG( char* buffer, double num, int width, int align_mode);
 
 double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode, unsigned  *key);

@@ -5,7 +5,7 @@ const char TypeStr[][2]={"S","f","Y"};
 	
 int SelectMemoryNum( int type, int max, int store, unsigned int *key ) {		//
 	char buffer[32];
-	int n,n0=1;
+	int n=0,n0=1;
 	PopUpWin(4);
 	FkeyClearAll();
 	locate( 3,2); if ( store ) Print((unsigned char *)"Store In"); else Print((unsigned char *)"Recall From");
@@ -14,7 +14,7 @@ int SelectMemoryNum( int type, int max, int store, unsigned int *key ) {		//
 	locate( 3,5); sprintf(buffer,"%s[%d~%d]:",TypeStr[type],1,max); Print((unsigned char *)buffer);
 	buffer[0]='\0';
 	while (1) {
-		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &(*key));		// 0123456789
+		n=InputNumD(13+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &(*key));		// 0123456789
 		if ( n == n0 ) break;
 		if ( (1<=n)&&(n<=max) ) break;
 		n=n0;
