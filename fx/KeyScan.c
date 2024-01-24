@@ -154,11 +154,11 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	if ( ( code ) && ( Getkey_shift ) ) {
 		Getkey_shift=0;
 		if ( code == 68 ) {	// 68
-			BackLight(2);
+			Keyboard_ClrBuffer();
+			if ( SH3 == 0 ) BackLight(2);	// SH4 only
 		} else
 		if ( code == 34 ) {	// AC
-			Keyboard_ClrBuffer();
-			PutKey( KEY_CTRL_SHIFT,1);	GetKey(&key);
+//			PutKey( KEY_CTRL_SHIFT,1);	GetKey(&key);
 			PutKey( KEY_CTRL_AC,1);		GetKey(&key);
 			code=0;
 		}
@@ -464,6 +464,7 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	unsigned int key;
 	int code;
 	
+	Getkey_shift=0;
 	GetKey(&key);
 	return CB_KeyCodeCnvt( key ) ;
 }
