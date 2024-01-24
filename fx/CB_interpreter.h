@@ -85,13 +85,13 @@ extern double  REGv[11];
 extern	double Xfct;
 extern	double Yfct;
 
-
-extern	double 	*LocalDbl;		// local var ptr
-extern	int		*LocalInt;		// local var ptr
+#define ArgcMAX 10
+extern	double 	*LocalDbl[26];		// local var ptr
+extern	int		*LocalInt[26];		// local var ptr
 
 extern double	traceAry[130];		// Graph trace array
 
-#define GraphStrMAX 64
+#define GraphStrMAX 32
 extern char *GraphY;
 extern char GraphY1[];
 extern char GraphY2[];
@@ -151,24 +151,26 @@ extern int dspflag;
 extern int CursorX;	// text cursor X
 extern int CursorY;	// text cursor X
 
-#define ProgMax 10
+#define ProgMax 15
 extern char ProgEntryN;		// how many subroutin
 extern char ProgNo;			// current Prog No
 extern char *ProgfileAdrs[ProgMax+1];
 extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
+extern char  ProgLocalN[ProgMax+1];
+extern char  ProgLocalVar[ProgMax+1][26];
 
-extern char   CB_CurrentStr[128];	//
+//extern char   CB_CurrentStr[128];	//
 extern double CB_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
 #define StackGotoMax 10+26
 #define StackGosubMax 4
-#define IfCntMax 16
+#define IfCntMax 32
 #define RemCntMax 32
-#define StackForMax 5
-#define StackWhileMax 5
-#define StackDoMax 5
+#define StackForMax 4
+#define StackWhileMax 4
+#define StackDoMax 4
 #define StackSwitchMax 4
 
 typedef struct {
@@ -201,15 +203,15 @@ typedef struct {
 } StkWhileDo;
 
 typedef struct {
-	int		Ptr;
-	short	flag[StackSwitchMax];
+	char	Ptr;
+	char	flag[StackSwitchMax];
 	short	EndAdrs[StackSwitchMax];
 	int		Value[StackSwitchMax];
 } StkSwitch;
 
 typedef struct {
-	int		CNT;
-	char	TYPE[12];
+	short	CNT;
+	char	TYPE[14];
 } CurrentStk;
 
 //-----------------------------------------------------------------------------
@@ -219,7 +221,7 @@ typedef struct {
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."
-void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ); //	Gosub N
+void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs, int *localvarInt, double *localvarDbl  ); //	Gosub N
 double CB_EvalStr( char *SRC) ;		// Eval str -> double
 int CBint_EvalStr( char *SRC) ;		// Eval str -> int
 

@@ -452,6 +452,7 @@ const short oplistPRGM[]={
 		0xF7EC,	// Default
 		0xF7ED,	// SwitchEnd
 		
+		0xF7F1,	// Local
 		0xED,	// Prog
 		0xFE,	// Gosub
 		0xF70C,	// Return
@@ -812,9 +813,9 @@ const short oplistCMD[]={
 		0xF7EB,	// Case
 		0xF7EC,	// Default
 		0xF7ED,	// SwitchEnd
-		0xFFFF,	// 				-
-		0xFE,	// Gosub
 		0xFD,	// Eval(
+		0xF7F1,	// Local
+		0xFE,	// Gosub
 
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
@@ -1317,6 +1318,15 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[7]='e';
 		string[8]='(';
 		string[9]='\0';
+	} else
+	if ( opcode == 0xF7F1 ) {
+		string[0]='L';
+		string[1]='o';
+		string[2]='c';
+		string[3]='a';
+		string[4]='l';
+		string[5]=' ';
+		string[6]='\0';
 	} else
 /*	if ( opcode == 0xFB ) { // P(
 		string[0]='E';

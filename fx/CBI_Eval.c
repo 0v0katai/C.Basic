@@ -186,11 +186,6 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		ExecPtr++;
 		return - EvalIntsub1( SRC );
 	}
-//	if ( c == '@' ) {
-//			c=SRC[++ExecPtr];
-//			ExecPtr++;
-//			if  ( ( '1'<= c ) && ( c<='9' ) ) return LocalInt[c-'1'];
-//	}
 	if ( ( 'A' <= c )&&( c <= 'Z' ) )  {
 			reg=c-'A';
 			c=SRC[++ExecPtr];
@@ -202,10 +197,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	if ( ( 'a' <= c )&&( c <= 'z' ) )  {
 			reg=c-'a';
 			c=SRC[++ExecPtr];
-			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg] ; }
+			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
 			else
 			if ( c=='%' ) ExecPtr++;
-			return LocalInt[reg] ;
+			return LocalInt[reg][0] ;
 	}
 	if ( ( '0' <= c )&&( c <= '9' ) ) return  Eval_atod( SRC, c );
 	
@@ -214,7 +209,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			c = SRC[ExecPtr+1];
 			if ( c == 0x40 ) {	// Mat A[a,b]
 				ExecPtr+=2;
-				c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='Z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+				c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
 				if ( SRC[ExecPtr] != '[' ) { dspflag=3; return 1; }	// Mat A
 				ExecPtr++;
 				MatOprandInt2( SRC, reg, &dimA, &dimB );
@@ -255,14 +250,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return result ;
 			} else if ( c == 0xFFFFFFE9 ) {	// CellSum(Mat A[x,y])
 					ExecPtr+=2;
-					c = SRC[ExecPtr];
-					if ( ( c!=0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr+=2;
-					c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='Z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
-					if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++;
-					MatOprandInt2( SRC, reg, &x, &y );
-					if ( ErrorNo ) return 1 ; // error
+					MatrixOprand( SRC, &reg, &x, &y );
+					if ( ErrorNo ) return ; // error
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return Cellsum( reg, x, y );
 
@@ -664,16 +653,9 @@ int CBint_BinaryEval( char *SRC ) {	// eval 2
 		}
 	} else 
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x40 ) {	// Mat A[a,b]
-			ExecPtr+=2;
-			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='Z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
-			if ( SRC[ExecPtr] != '[' ) { CB_Error(SyntaxERR); }	// Syntax error
-			ExecPtr++;
-			MatOprandInt2( SRC, reg, &dimA, &dimB);
+			MatrixOprand( SRC, &reg, &dimA, &dimB );
 			if ( ErrorNo ) return ; // error
 			src = ReadMatrixInt( reg, dimA, dimB );
-		}
 	} else  src = EvalIntsub1(SRC);
 
 	opPtr=ExecPtr;
@@ -692,16 +674,9 @@ int CBint_BinaryEval( char *SRC ) {	// eval 2
 		}
 	} else 
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x40 ) {	// Mat A[a,b]
-			ExecPtr+=2;
-			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='Z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
-			if ( SRC[ExecPtr] != '[' ) { CB_Error(SyntaxERR); }	// Syntax error
-			ExecPtr++;
-			MatOprandInt2( SRC, reg, &dimA, &dimB);
+			MatrixOprand( SRC, &reg, &dimA, &dimB );
 			if ( ErrorNo ) return ; // error
 			dst = ReadMatrixInt( reg, dimA, dimB );
-		}
 	} else  dst = EvalIntsub1(SRC);
 
 //	ExecPtr++;
@@ -760,16 +735,9 @@ int CBint_UnaryEval( char *SRC ) {	// eval 1
 		}
 	} else 
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x40 ) {	// Mat A[a,b]
-			ExecPtr+=2;
-			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='Z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
-			if ( SRC[ExecPtr] != '[' ) { CB_Error(SyntaxERR); }	// Syntax error
-			ExecPtr++;
-			MatOprandInt2( SRC, reg, &dimA, &dimB);
+			MatrixOprand( SRC, &reg, &dimA, &dimB );
 			if ( ErrorNo ) return ; // error
 			return ReadMatrixInt( reg, dimA, dimB );
-		}
 	} else  return EvalIntsub1(SRC);
 }
 

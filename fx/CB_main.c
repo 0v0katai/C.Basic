@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.90 
+ Casio Basic Interpreter (& Compiler) ver 0.95 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -64,7 +64,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	unsigned int key;
 	char buffer[32];
 	char *ptr,*stat;
-	int i,reg,run=0;
+	int i,j,reg,run=0;
 
 	char filename[50];
 	char *src;
@@ -74,19 +74,24 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 //	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
 	LoadConfig();
 	CB_INT=0;	// double mode default
-	LocalDbl=REGsmall;
-	LocalInt=REGINTsmall;
+	
+	ClipBuffer = (char *)malloc( ClipMax+1 );
+	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
 			ProgfileEdit[i]=0;		// Prog Edit flag clear
+			for (j=0; j<26; j++)	ProgLocalVar[i][j]=-1;
 		}
 		for (i=1; i<=PictMax; i++) {
 			PictAry[i]=NULL;		// Pict ptr clear
 		}
 		PictAry[0]=GetVRAMAddress();
 		
+		for ( i=0; i<26; i++ ) LocalDbl[i]=&REGsmall[i];	// local var init
+		for ( i=0; i<26; i++ ) LocalInt[i]=&REGINTsmall[i];	// local var init
+	
 		key =( SelectFile( filename ) ) ;
 		switch ( key ) {
 			case KEY_CHAR_POWROOT:				// -- test for SDK (internal sample program)
