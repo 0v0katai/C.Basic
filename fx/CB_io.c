@@ -8,7 +8,7 @@ char IsHiddenRAM =0;
 
 #define HIDDENRAM_TOP   0x88040000
 #define HIDDENRAM_TOP2  0x88051400
-#define HIDDENRAM_END   0x88080000
+#define HIDDENRAM_END   0x88080000-16
 char * HIDDENRAM_Top        =(char*)HIDDENRAM_TOP;				// Hidden RAM TOP
 
 char * HiddenRAM_Top        =(char*)HIDDENRAM_TOP+16+256;		// Hidden RAM TOP

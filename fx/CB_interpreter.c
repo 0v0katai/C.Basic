@@ -2411,6 +2411,7 @@ void CB_Store( char *SRC ){	// ->
 			Graphj:
 				ExecPtr+=2;
 				CB_ChangeViewWindow() ;
+				if ( ErrorNo == RangeERR ) ErrorNo=0;	// Cancel Range error
 		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF7 ) {
@@ -3180,10 +3181,10 @@ int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte

@@ -825,6 +825,7 @@ unsigned int Explorer( int size, char *folder )
 			case KEY_CTRL_EXE:
 //				if ( filemode != 0 ) break;
 				strcpy(buffer,files[index].filename);
+				if ( buffer[0] == 0 ) break;
 				GetExtName( buffer, ext );
 				if ( (strcmp(ext, "bmp") == 0 ) ) { 
 					SetFullfilenameExt( fname, buffer, ext );
@@ -3463,9 +3464,9 @@ int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4AA( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4BB( unsigned int n ){ return n; }	// align +4byte
