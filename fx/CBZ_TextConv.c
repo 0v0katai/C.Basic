@@ -704,7 +704,7 @@ const char ConvListF700[][17]={
 "D SelOff ",		// F7DA
 "R SelOff ",		// F7DB
 "DrawOff",			// F7DC
-"@F7DD",			// F7DD
+"Beep ",			// F7DD
 "BatteryStatus",			// F7DE
 "Delete ",				// F7DF
 
@@ -1830,7 +1830,12 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 				if ( c == 0x5C ) {
 					srcbase[ofst++] = c;
 					textofst++;
-					c = text[textofst];
+					if ( ( d==0x0D ) && ( n==0x0A ) ) { 	// 0x0D 0x0A
+						c = 0x0D;
+						textofst++;
+					} else {
+						c = text[textofst];
+					}
 				}
 				srcbase[ofst++] = c;
 				textofst++;

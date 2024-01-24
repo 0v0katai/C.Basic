@@ -26,6 +26,8 @@ int fexpint( int x ) ;
 int fcuberootint( int x ) ;
 int fsquint( int x ) ;
 int ffactint( int x ) ;
+int f_nPrint( int n, int r ) ;
+int f_nCrint( int n, int r ) ;
 int frecipint( int x ) ;	// ^(-1) RECIP
 int fsignint( int x ) ;	// -x
 int fADDint( int x, int y ) ;	// x + y

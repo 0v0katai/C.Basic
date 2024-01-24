@@ -284,7 +284,7 @@ int StrShift( char *str1, char *str2, int n ) {		// Shift$("1234567",  2) -> "34
 		m=slen-n;
 		i=0;
 		while (i<n) { str1[i]=' '; i++; }
-		if ( i < slen ) i=StrMidCopySub( str1, str2, oplen, 1, m );	// =Left$
+		if ( i < slen ) i=StrMidCopySub( str1+i, str2, oplen, 1, m+i );	// =Left$
 	}
 	str1[i]='\0';
 	return i;
@@ -563,13 +563,20 @@ char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 int SearchListnameSub( char *name ) {
 	int reg,j,len;
 	len = strlen( name ) +1;
-	for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
-		for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break; 
-		if ( j==len ) return reg;	// matching!
-	}
-	for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
-		for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
-		if ( j==len ) return reg;	// matching!
+	if ( ListFilePtr ) {
+		for( reg=ListFilePtr; reg<ListFilePtr+52; reg++ ) {	// File 1~6  List 1~52
+			for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break; 
+			if ( j==len ) return reg;	// matching!
+		}
+	} else {
+		for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
+			for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break; 
+			if ( j==len ) return reg;	// matching!
+		}
+		for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
+			for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
+			if ( j==len ) return reg;	// matching!
+		}
 	}
 	return -1;	// not matching!
 }
@@ -642,7 +649,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 		c=SRC[execptr+1];
 		if ( c == 0xFFFFFFF0 )  return c;	// GraphY
 		else
-		if ( c == 0x51 ) {	// List [0]?
+		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
 			ExecPtr+=2;
 			f = IsStrList( SRC, 0 );
@@ -955,7 +962,8 @@ void CB_StorStr( char *SRC ) {
 			StorStrList0( SRC ) ;
 			break;
 		default:
-			if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) goto ListStrj;	// "ABCD"->List 1
+			c=SRC[ExecPtr+1];
+			if ( ( SRC[ExecPtr]==0x7F ) && ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) goto ListStrj;	// "ABCD"->List 1
 			CB_Error(SyntaxERR);  // Syntax error
 	}
 }
@@ -2006,9 +2014,9 @@ int CB_TimeToStr() {	// "23:59:59"
 
 //----------------------------------------------------------------------------------------------
 int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

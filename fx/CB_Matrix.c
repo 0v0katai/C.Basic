@@ -35,10 +35,10 @@ char * MatrixPtr( int reg, int m, int n ){		// base:0  0-    base:1 1-
 		case  2:	// Vram
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;
-			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>3)*n+(m>>3));
+			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>3+1)*n+(m>>3));
 		case  4:
 			MatAryC=(char*)MatAry[reg].Adrs;
-			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>1)*n+(m>>1));
+			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>1+1)*n+(m>>1));
 		case  8:
 			MatAryC=(char*)MatAry[reg].Adrs;
 			return  (char *)(MatAryC+dimB*m+n);
@@ -3131,7 +3131,7 @@ void qsortSub( double *dptr, int  ElementSize, int sizeA, int sizeB, int flagAD 
 }
 
 void CB_SortAD( char *SRC, int flagAD) {	// SortA( List 1 [,List 2][,List 3]...) or 	// SortD( List 1 [,List 2][,List 3]...)
-	int c,i;
+	int c,d,i;
 	int reg,areg[8];
 	int tmpreg=Mattmpreg;
 	int m,n;
@@ -3140,8 +3140,9 @@ void CB_SortAD( char *SRC, int flagAD) {	// SortA( List 1 [,List 2][,List 3]...)
 	int base;
 	double	*dptr;
 
-	c=SRC[ExecPtr];;
-	if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x51 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	c=SRC[ExecPtr];
+	d=SRC[ExecPtr+1];
+	if ( !( ( c == 0x7F ) && ( ( d == 0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr+=2;
 	reg=ListRegVar( SRC );
 	if ( reg>=0 ) {
@@ -3162,8 +3163,8 @@ void CB_SortAD( char *SRC, int flagAD) {	// SortA( List 1 [,List 2][,List 3]...)
 		areg[i++]=reg;
 		while ( SRC[ExecPtr] == ',' ) {
 			ExecPtr++;
-			c=SRC[ExecPtr];;
-			if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x51 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			d=SRC[ExecPtr+1];
+			if ( !( ( c == 0x7F ) && ( ( d == 0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
 			if ( reg>=0 ) {

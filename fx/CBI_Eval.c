@@ -242,6 +242,17 @@ int ffactint( int x ) {
 	while ( tmp > 0 ) { x *= tmp; tmp--; }
 	return x;
 }
+int f_nPrint( int n, int r ) {
+	int x,tmp;
+	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
+	x = 1;
+	tmp = n;
+	while ( tmp > n-r ) { x *= tmp; tmp--; }
+	return x;
+}
+int f_nCrint( int n, int r ) {
+	return f_nCr( n, r);
+}
 int frecipint( int x ) {	// ^(-1) RECIP
 	if ( x == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 	return 1 / x ;
@@ -584,6 +595,12 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					goto Matrix1;
 
 				case 0x51 :		// List 1~26
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					reg=ListRegVar( SRC );
 				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
@@ -595,14 +612,6 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 							CopyMatList2Ans( reg );
 					}
 					return ReadMatrixInt( reg, dimA, dimB);
-					
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-					reg=c+(58-0x6A); goto Listj;
 						
 				case 0x3A :				// MOD(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);
@@ -999,6 +1008,12 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				case 0x59 :			// RowSize( Mat A )
 				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					result *= EvalIntsub4( SRC ) ;
 					break;
 				default:
@@ -1108,6 +1123,12 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						return result;
 						break;
 				}
+				break;
+			case 0xFFFFFF88 :		// nPr
+				result = f_nPrint( result, EvalIntsub7( SRC ) );
+				break;
+			case 0xFFFFFF98 :		// nCr
+				result = f_nCrint( result, EvalIntsub7( SRC ) );
 				break;
 			case ' ':	// Skip Space
 				break;

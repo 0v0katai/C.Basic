@@ -28,6 +28,7 @@ typedef struct  {
 #include "CB_Time.h"
 #include "CB_Matrix.h"
 #include "CB_Str.h"
+#include "CB_Help.h"
 
 #include "CB_error.h"
 #include "fx_syscall.h"

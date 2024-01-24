@@ -165,6 +165,12 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					goto Matrix1;
 
 				case 0x51 :		// List 1~26
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					reg=ListRegVar( SRC );
 				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
@@ -177,14 +183,6 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrixInt( reg, dimA, dimB);
 					
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-					reg=c+(58-0x6A); goto Listj;
-						
 				case 0x3A :		// MOD(a,b)
 					result = ListEvalIntsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
@@ -642,6 +640,12 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x59 :			// RowSize( Mat A )
 				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 					break;
 				default:
@@ -757,6 +761,12 @@ int ListEvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						return result;
 						break;
 				}
+				break;
+			case 0xFFFFFF88 :		// nPr
+				result = EvalFxInt2( &f_nPrint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
+				break;
+			case 0xFFFFFF98 :		// nCr
+				result = EvalFxInt2( &f_nCrint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
 				break;
 			case ' ':	// Skip Space
 				break;
@@ -939,6 +949,7 @@ int ListEvalIntsubTopAns(char *SRC) {	//
 	int resultreg,tmpreg;
 
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
+	ErrorNo = 0;
 	result = ListEvalIntsubTop( SRC );
 	resultreg=CB_MatListAnsreg;
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return result; } // Argument error

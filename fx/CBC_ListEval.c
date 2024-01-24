@@ -175,6 +175,12 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 					goto Matrix1;
 					
 				case 0x51 :		// List 1~26
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					reg=ListRegVar( SRC );
 				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
@@ -191,14 +197,6 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 					result.imag = 1;
 					return result;
 					
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-					reg=c+(58-0x6A); goto Listj;
-						
 				case 0x3A :		// MOD(a,b)
 					result = Cplx_ListEvalsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
@@ -812,6 +810,12 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 				case 0x23 :				// Conjg
 				case 0x24 :				// ReP
 				case 0x25 :				// ImP
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 					break;
 				default:
@@ -919,10 +923,10 @@ complex Cplx_ListEvalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF88 :		// nPr
-//				result = Cplx_EvalFxDbl2( &Cplx_fnPr, &resultflag, &resultreg, result, Cplx_ListEvalsub7( SRC ) ) ;
+				result = Cplx_EvalFxDbl2( &Cplx_f_nPr, &resultflag, &resultreg, result, Cplx_ListEvalsub7( SRC ) ) ;
 				break;
 			case 0xFFFFFF98 :		// nCr
-//				result = Cplx_EvalFxDbl2( &Cplx_fnCr, &resultflag, &resultreg, result, Cplx_ListEvalsub7( SRC ) ) ;
+				result = Cplx_EvalFxDbl2( &Cplx_f_nCr, &resultflag, &resultreg, result, Cplx_ListEvalsub7( SRC ) ) ;
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
@@ -1160,6 +1164,7 @@ int Cplx_ListEvalsubTopAns(char *SRC) {	//
 	int resultreg,tmpreg;
 
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
+	ErrorNo = 0;
 	Cplx_ListEvalsubTop( SRC );
 	resultreg=CB_MatListAnsreg;
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return -1; } // Argument error

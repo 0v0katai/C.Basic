@@ -100,6 +100,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			} break;
 		case CMD_OPTN_PROB:
 			switch ( CommandPage ) {
+				case 0: (*code)=0x0088;return;	// nPr
 			} break;
 		case CMD_OPTN_PROB_RAND:
 			switch ( CommandPage ) {

@@ -20,13 +20,15 @@ char  ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
 char  ForceReturn;		// 0:none  1:return
 char  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
 char  CB_fx5800P = 0;		// fx-5800P mode
+char  CB_HelpOn=0;			// Help function
+
 
 int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.95\xE6\x41";
-#define VERSION 195
+const char VerMSG[]="C.Basic  v1.96\xE6\x41";
+#define VERSION 196
 
 //---------------------------------------------------------------------------------------------
 
@@ -1121,40 +1123,41 @@ int SelectNum4( int n ) {		//
 #define SETUP_Background	8
 #define SETUP_Sketch		9
 #define SETUP_Display		10
-#define SETUP_RecoverSetup	11
-#define SETUP_CMDINPUT		12
-#define SETUP_MaxMemMode	13
-#define SETUP_EnableExtFONT	14
-#define SETUP_EditTopLine	15
-#define SETUP_EditExtFont	16
-#define SETUP_EditFontSize	17
-#define SETUP_EditLineNum	18
-#define SETUP_EditListChar	19
-#define SETUP_UseHidnRam	20
-#define SETUP_HidnRamInit	21
-#define SETUP_ExtendPict	22
-#define SETUP_ExtendList	23
-#define SETUP_DisableDebugMode	24
-#define SETUP_ExitDebugModeCheck	25
-#define SETUP_BreakStop		26
-#define SETUP_ExecTimeDsp	27
-#define SETUP_IfEndCheck	28
-#define SETUP_ACBreak		29
-#define SETUP_ForceReturnMode	30
-#define SETUP_Key1sttime	31
-#define SETUP_KeyReptime	32
-#define SETUP_SkipUpDown	33
-#define SETUP_MatDspmode	34
-#define SETUP_Matrixbase	35
-#define SETUP_DATE			36
-#define SETUP_TIME			37
-#define SETUP_AutoSaveMode	38
-#define SETUP_Forceg1msave	39
-#define SETUP_Pictmode		40
-#define SETUP_Storagemode	41
-#define SETUP_RefrshCtlDD	42
-#define SETUP_DefaultWaitcount	43
-#define SETUP_Executemode	44
+#define SETUP_Help			11
+#define SETUP_RecoverSetup	12
+#define SETUP_CMDINPUT		13
+#define SETUP_MaxMemMode	14
+#define SETUP_EnableExtFONT	15
+#define SETUP_EditTopLine	16
+#define SETUP_EditExtFont	17
+#define SETUP_EditFontSize	18
+#define SETUP_EditLineNum	19
+#define SETUP_EditListChar	20
+#define SETUP_UseHidnRam	21
+#define SETUP_HidnRamInit	22
+#define SETUP_ExtendPict	23
+#define SETUP_ExtendList	24
+#define SETUP_DisableDebugMode	25
+#define SETUP_ExitDebugModeCheck	26
+#define SETUP_BreakStop		27
+#define SETUP_ExecTimeDsp	28
+#define SETUP_IfEndCheck	29
+#define SETUP_ACBreak		30
+#define SETUP_ForceReturnMode	31
+#define SETUP_Key1sttime	32
+#define SETUP_KeyReptime	33
+#define SETUP_SkipUpDown	34
+#define SETUP_MatDspmode	35
+#define SETUP_Matrixbase	36
+#define SETUP_DATE			37
+#define SETUP_TIME			38
+#define SETUP_AutoSaveMode	39
+#define SETUP_Forceg1msave	40
+#define SETUP_Pictmode		41
+#define SETUP_Storagemode	42
+#define SETUP_RefrshCtlDD	43
+#define SETUP_DefaultWaitcount	44
+#define SETUP_Executemode	45
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
     
@@ -1257,151 +1260,155 @@ int SetupG(int select, int limit){		// ----------- Setup
 			Print((unsigned char*)ENGmode[ENG]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"SetupRecover:");		// 11
+			locate( 1,cnt-scrl); Print((unsigned char*)"Syntax Help :");		// 11
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[CB_HelpOn]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1, cnt-scrl); Print((unsigned char*)"SetupRecover:");		// 12
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[CB_RecoverSetup]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Command Inpt:");		// 12
+			locate( 1, cnt-scrl); Print((unsigned char*)"Command Inpt:");		// 13
 			locate(14, cnt-scrl); Print((unsigned char*)CMDinput[CommandInputMethod + 2*CB_fx5800P]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Max Mem Mode:");		// 13
+			locate( 1,cnt-scrl); Print((unsigned char*)"Max Mem Mode:");		// 14
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[MaxMemMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EnableExFont:");		// 14
+			locate( 1, cnt-scrl); Print((unsigned char*)"EnableExFont:");		// 15
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[EnableExtFont]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit TopLine:");		// 15
+			locate( 1, cnt-scrl); Print((unsigned char*)"Edit TopLine:");		// 16
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[EditTopLine]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			CB_Print_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont );		// 16
+			CB_Print_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont );		// 17
 			CB_Print_ext(14,cnt-scrl,(unsigned char*)onoff[EditExtFont], EditExtFont );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditFontSize:");		// 17
+			locate( 1, cnt-scrl); Print((unsigned char*)"EditFontSize:");		// 18
 			locate(14, cnt-scrl); Print((unsigned char*)CharSize[EditFontSize & 0x0F ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit LineNum:");		// 18
+			locate( 1, cnt-scrl); Print((unsigned char*)"Edit LineNum:");		// 19
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[(EditFontSize & 0xF0)>>4 ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditListChar:");		// 19
+			locate( 1, cnt-scrl); Print((unsigned char*)"EditListChar:");		// 20
 			CB_Print(14, cnt-scrl, (unsigned char*)ListChar[EditListChar]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 20
+			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 21
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[UseHiddenRAM&0x0F]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"HidnRAM Init:");		// 21
+			locate( 1,cnt-scrl); Print((unsigned char*)"HidnRAM Init:");		// 22
 			locate(14,cnt-scrl);
 			if ( UseHiddenRAM&0x0F ) Print((unsigned char*)onoff[!(UseHiddenRAM&0xF0)]);
 			else                     Print((unsigned char*)"---");
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max Pict No:");		// 22
+			locate( 1, cnt-scrl); Print((unsigned char*)"Max Pict No:");		// 23
 			sprintf((char*)buffer,"%d",20+ExtendPict);
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max List 52\xA9:");		// 23
+			locate( 1, cnt-scrl); Print((unsigned char*)"Max List 52\xA9:");	// 24
 			sprintf((char*)buffer,"%d (%d)", ExtendList+1, 52+ExtendList*52);
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 24
+			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 25
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[!DisableDebugMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ExitDM PopUp:");		// 25
+			locate( 1,cnt-scrl); Print((unsigned char*)"ExitDM PopUp:");		// 26
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ExitDebugModeCheck]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 26
+			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 27
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[BreakCheckDefault]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 27
+			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 28
 			locate(14,cnt-scrl); Print((unsigned char*)ExecTimemode[TimeDsp]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 28
+			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 29
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[CheckIfEnd]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 29
+			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 30
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 30
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 31
 			locate(14,cnt-scrl); Print((unsigned char*)Returnmode[ForceReturnMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 31
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 32
 			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 32
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 33
 			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 33
+			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 34
 			sprintf((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 34
+			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 35
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 35
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 36
 			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 36
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 37
 			DateCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 37
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 38
 			TimeCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 38
+			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 39
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[AutoSaveMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 39
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 40
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 40
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 41
 			locate(14,cnt-scrl); if ( StorageMode & 1 ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 41
+			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 42
 			locate(14,cnt-scrl); Print((unsigned char*)Storagemode[StorageMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 42
+			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 43
 			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 43
+			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 44
 			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
 			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 44
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 45
 			locate(14,cnt-scrl); Print((unsigned char*)CBmode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -1421,6 +1428,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			case SETUP_Axes: // Axes
 			case SETUP_Label: // Label
 			case SETUP_Derivative: // Derivative
+			case SETUP_Help:	// Help
 			case SETUP_EnableExtFONT: // Enable External Font
 			case SETUP_EditTopLine: // Use Top of Line (edit)
 			case SETUP_EditExtFont: // Use Ext Font (edit)
@@ -1643,6 +1651,9 @@ int SetupG(int select, int limit){		// ----------- Setup
 						CB_Round.DIGIT=i;
 						CB_Round.MODE =Fix;
 						break;
+					case SETUP_Help:	// Help
+						CB_HelpOn = 1;	// help on
+						break;
 					case SETUP_RecoverSetup: // Setup Mode 
 						CB_RecoverSetup = 1 ; // recover on
 						break;
@@ -1823,6 +1834,9 @@ int SetupG(int select, int limit){		// ----------- Setup
 						if ( key==KEY_CTRL_EXIT ) break;
 						CB_Round.DIGIT=i;
 						CB_Round.MODE =Sci;
+						break;
+					case SETUP_Help:	// Help
+						CB_HelpOn = 0;	// help off
 						break;
 					case SETUP_RecoverSetup: // Setup Mode 
 						CB_RecoverSetup = 0 ; // recover off

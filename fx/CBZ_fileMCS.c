@@ -127,7 +127,7 @@ int MCS_Save( char *filebase, char *dirname, char *itemname, int size, int flag0
 	if ( data_length == size ) {
 		r = MCS_OverwriteData( (unsigned char *)dirname, (unsigned char *)itemname, 0, data_length, filebase+0x56-10 );
 	} else {
-		if ( size > MCS_Free()-data_length ) { 
+		if ( size-data_length > MCS_Free() ) { 
 			if ( flag0==0xC7 ) ErrorMSG( "MCS memory full", -1 ); 
 			return -1 ; 
 		}

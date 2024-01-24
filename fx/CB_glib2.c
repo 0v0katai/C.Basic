@@ -403,8 +403,8 @@ unsigned int Trace(int *index ) {
 		if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
 		VWtoPXY( regX.real, regY.real, &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
 		if ( Coord ) {
-			sprintf((char*)buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
-			sprintf((char*)buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
+//			sprintf((char*)buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
+//			sprintf((char*)buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
 			sprintGRS(buffer, regX.real,             13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
@@ -536,13 +536,13 @@ void Graph_checker_line( double vx1, double vy1, double vx2, double vy2 ){
 
 void Graph_Draw_X(){	//	62:Graph X= 2C:Graph X>  2D:Graph X<  2E:Graph X>=  2F:Graph X<=
 	int i;
-	int gptr=0;
+	int gptr=GraphPtr;
 	double p_x=Previous_X;
 	double p_y=Previous_Y;
 	int px1,py1,px2,py2,flag;
 	double tx,vx1,vx2;
-	int style=S_L_Style;
-	if ( tmp_Style >= 0 ) style=tmp_Style;
+	int style=GraphStat[gptr].style;
+//	if ( tmp_Style >= 0 ) style=tmp_Style;
 	regY.real   = Ymin-Ydot;
 	
 	for ( i=0; i<=63; i++) {
@@ -591,13 +591,13 @@ void Graph_Draw_X(){	//	62:Graph X= 2C:Graph X>  2D:Graph X<  2E:Graph X>=  2F:G
 
 void Graph_Draw(){	//	EE:Graph Y= F0:Graph Y>  F1:Graph Y<  F2:Graph Y>=  F3:Graph Y<=
 	int i;
-	int gptr=0;
+	int gptr=GraphPtr;
 	double p_x=Previous_X;
 	double p_y=Previous_Y;
 	int px1,py1,px2,py2,flag;
 	double ty,vy1,vy2;
-	int style=S_L_Style;
-	if ( tmp_Style >= 0 ) style=tmp_Style;
+	int style=GraphStat[gptr].style;
+//	if ( tmp_Style >= 0 ) style=tmp_Style;
 	regX.real   = Xmin-Xdot;
 	
 	traceAry = NewTraceAry();
