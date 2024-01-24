@@ -597,6 +597,7 @@ unsigned int Explorer( int size, char *folder )
 	char buffer3[32];
 	char fname[64];
 	char ext[5];
+	char search[9]="";
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -686,12 +687,16 @@ unsigned int Explorer( int size, char *folder )
 //		locate(1, 1);Print((unsigned char*)"File List  [        ]");
 //		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
 		locate(1, 1);Print((unsigned char*)"[        ]");
-		if ( StorageMode & 2 ) {
-			locate(2,1);Print((unsigned char*)"Main Mem");
+		if ( strlen(search) ) {
+			locate(2,1);Print( (unsigned char*)search );	// search string
 		} else {
-			if ( root2[0] ) PrintMini(13, 1, (unsigned char*)(root2+1), MINI_OVER);
-			sprintf( buffer, "%-8s", folder );
-			locate(2,1);Print( strlen(folder) ? (unsigned char*)buffer : (unsigned char*)"/");	// root
+			if ( StorageMode & 2 ) {
+				locate(2,1);Print((unsigned char*)"Main Mem");
+			} else {
+				if ( root2[0] ) PrintMini(13, 1, (unsigned char*)(root2+1), MINI_OVER);
+				sprintf( buffer, "%-8s", folder );
+				locate(2,1);Print( strlen(folder) ? (unsigned char*)buffer : (unsigned char*)"/");	// root
+			}
 		}
 														PrintMini(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
 		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file
@@ -769,7 +774,25 @@ unsigned int Explorer( int size, char *folder )
 
 		Isfolder= ( files[index].filesize == FOLDER_FLAG ) ;
 
+		i = strlen(search);
+		if ( i ) {
+			locate(2+i,1);
+			Cursor_SetFlashMode(1);			// cursor flashing on
+		}
 		GetKey(&key);
+		Cursor_SetFlashMode(0); 		// cursor flashing off
+		if ( KEY_CTRL_DEL == key ) {
+			i=strlen(search);
+			if ( i ) {
+				i--;
+				search[i--]='\0';
+				if ( i>=0 ) {
+					key=search[i];
+					search[i]='\0';
+				}
+			}
+		}
+		if ( ( 'a' <= key ) && ( key <= 'z' ) ) key -= 'a'-'A';
 		if ( KEY_CTRL_XTT  == key ) key='A';
 		if ( KEY_CHAR_LOG  == key ) key='B';
 		if ( KEY_CHAR_LN   == key ) key='C';
@@ -811,16 +834,29 @@ unsigned int Explorer( int size, char *folder )
 
 		} else
 		if ( ( ( 'A' <= key ) && ( key <= 'Z' ) ) || ( key == '~' ) ) {
+			j=strlen(search);
+			if ( j<8 ) {
+				search[j++]=key;
+				search[j]='\0';
+			}
 			i=FavoritesMAX;
 			while ( i<size ) {
 				if ( files[i].filesize == FOLDER_FLAG ) i++;
-				else if ( files[i].filename[0]==key ) {
+				else {
+					k=0;
+					while ( k<=j ) {
+						if ( files[i].filename[k] != search[k] ) { k=(k>=j); break; }
+						k++;
+					}
+					if ( k>0 ) {
 						index = i;
 						top = index;
 						break;
-				} else i++; // folder skip
+					} else i++; // folder skip
+				}
 			}
-		}
+		} else search[0]='\0';
+		
 		switch ( key ) {
 			case KEY_CTRL_UP:
 				if ( nofile ) break;
@@ -961,6 +997,10 @@ unsigned int Explorer( int size, char *folder )
 				if ( filemode >2 ) filemode=0;
 				break;
 
+			case KEY_CTRL_AC:
+				search[0]='\0';
+				break;
+				
 			case KEY_CTRL_EXIT:
 				if ( ( nofile ) || ( index == StartLine ) ) key=KEY_CTRL_QUIT;
 //				index = size;
@@ -3726,8 +3766,8 @@ int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4AA( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4BB( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4CC( unsigned int n ){ return n; }	// align +4byte

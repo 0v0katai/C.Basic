@@ -2213,7 +2213,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							ptr++;
 							indent++;
 						}
-						indent += CheckIndentCommand( SrcBase, ptr );
+					  	if ( csrPtr != ptr ) indent += CheckIndentCommand( SrcBase, ptr );
 					}
 			}
 			if ( ( 0x00 < key ) && ( key < 0xFF ) || ( key == KEY_CTRL_XTT ) ) {		// ----- 1 byte code -----

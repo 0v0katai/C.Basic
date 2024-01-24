@@ -565,17 +565,20 @@ void GetNewAry8( int reg, int aryN, int aryMax ) {
 		if ( MatAry[reg].SizeA < aryN ) MatElementPlus( reg, aryN, aryMax );				// matrix +
 	}
 }
-char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
-	int dimA,dimB;
+char* GetStrYFnPtrSub( int reg, int dimA, int dimB ) {
 	char *buffer;
-	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
-	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
-	dimB = aryMax;
 	GetNewAry8( reg, dimA, dimB );
 	if ( ErrorNo ) return 0; // error
 	dimB = 1;
 	buffer=MatrixPtr( reg, dimA, dimB );
 	return buffer;
+}
+char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
+	int dimA,dimB;
+	char *buffer;
+	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
+	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+	return GetStrYFnPtrSub( reg, dimA, aryMax );
 }
 
 int SearchListnameSub( char *name ) {
@@ -661,11 +664,18 @@ int CB_IsStr( char *SRC, int execptr ) {
 		else
 		if ( c == 0x4D ) return c;	// StrSplit
 		else
-		if ( c == 0x1B ) return c;	// fn
+		if ( c == 0x1B ) {
+		  fnjmp:
+			extmp=ExecPtr;
+			ExecPtr=execptr+2;
+			f=CB_CheckYfn( SRC );
+			ExecPtr=extmp;
+			if ( f ) return c;	// fn
+		}
 	} else
 	if ( c == 0x7F ) {
 		c=SRC[execptr+1];
-		if ( c == 0xFFFFFFF0 )  return c;	// GraphY
+		if ( c == 0xFFFFFFF0 )  goto fnjmp;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
@@ -678,6 +688,13 @@ int CB_IsStr( char *SRC, int execptr ) {
 	return 0;
 }
 
+int CB_CheckYfn( char *SRC ) {	// 1:string   0:function
+	int	extmp=ExecPtr,r;
+	EvalIntsub1( SRC );
+	r= ( SRC[ExecPtr] != '(' );
+	ExecPtr=extmp;
+	return r;
+}
 
 char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 	int c,d,n;
@@ -1017,10 +1034,10 @@ void CB_StrPrint( char *SRC , int csrX ) {
 			if ( ( c==0x0C ) || ( c==0x0D ) ) { ClrLine5800P( CursorX ); Scrl_Y(); px=0; }
 			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
 			i++;
-			Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
+//			Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		}
 		if ( ( buffer[0]==0 ) || ( px ) ) ClrLine5800P( CursorX );
-		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
+//		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		if ( CursorX == 22 ) {
 			if ( CursorY < 7 ) {
 				Scrl_Y();
@@ -1288,7 +1305,7 @@ int CBint_EvalStr( char *SRC, int calcflag ) {		// Exp(			Eval str -> int
 char* CB_GraphYStrSub( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnAry
 	int dimA,dimB;
 	int base=MatAry[reg].Base;
-	dimA=Eval_atoi( SRC, SRC[ExecPtr] );
+	dimA=EvalIntsub1( SRC );
 	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(MemoryERR); }  // Memory error
 	return MatrixPtr( reg, dimA, base );
 }
@@ -2069,10 +2086,10 @@ int CB_TimeToStr() {	// "23:59:59"
 
 
 //----------------------------------------------------------------------------------------------
-//int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
