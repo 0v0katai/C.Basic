@@ -486,8 +486,8 @@ unsigned int Trace(int *index ) {
 }
 
 //----------------------------------------------------------------------------------------------
-
-void Graph_Draw(){
+/*
+void Graph_Draw(){	//
 	int i;
 	double p_x=Previous_X;
 	double p_y=Previous_Y;
@@ -517,11 +517,135 @@ void Graph_Draw(){
 	Previous_X=p_x;
 	Previous_Y=p_y;
 }
+*/
+void Graph_checker_line( double vx1, double vy1, double vx2, double vy2 ){
+	int px1,py1,px2,py2;
+	VWtoPXY( vx1, vy1, &px1, &py1);	// VW(X,Y) to  graphic cursor XY
+	VWtoPXY( vx2, vy2, &px2, &py2);	// VW(X,Y) to  graphic cursor XY
+	ML_line( px1, py1, px2, py2, ML_CHECKER);
+}
+
+void Graph_Draw_X(){	//	62:Graph X= 2C:Graph X>  2D:Graph X<  2E:Graph X>=  2F:Graph X<=
+	int i;
+	int gptr=0;
+	double p_x=Previous_X;
+	double p_y=Previous_Y;
+	int px1,py1,px2,py2,flag;
+	double tx,vx1,vx2;
+	int style=S_L_Style;
+	if ( tmp_Style >= 0 ) style=tmp_Style;
+	regY.real   = Ymin-Ydot;
+	
+	for ( i=0; i<=63; i++) {
+		//-----------------------------
+		tx=CB_EvalStrDBL(GraphY,1);		// function
+		if ( ErrorNo ) return ;
+		//-----------------------------
+		if ( i==0 ) { Previous_X = tx; Previous_Y = regY.real; }
+		if ( ( 0<i ) && ( i<=63 ) ) {
+			flag=1;
+			switch ( GraphStat[gptr].type ) {
+				case 0x2C:	// Graph X>
+					flag=2;
+				case 0x2E:	// Graph X>=
+					vx1=tx;
+					vx2=Xmax;
+					break;
+				case 0x2D:	// Graph X<
+					flag=2;
+				case 0x2F:	// Graph X<=
+					vx1=tx;
+					vx2=Xmin;
+					break;
+				default:
+					flag=0;
+					break;
+			}
+			if ( flag==1 ) Graph_checker_line( vx1, regY.real, vx2, regY.real);
+			PlotOn_VRAM( tx, regY.real );
+			Plot_X=regX.real;
+			Plot_Y=regY.real;
+			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
+				Line( style , 1, 0);	// No error check
+			}
+			if ( flag==2 ) Graph_checker_line( vx1, regY.real, vx2, regY.real);
+		}
+		regY.real += Ydot;
+		Bdisp_PutDisp_DD_DrawBusy_skip();
+	}
+	regY.real=Plot_Y;
+	regintX=regX.real; regintY=regY.real;
+	Previous_X=p_x;
+	Previous_Y=p_y;
+	GraphAxesGrid();
+}
+
+void Graph_Draw(){	//	EE:Graph Y= F0:Graph Y>  F1:Graph Y<  F2:Graph Y>=  F3:Graph Y<=
+	int i;
+	int gptr=0;
+	double p_x=Previous_X;
+	double p_y=Previous_Y;
+	int px1,py1,px2,py2,flag;
+	double ty,vy1,vy2;
+	int style=S_L_Style;
+	if ( tmp_Style >= 0 ) style=tmp_Style;
+	regX.real   = Xmin-Xdot;
+	
+	for ( i=0; i<=127; i++) {
+		//-----------------------------
+		ty=CB_EvalStrDBL(GraphY,1);		// function
+		if ( ErrorNo ) return ;
+		//-----------------------------
+		if ( fabs(ty)*1e10<Ydot ) ty=0;	// zero adjust
+		traceAry[i]=ty;
+		if ( i==0 ) { Previous_X = regX.real; Previous_Y = ty; }
+		if ( ( 0<i ) && ( i<=127 ) ) {
+			flag=1;
+			switch ( GraphStat[gptr].type ) {
+				case 0xFFFFFFEF:	// Graph Integral
+					vy1=0;
+					vy2=ty;
+					flag=( (IntegralStart <= regX.real) && (regX.real <= IntegralEnd) );
+					break;
+				case 0xFFFFFFF0:	// Graph Y>
+					flag=2;
+				case 0xFFFFFFF2:	// Graph Y>=
+					vy1=ty;
+					vy2=Ymax;
+					break;
+				case 0xFFFFFFF1:	// Graph Y<
+					flag=2;
+				case 0xFFFFFFF3:	// Graph Y<=
+					vy1=ty;
+					vy2=Ymin;
+					break;
+				default:
+					flag=0;
+					break;
+			}
+			if ( flag==1 ) Graph_checker_line( regX.real, vy1, regX.real, vy2 );
+			PlotOn_VRAM( regX.real, ty);
+			Plot_X=regX.real;
+			Plot_Y=regY.real;
+			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
+				Line( style , 1, 0);	// No error check
+			}
+			if ( flag==2 ) Graph_checker_line( regX.real, vy1, regX.real, vy2 );
+		}
+		regX.real += Xdot;
+		Bdisp_PutDisp_DD_DrawBusy_skip();
+	}
+	regX.real=Plot_X;
+	regintX=regX.real; regintY=regY.real;
+	Previous_X=p_x;
+	Previous_Y=p_y;
+	GraphAxesGrid();
+}
+
 void Graph_reDraw(){
 	int i;
 	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
-	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	Graph_Draw();
 	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
@@ -835,7 +959,15 @@ void DrawStat(){	// DrawStat
 		at1st=0;
 		if ( Sgraph[No].Draw == 1 ) {
 			xlistreg=Sgraph[No].xList;
+			if ( ListFilePtr ) {
+				if ( 58 <= xlistreg ) xlistreg-=58; else xlistreg-=32+26;
+				xlistreg += ListFilePtr;
+			}
 			ylistreg=Sgraph[No].yList;
+			if ( ListFilePtr ) {
+				if ( 58 <= ylistreg ) ylistreg-=58; else ylistreg-=32+26;
+				ylistreg += ListFilePtr;
+			}
 			if ( xlistreg==0 ) sizeA =1; else { sizeA =MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base; }
 			if ( ylistreg==0 ) sizeA2=1; else { sizeA2=MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base; }
 			if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -863,6 +995,10 @@ void DrawStat(){	// DrawStat
 	regX.real=tmpX; regY.real=tmpY;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
+
+
+//--------------------------------------------------------------
+
 
 
 //--------------------------------------------------------------

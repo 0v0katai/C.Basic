@@ -204,8 +204,8 @@ extern  char *GVRAM;
 #define StackGosubMax 4
 #define IfCntMax 32
 #define StackForMax 4
-#define StackWhileMax 4
-#define StackDoMax 4
+#define StackWhileMax 6
+#define StackDoMax 6
 #define StackSwitchMax 4
 
 #define TYPE_For_Next 			1
@@ -333,6 +333,7 @@ void StoPict( int pictNo);
 void RclPict( int pictNo, int errorcheck);
 void CB_DrawGraph(  char *SRC );
 void CB_GraphY( char *SRC );
+void CB_GraphX( char *SRC );
 int  CB_GraphXYEval( char *SRC ) ;
 void CB_GraphXY( char *SRC );
 void CB_StoPict( char *SRC ) ; //	StoPict
@@ -390,18 +391,20 @@ int GetVarName( char *SRC, int *ptr, char *name, int *len );
 #define GRAPHLENMAX	64
 typedef struct {
 	char en;		// 
+	char type;
 	char style;			//
 	unsigned short color;	//
 	char gstr[GRAPHLENMAX];		//
 } tgraphstat;
 extern	tgraphstat GraphStat[GRAPHMAX];
 extern	int	GraphPtr;
+extern double IntegralStart,IntegralEnd;
 
 typedef struct {
 	char Draw;			// 0:off  1:on
 	char GraphType;		// 0;Scatter 1:xyline  2:
-	char xList;			// List 1-26
-	char yList;			// List 1-26
+	short xList;			// List 1-26
+	short yList;			// List 1-26
 	char Freq;			// -1:1  1-26:List 1-26
 	char MarkType;		// 0:Square  1:Cross  2:Dot
 } tdrawstat;

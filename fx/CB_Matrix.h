@@ -29,6 +29,9 @@ extern char   CB_MatListAnsreg;
 
 extern char listdsp;	// Mat:0  list:1
 
+extern char  ListFileNo;
+extern short ListFilePtr;
+
 //------------------------------------------------------------------------------
 int ReadMatrixInt( int reg, int dimA, int dimB);				// 0-
 double ReadMatrix( int reg, int dimA, int dimB);				// 0-
@@ -143,3 +146,7 @@ int CB_NormVInt( char *SRC );		// Norm(Vct A)
 void Mat_inverse( int ansreg ) ;
 void Cplx_Mat_inverse( int ansreg ) ;
 void Cplx_CB_MatInv( char *SRC ) ;	// Inverse Mat A	
+
+void CB_ListNo2Ptr( int n );
+void CB_ListFile( char *SRC );
+

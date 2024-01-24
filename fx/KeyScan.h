@@ -35,7 +35,7 @@
 //05  F4    cos  7    4    1    0        05
 //04  F5    tan  8    5    2    .        04
 //03  F6    ab/c 9    6    3    EXP      03
-//02  EXIT  F<>D DEL  +    -    (-)      02
+//02  EXIT  F<>D DEL  x    +    (-)      02
 //01        (    )    div  EXE  -        01
 //00                                 AC  00
 //--------------------------------------
@@ -141,12 +141,74 @@
 
 #define KEYSC_AC 		0x010 // 
 
+//---------------------------------------- 
+#define KEYS_F1 		79
+#define KEYS_F2 		69
+#define KEYS_F3 		59
+#define KEYS_F4 		49
+#define KEYS_F5			39
+#define KEYS_F6 		29
+
+#define KEYS_SHIFT 		78
+#define KEYS_OPTN 		68
+#define KEYS_VARS 		58
+#define KEYS_MENU 		48
+#define KEYS_LEFT 		38
+#define KEYS_UP 		28
+
+#define KEYS_ALPHA 		77
+#define KEYS_SQUARE 	67
+#define KEYS_POW 		57
+#define KEYS_EXIT 		47
+#define KEYS_DOWN 		37
+#define KEYS_RIGHT 		27
+
+#define KEYS_XTT 		76
+#define KEYS_LOG 		66
+#define KEYS_LN 		56
+#define KEYS_SIN 		46
+#define KEYS_COS 		36
+#define KEYS_TAN 		26
+
+#define KEYS_FRAC 		75
+#define KEYS_FD 		65
+#define KEYS_LPAR 		55
+#define KEYS_RPAR 		45
+#define KEYS_COMMA 		35
+#define KEYS_STORE 		25
+
+#define KEYS_7 			74
+#define KEYS_8 			64
+#define KEYS_9 			54
+#define KEYS_DEL 		44
+
+#define KEYS_4 			73
+#define KEYS_5 			63
+#define KEYS_6 			53
+#define KEYS_MULT 		43
+#define KEYS_DIV 		33
+
+#define KEYS_1 			72
+#define KEYS_2 			62
+#define KEYS_3 			52
+#define KEYS_PLUS 		42
+#define KEYS_MINUS 		32
+
+#define KEYS_0 			71
+#define KEYS_DP 		61
+#define KEYS_EXP 		51
+#define KEYS_PMINUS		41
+#define KEYS_EXE 		31
+//---------------------------------------- 
+
+
 int CheckKeyRow( int row );
 int CheckKeyRow7305( int row );
 int KeyScanDown(int keyscan_code);
 int KeyScanDownAC();
 int GetKey_DisableMenu( unsigned int *key ) ;
 int CB_KeyCodeCnvt( unsigned int key ) ;			// CasioBasic Getkey SDK compatible
+int KeyConvert2Slim( int key ) ;	// 9860G -> Slim
 
 int KeyCheckAC();
 int KeyCheckEXE();

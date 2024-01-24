@@ -379,7 +379,7 @@ int VctRegVar( char *SRC ) {
 	}
 	if ( ( '0'<=c )&&( c<='9' ) ) { 
 		  jp0:
-			reg=Eval_atoi( SRC, c )+84;
+			reg=Eval_atoi( SRC, c );
 		  jp1:
 			if ( ( reg<1 ) || ( ExtListMax<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
 			if ( 26<reg ) reg+=6;
@@ -411,7 +411,7 @@ int VctRegVar( char *SRC ) {
 int SearchListname( char *SRC ) {
 	int reg,j,len;
 	char name[10];
-	CB_GetQuotOpcode( SRC, name, 9 );
+	CB_GetLocateStr( SRC, name, 9 );		// String -> name
 	len = strlen( name ) +1;
 	for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
 		for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break; 
@@ -439,16 +439,28 @@ int ListRegVar( char *SRC ) {	// return reg no
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++ ;	// 
 		goto jp0;
 	}
-	if ( c=='"' ) return SearchListname( SRC );
 	ExecPtr--;
-	reg=Eval_atoi( SRC, c );
+	if ( ( '1'<=c ) && ( c<='9' ) ) {
+		goto NUM;
+	} else {	
+		c=CB_IsStr( SRC, ExecPtr );
+		if ( c ) {
+			return SearchListname( SRC );	// string
+		} else {
+			c=SRC[ExecPtr];
+		  NUM:
+			reg=Eval_atoi( SRC, c );
+		}
+	}
   jp0:
 	if ( ( reg<1 ) || ( ExtListMax<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
   jp1:
-  	if ( reg<=52 ) {
-		if ( 27<=reg ) return reg+5;
-		return reg+57;
-	} else return reg+31+26;	// +26(Vct)
+  	if ( ListFilePtr == 0 ) {
+	  	if ( reg<=52 ) {
+			if ( 27<=reg ) return reg+5;
+			return reg+57;
+		} else return reg+31+26;	// +26(Vct)
+	} else return reg-1 +ListFilePtr;
 }
 
 //-----------------------------------------------------------------------------

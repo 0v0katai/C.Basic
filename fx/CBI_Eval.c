@@ -1364,21 +1364,29 @@ int CB_GetkeyM() {	//	Getkey multi  -> list { }
 //	char keycode7[]={ 77,67,57,47,37,27};
 //	char keycode6[]={ 76,66,56,46,36,26};
 //	char keycode5[]={ 75,65,55,45,35,25};
-//	char keycode4[]={ 74,64,54,44,34};
-//	char keycode3[]={ 73,63,53,43,33};
-//	char keycode2[]={ 72,62,52,42,32};
-//	char keycode1[]={ 71,61,51,41,31};
+//	char keycode4[]={ 74,64,54,44,34,24};
+//	char keycode3[]={ 73,63,53,43,33,23};
+//	char keycode2[]={ 72,62,52,42,32,22};
+//	char keycode1[]={ 71,61,51,41,31,21};
+
 	char rowdata[10];
 	char result[55];
-	int i,j,a,b,c=0;
+	int i,j,a,b,c=0,code;
 	for(i=1; i<=9; i++) rowdata[i]=CB_KeyRowSub(i);
 	b=128;
 	for(j=6; j>=1; j--) {
 		b>>=1;
 		for(i=9; i>=1; i--) {
-			if ( rowdata[i] & b ) result[c++] = i+(j+1)*10;
+			if ( rowdata[i] & b ) {
+				code = i+(j+1)*10;
+				if ( IsSH3==2 ) {	// slim
+					code = KeyConvert2Slim( code );
+				}
+				result[c++] = code;
+			}
 		}
 	}
+	
 
 	dspflag=4;	// List ans
 	if ( c==0 ) {
@@ -1432,3 +1440,5 @@ int EvalIntObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4k( unsigned int n ){ return n; }	// align +4byte

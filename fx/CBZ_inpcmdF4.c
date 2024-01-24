@@ -144,6 +144,12 @@ void GetGenuineCmdF4( unsigned int *code ){
 				case 1: (*code)=0xF7A3;return;	// Vertical
 				case 2: (*code)=0xF7AF;return;	// PxlTest(
 			} break;
+		case CMD_SHIFT_SKTCH_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x00F5;return;	// Graph X=
+				case 1: (*code)=0x00F3;return;	// Graph Y<=
+				case 2: (*code)=0xF92F;return;	// Graph X<=
+			} break;
 		case CMD_SHIFT_SKTCH_PLOT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7AA;return;	// PlotChg
@@ -199,6 +205,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_SETUP_AXES;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_DERV;CommandPage=0;break;
+				case 2: CommandType=CMD_SETUP_LIST;CommandPage=0;break;
 				case 3: (*code)=0xF942;return;	// TIME
 				case 4: (*code)=0x7FCF;return;	// System(
 			} break;

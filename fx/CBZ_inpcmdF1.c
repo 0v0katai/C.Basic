@@ -191,7 +191,9 @@ void GetGenuineCmdF1( unsigned int *code ){
 			} break;
 		case CMD_SHIFT_SKTCH_GRPH:
 			switch ( CommandPage ) {
-				case 0: (*code)=0x00EE;return;	// GRAPH Y=
+				case 0: (*code)=0x00EE;return;	// Graph Y=
+				case 1: (*code)=0x00F0;return;	// Graph Y>
+				case 2: (*code)=0xF92C;return;	// Graph X>
 			} break;
 		case CMD_SHIFT_SKTCH_PLOT:
 			switch ( CommandPage ) {
@@ -326,6 +328,10 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_SETUP_CPLX:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF908;return;	// Real
+			} break;
+		case CMD_SETUP_LIST:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF91C;return;	// File
 			} break;
 
 		default:
