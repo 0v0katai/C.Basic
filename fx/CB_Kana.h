@@ -41,3 +41,5 @@ int CB_GetFont( char *SRC );		// DotChar(0xFFA0)->Mat C
 int CB_GetFontMini( char *SRC );	// DotChar(0xFFA0)->Mat C
 void CB_SetFont( char *SRC );		// SetFont 0xFFA0,Mat C
 void CB_SetFontMini( char *SRC );	// SetFont 0xFFA0,Mat C
+
+void ReadExtFont();

@@ -1394,6 +1394,12 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
+void ReadExtFont(){
+	LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
+	LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+	LoadExtFontGaiji( 3, "", -1 );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+}
+
 int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
 	int opcode;
 	int c=SRC[ExecPtr];

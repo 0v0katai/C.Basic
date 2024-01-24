@@ -63,7 +63,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	CB_AliasVarClr();
 	
-	LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
+	FileListUpdate=1;
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {

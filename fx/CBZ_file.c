@@ -47,12 +47,14 @@ unsigned int SelectFile (char *filename)
 	Bdisp_AllClr_DDVRAM();
 	while( 1 ){
 		if ( FileListUpdate  ) {
-			ClearExtFontflag();
 			if ( EnableExtFont ) {
 				MSG2(VerMSG,"Font Reading.....");
-				LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
-				LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
-				LoadExtFontGaiji( 3, "", -1 );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+				ReadExtFont();
+//				LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
+//				LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+//				LoadExtFontGaiji( 3, "", -1 );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+			} else {
+				ClearExtFontflag();
 			}
 			MSG2(VerMSG,"File Reading.....");
 			Bdisp_PutDisp_DD();
@@ -488,18 +490,26 @@ void check_basname( char *basname ) {
 
 int Check_Favorite( char*folder, char *sname ) {
 	int i=0;
+	char buf1[32];
+	char buf2[32];
+	strcpy( buf1, sname );
+	ToLower( buf1 );
 	while ( i < FavoritesMAX ) {	// file matching search
-		if ( strcmp( Favoritesfiles[i].filename,  sname )== 0 ) 
+		strcpy( buf2, Favoritesfiles[i].filename );
+		ToLower( buf2 );
+		if ( strcmp( buf1, buf2 )== 0 ) 
 		if ( strcmp( Favoritesfiles[i].folder  ,  folder)== 0 ) break; // already favorite exist
 		i++;
 	}
 	return i;
 }
 
-void Check_Favorite_size( char*folder, char *sname, int newsize ) {
-	int i=Check_Favorite( folder, sname);	// file matching search
+void Check_Favorite_size( char*folder, char *oldsname, char *newsname, int size ) {
+	int i=Check_Favorite( folder, oldsname);	// file matching search
 	if ( i < FavoritesMAX ) { 		//	exist favorites list
-		Favoritesfiles[i].filesize = newsize;
+		if ( size ) Favoritesfiles[i].filesize = size;
+		strncpy( Favoritesfiles[i].filename, newsname,  FILENAMEMAX );	// rename name
+		strncpy( Favoritesfiles[i].folder,   folder,    FOLDERMAX );
 	}
 }
 
@@ -592,9 +602,9 @@ unsigned int Explorer( int size, char *folder )
 			case 2:
 				Fkey_Icon( FKeyNo1, 910 );	//	Fkey_dispR( FKeyNo3,"MkDir");
 				Fkey_Icon( FKeyNo2, 944 );	//	Fkey_dispN( FKeyNo1,"RnDir");
-				FkeyClear( FKeyNo3 );
-				FkeyClear( FKeyNo4 );
-				FkeyClear( FKeyNo5 );
+				Fkey_dispN( FKeyNo3,"\xE6\x91SD");
+				Fkey_dispN( FKeyNo4,"\xE6\x91SMEM");
+				Fkey_dispN( FKeyNo5,"\xE6\x91Main");
 //				Fkey_Icon( FKeyNo5,  56 );	//	Fkey_dispR( FKeyNo5,"DELA");
 				Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 				break;
@@ -802,6 +812,11 @@ unsigned int Explorer( int size, char *folder )
 						index = FavoritesFunc( index );
 //						FavoritesFunc( index );
 						break;
+					case 2:	// ->SD
+						StorageMode = CheckSD() ; // SD mode
+						FileListUpdate = 1;
+						cont=0;
+						break;
 				}
 				break;
 			case KEY_CTRL_F4:	// Copy file
@@ -814,6 +829,11 @@ unsigned int Explorer( int size, char *folder )
 						break;
 					case 1:
 						goto fav_up;
+						break;
+					case 2:	// ->Storage
+						StorageMode = 0 ;	// -> storage memory 
+						FileListUpdate = 1;
+						cont=0;
 						break;
 				}
 				break;
@@ -831,6 +851,11 @@ unsigned int Explorer( int size, char *folder )
 						break;
 					case 1:
 						goto fav_dw;
+						break;
+					case 2:	// ->MCS
+						StorageMode |= 2 ;	// -> main memory
+						FileListUpdate = 1;
+						cont=0;
 						break;
 				}
 				break;
@@ -860,7 +885,10 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
 				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
 				Fkey_Icon( FKeyNo4, 406 );	//	Fkey_dispN( FKeyNo4, "Pass");
-				FkeyClear( FKeyNo5 );
+				if ( StorageMode==3 ) Fkey_dispN( FKeyNo5,"\xE6\x91SD");
+				else
+				if ( StorageMode==2 ) Fkey_dispN( FKeyNo5,"\xE6\x91SMEM");
+				else				  Fkey_dispN( FKeyNo5,"\xE6\x91Main");
 				Fkey_dispN( FKeyNo6, "Debg");
 				GetMemFreeStr10(buffer3);
 				PrintMini(10*6+1, 1, (unsigned char*)buffer3, MINI_OVER);  // free mem area
@@ -875,7 +903,7 @@ unsigned int Explorer( int size, char *folder )
 							i = StorageMode ;
 							selectSetup=SetupG(selectSetup, 0);
 							SaveFavorites();
-							if ( i != StorageMode ) { key = KEY_CTRL_EXIT; goto update; }
+							if ( ( FileListUpdate ) || ( i != StorageMode ) ) { key = KEY_CTRL_EXIT; goto update; }
 							break;
 					case KEY_CTRL_F1:
 							selectVar=SetVar(selectVar);		// A - 
@@ -892,7 +920,19 @@ unsigned int Explorer( int size, char *folder )
 							key=FileCMD_PASS;
 							cont = 0 ;
 							break;
-//					case KEY_CTRL_F5:	//
+					case KEY_CTRL_F5:	//
+						  ChangeStorageMode:
+							if ( StorageMode == 0 ) {
+								StorageMode = 2 ;	// -> main memory
+							} else
+							if ( StorageMode == 1 ) {
+								StorageMode = 3 ;	// -> main memory
+							} else {
+								StorageMode &= 1 ;	// -> storage/SD memory 
+							}
+							FileListUpdate = 1;
+							cont=0;
+							break;
 					case KEY_CTRL_F6:
 							if ( Isfolder ) break;
 							if ( nofile ) break;
@@ -971,6 +1011,22 @@ int renameExistedFile( char *basname, char *ext ){
 //	GetExtName( basname, ext );
 	return r;	// 0:already existed
 }
+int renameExistedfname( char *fname ){
+	int handle;
+	int r,s;
+	char sname[64];
+	char basname[32];
+	char ext[8];
+
+	SetShortName( basname, fname );
+	GetExtName( basname, ext );
+	r = renameExistedFile( basname, ext ) ;
+	if ( r ) return r;
+
+	GetExtName( basname, ext );
+	SetFullfilenameExt( fname, basname, ext );
+	return r;	// 0:already existed
+}
 
 /* load file to buffer */
 char * loadFile( const char *name , int editMax, int disperror, int hiddenflag )
@@ -979,20 +1035,24 @@ char * loadFile( const char *name , int editMax, int disperror, int hiddenflag )
 	FONTCHARACTER filename[50];
 	int size;
 	char *buffer;
+	char fname[64];
 
-	CharToFont( name, filename );
+	strcpy( fname, name );
+	renameExistedfname( fname );
+	CharToFont( fname, filename );
+	
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
-	if( handle < 0 )
-	{
+	if( handle < 0 ) {
 		if ( disperror ) ErrorMSGfile( "Can't find file", name, handle);
 		CB_Error(CantFindFileERR); 
 		return NULL;
 	}
 
 	size = Bfile_GetFileSize( handle );
-
+  loop:
 	buffer = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+editMax+4 );
 	if( buffer == NULL ) {
+		editMax/=2; if ( editMax>=16 ) goto loop;
 		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)name, handle);
 		CB_Error(NotEnoughMemoryERR); 
 		return NULL;
@@ -1018,7 +1078,11 @@ int deleteFile( FONTCHARACTER *filename, int size ){
 	FONTCHARACTER buffer[50];
 	FILE_INFO info;
 	/* end */
+	char fname[32];
 
+	FontToChar( filename, fname );
+	renameExistedfname( fname );
+	CharToFont( fname, filename );
 	r = alreadyExistedFile( filename, buffer );
 	if( r == 0 ) { //already existed, delete it
 		GetMediaFree(&freehigh,&freelow);
@@ -1034,6 +1098,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 {
 	int handle;
 	FONTCHARACTER filename[50];
+	FONTCHARACTER filename2[50];
 	int r,s;
 	unsigned int freehigh,freelow;
 
@@ -1043,7 +1108,8 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	/* end */
 
 	CharToFont( name, filename );
-	r = deleteFile( filename, size ) ;
+	CharToFont( name, filename2 );
+	r = deleteFile( filename2, size ) ;
 	if ( r ) return r;
 	
 	FileListUpdate=1;
@@ -1461,8 +1527,8 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	SetShortName( sname, fname);
 	SetShortName( basname, fname);
 	GetExtName( basname, ext );
-	renameExistedFile( basname, ext );	// replace? filename
-	GetExtName( basname, ext );
+//	renameExistedFile( basname, ext );	// replace? filename
+//	GetExtName( basname, ext );
 	SetFullfilenameExt( fname, basname, ext );
 	if ( StorageMode & 2 ) {	// MCS mode
 			filebase = MCS_LoadG1M( fname , editsize, disperror, 1 );	// hidden ram
@@ -1534,7 +1600,7 @@ void SetExt( char *ext ) {
 
 int SaveProgfile( int progNo ){
 	char *filebase;
-	char fname[32],sname[16],basname[32];
+	char fname[32],fname2[32],sname[16],basname[32],basname2[32];
 	int size,i,r;
 	char *text;
 	int textptr;
@@ -1552,7 +1618,8 @@ int SaveProgfile( int progNo ){
 	  	SetExt( ext2 );	// set ext ( g1m,MCS )
 		if ( AutoSaveMode == 0 ) {
 			if ( InputFilenameG1MorG3M( basname, "Save", ext ) ) if ( CurrentFileMode == 1 ) goto loop2; else return 1 ;
-			if ( ExistG1Mext( basname, ext ) ==0 ) if ( YesNoOverwrite() ) goto loop;
+			strcpy( basname2, basname) ;
+			if ( ExistG1Mext( basname2, ext ) ==0 ) if ( YesNoOverwrite() ) goto loop;
 		}
 		basname[8]='\0';
 		basname8ToG1MHeader( filebase, basname);
@@ -1569,10 +1636,11 @@ int SaveProgfile( int progNo ){
 		}
 		basname[8]='\0';
 		SetFullfilenameExt( fname, basname, "txt" );
+		strcpy( fname2, fname) ;
+		
 		if ( AutoSaveMode == 0 ) {
-			if ( ExistFile( fname, 0 ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
+			if ( ExistFile( fname2, 0 ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
 		}
-		sprintf(sname, "%s.txt", basname );
 		size = ProgfileMax[progNo] ;
 		buffersize = size-SrcSize( filebase );	// buffersize (free space)
 		memcpy( filebase+buffersize, filebase, SrcSize( filebase ) );
@@ -1580,12 +1648,13 @@ int SaveProgfile( int progNo ){
 		textsize=OpcodeToText( filebase+buffersize+0x56, text, size );
 		if ( textsize<0 ) { CB_ErrMsg(MemoryERR); return 1 ; } // error	
 		storeFile( fname, (unsigned char*)text, textsize );
+		SetShortName( sname, fname);
 	}
 	
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
 	
-	Check_Favorite_size( folder, sname, SrcSize(filebase) ) ;	// favorite filesize update?
+	Check_Favorite_size( folder, sname, sname, SrcSize(filebase) ) ;	// favorite filesize update?
 
 	return r;
 }
@@ -1812,8 +1881,6 @@ char * Load1st2nd( char *basname, char *dir2nd, char *ext ){
 	char *fileptr;
 	char fname[32];
 
-	renameExistedFile( basname, ext );	// replace? filename
-	GetExtName( basname, ext );
 	SetFullfilenameExt( fname, basname, ext );
 	
 	fileptr = loadFile( fname, 0, 0, 0 );					// no hidden load
@@ -1924,25 +1991,18 @@ int MakeDirectory(){
 	return 0;	// ok
 }
 
-void Rename_Favorite( char* folder, char* oldsname, char* newsname ){
-	int i=Check_Favorite( folder, oldsname);	// file matching search
-	if ( i < FavoritesMAX ) { 		//	rename Favorites 
-		strncpy( Favoritesfiles[i].filename, newsname,  FILENAMEMAX );	// rename name
-		strncpy( Favoritesfiles[i].folder,   folder,    FOLDERMAX );
-	}
-}
-
 //----------------------------------------------------------------------------------------------
 const char RenameCopy_msg[2][18]={"Rename File Name?" ,"Copy File Name?" };
 
 int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 copy
 	char *filebase;
-	char name[32],name2[32],sname[16],sname2[16],basname[32];
+	char name[32],name2[32],sname[16],oldsname[16],basname[32];
 	int size,i,j;
 	int bmp=0;
 	char ext[8],ext2[8];
 	char *str;
 
+	SetShortName( oldsname, fname);
 	SetShortName( basname, fname);
 	GetExtName( basname, ext );
 	if ( strcmp( ext, "g1m") == 0 ) {	// g1m file
@@ -1999,10 +2059,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
 	
-//	if ( select ) return 0;	// (copy)
-
-	SetShortName( sname2, fname);	// orignal name
-	Rename_Favorite( folder, sname2, sname );
+	Check_Favorite_size( folder, oldsname, sname, 0 ) ;	// favorite rename?
 	
 	return 0;
 }
@@ -2146,7 +2203,7 @@ void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname 
 	}
 	if ( storeFile( fname, (unsigned char*)FilePtr, size )!=0 ) CB_Error(FileERR);
 	SetShortName( sname2, fname);	//
-	Check_Favorite_size( folder, sname2, size ) ;	// favorite filesize update?
+	Check_Favorite_size( folder, sname2, sname2, size ) ;	// favorite filesize update?
 	exit:
 	Restorefolder();
 }
@@ -2878,32 +2935,32 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
@@ -2941,6 +2998,7 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2989,7 +3047,6 @@ void FavoritesDowndummy4( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy5( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
