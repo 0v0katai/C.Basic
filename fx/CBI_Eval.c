@@ -122,7 +122,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					ExecPtr++ ;	// ',' skip
 					y=(EvalIntsubTop( SRC ));
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					result= rand()*(x-y+1)/(RAND_MAX+1) +y ;
+					if ( x>y ) { i=x; x=y; y=i; }
+					result= rand()*(y-x+1)/(RAND_MAX+1) +x ;
 					return result ;
 			} else if ( c == 0xFFFFFFE9 ) {	// CellSum(Mat A[x,y])
 					ExecPtr+=2;

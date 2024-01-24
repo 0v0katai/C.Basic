@@ -28,5 +28,6 @@ double Evalsub1(char *SRC);
 double Evalsub5(char *SRC);
 double Evalsub6(char *SRC);
 double Evalsub7(char *SRC);
+double Evalsub13(char *SRC);
 double EvalsubTop(char *SRC);
 

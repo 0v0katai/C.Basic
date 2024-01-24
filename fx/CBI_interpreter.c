@@ -293,7 +293,6 @@ void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	CurrentStruct->loop[CurrentStruct->CNT]=1;
 	CurrentStruct->CNT++;
 }
-
 void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	int step,end;
 	if ( StackFor->Ptr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
