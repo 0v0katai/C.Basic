@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series     v0.80
+ Casio Basic RUNTIME library for fx-9860G series     v0.88
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -109,7 +109,7 @@ int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(
 //-----------------------------------------------------------------------------
 void BdispSetPointVRAM2( int px, int py, int mode){
 	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
-	int m=px&0x7,d;
+	int m=px&0x7;
 	char dot[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 	switch ( mode ) {
 		case 0:	// Clear
@@ -123,6 +123,15 @@ void BdispSetPointVRAM2( int px, int py, int mode){
 			
 			break;
 	}
+}
+//-----------------------------------------------------------------------------
+int BdispGetPointVRAM2( int px, int py){
+	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
+	int m=px&0x7;
+	char dot[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+
+	if ( ( (*VRAM) & (dot[m]) ) == 0 ) return 0; 
+	return 1;
 }
 
 //-----------------------------------------------------------------------------

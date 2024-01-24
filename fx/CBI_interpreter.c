@@ -29,7 +29,6 @@
 
 #include "CBI_Eval.h"
 #include "CBI_interpreter.h"
-//#include "TIMER_FX2.H"
 
 //-----------------------------------------------------------------------------
 // Casio Basic inside
@@ -58,86 +57,7 @@ int RangeErrorCKint( char *SRC ) {
 #define CBint_Eval  EvalIntsubTop
 #define CBint_Eval1 EvalIntsub1
 
-//-----------------------------------------------------------------------------
-int MatOprandInt( char *SRC, int *reg){ 
-	int dimA,dimB;
-	int c=SRC[ExecPtr],d;
-	if ( ( 'A'<=c )&&( c<='Z' ) ) {
-		(*reg)=c-'A';
-		ExecPtr++ ;
-		
-		if ( SRC[ExecPtr] != '[' ) { return -2; }	// [a,b]
-		c=SRC[++ExecPtr];
-		d=SRC[ExecPtr+1];
-		if ( d == ',' ) {										// [a,
-			ExecPtr++ ;
-			if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-			else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REGINT[c-'A'];
-		} else
-		if ( d == '+' ) { 										// [a+1,
-			if ( SRC[ExecPtr+3] == ',' ) {
-				ExecPtr+=2 ;
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REGINT[c-'A'];
-				c=SRC[ExecPtr++];
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimA+=(c-'0');
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA+=REGINT[c-'A'];
-			}
-		} else
-		if ( d == '-' ) { 										// [a-1,
-			if ( SRC[ExecPtr+3] == ',' ) {
-				ExecPtr+=2 ;
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REGINT[c-'A'];
-				c=SRC[ExecPtr++];
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimA-=(c-'0');
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA-=REGINT[c-'A'];
-			}
-		} else {
-			dimA=(CBint_Eval( SRC ));
-			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
-		}
-		if ( ( dimA < 1 ) || ( MatArySizeA[(*reg)] < dimA ) ) { CB_Error(DimensionERR); return -1; }	// Dimension error
-		c=SRC[++ExecPtr];
-		d=SRC[ExecPtr+1];
-		if ( d == ']' ) {										//    b]
-			ExecPtr++ ;
-			if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-			else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REGINT[c-'A'];
-		} else
-		if ( d == '+' ) { 										//      b+1]
-			if ( SRC[ExecPtr+3] == ']' ) {
-				ExecPtr+=2 ;
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REGINT[c-'A'];
-				c=SRC[ExecPtr++];
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimB+=(c-'0');
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB+=REGINT[c-'A'];
-			}
-		} else
-		if ( d == '-' ) { 										//      b-1]
-			if ( SRC[ExecPtr+3] == ']' ) {
-				ExecPtr+=2 ;
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REGINT[c-'A'];
-				c=SRC[ExecPtr++];
-				if  ( ( '1'<= c ) && ( c<='9' ) ) dimB-=(c-'0');
-				else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB-=REGINT[c-'A'];
-			}
-		} else {
-			dimB=(CBint_Eval( SRC ));
-			if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
-		}
-		if ( ( dimB < 1 ) || ( MatArySizeB[(*reg)] < dimB ) ) { CB_Error(DimensionERR); return -1; }	// Dimension error
-		ExecPtr++ ;
-
-		return (dimA-1)*MatArySizeB[(*reg)]+dimB-1;
-	} else
-	{ CB_Error(SyntaxERR); return -1; }	// Syntax error
-	return -1; //
-}
 //----------------------------------------------------------------------------------------------
-
 void CBint_Store( char *SRC ){	// ->
 	int	st,en,i;
 	int dimA,dimB,reg;
@@ -263,8 +183,12 @@ void CBint_Store( char *SRC ){	// ->
 		}
 	} else
 	if ( c=='%' ) {
+		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
 		SetRtc( CBint_CurrentValue );
-		CB_TicksAdjust=RTC_GetTicks()-CBint_CurrentValue;	// 
+		st=RTC_GetTicks();
+		CB_TicksAdjust=st-CBint_CurrentValue ;	// 
+		CB_TicksStart+=(st-1);	// 
+		skip_count=0;
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
@@ -673,80 +597,4 @@ int CBint_UnaryEval( char *SRC ) {	// eval 1
 		}
 	} else  return CBint_Eval1(SRC);
 }
-
-//----------------------------------------------------------------------------------------------
-
-int q_un_subint(void) {
-     int i;
-     int a[9];
-     for (i=0;i<9;i++) a[i]=0;
-     regintN=1;  
- l5: regintR=8;
-     regintS=0;
-     regintX=0;
- l0: if (regintX==regintR) goto l4;
-     regintX++;
-     a[(int)regintX]=regintR;
- l1: ++regintS;
-     regintY=regintX;
- l2: if (!--regintY) goto l0;
-     if (!(regintT=a[(int)regintX]-a[(int)regintY])) goto l3;
-     if (regintX-regintY!=abs(regintT)) goto l2;
- l3: if (--a[(int)regintX]) goto l1;
-     if (--regintX) goto l3;
- l4: if (--regintN) goto l5;
-
-  return (regintS);
-}
-
-int asctt4int(){
-	regintK=1;
-	lbl0:
-	regintK=regintK+1;
-	regintA=regintK/3*regintK+4-regintK;
-	if ( regintK<10000 ) goto lbl0;
-	return regintA;;
-}
-
-
-void CBint_test() {
-	int i, s, t, result;
-	char	buffer[32];
-	unsigned int key=0;
-
-	Bdisp_AllClr_DDVRAM();
-	locate(1,1); Print((unsigned char*)"8queen int");
-	Bdisp_PutDisp_DD();
-	
-	start_timer();	// --------------------------------------
-
-	regS=q_un_subint();
-
-	t=get_timer();	// --------------------------------------
-
-	locate(1,2);
-	sprintG(buffer, regS, 21, RIGHT_ALIGN);
-		Print((unsigned char*)buffer);
-	locate(1,3);sprintf((char*)buffer,"time=%5.3fs",(float)t/1000); Print((unsigned char*)buffer);
-	Bdisp_PutDisp_DD();
-
-	
-	locate(1,5); Print((unsigned char*)"Asciit4 int");
-	Bdisp_PutDisp_DD();
-	
-	start_timer();	// --------------------------------------
-
-	regS=asctt4int();
-
-	t=get_timer();	// --------------------------------------
-
-	locate(1,6);
-	sprintG(buffer, regS, 21, RIGHT_ALIGN);
-		Print((unsigned char*)buffer);
-	locate(1,7);sprintf((char*)buffer,"time=%5.3fs",(float)t/1000); Print((unsigned char*)buffer);
-
-	Bdisp_PutDisp_DD();
-	GetKey(&key);
-}
-
 

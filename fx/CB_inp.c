@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.11                                       */
+/*   inp Library  ver 1.12                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -18,7 +18,7 @@
 //----------------------------------------------------------------------------------------------
 void Fkey_KDISPN(int n,char *buffer) {
 	Fkey_Clear(n);
-	CB_PrintXY(n*21+3,7*8+1,(unsigned char *)buffer);
+	CB_PrintXY(n*21+3,7*8+1,(unsigned char *)buffer,0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
@@ -159,6 +159,7 @@ int SelectChar( int *ContinuousSelect ) {
 				return 0;	// input cancel
 				break;
 			case KEY_CTRL_EXE:
+			case KEY_CHAR_CR:
 				cont=0;
 				break;
 			case KEY_CTRL_F1:	// CharMATH
@@ -372,11 +373,11 @@ const short oplistOPTN[]={
 		0x7FB3,	// Not
 		0x7FB4,	// Xor
 
-		0xD3,	// Rnd
-		0x7F86,	// RndFix(
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
 		0xD9,	// Norm
 		0xE3,	// Fix
 		0xE4,	// Sci
@@ -449,7 +450,7 @@ const short oplistPRGM[]={
 
 		0xF718,	// ClrText
 		0xF719,	// ClrGraph
-		0xF71A,	// ClrList
+//		0xF71A,	// ClrList
 		0xF91E,	// ClrMat
 		
 		0xF710,	// Locate
@@ -468,6 +469,7 @@ const short oplistVARS[]={
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
 		0xF7A5,	// Text
+		0xF7E3,	// LocateYX
 		0xF7A6,	// Circle
 		0xF7A7,	// F-Line
 		0xF7A8,	// PlotOn
@@ -524,6 +526,8 @@ const short oplistVARS[]={
 		0xF94B,	// DotPut(
 		0xF74F,	// DotTrim(
 		0xF7E0,	// DotLife(
+		0xF7E8,	// ReadGraph(
+		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
 		0};
@@ -753,7 +757,8 @@ const short oplistCMD[]={
 		0x10,	// <=			6
 		0xF718,	// ClrText	
 		0xF719,	// ClrGraph	
-		0xF71A,	// ClrList	
+		0xFFFF,	// 				-
+//		0xF71A,	// ClrList	
 		0xF91E,	// ClrMat	
 		0x23,	// #
 		0x25,	// %
@@ -816,14 +821,30 @@ const short oplistCMD[]={
 		0xF7AD,	// PxlChg
 		0xF7AF,	// PxlTest(
 		0xF7A5,	// Text
+		0xF7E3,	// LocateYX
+		0xF720,	// DrawGraph
+		0xEE,	// Graph Y=
+		0x7FF0,	// GraphY
 		0xFFFF,	// 				-
+		0x23,	// #
+		0x25,	// %
+
+
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF78E,	// SketchBroken
 		0xF78F,	// SketchDot
+		0xF71C,	// S-L-Normal
+		0xF71D,	// S-L-Thick
+		0xF71E,	// S-L-Broken
+		0xF71F,	// S-L-Dot
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0x23,	// #
+		0x25,	// %
+
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
-		
 		0xF7C3,	// CoordOn
 		0xF7D3,	// CoordOff
 		0xF77D,	// GridOn
@@ -832,10 +853,8 @@ const short oplistCMD[]={
 		0xF7D2,	// AxesOff
 		0xF7C4,	// LabelOn
 		0xF7D4,	// LabelOff
-		0xF71C,	// S-L-Normal
-		0xF71D,	// S-L-Thick
-		0xF71E,	// S-L-Broken
-		0xF71F,	// S-L-Dot
+		0x23,	// #
+		0x25,	// %
 		
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
@@ -863,10 +882,10 @@ const short oplistCMD[]={
 		0xB2,	// arccosh
 		0xB3,	// arctanh
 
-		0xD3,	// Rnd
-		0x7F86,	// RndFix(
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
 		0xD9,	// Norm
 		0xE3,	// Fix
 		0xE4,	// Sci
@@ -888,23 +907,22 @@ const short oplistCMD[]={
 		0x0A,	// Peta
 		0x0B,	// Exa
 		0xFFFF,	// 				-
-		
-		0xF720,	// DrawGraph
-		0xEE,	// Graph Y=
-		0x7FF0,	// GraphY
-		0xFFFF,	// 				-
-		0xF7E1,	// Rect(
-		0xF7E2,	// FillRect(
+
 		0xF73F,	// DotGet(
 		0xF94B,	// DotPut(
 		0xF74F,	// DotTrim(
 		0xF7E0,	// DotLife(
+		0xF7E1,	// Rect(
+		0xF7E2,	// FillRect(
+		0xF7E3,	// LocateYX
+		0xFFFF,	// 				-
+		0xF7E8,	// ReadGraph(
+		0xF7E9,	// WriteGraph(
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
-
 		0};
 
 
@@ -1169,6 +1187,45 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[8]=' ';
 		string[9]='\0';
 	} else
+	if ( opcode == 0xF7E3 ) {
+		string[0]='L';
+		string[1]='o';
+		string[2]='c';
+		string[3]='a';
+		string[4]='t';
+		string[5]='e';
+		string[6]='Y';
+		string[7]='X';
+		string[8]=' ';
+		string[9]='\0';
+	} else
+	if ( opcode == 0xF7E8 ) {
+		string[0]='R';
+		string[1]='e';
+		string[2]='a';
+		string[3]='d';
+		string[4]='G';
+		string[5]='r';
+		string[6]='a';
+		string[7]='p';
+		string[8]='h';
+		string[9]='(';
+		string[10]='\0';
+	} else
+	if ( opcode == 0xF7E9 ) {
+		string[0]='W';
+		string[1]='r';
+		string[2]='i';
+		string[3]='t';
+		string[4]='e';
+		string[5]='G';
+		string[6]='r';
+		string[7]='a';
+		string[8]='p';
+		string[9]='h';
+		string[10]=' ';
+		string[11]='\0';
+	} else
 	if ( opcode == 0xF7F0 ) {
 		string[0]='D';
 		string[1]='o';
@@ -1206,7 +1263,7 @@ int CB_MB_ElementCount( char *str ) {
 		c=str[ptr++];
 		if (c==0x00) break;
 		else 
-		if ( (c==0xFFFFFF7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) {
+		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) {
 			ptr++; }
 		len++;
 	}
@@ -1214,63 +1271,6 @@ int CB_MB_ElementCount( char *str ) {
 }
 
 
-void CB_PrintC( int x, int y,const unsigned char *c ){
-	if ( *c == 0xFF ) {
-		*c++;
-		KPrintChar( x*6-6, y*8-8, *c );
-	} else {
-		locate (x,y);
-		PrintC( c );
-	}
-}
-void CB_PrintRevC( int x, int y,const unsigned char *c ){
-	if ( *c == 0xFF ) {
-		*c++;
-		KPrintRevChar( x*6-6, y*8-8, *c );
-	} else {
-		locate (x,y);
-		PrintRevC( c );
-	}
-}
-void CB_Print( int x, int y, const unsigned char *str){
-	unsigned int c=*str;
-	while ( c ) {
-		c=*str;
-		CB_PrintC( x, y, str++ );
-		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) str++;
-		x++;
-		if ( x>21 ) break;
-	}
-}
-void CB_PrintRev( int x, int y, const unsigned char *str){
-	unsigned int c=*str;
-	while ( c ) {
-		c=*str;
-		CB_PrintRevC( x, y, str++ );
-		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) str++;
-		x++;
-		if ( x>21 ) break;
-	}
-}
-
-void CB_PrintXYC( int px, int py,const unsigned char *c ){
-	if ( *c == 0xFF ) {
-		*c++;
-		KPrintChar( px, py, *c );
-	} else {
-		PrintXY( px, py, c ,0);
-	}
-}
-void CB_PrintXY( int px, int py, const unsigned char *str){
-	unsigned int c=*str;
-	while ( c ) {
-		c=*str;
-		CB_PrintXYC( px, py, str++ );
-		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) str++;
-		px+=6;
-		if ( px>127 ) break;
-	}
-}
 
 //----------------------------------------------------------------------------------------------
 

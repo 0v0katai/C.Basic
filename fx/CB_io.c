@@ -15,6 +15,70 @@ int CPU_check(void) {					// SH3:3 SH4A:4
 }
 
 //---------------------------------------------------------------------------------------------
+void CB_PrintC( int x, int y,const unsigned char *c ){
+	if ( *c == 0xFF ) {
+		*c++;
+		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xDF ) ) KPrintChar( (--x)*6, (--y)*8, *c );
+		else	goto jmp;
+	} else {
+		jmp:
+		locate (x,y);
+		PrintC( c );
+	}
+}
+void CB_PrintRevC( int x, int y,const unsigned char *c ){
+	if ( *c == 0xFF ) {
+		*c++;
+		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xDF ) ) KPrintRevChar( (--x)*6, (--y)*8, *c );
+		else	goto jmp;
+	} else {
+		jmp:
+		locate (x,y);
+		PrintRevC( c );
+	}
+}
+void CB_Print( int x, int y, const unsigned char *str){
+	int c=(char)*str;
+	while ( c ) {
+		c=(char)*str;
+		CB_PrintC( x, y, str++ );
+		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		x++;
+		if ( x>21 ) break;
+	}
+}
+void CB_PrintRev( int x, int y, const unsigned char *str){
+	unsigned int c=(char)*str;
+	while ( c ) {
+		c=(char)*str;
+		CB_PrintRevC( x, y, str++ );
+		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		x++;
+		if ( x>21 ) break;
+	}
+}
+
+void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){
+	if ( *c == 0xFF ) {
+		*c++;
+		if ( mode ) KPrintRevChar( px, py, *c );
+		else		KPrintChar( px, py, *c );
+	} else {
+		PrintXY( px, py, c ,mode);
+	}
+}
+void CB_PrintXY( int px, int py, const unsigned char *str, int mode){
+	int c=(char)*str;
+	while ( c ) {
+		c=(char)*str;
+		CB_PrintXYC( px, py, str++ , mode);
+		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		px+=6;
+		if ( px>127 ) break;
+	}
+}
+
+//---------------------------------------------------------------------------------------------
 void PrintXYR(int x,int y,char *buffer,int rev){
  	if ( rev ) PrintXY(x,y,(unsigned char *)buffer,1);
 		else   PrintXY(x,y,(unsigned char *)buffer,0);

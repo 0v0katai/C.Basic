@@ -10,10 +10,11 @@
 #include "CB_file.h"
 #include "CB_edit.h"
 #include "CB_interpreter.h"
+#include "CBI_interpreter.h"
 #include "CB_Matrix.h"
 #include "CB_setup.h"
 
-#include "CBI_interpreter.h"
+#include "CB_test.h"
 
 //-------------------------------------------------------------- source code refer to (WSC) file.c
 //---------------------------------------------------------------------------------------------

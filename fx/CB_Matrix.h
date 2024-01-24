@@ -8,3 +8,5 @@ void WriteMatrixint( int reg, int dimA, int dimB, int value);
 void DeleteMatrix( int reg ) ;
 void EditMatrix(int reg);		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
+int MatOprand( char *SRC, int *reg);
+int MatOprandInt( char *SRC, int *reg); 

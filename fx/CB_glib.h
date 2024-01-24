@@ -1,10 +1,16 @@
 //-----------------------------------------------------------------------------
 #define Bdisp_SetPoint_VRAM  BdispSetPointVRAM2
 void BdispSetPointVRAM2( int px, int py, int mode);
+
+#define Bdisp_GetPoint_VRAM  BdispGetPointVRAM2
+int BdispGetPointVRAM2( int px, int py);
 //-----------------------------------------------------------------------------
 double MOD(double numer, double denom);
 
 void Text(int y, int x, unsigned char*str);
+
+//-----------------------------------------------------------------------------
+extern int skip_count;
 
 void DrawBusy();		// BusyInd=0: running indicator off,  BusyInd=1: on
 void Bdisp_PutDisp_DD_DrawBusy();
