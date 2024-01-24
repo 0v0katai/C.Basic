@@ -161,6 +161,7 @@ extern char ProgNo;			// current Prog No
 extern char *ProgfileAdrs[ProgMax+1];
 extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
+extern char  ProgfileMode[ProgMax+1];	// g1m : 0    text : 1
 extern char  ProgLocalN[ProgMax+1];
 extern char  ProgLocalVar[ProgMax+1][26];
 

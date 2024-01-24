@@ -1755,11 +1755,11 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 }
 
 //----------------------------------------------------------------------------------------------
-int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

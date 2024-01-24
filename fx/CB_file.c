@@ -52,8 +52,10 @@ static char renamefolder[FOLDERMAX] = "";
 Files Favoritesfiles[FavoritesMAX];
 char FileListUpdate=1;
 char StorageMode=0;						// 0:Storage memory   1:SD
-int redrawsubfolder=0;
+char redrawsubfolder=0;
 int recentsize=0;
+
+char ForceG1Msave;		//    1: force g1m save
 
 const char root[][5]={"fls0","crd0"};
 
@@ -167,33 +169,31 @@ FONTCHARACTER * FilePath( char *sFolder, FONTCHARACTER *sFont )
 	return sFont;
 }
 
-void SetFullfilenameExt( char *fname, char *sname, char *extname ) {
+void SetFullfilenameExt( char *filename, char *sname, char *extname ) {
 	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
+		sprintf( filename, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
 	else
-		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
+		sprintf( filename, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
 }
 
-void SetShortName( char *sname, char *name) {	// fullpath name -> short name
+void SetShortName( char *sname, char *filename) {	// fullpath filename -> short name
 	int c,i;
 	int ptr=0;
-	c=name[ptr++];
-	while( c=='\\' ) c=name[ptr++];	//
-	while( c!='\\' ) c=name[ptr++];	// ROOT skip
-	if ( strchr(name+ptr,'\\') != NULL ) { name=strchr(name+ptr,'\\')+1; ptr=0;}
-	c=name[ptr];
+	ptr=strlen(filename);
+	c=filename[--ptr];
+	while( c!='\\' ) c=filename[--ptr];	//
 	i=0;
 	while ( c ) {
-		c=name[ptr++];
+		c=filename[++ptr];
 		sname[i++]=c;
 	}
 	sname[i]='\0';
 }
 
-void ErrorMSGfile( char *buffer, char *name, int err){
+void ErrorMSGfile( char *buffer, char *filename, int err){
 	char sname[32];
 	char buf[32];
-	SetShortName( sname, name);
+	SetShortName( sname, filename);
 	if ( err ) {
 		sprintf(buf, "%s (%d)", sname, err);
 		ErrorMSGstr( buffer, buf);
@@ -770,7 +770,7 @@ unsigned int Explorer( int size, char *folder )
 
 //----------------------------------------------------------------------------------------------
 /* load file to buffer */
-char * loadFile( const char *name , int editMax)
+char * loadFile( const char *name , int editMax, int disperror)
 {
 	int handle;
 	FONTCHARACTER filename[50];
@@ -782,8 +782,8 @@ char * loadFile( const char *name , int editMax)
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 )
 	{
-		ErrorMSGfile( "Can't find file", name, handle);
-		CB_Error(FileERR); 
+		if ( disperror ) ErrorMSGfile( "Can't find file", name, handle);
+		CB_Error(CantFindFileERR); 
 		return NULL;
 	}
 
@@ -821,7 +821,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	s = Bfile_FindClose( handle );
 	if( r == 0 ) { //already existed, delete it
 		GetMediaFree(&freehigh,&freelow);
-		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough SMEM", freelow ); return 1 ; }
+		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 1 ; }
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}
@@ -881,14 +881,6 @@ int ExistFile( const char *fname ) {
 
 /* G1M file exist? */
 int ExistG1M( const char *sname ) {
-	int handle;
-	FONTCHARACTER filename[50];
-	int r,s;
-
-	/* disable, just for call "Bfile_FindFirst" */
-	FONTCHARACTER buffer[50];
-	FILE_INFO info;
-	/* end */
 	char fname[32];
 
 	SetFullfilenameExt( fname, sname, "g1m" );
@@ -1107,7 +1099,7 @@ void NewPassWord( char *fname ){	// New Password command
 
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".g1m") != 0 ) return ;	// not g1mfile
-	if ( LoadProgfile( fname, 0 ) ) return ; // error
+	if ( LoadProgfile( fname, 0, 0, 1 ) ) return ; // error
 	filebase = ProgfileAdrs[0];
 	if ( CheckG1M( filebase ) ) return ; // not support g1m
 	G1MHeaderTobasname8( filebase, basname);
@@ -1149,16 +1141,17 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 	return 0; // ok
 }
 
-int LoadProgfile( char *fname, int editsize ) {
+int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	char *filebase;
 	int fsize,size;
 	char sname[16],basname[16];
 	int textsize;
 	int progsize;
+	char CurrentFileMode;
 
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
-			filebase = loadFile( fname , editsize + EditMaxfree);
+			filebase = loadFile( fname , editsize + EditMaxfree, disperror );
 			if ( filebase == NULL ) return 1;
 			textsize=strlen(filebase);
 			strncpy( basname, sname, strlen(sname)-4);
@@ -1168,20 +1161,23 @@ int LoadProgfile( char *fname, int editsize ) {
 				strncpy( filebase+0x3C-8, folder, 8);		// set folder to G1M header
 			}
 			progsize = textsize +  editsize ;
+			CurrentFileMode=1;		// text load save mode
 	} else {	// G1M file
-			filebase = loadFile( fname , editsize );
+			filebase = loadFile( fname , editsize, disperror );
 			if ( filebase == NULL ) return 1;
 			if ( CheckG1M( filebase ) ) { HiddenRAM_freeProg( filebase ); return 1; } // not support g1m
 			progsize = SrcSize( filebase ) + editsize ;
 			strncpy( filebase+0x3C-8, folder, 8);		// set folder to G1M header
+			CurrentFileMode=0;		// g1m load save mode
 	}
 
-	ProgEntryN=0;						// Main program
-	ProgfileAdrs[0]= filebase;
-	ProgfileMax[0]= progsize;
-	ProgfileEdit[0]= 0;
-	ProgNo=0;
-	ExecPtr=0;
+	ProgEntryN=prgNo;						// set program no
+	ProgfileAdrs[prgNo]= filebase;
+	ProgfileMax[prgNo]= progsize;
+	ProgfileEdit[prgNo]= 0;
+	ProgfileMode[prgNo]= CurrentFileMode;
+	ProgNo=prgNo;
+//	ExecPtr=0;
 
 	return 0; // ok
 }
@@ -1212,23 +1208,43 @@ int SaveProgfile( int progNo ){
 	char *filebase;
 	char fname[32],sname[16],basname[32];
 	int size,i,r;
+	char *text;
+	int textptr;
+	int textsize;
+	int buffersize;
+	char CurrentFileMode=ProgfileMode[progNo];
 	
 	filebase=ProgfileAdrs[progNo];
 	G1MHeaderTobasname8( filebase, basname);
 
-  loop:
-	if ( InputFilename( basname, "Save File Name?" ) ) return 1 ;
-//	if ( InputFilenamePass( filebase, basname, "Save File name?") ) return 1 ; // cancel
-	if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) goto loop;
-	basname8ToG1MHeader( filebase, basname);
+	if ( ( CurrentFileMode == 0 ) || ( ForceG1Msave == 1 ) ) {	// g1m save 
+	  loop:
+		if ( InputFilename( basname, "Save g1m Name?" ) ) if ( CurrentFileMode == 1 ) goto loop2; else return 1 ;
+		if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) goto loop;
+		basname8ToG1MHeader( filebase, basname);
+		sprintf(sname, "%s.g1m", basname );
+		r=SaveBasG1M( filebase );
 
-	sprintf(sname, "%s.g1m", basname );
+	}
+	if ( CurrentFileMode == 1 ) {	// text save
+	  loop2:
+		if ( InputFilename( basname, "Save Text Name?" ) ) return 1 ;
+		SetFullfilenameExt( fname, basname, "txt" );
+		if ( ExistFile( fname ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
+		sprintf(sname, "%s.txt", basname );
+		size = ProgfileMax[progNo] ;
+		buffersize = size-SrcSize( filebase );	// buffersize (free space)
+		memcpy( filebase+buffersize, filebase, SrcSize( filebase ) );
+		text = filebase;
+		textsize=OpcodeToText( filebase+buffersize+0x56, text, size );
+		if ( textsize<0 ) { CB_ErrMsg(MemoryERR); return 1 ; } // error	
+		storeFile( fname, (unsigned char*)text, textsize );
+	}
+	
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
-	
 	strncpy( tmpfolder, folder, FOLDERMAX );
 	strncpy( folder, filebase+0x3C-8, 8 );
-	r=SaveBasG1M( filebase );
 	
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
@@ -1268,7 +1284,7 @@ int NewProg(){
 	if ( InputFilenamePassname( filebase, basname, "New Program Name?") ) return 1 ; // cancel
 	if ( ExistG1M( basname ) == 0 ) { // existed file
 		SetFullfilenameExt( fname, basname, "g1m" );
-		LoadProgfile( fname, EditMaxfree );
+		LoadProgfile( fname, 0, EditMaxfree, 1 );
 		return 0;
 	}
 	basname8ToG1MHeader( filebase, basname);
@@ -1368,7 +1384,7 @@ char * LoadPicture( int pictNo ){
 	
 	sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], "Pict", pictname );
 
-	pict = loadFile( fname ,0);					//
+	pict = loadFile( fname, 0, 0 );					//
 	return pict;
 }
 
@@ -1412,7 +1428,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 	int size,i,j;
 	char msg[2][18]={"Rename File Name?" ,"Copy File Name?" };
 
-	if ( LoadProgfile( fname, 0 ) ) return 1 ; // error
+	if ( LoadProgfile( fname, 0, 0, 1 ) ) return 1 ; // error
 	filebase = ProgfileAdrs[0];
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
@@ -1527,7 +1543,7 @@ void SaveConfig(){
 	bufshort[17]=Label;				bufshort[16]=CB_Round.DIGIT-1;
 	bufshort[19]=Derivative;		bufshort[18]=0;
 	bufshort[21]=S_L_Style;			bufshort[20]=0;
-	bufshort[23]=Angle;				bufshort[22]=0;
+	bufshort[23]=Angle;				bufshort[22]=ForceG1Msave;
 	bufshort[25]=BreakCheck;		bufshort[24]=StorageMode;
 	bufshort[27]=TimeDsp;			bufshort[26]=PageUpDownNum;
 	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
@@ -1611,7 +1627,7 @@ void LoadConfig(){
 		Label         =bufshort[17];        CB_Round.DIGIT=bufshort[16]+1;
 		Derivative    =bufshort[19];        
 		S_L_Style     =bufshort[21];        
-		Angle         =bufshort[23];        
+		Angle         =bufshort[23];        ForceG1Msave   =bufshort[22];
 		BreakCheck    =bufshort[25];        StorageMode    =bufshort[24];
 		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
@@ -1803,8 +1819,8 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	CharToFont( fname, filename );
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
-		ErrorMSGfile( "Can't Load file", fname, handle);
-		CB_Error(FileERR); goto exit; ;
+//		ErrorMSGfile( "Can't Load file", fname, handle);
+		CB_Error(CantFindFileERR);  goto exit;
 	}
 	
 	size = Bfile_GetFileSize( handle ) -(ptr) ;
@@ -1813,7 +1829,7 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 
 	Bfile_ReadFile( handle, FilePtr, size, ptr );
 	Bfile_CloseFile( handle );
-	if ( FilePtr == NULL ) { ErrorMSGfile( "Load Error", fname, 0 ); CB_Error(FileERR); }
+//	if ( FilePtr == NULL ) { ErrorMSGfile( "Load Error", fname, 0 ); CB_Error(FileERR); }
 	exit:
 	Restorefolder();
 }
@@ -1831,7 +1847,7 @@ void ConvertToText( char *fname ){
 //	Bdisp_PutDisp_DD_DrawBusy();
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file -> G1M
-		if ( LoadProgfile( fname, EditMaxfree ) ) return ; // error
+		if ( LoadProgfile( fname, 0, EditMaxfree, 1 ) ) return ; // error
 		filebase = ProgfileAdrs[0];
 		G1MHeaderTobasname8( filebase, basname);
 		SetFullfilenameExt( fname, basname, "g1m" );
@@ -1842,7 +1858,7 @@ void ConvertToText( char *fname ){
 	} else {	// G1M file -> Text
 		buffersize=files[index].filesize /1;	// buffersize 100% up
 		if ( buffersize < EditMaxfree ) buffersize=EditMaxfree;
-		if ( LoadProgfile( fname, buffersize ) ) return ; // error
+		if ( LoadProgfile( fname, 0, buffersize, 1 ) ) return ; // error
 		filebase = ProgfileAdrs[0];
 		G1MHeaderTobasname8( filebase, basname);
 		if ( CheckPassWord( filebase ) ) return ;	// password error
@@ -1973,9 +1989,10 @@ void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
 }
 //----------------------------------------------------------------------------------------------
 void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
-	int c=1;
-	char buffer[32]="",folder16[21],bufferb[32];
-	char filename[32];
+	int c=1,r;
+	char buffer[32]="",folder16[21];
+	char fname[32],filename[32];
+	char sname[16],basname[16];
 	char *filebase;
 	char *StackProgSRC;
 	int StackProgPtr;
@@ -2008,33 +2025,26 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 			case 0xFFFFFFED:	// Prog "..."
 				ExecPtr++;	// " skip
 				CB_GetQuotOpcode(SRC, buffer, 32);	// Prog name
-//				locate( 1, 2); PrintLine(" ",21);						//
-//				locate( 1, 2); Print(buffer);							//
-//				locate( 1, 3); PrintLine(" ",21); GetKey(&key);			//
-				strcpy( bufferb, buffer);
-				Setfoldername16( folder16, bufferb );
+				strcpy( basname, buffer);
+				Setfoldername16( folder16, basname );
 				srcPrg = CB_SearchProg( folder16 );
 				if ( srcPrg < 0 ) { 				// undefined Prog
-					Getfolder( buffer );
-					SetFullfilenameExt( filename, (char*)buffer, "g1m" );
-					filebase = loadFile( filename ,EditMaxProg );
-					if ( filebase != NULL ) strncpy( filebase+0x3C-8, folder16, 8);		// set folder to header
-					Restorefolder();
-//					locate( 1, 3); Print(filename);						//
-//					locate( 1, 4); PrintLine(" ",21);					//
-//					sprintf(buffer,"ptr=%08X",filebase);						//
-//					locate( 1, 4); Print(buffer); GetKey(&key);			//
+					SetFullfilenameExt( filename, basname, "g1m" ) ;		// g1m 1st reading
+					r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
+					if ( r ) {
+						ErrorNo=0;	// clear error
+						SetFullfilenameExt( filename, basname, "txt" ) ;	// retry 2nd text file
+						r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
+					}
 					if ( ErrorNo ) {	// Can't find Prog
 						ErrorPtr=ExecPtr;
 						ProgNo=progno;
 						ErrorProg=ProgNo;
-//						if ( filebase != NULL ) HiddenRAM_freeProg( filebase );
+						CB_ErrMsg(ErrorNo);
 						return;
 					}
-					if ( filebase != NULL ) {
-						ProgfileAdrs[ProgEntryN]= filebase;
-						ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxProg ;
-						ProgfileEdit[ProgEntryN]= 0;
+					if ( r== 0 ) {	// Prog load Ok
+						filebase=ProgfileAdrs[ProgEntryN];
 						ProgEntryN++;
 						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Too Many Prog error
 						StackProgPtr = ExecPtr;
@@ -2071,31 +2081,31 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 
 //---------------------------------------------------------------------------------------------- align dummy
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 /*

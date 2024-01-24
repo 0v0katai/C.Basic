@@ -84,7 +84,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case KEY_CTRL_EXE:
 			case FileCMD_RUN:
 		runjp:
-				i=LoadProgfile( filename, EditMaxfree ) ;
+				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 				if ( i==0 )	{
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
 					ExecPtr=0;
@@ -94,7 +94,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				break;
 			case FileCMD_EDIT:
 				ExecPtr=0;
-				i=LoadProgfile( filename, EditMaxfree ) ;
+				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 				if ( i==0 )	{
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
 					ExecPtr=0;
