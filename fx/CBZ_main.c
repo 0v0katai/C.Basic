@@ -113,6 +113,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 				ForceDebugMode=1;
+				ForceReturn=0;
+				goto runjp;
 
 			case FileCMD_RUN_F1:
 				if ( ForceReturnMode & 1 ) ForceReturn=1;
