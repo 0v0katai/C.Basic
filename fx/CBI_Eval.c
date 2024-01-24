@@ -54,7 +54,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 		ExecPtr++;
 		return - EvalIntsub1( SRC );
 	}
-	if ( ( 'A'<=c )&&( c<='Z' ) || ( 'a'<=c )&&( c<='z' ) )  {
+	if ( ( 'A' <= c )&&( c <= 'Z' ) || ( 'a' <= c )&&( c <= 'z' ) )  {
 			reg=c-'A';
 			c=SRC[++ExecPtr];
 			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
@@ -62,7 +62,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 			if ( c=='%' ) ExecPtr++;
 			return REGINT[reg] ;
 	}
-	if ( ( '0'<=c )&&( c<='9' ) ) {
+	if ( ( '0' <= c )&&( c <= '9' ) ) {
 //		return  Eval_atof( SRC );
 		result=0;
 		while ( ('0'<=c)&&(c<='9') ) {
@@ -77,7 +77,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 			if ( c == 0x40 ) {	// Mat A[a,b]
 				ExecPtr+=2;
 				c = SRC[ExecPtr];
-				if ( ( 'A'<=c )&&( c<='Z' ) ) {
+				if ( ( 'A' <= c )&&( c <= 'Z' ) ) {
 					reg=c-'A';
 					ExecPtr++ ;
 					if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -85,7 +85,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr+1] == ',' ) {
 						ExecPtr++;
 						if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-							else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REGINT[c-'A'];
+							else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimA=REGINT[c-'A'];
 					} else {
 						dimA=(EvalIntsubTop( SRC ));
 						if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -95,7 +95,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr+1] == ']' ) {
 						ExecPtr++;
 						if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-						else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REGINT[c-'A'];
+						else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimB=REGINT[c-'A'];
 					} else {
 						dimB=(EvalIntsubTop( SRC ));
 						if ( SRC[ExecPtr] != ']' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -138,7 +138,9 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 					return result ;
 			} else if ( c == 0x8F ) {	// Getkey
 					ExecPtr+=2;
-					result = CB_Getkey() ;
+					c = SRC[ExecPtr];
+					if ( c=='1' ) {	ExecPtr++ ; result = CB_Getkey1() ; }
+					else		  	result = CB_Getkey() ;
 					return result ;
 			} else if ( c == 0x87 ) {	// RanInt#(st,en)
 					ExecPtr+=2;
@@ -155,7 +157,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 					if ( ( c!=0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr+=2;
 					c = SRC[ExecPtr];
-					if ( ( 'A'<=c )&&( c<='Z' ) ) {
+					if ( ( 'A' <= c )&&( c <= 'Z' ) ) {
 						reg=c-'A';
 						ExecPtr++ ;
 						if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -163,7 +165,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 						if ( SRC[ExecPtr+1] == ',' ) {
 							ExecPtr++;
 							if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-								else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REGINT[c-'A'];
+								else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimA=REGINT[c-'A'];
 						} else {
 							dimA=(EvalIntsubTop( SRC ));
 							if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -173,7 +175,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 						if ( SRC[ExecPtr+1] == ']' ) {
 							ExecPtr++;
 							if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-							else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REGINT[c-'A'];
+							else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimB=REGINT[c-'A'];
 						} else {
 							dimB=(EvalIntsubTop( SRC ));
 							if ( SRC[ExecPtr] != ']' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -274,17 +276,20 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 			ExecPtr++; result = 0;
 			return result ;
 		case 0x86 :	// sqr
-			ExecPtr++; result = sqrt( EvalIntsub5( SRC ) );
-			return result ;
+			ExecPtr++; tmp=EvalIntsub5( SRC ) ;
+			if ( tmp<=0 ) CB_Error(MathERR) ; // Math error
+			return sqrt( tmp );
 		case 0x95 :	// log10
-			ExecPtr++; result = log10( EvalIntsub5( SRC ) );
-			return result ;
+			ExecPtr++; tmp=EvalIntsub5( SRC ) ;
+			if ( tmp<=0 ) CB_Error(MathERR) ; // Math error
+			return log10( tmp );
 		case 0xB5 :	// 10^
 			ExecPtr++; result = pow(10, EvalIntsub5( SRC ) );
 			return result ;
 		case 0x85 :	// ln
-			ExecPtr++; result = log( EvalIntsub5( SRC ) );
-			return result ;
+			ExecPtr++; tmp=EvalIntsub5( SRC ) ;
+			if ( tmp<=0 ) CB_Error(MathERR) ; // Math error
+			return log( tmp );
 		case 0xA5 :	// expn
 			ExecPtr++; result = exp( EvalIntsub5( SRC ) );
 			return result ;

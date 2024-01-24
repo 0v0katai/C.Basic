@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.50
+ Casio Basic interpreter for fx-9860G series    v0.63
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -272,7 +272,7 @@ int MatOprand( unsigned char *SRC, int *reg){
 		if ( SRC[ExecPtr+1] == ',' ) {
 			ExecPtr++ ;
 			if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-			else if  ( ( 'A'<= c ) && ( c<='z' ) ) if (CB_INT) dimA=REGINT[c-'A']; else dimA=REG[c-'A']; 
+			else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REG[c-'A'];
 		} else {
 			if (CB_INT) dimA=(CBint_Eval( SRC )); else dimA=(CB_Eval( SRC ));
 			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
@@ -282,7 +282,7 @@ int MatOprand( unsigned char *SRC, int *reg){
 		if ( SRC[ExecPtr+1] == ']' ) {
 			ExecPtr++ ;
 			if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-			else if  ( ( 'A'<= c ) && ( c<='z' ) ) if (CB_INT) dimB=REGINT[c-'A']; else dimB=REG[c-'A']; 
+			else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REG[c-'A'];
 		} else {
 			if (CB_INT) dimB=(CBint_Eval( SRC )); else dimB=(CB_Eval( SRC ));
 			if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return -1; }	// Syntax error
@@ -332,10 +332,10 @@ void CB_MatrixInit( unsigned char *SRC ) { //	{n,m}->Dim Mat A[.B][.W][.L][.F]
 		reg=c-'A';
 		if ( SRC[ExecPtr]=='.' ) {
 			c =SRC[++ExecPtr];
-			if ( ( c=='B' ) || ( c=='b' ) ) ElementSize=1;
-			if ( ( c=='W' ) || ( c=='w' ) ) ElementSize=2;
-			if ( ( c=='L' ) || ( c=='l' ) ) ElementSize=4;
-			if ( ( c=='F' ) || ( c=='f' ) ) ElementSize=8;
+			if ( ( c=='B' ) || ( c=='b' ) ) { ElementSize=1; ExecPtr++; }
+			if ( ( c=='W' ) || ( c=='w' ) ) { ElementSize=2; ExecPtr++; }
+			if ( ( c=='L' ) || ( c=='l' ) ) { ElementSize=4; ExecPtr++; }
+			if ( ( c=='F' ) || ( c=='f' ) ) { ElementSize=8; ExecPtr++; }
 			DimMatrixSub( reg, ElementSize, dimA, dimB );
 		}
 		else DimMatrix( reg, dimA, dimB );
@@ -352,7 +352,7 @@ void CB_ClrMat( unsigned char *SRC ) { //	ClrMat A
 	}
 }
 
-void CB_MatCalc( unsigned char *SRC ,int *dspflag ) { //	Mat A -> Mat B  etc
+void CB_MatCalc( unsigned char *SRC ) { //	Mat A -> Mat B  etc
 	unsigned int c,d;
 	int dimA,dimB,i;
 	int reg,reg2;
@@ -380,11 +380,11 @@ void CB_MatCalc( unsigned char *SRC ,int *dspflag ) { //	Mat A -> Mat B  etc
 			 ( MatArySizeA[reg] == MatArySizeA[reg2] ) &&
 			 ( MatArySizeB[reg] == MatArySizeB[reg2] ) ) {
 			memcpy( MatAry[reg2], MatAry[reg], MatAryElementSize[reg]*MatArySizeA[reg]*MatArySizeB[reg] ) ;
-			*dspflag=0;
+			dspflag=0;
 		} else { CB_Error(DimensionERR); return; }	// Dimension error
 	} else {
 		ExecPtr-=3;
-		*dspflag=2;
+		dspflag=2;
 		if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 		else		CB_CurrentValue    = CB_Eval( SRC );
 	}
@@ -401,13 +401,13 @@ void CB_Store( unsigned char *SRC ){	// ->
 	int*	MatAryI;
 	
 	unsigned int c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		st=c-'A';
 		ExecPtr++;
 		if ( SRC[ExecPtr] == 0x7E ) {		// '~'
 			ExecPtr++;
 			c=SRC[ExecPtr];
-			if ( ( 'A' <= c ) && ( c <='z' ) ) {
+			if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 				en=c-'A';
 				if ( en<st ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[++ExecPtr];
@@ -539,7 +539,7 @@ int  CB_Input( unsigned char *SRC ){
 	if ( c==0x0E ) {
 		flag=0;
 	} else
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		DefaultValue = REG[ c-'A' ];
 		flag=1;
 		c=SRC[ExecPtr];
@@ -1136,8 +1136,10 @@ void Skip_rem( unsigned char *SRC ){	// skip '...
 	while (1){
 		c=SRC[ExecPtr++];
 		if ( c=='#' ) {
-			if ( strncmp( (char*)SRC+ExecPtr,"CBint",5) == 0 ) { ExecPtr+=5; CB_INT=1; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBINT",5) == 0 ) { ExecPtr+=5; CB_INT=1; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBint",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBINT",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBdbl",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
+			if ( strncmp( (char*)SRC+ExecPtr,"CBDBL",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
 			if ( strncmp( (char*)SRC+ExecPtr,"CBasic",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
 			if ( strncmp( (char*)SRC+ExecPtr,"CBASIC",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
 		} else 
@@ -1178,7 +1180,7 @@ void CB_Lbl( unsigned char *SRC, int *StackGotoAdrs ){
 		ExecPtr++;
 		label = c-'A'+10;
 	} else { CB_Error(SyntaxERR); return; }	// syntax error
-	if ( StackGotoAdrs[label] == 0 ) StackGotoAdrs[label]=ExecPtr+1;
+	if ( StackGotoAdrs[label] == 0 ) StackGotoAdrs[label]=ExecPtr;
 }
 
 int Search_Lbl( unsigned char *SRC, unsigned int lc ){
@@ -1337,7 +1339,7 @@ void CB_For( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *Stack
 	if ( c == 0x0E ) {	// ->
 		ExecPtr++;
 		c=SRC[ExecPtr];
-		if ( ( 'A' <= c ) && ( c <='z' ) ) {
+		if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		StackForVar[*StackForPtr]=c-'A';
 		CB_Store(SRC);
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -1561,13 +1563,16 @@ void CB_Dsz( unsigned char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		if (CB_INT) {
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
 			REGINT[reg] --;
-			CBint_CurrentValue = REGINT[reg] ;
+			CB_CurrentValue = REGINT[reg] ;
 		} else {
+			if ( c=='#' ) ExecPtr++;
 			REG[reg] --;
 			CB_CurrentValue = REG[reg] ;
 		}
@@ -1577,55 +1582,45 @@ void CB_Dsz( unsigned char *SRC ) { //	Dsz
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
 			mptr=MatOprand( SRC, &reg);
-			if ( mptr==-2 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 			if ( ErrorNo ) return ; // error
 			switch ( MatAryElementSize[reg] ) {
-				case 4:
-					MatAryI=(int*)MatAry[reg];
-					MatAryI[mptr] --;
-					if (CB_INT)	CBint_CurrentValue = MatAryI[mptr]   ;			// Matrix array int
-					else		CB_CurrentValue    = MatAryI[mptr]   ;			// Matrix array int
-					break;
 				case 8:
 					MatAry[reg][mptr] --;
-					if (CB_INT)	CBint_CurrentValue = MatAry[reg][mptr];			// Matrix array double
-					else		CB_CurrentValue    = MatAry[reg][mptr];			// Matrix array double
+					CB_CurrentValue = MatAry[reg][mptr];			// Matrix array double
 					break;
 				case 1:
 					MatAryC=(char*)MatAry[reg];
 					MatAryC[mptr] --;
-					if (CB_INT)	CBint_CurrentValue = MatAryC[mptr]   ;			// Matrix array char
-					else		CB_CurrentValue    = MatAryC[mptr]   ;			// Matrix array char
+					CB_CurrentValue = MatAryC[mptr]   ;			// Matrix array char
 					break;
 				case 2:
 					MatAryW=(short*)MatAry[reg];
 					MatAryW[mptr] --;
-					if (CB_INT)	CBint_CurrentValue = MatAryW[mptr]   ;			// Matrix array word
-					else		CB_CurrentValue    = MatAryW[mptr]   ;			// Matrix array word
+					CB_CurrentValue = MatAryW[mptr]   ;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					MatAryI[mptr] --;
+					CB_CurrentValue = MatAryI[mptr]   ;			// Matrix array int
 					break;
 			}
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
-	c=SRC[ExecPtr++];
+	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
-		if (CB_INT ) { 
-			if ( CBint_CurrentValue ) return ;
-			else Skip_block(SRC);
-		} else {
-			if ( CB_CurrentValue ) return ;
-			else Skip_block(SRC);
+		if ( CB_CurrentValue ) return ;
+		else { ExecPtr++;
+			Skip_block(SRC);
 		}
 	} else if ( c==0x0C ) {  // dsps
+		ExecPtr++;
 		CB_Disps( SRC ,2);
-		if (CB_INT ) { 
-			if ( CBint_CurrentValue ) return ;
-			else Skip_block(SRC);
-		} else {
-			if ( CB_CurrentValue ) return ;
-			else Skip_block(SRC);
+		if ( CB_CurrentValue ) return ;
+		else {
+			Skip_block(SRC);
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr-1; return; }	// Syntax error
+	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 }
 
 void CB_Isz( unsigned char *SRC ) { //	Isz
@@ -1635,13 +1630,16 @@ void CB_Isz( unsigned char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		if (CB_INT) {
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
 			REGINT[reg] ++;
-			CBint_CurrentValue = REGINT[reg] ;
+			CB_CurrentValue = REGINT[reg] ;
 		} else {
+			if ( c=='#' ) ExecPtr++;
 			REG[reg] ++;
 			CB_CurrentValue = REG[reg] ;
 		}
@@ -1651,55 +1649,45 @@ void CB_Isz( unsigned char *SRC ) { //	Isz
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
 			mptr=MatOprand( SRC, &reg);
-			if ( mptr==-2 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 			if ( ErrorNo ) return ; // error
 			switch ( MatAryElementSize[reg] ) {
-				case 4:
-					MatAryI=(int*)MatAry[reg];
-					MatAryI[mptr] ++;
-					if (CB_INT)	CBint_CurrentValue = MatAryI[mptr]   ;			// Matrix array int
-					else		CB_CurrentValue    = MatAryI[mptr]   ;			// Matrix array int
-					break;
 				case 8:
 					MatAry[reg][mptr] ++;
-					if (CB_INT)	CBint_CurrentValue = MatAry[reg][mptr];			// Matrix array double
-					else		CB_CurrentValue    = MatAry[reg][mptr];			// Matrix array double
+					CB_CurrentValue = MatAry[reg][mptr];			// Matrix array double
 					break;
 				case 1:
 					MatAryC=(char*)MatAry[reg];
 					MatAryC[mptr] ++;
-					if (CB_INT)	CBint_CurrentValue = MatAryC[mptr]   ;			// Matrix array char
-					else		CB_CurrentValue    = MatAryC[mptr]   ;			// Matrix array char
+					CB_CurrentValue = MatAryC[mptr]   ;			// Matrix array char
 					break;
 				case 2:
 					MatAryW=(short*)MatAry[reg];
 					MatAryW[mptr] ++;
-					if (CB_INT)	CBint_CurrentValue = MatAryW[mptr]   ;			// Matrix array word
-					else		CB_CurrentValue    = MatAryW[mptr]   ;			// Matrix array word
+					CB_CurrentValue = MatAryW[mptr]   ;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					MatAryI[mptr] ++;
+					CB_CurrentValue = MatAryI[mptr]   ;			// Matrix array int
 					break;
 			}
 		}
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
-	c=SRC[ExecPtr++];
+	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
-		if (CB_INT ) { 
-			if ( CBint_CurrentValue ) return ;
-			else Skip_block(SRC);
-		} else {
-			if ( CB_CurrentValue ) return ;
-			else Skip_block(SRC);
+		if ( CB_CurrentValue ) return ;
+		else { ExecPtr++;
+			Skip_block(SRC);
 		}
 	} else if ( c==0x0C ) {  // dsps
+		ExecPtr++;
 		CB_Disps( SRC ,2);
-		if (CB_INT ) { 
-			if ( CBint_CurrentValue ) return ;
-			else Skip_block(SRC);
-		} else {
-			if ( CB_CurrentValue ) return ;
-			else Skip_block(SRC);
+		if ( CB_CurrentValue ) return ;
+		else {
+			Skip_block(SRC);
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr-1; return; }	// Syntax error
+	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1899,16 +1887,17 @@ void CB_DotOprand( unsigned char *SRC, int *px, int *py) {
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 }
 
-void CB_DotP( unsigned char *SRC ){	// DotP(Mat B, x,y, px1,py1, px2,py2)
+void CB_DotP( unsigned char *SRC ){	// DotP(Mat B[x,y], px1,py1, px2,py2)
 	unsigned int c;
 	int x,y,px,py;
 	int px1,py1,px2,py2;
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	int reg,i;
+	double	*Matary2;
+	char	*MatAryC,*MatAryC2;
+	short	*MatAryW,*MatAryW2;
+	int		*MatAryI,*MatAryI2;
+	int reg,reg2,i;
 	int dimA,dimB;
-	int mptr;
+	int mptr,mptr2;
 	int value;
 	int ElementSize;
 	
@@ -1917,20 +1906,22 @@ void CB_DotP( unsigned char *SRC ){	// DotP(Mat B, x,y, px1,py1, px2,py2)
 	if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr+=2;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		reg=c-'A';
 		if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 		ExecPtr++;
 		c=SRC[ExecPtr];
-		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		if ( c != '[' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		if (CB_INT)	x=CBint_Eval( SRC ); else x=CB_Eval( SRC );
-		if ( ( x < 1 ) || ( MatArySizeA[(reg)] < x ) ) CB_Error(DimensionERR) ; // Dimension error 
+		if ( ( x < 1 ) || ( MatArySizeA[(reg)] < x ) ) CB_Error(RangeERR) ; // Range error 
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		if (CB_INT)	y=CBint_Eval( SRC ); else y=CB_Eval( SRC );
-		if ( ( y < 1 ) || ( MatArySizeB[(reg)] < y ) ) CB_Error(DimensionERR) ; // Dimension error 
+		if ( ( y < 1 ) || ( MatArySizeB[(reg)] < y ) ) CB_Error(RangeERR) ; // Range error 
 		
+		if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		CB_DotOprand( SRC, &px1, &py1);
@@ -1947,54 +1938,221 @@ void CB_DotP( unsigned char *SRC ){	// DotP(Mat B, x,y, px1,py1, px2,py2)
 		if (px1>px2) { i=px1; px1=px2; px2=i; }
 		if (py1>py2) { i=py1; py1=py2; py2=i; }
 		if ( dimA < px2-px1 ) px2=px1+dimA;
-		if ( dimB < py2-py1 ) py2=py1+dimA;
-		
+		if ( dimB < py2-py1 ) py2=py1+dimB;
+			
 		mptr=0;
 		ElementSize=MatAryElementSize[reg];
-		switch ( ElementSize ) {
-			case 1:
-				MatAryC=(char*)MatAry[reg];
-				for ( px=px1; px<=px2 ; px++) {
-					mptr=MatArySizeB[reg]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) {
-						if ( MatAryC[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
-							else				Bdisp_SetPoint_VRAM(px, py, 0);
-					}
+		
+		if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
+			ExecPtr++;
+			c =SRC[ExecPtr];
+			if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			ExecPtr+=2;
+			c=SRC[ExecPtr];
+			if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+				reg2=c-'A';
+				if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+				ExecPtr++;
+				if ( ElementSize != MatAryElementSize[reg2] ) { CB_Error(ArraySizeERR); return; }	// Illegal Array  size error
+				
+				dimA=MatArySizeA[reg2]-1;
+				dimB=MatArySizeB[reg2]-1;
+				if ( dimA+1 < px1 ) return;
+				if ( dimB+1 < py1 ) return;
+				if ( dimA+1 < px2 ) px2=dimA;
+				if ( dimB+1 < py2 ) py2=dimB;
+				if ( dimA < px2-px1 ) px2=px1+dimA;
+				if ( dimB < py2-py1 ) py2=py1+dimB;
+
+				switch ( ElementSize ) {
+					case 1:
+						MatAryC =(char*)MatAry[reg];
+						MatAryC2=(char*)MatAry[reg2];
+						for ( px=px1; px<=px2 ; px++) {
+							mptr =MatArySizeB[reg]*x+y;		x++;
+							mptr2=MatArySizeB[reg2]*px+py1;
+							for ( py=py1; py<=py2 ; py++) {
+								MatAryC2[mptr2++] = MatAryC[mptr++];
+							}
+						}
+						break;
+					case 2:
+						MatAryW =(short*)MatAry[reg];
+						MatAryW2=(short*)MatAry[reg2];
+						for ( px=px1; px<=px2 ; px++) {
+							mptr=MatArySizeB[reg]*x+y;		x++;
+							mptr2=MatArySizeB[reg2]*px+py1;
+							for ( py=py1; py<=py2 ; py++) {
+								MatAryW2[mptr2++] = MatAryW[mptr++];
+							}
+						}
+						break;
+					case 4:
+						MatAryI =(int*)MatAry[reg];
+						MatAryI2=(int*)MatAry[reg2];
+						for ( px=px1; px<=px2 ; px++) {
+							mptr=MatArySizeB[reg]*x+y;		x++;
+							mptr2=MatArySizeB[reg2]*px+py1;
+							for ( py=py1; py<=py2 ; py++) {
+								MatAryI2[mptr2++] = MatAryI[mptr++];
+							}
+						}
+						break;
+					case 8:
+						for ( px=px1; px<=px2 ; px++) {
+							mptr=MatArySizeB[reg]*x+y;		x++;
+							mptr2=MatArySizeB[reg2]*px+py1;
+							for ( py=py1; py<=py2 ; py++) {
+								MatAry[mptr2++] = MatAry[mptr++];
+							}
+						}
+						break;
 				}
-				break;
-			case 2:
-				MatAryW=(short*)MatAry[reg];
-				for ( px=px1; px<=px2 ; px++) {
-					mptr=MatArySizeB[reg]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) {
-						if ( MatAryW[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
-							else				Bdisp_SetPoint_VRAM(px, py, 0);
+				dspflag=0;
+			}	
+		} else {	//			-> VRAM
+
+			switch ( ElementSize ) {
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							if ( MatAryC[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
+								else				Bdisp_SetPoint_VRAM(px, py, 0);
+						}
 					}
-				}
-				break;
-			case 4:
-				MatAryI=(int*)MatAry[reg];
-				for ( px=px1; px<=px2 ; px++) {
-					mptr=MatArySizeB[reg]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) {
-						if ( MatAryI[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
-							else				Bdisp_SetPoint_VRAM(px, py, 0);
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							if ( MatAryW[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
+								else				Bdisp_SetPoint_VRAM(px, py, 0);
+						}
 					}
-				}
-				break;
-			case 8:
-				for ( px=px1; px<=px2 ; px++) {
-					mptr=MatArySizeB[reg]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) {
-						if ( MatAry[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
-							else				Bdisp_SetPoint_VRAM(px, py, 0);
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							if ( MatAryI[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
+								else				Bdisp_SetPoint_VRAM(px, py, 0);
+						}
 					}
-				}
-				break;
+					break;
+				case 8:
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							if ( MatAry[mptr++] ) 	Bdisp_SetPoint_VRAM(px, py, 1);
+								else				Bdisp_SetPoint_VRAM(px, py, 0);
+						}
+					}
+					break;
+			}
+//			ExecPtr++;
+			Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
+			dspflag=0;
+			UseGraphic=99;
 		}
-		ExecPtr++;
 	}
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
+}
+void CB_DotG( unsigned char *SRC ){	// DotG(px1,py1, px2,py2)->Mat B [x,y]
+	unsigned int c;
+	int x,y,px,py;
+	int px1,py1,px2,py2;
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int reg,i;
+	int dimA,dimB;
+	int mptr;
+	int value;
+	int ElementSize;
+	
+	if ( RangeErrorCK(SRC) ) return;
+	CB_DotOprand( SRC, &px1, &py1);
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	CB_DotOprand( SRC, &px2, &py2);
+	if ( SRC[ExecPtr] != ')' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
+		ExecPtr++;
+		c =SRC[ExecPtr];
+		if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		ExecPtr+=2;
+		c=SRC[ExecPtr];
+		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+			reg=c-'A';
+			if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c != '[' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+			ExecPtr++;
+			if (CB_INT)	x=CBint_Eval( SRC ); else x=CB_Eval( SRC );
+			if ( ( x < 1 ) || ( MatArySizeA[(reg)] < x ) ) CB_Error(RangeERR) ; // Range error 
+			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+			ExecPtr++;
+			if (CB_INT)	y=CBint_Eval( SRC ); else y=CB_Eval( SRC );
+			if ( ( y < 1 ) || ( MatArySizeB[(reg)] < y ) ) CB_Error(RangeERR) ; // Range error 
+		
+			if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+			ExecPtr++;
+
+			dimA=MatArySizeA[reg]-1; x--;
+			dimB=MatArySizeB[reg]-1; y--;
+			if ( dimA < x ) return;
+			if ( dimB < y ) return;
+			if (px1>px2) { i=px1; px1=px2; px2=i; }
+			if (py1>py2) { i=py1; py1=py2; py2=i; }
+			if ( dimA-x < px2-px1 ) px2=px1+dimA-x;
+			if ( dimB-y < py2-py1 ) py2=py1+dimB-y;
+
+			mptr=0;
+			ElementSize=MatAryElementSize[reg];
+			switch ( ElementSize ) {
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							MatAryC[mptr++]=Bdisp_GetPoint_VRAM(px,py);
+						}
+					}
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							MatAryW[mptr++]=Bdisp_GetPoint_VRAM(px,py);
+						}
+					}
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							MatAryI[mptr++]=Bdisp_GetPoint_VRAM(px,py);
+						}
+					}
+					break;
+				case 8:
+					for ( px=px1; px<=px2 ; px++) {
+						mptr=MatArySizeB[reg]*x+y; x++;
+						for ( py=py1; py<=py2 ; py++) {
+							MatAry[reg][mptr++]=Bdisp_GetPoint_VRAM(px,py);
+						}
+					}
+					break;
+			}
+		}
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
 //----------------------------------------------------------------------------------------------
@@ -2187,7 +2345,7 @@ double CB_BinaryEval( unsigned char *SRC ) {
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		src    = REG[reg] ;
@@ -2221,7 +2379,7 @@ double CB_BinaryEval( unsigned char *SRC ) {
 	opPtr=ExecPtr;
 	op=SRC[ExecPtr++];	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		dst = REG[reg] ;
@@ -2294,7 +2452,7 @@ double CB_UnaryEval( unsigned char *SRC ) {
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		return REG[reg] ;
@@ -2381,19 +2539,11 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				CB_Goto(SRC, StackGotoAdrs );
 				break;
 			case 0xE8:	// Dsz
-				CB_Dsz(SRC) ;
+				if (CB_INT) CBint_Dsz(SRC) ; else CB_Dsz(SRC) ;
 				break;
 			case 0xE9:	// Isz
-				CB_Isz(SRC) ;
+				if (CB_INT) CBint_Isz(SRC) ; else CB_Isz(SRC) ;
 				break;
-//			case 0x0E:	// ->
-//				CB_Store(SRC);
-//				break;
-//			case 0x13:	// =>
-//				CB_Cond(SRC);
-//				dspflag=0;
-//				if ( CB_CurrentValue == 0 ) Skip_block(SRC);		// false
-//				break;
 				
 			case 0xF7:	// F7
 				c=SRC[ExecPtr++];
@@ -2402,11 +2552,9 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						CB_If(SRC);
 						break;
 					case 0x02:	// Else
-//						CB_Else(SRC);
 						Search_IfEnd(SRC);
 						break;
 					case 0x03:	// IfEnd
-//						CB_IfEnd(SRC);
 						break;
 					case 0x04:	// For
 						if (CB_INT)	CBint_For(SRC, &StackForPtr, StackForAdrs, StackForVar, StackForEndint, StackForStepint, &CurrentStructCNT, CurrentStructloop );
@@ -2430,7 +2578,6 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						break;
 					case 0x0C:	// Return
 						if ( ProgEntryN ) return -1 ; //	in sub Prog
-//						dspflag=0;
 						cont=0;
 						break;
 					case 0x0D:	// Break
@@ -2440,7 +2587,6 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 					case 0x0E:	// Stop
 						BreakPtr=ExecPtr;
 						cont=0; 
-//						dspflag=0;
 						break;
 					case 0x10:	// Locate
 						CB_Locate(SRC);
@@ -2538,20 +2684,17 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						UseGraphic=99;
 						break;
 					case 0xAB:	// PxlOn
-						if (CB_INT)	CBint_PxlOn(SRC);
-						else		CB_PxlOn(SRC);
+						if (CB_INT)	CBint_PxlOn(SRC); else CB_PxlOn(SRC);
 						dspflag=0;
 						UseGraphic=99;
 						break;
 					case 0xAC:	// PxlOff
-						if (CB_INT)	CBint_PxlOff(SRC);
-						else		CB_PxlOff(SRC);
+						if (CB_INT)	CBint_PxlOff(SRC); else CB_PxlOff(SRC);
 						dspflag=0;
 						UseGraphic=99;
 						break;
 					case 0xAD:	// PxlChg
-						if (CB_INT)	CBint_PxlChg(SRC);
-						else		CB_PxlChg(SRC);
+						if (CB_INT)	CBint_PxlChg(SRC); else CB_PxlChg(SRC);
 						dspflag=0;
 						UseGraphic=99;
 						break;
@@ -2592,6 +2735,10 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						dspflag=0;
 						UseGraphic=2;
 						break;
+					case 0x3F:	// DotG(
+						CB_DotG(SRC);
+						dspflag=0;
+						break;
 					default:
 						ExecPtr-=2;
 						if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
@@ -2604,7 +2751,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				c=SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x40:	// Mat
-						CB_MatCalc(SRC,&dspflag);
+						CB_MatCalc(SRC);
 						break;
 					default:
 						ExecPtr-=2;
@@ -2631,8 +2778,6 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						break;
 					case 0x4B:	// DotP(Z,x,y)
 						CB_DotP(SRC);
-						dspflag=0;
-						UseGraphic=99;
 						break;
 					default:
 						ExecPtr-=2;
@@ -2651,14 +2796,12 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				dspflag=1;
 				break;
 			case 0x3F:	// ?
-				if (CB_INT)	CBint_Input(SRC);
-				else		CB_Input(SRC);
+				if (CB_INT)	CBint_Input(SRC); else CB_Input(SRC);
 				CB_TicksStart=RTC_GetTicks();	// 
 				dspflag=2;
 				c=SRC[ExecPtr++];
-				if ( c == 0x0E ) {
-					if (CB_INT)	CBint_Store(SRC);		// ->
-					else		CB_Store(SRC);		// ->
+				if ( c == 0x0E ) {		// ->
+					if (CB_INT)	CBint_Store(SRC); else CB_Store(SRC);
 				}
 				else ExecPtr--;
 				break;
