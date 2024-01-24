@@ -280,6 +280,12 @@ int KeyCheckDEL() {		// [DEL]
 //	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
 	return Bkey_GetKeyWait_sub( 4, 5 ); // [DEL] is down
 }
+int KeyCheckPMINUS() {		// [(-)]
+	if (IsSH3 ) return IsKeyDown(KEY_CHAR_PMINUS);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
+	return CheckKeyRow7305(1) & 0x08; // [(-)] is down
+//	return Bkey_GetKeyWait_sub( 4, 2 ); // [(-)] is down
+}
 
 void KeyRecover() {
 //	CB_Getkey();
@@ -581,7 +587,7 @@ int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) {			// CasioBasic Getke
 int kObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int kObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int kObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int kObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int kObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int kObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
