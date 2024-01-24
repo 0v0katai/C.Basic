@@ -115,8 +115,8 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 	}
 }
 //-----------------------------------------------------------------------------
-//int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
-//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
+int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
@@ -192,11 +192,11 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 }
 //-----------------------------------------------------------------------------
 //int EvalIntObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-int EvalIntObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 int fintint( int x ) {
@@ -369,7 +369,7 @@ int CB_rand( char *SRC ) {
 }
 
 //-----------------------------------------------------------------------------
-int EvalIntObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int CB_EvalInt( char *SRC ) {
@@ -525,7 +525,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	int*	MatAryI;
 	double*	MatAryF;
 
-	c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+	c = SRC[ExecPtr++];
+  topj:
 	if ( c == '(') {
 		result = EvalIntsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -687,6 +688,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CB_ProdInt( SRC );
 				case 0x47:	// Fill(
 					CB_MatFill(SRC);
+					return 3;
+				case 0x48:	// Identity 
+					CB_Identity(SRC);
 					return 3;
 				case 0x49:	// Argument(
 					CB_Argument(SRC);
@@ -858,7 +862,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		result = EvalsubTopReal( SRC );
 //		result = Evalsub1( SRC );
 		return result;
-	}
+	} else
+	if ( c==' ' ) { while ( c==' ' )c=SRC[ExecPtr++]; goto topj; }	// Skip Space
+	
 	ExecPtr--;
 	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
 	CB_Error(SyntaxERR) ; // Syntax error 
@@ -874,7 +880,7 @@ int EvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int c;
 	result = EvalIntsub1( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				result *= result ;
@@ -884,6 +890,8 @@ int EvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				break;
 			case  0xFFFFFFAB  :	//  !
 				result = ffactint( result );
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -898,13 +906,15 @@ int EvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 	int c;
 	result = EvalIntsub2( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = pow( result, EvalIntsub2( SRC ) );
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = pow( EvalIntsub2( SRC ), 1/result );
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -1043,7 +1053,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	int c;
 	result = EvalIntsub7( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// ~
 				result *= EvalIntsub7( SRC );
@@ -1054,7 +1064,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result /= tmp ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						tmp = EvalIntsub7( SRC );
@@ -1071,6 +1081,8 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						break;
 				}
 				break;
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -1084,13 +1096,15 @@ int EvalIntsub11(char *SRC) {	//  11th Priority  ( +,- )
 	int c;
 	result = EvalIntsub10( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result += EvalIntsub10( SRC );
 				break;
 			case 0xFFFFFF99 :		// -
 				result -= EvalIntsub10( SRC );
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -1105,7 +1119,7 @@ int EvalIntsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	int c;
 	result = EvalIntsub11( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case '=' :	// =
 				result = ( result == EvalIntsub11( SRC ) );
@@ -1136,6 +1150,8 @@ int EvalIntsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 			case 0xFFFFFFBA :	// and
 				result = ( result &  EvalIntsub11( SRC ) );
 				break;
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -1149,7 +1165,7 @@ int EvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 	int c;
 	result = EvalIntsub12( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1161,7 +1177,9 @@ int EvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 int EvalIntsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
@@ -1169,7 +1187,7 @@ int EvalIntsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 	int c;
 	result = EvalIntsub13( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1185,7 +1203,9 @@ int EvalIntsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 

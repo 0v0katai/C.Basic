@@ -24,8 +24,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.77\xE6\x41";
-#define VERSION 177
+const char VerMSG[]="C.Basic  v1.78\xE6\x41";
+#define VERSION 178
 
 //---------------------------------------------------------------------------------------------
 

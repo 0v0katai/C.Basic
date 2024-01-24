@@ -1110,7 +1110,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( DebugScreen ) Cursor_SetFlashMode(0);			// cursor flashing off
 				}
 				if (key < 0x7F00) {
-					if ( ContinuousSelect ) key=KEY_CTRL_F5; 
+					if ( ContinuousSelect ) goto F5Continue;
 					else { GetKey_DisableMenu(&key); }
 				}
 			} else { GetKey_DisableMenu(&key); }
@@ -1403,6 +1403,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 											PrevLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Up
 											csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
 									} else {
+									  F5Continue:
 										key=SelectChar( &ContinuousSelect);
 										if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 									}

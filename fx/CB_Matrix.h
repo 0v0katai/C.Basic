@@ -82,6 +82,7 @@ void CB_ListInitsub( char *SRC, int *reg, int dimA , int ElementSize, int dimdim
 void CB_ListInit2( char *SRC ) ; //	{1.2,3,4,5,6}->List 1[.B][.W][.L][.F]
 void CB_Seq( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_ListCalc( char *SRC ) ; //	List 1 -> List 2  etc
+void CB_Identity( char *SRC ) ;	// Identity 
 void CB_Argument( char *SRC ) ;	// Argument( List1, List2 )		Argument( Mat A, Mat B)
 void CB_SortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )
 int  CB_EvalSortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )  for Eval

@@ -182,7 +182,8 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 
 	dspflag=2;		// 2:value		3:list    4:mat
 
-	c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+	c = SRC[ExecPtr++];
+  topj:
 	if ( c == '(') {
 		result = ListEvalsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -389,6 +390,9 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return CB_Prod( SRC ).real;
 				case 0x47:	// Fill(
 					CB_MatFill(SRC);
+					return 3;
+				case 0x48:	// Identity 
+					CB_Identity(SRC);
 					return 3;
 				case 0x49:	// Argument(
 					CB_Argument(SRC);
@@ -603,7 +607,9 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 	if ( c == '#') {
 		result = EvalsubTop( SRC );
 		return result;
-	}
+	} else
+	if ( c==' ' ) { while ( c==' ' )c=SRC[ExecPtr++]; goto topj; }	// Skip Space
+	
 	ExecPtr--;
 	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
 	CB_Error(SyntaxERR) ; // Syntax error 
@@ -624,7 +630,7 @@ double ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	result = ListEvalsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				result = EvalFxDbl( &fsqu, result) ; 
@@ -684,6 +690,8 @@ double ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result = EvalFxDbl( &finvgrad, result) ; 
 				break;
 				
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -703,13 +711,15 @@ double ListEvalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = EvalFxDbl2( &fpow, &resultflag, &resultreg, result, ListEvalsub2( SRC ) ) ;
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = EvalFxDbl2( &fpowroot, &resultflag, &resultreg, result, ListEvalsub2( SRC ) ) ;
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -774,6 +784,9 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0xFFFFFF85:	// logab(a,b)
 				case 0xFFFFFF86:	// RndFix(n,digit)
 				case 0xFFFFFF87:	// RanInt#(st,en)
+				case 0xFFFFFF88 :	// RanList#(n) ->ListAns
+				case 0xFFFFFF89 :	// RanBin#(n,p[,m]) ->ListAns
+				case 0xFFFFFF8A :	// RanNorm#(sd,mean[,n]) ->ListAns
 				case 0xFFFFFFB3 :	// Not
 				case 0xFFFFFFF0:	// GraphY
 				case 0x00:	// Xmin
@@ -899,7 +912,7 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// ~
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
@@ -908,7 +921,7 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = EvalFxDbl2( &fDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						result = EvalFxDbl2( &fIDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
@@ -921,6 +934,8 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						return result;
 						break;
 				}
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -940,13 +955,15 @@ double ListEvalsub11(char *SRC) {	//  11th Priority  ( +,- )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result = EvalFxDbl2( &fADD, &resultflag, &resultreg, result, ListEvalsub10( SRC ) ) ;
 				break;
 			case 0xFFFFFF99 :		// -
 				result = EvalFxDbl2( &fSUB, &resultflag, &resultreg, result, ListEvalsub10( SRC ) ) ;
+				break;
+			case ' ':	// Skip Space
 				break;
 			default:
 				ExecPtr--;
@@ -966,7 +983,7 @@ double ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
+		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case '=' :	// =
 				result = EvalFxDbl2( &fcmpEQ, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
@@ -997,6 +1014,8 @@ double ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 			case 0xFFFFFFBA :	// and
 				result = EvalFxDbl2( &fAND, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
 				break;
+			case ' ':	// Skip Space
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -1015,7 +1034,7 @@ double ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1027,7 +1046,9 @@ double ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 
@@ -1042,7 +1063,7 @@ double ListEvalsubTop(char *SRC) {	//
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
+		c = SRC[ExecPtr];
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1058,7 +1079,9 @@ double ListEvalsubTop(char *SRC) {	//
 					return result;
 					break;
 			}
-		} else return result;
+		} else
+		if ( c == ' ' ) ExecPtr++;	// Skip Space
+		else return result;
 	}
 }
 

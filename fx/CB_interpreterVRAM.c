@@ -2077,6 +2077,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 void CB_DrawGraph(  char *SRC ){
 	int reg,dimA,base;
 	int i;
+	char* GraphY2;
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	reg=defaultGraphAry;
 	if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return; }	// Memory error
@@ -2084,8 +2085,9 @@ void CB_DrawGraph(  char *SRC ){
 	dimA=MatAry[reg].SizeA;
 	for ( i=base; i<dimA+base; i++ ) {
 		GraphY=MatrixPtr( reg, i, base );
-		if ( GraphY[0] != 0 ) Graph_Draw();
+		if ( GraphY[0] != 0 ) { Graph_Draw(); GraphY2=GraphY; }
 	}
+	GraphY=GraphY2;
 }
 
 void CB_GraphY( char *SRC ){

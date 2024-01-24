@@ -386,7 +386,7 @@ unsigned int Trace(int *index ) {
 	long NextCount; 	// pointer to repeat time of second repeat
 
 	if ( *index <   1 ) *index=  0;
-	if ( *index > 127 ) *index=128;
+	if ( *index > 127 ) *index=127;
 	PXYtoVW(*index, 0, &regX.real, &regY.real);	// graphic cursor X  to  VW(X,dummy)
 	VWtoPXY( regX.real, traceAry[*index], &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
 	
@@ -399,8 +399,9 @@ unsigned int Trace(int *index ) {
 		RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
 		PXYtoVW(GCursorX, 0, &regX.real, &regY.real);	// graphic cursor X  to  VW(X,dummy)
+		regY.real=traceAry[GCursorX];
 		if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
-		VWtoPXY( regX.real, traceAry[GCursorX], &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
+		VWtoPXY( regX.real, regY.real, &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
 		if ( Coord ) {
 			sprintf((char*)buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
 			sprintf((char*)buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
@@ -494,14 +495,14 @@ void Graph_Draw(){
 	if ( tmp_Style >= 0 ) style=tmp_Style;
 	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	regX.real   = Xmin-Xdot;
-	for ( i=0; i<=128; i++) {
+	for ( i=0; i<=127; i++) {
 		//-----------------------------
 		traceAry[i]=CB_EvalStrDBL(GraphY,1);		// function
 		if ( ErrorNo ) return ;
 		//-----------------------------
 		if ( fabs(traceAry[i])*1e10<Ydot ) traceAry[i]=0;	// zero adjust
 		if ( i==0 ) { Previous_X = regX.real; Previous_Y = traceAry[0]; }
-		if ( ( 0<i ) && ( i<128 ) ) {
+		if ( ( 0<i ) && ( i<=127 ) ) {
 			PlotOn_VRAM( regX.real, traceAry[i]);
 			Plot_X=regX.real;
 			Plot_Y=regY.real;
@@ -512,6 +513,7 @@ void Graph_Draw(){
 		}
 		regX.real += Xdot;
 	}
+	regX.real=Plot_X;
 	regintX=regX.real; regintY=regY.real;
 	Previous_X=p_x;
 	Previous_Y=p_y;
@@ -863,3 +865,11 @@ void DrawStat(){	// DrawStat
 
 
 //--------------------------------------------------------------
+//---------------------------------------------------------------------------------------------- align dummy
+int glib2ObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
