@@ -1675,6 +1675,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										} else {
 											ProgNo=0;
 											ExecPtr=0;
+											PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+											PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 											stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
 											if ( ( stat==-7 ) && ( ProgEntryN == 0 ) ) DebugMode=0;
 										}

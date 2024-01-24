@@ -99,6 +99,8 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 				adj = 1 - minus+ floor(log10(fabs(log10(fabsnum))))-1;
 				if ( ( 1e-10 <= fabsnum ) && ( fabsnum < dpoint )) adj++;
 				i=width-adj-5;
+				if ( ( 1.0e-10 < fabsnum ) && ( fabsnum < 1.0 ) ) i++;	// adjust  1.23e-08->1.234e-8   
+				if ( fabsnum >= pw ) i++;	// adjust  1.23e+09->1.234e+9  
 				if ( i > digit-1 ) i=digit-1;
 				if ( i >= 18 ) i=18;
 				if ( i <  1  ) i=0;
@@ -183,7 +185,6 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 		if ( buffer[0]=='-' ) buffer[++i]=0x99;	// (-)minus
 		if ( (buffer[1]=='1')&&(buffer[2]=='\0') ) buffer[1]='\0';
 	}
-	buffer[width]='\0';
 	while (i<width) {
 		c=buffer[++i];
 		switch ( c ) {
@@ -197,9 +198,19 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 				break;
 			case 'e':	// exp
 				buffer[i]=0x0F;	// (exp)
+				if ( buffer[i+2]=='0' ) {	// adjust  1.23e+09->1.234e9  1.23e-08->1.234e-8   
+					if ( buffer[i+1]==0x2B ) {	// +
+						buffer[i+1]=buffer[i+3];
+						buffer[i+2]='\0';
+					} else {
+						buffer[i+2]=buffer[i+3];
+						buffer[i+3]='\0';
+					}
+				}
 				break;
 		}
 	}
+	buffer[width]='\0';
   exit:
 	if ( cplx ) { 
 		buffer[  i]=0x7f;	// (i)
@@ -324,6 +335,8 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 	char buffer2[64];
 	char buffer3[64];
 	int k,oplen,rlen,ilen,rwidth,iwidth;
+	int over=0;
+	if ( width<0 ) { width=-width; over=1; }
 	if ( ( CB_INT==0 ) || ( num.real==0 ) || (num.imag==0) ) {
 		Cplx_sprintGR1( buffer, num, width, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
@@ -349,15 +362,25 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 			iwidth = width - rwidth;
 		}
 	  next:
-		sprintGRSiE( buffer, num.real, rwidth, LEFT_ALIGN, round_mode, round_digit, 0);	// real
-		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
-		if ( num.imag ) sprintGRSiE( buffer, num.imag, iwidth, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
-		else buffer[0]='\0';
-		OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
-		if ( ( num.real==0 ) && ( num.imag!=0 ) ) {
-			buffer2[0]='\0';
-			if ( buffer3[0]==0xFFFFFF89 ) strcat( buffer2, buffer3+1 );
-		} else	strcat( buffer2, buffer3 );
+	  	if ( over==0 ) {
+			sprintGRSiE( buffer, num.real, rwidth, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+			OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
+			if ( num.imag ) sprintGRSiE( buffer, num.imag, iwidth, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+			else buffer[0]='\0';
+			OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
+			if ( ( num.real==0 ) && ( num.imag!=0 ) ) {
+				buffer2[0]='\0';
+				if ( buffer3[0]==0xFFFFFF89 ) strcat( buffer2, buffer3+1 );
+			} else	strcat( buffer2, buffer3 );
+		} else {	// 1234567>
+			strcat( buffer2, buffer3 );
+			ilen = StrLen( buffer2, &oplen );
+			if ( ilen > width ) {
+				if ( buffer2[width-2]==0x7F ) width--;
+				buffer2[width-1]='>';
+				buffer2[width]='\0';
+			}
+		}
 	}
 	strcpy( buffer, buffer2);
 	if ( align_mode == RIGHT_ALIGN ) RightAlign( buffer, width );
@@ -2519,7 +2542,7 @@ const topcodes OpCodeStrList[] = {
 
 int CB_OpcodeToStr( int opcode, char *string  ) {
 	int i;
-	int code;
+	int code,H,L;
 	opcode &= 0xFFFF;
 	i=0;
 	if ( EditListChar ) {
@@ -2559,11 +2582,14 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 			return 0;
 		}
 	}
-	do {
-		code = OpCodeStrList[i].code & 0xFFFF ;
-		if ( code == opcode ) { strcpy( string, OpCodeStrList[i].str ); return 0; }
-		i++;
-	} while ( code ) ;
+	H=opcode>>8;
+	if ( (opcode==0xFA)||(opcode==0xA7)||(opcode==0x9A)||(opcode==0xAA)||(opcode==0xBA)||(opcode==0xF)||(H==0xF9 )||(H==0xF7 )||(H==0x7F) ) {
+		do {
+			code = OpCodeStrList[i].code & 0xFFFF ;
+			if ( code == opcode ) { strcpy( string, OpCodeStrList[i].str ); return 0; }
+			i++;
+		} while ( code ) ;
+	}
 	if ( ( opcode >= 0xFF00 ) || ( ( 0xE500 <= opcode ) && ( opcode <= 0xE7FF ) ) ) {	// kana or E5xx,E6xx,E7xx
 		string[0]=opcode >> 8 ;
 		string[1]=opcode&0xFF;
@@ -2786,9 +2812,9 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 	if ( ( float_mode == 0 ) && ( exp_mode == 0 ) && ( alpha_mode ) ) {
+		PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+		PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 		PutKey( KEY_CTRL_SHIFT, 1 );
 		PutKey( KEY_CTRL_ALPHA, 1 );
 		displaystatus=1;

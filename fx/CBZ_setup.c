@@ -52,7 +52,7 @@ void VerDispSub( int flag ) {
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2020" );
 
-	PrintMini(13*6+2, 2*8+1, (unsigned char*)"build 16", MINI_OVER );
+	PrintMini(13*6+2, 2*8+1, (unsigned char*)"build 17", MINI_OVER );
 	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
@@ -79,6 +79,7 @@ int IsG3or35E2() {
 	unsigned char version[16];
 	SysCalljmp( (int)&version[0], 0, 0, 0, 0x02EE );	//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
 	if ( version[6]=='2' ) return 4;	//  35+EII
+	if ( version[6]=='3' ) return 6;	//  9750GIII
 	return 5;							//	9860GIII
 }
 
@@ -1930,13 +1931,13 @@ int SetupG(int select, int limit){		// ----------- Setup
 						if ( IsHiddenRAM == 0 ) break;
 						UseHiddenRAM = 1 ; // on
 						ExtendList=(6-1);
-						HiddenRAM_MatAryInit();
+						HiddenRAM_MatAryClear();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						UseHiddenRAM &= 0x0F;	// on
-						HiddenRAM_MatAryInit();
+						HiddenRAM_MatAryClear();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
 						DisableDebugMode = 0 ; // on
@@ -2134,7 +2135,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						ExtendList--;
 						if (ExtendList<0) ExtendList=0;
-						HiddenRAM_MatAryInit();
+						HiddenRAM_MatAryClear();
 						break;
 					case SETUP_MaxMemMode: // Maximam Memory mode
 						MaxMemMode = 0 ; // off
@@ -2145,7 +2146,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						UseHiddenRAM = 0 ; // off
 						ExtendPict=0;
 						ExtendList=0;
-						HiddenRAM_MatAryInit();
+						HiddenRAM_MatAryClear();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
