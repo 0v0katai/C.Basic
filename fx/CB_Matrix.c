@@ -100,7 +100,7 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n , int base ) {	//
 	double	*dptr;
 	int i;
 	int matsize;
-	if ( ( ElementSize!= 1 ) && ( ElementSize!= 2 ) && ( ElementSize!= 8 ) && ( ElementSize!= 16 ) && ( ElementSize!= 32 ) && ( ElementSize!= 64 ) ) { CB_Error(ElementSizeERR); return; }	// Illegal Element size
+	if ( ( ElementSize!= 1 ) && ( ElementSize!= 2 ) &&( ElementSize!= 3 ) &&( ElementSize!= 4 ) && ( ElementSize!= 8 ) && ( ElementSize!= 16 ) && ( ElementSize!= 32 ) && ( ElementSize!= 64 ) ) { CB_Error(ElementSizeERR); return 0; }	// Illegal Element size
 	if ( ( 2<=ElementSize )&&( ElementSize<=4 ) ) { 						// 1 bit Vram array
 		if ( ( m != 128 ) || ( n != 64 ) ) { CB_Error(ArraySizeERR); return; }	// Illegal Ary size
 		switch ( ElementSize ) {
@@ -405,6 +405,8 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){	// base:0  0-    base:
 	
 	dimA=MatAry[reg].SizeA-1+base;	//
 	dimB=MatAry[reg].SizeB-1+base;	//
+	
+	if ( base ) { (*m)++; (*n)++; }
 
 	PopUpWin(3);
 
@@ -429,7 +431,6 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){	// base:0  0-    base:
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:
 				cont=0;
-				return key;
 				break;
 		
 			case KEY_CTRL_UP:
@@ -447,15 +448,15 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){	// base:0  0-    base:
 				y++;
 				switch (select) {
 					case 0: // dim m
-						do {
-							*m =InputNumD_full( 14, y, 5, *m);	// 
-						} while ( ( *m < base ) || ( *m > dimA ) ) ;
+						*m =InputNumD_full( 14, y, 5, *m);	// 
+						if ( *m < base ) *m=base;
+						if ( *m > dimA ) *m=dimA;
 						select+=1;
 						break;
 					case 1: // dim n
-						do {
-							*n =InputNumD_full( 14, y, 5, *n);	// 
-						} while ( ( *n < base ) || ( *n > dimB ) ) ;
+						*n =InputNumD_full( 14, y, 5, *n);	// 
+						if ( *n < base ) *n=base;
+						if ( *n > dimB ) *n=dimB;
 						break;
 					default:
 						break;
@@ -471,15 +472,15 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){	// base:0  0-    base:
 				y++;
 				switch (select) {
 					case 0: // dim m
-						do {
-							*m =InputNumD_Char( 14, y, 5, *m, key);	// 
-						} while ( ( *m < base ) || ( *m > dimA ) ) ;
+						*m =InputNumD_Char( 14, y, 5, *m, key);	// 
+						if ( *m < base ) *m=base;
+						if ( *m > dimA ) *m=dimA;
 						select+=1;
 						break;
 					case 1: // dim n
-						do {
-							*n =InputNumD_Char( 14, y, 5, *n, key);	// 
-						} while ( ( *n < base ) || ( *n > dimB ) ) ;
+						*n =InputNumD_Char( 14, y, 5, *n, key);	// 
+						if ( *n < base ) *n=base;
+						if ( *n > dimB ) *n=dimB;
 						break;
 					default:
 						break;
@@ -487,6 +488,7 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){	// base:0  0-    base:
 		}
 
 	}
+	if ( base ) { (*m)--; (*n)--; }
 	return key;
 }
 //-----------------------------------------------------------------------------
@@ -973,7 +975,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			if ( x < 128 ) Bdisp_DrawLineVRAM( x, 8, x, 12+MaxDY*dy);
 		} else {
 			for ( x=0; x<=MaxDX; x++ ) { 
-				if ( ( x >= 8 ) && ( MaxX==8 ) ) break;
+				if ( ( x >= 8 ) ) break;
 				Bdisp_DrawLineVRAM( x*dx+20,7,x*dx+20+dx-5,7);
 				if ( MaxX==7 ) 	sprintf((char*)buffer,"%2d",seltopX+x+base);
 				else 			sprintf((char*)buffer,"%3d",seltopX+x+base);
@@ -1026,6 +1028,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 					PrintMini( 20,y*8+10, (unsigned char*)buffer,MINI_OVER );	// string disp
 				} else {
 					for ( x=0; x<=MaxDX; x++ ) {
+						if ( ( x >= 8 ) ) break;
 						if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
 							if ( MatXYmode ) value=ReadMatrix( reg, seltopX+x+base, seltopY+y+base);
 							else			 value=ReadMatrix( reg, seltopY+y+base, seltopX+x+base);
@@ -1354,7 +1357,11 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				if ( ElementSize==0 ) 	ElementSize = CB_INT? 32:64 ;
 				key=SetDimension(reg, &dimA, &dimB, &ElementSize, &base);
 				if ( key==KEY_CTRL_EXIT ) break;
-				if ( DimMatrixSub(reg, ElementSize, dimA, dimB, base ) ) CB_ErrMsg(NotEnoughMemoryERR);
+				if ( MatAry[reg].SizeA == 0 ) {
+					if ( DimMatrixSub(reg, ElementSize, dimA, dimB, base ) ) CB_ErrMsg(ErrorNo);
+				} else {
+					if ( DimMatrixSubNoinit(reg, ElementSize, dimA, dimB, base ) ) CB_ErrMsg(ErrorNo);
+				}
 				HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 				EditMatrix( reg, 0 );
 				break;
@@ -1425,14 +1432,18 @@ int ElementSizeSelect( char *SRC, int *base, int ElementSize ) {
 		if (CB_INT)	ElementSize=32; else ElementSize=64;
 		if ( ( c=='0' ) || ( c=='1' ) ) { *base = c-'0'; c=SRC[++ExecPtr]; }
 		if ( ( c=='P' ) || ( c=='p' ) ) { ExecPtr++; ElementSize= 1; }
+		else
 		if ( ( c=='V' ) || ( c=='v' ) ) { ExecPtr++; ElementSize= 2;
 			c =SRC[ExecPtr];
 			if ( ( c=='T' ) || ( c=='t' ) ) { ExecPtr++; ElementSize= 3; } // text VRAM
 			if ( ( c=='G' ) || ( c=='g' ) ) { ExecPtr++; ElementSize= 4; } // GraphicVRAM
-		}
+		} else
 		if ( ( c=='B' ) || ( c=='b' ) ) { ExecPtr++; ElementSize= 8; }
+		else
 		if ( ( c=='W' ) || ( c=='w' ) ) { ExecPtr++; ElementSize=16; }
+		else
 		if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; ElementSize=32; }
+		else
 		if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; ElementSize=64; }
 		c =SRC[ExecPtr];
 		if ( ( c=='0' ) || ( c=='1' ) ) { 

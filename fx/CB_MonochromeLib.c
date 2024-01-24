@@ -322,12 +322,36 @@ void CB_ML_Point( char *SRC ) { // ML_Point x, y, width, color
 	ML_point( x, y, MLV_width, color);
 }
 
-int CB_ML_PixelTest( char *SRC ) { // ML_PixelTest( x, y)
-	int x,y;
+int CB_ML_PixelTest( char *SRC ) { // ML_PixelTest( x, y[,T/G])
+	int x,y,c,f=0;
 	CB_GetOprand2VW( SRC, &x, &y );
+	c=SRC[ExecPtr];
+	if ( c == ',' ) {
+		ExecPtr++;
+		c=SRC[ExecPtr];
+		if ( ( c=='T' )||( c=='t' ) ) {
+			ExecPtr++;
+			f=1;	// select Text Vram
+		} else
+		if ( ( c=='G' )||( c=='g' ) ) {
+			ExecPtr++;
+			f=2;	// select Graphic Vram
+		}
+	}
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	if ( ErrorNo ) return ;
-	return ML_pixel_test( x, y);
+	if ( ErrorNo ) return 0;
+	switch ( f ) {
+		case 0:		// Vram
+			f=ML_pixel_test( x, y);
+			break;
+		case 1:		// Text Vram
+			f=ML_pixel_test_TVRAM( x, y);
+			break;
+		case 2:		// Graphic Vram
+			f=ML_pixel_test_GVRAM( x, y);
+			break;
+	}
+	return f;
 }
 
 //----------------------------------------------------------------------------------------------

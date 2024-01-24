@@ -82,7 +82,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	PictAry[0]=GetVRAMAddress();
 
 	InitLocalVar();		// init Local variable
-	CB_AliasVarClr();
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -96,6 +95,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		DebugScreen=0;
 		ForceDebugMode=0;
 		ForceReturn=0;
+		CB_AliasVarClr();
 		
 		PictbasePtr=-1;
 		PictbaseCount=PictbaseCountMAX;

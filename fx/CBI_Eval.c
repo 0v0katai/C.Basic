@@ -518,7 +518,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	int*	MatAryI;
 	double*	MatAryF;
 
-	c = SRC[ExecPtr++];
+	c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 	if ( c == '(') {
 		result = EvalIntsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -822,6 +822,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CBint_EvalStr(SRC, 0 );
 				case 0x50:	// StrAsc(
 					return CB_StrAsc( SRC );
+				case 0x60:	// GetFont(
+					return CB_GetFont(SRC);
+				case 0x62:	// GetFontMini(
+					return CB_GetFontMini(SRC);
 				case 0x21:	// Xdot
 					return Xdot;
 				case 0x1B :		// fn str
@@ -856,7 +860,7 @@ int EvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int c;
 	result = EvalIntsub1( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				result *= result ;
@@ -880,7 +884,7 @@ int EvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 	int c;
 	result = EvalIntsub2( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = pow( result, EvalIntsub2( SRC ) );
@@ -1025,7 +1029,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	int c;
 	result = EvalIntsub7( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// ~
 				result *= EvalIntsub7( SRC );
@@ -1036,7 +1040,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result /= tmp ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++];
+				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						tmp = EvalIntsub7( SRC );
@@ -1066,7 +1070,7 @@ int EvalIntsub11(char *SRC) {	//  11th Priority  ( +,- )
 	int c;
 	result = EvalIntsub10( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result += EvalIntsub10( SRC );
@@ -1087,7 +1091,7 @@ int EvalIntsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	int c;
 	result = EvalIntsub11( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case '=' :	// =
 				result = ( result == EvalIntsub11( SRC ) );
@@ -1131,7 +1135,7 @@ int EvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 	int c;
 	result = EvalIntsub12( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1151,7 +1155,7 @@ int EvalIntsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 	int c;
 	result = EvalIntsub13( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -1217,7 +1221,7 @@ void CB_StoreTicks( char *SRC, int value ) {
 }
 
 int CB_RTC_GetTicks( int high ) {
-	if ( high ) return (int)GetTicks32768()-CB_HiTicksAdjust ;
+	if ( high ) return CB_HiTicksAdjust-(int)GetTicks32768() ;
 	return RTC_GetTicks()-CB_TicksAdjust ;
 }
 int CB_Ticks( char *SRC ) {

@@ -203,7 +203,6 @@ extern  char *GVRAM;
 #define StackGotoMax 10+26+2+6+26
 #define StackGosubMax 4
 #define IfCntMax 32
-#define RemCntMax 32
 #define StackForMax 4
 #define StackWhileMax 4
 #define StackDoMax 4
@@ -217,18 +216,9 @@ extern  char *GVRAM;
 typedef struct {		// 8 bytes
 	char	CNT;
 	char	TOP;
-	short	Prg;
 	unsigned short	Ptr[IfCntMax];
 	unsigned short	Adrs[IfCntMax];
 } CchIf;
-
-typedef struct {		// 8 bytes
-	char	CNT;
-	char	TOP;
-	short	Prg;
-	unsigned short	Ptr[RemCntMax];
-	unsigned short	Adrs[RemCntMax];
-} CchRem;
 
 typedef struct {		// 32 bytes
 	short	Ptr;
@@ -272,7 +262,7 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ); //	Gosu
 void Skip_quot( char *SRC ); // skip "..."
 void Skip_block( char *SRC );
 void Skip_rem( char *SRC );	// skip '...
-void CB_Rem( char *SRC, CchRem *CacheRem );
+void CB_Rem( char *SRC, CchIf *CacheRem );
 void CB_Lbl( char *SRC, short *StackGotoAdrs );
 void CB_Goto( char *SRC, short *StackGotoAdrs );
 void CB_If( char *SRC, CchIf *CacheIf );

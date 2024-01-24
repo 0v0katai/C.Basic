@@ -126,7 +126,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 
 	dspflag=2;		// 2:value		3:list    4:mat
 
-	c = SRC[ExecPtr++];
+	c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 	if ( c == '(') {
 		result = ListEvalIntsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -450,6 +450,10 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return CB_EvalStr(SRC, 1 );
 				case 0x50:	// StrAsc(
 					return CB_StrAsc( SRC );
+				case 0x60:	// GetFont(
+					return CB_GetFont(SRC);
+				case 0x62:	// GetFontMini(
+					return CB_GetFontMini(SRC);
 				case 0x21:	// Xdot
 					return Xdot;
 				case 0x1B :		// fn str
@@ -490,7 +494,7 @@ int ListEvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	result = ListEvalIntsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				result = EvalFxInt( &fsquint, result) ; 
@@ -520,7 +524,7 @@ int ListEvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = EvalFxInt2( &fpowint, &resultflag, &resultreg, result, ListEvalIntsub2( SRC ) ) ;
@@ -682,7 +686,7 @@ int ListEvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// ~
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
@@ -691,7 +695,7 @@ int ListEvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = EvalFxInt2( &fDIVint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++];
+				c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						result = EvalFxInt2( &fDIVint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
@@ -723,7 +727,7 @@ int ListEvalIntsub11(char *SRC) {	//  11th Priority  ( +,- )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result = EvalFxInt2( &fADDint, &resultflag, &resultreg, result, ListEvalIntsub10( SRC ) ) ;
@@ -749,7 +753,7 @@ int ListEvalIntsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = SRC[ExecPtr++]; while ( c==0x20 )c=SRC[ExecPtr++]; // Skip Space
 		switch ( c ) {
 			case '=' :	// =
 				result = EvalFxInt2( &fcmpEQint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
@@ -798,7 +802,7 @@ int ListEvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -824,7 +828,7 @@ int ListEvalIntsubTop(char *SRC) {	//
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; // Skip Space
 		if ( c == 0x7F ) {
 			c = SRC[ExecPtr+1];
 			switch ( c ) {

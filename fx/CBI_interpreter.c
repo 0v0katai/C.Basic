@@ -584,7 +584,7 @@ int CB_EvalIntStrPtr( char *SRC ) {
 		return CB_EvalInt( SRC );
 	}
 }
-
+/*
 int CB_SysCall( char *SRC ) {	// SysCall( No,r4,r5,r6,r7 )
 	int callNo=CB_EvalInt( SRC );
 	int r4=0,r5=0,r6=0,r7=0;
@@ -607,6 +607,24 @@ int CB_SysCall( char *SRC ) {	// SysCall( No,r4,r5,r6,r7 )
 	}
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	return SysCalljmp(r4,r5,r6,r7,callNo);	//		CallNo -> SysCallNo
+}
+*/
+int CB_SysCall( char *SRC ) {	// SysCall( No,r4,r5,r6,r7 )
+	int callNo=CB_EvalInt( SRC );
+	int r[12];
+	double r4d,r5d,r6d,r7d;
+	char buf1[32],buf2[32];
+	int para=0;
+	r[4]=1000;
+	while ( SRC[ExecPtr]==',' ) {
+		ExecPtr++;
+		r[para++]=CB_EvalIntStrPtr( SRC );
+		if ( para > 12-1 ) { CB_Error(TooMuchData); return 0; } // Too much data error
+	} 
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	
+	if ( para < 4 ) return SysCalljmp(r[0],r[1],r[2],r[3],callNo);	//		CallNo -> SysCallNo
+	return SysCalljmp12(r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9],r[10],r[11],callNo);	//		CallNo -> SysCallNo
 }
 int CB_Call( char *SRC ) {	// Call( adrs,r5,r6,r7 )
 	int adrs=CB_EvalInt( SRC );
