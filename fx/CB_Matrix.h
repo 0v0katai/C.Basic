@@ -1,2 +1,2 @@
 void EditMatrix(int reg);		// ----------- Edit Matrix
-void SetMatrix(int select);		// ----------- Set Matrix
+int SetMatrix(int select);		// ----------- Set Matrix

@@ -23,6 +23,7 @@
 #include "CB_glib2.h"
 #include "CB_Eval.h"
 #include "CB_interpreter.h"
+#include "CBI_interpreter.h"
 #include "CB_error.h"
 
 //------------------------------------------------------------------------------
@@ -225,6 +226,7 @@ void ZoomIn(){
 	
 	regX = (Xmax+Xmin)/2; // center
 	regY = (Ymax+Ymin)/2; // center
+	regintX=regX; regintY=regY;
 }
 
 void ZoomOut(){
@@ -252,6 +254,7 @@ void ZoomOut(){
 	
 	regX = (Xmax+Xmin)/2; // center
 	regY = (Ymax+Ymin)/2; // center
+	regintX=regX; regintY=regY;
 }
 
 //------------------------------------------------------------------------------ PLOT
@@ -271,6 +274,7 @@ void Plotsub(double x, double y, int kind, int mode){
 		}		
 	}
 	regX=x; regY=y;
+	regintX=regX; regintY=regY;
 }
 
 void PlotOn_VRAM(double x, double y){
@@ -298,6 +302,7 @@ void PlotChg_VRAM(double x,  double y){
 		 Bdisp_SetPoint_VRAM(px, py, 0);
 	else Bdisp_SetPoint_VRAM(px, py, 1);
 	regX=x; regY=y;
+	regintX=regX; regintY=regY;
 }
 
 void PlotChg_DDVRAM(double x, double y){
@@ -332,7 +337,7 @@ int PxlTest(int py, int px) {
 	return	Bdisp_GetPoint_VRAM(px, py);
 }
 void PxlChg_VRAM(int py, int px){
-	if (PxlTest(py,px)) 
+	if (Bdisp_GetPoint_VRAM(px, py)) 
 		Bdisp_SetPoint_VRAM(px, py, 0);
 	else
 		Bdisp_SetPoint_VRAM(px, py, 1);
@@ -698,5 +703,6 @@ void Circle(double x, double y, double r, int style, int drawflag ) {
 	}
 	regX=Plot_X;
 	regY=Plot_Y;
+	regintX=regX; regintY=regY;
 }
 

@@ -14,6 +14,7 @@
 #include "CB_Eval.h"
 #include "CB_interpreter.h"
 #include "CB_file.h"
+#include "CB_edit.h"
 #include "CB_error.h"
 
 //-----------------------------------------------------------------------------
@@ -36,10 +37,11 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB){
 	if ( *dimB==0 ) *dimB=1;
 
 	while (cont) {
-		locate(3,3); Print((unsigned char *)"Dimension m\xA9n");
-		locate(3,4); Print((unsigned char *) "  m  :           ");
+		locate( 3,3); Print((unsigned char *)"Dimension m\xA9n");
+//		locate(18,3); sprintf(buffer,"%d",MatAryElementSize[reg]); Print(buffer);
+		locate( 3,4); Print((unsigned char *) "  m  :           ");
 		sprintG(buffer,*dimA,  10,LEFT_ALIGN); locate( 9, 4); Print(buffer);
-		locate(3,5); Print((unsigned char *) "  n  :           ");
+		locate( 3,5); Print((unsigned char *) "  n  :           ");
 		sprintG(buffer,*dimB,  10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
 
 		y = select + 3 ;
@@ -110,49 +112,44 @@ int DimMatrix( int reg, int dimA, int dimB ) {
 	double	*dptr;
 	int i;
 	unsigned int c=reg+'A';
+	int ElementSize;
 
-	if ( ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
+	switch (c) {
+		case 'B':
+		case 'C':
+			ElementSize=1;
+			break;
+		case 'D':
+		case 'W':
+			ElementSize=2;
+			break;
+		case 'L':
+		case 'I':
+			ElementSize=4;
+			break;
+		case 'E':
+		case 'F':
+			ElementSize=8;
+			break;
+		default:
+			ElementSize= CB_INT?4:8 ;
+			break;
+	}
+	if ( ( ElementSize==MatAryElementSize[reg] ) && ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
 		dptr = MatAry[reg] ;							// Matrix array ptr*
 	} else {
 		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
 		MatArySizeA[reg]=dimA;						// Matrix array size
 		MatArySizeB[reg]=dimB;						// Matrix array size
-		if ( ( c=='B' ) || ( c=='C' ) ) {
-			MatAryElementSize[reg]=1;
-			dptr = malloc( dimA*dimB*sizeof(char) );
-		} else 
-		if ( ( c=='D' ) || ( c=='W' ) ) {
-			MatAryElementSize[reg]=2;
-			dptr = malloc( dimA*dimB*sizeof(short) );
-		} else
-		if ( ( c=='L' ) || ( c=='I' ) ) {
-			MatAryElementSize[reg]=4;
-			dptr = malloc( dimA*dimB*sizeof(int) );
-		} else {
-			MatAryElementSize[reg]=8;
-			dptr = malloc( dimA*dimB*sizeof(double) );
-		}
-   		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return; }	// Not enough memory error
+		
+		MatAryElementSize[reg]=ElementSize;
+		dptr = malloc( dimA*dimB*ElementSize );
+   		if( dptr == NULL ) { ErrorPtr=-1; return NotEnoughMemoryERR;}	// Not enough memory error
 		MatAry[reg] = dptr ;							// Matrix array ptr*
 	}
-	
-	switch ( MatAryElementSize[reg] ) {
-		case 1:
-			cptr=(char*)dptr;
-			for (i=0; i< dimA*dimB; i++) cptr[i]=0;	// initialize double
-			break;
-		case 2:
-			wptr=(short*)dptr;
-			for (i=0; i< dimA*dimB; i++) wptr[i]=0;	// initialize char
-			break;
-		case 4:
-			iptr=(int*)dptr;
-			for (i=0; i< dimA*dimB; i++) iptr[i]=0;	// initialize word
-			break;
-		case 8:
-			for (i=0; i< dimA*dimB; i++) dptr[i]=0;	// initialize int
-			break;
-	}
+
+	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
+
 	return 0;	// ok
 }
 
@@ -182,7 +179,7 @@ double ReadMatrix( int reg, int dimA, int dimB){
 	short*	MatAryW;
 	int*	MatAryI;
 	double value;
-	int mptr=(dimA-1)*MatArySizeB[reg]+dimB-1;
+	int mptr=(dimA)*MatArySizeB[reg]+dimB;
 	switch ( MatAryElementSize[reg] ) {
 		case 8:
 			value = MatAry[reg][mptr];			// Matrix array double
@@ -206,7 +203,7 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	int mptr=(dimA-1)*MatArySizeB[reg]+dimB-1;
+	int mptr=(dimA)*MatArySizeB[reg]+dimB;
 	switch ( MatAryElementSize[reg] ) {
 		case 8:
 			MatAry[reg][mptr] = value ;			// Matrix array double
@@ -262,7 +259,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 		for ( x=0; x<=i; x++ ) { 
 			Bdisp_DrawLineVRAM( x*28+20,7,x*28+43,7);
 			sprintf((char*)buffer,"%3d",seltopX+x+1);
-			PrintMini(x*28+20,1,buffer,MINI_OVER);
+			PrintMini(x*28+24,1,buffer,MINI_OVER);
 		}
 		for ( y=0; y<=j; y++ ) {
 				sprintf((char*)buffer,"%4d",seltopY+y+1);
@@ -286,6 +283,21 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 		Bdisp_AreaReverseVRAM(x*28+20, y*8+9, x*28+43, y*8+15);	// reverse selectY line 
 
 		Fkey_dispN(0,"Edit");
+		locate( 11, 8);
+		switch ( MatAryElementSize[reg] ) {
+			case 1:
+				Print((unsigned char*)"(byte)");
+				break;
+			case 2:
+				Print((unsigned char*)"(word)");
+				break;
+			case 4:
+				Print((unsigned char*)"(long)");
+				break;
+			case 8:
+				Print((unsigned char*)"(double)");
+				break;
+		}
 
 		Bdisp_PutDisp_DD();
 
@@ -303,8 +315,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				WriteMatrix( reg, selectY, selectX, InputNumD_full( 1, 7, 21, value));
 				selectX++;
 				if ( selectX > dimA ) { 
-					selectX =0;
-					if ( selectY < dimB ) selectY++;
+					if ( selectY < dimB ) { selectY++; selectX =0; }
 				}
 				break;
 			case KEY_CTRL_UP:
@@ -334,8 +345,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				WriteMatrix( reg, selectY, selectX, InputNumD_Char( 1, 7, 21, value, key));
 				selectX++;
 				if ( selectX > dimA ) { 
-					selectX =0;
-					if ( selectY < dimB ) selectY++;
+					if ( selectY < dimB ) { selectY++; selectX =0; }
 				}
 		}
 	}
@@ -343,7 +353,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 
 //-----------------------------------------------------------------------------
 
-void SetMatrix(int select){		// ----------- Set Matrix
+int SetMatrix(int select){		// ----------- Set Matrix
 	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
@@ -365,6 +375,21 @@ void SetMatrix(int select){		// ----------- Set Matrix
 			locate( 1, 1+i); Print((unsigned char*)"Mat");
 			locate( 5, 1+i); Print(buffer);
 			locate(13, 1+i); Print((unsigned char*)":");
+			locate( 6, 1+i);
+			switch ( MatAryElementSize[j] ) {
+				case 1:
+					Print((unsigned char*)"(byte)");
+					break;
+				case 2:
+					Print((unsigned char*)"(word)");
+					break;
+				case 4:
+					Print((unsigned char*)"(long)");
+					break;
+				case 8:
+					Print((unsigned char*)"(dbl)");
+					break;
+			}
 			if ( MatArySizeA[j] ) {
 				sprintf((char*)buffer,"%3d",MatArySizeA[j]);
 				locate(14,1+i); Print(buffer);
@@ -425,5 +450,6 @@ void SetMatrix(int select){		// ----------- Set Matrix
 				break;
 		}
 	}
+	return select;
 }
 

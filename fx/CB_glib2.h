@@ -15,7 +15,7 @@ void SetVeiwWindowSTD();
 
 int SetViewWindwo(void);
 void SetFactor();
-void SetVar(int select);
-void SetupG();
+int SetVar(int select);
+int SetupG(int select);
 
 //------------------------------------------------------------------------------

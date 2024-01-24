@@ -12,6 +12,8 @@
 #include "CB_interpreter.h"
 #include "CB_Matrix.h"
 
+#include "CBI_interpreter.h"
+
 //-------------------------------------------------------------- source code refer to (WSC) file.c
 //---------------------------------------------------------------------------------------------
 #define FILENAMEMAX 13
@@ -355,15 +357,15 @@ unsigned int Explorer( int size, char *folder )
 							cont =0 ;
 							break;
 					case KEY_CTRL_SETUP:
-							SetupG();
+							selectSetup=SetupG(selectSetup);
 							SaveFavorites();
 							break;
 					case KEY_CTRL_F1:
-							SetVar(0);		// A - 
+							selectVar=SetVar(selectVar);		// A - 
 							SaveFavorites();
 							break;
 					case KEY_CTRL_F2:
-							SetMatrix(0);		//
+							selectMatrix=SetMatrix(selectMatrix);		//
 							break;
 					case KEY_CTRL_F3:
 							SetViewWindow();
@@ -396,7 +398,7 @@ unsigned int Explorer( int size, char *folder )
 							PopUpWin( 6 );
 							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.51" );
+							locate( 3, 4 ); Print( (unsigned char*)"            v0.60" );
 							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 							GetKey(&key);
@@ -1078,63 +1080,29 @@ void SaveConfig(){
 	buffer[ 7]='i';
 	buffer[ 8]='g';
 	buffer[ 9]='0';
-	buffer[10]='5';
+	buffer[10]='6';
 	buffer[11]='0';
-	buffer[12]='\0';
-	buffer[13]='\0';
-	buffer[14]='\0';
-	buffer[15]='\0';
-	buffer[16]='C';
-	buffer[17]='B';
-	buffer[18]='.';
-	buffer[19]='c';
-	buffer[20]='o';
-	buffer[21]='n';
-	buffer[22]='f';
-	buffer[23]='i';
-	buffer[24]='g';
-	buffer[25]='0';
-	buffer[26]='5';
-	buffer[27]='0';
-	buffer[28]='\0';
-	buffer[29]='\0';
-	buffer[30]='\0';
-	buffer[31]='\0';
 
-	bufint[ 8]=DrawType;
-	bufint[ 9]=Coord;
-	bufint[10]=Grid;
-	bufint[11]=Axes;
-	bufint[12]=Label;
-	bufint[13]=Derivative;
-	bufint[14]=S_L_Style;
-	bufint[15]=Angle;
-	bufint[16]=BreakCheck;
-	bufint[17]=TimeDsp;
-	
-	bufint[18]=0;
-	bufint[19]=0;
-	bufint[20]=0;
-	bufint[21]=0;
-	bufint[22]=0;
-	bufint[23]=0;
-	bufint[24]=0;
-	bufint[25]=0;
-	bufint[26]=0;
-	bufint[27]=0;
-	bufint[28]=0;
-	bufint[29]=0;
-	bufint[30]=0;
-	bufint[31]=0;
+	bufint[ 3]=CB_INT;
+	bufint[ 4]=DrawType;
+	bufint[ 5]=Coord;
+	bufint[ 6]=Grid;
+	bufint[ 7]=Axes;
+	bufint[ 8]=Label;
+	bufint[ 9]=Derivative;
+	bufint[10]=S_L_Style;
+	bufint[11]=Angle;
+	bufint[12]=BreakCheck;
+	bufint[13]=TimeDsp;
+	bufint[15]=0;
 
-	bufdbl[16]=Xfct;
-	bufdbl[17]=Yfct;
-	bufdbl[18]=0;
-	bufdbl[19]=0;
-	for ( i=20; i< 20+58 ; i++ ) bufdbl[i]=REG[i-20];
-	for ( i=78; i< 78+11 ; i++ ) bufdbl[i]=REGv[i-78];
+	bufdbl[ 8]=Xfct;
+	bufdbl[ 9]=Yfct;
+	for ( i=10; i< 10+58 ; i++ ) bufdbl[i]=REG[i-10];
+	for ( i=68; i< 68+11 ; i++ ) bufdbl[i]=REGv[i-68];
+	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
 
-	sbuf=buffer+90*8;
+	sbuf=buffer+220*4;
 	
 	strncpy( (char*)sbuf, folder, FILENAMEMAX);
 	sbuf+=FILENAMEMAX;
@@ -1181,25 +1149,30 @@ void LoadConfig(){
 		 ( buffer[ 5]=='n' ) &&
 		 ( buffer[ 6]=='f' ) &&
 		 ( buffer[ 7]=='i' ) &&
-		 ( buffer[ 8]=='g' ) ) {
+		 ( buffer[ 8]=='g' ) &&
+		 ( buffer[ 9]=='0' ) &&
+		 ( buffer[10]=='6' ) &&
+		 ( buffer[11]=='0' ) ) {
 		
-		DrawType  =bufint[ 8];	// load config & memory
-		Coord     =bufint[ 9];
-		Grid      =bufint[10];
-		Axes      =bufint[11];
-		Label     =bufint[12];
-		Derivative=bufint[13];
-		S_L_Style =bufint[14];
-		Angle     =bufint[15];
-		BreakCheck=bufint[16];
-		TimeDsp   =bufint[17];
+		CB_INT    =bufint[ 3];
+		DrawType  =bufint[ 4];	// load config & memory
+		Coord     =bufint[ 5];
+		Grid      =bufint[ 6];
+		Axes      =bufint[ 7];
+		Label     =bufint[ 8];
+		Derivative=bufint[ 9];
+		S_L_Style =bufint[10];
+		Angle     =bufint[11];
+		BreakCheck=bufint[12];
+		TimeDsp   =bufint[13];
 
-		Xfct=bufdbl[16];
-		Yfct=bufdbl[17];
-		for ( i=20; i< 20+58 ; i++ ) REG[i-20] =bufdbl[i];
-		for ( i=78; i< 78+11 ; i++ ) REGv[i-78]=bufdbl[i];
+		Xfct=bufdbl[ 8];
+		Yfct=bufdbl[ 9];
+		for ( i=10; i< 10+58 ; i++ ) REG[i-10] =bufdbl[i];
+		for ( i=68; i< 68+11 ; i++ ) REGv[i-68]=bufdbl[i];
+		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
 
-		sbuf=buffer+90*8;
+		sbuf=buffer+220*4;
 
 		strncpy( folder, (char*)sbuf, FILENAMEMAX);
 		sbuf+=FILENAMEMAX;
@@ -1207,6 +1180,8 @@ void LoadConfig(){
 			strncpy( Favoritesfiles[i].filename, (char*)sbuf, FILENAMEMAX);
 			sbuf+=FILENAMEMAX;
 		}
+	} else {
+		Bfile_DeleteMainMemory((const unsigned char*)"CBasic");
 	}
 }
 

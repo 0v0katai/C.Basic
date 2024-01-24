@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.50.00 
+ Casio Basic Interpreter (& Compiler) ver 0.60.00 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
