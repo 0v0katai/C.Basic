@@ -23,6 +23,8 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 
 #endif
 
+extern char FileListUpdate;
+extern char StorageMode;		// 0:Storage memory   1:SD
 
 #define FileCMD_Prog   10000
 #define FileCMD_RUN    10001
@@ -68,3 +70,4 @@ int CheckPassWord( char *filebase );	// 1:cancel  0:Ok  -1:no pass
 void NewPassWord(char *name) ;
 
 void PP_ReplaceCode( char *SRC );
+int CheckSD();	// SD model  return : 1
