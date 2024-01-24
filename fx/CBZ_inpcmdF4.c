@@ -34,7 +34,9 @@ void GetGenuineCmdF4( unsigned int *code ){
 			} break;
 		case CMD_PRGM_I_O:
 			switch ( CommandPage ) {
-				case 1: (*code)=0xF7DF;return;	// Delete
+				case 0: (*code)=0xF712;return;	// Receive(
+				case 1: (*code)=0xF714;return;	// CloseComport38k
+				case 2: (*code)=0xF7DF;return;	// Delete
 			} break;
 		case CMD_PRGM_STR:
 			switch ( CommandPage ) {

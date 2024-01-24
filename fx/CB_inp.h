@@ -225,6 +225,20 @@ void GetGenuineCmdF4( unsigned int *code );
 void GetGenuineCmdF5( unsigned int *code );
 void GetGenuineCmdF6( unsigned int *code );
 
+//-------------------------------------------------------------
+#define OpRecentFreqMax 32
+#define OpRecentMax 32
+
+typedef struct {
+	short code;
+	short count;
+} toplistrecentfreq;
+
+extern toplistrecentfreq *OplistRecentFreq;
+extern short *OplistRecent;
+extern toplistrecentfreq OplistRecentFreqMem[OpRecentFreqMax];
+extern short OplistRecentMem[OpRecentMax];
+
 int InitOpcodeRecent() ;
 int AddOpcodeRecent( short opcode ) ;
 int SelectOpcodeRecent( int listselect ) ;

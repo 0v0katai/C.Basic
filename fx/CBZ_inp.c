@@ -475,16 +475,10 @@ void DMS_Opcode( char * buffer, short code ) {
 	if ( code == 0xBC ) { strcat( buffer,"(gra)"); }
 }
 //----------------------------------------------------------------------------------------------
-#define OpRecentFreqMax 32
-#define OpRecentMax 32
-
-typedef struct {
-	short code;
-	short count;
-} toplistrecentfreq;
-
-toplistrecentfreq OplistRecentFreq[OpRecentFreqMax];
-short OplistRecent[OpRecentMax];
+toplistrecentfreq *OplistRecentFreq;
+short *OplistRecent;
+toplistrecentfreq OplistRecentFreqMem[OpRecentFreqMax];
+short OplistRecentMem[OpRecentMax];
 
 int qsort_OpRecentFreq( const void *p1, const void *p2 ){
 	toplistrecentfreq *OpRecent1 = (toplistrecentfreq *)p1;
@@ -576,6 +570,8 @@ int SelectOpcodeRecent( int listselect ) {
 			if ( seltop < 0 ) seltop=0;
 			for ( i=0; i<6; i++ ) {
 				CB_Print(3,2+i,(unsigned char *)"                 ");
+				sprintf(buffer, "F%d:", i+1 ) ;
+				CB_PrintMini( 13, 8*i+10, (unsigned char *)buffer, MINI_OVER ) ;
 				if ( listselect == CMDLIST_RECENT ) {
 					j=OplistRecent[seltop+i];
 				} else {
@@ -586,13 +582,13 @@ int SelectOpcodeRecent( int listselect ) {
 				DMS_Opcode( tmpbuf, j);
 				j=0; if ( tmpbuf[0]==' ' ) j++;
 				if ( listselect == CMDLIST_RECENT ) {
-					sprintf(buffer, "%-17s", tmpbuf+j ) ;
+					sprintf(buffer, "%-15s", tmpbuf+j ) ;
 				} else {
 					k=OplistRecentFreq[seltop+i].count;
 					sprintf(buffer, "%s (%d)", tmpbuf+j, (unsigned short)k ) ;
 					if ( k==0 ) buffer[0]='\0';
 				}
-				CB_Print(3,2+i,(unsigned char *)buffer);
+				CB_Print(5,2+i,(unsigned char *)buffer);
 			}
 			Bdisp_PutDisp_DD();	
 			
@@ -609,6 +605,36 @@ int SelectOpcodeRecent( int listselect ) {
 					return 0;
 					
 				case KEY_CTRL_EXE:
+					cont=0;
+					cont2=0;
+					break;
+				case KEY_CTRL_F1:
+					select=seltop;
+					cont=0;
+					cont2=0;
+					break;
+				case KEY_CTRL_F2:
+					select=seltop+1;
+					cont=0;
+					cont2=0;
+					break;
+				case KEY_CTRL_F3:
+					select=seltop+2;
+					cont=0;
+					cont2=0;
+					break;
+				case KEY_CTRL_F4:
+					select=seltop+3;
+					cont=0;
+					cont2=0;
+					break;
+				case KEY_CTRL_F5:
+					select=seltop+4;
+					cont=0;
+					cont2=0;
+					break;
+				case KEY_CTRL_F6:
+					select=seltop+5;
 					cont=0;
 					cont2=0;
 					break;
@@ -630,6 +656,10 @@ int SelectOpcodeRecent( int listselect ) {
 				case KEY_CTRL_DOWN:
 					select++;
 					if ( select >= opNum ) select =0;
+					break;
+					
+				case KEY_CTRL_AC:
+					if ( YesNo( "Delete History ?" ) ) InitOpcodeRecent();
 					break;
 				default:
 					break;
@@ -982,6 +1012,14 @@ const short oplistPRGM[]={
 		0xF7E4,	// Disp
 		
 		0xFFFF,	// 				-
+		0xF711,	// Send(
+		0xF712,	// Receive(
+		0xF713,	// OpenComport38k
+		0xF714,	// CloseComport38k
+		0xF715,	// Send38k 
+		0xF716,	// Receive38k 
+		
+		0xFFFF,	// 				-
 		0x7F9F,	// KeyRow(
 		0xF90F,	// AliasVar
 		0x7FF5,	// IsExist(
@@ -1278,8 +1316,22 @@ const short oplistCMD[]={		// 5800P like
 		0x7F4D,	// Prod
 		0x7F5C,	// ListCmp(
 		0x25,	// %
+		
+//											7
+		0xF711,	// Send(
+		0xF712,	// Receive(
+		0xF713,	// OpenComport38k
+		0xF714,	// CloseComport38k
+		0xF715,	// Send38k 
+		0xF716,	// Receive38k 
+		0xFFFF,
+		0xFFFF,
+		0xFFFF,
+		0xFFFF,
+		0x23,	// #
+		0x25,	// %
 
-//											7	GR
+//											8	GR
 		0xD1,	// Cls		
 		0xF719,	// ClrGraph
 		0xEB,	// ViewWindow
@@ -1292,7 +1344,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF7A7,	// F-Line
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
-//											8
+//											9
 		0xF7AB,	// PxlOn
 		0xF7AC,	// PxlOff
 		0xF7AD,	// PxlChg
@@ -1308,7 +1360,7 @@ const short oplistCMD[]={		// 5800P like
 //		0x23,	// #
 //		0x25,	// %
 
-//											9
+//											10
 		0xF5,	// Graph(X,Y)=(
 		0xF723,	// DrawStat
 		0xF7CC,	// DrawOn
@@ -1322,7 +1374,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF750,	// Scatter
 		0xF751,	// xyLine
 
-//											10
+//											11
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF78E,	// SketchBroken
@@ -1336,7 +1388,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 
-//											11
+//											12
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
 		0xF7C3,	// CoordOn
@@ -1350,7 +1402,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF797,	// StoV-Win
 		0xF798,	// RclV-Win
 		
-//											12
+//											13
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
 		0x7F01,	// Xmax
@@ -1364,7 +1416,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F09,	// TThetamax
 		0x7F0A,	// TThetaptch
 
-//											13	FN
+//											14	FN
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -1378,7 +1430,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F3C,	// GCD(
 		0x7F3D,	// LCM(
 
-//											14
+//											15
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
@@ -1392,7 +1444,7 @@ const short oplistCMD[]={		// 5800P like
 		0x26,	// &
 		0x7C,	// |
 		
-//											15
+//											16
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 		0x7F8A,	// RanNorm#(
@@ -1408,7 +1460,7 @@ const short oplistCMD[]={		// 5800P like
 //		0x23,	// #
 //		0x25,	// %
 
-//											16
+//											17
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
@@ -1422,7 +1474,7 @@ const short oplistCMD[]={		// 5800P like
 		0x80,	// Pol(
 		0xA0,	// Rec(
 
-//											17
+//											18
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -1436,7 +1488,7 @@ const short oplistCMD[]={		// 5800P like
 		0x0B,	// Exa
 		0x25,	// %	
 
-//											18	STR
+//											19	STR
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -1445,26 +1497,40 @@ const short oplistCMD[]={		// 5800P like
 		0xF934,	// StrLeft(
 		0xF935,	// StrRight(
 		0xF936,	// StrMid(
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %
+		
+//											20
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
 		0xF93A,	// StrLwr(
-		
-//											19
-		0xF93F,	// Str
 		0xF93B,	// StrInv(
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
-		0xF944,	// StrChar(
-		0xF945,	// StrCenter(
-		0xF946,	// Hex(
-		0xF947,	// Bin(
+		0xFFFF,
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %
+
+//											21
 		0xF940,	// Str(
 		0xF943,	// Sprintf(
-		0xF948,	// StrBase(
-		0x25,	// %	
+		0xF946,	// Hex(
+		0xF947,	// Bin(
+		0xF944,	// StrChar(
+		0xF945,	// StrCenter(
+		0xF949,	// StrRepl(	
+		0xFFFF,
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %
 
-//											20	EX
+//											22	EX
 		0xF90F,	// AliasVar
 		0x7F5F,	// Ticks
 		0xF941,	// DATE
@@ -1563,10 +1629,10 @@ const short oplistCMD[]={		// 5800P like
 		0};
 
 #define CMD_STD  0
-#define CMD_GR   7
-#define CMD_FN  13
-#define CMD_STR 18
-#define CMD_EX  20
+#define CMD_GR   8
+#define CMD_FN  14
+#define CMD_STR 19
+#define CMD_EX  22
 
 int SelectOpcode5800P( int flag ) {
 	short *select=&selectCMD;

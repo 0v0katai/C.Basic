@@ -34,7 +34,7 @@ static int size=0;
 static char folder[FILENAMEMAX] = "", tmpfolder[FILENAMEMAX] = "", name[FILENAMEMAX];
 static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
-Files Favoritesfiles[FavoritesMAX];
+static Files Favoritesfiles[FavoritesMAX];
 char FileListUpdate=1;
 char StorageMode=0;						// 0:Storage memory   1:SD
 char redrawsubfolder=0;
@@ -47,13 +47,15 @@ const char root[][5]={"fls0","crd0"};
 unsigned int SelectFile (char *filename)
 {
 	unsigned int key;
+	int i;
 
 	Bdisp_AllClr_DDVRAM();
 	while( 1 ){
 		if ( FileListUpdate  ) {
 			MSG2(VerMSG,"File Reading.....");
  			size = ReadFile( folder );
-			qsort( files, size, sizeof(Files), FileCmp );
+			qsort( files+(FavoritesMAX), size-FavoritesMAX-1, sizeof(Files), FileCmp );
+			memcpy( files+FavoritesMAX+1, files+(FavoritesMAX), sizeof(Files)*(size-(FavoritesMAX+1)) );
 		}
 		key = Explorer( size, folder ) ;
 		if ( key == FileCMD_NEW  ) break ;	// new file
@@ -112,7 +114,7 @@ static int FileCmp( const void *p1, const void *p2 )
 	Files *f2 = (Files *)p2;
 
 	if( f1->filesize == FOLDER_FLAG && f2->filesize == FOLDER_FLAG )
-		return strcmp( f1->filename + 1, f2->filename + 1);
+		return strcmp( f1->filename, f2->filename );
 	else if( f1->filesize == FOLDER_FLAG )
 		return 1;
 	else if( f2->filesize == FOLDER_FLAG )
@@ -391,6 +393,11 @@ int CheckSD(){	// SD model  return : 1
 
 
 //----------------------------------------------------------------------------------------------
+void check_basname( char *basname ) {
+	int c=basname[7]&0xFF;
+	if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) basname[7]='\0';
+}
+
 unsigned int Explorer( int size, char *folder )
 {
 	int cont=1;
@@ -510,36 +517,42 @@ unsigned int Explorer( int size, char *folder )
 
 				if( files[i + top].filesize == 0 ) {
 					sprintf( buf, "---------------------");
+					goto dsp1;
 				} else
 				if ( files[i + top].filesize == FOLDER_SEPALATOR ) {
 					sprintf( buf, "------Favorites------");
+					goto dsp1;
 				} else
 				if( files[i + top].filesize == FOLDER_FLAG ) {
 					sprintf( buf, " [%s]", files[i + top].filename );
+				  dsp1:
+					locate(  1, i + 2 ); Print( (unsigned char*)buf );
 				} else {
 					strncpy( buf2, files[i + top].filename, FILENAMEMAX );
-					j=strlen(files[i + top].filename); if (j<4) j=4;
+					j=strlenOp(files[i + top].filename); if (j<4) j=4;
 					k=files[i + top].filesize;
 					if ( buf2[j-3]=='g' ) {
 						buf2[j-4]='\0';
 						k -= 0x38;	// file size adjust G1M
 					}
-					sprintf( buf, " %-12s :%5u ", buf2, k );
+					sprintf( buf, " %-12s ", buf2 );
 
 					if ( strcmp( files[i+top].folder, folder ) != 0 )
 					if ( i+top < FavoritesMAX ) {
-						j=strlen(files[i + top].folder) ;
+						j=strlenOp(files[i + top].folder) ;
 						if (j>5) j=5;
 						if ( j ) strncpy( buf2, files[i + top].folder, j); 
 						buf2[j++]='/'; buf2[j]=0;
 						strncpy( buf, files[i + top].filename, FILENAMEMAX );
-						j=strlen(files[i + top].filename); if (j<4) j=4;
+						j=strlenOp(files[i + top].filename); if (j<4) j=4;
 						if ( buf[j-3]=='g' ) buf[j-4]='\0';
 						strcat(buf2,buf); buf2[14]=0;
-						sprintf( buf, "%-14s:%5u ", buf2, k );
-					}						
+						sprintf( buf, "%-14s ", buf2 );
+					}
+					locate(  1, i + 2 ); Print( (unsigned char*)buf );
+					sprintf( buf, ":%5u ", k );
+					locate( 15, i + 2 ); Print( (unsigned char*)buf );
 				}
-				locate( 1, i + 2 ); Print( (unsigned char*)buf );
 			}
 
 			Bdisp_AreaReverseVRAM( 0, (index-top+1)*8 , 127, (index-top+2)*8-1 );
@@ -918,10 +931,17 @@ int YesNoOverwrite(){
 unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
+	int i;
 
 	buffer[width]='\0';
-	csrX=strlen((char*)buffer);
+	csrX=strlenOp((char*)buffer);
 	key=InputStrSub( x, y, width, csrX, buffer, maxLen, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	for( i=0; i<strlenOp((char*)buffer); i++ ) {	// kana cancel
+		if ( buffer[i]==0xFFFFFFFF ) { 
+			buffer[i]=0x7E;
+			if ( buffer[i+1] != '\0' ) buffer[i+1]=0x7E;
+		}
+	}
 	return ( key );
 }
 
@@ -958,7 +978,7 @@ void basname8ToG1MHeader( char *filebase, char *basname) {	// abcd -> header
 		i++;
 		c=basname[i];
 	} while ( ( c!='\0' ) ) ;
-//	} while ( ( c!='\0' ) ||  ( c!='.' ) ) ;
+	check_basname( nameptr );	// check end of multibyte character
 }
 
 void G1MHeaderTobasname8( char *filebase, char *basname) {	// header -> abcd
@@ -2424,32 +2444,32 @@ int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
@@ -2468,7 +2488,6 @@ int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
-/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2478,13 +2497,14 @@ void FavoritesDowndummy( int *index ) {
 	tmp=files[(*index)+1].filesize;
 	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
 	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	files[(*index)].filesize=tmp;
-	(*index)++;
-	SaveFavorites();
+//	files[(*index)+1].filesize=files[(*index)].filesize;
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	files[(*index)].filesize=tmp;
+//	(*index)++;
+//	SaveFavorites();
 }
+/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

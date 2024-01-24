@@ -21,6 +21,9 @@ extern short EditMaxProg;
 extern short NewMax;
 extern short ClipMax;
 
+extern short EditLineNum;
+extern char  UpdateLineNum;
+
 int SrcSize( char *src ) ;
 
 unsigned int EditRun(int run);

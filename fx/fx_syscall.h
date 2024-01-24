@@ -95,3 +95,29 @@ void Bdisp_ShapeToVRAM( TShape *p );
 
 int Calljmp(    int r4, int r5, int r6, int r7, int adrs );
 int SysCalljmp( int r4, int r5, int r6, int r7, int no );
+
+//------------------------------------------------------- Serial
+int Serial_Open2( unsigned short parameters );	//0x02AB
+int Serial_Open_57600( void );	//0x0285
+void*Serial_ResetAndDisable( void );	//0x0409
+void*Serial_GetInterruptHandler( int type );	//0x040A
+int Serial_SetInterruptHandler( int type, void*handler );	//0x040B
+int Serial_ReadOneByte( unsigned char*result );	//0x040C
+int Serial_ReadNBytes( unsigned char*result, int max_size, short*actually_transferred );	//0x040D
+int Serial_BufferedTransmitOneByte( unsigned char byte_to_transmit );	//0x040E
+int Serial_BufferedTransmitNBytes( unsigned char*bytes_to_transmit, int requested_count );	//0x040F
+int Serial_DirectTransmitOneByte( unsigned char byte_to_transmit );	//0x0410
+int Serial_GetReceivedBytesAvailable( void );	//0x0411
+int Serial_GetFreeTransmitSpace( void );	//0x0412
+int Serial_ClearReceiveBuffer( void );	//0x0413
+int Serial_ClearTransmitBuffer( void );	//0x0414
+int Serial_Open( unsigned char *mode );	//0x0418
+int Serial_Close( int mode );	//0x0419
+void*Serial_CallReceiveIntErrorResetHandler( void );	//0x041B
+void*Serial_CallReceiveIntHandler( void );	//0x041C
+void*Serial_CallTransmitIntErrorResetHandler( void );	//0x041D
+void*Serial_CallTransmitIntHandler( void );	//0x041E
+int Serial_SpyNthByte( int byteno_to_spy, unsigned char*result );	//0x0422
+void Serial_GetStatus( unsigned int*serial_status );	//0x0423 
+int Serial_IsOpen( void );	// 0x0425
+

@@ -180,12 +180,20 @@ void DispGenuineCmdMenu(){
 				case 0:
 					Fkey_Icon( FKeyNo1, 554 );	//	Fkey_dspRB( FKeyNo1, "Lcte");
 					Fkey_Icon( FKeyNo2, 555 );	//	Fkey_dspRB( FKeyNo2, "Gtky");
-					FkeyClear( FKeyNo3 );
-					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo3, 556 );	//	Fkey_dspRB( FKeyNo3, "Send");
+					Fkey_Icon( FKeyNo4, 557 );	//	Fkey_dspRB( FKeyNo4, "Recv");
 					Fkey_dspRB( FKeyNo5, "KeyR");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
+					Fkey_Icon( FKeyNo1, 264 );	//	Fkey_dspRB( FKeyNo1, "S38k");
+					Fkey_Icon( FKeyNo2, 265 );	//	Fkey_dspRB( FKeyNo2, "R38k");
+					Fkey_Icon( FKeyNo3, 266 );	//	Fkey_dspRB( FKeyNo3, "Open");
+					Fkey_Icon( FKeyNo4, 267 );	//	Fkey_dspRB( FKeyNo4, "Close");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 2:
 					Fkey_dspRB( FKeyNo1, "IsExs");
 					Fkey_dspRB( FKeyNo2, "Save");
 					Fkey_dspRB( FKeyNo3, "Load");

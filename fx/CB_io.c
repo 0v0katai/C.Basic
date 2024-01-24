@@ -8,6 +8,7 @@
 #include "CB_interpreter.h"
 #include "CB_edit.h"
 #include "CB_io.h"
+#include "CB_inp.h"
 #include "CB_error.h"
 #include "CB_Kana.h"
 #include "CB_Matrix.h"
@@ -23,10 +24,11 @@ char UseHiddenRAM=0;	//	0x11 :HiddenRAMInit off
 char IsHiddenRAM=0;
 
 #define PICTBACKSPACE 512	//
-char * HiddenRAM_Top  =(char*)0x88040000+16;	// Hidden RAM TOP
+#define HIDDENRAM_TOP 0x88040000
+char * HiddenRAM_Top  =(char*)0x88040000+16+256;	// Hidden RAM TOP
 char * HiddenRAM_End  =(char*)0x88080000-PICTBACKSPACE;	// Hidden RAM END
 
-char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16;	// Hidden RAM Prog next ptr
+char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16+256;	// Hidden RAM Prog next ptr
 char * HiddenRAM_MatTopPtr =(char*)0x88080000-PICTBACKSPACE;	// Hidden RAM Mat top ptr
 
 char IsSH3;	//	3:SH3   4:SH4
@@ -35,6 +37,7 @@ char IsSH3;	//	3:SH3   4:SH4
 ----------------------------------------
 HiddenRAM_Top(0x88040000)
 		>>>
+		History buffer(256byte)
 		(prog area) HiddenRAM_ProgNextPtr
 			... 
 			(free area)
@@ -141,28 +144,28 @@ void HiddenRAM_freeMat( int reg ){
 	}
 }
 
-const char MatAryCheckStr[]="#CBasic160#";
+const char MatAryCheckStr[]="#CBasic163#";
 
 void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
-	int *iptr1=(int*)(HiddenRAM_Top- 4);
+	int *iptr1=(int*)(HIDDENRAM_TOP+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		memcpy( HiddenRAM_Top-16, MatAryCheckStr, sizeof(MatAryCheckStr) );
-		memcpy( HiddenRAM_End,    MatAryCheckStr, sizeof(MatAryCheckStr) );
-		memcpy( HiddenRAM_End+16, PictAry, sizeof(PictAry) );
+		memcpy( (char *)HIDDENRAM_TOP, MatAryCheckStr, sizeof(MatAryCheckStr) );
+		memcpy( HiddenRAM_End,         MatAryCheckStr, sizeof(MatAryCheckStr) );
+		memcpy( HiddenRAM_End+16,      PictAry, sizeof(PictAry) );
 		iptr1[0]=(int)MatAry;
 		iptr2[0]=(int)HiddenRAM_MatTopPtr;
 	}
 }
 int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 	char buffer[10];
-	int *iptr1=(int*)(HiddenRAM_Top- 4);
+	int *iptr1=(int*)(HIDDENRAM_TOP+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	char *tmp;
 	tmp=HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
 	if ( !(UseHiddenRAM&0xF0) )return 0;	// hidden init
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) && ( (char *)iptr1[0]==tmp ) ){
-		if ( ( strcmp(HiddenRAM_Top-16, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
+		if ( ( strcmp((char *)HIDDENRAM_TOP, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
 			memcpy( PictAry, HiddenRAM_End+16, sizeof(PictAry) );
 			HiddenRAM_MatTopPtr=(char*)iptr2[0];
 			MatAry=(matary *)tmp;
@@ -173,7 +176,7 @@ int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 }
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	char buffer[10];
-	int *iptr1=(int*)(HiddenRAM_Top- 4);
+	int *iptr1=(int*)(HIDDENRAM_TOP+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	MatAryMax=MATARY_MAX +ExtendList*52;
 	Mattmpreg=MatAryMax-1;
@@ -187,12 +190,18 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 		EditMaxProg = EDITMAXPROG2;
 		NewMax      = NEWMAX2;
 		ClipMax     = CLIPMAX2;
+		OplistRecentFreq=(toplistrecentfreq *)(HIDDENRAM_TOP+16);
+		OplistRecent    =(short *)(HIDDENRAM_TOP+16+128);
 		if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
 		HiddenRAM_MatTopPtr = HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
 		MatAry = (matary *)HiddenRAM_MatTopPtr;
 		HiddenRAM_MatAryStore();
+		InitOpcodeRecent();
 	} else {		// use heap RAM
 		MatAry = ( matary *)malloc( sizeof(matary)*MatAryMax );
+		OplistRecentFreq=(toplistrecentfreq *)OplistRecentFreqMem;
+		OplistRecent    =(short *)OplistRecentMem;
+		InitOpcodeRecent();
 	}
 	memset( MatAry, 0, sizeof(matary)*MatAryMax );
 }

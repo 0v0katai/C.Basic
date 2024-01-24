@@ -76,8 +76,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	
 	PictAry[0]=GetVRAMAddress();
 
-	InitOpcodeRecent();
-
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear

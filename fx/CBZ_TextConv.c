@@ -754,7 +754,7 @@ const char ConvListF700[][17]={
 "@F7F3",			// F7F3
 "SysCall(",				// F7F4
 "Call(",				// F7F5
-"Poke ",				// F7F6
+"Poke(",				// F7F6
 "",					// F7F7
 "RefrshCtrl ",			// F7F8
 "",					// F7F9
@@ -1003,7 +1003,7 @@ const char ConvListF900[][17]={
 "BmpSave ",				// F9DB
 "BmpLoad(",				// F9DC
 "DrawMat ",			// F9DD
-"@F9DE",			// F9DE
+"_BmpZoomRotate ",		// F9DE
 "@F9DF",			// F9DF
 
 "OneSampleZTest ",	// F9E0

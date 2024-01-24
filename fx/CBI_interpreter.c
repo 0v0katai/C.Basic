@@ -676,14 +676,16 @@ int CB_VarPtr( char *SRC ) {
 		} else {
 			result=(int)MatAry[reg].Adrs;	// List 1
 		}
-	} else
-	if ( ( c == 0x22 ) || ( (c==0xFFFFFFF9)&&(SRC[ExecPtr+1]==0x3F) ) || ( (c==0x7F)&&(SRC[ExecPtr+1]==0xFFFFFFF0) ) ) {	// string "" str graphy
-		buffer = CB_GetOpStr( SRC, &maxoplen );	
-		if ( ErrorNo ) return ;			// error
-		result=(int)buffer;	//  return buffer ptr
 	} else {
-		reg=RegVarAliasEx(SRC); if ( reg>=0 ) goto regj;
-		CB_Error(SyntaxERR) ; return 0; // Syntax error 
+		c=CB_IsStr( SRC, ExecPtr );
+		if ( c ) {	// string
+			buffer=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
+			if ( ErrorNo ) return 1;			// error
+			result=(int)buffer;	//  return buffer ptr
+		} else {
+			reg=RegVarAliasEx(SRC); if ( reg>=0 ) goto regj;
+			CB_Error(SyntaxERR) ; return 0; // Syntax error 
+		}
 	}
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	return result;
