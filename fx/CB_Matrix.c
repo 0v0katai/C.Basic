@@ -623,7 +623,7 @@ void MatNumToExpBuf( double value, int bit ){	// value -> ExpBuffer
 }
 
 void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
-	char buffer[22];
+	char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int seltopY=0,seltopX=0;
@@ -634,6 +634,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 	int dx,MaxX,MaxDX,MaxDY,adjX=3;
 	int bit=0;	// 0:normal  1:bin  16~64:hex
 	int base=MatAry[reg].Base;
+	int strdisp=0;
 	
 	if (MatAry[reg].SizeA==0) return;
 //	if ( ( ( 28 <= reg ) && ( reg <= 31 ) ) || ( ( 28+32 <= reg ) && ( reg <= 31+32 ) ) ) ans=1; // Ans
@@ -759,38 +760,44 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			if ( seltopY+y == dimB ) {	Bdisp_ClearLineVRAM( 16,14+y*8,16,16+y*8); Bdisp_DrawLineVRAM( 16,14+y*8,18, 14+y*8);
 					if ( x < 128 )	 {	Bdisp_ClearLineVRAM(  x,14+y*8, x,16+y*8); Bdisp_DrawLineVRAM(  x,14+y*8,x-2,14+y*8); }
 			}
-			for ( x=0; x<=MaxDX; x++ ) {
-				if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
-					if ( MatXYmode ) value=ReadMatrix( reg, seltopX+x+base, seltopY+y+base);
-					else			 value=ReadMatrix( reg, seltopY+y+base, seltopX+x+base);
-					
-					if ( ( bit==0 ) && ( MaxX==7 ) ) {	sprintG(buffer, value, 2,RIGHT_ALIGN);
-								PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else 
-					if ( ( bit==0 ) && ( MaxX==3 ) ) {	sprintG(buffer, value, 6,RIGHT_ALIGN);
-								PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else 
-					if ( bit== 1 ) {	NumToBin(buffer, value, 8);
-								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else 
-					if ( bit== 2 ) {	NumToBin(buffer, value, 16);
-								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else 
-					if ( bit== 8 ) {	NumToHex(buffer, value, 2);
-								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else 
-					if ( bit==16 ) {	NumToHex(buffer, value, 4);
-								PrintMini(x*dx+22,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else 
-					if ( bit==32 ) {	NumToHex(buffer, value, 8);
-								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else 
-					if ( bit==64 ) {	DNumToHex(buffer, value, 16);
-								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
-					} else { 	sprintG(buffer, value, 4,RIGHT_ALIGN);
-								PrintMini(x*dx+23-adjX,y*8+10,(unsigned char*)buffer,MINI_OVER);
+			if ( ( strdisp ) && (ElementSize > 2 ) )  {
+				if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, seltopY+y+base, seltopX  +base), 32-1 );
+				else				OpcodeStringToAsciiString( buffer, MatrixPtr(reg, seltopX  +base, seltopY+y+base), 32-1 );
+				PrintMini( 20,y*8+10, (unsigned char*)buffer,MINI_OVER );	// string disp
+			} else {
+				for ( x=0; x<=MaxDX; x++ ) {
+					if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
+						if ( MatXYmode ) value=ReadMatrix( reg, seltopX+x+base, seltopY+y+base);
+						else			 value=ReadMatrix( reg, seltopY+y+base, seltopX+x+base);
+						
+						if ( ( bit==0 ) && ( MaxX==7 ) ) {	sprintG(buffer, value, 2,RIGHT_ALIGN);
+									PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else 
+						if ( ( bit==0 ) && ( MaxX==3 ) ) {	sprintG(buffer, value, 6,RIGHT_ALIGN);
+									PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else 
+						if ( bit== 1 ) {	NumToBin(buffer, value, 8);
+									PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else 
+						if ( bit== 2 ) {	NumToBin(buffer, value, 16);
+									PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else 
+						if ( bit== 8 ) {	NumToHex(buffer, value, 2);
+									PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else 
+						if ( bit==16 ) {	NumToHex(buffer, value, 4);
+									PrintMini(x*dx+22,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else 
+						if ( bit==32 ) {	NumToHex(buffer, value, 8);
+									PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else 
+						if ( bit==64 ) {	DNumToHex(buffer, value, 16);
+									PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						} else { 	sprintG(buffer, value, 4,RIGHT_ALIGN);
+									PrintMini(x*dx+23-adjX,y*8+10,(unsigned char*)buffer,MINI_OVER);
+						}
+//						Bdisp_PutDisp_DD();
 					}
-//					Bdisp_PutDisp_DD();
 				}
 			}
 		}
@@ -798,11 +805,17 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		if ( ( seltopX ) )               	 PrintMini( 16,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
 		if ( ( seltopX==0 )&&( dimA>MaxX ) ) PrintMini(122,1,(unsigned char*)"\xE6\x91",MINI_OR);	// ->
 
-		if ( MatXYmode ) value=ReadMatrix( reg, selectX+base, selectY+base);
-		else			 value=ReadMatrix( reg, selectY+base, selectX+base);
-		sprintG(buffer, value,21,RIGHT_ALIGN);
-		locate(1,7); Print((unsigned char*)buffer);
-		
+		if ( ( strdisp ) && ( ElementSize > 2 ) )  {
+			if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectY+base, selectX+base), 32-1 );
+			else				OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectX+base, selectY+base), 32-1 );
+			locate(1,7); PrintLine((unsigned char *)" ",21);
+			locate(1,7); Print((unsigned char *)buffer);
+		} else {
+			if ( MatXYmode ) value=ReadMatrix( reg, selectX+base, selectY+base);
+			else			 value=ReadMatrix( reg, selectY+base, selectX+base);
+			sprintG(buffer, value,21,RIGHT_ALIGN);
+			locate(1,7); Print((unsigned char*)buffer);
+		}
 		y = (selectY-seltopY) ;
 		x = (selectX-seltopX) ;
 		Bdisp_AreaReverseVRAM(x*dx+20, y*8+9, x*dx+20+dx-5, y*8+15);	// reverse select element
@@ -811,7 +824,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		Fkey_dispN(1,"Goto");
 		if ( ans==0 ) Fkey_dispR(2,"Init");
 		if ( MatXYmode ) Fkey_dispN(3,"X,Y"); else Fkey_dispN(3,"m,n"); 
-		locate(16, 8); MatAryElementSizePrint( MatAry[reg].ElementSize ) ;
+		locate(16, 8); MatAryElementSizePrint( ElementSize ) ;
 
 		Bdisp_PutDisp_DD();
 
@@ -830,23 +843,28 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			case KEY_CTRL_F1:
 				if ( ans ) break;
 				locate(1,8); PrintLine((unsigned char *)" ",21);
-				locate(1,8); MatAryElementSizePrint( MatAry[reg].ElementSize ) ;
-				if ( MatXYmode ) {
-					if ( ( selectX <= dimA ) && ( selectY <= dimB ) ) {
-						value=ReadMatrix( reg, selectX+base, selectY+base);
-						MatNumToExpBuf( value, bit );	// value -> ExpBuffer
-						WriteMatrix( reg, selectX+base, selectY+base, InputNumD_fullsub( 1, 7, 21, value));
-					}
+				locate(1,8); MatAryElementSizePrint( ElementSize ) ;
+				if ( ( strdisp ) && ( ElementSize > 2 ) )  {
+					if ( MatXYmode==0 )	key=InputStr( 1, 7, (MatAry[reg].SizeB-selectX)*ElementSize/8-1,  MatrixPtr(reg, selectY+base, selectX+base), ' ', REV_OFF);
+					else				key=InputStr( 1, 7, (MatAry[reg].SizeA-selectY)*ElementSize/8-1,  MatrixPtr(reg, selectX+base, selectY+base), ' ', REV_OFF);
 				} else {
-					if ( ( selectX <= dimA ) && ( selectY <= dimB ) ) {
-						value=ReadMatrix( reg, selectY+base, selectX+base);
-						MatNumToExpBuf( value, bit );	// value -> ExpBuffer
-						WriteMatrix( reg, selectY+base, selectX+base, InputNumD_fullsub( 1, 7, 21, value));
+					if ( MatXYmode ) {
+						if ( ( selectX <= dimA ) && ( selectY <= dimB ) ) {
+							value=ReadMatrix( reg, selectX+base, selectY+base);
+							MatNumToExpBuf( value, bit );	// value -> ExpBuffer
+							WriteMatrix( reg, selectX+base, selectY+base, InputNumD_fullsub( 1, 7, 21, value));
+						}
+					} else {
+						if ( ( selectX <= dimA ) && ( selectY <= dimB ) ) {
+							value=ReadMatrix( reg, selectY+base, selectX+base);
+							MatNumToExpBuf( value, bit );	// value -> ExpBuffer
+							WriteMatrix( reg, selectY+base, selectX+base, InputNumD_fullsub( 1, 7, 21, value));
+						}
 					}
-				}
-				selectX++;
-				if ( selectX > dimA ) { selectX = dimA;
-					if ( selectY < dimB ) { selectY++; selectX =0; }
+					selectX++;
+					if ( selectX > dimA ) { selectX = dimA;
+						if ( selectY < dimB ) { selectY++; selectX =0; }
+					}
 				}
 				break;
 			case KEY_CTRL_F2:
@@ -855,7 +873,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				break;
 			case KEY_CTRL_F3:
 				if ( ans ) break;
-				MatDefaultValue = InitMatrix( reg, MatDefaultValue ,MatAry[reg].ElementSize ) ;
+				MatDefaultValue = InitMatrix( reg, MatDefaultValue ,ElementSize ) ;
 				break;
 			case KEY_CTRL_F4:
 				MatXYmode=1-MatXYmode;
@@ -897,6 +915,9 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 					if ( selectY < 0 ) selectY = dimB;
 				}
 				break;
+			case KEY_CTRL_VARS:
+				if ( strdisp ) strdisp=0; else strdisp=1;
+				break;
 				
 			default:
 				break;
@@ -904,7 +925,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		key=MathKey( key );
 		if ( ( ans==0 ) && ( key ) ) {
 				locate(1,8); PrintLine((unsigned char *)" ",21);
-				locate(1,8); MatAryElementSizePrint( MatAry[reg].ElementSize ) ;
+				locate(1,8); MatAryElementSizePrint( ElementSize ) ;
 				if ( MatXYmode ) {
 					value=ReadMatrix( reg, selectX+base, selectY+base);
 					WriteMatrix( reg, selectX+base, selectY+base, InputNumD_Char( 1, 7, 21, value, key));
@@ -951,10 +972,10 @@ int SetMatrix(int select){		// ----------- Set Matrix
 		for ( i=0; i<7; i++ ) {
 			j=0;
 			k=seltop+i+small;
-			if ( ( listdsp ) && ( 31 <= k ) && ( k <= 31+26 ) )  { sprintf( buffer,"%d",seltop+i+1 ); j=strlen(buffer); }
+			if ( ( listdsp ) && ( 32 <= k ) && ( k < 32+26 ) )  { sprintf( buffer,"%d",seltop+i+1 ); j=strlen(buffer); }
 			else j=SetVarChar( buffer, k);
 			buffer[j]='\0';
-			locate( 1, 1+i); if ( listdsp ) Print((unsigned char*)"Lst"); else Print((unsigned char*)"Mat");
+			locate( 1, 1+i); if ( ( listdsp ) && ( 26 <= k ) )  Print((unsigned char*)"Lst"); else Print((unsigned char*)"Mat");
 			locate( 5, 1+i); Print((unsigned char*)buffer);
 			locate(13, 1+i); Print((unsigned char*)":");
 			if ( k >= 26+32 ) k=k-32;
@@ -1316,7 +1337,7 @@ void CB_MatrixInit2Str( char *SRC ) { //	["ABCD","12345","XYZ"]->Mat A[.B]
 //-----------------------------------------------------------------------------
 
 void CB_ClrMat( char *SRC ) { //	ClrMat A
-	int reg=ListRegVar( SRC );
+	int reg=RegVarAliasEx(SRC);
 	if ( reg>=0 ) {
 		DeleteMatrix( reg );
 	} else { ErrorNo=0;	//
@@ -1735,63 +1756,6 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 	ExecPtr=exptr2;
 	dspflag =4 ;	// List data
 }
-
-void CB_Seq( char *SRC ) { //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
-	int c,d;
-	int dimA,dimB,i;
-	int fxreg,reg;
-	int exptr,exptr2;
-	double data,databack;
-	double start,end,step;
-	int m,n;
-	int base;
-	int ElementSize;
-	
-	exptr=ExecPtr;
-	data=CB_EvalDbl( SRC );	// dummy read
-    ErrorPtr= 0;
-	ErrorNo = 0;	// error cancel
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	fxreg=RegVarAliasEx(SRC); if ( fxreg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	start=CB_EvalDbl( SRC );	// start
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	end=CB_EvalDbl( SRC );	// end
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	step=CB_EvalDbl( SRC );	// step
-
-	if ( start>end ) { data=start; start=end; end=data; }
-	dimA = (end-start)/step +1;
-	dimB = 1;
-
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-
-	ElementSize=ElementSizeSelect( SRC, &base, 0) & 0xFF;
-	NewMatListAns( dimA, dimB, base, ElementSize );
-	if ( ErrorNo ) return ;
-	reg=CB_MatListAnsreg;
-
-	exptr2=ExecPtr;
-	base=MatAry[reg].Base;
-	m=base; n=base;
-	databack=LocalDbl[fxreg][0];
-	LocalDbl[fxreg][0]=start;
-	while ( m < dimA+base ) {
-		ExecPtr=exptr;
-		data=CB_EvalDbl( SRC );	//
-		WriteMatrix( reg, m, n, data);
-		LocalDbl[fxreg][0]+=step;
-		m++;
-	}
-	LocalDbl[fxreg][0]=databack;
-	ExecPtr=exptr2;
-	dspflag =4 ;	// List data
-}
-
 
 //-----------------------------------------------------------------------------
 void CB_Mat2List( char *SRC ) {	// Mat>List( Mat A, m) -> List Ans
@@ -2219,50 +2183,297 @@ double CB_Prod( char *SRC ) {	// Prod List 1
 }
 
 //-----------------------------------------------------------------------------
-double CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1.10)
+int CB_MinMaxInt( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
+	int reg,reg2,reg3;
+	int m,n;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int min,tmp;
+	
+	ListEvalIntsub1(SRC);
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	reg=CB_MatListAnsreg;
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		ListEvalIntsub1(SRC);
+		if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		reg2=CB_MatListAnsreg;
+		if ( sizeA != MatAry[reg2].SizeA ) { CB_Error(DimensionERR); return 0 ; }	// Dimension error
+		for ( m=base; m<sizeA+base; m++) {
+			min=ReadMatrixInt( reg,  m, base ) ;
+			tmp=ReadMatrixInt( reg2, m, base ) ;
+			if ( flag )	{ 
+				if ( min < tmp ) WriteMatrixInt( reg,m, base , tmp ) ;	// max
+			} else {
+				if ( min > tmp ) WriteMatrixInt( reg,m, base , tmp ) ;	// min
+			}
+		}
+	} else {
+		min = ReadMatrixInt( reg, base, base ) ;
+		for ( m=base; m<sizeA+base; m++) {
+			tmp=ReadMatrixInt( reg, m, base ) ;
+			if ( flag )	{
+				if ( min < tmp ) min=tmp;	// max
+			} else {
+				if ( min > tmp ) min=tmp;	// min
+			}
+		}
+		dspflag=2;
+	}
+	DeleteMatListAns();
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return min;
+}
+int CB_MeanInt( char *SRC ) {	// Mean( List 1 )
+	int reg,reg2,reg3;
+	int m,n;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int result;
+	
+	ListEvalIntsub1(SRC);
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	reg=CB_MatListAnsreg;
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	
+	result=0;
+	for ( m=base; m<sizeA+base; m++) {
+		result+=ReadMatrixInt( reg, m, base ) ;
+	}
+	
+	DeleteMatListAns();
+	dspflag=2;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return result/sizeA;
+}
+int CB_SumInt( char *SRC ) {	// Sum List 1 
+	int reg;
+	int m,n;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int result;
+	
+	ListEvalIntsub1(SRC);
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	reg=CB_MatListAnsreg;
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+
+	result=0;
+	for ( m=base; m<sizeA+base; m++) {
+		result+=ReadMatrixInt( reg, m, base ) ;
+	}
+	
+	DeleteMatListAns();
+	dspflag=2;
+	return result;
+}
+int CB_ProdInt( char *SRC ) {	// Prod List 1 
+	int reg;
+	int m,n;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int result;
+	
+	ListEvalIntsub1(SRC);
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	reg=CB_MatListAnsreg;
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+
+	result=1;
+	for ( m=base; m<sizeA+base; m++) {
+		result*=ReadMatrixInt( reg, m, base ) ;
+	}
+	
+	DeleteMatListAns();
+	dspflag=2;
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void SeqOprand( char *SRC, int *fxreg, double *start, double *end, double *step ){	// Seq(X^2,X,1.10[,1])
+	int exptr=ExecPtr;
+	int errflag;
+	double data;
+  restart:
+	data=CB_EvalDbl( SRC );	// dummy read
+	if ( ErrorNo == 0 ) errflag=0;
+	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( errflag ) if ( ErrorNo ) return ;	// fatal error
+	errflag=ErrorNo;	// error?
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	ExecPtr++;
+	*fxreg=RegVarAliasEx(SRC); if ( (*fxreg)<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	ExecPtr++;
+	*start=CB_EvalDbl( SRC );	// start
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	ExecPtr++;
+	*end=CB_EvalDbl( SRC );	// end
+	if ( SRC[ExecPtr] == ',' ) {
+		ExecPtr++;
+		*step=CB_EvalDbl( SRC );	// step
+	} else *step=1;
+	
+	if ( (*start)>(*end) ) { data=*start; *start=*end; *end=data; }
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( errflag ) {
+		ExecPtr=exptr;
+		LocalDbl[*fxreg][0]=*start;
+		ErrorPtr= 0;
+		ErrorNo = 0;	// error cancel
+		goto restart;
+	}
+	
+}
+
+void CB_Seq( char *SRC ) { //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
+	int c,d;
+	int dimA,dimB,i;
+	int fxreg,reg;
+	int exptr,exptr2;
+	double data,databack;
+	double start,end,step;
+	int dataint,databackint;
+	int startint,endint,stepint;
+	int m,n;
+	int base;
+	int ElementSize;
+	
+	exptr=ExecPtr;
+	SeqOprand( SRC, &fxreg, &start, &end, &step );
+
+	dimA = (end-start)/step +1;
+	dimB = 1;
+
+	ElementSize=ElementSizeSelect( SRC, &base, 0) & 0xFF;
+	NewMatListAns( dimA, dimB, base, ElementSize );
+	if ( ErrorNo ) return ;
+	reg=CB_MatListAnsreg;
+
+	exptr2=ExecPtr;
+	base=MatAry[reg].Base;
+	m=base; n=base;
+	databack=LocalDbl[fxreg][0];
+	LocalDbl[fxreg][0]=start;
+	while ( m < dimA+base ) {
+		ExecPtr=exptr;
+		data=CB_EvalDbl( SRC );	//
+		WriteMatrix( reg, m, n, data);
+		LocalDbl[fxreg][0]+=step;
+		m++;
+	}
+	LocalDbl[fxreg][0]=databack;
+	ExecPtr=exptr2;
+	dspflag =4 ;	// List data
+}
+void SeqOprandInt( char *SRC, int *fxreg, int *start, int *end, int *step ){	// Seq(X^2,X,1.10[,1])
+	int exptr=ExecPtr;
+	int errflag;
+	int data;
+  restart:
+	data=CB_EvalInt( SRC );	// dummy read
+	if ( ErrorNo == 0 ) errflag=0;
+	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( errflag ) if ( ErrorNo ) return ;	// fatal error
+	errflag=ErrorNo;	// error?
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	*fxreg=RegVarAliasEx(SRC); if ( (*fxreg)<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	*start=CB_EvalInt( SRC );	// start
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	*end=CB_EvalInt( SRC );	// end
+	if ( SRC[ExecPtr] == ',' ) {
+		ExecPtr++;
+		*step=CB_EvalInt( SRC );	// step
+	} else *step=1;
+	
+	if ( (*start)>(*end) ) { data=*start; *start=*end; *end=data; }
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( errflag ) {
+		ExecPtr=exptr;
+		LocalInt[*fxreg][0]=*start;
+		ErrorPtr= 0;
+		ErrorNo = 0;	// error cancel
+		goto restart;
+	}
+}
+
+void CB_SeqInt( char *SRC ) { //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
+	int c,d;
+	int dimA,dimB,i;
+	int fxreg,reg;
+	int exptr,exptr2;
+	int data,databack;
+	int start,end,step;
+	int dataint,databackint;
+	int startint,endint,stepint;
+	int m,n;
+	int base;
+	int ElementSize;
+	
+	exptr=ExecPtr;
+	SeqOprandInt( SRC, &fxreg, &start, &end, &step );
+
+	dimA = (end-start)/step +1;
+	dimB = 1;
+
+	ElementSize=ElementSizeSelect( SRC, &base, 0) & 0xFF;
+	NewMatListAns( dimA, dimB, base, ElementSize );
+	if ( ErrorNo ) return ;
+	reg=CB_MatListAnsreg;
+
+	exptr2=ExecPtr;
+	base=MatAry[reg].Base;
+	m=base; n=base;
+	databack=LocalInt[fxreg][0];
+	LocalInt[fxreg][0]=start;
+	while ( m < dimA+base ) {
+		ExecPtr=exptr;
+		data=CB_EvalInt( SRC );	//
+		WriteMatrixInt( reg, m, n, data);
+		LocalInt[fxreg][0]+=step;
+		m++;
+	}
+	LocalInt[fxreg][0]=databack;
+	ExecPtr=exptr2;
+	dspflag =4 ;	// List data
+}
+
+
+double CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1.10[,1])
 	int c,d;
 	int i;
 	int fxreg,reg;
 	int exptr,exptr2;
-	double data,databack;
+	double data;
 	double start,end,step;
 	double result;
 	int errflag=0;
 	
 	exptr=ExecPtr;
   restart:
-	data=CB_EvalDbl( SRC );	// dummy read
-	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
-	if ( errflag ) if ( ErrorNo ) return;	// fatal error
-	errflag=ErrorNo;	// error?
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	fxreg=RegVarAliasEx(SRC); if ( fxreg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	start=CB_EvalDbl( SRC );	// start
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	end=CB_EvalDbl( SRC );	// end
-	if ( SRC[ExecPtr] == ',' ) {
-		ExecPtr++;
-		step=CB_EvalDbl( SRC );	// step
-	} else step=1;
-
-	if ( start>end ) { data=start; start=end; end=data; }
-
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-
-	if ( errflag ) {
-		ExecPtr=exptr;
-		LocalDbl[fxreg][0]=start;
-		ErrorPtr= 0;
-		ErrorNo = 0;	// error cancel
-		goto restart;
-	}
+	SeqOprand( SRC, &fxreg, &start, &end, &step );
 
 	exptr2=ExecPtr;
-	databack=LocalDbl[fxreg][0];
 	LocalDbl[fxreg][0]=start;
 	result=0;
 	while ( LocalDbl[fxreg][0] <= end ) {
@@ -2275,11 +2486,46 @@ double CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1.10)
 	return result;
 }
 
+int CB_SigmaInt( char *SRC ) { //	Sigma(X^2,X,1.10[,1])
+	int c,d;
+	int i;
+	int fxreg,reg;
+	int exptr,exptr2;
+	int data;
+	int start,end,step;
+	int result;
+	int errflag=0;
+	
+	exptr=ExecPtr;
+  restart:
+	SeqOprandInt( SRC, &fxreg, &start, &end, &step );
+
+	if ( errflag ) {
+		ExecPtr=exptr;
+		LocalInt[fxreg][0]=start;
+		ErrorPtr= 0;
+		ErrorNo = 0;	// error cancel
+		goto restart;
+	}
+
+	exptr2=ExecPtr;
+	LocalInt[fxreg][0]=start;
+	result=0;
+	while ( LocalInt[fxreg][0] <= end ) {
+		ExecPtr=exptr;
+		result+=CB_EvalInt( SRC );	//
+		LocalInt[fxreg][0]+=step;
+	}
+	LocalInt[fxreg][0]=end;
+	ExecPtr=exptr2;
+	return result;
+}
+
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte

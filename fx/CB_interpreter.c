@@ -680,7 +680,7 @@ int CB_interpreter_sub( char *SRC ) {
 					strjp:
 						ExecPtr-=2;
 						CB_Str(SRC) ;
-						dspflag=0;
+//						dspflag=0;
 						break;
 
 					case 0x05:	// >DMS
@@ -801,7 +801,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0x22:	// " "
 				ExecPtr--;
 				CB_Str(SRC) ;
-				dspflag=1;
+//				dspflag=1;
 				break;
 			case '?':	// ?
 				CB_Input(SRC);
@@ -826,13 +826,19 @@ int CB_interpreter_sub( char *SRC ) {
 				excptr=ExecPtr;
 				dspflag=0;
 				dspflagtmp=2;
-				if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
-				else		CB_CurrentValue    = EvalsubTop( SRC );
-				if ( dspflag>=3 ) {
-					if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
-					ExecPtr=excptr; ListEvalsubTopAns(SRC);	// List calc
-					dspflagtmp=dspflag; //	2:nomal  3:mat  4:list
-					MatdspNo=CB_MatListAnsreg;
+				if (CB_INT)	{
+					CBint_CurrentValue = EvalIntsubTop( SRC );
+					if ( dspflag>=3 ) {
+						ExecPtr=excptr;
+						dspflagtmp=ListEvalIntsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
+					}
+				}
+				else {
+					CB_CurrentValue    = EvalsubTop( SRC );
+					if ( dspflag>=3 ) {
+						ExecPtr=excptr;
+						dspflagtmp=ListEvalsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
+					}
 				}
 				break;
 		}
@@ -918,7 +924,7 @@ int CB_interpreter( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
@@ -1083,7 +1089,11 @@ remloop:
 
 void CB_Rem( char *SRC, CchRem *CacheRem ){
 	int i;
-
+	int c=SRC[ExecPtr];
+	if ( c=='#' ) { 	// C.Basic command
+		Skip_rem( SRC );
+		return;
+	}
 	for ( i=0; i<CacheRem->CNT; i++ ) {
 		if ( CacheRem->Ptr[i]==ExecPtr ) { ExecPtr=CacheRem->Adrs[i]; return ; }	// adrs ok
 	}
@@ -1250,7 +1260,7 @@ void CB_If( char *SRC, CchIf *CacheIf ){
 	value = CB_EvalInt( SRC ) ;
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
-	if ( c == 0x27 ) if ( SRC[++ExecPtr]=='/' )  c=SRC[++ExecPtr];
+	if ( c == 0x27 ) { Skip_rem(SRC); c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
 	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x01 ) ) { CB_Error(ThenWithoutIfERR); return; } // not Then error 
 	ExecPtr+=2 ;
 	if ( value ) return ; // true
@@ -1341,10 +1351,23 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		} else {
 			StackFor->IntStep[StackFor->Ptr] = 1;
 		}
+		if ( StackFor->IntStep[StackFor->Ptr] > 0 ) { 	// step +
+			if ( CBint_CurrentValue > StackFor->IntEnd[StackFor->Ptr] ) {  // for next cancel
+				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+				return;
+			}
+		}
+		else {									// step -
+			if ( CBint_CurrentValue < StackFor->IntEnd[StackFor->Ptr] ) {  // for next cancel
+				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+				return;
+			}
+		}
 		StackFor->Adrs[StackFor->Ptr] = ExecPtr;
 		StackFor->Ptr++;
 		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
 		CurrentStruct->CNT++;
+		
 	} else {			//					------------ Double mode
 		CB_CurrentValue = EvalsubTop( SRC );
 		c=SRC[ExecPtr];
@@ -1368,6 +1391,18 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 			StackFor->Step[StackFor->Ptr] = EvalsubTop( SRC );
 		} else {
 			StackFor->Step[StackFor->Ptr] = 1;
+		}
+		if ( StackFor->Step[StackFor->Ptr] > 0 ) { 	// step +
+			if ( CB_CurrentValue > StackFor->End[StackFor->Ptr] ) { // for next cancel
+				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+				return;
+			}
+		}
+		else {									// step -
+			if ( CB_CurrentValue < StackFor->End[StackFor->Ptr] ) { // for next cancel
+				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+				return;
+			}
 		}
 		StackFor->Adrs[StackFor->Ptr] = ExecPtr;
 		StackFor->Ptr++;
@@ -1918,6 +1953,7 @@ void CB_Store( char *SRC ){	// ->
 		} else if ( c == 0x51 ) {	// List
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
+		  Listj:
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; dspflag=0; return ; }	// ListAns -> List 1
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -1927,6 +1963,10 @@ void CB_Store( char *SRC ){	// ->
 				MatOprand1( SRC, reg, &dimA, &dimB);
 				goto Matrix2;
 			}
+		} else if ( (0x6A<=c) && (c<=0x6F) ) {	// List1~List6
+			ExecPtr+=2;
+			reg=c+(32-0x6A);
+			goto Listj;
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
@@ -2028,13 +2068,13 @@ void CB_Store( char *SRC ){	// ->
 }
 
 //----------------------------------------------------------------------------------------------
-int  CB_Input( char *SRC ){
+void  CB_Input( char *SRC ){
 	unsigned int key;
 	int c;
 	double DefaultValue=0;
 	int flag=0,flagint=0;
 	int reg,bptr,mptr;
-	int dimA,dimB;
+	int dimA,dimB,base;
 	char buffer[32];
 	char*	MatAryC;
 	short*	MatAryW;
@@ -2138,27 +2178,27 @@ int  CB_Input( char *SRC ){
 				DefaultValue = Yfct ;
 				flag=1;
 		} else if ( c == 0xFFFFFFF0 ) {	// GraphY
-			ExecPtr+=2;
 			reg=defaultGraphAry;
-			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
-			dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-			if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-			dimB=1;
-			flag=3;
-			ExecPtr=bptr;
+			goto strj;
 		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x3F ) {	// Str 1-20
-			ExecPtr+=2;
 			reg=defaultStrAry;
-			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
+		  strj:
+			ExecPtr+=2;
+			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return; }	// Memory error
 			dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-			if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+			base = MatAry[reg].Base;
+			if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 			dimB=1;
 			flag=3;
 			ExecPtr=bptr;
+		} else
+		if ( c == 0x1B ) {	// fn
+			reg=defaultFnAry;
+			goto strj;
 		} else
 		if ( c == 0x41 ) {	// DATE
 			ExecPtr+=2;
@@ -2192,7 +2232,7 @@ int  CB_Input( char *SRC ){
 		case 0:	// ? -> A value
 			CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
 			ErrorNo=0; // error cancel
-			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return 0; }
+			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			break;
 		case 1:	// ?A value
@@ -2201,7 +2241,7 @@ int  CB_Input( char *SRC ){
 			Scrl_Y();
 			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
 			ErrorNo=0; // error cancel
-			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return 0; }
+			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			if ( flagint ) {
 				CBint_Store( SRC );
@@ -2214,7 +2254,7 @@ int  CB_Input( char *SRC ){
 			CB_CurrentStr[0]='\0';
 	Inpj1:	key=InputStr( 1, CursorY, CB_StrBufferMax-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return 0; }
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return ; }
 			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
 			CB_StorStr( SRC );
 			break;
@@ -2226,7 +2266,7 @@ int  CB_Input( char *SRC ){
 			Scrl_Y();
 			key=InputStr( 1, CursorY, MatAry[reg].SizeB-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return 0; }
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return ; }
 			CB_StorStr( SRC );
 			break;
 		case 4:	// ?DATE
@@ -2243,7 +2283,7 @@ int  CB_Input( char *SRC ){
 	}
 	Scrl_Y();
 	Bdisp_PutDisp_DD_DrawBusy();
-	return 0 ;
+	return ;
 }
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

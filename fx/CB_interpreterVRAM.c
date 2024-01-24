@@ -290,12 +290,6 @@ void CB_Locate( char *SRC ){
 
 //-----------------------------------------------------------------------------
 
-void CB_ChangeViewWindow() {
-	int scrmode=ScreenMode;
-	if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
-	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	if ( scrmode == 0 )	CB_SelectTextVRAM();	// Select Text Screen
-}
 int CB_ChangeGraphicMode( char *SRC ) {
 	int c=SRC[ExecPtr];
 	if ( c == '@' ) {	// Only Vram Operation
@@ -315,6 +309,11 @@ int CB_ChangeGraphicMode( char *SRC ) {
 
 int RangeErrorCK( char *SRC ) {
 	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { CB_Error(RangeERR); PrevOpcode( SRC, &ExecPtr ); return ErrorNo; }	// Range error
+	return 0;
+}
+int CB_RangeErrorCK_ChangeGraphicMode( char *SRC ) {
+	if ( RangeErrorCK( SRC ) ) return 1;
+	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
 	return 0;
 }
 
@@ -337,8 +336,7 @@ void CB_Text( char *SRC ) { //	Text
 	int maxoplen;
 	int kanamini=1;
 
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	if ( SRC[ExecPtr] == '@' ) { ExecPtr++; kanamini=0; }		// OS PrintMini
 	CB_TextOprand( SRC, &py, &px);
 	c=SRC[ExecPtr];
@@ -380,8 +378,7 @@ void CB_LocateYX( char *SRC ){
 	int mode;
 	int maxoplen;
 
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	CB_TextOprand( SRC, &py, &px);
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -403,6 +400,12 @@ void CB_LocateYX( char *SRC ){
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
+void CB_ChangeViewWindow() {
+	int scrmode=ScreenMode;
+	if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
+	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+	if ( scrmode == 0 )	CB_SelectTextVRAM();	// Select Text Screen
+}
 void CB_ViewWindow( char *SRC ) { //	ViewWindow
 	int c;
 	int reg=0;
@@ -440,8 +443,7 @@ void CB_FLine( char *SRC) { //	F-Line
 	double x1,y1,x2,y2;
 	int style=S_L_Style;
 
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	x1=CB_EvalDbl( SRC );
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -465,8 +467,7 @@ void CB_FLine( char *SRC) { //	F-Line
 void CB_Line( char *SRC ) { //	Line
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	Line( style, CB_SetPointMode( SRC ) , 1 );	// error check
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 	tmp_Style = -1;
@@ -476,8 +477,7 @@ void CB_Vertical( char *SRC ) { //	Vertical
 	double x;
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	x=CB_EvalDbl( SRC );
 	Vertical(x, style, CB_SetPointMode( SRC ) );
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
@@ -487,8 +487,7 @@ void CB_Horizontal( char *SRC ) { //	Horizontal
 	double y;
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	y=CB_EvalDbl( SRC );
 	Horizontal(y, style, CB_SetPointMode( SRC ) );
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
@@ -499,8 +498,7 @@ void CB_Horizontal( char *SRC ) { //	Horizontal
 void CB_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 	double x,y;
 	int px,py;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	y = (EvalsubTop( SRC ));
 	py=y;
 	if ( ( y-floor(y) ) || ( (py)<MatBase ) || ( (py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
@@ -541,8 +539,7 @@ void CB_Plot( char *SRC ) { //	Plot
 	int c;
 	double x,y;
 	
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	c=SRC[ExecPtr];
 	if ( ( c==':' ) || (c==0x0D) || ( c==0x0C ) || (c==0x00) ) {
 		x=(Xmax+Xmin)/2;
@@ -566,8 +563,7 @@ void CB_Plot( char *SRC ) { //	Plot
 
 void CB_PlotSub( char *SRC, int mode ) { //	mode  1:PlotOn  0:PlotOff  2:PlotChg
 	double x,y;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	x=CB_EvalDbl( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -583,8 +579,7 @@ void CB_Circle( char *SRC ) { //	Circle
 	double x,y,r;
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	x=CB_EvalDbl( SRC );
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -637,36 +632,64 @@ void RclPictSmem( int pictNo){
 	WriteVram( pict+0x4C );
 	free(pict);
 }
-
+unsigned char * GetheapPict(){
+	unsigned char *pict;
+	pict = (unsigned char *) malloc( 1024 );
+	if( pict == NULL ) { CB_Error(NotEnoughMemoryERR); return; }	// Not enough memory error
+	return pict;
+}
 void StoPict( int pictNo){
 	int i,stat;
 	unsigned char *pict;
 	
 	if ( PictMode == 0 ) { StoPictSmem(pictNo); return; }	// strage memory mode
 	
-	if ( PictAry[pictNo] != NULL ) { // already exist heap mode
-		pict = PictAry[pictNo] ;						// Matrix array ptr*
-	} else {
-		pict = (unsigned char *) malloc( 1024 );
-		if( pict == NULL ) { CB_Error(NotEnoughMemoryERR); return; }	// Not enough memory error
-		PictAry[pictNo] = pict ;						// Pict array ptr*
+	if ( PictAry[pictNo] == NULL ) { //
+		PictAry[pictNo] = GetheapPict() ;						// New Pict array ptr*
+		if ( ErrorNo ) return;
 	}
+	pict = PictAry[pictNo];	//  heap mode
 	ReadVram(pict);
 }
 
-void RclPict( int pictNo){
+void RclPict( int pictNo, int errorcheck){
 	unsigned char *pict;
+	unsigned char *pict2;
 	int i;
-	if ( PictMode == 0 ) { RclPictSmem(pictNo); return; }	// strage memory mode
+	if ( PictMode == 0 ) {	// strage memory mode
+		RclPictSmem(pictNo);
+		if ( errorcheck ) return;
+		ErrorNo=0;
+		return;
+	}
 	
-	if ( PictAry[pictNo] == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
-	pict=PictAry[pictNo];	//  heap mode
+	pict = PictAry[pictNo];	//  heap mode
+	if ( pict == NULL ) {	//  not exist : read smem
+		pict2=(unsigned char *)LoadPicture( pictNo );
+		if ( pict2 == NULL ) { CB_Error(MemoryERR);
+			if ( errorcheck ) return;
+			ErrorNo=0;
+			return;
+		}
+		pict = GetheapPict() ;						// Pict array ptr*
+		if ( pict != NULL ) {
+			PictAry[pictNo] = pict;			//  heap mode pict
+			memcpy(pict, pict2+0x4C, 1024 );
+			WriteVram( pict );
+			free(pict2);
+			return;
+		} else {
+			WriteVram( pict2+0x4C );
+			free(pict2);
+			return ;
+		}
+	}
 	WriteVram( pict );
 }
 
 void CB_StoPict( char *SRC ) { //	StoPict
 	int n;
-	CB_SelectGraphVRAM();	// Select Graphic Screen
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	StoPict(n);
@@ -674,20 +697,22 @@ void CB_StoPict( char *SRC ) { //	StoPict
 }
 void CB_RclPict( char *SRC ) { //	RclPict
 	int n;
-	CB_SelectGraphVRAM();	// Select Graphic Screen
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	RclPict(n);
+	RclPict(n, 1);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 
 void CB_BG_None( char *SRC ) { //	BG_None
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	BG_Pict_No=0;
 }
 void CB_BG_Pict( char *SRC ) { //	BG_Pict
 	int n;
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	BG_Pict_No=n;
 }
 
@@ -717,8 +742,7 @@ void CB_RectSub( char *SRC , int RectMode ) { // RectMode  0:Rect  1:RectFill
 	int mode;
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	CB_DotOprandRect( SRC, &px1, &py1);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -758,8 +782,7 @@ void CB_DotShape( char *SRC ) { // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern
 	int mode,mode1,mode2;
 	int pat1,pat2;
 	
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 
 	CB_DotOprandRect( SRC, &px1, &py1);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -960,8 +983,7 @@ void CB_DotGet( char *SRC ){	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
 	int ElementSize;
 	int scrmode=ScreenMode;
 	
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	CB_DotOprand( SRC, &px1, &py1);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -1133,8 +1155,7 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 		}
 
 	} else {
-			if ( RangeErrorCK( SRC ) ) return;
-			CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+			if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 			CB_DotOprand( SRC, &px1, &py1);
 			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 			ExecPtr++;
@@ -1754,8 +1775,7 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 void CB_DrawGraph(  char *SRC ){
 	int reg,dimA,base;
 	int i;
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	reg=defaultGraphAry;
 	if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return; }	// Memory error
 	base=MatAry[reg].Base;
@@ -1767,9 +1787,8 @@ void CB_DrawGraph(  char *SRC ){
 }
 
 void CB_GraphY( char *SRC ){
-	if ( RangeErrorCK( SRC ) ) return;
 	CB_Str( SRC );				// graph text print
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	GraphY=CB_CurrentStr;
 	Graph_Draw();
 }
@@ -1794,8 +1813,7 @@ void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
 	int errflag=0;
 	double regTback=regT;
 	
-	if ( RangeErrorCK( SRC ) ) return;
-	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	
 	GraphX=SRC+ExecPtr;
 	regT=TThetamin;
@@ -1933,6 +1951,7 @@ void CB_S_WindMan( char *SRC ) {
 	return;
 }
 void CB_DrawStat( char *SRC ) {
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	DrawStat();
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }

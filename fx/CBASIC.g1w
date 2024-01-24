@@ -1,6 +1,6 @@
 [DLSimProject]
 Name=CBASIC
-Version=01.10.0002
+Version=01.10.2000
 Model=:fx-9860G.dlm
 SourcePath=.
 MemoryPath=INIT
@@ -36,6 +36,7 @@ SourceFile=:CB_interpreterVRAM.c
 SourceFile=:CB_MonochromeLib.c
 SourceFile=:MonochromeLib.c
 SourceFile=:CB_ListEval.c
+SourceFile=:CBI_ListEval.c
 HeaderFile=:fx_syscall.h
 HeaderFile=:CB_interpreter.h
 HeaderFile=:CB_Eval.h

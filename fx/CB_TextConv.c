@@ -520,7 +520,7 @@ const char ConvListF700[][17]={
 "ACBreak",				// F717
 "ClrText",			// F718
 "ClrGraph",			// F719
-"ClrList",			// F71A
+"ClrList ",			// F71A
 "LinearReg(a+bx) ",	// F71B
 "S-L-Normal",		// F71C
 "S-L-Thick",		// F71D
@@ -1724,6 +1724,9 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 					if ( ( c == '!' ) || ( c == '-') ) {
 						srcbase[ofst++] = c;
 						textofst+=5;
+					} else {
+						srcbase[ofst++] = c;
+						textofst++;
 					}
 				} else {
 					srcbase[ofst++] = c;

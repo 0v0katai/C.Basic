@@ -776,7 +776,7 @@ unsigned int Explorer( int size, char *folder )
 
 //----------------------------------------------------------------------------------------------
 /* load file to buffer */
-char * loadFile( const char *name , int editMax, int disperror)
+char * loadFile( const char *name , int editMax, int disperror, int hiddenflag )
 {
 	int handle;
 	FONTCHARACTER filename[50];
@@ -795,8 +795,8 @@ char * loadFile( const char *name , int editMax, int disperror)
 
 	size = Bfile_GetFileSize( handle );
 
-//	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
-	buffer = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+editMax+4 );
+	if ( hiddenflag )	buffer = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+editMax+4 );
+	else				buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
 	if( buffer == NULL ) Abort();
 	memset( buffer, 0x00,     size*sizeof(char)+editMax+4 );
 
@@ -1139,14 +1139,21 @@ void ConvertToOpcode( char *filebase, char *sname, int editsize){
 }
 
 int CheckG1M( char *filebase ){	// Check G1M Basic file
+	unsigned int key;
 	int	fsize = 0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
 	int size  = SrcSize( filebase ) ;
-	if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize );
-		 return 1; // error
+	if ( ( fsize != size ) || ( filebase[0x20] != 'P' ) || ( filebase[0x21] != 'R' ) ){ 
+		if ( ( filebase[0x20] == 'P' ) && ( filebase[0x21] == 'I' ) && ( filebase[0x22] == 'C' ) ) {
+			memcpy( PictAry[0], filebase+0x4C, 1024 );	// Pict display
+			GetKey( &key );
+			return 1;
+		} else {
+			ErrorMSG( "Not support file", fsize );
+			return 1; // error
+		}
 	} 
 	return 0; // ok
 }
-
 int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	char *filebase;
 	int fsize,size;
@@ -1157,7 +1164,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
-			filebase = loadFile( fname , editsize + EditMaxfree, disperror );
+			filebase = loadFile( fname , editsize + EditMaxfree, disperror, 1 );	// hidden ram
 			if ( filebase == NULL ) return 1;
 			textsize=strlen(filebase);
 			strncpy( basname, sname, strlen(sname)-4);
@@ -1169,7 +1176,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 			progsize = textsize +  editsize ;
 			CurrentFileMode=1;		// text load save mode
 	} else {	// G1M file
-			filebase = loadFile( fname , editsize, disperror );
+			filebase = loadFile( fname , editsize, disperror, 1 );	// hidden ram
 			if ( filebase == NULL ) return 1;
 			if ( CheckG1M( filebase ) ) { HiddenRAM_freeProg( filebase ); return 1; } // not support g1m
 			progsize = SrcSize( filebase ) + editsize ;
@@ -1388,10 +1395,18 @@ char * LoadPicture( int pictNo ){
 	pictname[4]= c;
 	pictname[5]= d;
 	pictname[6]='\0';
-	
-	sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], "Pict", pictname );
 
-	pict = loadFile( fname, 0, 0 );					//
+	sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], "Pict", pictname );	// Pict folder
+	pict = loadFile( fname, 0, 0, 0 );					// no hidden load
+	if ( pict != NULL ) return pict;
+
+	ErrorNo=0;	// error cancel
+	if( strlen(folder) == 0 )		// current folder
+		sprintf( fname, "\\\\%s\\%s.g1m", root[StorageMode], pictname );
+	else
+		sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], folder, pictname);
+		
+	pict = loadFile( fname, 0, 0, 0 );					// no hidden load
 	return pict;
 }
 
@@ -2113,11 +2128,11 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
@@ -2163,14 +2178,13 @@ void FavoritesDowndummy2( int *index ) {
 	tmp=files[(*index)+1].filesize;
 	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
 	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-//	files[(*index)+1].filesize=files[(*index)].filesize;
-//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-//	(*index)++;
-//	files[(*index)].filesize=tmp;
-//	SaveFavorites();
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2203,4 +2217,21 @@ void FavoritesDowndummy4( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+void FavoritesDowndummy5( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	(*index)++;
+//	files[(*index)].filesize=tmp;
+//	SaveFavorites();
+}
+/*
 */

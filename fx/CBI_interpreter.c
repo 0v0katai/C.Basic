@@ -102,6 +102,7 @@ void CBint_Store( char *SRC ){	// ->
 		} else if ( c == 0x51 ) {	// List
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
+		  Listj:
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; dspflag=0; return ; }	// ListAns -> List 1
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -111,6 +112,10 @@ void CBint_Store( char *SRC ){	// ->
 				MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
 				goto Matrix2;
 			}
+		} else if ( (0x6A<=c) && (c<=0x6F) ) {	// List1~List6
+			ExecPtr+=2;
+			reg=c+(32-0x6A);
+			goto Listj;
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;

@@ -282,7 +282,7 @@ int CB_ChangeGraphicMode( char *SRC ) ;
 void CB_Dsz( char *SRC ) ; //	Dsz
 void CB_Isz( char *SRC ) ; //	Isz
 void CB_Store( char *SRC );	// ->
-int  CB_Input( char *SRC );
+void CB_Input( char *SRC );
 int CB_Fix( char *SRC );
 int CB_Sci( char *SRC );
 int CB_Norm( char *SRC );
@@ -313,7 +313,7 @@ void CB_Circle( char *SRC ) ; //	Circle
 void CB_PxlSub( char *SRC, int mode ) ; //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 
 void StoPict( int pictNo);
-void RclPict( int pictNo);
+void RclPict( int pictNo, int errorcheck);
 void CB_DrawGraph(  char *SRC );
 void CB_GraphY( char *SRC );
 int  CB_GraphXYEval( char *SRC ) ;
@@ -342,8 +342,6 @@ void CB_PopUpWin( char *SRC );	//
 void CB_Menu( char *SRC, short *StackGotoAdrs) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
 void CB_Wait( char *SRC ) ;
 
-double CB_GraphYStr( char *SRC, int reg ) ;	//
-int CBint_GraphYStr( char *SRC, int reg ) ;	// 
 //-----------------------------------------------------------------------------
 typedef struct {		// 4 bytes
 	short	org;

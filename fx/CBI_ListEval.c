@@ -19,91 +19,18 @@
 #include "CB_MonochromeLib.h"
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-
-#define CB_MatListAnsregMax 4+28-1
-char   CB_MatListAnsreg=27;
 //-----------------------------------------------------------------------------
-
-void NewMatListAns( int dimA, int dimB, int base, int element ){
-	if ( CB_MatListAnsreg > CB_MatListAnsregMax-1 ) { CB_Error(MemoryERR); return ; }	// Memory error
-	CB_MatListAnsreg++;
-	DimMatrixSub( CB_MatListAnsreg, element, dimA, dimB, base);	//
-//	if ( ErrorNo ) return ; // error
-}
-void DeleteMatListAns() {
-	if ( CB_MatListAnsreg >= 28 ) {
-		DeleteMatrix( CB_MatListAnsreg );
-		CB_MatListAnsreg--;
-	}
-}
-void DeleteMatListAnsAll() {
-	CB_MatListAnsreg=CB_MatListAnsregMax;	// Ans init	
-	DeleteMatListAns();
-	DeleteMatListAns();
-	DeleteMatListAns();
-	DeleteMatListAns();
-}
-void CopyMatList2Ans( int reg ) {	// List 1 -> ListAns
-	int sizeA,sizeB;
-	int ElementSize;
-	int base;
-	sizeA        = MatAry[reg].SizeA;
-	sizeB        = MatAry[reg].SizeB;
-	base         = MatAry[reg].Base;
-	ElementSize  = MatAry[reg].ElementSize;
-	
-	NewMatListAns( sizeA, sizeB, base, ElementSize );
-	CopyMatrix( CB_MatListAnsreg, reg );		// reg -> CB_MatListAnsreg
-	MatdspNo=CB_MatListAnsreg;
-}
-void CopyMatList2AnsTop( int reg ) {	// List 1 -> ListAns top
-	if ( reg == 28 ) return ;
-	CB_MatListAnsreg=27;
-	CopyMatList2Ans( reg );
-}
-void CopyAns2MatList( char* SRC, int reg ) {	// ListAns -> List 1
-	int sizeA,sizeB;
-	int ElementSize;
-	int base;
-	
-	sizeA        = MatAry[CB_MatListAnsreg].SizeA;
-	sizeB        = MatAry[CB_MatListAnsreg].SizeB;
-	base         = MatAry[CB_MatListAnsreg].Base;
-	ElementSize  = MatAry[CB_MatListAnsreg].ElementSize;
-	if ( sizeA == 0 ) { CB_Error(ArgumentERR); return ; } // Argument error
-	
-	ElementSize=ElementSizeSelect( SRC, &base, ElementSize) & 0xFF;
-	DimMatrixSub( reg, ElementSize, sizeA, sizeB, base);	//
-	if ( ErrorNo ) return ; // error
-	CopyMatrix( reg, CB_MatListAnsreg );
-	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
-}
-int CheckAnsMatList( int reg ) {	// ListAns <-> List 1
-	
-	if ( MatAry[reg].SizeA != MatAry[CB_MatListAnsreg].SizeA ) { CB_Error(DimensionERR); return 1 ; }	// Dimension error
-	else
-		return 0;	// ok	
-}
-
-void WriteListAns2( double x, double y ) {
-	dspflag=4;	// List ans
-	NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-	WriteMatrix( CB_MatListAnsreg, 1,1, x ) ;	//
-	WriteMatrix( CB_MatListAnsreg, 2,1, y ) ;	// 
-}
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-typedef double (*FXPTR)( double x );
-double EvalFxDbl( FXPTR fxptr, double result ) { 
+typedef int (*FXPTR)( int x );
+int EvalFxInt( FXPTR fxptr, int result ) { 
 	int i;
 	int base;
 	int resultreg=CB_MatListAnsreg;
 	if ( dspflag == 4 ) {	// Listresult
 		base=MatAry[resultreg].Base;
 		for (i=base; i<MatAry[resultreg].SizeA+base; i++ ) {
-			result = ReadMatrix( resultreg, i, base );
+			result = ReadMatrixInt( resultreg, i, base );
 			result = (fxptr)( result );
-			WriteMatrix( resultreg, i, base, result ) ;	// Fx(Listresult) -> Listresult
+			WriteMatrixInt( resultreg, i, base, result ) ;	// Fx(Listresult) -> Listresult
 		}
 	} else {	// result
 		result = (fxptr)( result ) ;
@@ -111,8 +38,8 @@ double EvalFxDbl( FXPTR fxptr, double result ) {
 	return result;
 }
 
-typedef double (*FXPTR2)( double x, double y );
-double EvalFxDbl2( FXPTR2 fxptr2, int *resultflag, int *resultreg, double result, double tmp ) { 
+typedef int (*FXPTR2)( int x, int y );
+int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int tmp ) { 
 	int i;
 	int base;
 	int tmpreg=CB_MatListAnsreg;
@@ -121,15 +48,15 @@ double EvalFxDbl2( FXPTR2 fxptr2, int *resultflag, int *resultreg, double result
 		if ( *resultflag == 4 ) {
 			if ( CheckAnsMatList(*resultreg) ) return 0;	// Not same List error
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
-				result = ReadMatrix( *resultreg, i, base);
-				tmp    = ReadMatrix( tmpreg, i, base);
-				WriteMatrix( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
+				result = ReadMatrixInt( *resultreg, i, base);
+				tmp    = ReadMatrixInt( tmpreg, i, base);
+				WriteMatrixInt( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
 			}
 			DeleteMatListAns();
 		} else {
 			for (i=base; i<MatAry[tmpreg].SizeA+base; i++ ) {
-				tmp    = ReadMatrix( tmpreg, i, base);
-				WriteMatrix( tmpreg, i, base, (fxptr2)(result,tmp) ) ;	// result * Listtmp -> Listresult
+				tmp    = ReadMatrixInt( tmpreg, i, base);
+				WriteMatrixInt( tmpreg, i, base, (fxptr2)(result,tmp) ) ;	// result * Listtmp -> Listresult
 			}
 			*resultflag=dspflag;
 			*resultreg=tmpreg;
@@ -138,8 +65,8 @@ double EvalFxDbl2( FXPTR2 fxptr2, int *resultflag, int *resultreg, double result
 		if ( *resultflag == 4 ) { // 4:Listresult
 			base=MatAry[*resultreg].Base;
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
-				result = ReadMatrix( *resultreg, i, base);
-				WriteMatrix( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult * tmp -> Listresult
+				result = ReadMatrixInt( *resultreg, i, base);
+				WriteMatrixInt( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult * tmp -> Listresult
 			}
 			dspflag = *resultflag ;
 		} else	{
@@ -151,9 +78,9 @@ double EvalFxDbl2( FXPTR2 fxptr2, int *resultflag, int *resultreg, double result
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-double ListEvalsub1(char *SRC) {	// 1st Priority
-	double result=0,tmp,tmp2;
-	double sign=1;
+int ListEvalIntsub1(char *SRC) {	// 1st Priority
+	int result=0,tmp,tmp2;
+	int sign=1;
 	int c,d;
 	char *pt;
 	int dimA,dimB,reg,x,y,base;
@@ -161,7 +88,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	double*	MatAryF;
+	int*	MatAryF;
 	int resultreg;
 	int resultflag;
 
@@ -169,19 +96,19 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 
 	c = SRC[ExecPtr++];
 	if ( c == '(') {
-		result = ListEvalsubTop( SRC );
+		result = ListEvalIntsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 		return result;
 	}
 	while ( c == 0xFFFFFF89 ) c=SRC[ExecPtr++];	// +
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
-		return EvalFxDbl( &fsign, ListEvalsub1( SRC ) ) ; 
+		return EvalFxInt( &fsignint, ListEvalIntsub1( SRC ) ) ; 
 	}
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  {
 		reg=c-'A';
 	  regj:
 		c=SRC[ExecPtr];
-		if ( c=='%' ) { ExecPtr++; return LocalInt[reg][0] ; }
+		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
 		else
 		if ( c=='[' ) { goto Matrix; }
 		else
@@ -191,11 +118,11 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 		} else
-		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
-		if ( CB_INT) return LocalInt[reg][0] ; else return LocalDbl[reg][0] ;
+		if ( c=='%' ) ExecPtr++;
+		return LocalInt[reg][0] ;
 	}
-	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
-		ExecPtr--; return Eval_atof( SRC , c );
+	if ( ( '0'<=c )&&( c<='9' ) ) {
+		ExecPtr--; return  Eval_atod( SRC, c );
 	}
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
@@ -203,32 +130,32 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			c = SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x40 :		// Mat A[a,b]
-					reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
-					Matrix1:	
+					reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
+					Matrix1:
 					if ( SRC[ExecPtr] == '[' ) {
 					Matrix:	
 						ExecPtr++;
-						MatOprand2( SRC, reg, &dimA, &dimB );
+						MatOprandInt2( SRC, reg, &dimA, &dimB );
 					Matrix2:
 						if ( ErrorNo ) return 1 ; // error
 					} else { dspflag=3;	// Mat A
 							dimA=MatAry[reg].Base; dimB=dimA;
 							CopyMatList2Ans( reg );
 					}
-					return ReadMatrix( reg, dimA, dimB);
+					return ReadMatrixInt( reg, dimA, dimB);
 						
 				case 0x51 :		// List 1~26
 					reg=ListRegVar( SRC );
 				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
 						ExecPtr++;
-						MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
+						MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
 						if ( ErrorNo ) return 1 ; // error
 					} else { dspflag=4;	// List 1
 							dimA=MatAry[reg].Base; dimB=dimA;
 							CopyMatList2Ans( reg );
 					}
-					return ReadMatrix( reg, dimA, dimB);
+					return ReadMatrixInt( reg, dimA, dimB);
 					
 				case 0x6A :		// List1
 				case 0x6B :		// List2
@@ -239,27 +166,27 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					reg=c+(32-0x6A); goto Listj;
 						
 				case 0x3A :		// MOD(a,b)
-					result = ListEvalsubTop( SRC );
+					result = ListEvalIntsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
 					resultreg=CB_MatListAnsreg;
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
-					result = EvalFxDbl2( &fMOD, &resultflag, &resultreg, result, ListEvalsubTop( SRC ) ) ;
+					result = EvalFxInt2( &fMODint, &resultflag, &resultreg, result, ListEvalIntsubTop( SRC ) ) ;
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 						
 				case 0xFFFFFF85 :		// logab(a,b)
-					result = ListEvalsubTop( SRC );
+					result = ListEvalIntsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
 					resultreg=CB_MatListAnsreg;
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
-					result = EvalFxDbl2( &flogab, &resultflag, &resultreg, result, ListEvalsubTop( SRC ) ) ;
+					result = EvalFxInt2( &flogabint, &resultflag, &resultreg, result, ListEvalIntsubTop( SRC ) ) ;
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 
 				case 0xFFFFFFB3 :		// Not
-					return EvalFxDbl( &fNot, ListEvalsub5( SRC ) ) ; 
+					return EvalFxInt( &fNotint, ListEvalIntsub5( SRC ) ) ; 
 						
 				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
@@ -279,10 +206,10 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return 	result ;
 					
 				case 0xFFFFFF87 :		// RanInt#(st,en)
-					x=NoListEvalsubTop( SRC );
+					x=NoListEvalIntsubTop( SRC );
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
-					y=NoListEvalsubTop( SRC );
+					y=NoListEvalIntsubTop( SRC );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	//				if ( x>=y ) CB_Error(ArgumentERR);  // Argument error
 					if ( x>y ) { i=x; x=y; y=i; }
@@ -301,22 +228,13 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x5F :				// 1/128 Ticks
 					return RTC_GetTicks()-CB_TicksAdjust;	// 
 						
-				case 0xFFFFFF86 :		// RndFix(n,digit)
-					tmp=(NoListEvalsubTop( SRC ));
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++ ;	// ',' skip
-					i = NoListEvalsubTop( SRC ) +.5;
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					result=Round( tmp, Fix, i) ;
-					return result ;
-					
 				case 0xFFFFFFF0 :		// GraphY str
-					return CB_GraphYStr( SRC, 1 );
+					return CBint_GraphYStr( SRC, 1 );
 					
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC );
 				case 0xFFFFFFF6 :		// Peek(
-					return  CB_Peek( SRC, NoListEvalsubTop( SRC ) );
+					return  CB_Peek( SRC, NoListEvalIntsubTop( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
 					return  CB_VarPtr( SRC );
 				case 0xFFFFFFFA :		// ProgPtr(
@@ -345,17 +263,17 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return Yfct;
 	
 				case 0x29 :				// Sigma( X, X, 1, 1000)
-					return CB_Sigma( SRC );
+					return CB_SigmaInt( SRC );
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
-					return CB_MinMax( SRC, 1 );
+					return CB_MinMaxInt( SRC, 1 );
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
-					return CB_MinMax( SRC, 0 );
+					return CB_MinMaxInt( SRC, 0 );
 				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-					return CB_Mean( SRC );
+					return CB_MeanInt( SRC );
 				case 0x4C :				// Sum List 1
-					return CB_Sum( SRC );
+					return CB_SumInt( SRC );
 				case 0x4D :				// Prod List 1
-					return CB_Prod( SRC );
+					return CB_ProdInt( SRC );
 				case 0x47:	// Fill(
 					CB_MatFill(SRC);
 					return 3;
@@ -363,7 +281,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					CB_Argument(SRC);
 					return 3;
 				case 0x2C:	// Seq
-					CB_Seq(SRC);
+					CB_SeqInt(SRC);
 					return 4;
 				case 0x41:	// Trn
 					CB_MatTrn(SRC);
@@ -377,7 +295,8 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 							return MatAry[reg].SizeA;
 						} else
 						if ( SRC[ExecPtr+1]==0x51 ) {	// Dim List
-							goto ColSizej;
+							MatrixOprandreg( SRC, &reg );
+							return MatAry[reg].SizeA;
 						}
 					} 
 					ExecPtr--;	// error
@@ -389,7 +308,6 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					if (i <= 4 ) i=1;
 					return i;
 				case 0x59 :				// ColSize( Mat A )
-				  ColSizej:
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeA;
@@ -418,23 +336,21 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[ExecPtr];
 			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atod( SRC, c ) );
-			result=(double)rand()/(double)(RAND_MAX+1.0);
-			return result ;
+			return rand();
 		case 0xFFFFFF97 :	// abs
-			return EvalFxDbl( &fabs, ListEvalsub5( SRC ) ) ; 
+			return EvalFxInt( &fabsint, ListEvalIntsub5( SRC ) ) ; 
 		case 0xFFFFFFA6 :	// int
-			return EvalFxDbl( &fint, ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFFDE :	// intg
-			return EvalFxDbl( &floor, ListEvalsub5( SRC ) ) ; 
+			return EvalFxInt( &fintint, ListEvalIntsub5( SRC ) ) ; 
 		case 0xFFFFFFB6 :	// frac
-			return EvalFxDbl( &frac, ListEvalsub5( SRC ) ) ; 
+			return EvalFxInt( &ffracint, ListEvalIntsub5( SRC ) ) ; 
 //		case 0xFFFFFFA7 :	// Not
-//			return EvalFxDbl( &fNot, ListEvalsub5( SRC ) ) ; 
+//			return EvalFxInt( &fNot, ListEvalIntsub5( SRC ) ) ; 
 
 		case '%' :	// 1/128 Ticks
 			return RTC_GetTicks()-CB_TicksAdjust;	// 
 		case '*' :	// peek
-			return CB_Peek( SRC, ListEvalsub1( SRC ) );	// 
+			return CB_Peek( SRC, ListEvalIntsub1( SRC ) );	// 
 
 		case '{':	// { 1,2,3,4,5... }->List Ans
 			CB_List(SRC);
@@ -443,14 +359,27 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			CB_Matrix(SRC);
 			return 0;
 
+		case 0xFFFFFF86 :	// sqr
+			return EvalFxInt( &fsqrtint, ListEvalIntsub5( SRC ) ) ; 
+		case 0xFFFFFF95 :	// log10
+			return EvalFxInt( &flog10int, ListEvalIntsub5( SRC ) ) ; 
+		case 0xFFFFFFB5 :	// 10^
+			return EvalFxInt( &fpow10int, ListEvalIntsub5( SRC ) ) ; 
+		case 0xFFFFFF85 :	// ln
+			return EvalFxInt( &flnint, ListEvalIntsub5( SRC ) ) ; 
+		case 0xFFFFFFA5 :	// expn
+			return EvalFxInt( &fexpint, ListEvalIntsub5( SRC ) ) ; 
+		case 0xFFFFFF96 :	// cuberoot
+			return EvalFxInt( &fcuberootint, ListEvalIntsub5( SRC ) ) ; 
+			
 		case 0xFFFFFFF7:	// F7..
 			c = SRC[ExecPtr++];
 			switch ( c ) {
 				case 0xFFFFFFAF:	// PxlTest(y,x)
-					y=(NoListEvalsubTop( SRC ));
+					y=(NoListEvalIntsubTop( SRC ));
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
-					x=(NoListEvalsubTop( SRC ));
+					x=(NoListEvalIntsubTop( SRC ));
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result = PxlTest(y, x) ;			// 
 					return result ;
@@ -472,67 +401,6 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			}
 			break;
 
-		case 0xFFFFFF86 :	// sqr
-			return EvalFxDbl( &fsqrt, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF95 :	// log10
-			return EvalFxDbl( &flog10, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFB5 :	// 10^
-			return EvalFxDbl( &fpow10, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF85 :	// ln
-			return EvalFxDbl( &fln, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFA5 :	// expn
-			return EvalFxDbl( &fexp, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF96 :	// cuberoot
-			return EvalFxDbl( &fcuberoot, ListEvalsub5( SRC ) ) ; 
-
-		case 0xFFFFFF81 :	// sin
-			return EvalFxDbl( &fsin, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF82 :	// cos
-			return EvalFxDbl( &fcos, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF83 :	// tan
-			return EvalFxDbl( &ftan, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF91 :	// asin
-			return EvalFxDbl( &fasin, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF92 :	// acos
-			return EvalFxDbl( &fcos, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFF93 :	// atan
-			return EvalFxDbl( &fatan, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFA1 :	// sinh
-			return EvalFxDbl( &sinh, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFA2 :	// cosh
-			return EvalFxDbl( &cosh, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFA3 :	// tanh
-			return EvalFxDbl( &tanh, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFB1 :	// asinh
-			return EvalFxDbl( &asinh, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFB2 :	// acosh
-			return EvalFxDbl( &acosh, ListEvalsub5( SRC ) ) ; 
-		case 0xFFFFFFB3 :	// atanh
-			return EvalFxDbl( &atanh, ListEvalsub5( SRC ) ) ; 
-			
-		case 0xFFFFFF80 :	// Pol( x, y ) -> r=List Ans[1] , Theta=List Ans[2]
-			tmp=NoListEvalsubTop( SRC );
-			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR) ; return 0; }	// Syntax error
-			ExecPtr++;
-			tmp2=NoListEvalsubTop( SRC );
-			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-			WriteMatrix( CB_MatListAnsreg, 1,1, fpolr(tmp,tmp2) ) ;	// r
-			WriteMatrix( CB_MatListAnsreg, 2,1, fpolt(tmp,tmp2) ) ;	// Theta
-			return 0;
-		case 0xFFFFFFA0 :	// Rec( r, Theta ) -> X,Y
-			tmp=NoListEvalsubTop( SRC );
-			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR) ; return 0; }	// Syntax error
-			ExecPtr++;
-			tmp2=NoListEvalsubTop( SRC );
-			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 64 );		// List Ans[2]
-			WriteMatrix( CB_MatListAnsreg, 1,1, frecx(tmp,tmp2) ) ;	// x
-			WriteMatrix( CB_MatListAnsreg, 2,1, frecy(tmp,tmp2) ) ;	// y
-			return 0;
-
 		case 0xFFFFFFF9:	// F9..
 			c = SRC[ExecPtr++];
 			switch ( c ) {
@@ -551,7 +419,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x21:	// Xdot
 					return Xdot;
 				case 0x1B :		// fn str
-					return CB_FnStr( SRC, 1 );
+					return CBint_FnStr( SRC, 1 );
 				default:
 					ExecPtr--;	// error
 					break;
@@ -575,79 +443,30 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 }
 
 //-----------------------------------------------------------------------------
-//int ListEvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
-//int ListEvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
+//int ListEvalIntObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+//int ListEvalIntObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
-double ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
+int ListEvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
-	double result,tmp;
+	int result,tmp;
 	int c,i;
 	int base;
 	int resultreg,tmpreg;
-	result = ListEvalsub1( SRC );
+	result = ListEvalIntsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
-				result = EvalFxDbl( &fsqu, result) ; 
+				result = EvalFxInt( &fsquint, result) ; 
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				result = EvalFxDbl( &frecip, result) ; 
+				result = EvalFxInt( &frecipint, result) ; 
 				break;
 			case  0xFFFFFFAB  :	//  !
-				result = EvalFxDbl( &ffact, result) ; 
+				result = EvalFxInt( &ffactint, result) ; 
 				break;
-				
-			case  0x01  :	//  femto
-				result = EvalFxDbl( &ffemto, result) ; 
-				break;
-			case  0x02  :	//  pico
-				result = EvalFxDbl( &fpico, result) ; 
-				break;
-			case  0x03  :	//  nano
-				result = EvalFxDbl( &fnano, result) ; 
-				break;
-			case  0x04  :	//  micro
-				result = EvalFxDbl( &fmicro, result) ; 
-				break;
-			case  0x05  :	//  milli
-				result = EvalFxDbl( &fmilli, result) ; 
-				break;
-			case  0x06  :	//  Kiro
-				result = EvalFxDbl( &fKiro, result) ; 
-				break;
-			case  0x07  :	//  Mega
-				result = EvalFxDbl( &fMega, result) ; 
-				break;
-			case  0x08  :	//  Giga
-				result = EvalFxDbl( &fGiga, result) ; 
-				break;
-			case  0x09  :	//  Tera
-				result = EvalFxDbl( &fTera, result) ; 
-				break;
-			case  0x0A  :	//  Peta
-				result = EvalFxDbl( &fPeta, result) ; 
-				break;
-			case  0x1B  :	//  Exa
-				result = EvalFxDbl( &fExa, result) ; 
-				break;
-				
-			case  0xFFFFFF8C  :	//  dms
-				result = DmsToDec( SRC, result );
-				break;
-				
-			case  0xFFFFFF9C  :	//  Deg
-				result = EvalFxDbl( &finvdegree, result) ; 
-				break;
-			case  0xFFFFFFAC  :	//  Rad
-				result = EvalFxDbl( &finvradian, result) ; 
-				break;
-			case  0xFFFFFFBC  :	//  Grad
-				result = EvalFxDbl( &finvgrad, result) ; 
-				break;
-				
 			default:
 				ExecPtr--;
 				return result;
@@ -656,24 +475,24 @@ double ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	 }
 	return result;
 }
-double ListEvalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
-	double result;
+int ListEvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
+	int result;
 	int c;
 	int resultreg;
 	int resultflag;
 	int execptr;
 	
-	result = ListEvalsub2( SRC );
+	result = ListEvalIntsub2( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
-				result = EvalFxDbl2( &fpow, &resultflag, &resultreg, result, ListEvalsub2( SRC ) ) ;
+				result = EvalFxInt2( &fpowint, &resultflag, &resultreg, result, ListEvalIntsub2( SRC ) ) ;
 				break;
 			case  0xFFFFFFB8  :	// powroot
-				result = EvalFxDbl2( &fpowroot, &resultflag, &resultreg, result, ListEvalsub2( SRC ) ) ;
+				result = EvalFxInt2( &fpowrootint, &resultflag, &resultreg, result, ListEvalIntsub2( SRC ) ) ;
 				break;
 			default:
 				ExecPtr--;
@@ -684,36 +503,14 @@ double ListEvalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 	return result;
 }
 
-double ListEvalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
-	double result,frac1,frac2,frac3;
-	unsigned int c;
-	result = ListEvalsub3( SRC );
-	c = SRC[ExecPtr];
-	if ( c == 0xFFFFFFBB ) {
-		ExecPtr++;
-		frac1 = result ;
-		frac2 = ListEvalsub3( SRC );
-		c = SRC[ExecPtr];
-		if ( c == 0xFFFFFFBB ) {
-			ExecPtr++;
-			frac3 = ListEvalsub3( SRC );
-			if ( frac3 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = frac1 + ( frac2 / frac3 ) ;
-		} else {
-			if ( frac2 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = ( frac1 / frac2 ) ;
-		}
-	}
-	return result;
-}
-double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
-	double result;
+int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
+	int result;
 	int c;
 	int resultreg;
 	int resultflag;
 	int execptr;
 	
-	result = ListEvalsub4( SRC );
+	result = ListEvalIntsub4( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
@@ -725,7 +522,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			 ( c == 0xFFFFFFD0 ) || // PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
 			 ( c == 0xFFFFFFC1 )) { // Ran#
-				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
+				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -748,7 +545,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x0A:	// Thetaptch
 				case 0x0B:	// Xfct
 				case 0x0C:	// Yfct
-				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
+				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 					break;
 				default:
 					goto exitj;
@@ -758,7 +555,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0xFFFFFFAF:	// PxlTest(y,x)
-				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
+				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 					break;
 				default:
 					goto exitj;
@@ -768,7 +565,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x21:	// Xdot
-				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
+				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 					break;
 				default:
 					goto exitj;
@@ -785,18 +582,18 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 		  exitj:
 			execptr=ExecPtr;
 			c=RegVarAliasEx(SRC);
-			if (c>0) { ExecPtr=execptr; result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ; }
+			if (c>0) { ExecPtr=execptr; result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ; }
 			else return result;
 		}
 	 }
 }
-double ListEvalsub7(char *SRC) {	//  7th Priority abbreviated multiplication type A/C
-	double result;
+int ListEvalIntsub7(char *SRC) {	//  7th Priority abbreviated multiplication type A/C
+	int result;
 	int c;
 	int resultreg;
 	int resultflag;
 	
-	result = ListEvalsub5( SRC );
+	result = ListEvalIntsub5( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
@@ -805,8 +602,8 @@ double ListEvalsub7(char *SRC) {	//  7th Priority abbreviated multiplication typ
 			case '(' :
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
-			case 0xFFFFFFDE :	// intg
 			case 0xFFFFFFB6 :	// frac
+			case 0xFFFFFFDE :	// intg
 			case 0xFFFFFF85 :	// ln
 			case 0xFFFFFF86 :	// sqr
 			case 0xFFFFFF95 :	// log10
@@ -815,19 +612,7 @@ double ListEvalsub7(char *SRC) {	//  7th Priority abbreviated multiplication typ
 			case 0xFFFFFFA7 :	// Not
 			case 0xFFFFFFB5 :	// 10^
 			case 0xFFFFFFB7 :	// Neg
-			case 0xFFFFFF81 :	// sin
-			case 0xFFFFFF82 :	// cos
-			case 0xFFFFFF83 :	// tan
-			case 0xFFFFFF91 :	// asin
-			case 0xFFFFFF92 :	// acos
-			case 0xFFFFFF93 :	// atan
-			case 0xFFFFFFA1 :	// sinh
-			case 0xFFFFFFA2 :	// cosh
-			case 0xFFFFFFA3 :	// tanh
-			case 0xFFFFFFB1 :	// asinh
-			case 0xFFFFFFB2 :	// acosh
-			case 0xFFFFFFB3 :	// atanh
-				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub5( SRC ) ) ;
+				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub5( SRC ) ) ;
 				break;
 			default:
 				return result;
@@ -837,32 +622,32 @@ double ListEvalsub7(char *SRC) {	//  7th Priority abbreviated multiplication typ
 	return result;
 }
 
-double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
-	double result;
+int ListEvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
+	int result;
 	int c;
 	int resultreg;
 	int resultflag;
 	
-	result = ListEvalsub7( SRC );
+	result = ListEvalIntsub7( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// ~
-				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
+				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
 				break;
 			case 0xFFFFFFB9 :		// €
-				result = EvalFxDbl2( &fDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
+				result = EvalFxInt2( &fDIVint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
-						result = EvalFxDbl2( &fIDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
+						result = EvalFxInt2( &fDIVint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
 						break;
 					case 0xFFFFFFBD:	// Rmdr
-						result = EvalFxDbl2( &fMOD, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
+						result = EvalFxInt2( &fMODint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
 						break;
 					default:
 						ExecPtr-=2;
@@ -878,23 +663,23 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	 }
 	return result;
 }
-double ListEvalsub11(char *SRC) {	//  11th Priority  ( +,- )
-	double result;
+int ListEvalIntsub11(char *SRC) {	//  11th Priority  ( +,- )
+	int result;
 	int c;
 	int resultreg;
 	int resultflag;
 
-	result = ListEvalsub10( SRC );
+	result = ListEvalIntsub10( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
-				result = EvalFxDbl2( &fADD, &resultflag, &resultreg, result, ListEvalsub10( SRC ) ) ;
+				result = EvalFxInt2( &fADDint, &resultflag, &resultreg, result, ListEvalIntsub10( SRC ) ) ;
 				break;
 			case 0xFFFFFF99 :		// -
-				result = EvalFxDbl2( &fSUB, &resultflag, &resultreg, result, ListEvalsub10( SRC ) ) ;
+				result = EvalFxInt2( &fSUBint, &resultflag, &resultreg, result, ListEvalIntsub10( SRC ) ) ;
 				break;
 			default:
 				ExecPtr--;
@@ -904,35 +689,35 @@ double ListEvalsub11(char *SRC) {	//  11th Priority  ( +,- )
 	 }
 	return result;
 }
-double ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
-	double result;
+int ListEvalIntsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
+	int result;
 	int c;
 	int resultreg;
 	int resultflag;
 	
-	result = ListEvalsub11( SRC );
+	result = ListEvalIntsub11( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case '=' :	// =
-				result = EvalFxDbl2( &fcmpEQ, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				result = EvalFxInt2( &fcmpEQint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
 				break;
 			case '>' :	// >
-				result = EvalFxDbl2( &fcmpGT, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				result = EvalFxInt2( &fcmpGTint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
 				break;
 			case '<' :	// <
-				result = EvalFxDbl2( &fcmpLT, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				result = EvalFxInt2( &fcmpLTint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
 				break;
 			case 0x11 :	// !=
-				result = EvalFxDbl2( &fcmpNE, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				result = EvalFxInt2( &fcmpNEint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
 				break;
 			case 0x12 :	// >=
-				result = EvalFxDbl2( &fcmpGE, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				result = EvalFxInt2( &fcmpGEint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
 				break;
 			case 0x10 :	// <=
-				result = EvalFxDbl2( &fcmpLE, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
+				result = EvalFxInt2( &fcmpLEint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
 				break;
 			default:
 				ExecPtr--;
@@ -942,13 +727,13 @@ double ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	 }
 	return result;
 }
-double ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
-	double result;
+int ListEvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
+	int result;
 	int c;
 	int resultreg;
 	int resultflag;
 	
-	result = ListEvalsub12( SRC );
+	result = ListEvalIntsub12( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
@@ -958,7 +743,7 @@ double ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 			switch ( c ) {
 				case 0xFFFFFFB0 :	// And
 					ExecPtr+=2;
-					result = EvalFxDbl2( &fAND, &resultflag, &resultreg, result, ListEvalsub12( SRC ) ) ;
+					result = EvalFxInt2( &fANDint, &resultflag, &resultreg, result, ListEvalIntsub12( SRC ) ) ;
 					break;
 				default:
 					return result;
@@ -968,14 +753,13 @@ double ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 	}
 }
 
-
-double ListEvalsubTop(char *SRC) {	//  
-	double result,dst;
+int ListEvalIntsubTop(char *SRC) {	//  
+	int result,dst;
 	int c,i;
 	int resultreg;
 	int resultflag;
 	
-	result = ListEvalsub13( SRC );
+	result = ListEvalIntsub13( SRC );
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
@@ -985,11 +769,11 @@ double ListEvalsubTop(char *SRC) {	//
 			switch ( c ) {
 				case 0xFFFFFFB1 :	// Or
 					ExecPtr+=2;
-					result = EvalFxDbl2( &fOR, &resultflag, &resultreg, result, ListEvalsub13( SRC ) ) ;
+					result = EvalFxInt2( &fORint, &resultflag, &resultreg, result, ListEvalIntsub13( SRC ) ) ;
 					break;
 				case 0xFFFFFFB4 :	// Xor
 					ExecPtr+=2;
-					result = EvalFxDbl2( &fXOR, &resultflag, &resultreg, result, ListEvalsub13( SRC ) ) ;
+					result = EvalFxInt2( &fXORint, &resultflag, &resultreg, result, ListEvalIntsub13( SRC ) ) ;
 					break;
 				default:
 					return result;
@@ -999,22 +783,23 @@ double ListEvalsubTop(char *SRC) {	//
 	}
 }
 
-double NoListEvalsubTop(char *SRC) {	//  
+int NoListEvalIntsubTop(char *SRC) {	//  
 	double result,tmp;
 	int c,i;
 	int base;
 
-	result = EvalsubTop( SRC );
+	result = EvalIntsubTop( SRC );
 	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return result; } // Argument error
 	return result;
 }
-int ListEvalsub1Ans(char *SRC) {	//  
-	double result,tmp;
+
+int ListEvalIntsub1Ans(char *SRC) {	//  
+	int result,tmp;
 	int c,i;
 	int base;
 	int resultreg,tmpreg;
 
-	result = ListEvalsub1( SRC );
+	result = ListEvalIntsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return result; } // Argument error
 
@@ -1023,14 +808,14 @@ int ListEvalsub1Ans(char *SRC) {	//
 }
 
 
-int ListEvalsubTopAns(char *SRC) {	//  
-	double result,tmp;
+int ListEvalIntsubTopAns(char *SRC) {	//  
+	int result,tmp;
 	int c,i;
 	int base;
 	int resultreg,tmpreg;
 
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
-	result = ListEvalsubTop( SRC );
+	result = ListEvalIntsubTop( SRC );
 	resultreg=CB_MatListAnsreg;
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return result; } // Argument error
 

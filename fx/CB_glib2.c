@@ -144,7 +144,7 @@ unsigned int Pict() {
 						n=PictSelectNum2( "Store In" );
 						if (n>0) { 
 							RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
-							StoPict(n);
+							StoPictSmem(n);
 							cont=0;
 						}
 						break;
@@ -152,7 +152,7 @@ unsigned int Pict() {
 						n=PictSelectNum2( "Recall From" );
 						if (n>0) { 
 							RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
-							RclPict(n);
+							RclPict(n, 1);
 							SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
 							cont=0;
 						}
@@ -510,8 +510,8 @@ void Graph_Draw(){
 	regX   = Xmin-Xdot;
 	for ( i=0; i<=128; i++) {
 		//-----------------------------
-		traceAry[i]=CB_EvalStrDBL(GraphY);		// function
-		if ( ErrorPtr ) return ;
+		traceAry[i]=CB_EvalStrDBL(GraphY,1);		// function
+		if ( ErrorNo ) return ;
 		//-----------------------------
 		if ( fabs(traceAry[i])*1e10<Ydot ) traceAry[i]=0;	// zero adjust
 		if ( i==0 ) { Previous_X = regX; Previous_Y = traceAry[0]; }
@@ -722,12 +722,12 @@ double GraphXYEval( char *buffer ) {
 	int Ansreg=CB_MatListAnsreg;
 	dspflag=0;
 	ExecPtr=0;
-	result=CB_EvalDbl( buffer );
+	result=EvalsubTop( buffer );
 	if ( dspflag>=3 ) {
 		CB_MatListAnsreg=Ansreg;
 		ExecPtr=0; ListEvalsubTop( buffer );	// List calc
 		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
-		result=ReadMatrix( CB_MatListAnsreg, regT, 1 );
+		result=ReadMatrix( CB_MatListAnsreg, regT, MatAry[CB_MatListAnsreg].Base );
 	}
 	ExecPtr=excptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
@@ -825,12 +825,13 @@ void DrawStat(){	// DrawStat
 	int sizeA,sizeA2;
 	int base=0,base2=0;
 	int c,No=0;
-	int at1st=0;
+	int at1st;
 	int xlistreg,ylistreg;
 	
 	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 
 	for ( No=0; No<3; No++ ) {
+		at1st=0;
 		if ( Sgraph[No].Draw == 1 ) {
 			xlistreg=Sgraph[No].xList;
 			ylistreg=Sgraph[No].yList;
