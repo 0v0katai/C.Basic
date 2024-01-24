@@ -120,19 +120,18 @@ double Integral_Kronrod( char *SRC, int execptr, double A, double B, double tol 
 		D *= G;										//		G*D->D
 		E *= G;										//		G*E->E
 		if ( tol>=1 ) {
-			E = Round(E,Sci,(int)tol);
-			if ( E==Round(D,Sci,(int)tol) ) {	//	If RndFix(D,Sci C+1)=RndFix(E,Sci C+1)Then 
+			if ( Round(E,Sci,(int)tol)==Round(D,Sci,(int)tol) ) {	//	If RndFix(D,Sci C+1)=RndFix(E,Sci C+1)Then 
 				break;									//			Break
 			}											//		IfEnd
 		} else {
 			if ( fabs(D-E)<=tol ) {						//		If Abs(D-E)<tol Then 
-				E = Round(E,Fix,-log10(tol));
+				D = Round(E,Fix,-log10(tol));
 				break;
 			}
 		}
 	}												//	Next
 	if ( j>4 ) { 									//	If N%>3 Then "**ACCURACY NOT MET**"
-		CB_Error(NotAccuracyERR); return (D+E)/2;
+		CB_Error(NotAccuracyERR);
 	}												//	IfEnd
   exit:
 	regX.real=xreg;
@@ -159,12 +158,12 @@ void IntgralOprand( char *SRC, double *start, double *end, double *tol ){	// Int
 	if ( SRC[ExecPtr] == ',' ) {
 		ExecPtr++;
 		*tol=CB_EvalDbl( SRC );	// tol
-	} else *tol=10;
+	} else *tol=6;
 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( errflag ) {
 		ExecPtr=exptr;
-		regX=Dbl2Cplx(*start);
+		regX=Dbl2Cplx(((*start)+(*end))/2);
 		ErrorPtr= 0;
 		ErrorNo = 0;	// error cancel
 		goto restart;
@@ -189,6 +188,11 @@ double CB_Integral( char *SRC ){	// Integral( FX, start, end, tol )
 }
 
 double CB_Differ( char *SRC ){	// Differ( FX, tol )
+	int exptr=ExecPtr;
+	int errflag=0;
+	double data;
+  restart:
+	CB_EvalDbl( SRC );	// dummy read
 	return 0;
 }
 
