@@ -310,7 +310,7 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_DISPN( 5," \xE6\x9E ");
 				break;
 		}
-		locate(1, 1);Print((unsigned char*)"Prog List  [        ]");
+		locate(1, 1);Print((unsigned char*)"File List  [        ]");
 		locate(13, 1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"Root");
 		if( size < 1 ){
 			locate( 8, 4 );

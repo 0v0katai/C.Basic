@@ -667,6 +667,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Input(SRC);
 				CB_TicksStart=RTC_GetTicks();	// 
 				dspflagtmp=2;
+				if ( BreakPtr ) break;
 				c=SRC[ExecPtr++];
 				if ( c == 0x0E ) {		// ->
 					if (CB_INT)	CBint_Store(SRC); else CB_Store(SRC);
@@ -1745,6 +1746,7 @@ void CB_Store( char *SRC ){	// ->
 
 //----------------------------------------------------------------------------------------------
 int  CB_Input( char *SRC ){
+	unsigned int key;
 	int c;
 	double DefaultValue=0;
 	int flag=0,flagint=0;
@@ -1908,6 +1910,7 @@ int  CB_Input( char *SRC ){
 		case 0:	// value
 			CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
 			ErrorNo=0; // error cancel
+			if ( BreakPtr ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			break;
 		case 1:	// value
@@ -1916,6 +1919,7 @@ int  CB_Input( char *SRC ){
 			Scrl_Y();
 			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
 			ErrorNo=0; // error cancel
+			if ( BreakPtr ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			if ( flagint ) {
 				CBint_Store( SRC );
@@ -1926,8 +1930,9 @@ int  CB_Input( char *SRC ){
 		case 2:	// ? -> str 
 			CB_CurrentStr=CB_StrBuffer[0];
 			CB_CurrentStr[0]='\0';
-			InputStr( 1, CursorY, CB_StrBufferMax-1,  CB_CurrentStr, ' ', REV_OFF);
+			key=InputStr( 1, CursorY, CB_StrBufferMax-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { ExecPtr--; BreakPtr=ExecPtr;  return 0; }
 			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
 			CB_StorStr( SRC );
 			break;
@@ -1937,8 +1942,9 @@ int  CB_Input( char *SRC ){
 			locate( CursorX, CursorY); Print((unsigned char*)buffer);
 			Scrl_Y();
 			CB_CurrentStr=MatAryC;
-			InputStr( 1, CursorY, MatAry[reg].SizeB-1,  CB_CurrentStr, ' ', REV_OFF);
+			key=InputStr( 1, CursorY, MatAry[reg].SizeB-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { ExecPtr--; BreakPtr=ExecPtr;  return 0; }
 			CB_StorStr( SRC );
 			break;
 	}

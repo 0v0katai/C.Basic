@@ -1137,8 +1137,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				switch (key) {
 //					case KEY_CTRL_EXIT:
 					case KEY_CTRL_QUIT:
-							key=0;
-							ClipStartPtr = -1 ;		// ClipMode cancel
+							key = KEY_CTRL_EXIT;
+//							ClipStartPtr = -1 ;		// ClipMode cancel
 							cont=0;
 							break;
 							
@@ -1399,7 +1399,8 @@ int CB_BreakStop() {
 	ScreenModeEdit=scrmode;
 	key=EditRun(2);	// Program listing & edit
 
-	if ( key == KEY_CTRL_EXIT  ) { 
+//	if ( ( key == KEY_CTRL_QUIT ) || ( key == KEY_CTRL_EXIT ) ) { 
+	if ( key == KEY_CTRL_EXIT ) { 
 		if ( ProgEntryN == 0 ) DebugMode=0;
 		BreakPtr=-999;
 		return BreakPtr;
@@ -1415,7 +1416,7 @@ int CB_BreakStop() {
 //----------------------------------------------------------------------------------------------
 int eObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
-int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
