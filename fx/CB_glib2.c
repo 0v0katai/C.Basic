@@ -1191,7 +1191,7 @@ void SetFactor(){
 }
 
 //-----------------------------------------------------------------------------
-void InitVar( double value, int VarMode ) {
+void InitVar( double value, int VarMode, int vartop ) {
 	unsigned char buffer[32];
 	unsigned int key;
 	int	cont=1;
@@ -1228,9 +1228,9 @@ void InitVar( double value, int VarMode ) {
 
 	if ( YesNo("Initialize Ok?") ) {
 		if ( VarMode ) {
-			for ( i=32; i<32+26; i++) REGINT[i]=value;
+			for ( i=vartop; i<vartop+26; i++) REGINT[i]=value;
 		} else {
-			for ( i= 0; i<  +26; i++) REG[i]=value;
+			for ( i=vartop; i<vartop+26; i++) REG[i]=value;
 		}
 	}
 }
@@ -1289,7 +1289,7 @@ int SetVar(int select){		// ----------- Set Variable
 				small=32-small;
 				break;
 			case KEY_CTRL_F2:
-				InitVar(value,VarMode);
+				InitVar(value,VarMode, small);
 				break;
 			case KEY_CTRL_F3:
 				VarMode=1-VarMode;
