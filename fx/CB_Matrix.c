@@ -2560,7 +2560,7 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A -> Mat Ans
 	base       =MatAry[reg].Base;
 	dimA       =MatAry[reg].SizeA;
 	dimB       =MatAry[reg].SizeB;
-	DimMatrixSub( tmpreg, ElementSize, dimB, dimA, base);	//
+	DimMatrixSub( tmpreg, ElementSize, dimA, dimA, base);	//
 	if ( ErrorNo ) return ;
 	reg2=tmpreg;
 	

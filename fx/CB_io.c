@@ -38,8 +38,14 @@ HiddenRAM_Top(0x88040000)
 ----------------------------------------
 */
 //---------------------------------------------------------------------------------------------
-int CPU_check(void) {					// SH3:1 SH4A:0
-	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) ;
+int CPU_check(void) {					// SH3:1 SH4A:0   2:Slim
+	int slim=0;
+	if ( *(unsigned int*)0x80000300 == 0x80005D7C ){
+		if ( ( *(unsigned char*)0xA4000128 & 0x08 ) == 0 ) {
+			slim = 1;;
+		}
+	}
+	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) + slim;
 }
 
 int OS_Version(){

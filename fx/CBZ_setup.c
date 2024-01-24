@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.84\xE6\x41";
-#define VERSION 184
+const char VerMSG[]="C.Basic  v1.85\xE6\x41";
+#define VERSION 185
 
 //---------------------------------------------------------------------------------------------
 
@@ -72,9 +72,10 @@ int CB_System( char *SRC ) {	// System( n )
 		case -2:
 			r=OS_Version();
 			break;
-		case -1:	// model 	bit0 :SH3:0  SH4A:1	 256KB bit1		// 9860G:0  9860GII(SH3):2   9860GII(SH4A):3
-			r = 1; if ( IsSH3 ) r = 0 ;
+		case -1:	// 9860G:0  slim:1  9860GII(SH3):2   9860GII(SH4A):3
+			r = ( IsSH3==0 );
 			if ( IsHiddenRAM ) r |= 0x2;;
+			if ( IsSH3==2 ) r = 1 ;
 			break;
 		case 0:	// Version
 			r = VERSION;
