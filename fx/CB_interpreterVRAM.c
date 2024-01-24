@@ -696,6 +696,10 @@ void CB_Plot( char *SRC ) { //	Plot
 	if ( ( c==':' ) || (c==0x0D) || ( c==0x0C ) || (c==0x00) ) {
 		x=(Xmax+Xmin)/2;
 		y=(Ymax+Ymin)/2;
+		regX.real = x;
+		regY.real = y;
+		regintX = x;
+		regintY = y;
 	} else {
 		x=CB_EvalDbl( SRC );
 		c=SRC[ExecPtr];
@@ -705,10 +709,6 @@ void CB_Plot( char *SRC ) { //	Plot
 	}
 	Plot_X = x;
 	Plot_Y = y;
-	regX.real = x;
-	regY.real = y;
-	regintX = x;
-	regintY = y;
 	c=SRC[ExecPtr];
 	if ( ( c != 0 ) && ( c != 0x0C ) ) {  //  end or Disps
 		PlotPreviousPXY();
@@ -2467,7 +2467,7 @@ int GObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

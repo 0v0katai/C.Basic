@@ -343,14 +343,15 @@ int frandIntint( int x, int y ) {
 	if ( x>y ) { i=x; x=y; y=i; }
 	return rand()*(y-x+1)/(RAND_MAX+1) +x ;
 }
+
 int fMODint( int x, int y ) {	// fMODint(x,y)
 	int result;
 	if ( y == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
 	result= abs(x % y);
-	if ( result == y  ) result--;
 	if ( x < 0 ) {
-		result=abs(y)-result;
-		if ( result == y  ) result=0;
+		y = abs(y);
+		result = y-result;
+		if ( ( result == y  ) || ( x == y  ) ) result=0;
 	}
 	return result ;
 }

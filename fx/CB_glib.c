@@ -326,9 +326,9 @@ void PlotSub(double x, double y, int mode){
 	int px,py;
 	if ( VWtoPXY( x,y, &px, &py) == 0) {
 		BdispSetPointVRAM2(px, py, mode);
+		regX.real=x; regY.real=y;
+		regintX=regX.real; regintY=regY.real;
 	}
-	regX.real=x; regY.real=y;
-	regintX=regX.real; regintY=regY.real;
 }
 
 void PlotOn_VRAM(double x, double y){
