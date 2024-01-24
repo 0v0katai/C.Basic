@@ -1043,9 +1043,9 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 			case '-':
 				CB_CurrentStr[i]=0x87;	// (-)
 				break;
-			case '+':
-				CB_CurrentStr[i]=0x89;	// (+)
-				break;
+//			case '+':
+//				CB_CurrentStr[i]=0x89;	// (+)
+//				break;
 //			case 'E':
 //			case 'e':
 //				CB_CurrentStr[i]=0x0F;	// (exp)
