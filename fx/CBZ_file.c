@@ -2422,7 +2422,7 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 //	matptr = CB_SaveLoadOprand( SRC, &reg, &matsize );
-	matptr = (char *)VarPtrLength( SRC, &matsize, &c, 0);
+	matptr = (char *)VarPtrLength( SRC, &matsize, &c, 1);
 	if ( ErrorNo ) return ; // error
 
 	CB_LoadSubBuffer( matptr, sname, ptr, matsize, "bin" ) ;
