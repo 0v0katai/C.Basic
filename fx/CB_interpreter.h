@@ -1,15 +1,15 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
-extern int CB_INTDefault;	// default mode  0:normal  1: integer mode
-extern int CB_INT;		// current mode  0:normal  1: integer mode
+extern short CB_INTDefault;	// default mode  0:normal  1: integer mode
+extern short CB_INT;		// current mode  0:normal  1: integer mode
 
-extern int	DrawType  ;	// 0:connect  1:Plot
-extern int	Coord     ;	// 0:off 1:on
-extern int	Grid      ;	// 0:off 1:on
-extern int	Axes      ;	// 0:off 1:on
-extern int	Label     ;	// 0:off 1:on
-extern int	Derivative     ;	// 0:off 1:on
+extern short	DrawType  ;	// 0:connect  1:Plot
+extern short	Coord     ;	// 0:off 1:on
+extern short	Grid      ;	// 0:off 1:on
+extern short	Axes      ;	// 0:off 1:on
+extern short	Label     ;	// 0:off 1:on
+extern short	Derivative     ;	// 0:off 1:on
 
 #define S_L_Normal   0
 #define S_L_Thick    1
@@ -17,9 +17,9 @@ extern int	Derivative     ;	// 0:off 1:on
 #define S_L_Dot      3
 #define S_L_Default  -1
 
-extern int S_L_Style;		// set line style 
-extern int tmp_Style;		// set line style 
-extern int Angle;			// 0:deg  1:rad  2:grad
+extern short S_L_Style;		// set line style 
+extern short tmp_Style;		// set line style 
+extern short Angle;			// 0:deg  1:rad  2:grad
 
 extern double Previous_X ;	// Plot Previous X
 extern double Previous_Y ;	// Plot Previous Y
@@ -28,7 +28,7 @@ extern int Previous_PY   ;	// Plot Previous PY
 extern double Plot_X     ;	// Plot Current X
 extern double Plot_Y     ;	// Plot Current Y
 
-extern int TimeDsp;
+extern short TimeDsp;
 
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
@@ -91,17 +91,17 @@ extern unsigned char GraphY3[];
 #define PI 3.1415926535897932
 
 #define MatAryMax 26
-extern short	MatArySizeA[MatAryMax];		// Matrix array status
-extern short	MatArySizeB[MatAryMax];		// Matrix array status
+extern short	MatArySizeA[MatAryMax];		// Matrix array size
+extern short	MatArySizeB[MatAryMax];		// Matrix array size
 extern char		MatAryElementSize[MatAryMax];		// Matrix array word size
 extern double *MatAry[MatAryMax];			// Matrix array ptr*
 
 //------------------------------------------------------------------------------
-extern int ScreenMode;	//  0:Text  1:Graphic
-extern int UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
+extern short ScreenMode;	//  0:Text  1:Graphic
+extern short UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
 
-extern int CursorX;	// text cursor X
-extern int CursorY;	// text cursor X
+extern short CursorX;	// text cursor X
+extern short CursorY;	// text cursor X
 
 extern int ExecPtr;
 extern int BreakPtr;
@@ -109,16 +109,16 @@ extern int BreakPtr;
 extern char   CB_CurrentStr[128];	//
 extern double CB_CurrentValue;	// Ans
 
-extern int CB_round;	// round mode    0:normal  1:Fix  2:Sci
-extern int CB_fix;
-extern int CB_sci;
+extern short CB_round;	// round mode    0:normal  1:Fix  2:Sci
+extern short CB_fix;
+extern short CB_sci;
 
 #define ProgMax 10
-extern int ProgEntryN;		// how many subroutin
-extern int ProgNo;			// current Prog No
+extern short ProgEntryN;		// how many subroutin
+extern short ProgNo;			// current Prog No
 extern unsigned char *ProgfileAdrs[ProgMax+1];
-extern int ProgfileMax[ProgMax+1] ;	// Max edit filesize 
-extern int ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
+extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
+extern short ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 
 #define StackGotoMax 10+26+6+26+1
 #define StackForMax 8
@@ -128,10 +128,10 @@ extern int ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 extern int	CB_TicksStart;
 extern int	CB_TicksEnd;
 
-extern int BreakCheck;	// Break Stop on/off
+extern short BreakCheck;	// Break Stop on/off
 
-extern int dspflag;
-extern int MatXYmode;
+extern short dspflag;
+extern short MatXYmode;
 
 //------------------------------------------------------------------------------
 void CB_SaveTextVRAM() ;
@@ -166,10 +166,6 @@ void PlotXYtoPrevPXY() ;
 void PlotPreviousPXY() ;
 void PlotCurrentXY();
 unsigned int GWait( int exit_cancel ) ;
-int CB_Disps( unsigned char *SRC ,int dspflag);
-void CB_end( unsigned char *SRC, int dspflag );
-void CB_Locate( unsigned char *SRC );
-void CB_Text( unsigned char *SRC, int *dspflag ) ; //	Text
 
 void Skip_quot( unsigned char *SRC ); // skip "..."
 void Skip_block( unsigned char *SRC );

@@ -343,6 +343,7 @@ int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPt
 	unsigned short opcode;
 	unsigned char  c=1;
 	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+	if ( csry>7 ) return ofst;
 	while ( cont ) {
 		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
 		if ( y == n ) if (ofst==csrPtr) { *cx=x; *cy=csry; }
@@ -376,14 +377,11 @@ int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPt
 //---------------------------------------------------------------------------------------------
 
 void DumpOpcode(unsigned char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr){
-	int i,x,y,ynum;
+	int i,n,x,y,ynum;
 	int ofst,ofst2,ofstYptr;
 
 	*cx=0; *cy=0;
-//	if ( *offset > csrPtr ) { 
-//		*offset=csrPtr;
-//	}
-	
+
 	while ( 1 ) {
 		locate(1,2); PrintLine((unsigned char*)" ",21);
 		locate(1,3); PrintLine((unsigned char*)" ",21);
@@ -392,43 +390,40 @@ void DumpOpcode(unsigned char *SrcBase, int *offset, int *offset_y, int csrPtr, 
 		locate(1,6); PrintLine((unsigned char*)" ",21);
 		locate(1,7); PrintLine((unsigned char*)" ",21);
 		y=2; ofst=(*offset);
+		ofst2=ofst;
+		x=0; ynum=0;
+		OpcodeLineN( SrcBase, &ofst2 ,&x ,&ynum);
+		n=(*offset_y);
+		while ( n < ynum ) {
 				ofst2=ofst;
-				x=0; ynum=0;
-				OpcodeLineN( SrcBase, &ofst2 ,&x ,&ynum);
-				i=*offset_y;
-				while ( i < ynum ) {
-					ofst2=ofst;
-					PrintOpcodeLine1( y, i, SrcBase, ofst2, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
-					i++;
-					y++;
-					if ( y>7 ) break;
-				}
-				if ( y>7 ) break;
-				ofst = PrintOpcodeLine1( y, i, SrcBase, ofst, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
+				PrintOpcodeLine1( y, n, SrcBase, ofst2, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
+				n++;
 				y++;
+				if ( y>6 ) break ;
+		}
+		ofst = PrintOpcodeLine1( y, n, SrcBase, ofst, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
+		y++;
 		while ( y<8 ) {
 				if ( SrcBase[ofst]==0x00 ) break ;
 				ofst2=ofst;
 				x=0; ynum=0;
 				OpcodeLineN( SrcBase, &ofst2 ,&x ,&ynum);
-				i=0;
-				while ( i < ynum ) {
+				n=0;
+				while ( n < ynum ) {
 					ofst2=ofst;
-					PrintOpcodeLine1( y, i, SrcBase, ofst2, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
-					i++;
+					PrintOpcodeLine1( y, n, SrcBase, ofst2, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
+					n++;
 					y++;
-					if ( y>7 ) break;
+					if ( y>6 ) break ;
 				}
-				if ( y>7 ) break;
-				ofst = PrintOpcodeLine1( y, i, SrcBase, ofst, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
+				ofst = PrintOpcodeLine1( y, n, SrcBase, ofst, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
 				y++;
 		}
 		if ( ( (*cx)!=0 ) && ( (*cy)>1 ) && ( (*cy)<8 ) ) break ;
 		ofstYptr=OpcodeLineYptr( *offset_y, SrcBase, *offset, &x);
-		if ( csrPtr < ofstYptr ) {
-					PrevLinePhy( SrcBase, &(*offset), &(*offset_y) );
-		} else {	NextLinePhy( SrcBase, &(*offset), &(*offset_y) );
-		}
+		if ( csrPtr < ofstYptr ) PrevLinePhy( SrcBase, &(*offset), &(*offset_y) );
+		else 					 NextLinePhy( SrcBase, &(*offset), &(*offset_y) );
+
 //		if ( SrcBase[ofst]==0x00 ) break ;
 	}
 }
@@ -541,6 +536,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int i,j,n,d,x,y,cx,cy,ptr,ptr2,tmpkey=0;
 	int 	offset=0;
 	int 	offset_y=0;
+	int 	ofstYptr;
 	int 	csrPtr=0;
 	int 	csrPtr_y=0;
 	int 	dumpflg=2;
@@ -610,8 +606,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			}
 			switch (dumpflg) {
 				case 2: 		// Opcode
-						if ( abs(offset-csrPtr) > 126 ) { offset=csrPtr;
-							for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
+						if (SearchMode ) {
+							ofstYptr=OpcodeLineYptr( offset_y, SrcBase, offset, &x);
+							if ( csrPtr > ofstYptr ) {
+								offset=csrPtr; offset_y=0;
+								PrevLine( SrcBase, &offset);
+								for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
+							}
 						}
 						DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr);
 						break;
@@ -698,28 +699,29 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F1:
 			case 0x7553:		// ClipMode F1
-				if ( SearchMode ) {		//	Next Search
-					i=SearchOpcode( SrcBase, searchbuf, &csrPtr);
-					if ( i==0 ) SearchMode=0;
-				} else {
-					if ( ClipEndPtr >= 0 ) {
-						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-						EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+					if ( SearchMode ) {		//	Next Search
+						i=SearchOpcode( SrcBase, searchbuf, &csrPtr);
+						if ( i==0 ) SearchMode=0;
 					} else {
-						offset=0;
-						csrPtr=0;
-						switch (dumpflg) {
-							case 2: 		// Opcode
-								break;
-							case 4: 		// hex dump
-							case 16:		// Ascii dump
-								cx=6; cy=2;
-								break;
-							default:
-								break;
+						if ( ClipEndPtr >= 0 ) {
+							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+							EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+						} else {
+							offset=0;
+							offset_y=0;
+							csrPtr=0;
+							switch (dumpflg) {
+								case 2: 		// Opcode
+									break;
+								case 4: 		// hex dump
+								case 16:		// Ascii dump
+									cx=6; cy=2;
+									break;
+								default:
+									break;
+							}
 						}
 					}
-				}
 					key=0;
 					alphalock = 0 ;
 					ClipStartPtr = -1 ;		// ClipMode cancel
@@ -733,6 +735,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					} else {
 						offset=EndOfSrc( SrcBase, offset );
 						csrPtr=offset;
+						offset_y=0;
 						switch (dumpflg) {
 							case 2: 		// Opcode
 								for ( i=0; i<6; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
@@ -780,6 +783,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						} else offset = 0;
 						if ( stat == -1 ) offset = ExecPtr-1;
 						csrPtr = offset;
+						offset_y=0;
 						run=2; // edit mode
 						if ( dumpflg == 2 ) {
 							for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
@@ -873,6 +877,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								x -= OpcodeStrLenBuf( SrcBase, csrPtr);
 								if ( x < 1 ) { NextOpcode( SrcBase, &csrPtr ); break ; }
 							}
+							if ( cy==2 ) PrevLinePhy( SrcBase, &offset, &offset_y );
 							break;
 					case 4: 		// hex dump
 							cy--;
@@ -918,6 +923,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								c=SrcBase[csrPtr];
 								if ( ( c==0x0C ) || ( c==0x0D ) || ( c==0x00 ) ) break;
 							}
+							if ( cy==7 ) NextLinePhy( SrcBase, &offset, &offset_y );
 							break;
 					case 4: 		// hex dump
 							cy++;
@@ -954,6 +960,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							
 					case KEY_CTRL_PAGEUP:
 							offset=0;
+							offset_y=0;
 							csrPtr=0;
 							switch (dumpflg) {
 								case 2: 		// Opcode
@@ -971,6 +978,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_PAGEDOWN:
 							offset=EndOfSrc( SrcBase, offset );
 							csrPtr=offset;
+							offset_y=0;
 							switch (dumpflg) {
 								case 2: 		// Opcode
 								for ( i=0; i<6; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
@@ -1024,6 +1032,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 							}
 							offset=csrPtr;
+							offset_y=0;
 							cx=6; cy=2;
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel

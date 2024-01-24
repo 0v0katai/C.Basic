@@ -1392,10 +1392,10 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				break;
 		}
 
-		if ( key == KEY_CTRL_OPTN ) {
-				key=SelectOpcode(oplistInp,&selectOPTN);
-				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
-		}
+//		if ( key == KEY_CTRL_OPTN ) {
+//				key=SelectOpcode(oplistInp,&selectOPTN);
+//				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+//		}
 		if ( key == KEY_CTRL_F3 )  {
 				key=SelectOpcode5800P(oplistCMD,&selectCMD);
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
