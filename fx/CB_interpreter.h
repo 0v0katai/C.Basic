@@ -164,6 +164,8 @@ extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 extern char  ProgLocalN[ProgMax+1];
 extern char  ProgLocalVar[ProgMax+1][26];
 
+extern  char *TVRAM;
+extern  char *GVRAM;
 //------------------------------------------------------------------------------
 #define StackGotoMax 10+26
 #define StackGosubMax 4
