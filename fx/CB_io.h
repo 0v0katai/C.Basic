@@ -6,6 +6,8 @@ struct st_round {
 
 extern struct st_round CB_Round;	// struct Round
 extern int ENG;	// ENG flag
+extern char UseHiddenRAM;		// 0: no use   1: use hiddenRAM
+extern char IsHiddenRAM;		// 0: hiddenRAM not exist   1: exist
 
 #define Norm 0
 #define Fix  1

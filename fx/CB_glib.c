@@ -86,9 +86,16 @@ void Bdisp_PutDisp_DD_DrawBusy_skip() {
 		Bdisp_PutDisp_DD_DrawBusy();
 	}
 }
+//void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
+//	unsigned char c;
+//	if ( SRC[ExecPtr++] == ':' ) return ;
+//	ExecPtr--;
+//	Bdisp_PutDisp_DD_DrawBusy();
+//}
 void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
-	unsigned char c;
-	if ( SRC[ExecPtr++] == ':' ) return ;
+	unsigned char c=SRC[ExecPtr++];
+	if ( c == ':' ) return ;
+	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
 	Bdisp_PutDisp_DD_DrawBusy();
 }
@@ -778,5 +785,5 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 }
 
 //----------------------------------------------------------------------------------------------
-int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
 

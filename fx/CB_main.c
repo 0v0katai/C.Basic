@@ -75,6 +75,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	LoadConfig();
 	CB_INT=0;	// double mode default
 	
+	HiddenRAM();	// Check HiddenRAM
 	ClipBuffer = (char *)malloc( ClipMax+1 );
 	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 

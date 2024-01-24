@@ -638,6 +638,7 @@ const short oplistVARS[]={
 		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
+		0xF7FC,	// PutDispDD
 		0xF7FD, // FKey(
 		0xF7FE,	// BackLight
 		0};
@@ -939,7 +940,7 @@ const short oplistCMD[]={
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
 		0xF7FD, // FKey(
-		0x23,	// #
+		0xF7FC,	// PutDispDD
 		0x25,	// %
 
 
@@ -1277,6 +1278,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7EF, "Load(" }, 
 	{ 0xF7F0, "DotShape(" }, 
 	{ 0xF7F1, "Local " }, 
+	{ 0xF7FC, "PutDispDD" }, 
 	{ 0xF7FD, "FKeyMenu(" }, 
 	{ 0xF7FE, "BackLight " }, 
 	{ 0xF930, "StrJoin(" }, 
