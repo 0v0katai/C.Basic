@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.00                                       */
+/*   inp Library  ver 1.11                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -33,11 +33,9 @@ extern const short oplistPRGM[];
 extern const short oplistVARS[];
 extern const short oplistCMD[];
 
+int SelectChar( int *ContinuousSelect ) ;
 int SelectOpcode( short *oplist, int *select) ;
 int SelectOpcode5800P( short *oplist, int *select) ;
-
-unsigned int SelectChar() ;
-int SelectOpcode( short *oplist, int *select) ;
 
 int OpcodeLen( int opcode );
 int OpcodeStrlen(int c);

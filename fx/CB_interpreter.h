@@ -193,6 +193,29 @@ double CB_BinaryEval( char *SRC ) ;	// eval 2
 double CB_UnaryEval( char *SRC ) ;	// eval 1
 
 void CB_Prog( char *SRC ) ; //	Prog "..."
+
+void CB_ViewWindow( char *SRC ) ; //	ViewWindow
+void CB_FLine( char *SRC) ; //	F-Line
+void CB_Line( char *SRC ) ; //	Line
+void CB_Vertical( char *SRC ) ; //	Vertical
+void CB_Horizontal( char *SRC ) ; //	Horizontal
+void CB_Plot( char *SRC ) ; //	Plot
+void CB_PlotOn( char *SRC ) ; //	PlotOn
+void CB_PlotOff( char *SRC ) ; //	PlotOff
+void CB_PlotChg( char *SRC ) ; //	PlotChg
+void CB_PxlOn( char *SRC ) ; //	PxlOn
+void CB_PxlOff( char *SRC ) ; //	PxlOff
+void CB_PxlChg( char *SRC ) ; //	PxlChg
+void CB_Circle( char *SRC ) ; //	Circle
+
+void CB_DrawGraph(  char *SRC );
+void CB_GraphY( char *SRC );
+void CB_StoPict( char *SRC ) ; //	StoPict
+void CB_RclPict( char *SRC ) ; //	RclPict
+
+void CB_DotGet( char *SRC );	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
+void CB_DotPut( char *SRC );	// DotPut(Mat B[x,y], px1,py1, px2,py2)
+void CB_DotTrim( char *SRC );	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 void CB_DotLife( char *SRC ) ;
 
 void CB_test() ;

@@ -157,9 +157,8 @@ double Eval_atof(char *SRC) {
 //-----------------------------------------------------------------------------
 
 double Evalsub1(char *SRC) {	// 1st Priority
-	double result=0;
-	int tmp,tmp2,resultint;
-	char c,d;
+	double result=0,tmp,tmp2;
+	int c,d;
 	char *pt;
 	int dimA,dimB,reg,x,y;
 	int i,ptr,mptr;
@@ -216,19 +215,19 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				}
 			} else if ( c == 0x3A ) {	// MOD(a,b)
 					ExecPtr+=2;
-					tmp = EvalsubTop( SRC ) +.5;
+					tmp = floor(EvalsubTop( SRC ) +.5);
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
-					tmp2 = EvalsubTop( SRC ) +.5;
+					tmp2 = floor( EvalsubTop( SRC ) +.5);
 					if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-					resultint= tmp-tmp/tmp2*tmp2;
-					if ( result == tmp2  ) resultint--;
+					result= floor(fabs(fmod( tmp, tmp2 ))+.5);
+					if ( result == tmp2  ) result--;
 					if ( tmp < 0 ) {
-						resultint=abs(tmp2)-resultint;
-						if ( resultint == tmp2  ) resultint=0;
+						result=fabs(tmp2)-result;
+						if ( result == tmp2  ) result=0;
 					}
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return resultint ;
+					return result ;
 					
 			} else if ( c == 0xFFFFFF8F ) {	// Getkey
 					ExecPtr+=2;

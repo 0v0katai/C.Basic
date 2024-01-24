@@ -510,6 +510,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int ClipEndPtr   = -1 ;
 	int alphalock = 0 ;
 	int SearchMode=0;
+	int ContinuousSelect=0;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -589,7 +590,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				default:
 						break;
 			}
-			Bdisp_PutDisp_DD();
+//			Bdisp_PutDisp_DD();
 
 
 			locate(cx,cy);
@@ -605,7 +606,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
 				if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
 				if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
-				if (key < 0x7F00)	GetKey(&key);
+				if (key < 0x7F00)	if ( ContinuousSelect ) key=KEY_CTRL_F5; else GetKey(&key);
 			} else
 									GetKey(&key);
 		}						
@@ -648,6 +649,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				break;
 		}
 
+		
+		
 		switch (key) {
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel
@@ -659,6 +662,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					ClipStartPtr = -1 ;		// ClipMode cancel
 //					break;
 			case KEY_CTRL_EXIT:
+			case KEY_CTRL_QUIT:
 					cont=0;
 					break;
 			case KEY_CTRL_F1:
@@ -725,7 +729,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F5:
 					if ( SearchMode ) break;;
-					key=SelectChar();
+					key=SelectChar( &ContinuousSelect);
 					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
@@ -918,6 +922,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
+					case KEY_CTRL_QUIT:
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
