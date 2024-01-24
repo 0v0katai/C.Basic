@@ -491,14 +491,6 @@ int CB_interpreter_sub( char *SRC ) {
 						Skip_block(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFF4:	// SysCall r4,r5,r6,r7
-						CB_SysCall(SRC);
-						dspflag=0;
-						break;
-					case 0xFFFFFFF5:	// Call adrs,r5,r6,r7
-						CB_Call(SRC);
-						dspflag=0;
-						break;
 					case 0xFFFFFFF6:	// Poke
 						CB_Poke(SRC);
 						dspflag=0;
@@ -704,7 +696,6 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case '$':	// $Mat
-			case '&':	// &Mat
 			case 0x22:	// " "
 				ExecPtr--;
 				CB_Str(SRC) ;
@@ -1957,7 +1948,7 @@ int  CB_Input( char *SRC ){
 				flag=1;
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
 	} else
-	if ( ( c=='$' ) || ( c=='&' ) ) {
+	if ( c=='$' ) {
 		ExecPtr++;
 		MatrixOprand( SRC, &reg, &dimA, &dimB );
 		if ( ErrorNo ) return ; // error
@@ -2213,6 +2204,6 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAligncf( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

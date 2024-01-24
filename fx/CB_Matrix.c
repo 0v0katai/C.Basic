@@ -1748,9 +1748,9 @@ int CB_EvalIntStrPtr( char *SRC ) {
 	}
 }
 
-void CB_SysCall( char *SRC ) {	// SysCall No,r4,r5,r6,r7
+int CB_SysCall( char *SRC ) {	// SysCall( No,r4,r5,r6,r7 )
 	int callNo=CB_EvalInt( SRC );
-	int r0,r4=0,r5=0,r6=0,r7=0;
+	int r4=0,r5=0,r6=0,r7=0;
 	unsigned int ur4,ur5,ur6,ur7;
 	if ( SRC[ExecPtr]==',' ) { 
 		ExecPtr++;
@@ -1768,13 +1768,12 @@ void CB_SysCall( char *SRC ) {	// SysCall No,r4,r5,r6,r7
 			}
 		}
 	}
-	r0=SysCalljmp(r4,r5,r6,r7,callNo);	//		CallNo -> SysCallNo
-	if (CB_INT)	CBint_CurrentValue = r0;
-	else		CB_CurrentValue    = r0;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	return SysCalljmp(r4,r5,r6,r7,callNo);	//		CallNo -> SysCallNo
 }
-void CB_Call( char *SRC ) {	// Call adrs,r5,r6,r7
+int CB_Call( char *SRC ) {	// Call( adrs,r5,r6,r7 )
 	int adrs=CB_EvalInt( SRC );
-	int r0,r4=0,r5=0,r6=0,r7=0;
+	int r4=0,r5=0,r6=0,r7=0;
 	if ( adrs & 1 ) CB_Error(ArgumentERR);  // Argument error
 	if ( SRC[ExecPtr]==',' ) { 
 		ExecPtr++;
@@ -1792,9 +1791,8 @@ void CB_Call( char *SRC ) {	// Call adrs,r5,r6,r7
 			}
 		}
 	}
-	r0=Calljmp(r4,r5,r6,r7,adrs);
-	if (CB_INT)	CBint_CurrentValue = r0;
-	else		CB_CurrentValue    = r0;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	return Calljmp(r4,r5,r6,r7,adrs);
 }
 
 int CB_VarPtr( char *SRC ) {
@@ -1882,14 +1880,14 @@ int CB_ProgPtr( char *SRC ) { //	ProgPtr(
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 /*
 int Dummy1_ElementSizeSelect( char *SRC, int reg, int *base ) {

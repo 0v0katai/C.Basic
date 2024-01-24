@@ -67,7 +67,7 @@ int CB_PeekInt( char *SRC, int adrs ) ;	// Peek(123456).w
 void CB_PokeSub( char *SRC, double data, int adrs ) ;	// Poke(123456).f
 void CB_PokeSubInt( char *SRC, int data, int adrs ) ;	// Poke(123456).w
 void CB_Poke( char *SRC ) ;
-void CB_Call( char *SRC ) ;
-void CB_SysCall( char *SRC ) ;
+int CB_Call( char *SRC ) ;
+int CB_SysCall( char *SRC ) ;
 int CB_VarPtr( char *SRC ) ;
 int CB_ProgPtr( char *SRC ) ; //	ProgPtr(

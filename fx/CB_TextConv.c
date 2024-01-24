@@ -752,8 +752,8 @@ const char ConvListF700[][17]={
 "Local ",				// F7F1
 "@F7F2",			// F7F2
 "@F7F3",			// F7F3
-"SysCall ",				// F7F4
-"Call ",				// F7F5
+"SysCall(",				// F7F4
+"Call(",				// F7F5
 "Poke ",				// F7F6
 "",					// F7F7
 "@F7F8",			// F7F8
