@@ -1139,6 +1139,7 @@ void SetFactor(){
 				switch (select) {
 					case 0: // Xfct
 						Xfct  =InputNumD_full( 9, y, 10, Xfct);	// 
+						select+=1;
 						break;
 					case 1: // Yfct
 						Xmax  =InputNumD_full( 9, y, 10, Yfct);	// 
@@ -1158,6 +1159,7 @@ void SetFactor(){
 				switch (select) {
 					case 0: // Xfct
 						Xfct  =InputNumD_Char( 9, y, 10, Xfct, key);	// 
+						select+=1;
 						break;
 					case 1: // Yfct
 						Yfct  =InputNumD_Char( 9, y, 10, Yfct, key);	// 
@@ -1534,4 +1536,3 @@ void SetupG(){		// ----------- Setup
 	}
 	SaveConfig();
 }
-

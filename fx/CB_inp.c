@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.02                                       */
+/*   inp Library  ver 1.03                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -25,12 +25,12 @@ void Fkey_KDISPN(int n,char *buffer) {
 	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
 }
 
-void Fkey_dispN_Aa(int n) {
-	Fkey_dispN(n,"A<>a");
+void Fkey_dispN_Aa(int n, char *buffer) {
+	Fkey_dispN(n,buffer);
 	Bdisp_AreaReverseVRAM( n*21+3, 7*8+1, n*21+7, 7*8+7);	// reverse
 }
-void Fkey_dispN_aA(int n) {
-	Fkey_dispN(n,"A<>a");
+void Fkey_dispN_aA(int n, char *buffer) {
+	Fkey_dispN(n,buffer);
 	Bdisp_AreaReverseVRAM( n*21+15, 7*8+1, n*21+20, 7*8+7);	// reverse
 }
 
@@ -698,7 +698,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				else				PrevOpcode( buffer, &offsetX);
 		}
 		
-		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(4); else Fkey_dispN_Aa(4);
+		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(4,"A<>a"); else Fkey_dispN_Aa(4,"a<>A");
 		if ( ( pallet_mode ) && ( alpha_mode ) ) Fkey_dispR(5,"CHAR");
 
 		CursorStyle=Cursor_GetFlashStyle();
@@ -985,7 +985,7 @@ void sprintGRS(unsigned char* buffer, double num, int width, int align_mode, int
 				i=width-adj-5;
 				if ( i > digit-1 ) i=digit-1;
 				if ( i >= 18 ) i=18;
-				if ( i <  1  ) i=1;
+				if ( i <  1  ) i=0;
 				if ( round_digit==2 ) if ( i>11 ) i=11;
 				c='e';
 			}

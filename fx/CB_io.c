@@ -86,10 +86,36 @@ int YesNo( char*buffer){
 	unsigned int key;
 
 	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(5);
+	PopUpWin(4);
 	locate(3,2); Print((unsigned char *)buffer);
 	locate(3,4); Print((unsigned char *) "   Yes:[F1]");
 	locate(3,5); Print((unsigned char *) "   No :[F6]");
+//	Bdisp_PutDisp_DD();
+
+	while ( 1 ) {
+		GetKey(&key);	
+		if ( key == KEY_CTRL_F1  ) break ;
+		if ( key == KEY_CTRL_F6  ) break ;
+		if ( key == KEY_CTRL_EXIT) break ;
+		if ( key == KEY_CTRL_AC  ) break ;
+		if ( key == KEY_CTRL_EXE ) break ;
+	}
+	RestoreDisp(SAVEDISP_PAGE1);
+	if ( key == KEY_CTRL_F1  ) return 1 ; // Yes
+	if ( key == KEY_CTRL_EXE ) return 1 ; // Yes
+//	Bdisp_PutDisp_DD();
+	return 0 ; // No
+}
+
+int YesNo2( char*buffer, char*buffer2){
+	unsigned int key;
+
+	SaveDisp(SAVEDISP_PAGE1);
+	PopUpWin(5);
+	locate(3,2); Print((unsigned char *)buffer);
+	locate(3,3); Print((unsigned char *)buffer2);
+	locate(3,5); Print((unsigned char *) "   Yes:[F1]");
+	locate(3,6); Print((unsigned char *) "   No :[F6]");
 //	Bdisp_PutDisp_DD();
 
 	while ( 1 ) {

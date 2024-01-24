@@ -7,6 +7,8 @@ unsigned int Trace(int *index );
 void Graph_Draw();
 unsigned int Graph_main();
 //------------------------------------------------------------------------------
+unsigned int MathKey( unsigned int  key) ;
+
 void SetVeiwWindowInit();
 void SetVeiwWindowTrig();
 void SetVeiwWindowSTD();
