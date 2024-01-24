@@ -1,6 +1,7 @@
 #define EditMaxfree 2048
 #define EditMaxProg  256
-#define NewMax 2048+0x4C
+#define NewMax 4096+0x4C
+#define EditMAX	65000-EditMaxfree
 
 #define ClipMax 2048
 

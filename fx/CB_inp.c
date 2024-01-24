@@ -489,6 +489,8 @@ const short oplistOPTN[]={
 		0xBC,	// grad
 		0x8C,	// dms
 		0xF905,	// >DMS
+		0xF941,	// DATE
+		0xF942,	// TIME
 		0x7F5F,	// Ticks
 		0};
 							
@@ -692,8 +694,15 @@ int SelectOpcode5800P( short *oplist, int *select) {
 
 	while (cont) {
 		Bdisp_AllClr_VRAM();
-		locate(1,1); Print((unsigned char *)"== Command Select ==");
 		(*select)=(*select)/12*12;
+//		locate(1,1); Print((unsigned char *)"== Command Select ==");
+		locate(1,1); Print((unsigned char *)"==STD GR FN STR EX==");
+		if ( (*select) < 5*12 )       { locate( 3,1); PrintRev((unsigned char *)"STD"); }
+		else if ( (*select) < 10*12 ) { locate( 7,1); PrintRev((unsigned char *)"GR"); }
+		else if ( (*select) < 14*12 ) { locate(10,1); PrintRev((unsigned char *)"FN"); }
+		else if ( (*select) < 16*12 ) { locate(13,1); PrintRev((unsigned char *)"STR"); }
+		else                       { locate(17,1); PrintRev((unsigned char *)"EX"); }
+		
 		for ( i=0; i<12; i++ ) {
 			n=oplist[(*select)+i];
 			tmpbuf[0]='\0'; 
@@ -767,10 +776,18 @@ int SelectOpcode5800P( short *oplist, int *select) {
 				break;
 
 			case KEY_CTRL_LEFT:
-				*select = 0;
+				if ( (*select) < 5*12 )       { (*select)=16*12; break; }
+				else if ( (*select) < 10*12 ) { (*select)= 0*12; break; }
+				else if ( (*select) < 14*12 ) { (*select)= 5*12; break; }
+				else if ( (*select) < 16*12 ) { (*select)=10*12; break; }
+				else                            { (*select)=14*12; break; }
 				break;
 			case KEY_CTRL_RIGHT:
-				*select = opNum;
+				if ( (*select) < 5*12 )       { (*select)= 5*12; break; }
+				else if ( (*select) < 10*12 ) { (*select)=10*12; break; }
+				else if ( (*select) < 14*12 ) { (*select)=14*12; break; }
+				else if ( (*select) < 16*12 ) { (*select)=16*12; break; }
+				else                          { (*select)= 0*12; break; }
 				break;
 			case KEY_CTRL_UP:
 			case KEY_CTRL_PAGEUP:
@@ -861,6 +878,7 @@ int SelectOpcode5800P( short *oplist, int *select) {
 
 							
 const short oplistCMD[]={	
+//											0	STD
 		0x3F,	// ?			1
 		0x0E,	// ->			2
 		0xF700,	// If			3
@@ -874,6 +892,7 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %
 
+//											1
 		0x3D,	// =			1
 		0x11,	// !=			2
 		0x3E,	// >			3
@@ -882,13 +901,13 @@ const short oplistCMD[]={
 		0x10,	// <=			6
 		0xF718,	// ClrText	
 		0xF719,	// ClrGraph	
-//		0xFFFF,	// 				-
-//		0xF71A,	// ClrList	
 		0xF91E,	// ClrMat	
-		0x7FF5,	// IsExist(
-		0xF7EE,	// Save
-		0xF7EF,	// Load(
+//		0xF71A,	// ClrList	
+		0x7E,	// ~
+		0x23,	// #
+		0x25,	// %
 		
+//											2
 		0xE8,	// Dsz			1
 		0xE9,	// Isz			2
 		0x13,	// =>			3
@@ -902,6 +921,7 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %
 		
+//											3
 		0xF704,	// For			1
 		0xF705,	// To			2
 		0xF706,	// Step			3
@@ -911,25 +931,27 @@ const short oplistCMD[]={
 		0xF70A,	// Do			7
 		0xF70B,	// LpWhile		8
 		0x7F46,	// Dim	
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
-		0x7FE9,	// CellSum(
+		0x7E,	// ~
+		0x23,	// #
+		0x25,	// %
 
 		
+//											4
 		0xF70D,	// Break		1
 		0xF70C,	// Return		2
 		0xF70E,	// Stop			3
 		0x7F8F,	// Getkey		4
 		0xED,	// Prog			5
+		0xFA,	// Gosub
 		0xF7EA,	// Switch
 		0xF7EB,	// Case
 		0xF7EC,	// Default
 		0xF7ED,	// SwitchEnd
-		0xF717,	// ACBreak
 		0xF7F1,	// Local
-		0xFA,	// Gosub
+		0xF717,	// ACBreak
 
-		0xD1,	// Cls
+//											5	GR
+		0xD1,	// Cls		
 		0xF719,	// ClrGraph
 		0xEB,	// ViewWindow
 		0xE0,	// Plot
@@ -941,7 +963,7 @@ const short oplistCMD[]={
 		0xF7A7,	// F-Line
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
-		
+//											6
 		0xF7AB,	// PxlOn
 		0xF7AC,	// PxlOff
 		0xF7AD,	// PxlChg
@@ -951,11 +973,11 @@ const short oplistCMD[]={
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
-		0xF7FD, // FKey(
-		0xF7FB,	// Screen
-		0xF7FC,	// PutDispDD
+		0xFFFF,	// 				-
+		0xF793,	// StoPict
+		0xF794,	// RclPict
 
-
+//											7
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF78E,	// SketchBroken
@@ -964,11 +986,11 @@ const short oplistCMD[]={
 		0xF71D,	// S-L-Thick
 		0xF71E,	// S-L-Broken
 		0xF71F,	// S-L-Dot
-		0x7F58,	// ElemSize(
-		0x7F5F,	// Ticks
-		0x7F59,	// ColSize(
-		0x7F5A,	// RowSize(
-
+		0x5C,	// 
+		0x7E,	// ~
+		0x23,	// #
+		0x25,	// %
+//											8
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
 		0xF7C3,	// CoordOn
@@ -979,9 +1001,10 @@ const short oplistCMD[]={
 		0xF7D2,	// AxesOff
 		0xF7C4,	// LabelOn
 		0xF7D4,	// LabelOff
-		0xF7F8,	// RefreshCtrl
-		0xF7FA,	// RefreshTime
+		0x23,	// #
+		0x25,	// %
 		
+//											9
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
 		0x7F01,	// Xmax
@@ -995,6 +1018,7 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %
 
+//											10	FN
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -1008,6 +1032,7 @@ const short oplistCMD[]={
 		0xB2,	// arccosh
 		0xB3,	// arctanh
 
+//											11
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 		0xD3,	// Rnd
@@ -1021,6 +1046,7 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %
 
+//											12
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
@@ -1030,10 +1056,11 @@ const short oplistCMD[]={
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
-		0xFFFF,	// 				-
+		0x7E,	// ~
 		0x23,	// #
 		0x25,	// %	
-		
+
+//											13
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -1046,6 +1073,61 @@ const short oplistCMD[]={
 		0x0A,	// Peta
 		0x0B,	// Exa
 		0x5C,	// 
+
+//											14	STR
+		0xF93F,	// Str
+		0xF930,	// StrJoin(
+		0xF931,	// StrLen
+		0xF932,	// StrCmp(
+		0xF933,	// StrSrc(
+		0xF934,	// StrLeft(
+		0xF935,	// StrRight(
+		0xF936,	// StrMid(
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %	
+		
+//											15
+		0xF937,	// Exp>Str(
+		0xF938,	// Exp(
+		0xF939,	// StrUpr(
+		0xF93A,	// StrDwr(
+		0xF93B,	// StrInv(
+		0xF93C,	// StrShift(
+		0xF93D,	// StrRotate(
+		0xF93E,	// Sprintf(
+		0xF940,	// Str(
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %	
+
+//											16	EX
+		0x7F46,	// Dim	
+		0x7F58,	// ElemSize(
+		0x7F59,	// ColSize(
+		0x7F5A,	// RowSize(
+		0x7F41,	// Trn 
+		0x7F47,	// Fill(
+		0xF941,	// DATE
+		0xF942,	// TIME
+		0x7F5F,	// Ticks
+		0x7E,	// ~
+		0x23,	// #
+		0x25,	// %	
+		
+		0xF73E,	// DotGet(
+		0xF94B,	// DotPut(
+		0xF73D,	// DotTrim(
+		0xF7E0,	// DotLife(
+		0xF7E1,	// Rect(
+		0xF7E2,	// FillRect(
+		0xF7E8,	// ReadGraph(
+		0xF7E9,	// WriteGraph(
+		0xF7FB,	// Screen
+		0xF7FC,	// PutDispDD
+		0x23,	// #
+		0x25,	// %	
 
 		0xF7F4,	// SysCall
 		0xF7F5,	// Call
@@ -1060,46 +1142,22 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %
 		
-		0xF93F,	// Str
-		0xF930,	// StrJoin(
-		0xF931,	// StrLen
-		0xF932,	// StrCmp(
-		0xF933,	// StrSrc(
-		0xF934,	// StrLeft(
-		0xF935,	// StrRight(
-		0xF936,	// StrMid(
-		0x5C,	// 
-		0x24,	// $
-		0x23,	// #
-		0x25,	// %	
-		
-		0xF937,	// Exp>Str(
-		0xF938,	// Exp(
-		0xF939,	// StrUpr(
-		0xF93A,	// StrDwr(
-		0xF93B,	// StrInv(
-		0xF93C,	// StrShift(
-		0xF93D,	// StrRotate(
-		0xF93E,	// Sprintf(
-		0xF940,	// Str(
-		0x24,	// $
-		0x23,	// #
-		0x25,	// %	
-
-		0xF73E,	// DotGet(
-		0xF94B,	// DotPut(
-		0xF73D,	// DotTrim(
-		0xF7E0,	// DotLife(
-		0xF7E1,	// Rect(
-		0xF7E2,	// FillRect(
-		0xF7E8,	// ReadGraph(
-		0xF7E9,	// WriteGraph(
-		0xFFFF,	// 				-
+		0xF7FD, // FKey(
 		0xF7FE,	// BackLight
+		0xF7F8,	// RefreshCtrl
+		0xF7FA,	// RefreshTime
+		0xFFFF,	// 				-
+		0xFFFF,	// 				-
+		0x7FE9,	// CellSum(
+		0x7FF5,	// IsExist(
+		0xF7EE,	// Save
+		0xF7EF,	// Load(
+		0x23,	// #
+		0x25,	// %
+		
+		
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
-		0xF793,	// StoPict
-		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
 
 		0};
@@ -1334,6 +1392,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF93E, "Sprintf(" }, 
 	{ 0xF93F, "Str " }, 
 	{ 0xF940, "Str(" }, 
+	{ 0xF941, "DATE" }, 
+	{ 0xF942, "TIME" }, 
 	{ 0xF94B, "DotPut(" }, 
 	{ 0x00FA, "Gosub "},
 	{ 0, "" }
@@ -1720,6 +1780,11 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 }
 
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
 /*
 double round( double x, int n ) {
 	unsigned char row[9];
@@ -1752,8 +1817,8 @@ double round( double x, int n ) {
 	}
 	return ( result ); 
 }
-
 */
+
 
 double Round( double num, int round_mode, int digit){
 	int minus=0,exp,ex2;
@@ -1951,7 +2016,6 @@ void sprintGR( char* buffer, double num, int width, int align_mode, int round_mo
 void sprintG( char* buffer, double num, int width, int align_mode) {
 	sprintGRS(buffer, num, width, align_mode, Norm, 15); // + round
 }
-
 //----------------------------------------------------------------------------------------------
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
 	char buffer[32];
@@ -1978,8 +2042,3 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_
 	return ( key );
 }
 
-//----------------------------------------------------------------------------------------------
-int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
-//int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------

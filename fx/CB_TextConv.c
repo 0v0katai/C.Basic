@@ -318,7 +318,7 @@ const char ConvList7F00[][16]={
 "@7F5C",			// 7F5C
 "@7F5D",			// 7F5D
 "@7F5E",			// 7F5E
-"@7F5F",			// 7F5F
+"Ticks",				// 7F5F
 					
 "Sim Coef", 		// 7F60
 "Ply Coef", 		// 7F61
@@ -352,7 +352,7 @@ const char ConvList7F00[][16]={
 "x3",				// 7F7C
 "y3",				// 7F7D
 "@7F7E",			// 7F7E
-"",				// 7F7F
+"",					// 7F7F
 					
 "@7F80",			// 7F80
 "@7F81",			// 7F81
@@ -508,7 +508,7 @@ const char ConvListF700[][17]={
 "Return ",			// F70C
 "Break",			// F70D
 "Stop",				// F70E
-"ElseIf ",			// F70F
+"ElseIf ",				// F70F
 
 "Locate ",			// F710
 "Send(",			// F711
@@ -833,12 +833,12 @@ const char ConvListF900[][17]={
 "StrInv(",			// F93B
 "StrShift(",		// F93C
 "StrRotate(",		// F93D
-"Sprintf(",			// F93E
+"Sprintf(",				// F93E
 "Str ",				// F93F
 
-"Str(",				// F940
-"@F941",			// F941
-"@F942",			// F942
+"Str(",					// F940
+"DATE",					// F941
+"TIME",					// F942
 "@F943",			// F943
 "@F944",			// F944
 "@F945",			// F945

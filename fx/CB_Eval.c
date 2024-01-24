@@ -170,8 +170,7 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
   L2:	(*dimB)=(EvalsubTop( SRC ));
 	}
 	if ( ( (*dimB) < base ) || ( MatAry[reg].SizeB-1+base < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
-	ExecPtr++ ;
+	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 }
 
 int MatrixOprandreg( char *SRC, int *reg) {	// 0-
@@ -873,7 +872,7 @@ double DmsToDec( char *SRC, double h ) {
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 

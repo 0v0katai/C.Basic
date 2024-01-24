@@ -65,3 +65,9 @@ int CB_EvalToStr( char *SRC ) ;
 
 int CB_StrDMS( char *SRC ) ;
 
+void StorDATE( char *buffer ) ;	// "2017/01/17" -> DATE
+void StorTIME( char *buffer ) ;	// "23:59:59" -> TIME
+int DateToStr( char *buffer ) ;	// -> "2017/01/17 TUE"
+int TimeToStr( char *buffer ) ;	// -> "23:59:59"
+int CB_DateToStr() ;	// -> "2017/01/17 TUE"
+int CB_TimeToStr() ;	// -> "23:59:59"

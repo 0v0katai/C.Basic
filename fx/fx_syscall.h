@@ -1,9 +1,11 @@
 // refer to siomn's fxDocumentation
 
 int RTC_GetTicks();  // 1/128s counter
+void RTC_SetDateTime( unsigned char *timestr );
 
 void PutKey(unsigned int keycode, int mode);
 void Keyboard_ClrBuffer();
+int Keyboard_GetKeyWait(int*column, int*row, int type_of_waiting, int timeout_period, int menu, unsigned short*keycode );
 
 int Cursor_SetPosition(char x, char y); 
 

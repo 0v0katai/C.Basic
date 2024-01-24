@@ -1,5 +1,5 @@
-//  こちらのサイトより6x8カナフォントデータおよび表示ルーチンを引用させていただいています。
-//	http://baticadila.dip.jp/fx_sdk_005.html
+//  こちらのサイトより6x8カナフォントデータおよび表示ルーチンを部分的に引用させていただいています。
+//	http://www.d-b.ne.jp/~k-kita/fx_sdk_005.html
 //
 
 #include <stdio.h>

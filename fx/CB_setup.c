@@ -20,6 +20,7 @@
 #include "CB_error.h"
 #include "CB_setup.h"
 #include "CB_Matrix.h"
+#include "CB_Str.h"
 
 //---------------------------------------------------------------------------------------------
 int KeyRepeatFirstCount=20;		// pointer to repeat time of first repeat (20:default)
@@ -40,7 +41,7 @@ void VerDisp() {
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
 	locate( 3, 4 ); Print( (unsigned char*)"          v0.99t " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
-	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
+	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
 	GetKey(&key);
 }
 
@@ -745,16 +746,58 @@ int SetVar(int select){		// ----------- Set Variable
 }
 
 //-----------------------------------------------------------------------------
-int SelectNum2( char*msg, int n ) {		// 
+//--------------------------------------------------------------
+int DateCursorY;
+int TimeCursorY;
+
+void DateTimePrint(){		// timer IRQ handler
+	char buffer[32];
+	char DateStr[16];
+	char TimeStr[16];
+	int cy,y;
+	cy=DateCursorY & 0xFF;
+	y =DateCursorY / 0x100;
+	if ( ( 1<=cy ) && ( cy<=7 ) ) {
+			DateToStr(DateStr);
+			sprintf(buffer,"DATE : %s ",DateStr);
+			locate( 1, cy); Print((unsigned char*)buffer);
+			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+	}
+	cy=TimeCursorY & 0xFF;
+	y =TimeCursorY / 0x100;
+	if ( ( 1<=cy ) && ( cy<=7 ) ) {
+			TimeToStr(TimeStr);
+			sprintf(buffer,"TIME : %s       ",TimeStr);
+			locate( 1, cy); Print((unsigned char*)buffer);
+			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+	}
+	Bdisp_PutDisp_DD();
+}
+
+void TimePrintSetMode(int set){	// 1:on  0:off
+	switch (set) {
+		case 0:
+			KillTimer(ID_USER_TIMER1);
+			break;
+		case 1:
+			SetTimer(ID_USER_TIMER1, 1000, (void*)&DateTimePrint);
+			break;
+		default:
+			break;
+	}
+}
+//--------------------------------------------------------------
+
+int SelectNum2( char*msg, int n ,int min, int max) {		// 
+	char buffer[32];
 	unsigned int key;
 	int n0=n;
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Select Number");
-	locate( 6,5); Print((unsigned char *)msg);
-	locate( 9,5); Print((unsigned char *)"[0~15]:");
+	locate( 3,5); sprintf(buffer,"%s[%d~%d]:",msg,min,max); Print((unsigned char *)buffer);
 	while (1) {
-		n=InputNumD(17, 5, 2, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
-		if ( (0<=n)&&(n<=15) ) break;
+		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		if ( (min<=n)&&(n<=max) ) break;
 		n=n0;
 	}
 	return n ; // ok
@@ -787,6 +830,8 @@ int SelectNum4( int n ) {		//
 	return n ; // ok
 }
 
+//--------------------------------------------------------------
+
 int SetupG(int select){		// ----------- Setup 
     char *onoff[]   ={"off","on"};
     char *draw[]    ={"Connect","Plot"};
@@ -804,7 +849,10 @@ int SetupG(int select){		// ----------- Setup
 	int	cont=1;
 	int scrl=select-6;
 	int y,cnt;
-	int listmax=21;
+	char DateStr[16];
+	char TimeStr[16];
+	int year,month,day,hour,min,sec;
+	int listmax=23;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -814,6 +862,12 @@ int SetupG(int select){		// ----------- Setup
 
 	while (cont) {
 		Bdisp_AllClr_VRAM();
+		
+		DateToStr(DateStr);
+		TimeToStr(TimeStr);
+		DateCursorY=-1;
+		TimeCursorY=-1;
+		
 		cnt=1;
 		if ( scrl <=(cnt-1) ) {
 			locate( 1, cnt-scrl); Print((unsigned char*)"Draw Type   :");		// 0
@@ -910,8 +964,16 @@ int SetupG(int select){		// ----------- Setup
 			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){							// 21
+			DateCursorY=cnt-scrl;
+			DateTimePrint();
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){							// 22
+			TimeCursorY=cnt-scrl;
+			DateTimePrint();
+		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 21
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 23
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -982,8 +1044,19 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 1, "Grph");
 				Fkey_dispN( 2, "All ");
 				if ( RefreshCtrl ) Fkey_dispN( 3, "time");
+				Fkey_dispN( 4, "Init");
 				break;
-			case 21: // Execute Mode
+			case 21: // DATE
+				Fkey_dispN( 0, "Year");
+				Fkey_dispN( 1, "Mth");
+				Fkey_dispN( 2, "Day");
+				break;
+			case 22: // TIME
+				Fkey_dispN( 0, "Hour");
+				Fkey_dispN( 1, "Min");
+				Fkey_dispN( 2, "Sec");
+				break;
+			case 23: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -993,8 +1066,14 @@ int SetupG(int select){		// ----------- Setup
 		
 		Fkey_dispN( 5, "Ver.");
 		Bdisp_PutDisp_DD();
-
+		
+		DateCursorY+=(select-scrl)*0x100;
+		TimeCursorY+=(select-scrl)*0x100;
+		TimePrintSetMode( 1 ) ;			// Date/Time print IRQ on
 		GetKey( &key );
+		TimePrintSetMode( 0 ) ;			// Date/Time print IRQ off
+		DateToStr(DateStr);
+		TimeToStr(TimeStr);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:
@@ -1042,7 +1121,7 @@ int SetupG(int select){		// ----------- Setup
 						Angle = 0 ; // Deg
 						break;
 					case 8: // Display
-						CB_Round.DIGIT=SelectNum2("Fix",CB_Round.DIGIT);
+						CB_Round.DIGIT=SelectNum2("Fix",CB_Round.DIGIT,0,15);
 						CB_Round.MODE =Fix;
 						break;
 					case 9: // Hidden RAM
@@ -1084,7 +1163,23 @@ int SetupG(int select){		// ----------- Setup
 					case 20: // Refresh Ctrl DD Mode
 						RefreshCtrl = 0 ; // off
 						break;
-					case 21: // CB mode
+					case 21: // DATE year
+						year = (DateStr[0]-'0')*1000+(DateStr[1]-'0')*100+(DateStr[2]-'0')*10+(DateStr[3]-'0');
+						year = SelectNum2("Year",year,0,9999);
+						DateStr[0]=(year/1000)+'0';
+						DateStr[1]=(year/100)%10+'0';
+						DateStr[2]=(year/10)%10+'0';
+						DateStr[3]=(year)%10+'0';
+						StorDATE( DateStr );
+						break;
+					case 22: // Time hour
+						hour = (TimeStr[0]-'0')*10+(TimeStr[1]-'0');
+						hour = SelectNum2("Hour",hour,0,23);
+						TimeStr[0]=(hour/10)%10+'0';
+						TimeStr[1]=(hour)%10+'0';
+						StorTIME( TimeStr );
+						break;
+					case 23: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
 						break;
@@ -1120,7 +1215,7 @@ int SetupG(int select){		// ----------- Setup
 						Angle = 1 ; // Rad
 						break;
 					case 8: // Display
-						CB_Round.DIGIT=SelectNum2("Sci",CB_Round.DIGIT);
+						CB_Round.DIGIT=SelectNum2("Sci",CB_Round.DIGIT,0,15);
 						CB_Round.MODE =Sci;
 						break;
 					case 9: // Hidden RAM
@@ -1162,7 +1257,21 @@ int SetupG(int select){		// ----------- Setup
 					case 20: // Refresh Ctrl DD Mode
 						RefreshCtrl = 1 ; // graphics
 						break;
-					case 21: // CB mode
+					case 21: // DATE month
+						month = (DateStr[5]-'0')*10+(DateStr[6]-'0');
+						month = SelectNum2("Month",month,1,12);
+						DateStr[5]=(month/10)%10+'0';
+						DateStr[6]=(month)%10+'0';
+						StorDATE( DateStr );
+						break;
+					case 22: // Time min
+						min = (TimeStr[3]-'0')*10+(TimeStr[4]-'0');
+						min = SelectNum2("Min",min,0,59);
+						TimeStr[3]=(min/10)%10+'0';
+						TimeStr[4]=(min)%10+'0';
+						StorTIME( TimeStr );
+						break;
+					case 23: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
 						break;
@@ -1180,7 +1289,7 @@ int SetupG(int select){		// ----------- Setup
 						Angle = 2 ; // Grad
 						break;
 					case 8: // Display
-						CB_Round.DIGIT=SelectNum2("Nrm",CB_Round.DIGIT);
+						CB_Round.DIGIT=SelectNum2("Nrm",CB_Round.DIGIT,0,15);
 						CB_Round.MODE =Norm;
 						break;
 					case 15: // Roolup/down count init
@@ -1188,6 +1297,20 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case 20: // Refresh Ctrl DD Mode
 						RefreshCtrl = 2 ; // graphics+text
+						break;
+					case 21: // DATE day
+						day = (DateStr[8]-'0')*10+(DateStr[9]-'0');
+						day = SelectNum2("Day",day,1,31);
+						DateStr[8]=(day/10)%10+'0';
+						DateStr[9]=(day)%10+'0';
+						StorDATE( DateStr );
+						break;
+					case 22: // Time sec
+						sec = (TimeStr[6]-'0')*10+(TimeStr[7]-'0');
+						sec = SelectNum2("Min",sec,0,59);
+						TimeStr[6]=(sec/10)%10+'0';
+						TimeStr[7]=(sec)%10+'0';
+						StorTIME( TimeStr );
 						break;
 					default:
 						break;
@@ -1215,6 +1338,17 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case 20: // Refresh Ctrl DD Mode
 						if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
+						break;
+					default:
+						break;
+				}
+				break;
+			case KEY_CTRL_F5:
+				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+				switch (select) {
+					case 20: // Refresh Ctrl DD Mode init
+						RefreshCtrl = 1 ; // graphics only
+						Refreshtime = 3-1 ; // 3/128
 						break;
 					default:
 						break;

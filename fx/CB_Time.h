@@ -15,8 +15,7 @@ struct st_RTC {             // struct RTC      similar to SH7705
     unsigned char t6;
     unsigned char RMONCNT;	// CC
     unsigned char t7;
-    unsigned char RYRCONT;	// CE
-    unsigned char t8;
+    unsigned short RYRCONT;	// CE
     unsigned char RSECAR;	// D0
     unsigned char t9;
     unsigned char RMINAR;	// D2
@@ -72,5 +71,9 @@ struct st_RTC {             // struct RTC      similar to SH7705
 
 //--------------------------------------------------------------------------
 
+int IntToBcd( int x ) ;
 
 void SetRtc( int data ) ;
+int GetTime() ;	// ->   HHMMSS : BCD (0x  235959 etc)
+int GetDate() ;	// -> YYYYMMDD : BCD (0x20161201 etc)
+

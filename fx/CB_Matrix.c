@@ -1866,7 +1866,7 @@ int CB_ProgPtr( char *SRC ) { //	ProgPtr(
 
 	c=SRC[ExecPtr];
 	if ( c != 0x22 ) { 
-		if ( c != ')' ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
+		if ( c != ')' ) { ExecPtr++; return 0; }	// ProgPtr()
 		ExecPtr++;
 		return (int)ProgfileAdrs[ProgNo];
 	}
@@ -1883,10 +1883,10 @@ int CB_ProgPtr( char *SRC ) { //	ProgPtr(
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
