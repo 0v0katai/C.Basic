@@ -21,14 +21,16 @@ char  ForceReturn;		// 0:none  1:return
 char  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
 char  CB_fx5800P = 0;		// fx-5800P mode
 char  CB_HelpOn=0;			// Help function
-
+char  CB_EditIndent=0;		// indent function  0:Non  1~4:indent space
 
 int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v2.10\xE6\x41";
-#define VERSION 210
+int StackPtr;
+
+const char VerMSG[]="C.Basic  v2.20\xE6\x41";
+#define VERSION 220
 
 //---------------------------------------------------------------------------------------------
 
@@ -86,6 +88,7 @@ int CB_System( char *SRC ) {	// System( n )
 			r = ( IsSH3==0 );
 			if ( IsHiddenRAM ) r |= 0x2;;
 			if ( IsSH3==2 ) r = 1 ;
+			if ( Is35E2 ) r = 4 ;
 			break;
 		case 0:	// Version
 			r = VERSION;
@@ -109,6 +112,9 @@ int CB_System( char *SRC ) {	// System( n )
 			r = (int)files;
 			break;
 			
+		case 999:	// 
+			r =StackPtr;
+			break;
 		case 1000:	// 
 			r = (int)HiddenRAM_Top;
 			break;
@@ -1131,59 +1137,61 @@ int SelectNum4( int n ) {		//
 #define SETUP_CMDINPUT		13
 #define SETUP_MaxMemMode	14
 #define SETUP_EnableExtFONT	15
-#define SETUP_EditTopLine	16
-#define SETUP_EditExtFont	17
-#define SETUP_EditFontSize	18
-#define SETUP_EditLineNum	19
-#define SETUP_EditListChar	20
-#define SETUP_UseHidnRam	21
-#define SETUP_HidnRamInit	22
-#define SETUP_ExtendPict	23
-#define SETUP_ExtendList	24
-#define SETUP_DisableDebugMode	25
-#define SETUP_ExitDebugModeCheck	26
-#define SETUP_BreakStop		27
-#define SETUP_ExecTimeDsp	28
-#define SETUP_IfEndCheck	29
-#define SETUP_ACBreak		30
-#define SETUP_ForceReturnMode	31
-#define SETUP_Key1sttime	32
-#define SETUP_KeyReptime	33
-#define SETUP_SkipUpDown	34
-#define SETUP_MatDspmode	35
-#define SETUP_Matrixbase	36
-#define SETUP_DATE			37
-#define SETUP_TIME			38
-#define SETUP_RootFolder	39
-#define SETUP_AutoSaveMode	40
-#define SETUP_Forceg1msave	41
-#define SETUP_Pictmode		42
-#define SETUP_Storagemode	43
-#define SETUP_RefrshCtlDD	44
-#define SETUP_DefaultWaitcount	45
-#define SETUP_Executemode	46
+#define SETUP_EditExtFont	16
+#define SETUP_EditFontSize	17
+#define SETUP_EditTopLine	18
+#define SETUP_EditIndent	19
+#define SETUP_EditLineNum	20
+#define SETUP_EditListChar	21
+#define SETUP_UseHidnRam	22
+#define SETUP_HidnRamInit	23
+#define SETUP_ExtendPict	24
+#define SETUP_ExtendList	25
+#define SETUP_DisableDebugMode	26
+#define SETUP_ExitDebugModeCheck	27
+#define SETUP_BreakStop		28
+#define SETUP_ExecTimeDsp	29
+#define SETUP_IfEndCheck	30
+#define SETUP_ACBreak		31
+#define SETUP_ForceReturnMode	32
+#define SETUP_Key1sttime	33
+#define SETUP_KeyReptime	34
+#define SETUP_SkipUpDown	35
+#define SETUP_MatDspmode	36
+#define SETUP_Matrixbase	37
+#define SETUP_DATE			38
+#define SETUP_TIME			39
+#define SETUP_RootFolder	40
+#define SETUP_AutoSaveMode	41
+#define SETUP_Forceg1msave	42
+#define SETUP_Pictmode		43
+#define SETUP_Storagemode	44
+#define SETUP_RefrshCtlDD	45
+#define SETUP_DefaultWaitcount	46
+#define SETUP_Executemode	47
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
     
 int SetupG(int select, int limit){		// ----------- Setup 
-    const char *degrad[]  ={"Deg","Rad","Grad"};
-    const char *cplxmode[]={"Real","a+b\x7F\x50","r\x7F\x54\xE6\x47"};
-    const char *onoff[]   ={"off","on"};
-    const char *draw[]    ={"Connect","Plot"};
-    const char *style[]   ={"Normal","Thick","Broken","Dot"};
-    const char *display[] ={"Nrm","Fix","Sci"};
-    const char *ENGmode[] ={"  ","/E","  ","/3"};
-    const char *CMDinput[] ={"C.Basic","Standard","CB5800","Std5800"};
-    const char *CharSize[] ={"Standard","Mini","Mini Rev","Mini_","Mini_Rev"};
-    const char *Matmode[]    ={"[m,n]","[X,Y]"};
-    const char *Matbase[]    ={"0","1"};
+    const char *degrad[]      ={"Deg","Rad","Grad"};
+    const char *cplxmode[]    ={"Real","a+b\x7F\x50","r\x7F\x54\xE6\x47"};
+    const char *onoff[]       ={"off","on"};
+    const char *draw[]        ={"Connect","Plot"};
+    const char *style[]       ={"Normal","Thick","Broken","Dot"};
+    const char *display[]     ={"Nrm","Fix","Sci"};
+    const char *ENGmode[]     ={"  ","/E","  ","/3"};
+    const char *CMDinput[]    ={"C.Basic","Standard","CB5800","Std5800"};
+    const char *CharSize[]    ={"Standard","Mini","Mini Rev","Mini_","Mini_Rev"};
+    const char *Matmode[]     ={"[m,n]","[X,Y]"};
+    const char *Matbase[]     ={"0","1"};
     const char *Pictmode[]    ={"S.Mem","Heap","Both","Main Mem"};
     const char *PictmodeSD[]  ={"SDcard ","Heap","Both","Main Mem"};
-    const char *Storagemode[]  ={"S.Mem","SDcard ","Main Mem","Main/SD"};
-    const char *DDmode[]    ={"off","Grph","All"};
+    const char *Storagemode[] ={"S.Mem","SDcard ","Main Mem","Main/SD"};
+    const char *DDmode[]      ={"off","Grph","All"};
     const char *ListChar[]    ={"List"," \xE5\xB7"," \xFF\xE0"};
-    const char *Returnmode[]    ={"None","F1","EXE","F1&EXE"};
-    const char *ExecTimemode[]    ={"off","on","off%","on reset","  %","on%","  % reset","on%reset"};
+    const char *Returnmode[]  ={"None","F1","EXE","F1&EXE"};
+    const char *ExecTimemode[]={"off","on","off%","on reset","  %","on%","  % reset","on%reset"};
+    const char *EditIndent[]  ={"off","1","2","3","4","5","6","7","off sav-","1 save-","2 save-","3 save-","4 save-","D","E","F"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
@@ -1284,106 +1292,110 @@ int SetupG(int select, int limit){		// ----------- Setup
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[EnableExtFont]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit TopLine:");		// 16
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[EditTopLine]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			CB_Print_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont );		// 17
+			CB_Print_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont );		// 16
 			CB_Print_ext(14,cnt-scrl,(unsigned char*)onoff[EditExtFont], EditExtFont );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditFontSize:");		// 18
+			locate( 1, cnt-scrl); Print((unsigned char*)"EditFontSize:");		// 17
 			locate(14, cnt-scrl); Print((unsigned char*)CharSize[EditFontSize & 0x0F ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit LineNum:");		// 19
+			locate( 1, cnt-scrl); Print((unsigned char*)"Edit TopLine:");		// 18
+			locate(14, cnt-scrl); Print((unsigned char*)onoff[EditTopLine]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1, cnt-scrl); Print((unsigned char*)"Edit +Indent:");		// 19
+			locate(14, cnt-scrl); Print((unsigned char*)EditIndent[CB_EditIndent]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1, cnt-scrl); Print((unsigned char*)"Edit LineNum:");		// 20
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[(EditFontSize & 0xF0)>>4 ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditListChar:");		// 20
+			locate( 1, cnt-scrl); Print((unsigned char*)"EditListChar:");		// 21
 			CB_Print(14, cnt-scrl, (unsigned char*)ListChar[EditListChar]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 21
+			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 22
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[UseHiddenRAM&0x0F]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"HidnRAM Init:");		// 22
+			locate( 1,cnt-scrl); Print((unsigned char*)"HidnRAM Init:");		// 23
 			locate(14,cnt-scrl);
 			if ( UseHiddenRAM&0x0F ) Print((unsigned char*)onoff[!(UseHiddenRAM&0xF0)]);
 			else                     Print((unsigned char*)"---");
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max Pict No:");		// 23
+			locate( 1, cnt-scrl); Print((unsigned char*)"Max Pict No:");		// 24
 			sprintf((char*)buffer,"%d",20+ExtendPict);
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max List 52\xA9:");	// 24
+			locate( 1, cnt-scrl); Print((unsigned char*)"Max List 52\xA9:");	// 25
 			sprintf((char*)buffer,"%d (%d)", ExtendList+1, 52+ExtendList*52);
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 25
+			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 26
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[!DisableDebugMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ExitDM PopUp:");		// 26
+			locate( 1,cnt-scrl); Print((unsigned char*)"ExitDM PopUp:");		// 27
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ExitDebugModeCheck&1]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 27
+			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 28
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[BreakCheckDefault]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 28
+			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 29
 			locate(14,cnt-scrl); Print((unsigned char*)ExecTimemode[TimeDsp]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 29
+			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 30
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[CheckIfEnd]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 30
+			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 31
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 31
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 32
 			locate(14,cnt-scrl); Print((unsigned char*)Returnmode[ForceReturnMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 32
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 33
 			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 33
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 34
 			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 34
+			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 35
 			sprintf((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 35
+			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 36
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 36
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 37
 			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 37
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 38
 			DateCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 38
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 39
 			TimeCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Root Folder:");		// 39
+			locate( 1,cnt-scrl); Print((unsigned char*)"Root Folder:");		// 40
 			locate(13,cnt-scrl); 
 			if ( root2[0] == '\0' ) { 
 				Print((unsigned char*)"/");
@@ -1392,36 +1404,36 @@ int SetupG(int select, int limit){		// ----------- Setup
 			}
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 40
+			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 41
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[AutoSaveMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 41
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 42
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 42
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 43
 			locate(14,cnt-scrl); if ( StorageMode & 1 ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 43
+			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 44
 			locate(14,cnt-scrl); Print((unsigned char*)Storagemode[StorageMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 44
+			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 45
 			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 45
+			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 46
 			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
 			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 46
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 47
 			locate(14,cnt-scrl); Print((unsigned char*)CBmode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -1569,6 +1581,13 @@ int SetupG(int select, int limit){		// ----------- Setup
 				Fkey_dispN( FKeyNo1, "  / ");
 				Fkey_dispN( FKeyNo2, "cur.f");
 				break;
+			case SETUP_EditIndent: //
+				Fkey_Icon( FKeyNo1, 18 );	//	Fkey_dispN( FKeyNo1, "off ");
+				Fkey_dispN( FKeyNo2, " 1");
+				Fkey_dispN( FKeyNo3, " 2");
+				Fkey_dispN( FKeyNo4, " 4");
+				Fkey_dispN( FKeyNo5, "sv-");
+				break;
 			default:
 				break;
 		}
@@ -1681,6 +1700,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_CMDINPUT: // Command input method
 						CommandInputMethod=0;
+						break;
+					case SETUP_EditIndent: //
+						i = CB_EditIndent&0x8;
+						CB_EditIndent = 0 | i;
 						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
 						EditTopLine=1;
@@ -1872,6 +1895,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_CMDINPUT: // Command input method
 						CommandInputMethod=1;
 						break;
+					case SETUP_EditIndent: //
+						i = CB_EditIndent&0x8;
+						CB_EditIndent = 1 | i;
+						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
 						EditTopLine=0;
 						break;
@@ -2029,6 +2056,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 						CB_Round.DIGIT=i;
 						CB_Round.MODE =Norm;
 						break;
+					case SETUP_EditIndent: //
+						i = CB_EditIndent&0x8;
+						CB_EditIndent = 2 | i;
+						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// mini
 						EditFontSize |= 0x02;	// reverse
@@ -2096,6 +2127,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_CMDINPUT: // Command input method (fx5800P mode change)
 						CB_fx5800P = 1-CB_fx5800P;
 						break;
+					case SETUP_EditIndent: //
+						i = CB_EditIndent&0x8;
+						CB_EditIndent = 4 | i;
+						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// mini
 						EditFontSize |= 0x03;	// underbar cursor
@@ -2145,6 +2180,9 @@ int SetupG(int select, int limit){		// ----------- Setup
 			case KEY_CTRL_F5:
 //				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
+					case SETUP_EditIndent: //
+						CB_EditIndent^=0x08;
+						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// mini
 						EditFontSize |= 0x04;	// underbar cursor & reverse

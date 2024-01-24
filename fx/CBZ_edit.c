@@ -534,7 +534,7 @@ int HomeLineNum( char * SrcBase, int offset ) {	// Logical line numbrer
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				return no;
-//			case 0x0C:	// dsps
+			case 0x0C:	// dsps
 			case 0x0D:	// <CR>
 				no++;
 				break;
@@ -562,7 +562,7 @@ int JumpLineNum( char * SrcBase, int lineNum ) {	// Logical line numbrer
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				return ofst;
-//			case 0x0C:	// dsps
+			case 0x0C:	// dsps
 			case 0x0D:	// <CR>
 				no++;
 				break;
@@ -854,6 +854,28 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 	return n ; // ok
 }
 
+int CheckIndentCommand( char *SrcBase, int ptr ){
+	int c=SrcBase[ptr++];
+	int indent=0;
+	if ( c==0xFFFFFFF7 ) {
+		c=SrcBase[ptr++];
+		switch (c) {
+			case 0x00:	// If
+			case 0x02:	// Else
+			case 0x04:	// For
+			case 0x08:	// While
+			case 0x0A:	// Do
+			case 0x0F:	// ElseIf
+			case 0x0FFFFFFEA:	// Switch
+//			case 0x0FFFFFFEB:	// Case
+//			case 0x0FFFFFFEC:	// Default
+				indent++;
+				break;
+		}
+	}
+	return indent*(CB_EditIndent&0x07);
+}
+
 void RestoreScreenModeEdit(){
 	if ( ScreenModeEdit )	CB_RestoreGraphVRAM();	// Resotre Graphic screen
 	else					CB_RestoreTextVRAM();	// Resotre Text screen
@@ -890,6 +912,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int ymin,ymax,ymaxpos;
 	int mini;
 	int help_code=0;
+	int indent;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -1610,9 +1633,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( csrPtr==0 ) break; 
 							ptr=csrPtr;
 							PrevOpcode( SrcBase, &ptr );
-							c = GetOpcode( SrcBase, ptr );
+							d = GetOpcode( SrcBase, ptr );
 							ptr=csrPtr;
-							if ( ( c!=0x0C ) && ( c!=0x0D ) ) PrevLine( SrcBase, &ptr );	// current line top
+							if ( ( d!=0x0C ) && ( d!=0x0D ) ) PrevLine( SrcBase, &ptr );	// current line top
 							y=0; ptr2=ptr;
 							OpcodeLineN( SrcBase, &ptr2 , &x, &y);
 							csrPtr_y = OpcodeLineSrcYpos( SrcBase, ptr, csrPtr ) ;	//
@@ -1974,8 +1997,19 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
 			switch ( keyH ) {		// ----- 2byte code -----
-				case 0x7F:		// 
 				case 0xFFFFFFF7:		// 
+					if ( ( keyL==0x02 ) || ( keyL==0x0F ) || ( keyL==0x03 ) ||	// Else/ElseIf
+						 ( keyL==0x07 ) || ( keyL==0x09 ) || ( keyL==0x0B ) || ( keyL==0xFFFFFFED )  ) {	// Next/WhileEnd/LpWhile/SwitchEnd
+						i=0;
+						while ( i < (CB_EditIndent&0x07) ) {
+							PrevOpcode( SrcBase, &csrPtr );
+							c=GetOpcode( SrcBase, csrPtr );
+							if ( c==' ' ) DeleteOpcode( filebase, &csrPtr);
+							else NextOpcode( SrcBase, &csrPtr );
+							i++;
+						}
+					}
+				case 0x7F:		// 
 				case 0xFFFFFFF9:		// 
 				case 0xFFFFFFE5:		// 
 				case 0xFFFFFFE6:		// 
@@ -2002,11 +2036,29 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				default:
 					break;
 			}
+			indent=0;
+			if ( key == 0x0C ) goto indent_CR;
 			if ( key == KEY_CTRL_EXE ) {
 					if ( SearchMode ) {		//	Next Search
 						i=SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 1 );
 						if ( i==0 ) SearchMode=0;
-					} else  key=0x0D; // <CR>
+					} else  {
+						key=0x0D; // <CR>
+					 indent_CR:
+						ptr=csrPtr;
+						PrevOpcode( SrcBase, &ptr );
+						d = GetOpcode( SrcBase, ptr );
+						ptr=csrPtr;
+						if ( ( d!=0x0C ) && ( d!=0x0D ) ) PrevLine( SrcBase, &ptr );	// current line top
+						x=1;
+						while ( SrcBase[ptr]==' ' ) {
+							if ( x >= pcx ) break;
+							x += OpcodeStrLenBufpx( SrcBase, ptr);
+							ptr++;
+							indent++;
+						}
+						indent += CheckIndentCommand( SrcBase, ptr );
+					}
 			}
 			if ( ( 0x00 < key ) && ( key < 0xFF ) || ( key == KEY_CTRL_XTT ) ) {		// ----- 1 byte code -----
 				if ( ClipStartPtr >= 0 ) { 
@@ -2014,13 +2066,19 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else {
 //					if ( key == KEY_CHAR_POW )   key='^';
 					if ( key == KEY_CTRL_XTT  )   key='X'; // 
-					if ( CursorStyle < 0x6 ) {		// insert mode
-							InsertOpcode( filebase, csrPtr, key );
-					} else {					// overwrite mode
-							if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( filebase, &csrPtr);
-							InsertOpcode( filebase, csrPtr, key );
-					}
-					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
+					
+					do {
+						if ( ( CursorStyle < 0x6 ) || ( indent ) ) {	// insert mode
+								InsertOpcode( filebase, csrPtr, key );
+						} else {										// overwrite mode
+								if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( filebase, &csrPtr);
+								InsertOpcode( filebase, csrPtr, key );
+						}
+						if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
+						indent--;
+						key=' ';
+					} while ( indent >= 0 ) ;
+					
 					if ( alphalock == 0 ) alphastatus = 0;
 					help_code=key;
 					key=0;

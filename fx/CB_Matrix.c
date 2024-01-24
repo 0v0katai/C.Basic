@@ -4712,16 +4712,17 @@ complex Cplx_CB_NormV( char *SRC ){	// Norm(Vct A)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int CB_Dim( char *SRC ){	// Dim Mat or Dim List
-	int reg;
+	int reg,c;
 	if ( SRC[ExecPtr]==0x7F ) {
 		if ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) {	// Dim Mat or Vct
 			MatrixOprandreg( SRC, &reg );
 			WriteListAns2( MatAry[reg].SizeA, MatAry[reg].SizeB );
 			return MatAry[reg].SizeA;
-		} else
-		if ( SRC[ExecPtr+1]==0x51 ) {	// Dim List
-			MatrixOprandreg( SRC, &reg );
-			return MatAry[reg].SizeA;
+		} else { c=SRC[ExecPtr+1];
+			if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// Dim List or List1~List6
+				MatrixOprandreg( SRC, &reg );
+				return MatAry[reg].SizeA;
+			}
 		}
 	} 
 	ExecPtr--;	// error
@@ -4782,11 +4783,11 @@ int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M0( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M0( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MA( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MB( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MC( unsigned int n ){ return n; }	// align +4byte

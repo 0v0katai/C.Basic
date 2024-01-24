@@ -136,6 +136,9 @@ void G1MHeaderTobasname8( char *filebase, char *basname) ;	// header -> abcd
 void G1M_header( char *filebase ,int *size ) ;
 void G1M_Basic_header( char *filebase ) ;
 
+int CB_PreProcessIndent( char *filebase, int progno ) ; //
+void CB_PostProcessIndentRemove( char *filebase ) ; //
+
 //-----------------------------------------------------------------------------
 int DecodeBmp2Vram( char *filebase, int px, int py );	//	bmp -> vram
 char * LoadBmp( char *filebase );

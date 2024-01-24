@@ -1247,11 +1247,15 @@ int ExistFile( char *fname, int replace ) {
 /* G1M file exist? */
 int ExistG1M( const char *sname ) {
 	char fname[32];
+	char ext[8];
 	int r;
 	SetFullfilenameExt( fname, sname, "g1m" );
 	if ( StorageMode & 2 ) return MCS_ExistFile( fname );
 	r = ExistFile( fname, 1 ); // r==0 existed 
-	if ( r==0 ) SetShortName( sname, fname);	// replace sname
+	if ( r==0 ) {
+		SetShortName( sname, fname);	// replace sname
+		GetExtName( sname, ext );
+	}
 	return r;
 }
 int ExistG1Mext( const char *sname, char *ext ) {
@@ -1640,7 +1644,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	ProgfileMode[prgNo]= CurrentFileMode;
 	ProgNo=prgNo;
 //	ExecPtr=0;
-
+	if ( editsize ) return ( CB_PreProcessIndent( filebase, prgNo ) ) ;	// 0:ok
 	return 0; // ok
 }
 
@@ -1688,6 +1692,7 @@ int SaveProgfile( int progNo ){
 	char ext[8],ext2[8];
 	
 	filebase=ProgfileAdrs[progNo];
+	CB_PostProcessIndentRemove( filebase );
 	G1MHeaderTobasname8( filebase, basname);
 	
 	if ( ( CurrentFileMode == 0 ) || ( ForceG1Msave == 1 ) ) {	// g1m save 
@@ -2665,7 +2670,7 @@ typedef struct {
 	buffer[ 42] =ExitDebugModeCheck;buffer[42+1]=S_L_Style;			bufshort[20]=CommandInputMethod;
 	buffer[ 46] =ComplexMode;		buffer[46+1]=Angle;				buffer[ 44]=EnableExtFont;		buffer[44+1]=ForceG1Msave;
 	bufshort[25]=BreakCheckDefault;									bufshort[24]=StorageMode;
-	bufshort[27]=TimeDsp;											bufshort[26]=PageUpDownNum;
+	buffer[ 54] =CB_EditIndent;		buffer[54+1]=TimeDsp;			bufshort[26]=PageUpDownNum;
 	bufshort[29]=MatXYmode;											bufshort[28]=1-MatBaseDefault;
 	bufshort[31]=PictMode;											buffer[ 60]=CB_HelpOn;			buffer[60+1]=CheckIfEnd;
 
@@ -2854,7 +2859,7 @@ void LoadConfig1(){
 		ExitDebugModeCheck=buffer[42];		S_L_Style     =buffer[42+1];	CommandInputMethod=bufshort[20];
 		ComplexMode   =buffer[46];			Angle         =buffer[46+1];	EnableExtFont  =buffer[ 44];		ForceG1Msave   =buffer[44+1];
 		BreakCheckDefault=bufshort[25];        								StorageMode    =bufshort[24];
-		TimeDsp       =bufshort[27];										PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
+		CB_EditIndent =buffer[54];			TimeDsp       =buffer[54+1];	PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        								MatBaseDefault=1-bufshort[28];
 		PictMode      =bufshort[31];        								CB_HelpOn      =buffer[ 60];		CheckIfEnd    =buffer[60+1];
 
@@ -2935,6 +2940,272 @@ void LoadConfig(){
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 // C.Basic Pre process
+//----------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------/Indent
+
+void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
+	int c;
+	while (1){
+		c=SRC[(*ptr)++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+			case 0x0D:	// <CR>
+			case 0x22:	// "
+				return ;
+			case 0x0000005C:	// 
+			case 0x0000007F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFF7:	// 
+				c=SRC[(*ptr)++];
+				break;
+		}
+	}
+}
+void PP_Search_CR_SPACE_Skip_comment(char *SRC, int *ptr){
+	int c;
+	while (1){
+		c=SRC[(*ptr)++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+			case 0x0D:	// <CR>
+				return ;
+			case 0x0000005C:	// 
+			case 0x0000007F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFF7:	// 
+				c=SRC[(*ptr)++];
+				break;
+		}
+	}
+}
+int PP_Search_CR_SPACE(char *SRC ){
+	int c;
+	int ptr=0;
+	if ( SRC[ptr] == ' ' ) return 1;
+	while (1){
+		c=SRC[ptr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				return 0;
+			case 0x22:	// "
+				PP_Search_CR_SPACE_Skip_quot(SRC, &ptr);
+				break ;
+			case 0x27:	// "
+				PP_Search_CR_SPACE_Skip_comment(SRC, &ptr);
+				break ;
+			case 0x0C:	// <Disps>
+			case 0x0D:	// <CR>
+				if ( SRC[ptr] == ' ' ) return 1;
+				break;
+			case 0x0000005C:	// 
+			case 0x0000007F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFF7:	// 
+				c=SRC[ptr++];
+				break;
+		}
+	}
+	return 0;
+}
+
+void PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
+	int c;
+	while (1){
+		c=SRC[(*sptr)++];
+		dest[(*dptr)++]=c;
+		switch ( c ) {
+			case 0x00:	// <EOF>
+//			case 0x0D:	// <CR>
+			case 0x22:	// "
+				return ;
+			case 0x0000005C:	// 
+			case 0x0000007F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFF7:	// 
+				c=SRC[(*sptr)++];
+				dest[(*dptr)++]=c;
+				break;
+		}
+	}
+}
+
+int CB_PreProcessIndent( char *filebase, int progno ) { //
+	char *dest,*SRC;
+	int ptr;
+	int c,i;
+	int size,maxsize,newsize;
+	int editMax;
+	int sptr=0,dptr=0;
+	int indent = 0;
+	int editIndent=(CB_EditIndent&0x07);
+
+	if ( editIndent == 0 ) return 0;
+	if ( PP_Search_CR_SPACE( filebase+0x56 ) ) return 0;	// already exist indent
+	
+	size = SrcSize( filebase ) ;
+	editMax = ProgfileMax[progno]-size;
+	maxsize = HiddenRAM_MatTopPtr - filebase -16;
+	HiddenRAM_freeProg( filebase );
+	filebase = (char*)HiddenRAM_mallocProg( maxsize );
+	if ( filebase == NULL ) { CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } // 
+	memcpy2( filebase+maxsize-size, filebase, size );
+	
+	SRC  = filebase+maxsize-size +0x56;
+	dest = filebase +0x56;
+	
+	while ( sptr < size ){
+		if ( dptr >= maxsize ) {
+			CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } // 
+		c=SRC[sptr++];
+		dest[dptr++]=c;
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				goto exit;
+			case 0x22:	// "
+				PP_Indent_Skip_quot(SRC, dest, &sptr, &dptr);
+				break;
+			case 0x0C:	// <Disps>
+			case 0x0D:	// <CR>
+				i = 0 ;
+				while ( i < indent ) {
+					dest[dptr++]=' ';
+					i++;
+				}
+				break;
+			case 0x0000005C:	// 
+			case 0x0000007F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFFF:	// 
+				c=SRC[sptr++];
+				dest[dptr++]=c;
+				break;
+			case 0xFFFFFFF7:	//
+				c=SRC[sptr++];
+				dest[dptr++]=c;
+				switch (c) {
+					case 0x00:	// If
+					case 0x04:	// For
+					case 0x08:	// While
+					case 0x0A:	// Do
+					case 0x0FFFFFFEA:	// Switch
+//					case 0x0FFFFFFEB:	// Case
+						indent += editIndent;
+						break;
+					case 0x01:	// Then
+						if ( SRC[sptr] == ':' ) SRC[sptr]=0x0D;
+						break;
+					case 0x03:	// IfEnd
+					case 0x07:	// Next
+					case 0x09:	// WhileEnd
+					case 0x0B:	// LpWhile
+					case 0x0FFFFFFED:	// SwitchEnd
+						indent -= editIndent;
+						if ( indent < 0 ) indent =0 ;
+					case 0x02:	// Else
+					case 0x0F:	// ElseIf
+						if ( dest[dptr-3]==' ' ) {
+							i = 1 ;
+							dptr -= 3;
+							do {
+								if ( i >= editIndent ) break;
+								dptr--;
+								i++;
+							} while ( dest[dptr]==' ' ) ;
+							dest[dptr++]=0xF7;
+							dest[dptr++]=c;
+						} 
+						break;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+  exit:
+	dest[dptr++]='\0';
+	newsize = dptr +0x56;
+	HiddenRAM_freeProg( filebase );
+  loop:
+	filebase = (char*)HiddenRAM_mallocProg( newsize +editMax);
+	if ( filebase == NULL ) {
+		editMax/=2; if ( editMax>=16 ) goto loop;
+		{ CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } // 
+	}
+	G1M_header( filebase, &newsize );	// G1M header set
+	ProgfileMax[progno] = newsize +editMax;
+	return 0;
+}
+
+void CB_PostProcessIndentRemove( char *filebase ) { //
+	char *dest,*SRC;
+	int ptr;
+	int c,i;
+	int size,maxsize;
+	int buffersize;
+	int sptr=0,dptr=0;
+	int indent = 0;
+
+	if ( ( CB_EditIndent&0x08 ) == 0 ) return ;
+
+	size = SrcSize( filebase ) ;
+	
+	SRC  = filebase +0x56;
+	dest = filebase +0x56;
+	
+	while ( sptr < size ){
+		c=SRC[sptr++];
+		dest[dptr++]=c;
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				goto exit;
+			case 0x22:	// "
+				PP_Indent_Skip_quot(SRC, dest, &sptr, &dptr);
+				break;
+			case ' ':	// <SPC>
+				dptr--;
+				while ( SRC[sptr] == ' ' ) sptr++;
+				break;
+			case 0x0000005C:	// 
+			case 0x0000007F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFF7:	//
+				c=SRC[sptr++];
+				dest[dptr++]=c;
+				break;
+			default:
+				break;
+		}
+	}
+  exit:
+	dest[dptr++]='\0';
+	size=dptr+0x56;
+	G1M_header( filebase, &size );	// G1M header set
+}
+
+
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void CB_Local( char *SRC ) {
@@ -3039,6 +3310,7 @@ void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
 	if ( ErrorNo ) return;
 	ExecPtr=execptr;
 }
+
 //----------------------------------------------------------------------------------------------
 void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	int c=1,r;
@@ -3177,23 +3449,23 @@ int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4AA( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4BB( unsigned int n ){ return n; }	// align +4byte
@@ -3247,7 +3519,6 @@ void FavoritesDowndummy3( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy4( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3328,6 +3599,7 @@ void FavoritesDowndummy8( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy9( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
