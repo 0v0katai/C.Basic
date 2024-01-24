@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.99 
+ Casio Basic Interpreter (& Compiler) ver 1.00 
 
  copyright(c)2015/2016 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -21,34 +21,8 @@
 
 #include "CB_interpreter.h"
 #include "CB_error.h"
-#include "CB_sample.h"
 #include "fx_syscall.h"
 
-#define loadsdk
-//----------------------------------------------------------------------------------------------
-#ifdef loadsdk
-int LoadFileSDK( char *src ) {	// test source to SDK
-	int size,i;
-	char *buffer;
-
-	if ( src[0]=='\0' ) return 0 ;
-	size=(src[0x47]&0xFF)*256+(src[0x48]&0xFF)+0x4C;
-	locate( 1, 1);
-	buffer = (char *)malloc( size*sizeof(char)+EditMaxfree +4 );
-	if ( buffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-	memset( buffer, 0x00,             size*sizeof(char)+EditMaxfree +4 );
-
-	for (i=0;i<size;i++) buffer[i]=src[i];
-
-	ProgfileAdrs[ProgEntryN]= buffer;
-	ProgfileMax[ProgEntryN]= SrcSize( buffer ) +EditMaxfree ;
-	ProgfileEdit[ProgEntryN]= 1;
-	ProgEntryN++;
-	memset( buffer+0x3C-8, 0x00,  8);		// set folder to header
-
-	return 0 ;
-}
-#endif
 //----------------------------------------------------------------------------------------------
 
 //****************************************************************************
@@ -105,18 +79,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		
 		key =( SelectFile( filename ) ) ;
 		switch ( key ) {
-#ifdef loadsdk
-			case FileCMD_Prog:				// -- test for SDK (internal sample program)
-				ProgEntryN=0;						// Main program
-				LoadFileSDK( bas_src );
-				LoadFileSDK( bas_src1 );
-				LoadFileSDK( bas_src2 );
-				LoadFileSDK( bas_src3 );
-				LoadFileSDK( bas_src4 );
-				LoadFileSDK( bas_src5 );
-				EditRun(2);		// Program listing & edit
-				break;
-#endif
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 			case KEY_CTRL_EXE:

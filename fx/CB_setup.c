@@ -39,7 +39,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v1.00\xE6\x41\x32" );
+	locate( 3, 4 ); Print( (unsigned char*)"          v1.00\xE6\x41\x33" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
 	GetKey(&key);
@@ -833,17 +833,19 @@ int SelectNum4( int n ) {		//
 //--------------------------------------------------------------
 
 int SetupG(int select){		// ----------- Setup 
-    char *onoff[]   ={"off","on"};
-    char *draw[]    ={"Connect","Plot"};
-    char *style[]   ={"Normal","Thick","Broken","Dot"};
-    char *degrad[]  ={"Deg","Rad","Grad"};
-    char *display[] ={"Nrm","Fix","Sci"};
-    char *ENGmode[] ={"  ","/E","  ","/3"};
-    char *mode[]    ={"Dbl#","Int%"};
-    char *Matmode[]    ={"[m,n]","[X,Y]"};
-    char *Matbase[]    ={"0","1"};
-    char *Pictmode[]    ={"S.Mem","Heap"};
-    char *DDmode[]    ={"off","Grph","All"};
+    const char *onoff[]   ={"off","on"};
+    const char *draw[]    ={"Connect","Plot"};
+    const char *style[]   ={"Normal","Thick","Broken","Dot"};
+    const char *degrad[]  ={"Deg","Rad","Grad"};
+    const char *display[] ={"Nrm","Fix","Sci"};
+    const char *ENGmode[] ={"  ","/E","  ","/3"};
+    const char *mode[]    ={"Dbl#","Int%"};
+    const char *Matmode[]    ={"[m,n]","[X,Y]"};
+    const char *Matbase[]    ={"0","1"};
+    const char *Pictmode[]    ={"S.Mem","Heap"};
+    const char *PictmodeSD[]  ={" SD ","Heap"};
+    const char *Stragemode[]  ={"S.Mem"," SD "};
+    const char *DDmode[]    ={"off","Grph","All"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
@@ -852,7 +854,7 @@ int SetupG(int select){		// ----------- Setup
 	char DateStr[16];
 	char TimeStr[16];
 	int year,month,day,hour,min,sec;
-	int listmax=23;
+	int listmax=24;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -951,7 +953,7 @@ int SetupG(int select){		// ----------- Setup
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 18
-			locate(14,cnt-scrl); Print((unsigned char*)Pictmode[PictMode]);
+			locate(14,cnt-scrl); if ( StorageMode ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 19
@@ -973,7 +975,11 @@ int SetupG(int select){		// ----------- Setup
 			DateTimePrint();
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 23
+			locate( 1,cnt-scrl); Print((unsigned char*)"Strage mode :");		// 23
+			locate(14,cnt-scrl); Print((unsigned char*)Stragemode[StorageMode]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 24
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -1036,7 +1042,7 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 1, " 1 ");
 				break;
 			case 18: // Pict mode
-				Fkey_dispN( 0, "MEM ");
+				if ( StorageMode ) Fkey_dispN( 0, " SD "); else Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
 			case 20: // Refresh Ctrl DD Mode
@@ -1056,7 +1062,11 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 1, "Min");
 				Fkey_dispN( 2, "Sec");
 				break;
-			case 23: // Execute Mode
+			case 23: // Strage mode
+				Fkey_dispN( 0, "MEM ");
+				Fkey_dispN( 1, " SD ");
+				break;
+			case 24: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -1179,7 +1189,10 @@ int SetupG(int select){		// ----------- Setup
 						TimeStr[1]=(hour)%10+'0';
 						StorTIME( TimeStr );
 						break;
-					case 23: // CB mode
+					case 23: // Strage mode
+						StorageMode = 0 ; // Memory mode
+						break;
+					case 24: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
 						break;
@@ -1271,7 +1284,10 @@ int SetupG(int select){		// ----------- Setup
 						TimeStr[4]=(min)%10+'0';
 						StorTIME( TimeStr );
 						break;
-					case 23: // CB mode
+					case 23: // Strage mode
+						StorageMode = CheckSD() ; // SD mode
+						break;
+					case 24: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
 						break;

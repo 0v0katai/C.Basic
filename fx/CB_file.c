@@ -50,9 +50,12 @@ static char folder[FILENAMEMAX] = "", tmpfolder[FILENAMEMAX] = "", name[FILENAME
 static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 Files Favoritesfiles[FavoritesMAX];
-char	FileListUpdate=1;
+char FileListUpdate=1;
+char StorageMode=0;						// 0:Storage memory   1:SD
 int redrawsubfolder=0;
 int recentsize=0;
+
+const char root[][5]={"fls0","crd0"};
 
 unsigned int SelectFile (char *filename)
 {
@@ -93,9 +96,9 @@ unsigned int SelectFile (char *filename)
 	}
 
 	if( strlen(folder) == 0 )
-		sprintf( filename, "\\\\"ROOT"\\%s", name );
+		sprintf( filename, "\\\\%s\\%s", root[StorageMode], name );
 	else
-		sprintf( filename, "\\\\"ROOT"\\%s\\%s", folder, name );
+		sprintf( filename, "\\\\%s\\%s\\%s", root[StorageMode], folder, name );
 	
 	return key ;
 }
@@ -261,12 +264,49 @@ void FavoritesDown( int *index ) {
 
 //--------------------------------------------------------------
 
-int GetMediaFree(void) {
-		int freespace[2];
-		if ( Bfile_GetMediaFree(DEVICE_STORAGE,freespace) != 0 ) Abort() ;
-		if ( freespace[0]==0 ) freespace[0]=freespace[1];	// GII-2
-		return freespace[0];
+int GetMediaFree( int *high, int *low) {
+	int freespace[2];
+	switch ( StorageMode ) {	
+		case 0:		// Strage memory
+			if ( Bfile_GetMediaFree(DEVICE_STORAGE,freespace) != 0 ) Abort() ;
+			if ( CPU_check() == 3 ) {
+				(*high)=0;
+				(*low) =freespace[0];
+			} else {
+				(*high)=freespace[0];
+				(*low) =freespace[1];
+			}
+			break;
+		case 1:		// SD
+			if ( Bfile_GetMediaFree(DEVICE_SD_CARD,freespace) != 0 ) Abort() ;
+			if ( CPU_check() == 3 ) {
+				(*high)=0;
+				(*low) =freespace[0];
+			} else {
+				(*high)=freespace[0];
+				(*low) =freespace[1];
+			}
+			break;
+	}
+	return (*low);
 }
+void GetMediaFreeStr10( char *buffer ) {
+	int high,low;
+	GetMediaFree( &high, &low);
+	if ( ( high == 0 ) && ( low < 1000000 ) ) {
+		sprintf(buffer,"%10d",low );
+	} else {
+		low = low/0x400+ high*0x400000;
+		sprintf(buffer,"%9.3fM",(double)low/1024.0);
+	}
+}
+
+int CheckSD(){	// SD model  return : 1
+	int freespace[2];	
+	if ( Bfile_GetMediaFree(DEVICE_SD_CARD,freespace) != 0 ) return 0;
+	return 1 ;
+}
+
 
 unsigned int Explorer( int size, char *folder )
 {
@@ -351,8 +391,8 @@ unsigned int Explorer( int size, char *folder )
 //		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
 		locate(1,1);Print((unsigned char*)"[        ]");
 		locate(2,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
-		sprintf(buffer, "%10d" ,GetMediaFree());		PrintMini(10*6, 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
-		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6, 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
+		GetMediaFreeStr10(buffer);						PrintMini(10*6+1, 1, (unsigned char*)buffer , MINI_OVER);  // free area
+		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
 		if( size < 1+FavoritesMAX+1 ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
@@ -572,16 +612,17 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispN( 5, "Debg");
 				GetKey(&key);
 				switch (key) {
-					case KEY_CHAR_POWROOT:
-							key=FileCMD_Prog;
 //					case KEY_CTRL_EXIT:
 					case KEY_CTRL_QUIT:
+						update:
 							FileListUpdate = 1 ; // 
 							cont = 0 ;
 							break;
 					case KEY_CTRL_SETUP:
+							i = StorageMode ;
 							selectSetup=SetupG(selectSetup);
 							SaveFavorites();
+							if ( i != StorageMode ) goto update;
 							break;
 					case KEY_CTRL_F1:
 							selectVar=SetVar(selectVar);		// A - 
@@ -681,9 +722,9 @@ FONTCHARACTER * FilePath( char *sFolder, FONTCHARACTER *sFont )
 	char path[50];
 
 	if( strlen(sFolder)==0 )
-		sprintf( path, "\\\\"ROOT"\\*" );
+		sprintf( path, "\\\\%s\\*",root[StorageMode] );
 	else
-		sprintf( path, "\\\\"ROOT"\\%s\\*",sFolder );
+		sprintf( path, "\\\\%s\\%s\\*",root[StorageMode] ,sFolder );
 
 	//Convert to FONTCHARACTER
 	CharToFont( path, sFont );
@@ -759,7 +800,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	int handle;
 	FONTCHARACTER filename[50];
 	int r,s;
-	int freespace[2];
+	int freehigh,freelow;
 
 	/* disable, just for call "Bfile_FindFirst" */
 	FONTCHARACTER buffer[50];
@@ -770,7 +811,8 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	r = Bfile_FindFirst( filename, &handle, buffer, &info );
 	s = Bfile_FindClose( handle );
 	if( r == 0 ) { //already existed, delete it
-		if ( GetMediaFree() < size+256 ) { ErrorMSG( "Not enough SMEM", freespace[0] ); return 1 ; }
+		GetMediaFree(&freehigh,&freelow);
+		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough SMEM", freelow ); return 1 ; }
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}
@@ -790,9 +832,9 @@ int storeFile( const char *name, unsigned char* codes, int size )
 
 void SetFullfilenameExt( char *fname, char *sname, char *extname ) {
 	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\"ROOT"\\%s.%s", sname, extname );
+		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
 	else
-		sprintf( fname, "\\\\"ROOT"\\%s\\%s.%s", folder, sname, extname );
+		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
 }
 
 int GetFileSize( const char *fname ) {
@@ -1135,9 +1177,6 @@ int LoadProgfile( char *fname, int editsize ) {
 	ExecPtr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
 
-	PP_ReplaceCode( filebase + 0x56 );	//
-	ExecPtr=0;
-	
 	return 0; // ok
 }
 
@@ -1287,7 +1326,7 @@ int SavePicture( char *filebase, int pictNo ){
 	folder[0x03]='t';
 	folder[0x04]='\0';
 
-	sprintf( fname, "\\\\"ROOT"\\%s", folder );
+	sprintf( fname, "\\\\%s\\%s", root[StorageMode], folder );
 	CharToFont( fname, filename );
 	r = Bfile_FindFirst( filename, &handle, buffer, &info );
 	s = Bfile_FindClose( handle );
@@ -1321,7 +1360,7 @@ char * LoadPicture( int pictNo ){
 	pictname[5]= d;
 	pictname[6]='\0';
 	
-	sprintf( fname, "\\\\"ROOT"\\%s\\%s.g1m", "Pict", pictname );
+	sprintf( fname, "\\\\%s\\%s\\%s.g1m", root[StorageMode], "Pict", pictname );
 
 	pict = loadFile( fname ,0);					//
 	return pict;
@@ -1483,7 +1522,7 @@ void SaveConfig(){
 	bufshort[19]=Derivative;		bufshort[18]=0;
 	bufshort[21]=S_L_Style;			bufshort[20]=0;
 	bufshort[23]=Angle;				bufshort[22]=0;
-	bufshort[25]=BreakCheck;		bufshort[24]=0;
+	bufshort[25]=BreakCheck;		bufshort[24]=StorageMode;
 	bufshort[27]=TimeDsp;			bufshort[26]=PageUpDownNum;
 	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
 	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
@@ -1567,7 +1606,7 @@ void LoadConfig(){
 		Derivative    =bufshort[19];        
 		S_L_Style     =bufshort[21];        
 		Angle         =bufshort[23];        
-		BreakCheck    =bufshort[25];        
+		BreakCheck    =bufshort[25];        StorageMode    =bufshort[24];
 		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
 		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
@@ -1661,9 +1700,9 @@ void SetFullfilenameBin( char *fname, char *sname ) {
 		*cptr='\0';
 	}
 	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\"ROOT"\\%s.%s", sname, extname );
+		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
 	else
-		sprintf( fname, "\\\\"ROOT"\\%s\\%s.%s", folder, sname, extname );
+		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
 }
 
 int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
@@ -2030,24 +2069,24 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
