@@ -57,6 +57,7 @@ void CB_Str( char *SRC );		// "" ""
 int CB_StrCmp( char *SRC ) ;
 int CB_StrSrc( char *SRC ) ;
 int CB_StrLen( char *SRC ) ;
+int CB_StrAsc( char *SRC ) ;	// StrAsc("A")  -> 0x41
 
 int CB_StrJoin( char *SRC ) ;
 int CB_StrLeft( char *SRC ) ;

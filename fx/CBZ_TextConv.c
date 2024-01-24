@@ -853,7 +853,7 @@ const char ConvListF900[][17]={
 "@F94E",			// F94E
 "Wait ",				// F94F
 
-"@F950",			// F950
+"StrAsc(",			// F950
 "@F951",			// F951
 "@F952",			// F952
 "@F953",			// F953
@@ -1542,13 +1542,13 @@ int codecnvF700( char *srcbase, char *text, int *ofst, int *textofst ) {
 	}
 	return c;	// no matching
 }
-int codecnvF900( char *srcbase, char *text, int *ofst, int *textofst ) {
+int codecnvF900( char *srcbase, char *text, int *ofst, int *textofst, unsigned short start, unsigned short end  ) {
 	char *opstr;
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-	for ( code=0x0000; code<=0x00FF; code++) {		// 0xF900 - 0xF9FF
-		opstr=ConvListF900[code];
+	for ( code=start; code<=end; code++) {		// 0xF900 - 0xF9FF
+		opstr=(char*)ConvListF900[code];
 		if ( c == opstr[0] ) {
 			len = strlen( opstr );
 			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
@@ -1658,7 +1658,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	int i,cont=1;
 	unsigned short opcode,code;
 	int c=1,d,e;
-	int ofst=0,len;
+	int ofst=0;
 	int textofst=0;
 	char *opstr;
 	char flag=0;	// ' "
@@ -1666,6 +1666,8 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	char quotflag=0;	// ""  no <CR>
 	int	maxtextsize=strlen(text)-1;
 	int progressofst=0;
+	int len;
+	int textofst2,ofst2;
 
 	srcbase=filebase+0x56;
 	if ( strncmp( text, cbasicstr, 18 ) == 0 ) textofst+=18;
@@ -1710,18 +1712,43 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 			if ( ( c!=0x0D ) && ( c!='+' ) && ( c!='-' ) && ( c!='*' ) && ( c!='/' ) && ( c!='!' ) && ( c!='^' ) ) goto tokenskip;
 		}
 		
-		c=codecnv7F00( srcbase, text, &ofst, &textofst ) ;	// 0x7F00 - 0x7FFF
-		if ( c==0 ) goto tokenloop;
+		if ( ( flag_ == 0 ) && ( c=='_' ) ) {	// _extvar ?
+			c=codecnvF900( srcbase, text, &ofst, &textofst, 0xC0, 0xDF ) ;	// 0xF9C0 - 0xF9DF  _MLcommand?
+			if ( c ) {
+				srcbase[ofst++] = '_';
+				textofst++;
+				len=MAXNAMELEN;
+				GetVarName( text, &textofst, srcbase+ofst, &len) ;
+				ofst+=len;
+			}
+			goto tokenloop;
+		}
 
-		c=codecnvF900( srcbase, text, &ofst, &textofst ) ;	// 0xF900 - 0xF9FF
-		if ( c==0 ) goto tokenloop;
+		textofst2=textofst;
+		ofst2    =ofst;
+		
+		c=codecnv7F00( srcbase, text, &ofst, &textofst ) ;	// 0x7F00 - 0x7FFF
+		if ( c==0 ) {
+		  extvar:
+			if ( ( flag_ ) && ( text[textofst] != '_' ) ) {
+				textofst=textofst2;
+				ofst    =ofst2;
+				srcbase[ofst++] = '_';		// _extvar
+				len=MAXNAMELEN;
+				GetVarName( text, &textofst, srcbase+ofst, &len) ;
+				ofst+=len;
+			}
+			goto tokenloop;
+		}
+		c=codecnvF900( srcbase, text, &ofst, &textofst, 0x00, 0xFF ) ;	// 0xF900 - 0xF9FF
+		if ( c==0 ) goto extvar;
 
 		c=codecnvF700( srcbase, text, &ofst, &textofst ) ;	// 0xF700 - 0xF7FF
-		if ( c==0 ) goto tokenloop;
+		if ( c==0 ) goto extvar;
 
 		if ( ( c=='[' ) || ( c=='@' ) ) {
 			c=codecnvE700( srcbase, text, &ofst, &textofst ) ;	// 0xE700 - 0xE7FF
-			if ( c==0 ) goto tokenloop;
+			if ( c==0 ) goto extvar;
 		}
 		
 		if ( c == 0x27 ) {	// '
@@ -1747,17 +1774,20 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		} else
 		if ( c != '(' ) {
 			c=codecnv0000( srcbase, text, &ofst, &textofst ) ;	// 0x0001 - 0x002F
-			if ( c==0 ) goto tokenloop;
+			if ( c==0 ) {
+				if ( flag_ == 0 ) goto tokenloop;
+				d = text[textofst];
+				if ( d=='_' ) goto tokenloop;
+				textofst=textofst2;
+				ofst    =ofst2;
+			}
 		}
+		
 		c=codecnv0080( srcbase, text, &ofst, &textofst ) ;	// 0x0080 - 0x00FE
-		if ( c==0 ) goto tokenloop;
+		if ( c==0 ) goto extvar;
 		
 		c=ex_codecnv( srcbase, text, &ofst, &textofst ) ;	// ext
-		if ( c==0 ) goto tokenloop;
-
-//		if ( flag_ ) {		// '_'
-//					ofst++; goto tokenloop;
-//		}
+		if ( c==0 ) goto extvar;
 
 	  tokenskip:
 		if ( ( 0x20 <= c ) && ( c <= 0x7E ) ) {

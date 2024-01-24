@@ -36,13 +36,13 @@ char  ExtendPict=0;	// 0:20  21~99						( use hidden ram only )
 char  ExtendList=0;	// 0:52(default) 1:+16 ~ 63:+1008	( use hidden ram only )
 char  ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
 char  ForceReturn;		// 0:none  1:return
-char  CB_RecoverSetup;	// setup recover flag 0:none 1:recover
+char  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
 
 int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.70\xE6\x41";
+const char VerMSG[]="C.Basic  v1.71\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -703,7 +703,8 @@ int SetVar(int select){		// ----------- Set Variable
 
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
-	if ( select >= 58 ) { small=58; if ( select >= IsExtVar ) select=IsExtVar; }
+	if ( select >= IsExtVar ) select=IsExtVar;
+	if ( select >= 58 ) { small=58; }
 	else
 	if ( select >= 32 ) { small=32; }
 	select-=small;
@@ -1239,7 +1240,7 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_ExecTimeDsp: // TimeDsp
 				Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
 				Fkey_Icon( FKeyNo2, 18 );	//	Fkey_dispN( FKeyNo2, " Off");
-				Fkey_dispN( FKeyNo3, " %HR ");
+				if ( IsSH3 == 0 ) Fkey_dispN( FKeyNo3, " %HR ");
 				Fkey_dispN( FKeyNo4, "reset");
 				break;
 			case SETUP_Background: // BG pict

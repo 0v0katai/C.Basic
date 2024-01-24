@@ -251,7 +251,8 @@ void DispGenuineCmdMenu(){
 					break;
 				case 2:
 					Fkey_dspRB( FKeyNo1, "Split");
-					FkeyClear( FKeyNo2 );
+					Fkey_dspRB( FKeyNo2, "Asc(");
+//					FkeyClear( FKeyNo2 );
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );

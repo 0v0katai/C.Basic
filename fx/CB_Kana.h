@@ -23,8 +23,8 @@ void SaveExtFontKana(  int flag, char* sname, int folder, int no, int check );		
 void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check );		// font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
 void SaveExtFontAnk(   int flag, char* sname, int folder, int no, int check );		// font 6x8 -> FONTA8L.bmp    font 6x6 -> FONTA6M.bmp
 
-void KPrintChar( int px, int py, unsigned short c) ; //カナ一文字表示
-void KPrintRevChar( int px, int py, unsigned short c) ; //カナ一文字表示
+void KPrintChar( int px, int py, unsigned char *c) ; //カナ一文字表示
+void KPrintRevChar( int px, int py, unsigned char *c) ; //カナ一文字表示
 
 int KPrintCharMini( int px, int py, unsigned char *str, int mode ) ; // カナ対応 PrintMini
 

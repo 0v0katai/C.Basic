@@ -1475,8 +1475,8 @@ void CB_MatrixInit( char *SRC, int dimdim ) { //	{n,m}->Dim Mat A[.B][.W][.L][.F
 	if ( MatAry[CB_MatListAnsreg].SizeA != 2 ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	base = MatAry[CB_MatListAnsreg].Base;
-	dimA = ReadMatrix( CB_MatListAnsreg, base  , base) +(1-base);
-	dimB = ReadMatrix( CB_MatListAnsreg, base+1, base) +(1-base);
+	dimA = ReadMatrix( CB_MatListAnsreg, base  , base) ;
+	dimB = ReadMatrix( CB_MatListAnsreg, base+1, base) ;
 
 	CB_MatrixInitsub( SRC, &reg, dimA, dimB, 0, dimdim );
 }

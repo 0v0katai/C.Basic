@@ -588,6 +588,8 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return CB_StrSrc( SRC );
 				case 0x38:	// Exp(
 					return CB_EvalStr(SRC, 1 );
+				case 0x50:	// StrAsc(
+					return CB_StrAsc( SRC );
 				case 0x21:	// Xdot
 					return Xdot;
 				case 0x1B :		// fn str

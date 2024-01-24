@@ -1790,6 +1790,8 @@ void CB_end( char *SRC ){
 	int c,t,reg;
 	unsigned int key=0;
 	int scrmode=ScreenMode;
+	int CB_TicksEnd=RTC_GetTicks();	// 
+	int CB_HiTicksEnd=(int)GetTicks32768();;	// 
 
 	ExecPtr++;
 	

@@ -820,6 +820,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CB_StrSrc( SRC );
 				case 0x38:	// Exp(
 					return CBint_EvalStr(SRC, 0 );
+				case 0x50:	// StrAsc(
+					return CB_StrAsc( SRC );
 				case 0x21:	// Xdot
 					return Xdot;
 				case 0x1B :		// fn str
@@ -1192,7 +1194,7 @@ int	Hitickstmp=0;
 #define P7305_EXTRA_TMU5_COUNT 0xA44D00D8
 
 unsigned int GetTicks32768(){
-	if ( IsSH3 ) return 0;
+	if ( IsSH3 ) return RTC_GetTicks()<<8;
 	return *(unsigned int*)P7305_EXTRA_TMU5_COUNT;
 }
 

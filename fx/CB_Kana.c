@@ -351,15 +351,16 @@ static const unsigned char FontE7[][8] = {
 };
 
  
-void KPrintCharSub( int px, int py, unsigned short c, int modify ) { //ƒJƒiˆê•¶Žš•\Ž¦	px,py  (0,-24)-(383,191)
+void KPrintCharSub( int px, int py, unsigned char *c, int modify ) { //ƒJƒiˆê•¶Žš•\Ž¦	px,py  (0,-24)-(383,191)
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;
-    int a;
+    int a,b;
 
-	a= c & 0xFFFF;
- 	if ( ( ( ExtCharKanaFX )&&( 0xFFA0 <= a )&&( a <= 0xFFEF ) ) || ( ( ExtCharGaijiFX )&&( 0xFF80 <= a )&&( a <= 0xFF9F ) ) || ( ( ExtCharAnkFX )&&( 0x20 <= a )&&( a < 0x7F ) ) ) {
-		if ( ( 0x20 <= a )&&( a < 0x7F ) ) {
-		    kfont_info.pBitmap = ExtAnkFontFX + (a-0x20)*8;
+	b= (*c);
+	a= (b<<8) + c[1];
+ 	if ( ( ( ExtCharKanaFX )&&( 0xFFA0 <= a )&&( a <= 0xFFEF ) ) || ( ( ExtCharGaijiFX )&&( 0xFF80 <= a )&&( a <= 0xFF9F ) ) || ( ( ExtCharAnkFX )&&( 0x20 <= b )&&( b < 0x7F ) ) ) {
+		if ( ( 0x20 <= b )&&( b < 0x7F ) ) {
+		    kfont_info.pBitmap = ExtAnkFontFX + (b-0x20)*8;
 		} else {
 			a &= 0xFF;
 			a -= 0x80;
@@ -393,10 +394,10 @@ void KPrintCharSub( int px, int py, unsigned short c, int modify ) { //ƒJƒiˆê•¶Ž
     kfont.WriteKind = IMB_WRITEKIND_OVER;
     Bdisp_WriteGraph_VRAM(&kfont);
 }
-void KPrintChar( int px, int py, unsigned short c) { //ƒJƒiˆê•¶Žš•\Ž¦	px,py  (0,-24)-(383,191)
+void KPrintChar( int px, int py, unsigned char *c) { //ƒJƒiˆê•¶Žš•\Ž¦	px,py  (0,-24)-(383,191)
 	KPrintCharSub( px, py, c, IMB_WRITEMODIFY_NORMAL);
 }
-void KPrintRevChar( int px, int py, unsigned short c) { //ƒJƒiˆê•¶Žš•\Ž¦	px,py  (0,-24)-(383,191)
+void KPrintRevChar( int px, int py, unsigned char *c) { //ƒJƒiˆê•¶Žš•\Ž¦	px,py  (0,-24)-(383,191)
 	KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
 

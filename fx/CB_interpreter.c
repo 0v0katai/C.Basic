@@ -111,10 +111,8 @@ short PictbaseCount;
 //		Interpreter inside
 //----------------------------------------------------------------------------------------------
 int	CB_TicksStart;
-int	CB_TicksEnd;
 int	CB_TicksAdjust;
 int	CB_HiTicksStart;
-int	CB_HiTicksEnd;
 int	CB_HiTicksAdjust;
 
 int CB_INT=0;		// current mode  0:normal  1: integer mode
@@ -710,7 +708,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case '?':	// ?
 				CB_Input(SRC);
-				CB_TicksStart=RTC_GetTicks();	// init
+				CB_ResetExecTicks();
 				dspflagtmp=2;
 //				if ( BreakPtr > 0 ) break;
 				c=SRC[ExecPtr++];
@@ -721,7 +719,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case 0x0C:	// disps
 				if ( CB_Disps(SRC, dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
-				CB_TicksStart=RTC_GetTicks();	// init
+				CB_ResetExecTicks();
 				c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
 				break;
 		
@@ -771,7 +769,6 @@ int CB_interpreter_sub( char *SRC ) {
 		if ( dspflagtmp ) dspflag=dspflagtmp & 0x0F;
 	}
 	iend:
-	CB_TicksEnd=RTC_GetTicks();	// 
 	if ( ProgEntryN == 0 ) CB_end(SRC);
 	return -1;
 }
@@ -2392,6 +2389,15 @@ void CB_AliasVarClr(){
 	AliasVarMAX=-1;
 	AliasVarMAXMat=-1;
 	AliasVarMAXLbl=-1;
+	
+	IsExtVar=26+6+26-1;		// Ext Var init
+	for ( i=IsExtVar+1; i<VARMAXSIZE; i++ ) {
+		REG[i]=0;
+		REGINT[i]=0;
+	}
+	for ( i=0; i<VARMAXSIZE; i++ ) {
+		REGtype[i]=0;
+	}
 }
 
 void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
@@ -2425,7 +2431,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 				AliasVarMAXMat++; 
 				AliasVarCodeMat[AliasVarMAXMat].org  =org_reg;
 				AliasVarCodeMat[AliasVarMAXMat].alias=0x4040;	// @@
-				if ( len > 8 ) len=8;
+				if ( len > MAXNAMELEN ) len=MAXNAMELEN;
 				AliasVarCodeMat[AliasVarMAXMat].len=len;
 				memcpy( &AliasVarCodeMat[AliasVarMAXMat].name[0], name, len );
 			} else {
@@ -2469,7 +2475,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 				AliasVarMAXLbl++; 
 				AliasVarCodeLbl[AliasVarMAXLbl].org  =org_reg+10;
 				AliasVarCodeLbl[AliasVarMAXLbl].alias=0x4040;	// @@
-				if ( len > 8 ) len=8;
+				if ( len > MAXNAMELEN ) len=MAXNAMELEN;
 				AliasVarCodeLbl[AliasVarMAXLbl].len=len;
 				memcpy( &AliasVarCodeLbl[AliasVarMAXLbl].name[0], name, len );
 			} else {
@@ -2511,7 +2517,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 				AliasVarMAX++; 
 				AliasVarCode[AliasVarMAX].org  =org_reg;
 				AliasVarCode[AliasVarMAX].alias=0x4040;	// @@
-				if ( len > 8 ) len=8;
+				if ( len > MAXNAMELEN ) len=MAXNAMELEN;
 				AliasVarCode[AliasVarMAX].len=len;
 				memcpy( &AliasVarCode[AliasVarMAX].name[0], name, len );
 			} else {
@@ -2534,6 +2540,11 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+void CB_ResetExecTicks(){
+	CB_TicksStart = RTC_GetTicks();	// 
+	CB_HiTicksStart = (int)GetTicks32768();	// 
+}
+
 int CB_interpreter( char *SRC ) {
 	int flag;
 	int c;
@@ -2559,8 +2570,7 @@ int CB_interpreter( char *SRC ) {
 	Waitcount=DefaultWaitcount;
 	MatBase = MatBaseDefault;
 	BreakCheck =BreakCheckDefault;	// Break Stop on/off
-	CB_TicksStart = RTC_GetTicks();	// 
-	CB_HiTicksStart = (int)GetTicks32768();	// 
+	CB_ResetExecTicks();
 	CB_TicksAdjust = 0 ;	// 
 	CB_HiTicksAdjust = 0 ;	// 
 	srand( CB_TicksStart ) ;	// rand seed
@@ -2577,15 +2587,6 @@ int CB_interpreter( char *SRC ) {
 	defaultStrAry=26;	// <r>
 	defaultFnAry=27;		// Theta
 	defaultGraphAry=27;		// Theta
-
-	IsExtVar=26+6+26-1;		// Ext Var init
-	for ( c=IsExtVar+1; c<VARMAXSIZE; c++ ) {
-		REG[c]=0;
-		REGINT[c]=0;
-	}
-	for ( c=0; c<VARMAXSIZE; c++ ) {
-		REGtype[c]=0;
-	}
 	
 	CB_MatListAnsreg=27;	//	ListAns init
 	Bdisp_PutDisp_DD_DrawBusy();

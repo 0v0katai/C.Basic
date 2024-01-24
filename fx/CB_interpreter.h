@@ -368,6 +368,8 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) ;		// Menu "title name","Branch n
 void CB_Wait( char *SRC ) ;
 
 //-----------------------------------------------------------------------------
+#define MAXNAMELEN 8
+
 typedef struct {		// 16 bytes
 	short	alias;
 	short	org;
@@ -422,3 +424,4 @@ void CB_Receive38k( char *SRC );		// Receive38k
 
 void CB_Beep( char *SRC );
 
+void CB_ResetExecTicks();
