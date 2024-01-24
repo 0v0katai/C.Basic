@@ -1,34 +1,14 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series  v1.00
+ Casio Basic RUNTIME library for fx-9860G series  v1.8x
 
- copyright(c)2015/2016/2017 by sentaro21
+ copyright(c)2015/2016/2017/2018 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
 */
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_error.h"
-
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_interpreter.h"
-#include "CB_Eval.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
-
-#include "CBI_Eval.h"
-#include "CBI_interpreter.h"
-#include "CB_MonochromeLib.h"
+#include "CB.h"
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> int
 //----------------------------------------------------------------------------------------------
@@ -43,7 +23,10 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	complex* MatAryCPLX;
 	int		base=MatAry[reg].Base;
+	int 	r;
+	int result;
 	dimA-=base;
 	dimB-=base;
 	switch ( MatAry[reg].ElementSize ) {
@@ -53,6 +36,13 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 1 bit
 			return ( MatAryC[dimB*(((MatAry[reg].SizeA-1)>>3)+1)+(dimA>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+		case  4:
+			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 4 bit
+			r=MatAryC[dimB*(((MatAry[reg].SizeA-1)>>1)+1)+(dimA>>1)];
+			if ( (dimA&1)==0 )  r = r>>4;
+			else				r = r&0xF;
+			if ( r>=8 ) r -= 16;	// minus
+			return r;
 		case  8:
 			MatAryC=(char*)MatAry[reg].Adrs;
 			return MatAryC[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array char
@@ -64,6 +54,10 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 			return MatAryI[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array int
 		case 64:
 			return MatAry[reg].Adrs[dimA*MatAry[(reg)].SizeB+dimB] ;			// Matrix array doubl
+		case 128:
+			MatAryCPLX=(complex*)MatAry[reg].Adrs;			// Matrix array 1 bit
+			return MatAryCPLX[dimA*MatAry[reg].SizeB+dimB].real ;			// Matrix array complex
+			break;
 	}
 }
 //-----------------------------------------------------------------------------
@@ -74,7 +68,8 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	int tmp;
+	complex*	MatAryCPLX;
+	int tmp,vtmp,mask;
 	int mptr;
 	int base=MatAry[reg].Base;
 	dimA-=base;
@@ -90,6 +85,14 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 			if ( value ) 	MatAryC[mptr] |= tmp ;
 			else	 		MatAryC[mptr] &= ~tmp ;
 			break;
+		case  4:
+			MatAryC=(char*)MatAry[reg].Adrs;					// Matrix array 4 bit
+			mptr=dimB*(((MatAry[reg].SizeA-1)>>1)+1)+((dimA)>>1);
+			vtmp=(value)&0x0F; mask=0xF0;
+			if ( (dimA&1)==0 ) { vtmp<<=4; mask>>=4; }
+			MatAryC[mptr] &= mask ;
+			MatAryC[mptr] |= vtmp ;
+			break;
 		case  8:
 			MatAryC=(char*)MatAry[reg].Adrs;
 			MatAryC[dimA*MatAry[reg].SizeB+dimB] = (char)value ;	// Matrix array char
@@ -104,6 +107,10 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 			break;
 		case 64:
 			MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB]  = (double)value ;	// Matrix array double
+			break;
+		case 128:
+			MatAryCPLX=(complex*)MatAry[reg].Adrs;			// Matrix array 1 bit
+			MatAryCPLX[dimA*MatAry[reg].SizeB+dimB] = Int2Cplx( value );				// Matrix array complex
 			break;
 	}
 }
@@ -169,7 +176,7 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	int base;
 	MatOprandInt1sub( SRC, reg, &(*dimA) );
 	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+		DimMatrixSub( reg, DefaultElemetSize(), 10-MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 	base=MatAry[reg].Base;
@@ -367,7 +374,7 @@ int EvalIntObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 int CB_EvalInt( char *SRC ) {
 	int value;
-	if (CB_INT) value=EvalIntsubTop( SRC ); else value=EvalsubTop( SRC ); 
+	if (CB_INT==1) value=EvalIntsubTop( SRC ); else value=EvalsubTopReal( SRC ); 
 	return value;
 }
 /*
@@ -532,7 +539,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		reg=c-'A';
 	  regj:
 		c=SRC[ExecPtr];
-		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
+		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0].real ; }
 		else
 		if ( c=='[' ) { goto Matrix; }
 		else
@@ -638,7 +645,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC, 0 );
 				case 0xFFFFFFF6 :		// Peek(
-					return  CB_Peek( SRC, EvalsubTop( SRC ) );
+					return  CB_Peek( SRC, EvalsubTopReal( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
 					return  CB_VarPtr( SRC );
 				case 0xFFFFFFFA :		// ProgPtr(
@@ -729,8 +736,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 //			return CBint_CurrentValue ;
 		case '&' :	// & VarPtr
 			return CB_VarPtr( SRC ) ;
-		case 0xFFFFFFD0 :	// PI
-			return PI ;
+		case 0xFFFFFFD0 :	// const_PI
+			return const_PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			return CB_rand( SRC ) ;
 		case 0xFFFFFF97 :	// abs
@@ -848,7 +855,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			break;
 	}
 	if ( c == '#') {
-		result = EvalsubTop( SRC );
+		result = EvalsubTopReal( SRC );
 //		result = Evalsub1( SRC );
 		return result;
 	}
@@ -918,7 +925,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFCD ) || // <r>
 			 ( c == 0xFFFFFFCE ) || // Theta
-			 ( c == 0xFFFFFFD0 ) || // PI
+			 ( c == 0xFFFFFFD0 ) || // const_PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
 			 ( c == 0xFFFFFFC1 )) { // Ran#
 				result *= EvalIntsub4( SRC ) ;
@@ -997,7 +1004,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 		  exitj:
 			execptr=ExecPtr;
 			c=RegVarAliasEx(SRC);
-			if (c>0) { ExecPtr=execptr; result *= Evalsub4( SRC ) ; }
+			if (c>0) { ExecPtr=execptr; result *= EvalIntsub4( SRC ) ; }
 			else return result;
 		}
 	 }
@@ -1345,8 +1352,9 @@ int CB_GetkeyM() {	//	Getkey multi  -> list { }
 }
 
 int CB_GetkeyEntry( char *SRC ) {	// CB_GetKey entry
-	int c = SRC[ExecPtr];
-	int result;
+	int c = SRC[ExecPtr],d;
+	int result,sdkcode=0;
+	if ( c=='@' ) { sdkcode=1; c = SRC[++ExecPtr]; }	// Getkey SDK code
 	if ( ( ( '0'<=c )&&( c<='3' )) || ( c=='m') || ( c=='M') ) {
 		ExecPtr++ ;
 		switch ( c ) {
@@ -1358,7 +1366,7 @@ int CB_GetkeyEntry( char *SRC ) {	// CB_GetKey entry
 				result=CB_Getkey3( SRC ) ; 
 				break;
 			default:
-				result=CB_GetkeyN(c-'0') ;
+				result=CB_GetkeyN( c-'0', 1, sdkcode ) ;
 				break;
 		}
 		if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } 

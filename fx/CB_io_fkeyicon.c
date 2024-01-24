@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <fxlib.h>
-#include "fx_syscall.h"
-
-#include "CB_io.h"
-#include "CB_Kana.h"
-#include "CB_Matrix.h"
-#include "CB_glib.h"
-#include "KeyScan.h"
+#include "CB.h"
 
 //---------------------------------------------------------------------------------------------
 

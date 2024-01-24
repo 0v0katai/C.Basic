@@ -1,31 +1,10 @@
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "fx_syscall.h"
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_Eval.h"
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_file.h"
-#include "CB_Edit.h"
-#include "CB_error.h"
-#include "CB_setup.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
-#include "MonochromeLib.h"
+#include "CB.h"
 
 //---------------------------------------------------------------------------------------------
 int KeyRepeatFirstCount=20;		// pointer to repeat time of first repeat (20:default)
 int KeyRepeatNextCount = 5;		// pointer to repeat time of second repeat( 5:default)
 
+char  ComplexMode = 0;		// Complex mode  real:0   a+bi:1  a_b:2
 char  MaxMemMode = 0;		// Maximam memory mode
 char  EnableExtFont = 0;	// enable external font
 
@@ -45,8 +24,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.75\xE6\x41";
-#define VERSION 175
+const char VerMSG[]="C.Basic  v1.76\xE6\x41";
+#define VERSION 176
 
 //---------------------------------------------------------------------------------------------
 
@@ -83,6 +62,19 @@ int CB_System( char *SRC ) {	// System( n )
 	int r;
 	int c = SRC[ExecPtr];
 	switch ( CB_EvalInt( SRC ) ) {
+//		case -4:
+//			r=0;
+//			break;
+//		case -3:
+//			r=MAXHEAP/1024;
+//			break;
+//		case -2:
+//			r=OS_Version();
+//			break;
+		case -1:	// model 	bit0 :SH3:0  SH4A:1	 256KB bit1		// 9860G:0  9860GII(SH3):2   9860GII(SH4A):3
+			r = 0; if ( IsSH3 ) r = 1 ;
+			if ( IsHiddenRAM ) r |= 0x2;;
+			break;
 		case 0:	// Version
 			r = VERSION;
 			break;
@@ -221,9 +213,15 @@ void SetVeiwWindowSTD(){	// STD Initialize
 
 
 unsigned int MathKey( unsigned int  key) {
-	if ( ( (  KEY_CHAR_0 <= key ) && ( key <= KEY_CHAR_9 ) ) ||
-		 ( (  KEY_CHAR_A <= key ) && ( key <= KEY_CHAR_Z ) ) ) return key;
 	switch ( key ) {
+			case KEY_CHAR_IMGNRY:
+//				return 0x7F50;
+			case KEY_CHAR_MAT:
+//				return 0x7F40;
+			case KEY_CHAR_LIST:
+//				return 0x7F51;
+			case KEY_CHAR_ANGLE: //
+//				return 0x7F54;
 			case KEY_CHAR_DP:
 			case KEY_CHAR_EXP:
 			case KEY_CHAR_PLUS:
@@ -235,9 +233,6 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CTRL_XTT:
 			case KEY_CHAR_VALR:
 			case KEY_CHAR_THETA:
-			case KEY_CHAR_IMGNRY:
-			case KEY_CHAR_LIST:
-			case KEY_CHAR_MAT:
 			case KEY_CHAR_EQUAL:
 			case KEY_CHAR_FRAC:   //    0xbb
 			case KEY_CHAR_LPAR:   //    0x28
@@ -263,7 +258,6 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CHAR_LBRACE: //
 			case KEY_CHAR_RBRACE: //
 			case KEY_CHAR_RECIP: //
-			case KEY_CHAR_ANGLE: //
 			case KEY_CHAR_DQUATE: //
 				if ( key == KEY_CTRL_XTT ) key='X';
 //				if ( key == KEY_CHAR_PLUS  )  key='+';
@@ -271,6 +265,8 @@ unsigned int MathKey( unsigned int  key) {
 //				if ( key == KEY_CHAR_PMINUS ) key=0x87; // (-)
 				return key;
 			default:
+				if ( ( (  KEY_CHAR_0 <= key ) && ( key <= KEY_CHAR_9 ) ) ||
+					 ( (  KEY_CHAR_A <= key ) && ( key <= KEY_CHAR_Z ) ) ) return key;
 				break;
 		}
 	return 0;
@@ -383,7 +379,9 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 			case KEY_CTRL_F3:	// STD Initialize
 				SetVeiwWindowSTD();
 				break;
-			
+
+			case KEY_CTRL_LEFT:
+				PutKey( KEY_CTRL_DOWN, 1 );
 			case KEY_CTRL_RIGHT:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				FkeyClear( FKeyNo1 );
@@ -538,6 +536,8 @@ void SetFactor(){
 				if ( select > 1 ) select=0;
 				break;
 
+			case KEY_CTRL_LEFT:
+				PutKey( KEY_CTRL_DOWN, 1 );
 			case KEY_CTRL_RIGHT:
 				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
 				Bdisp_PutDisp_DD();
@@ -581,10 +581,15 @@ void SetFactor(){
 
 //-----------------------------------------------------------------------------
 void SetVarDsp(int VarMode) {
-	if ( VarMode ) Print((unsigned char*)"[int%]"); else Print((unsigned char*)"[dbl#]");
+	if ( VarMode ) {
+		Print((unsigned char*)"[INT%]"); 
+	} else {
+		if ( CB_INT==0 ) Print((unsigned char*)"[DBL#]");
+		else	Print((unsigned char*)"[CPLX]");
+	}
 }
-void InitVar( double value, int VarMode, int small) {
-	char buffer[32];
+void InitVar( complex value, int VarMode, int small) {
+	char buffer[64];
 	unsigned int key;
 	int	cont=1;
 	int i,reg;
@@ -594,7 +599,8 @@ void InitVar( double value, int VarMode, int small) {
 	while (cont) {
 		locate( 3,3); Print((unsigned char *)"Init All Variable");
 		locate( 3,5); Print((unsigned char *)"value:           ");
-		sprintG(buffer,value,  10,LEFT_ALIGN); locate( 9, 5); Print((unsigned char*)buffer);
+		Cplx_sprintGR1cutlim( buffer, value, 10,LEFT_ALIGN, Norm, 10 );
+		locate( 9, 5); Print((unsigned char*)buffer);
 		locate(1,8); PrintLine((unsigned char *)" ",21);
 		locate(1,8); SetVarDsp(VarMode);
 //		Bdisp_PutDisp_DD();
@@ -607,21 +613,23 @@ void InitVar( double value, int VarMode, int small) {
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
+			case KEY_CTRL_LEFT:
+				PutKey( KEY_CTRL_DOWN, 1 );
 			case KEY_CTRL_RIGHT:
-				value  =InputNumD_full( 9, 5, 10, value);	// 
+				value  =InputNumC_full( 9, 5, 10, value);	// 
 				break;
 			default:
 				break;
 		}
 		key=MathKey( key );
 		if ( key ) {
-			value  =InputNumD_Char( 9, 5, 10, value, key);	// 
+			value  =InputNumC_Char( 9, 5, 10, value, key);	// 
 		}
 	}
 
 	if ( YesNo("Initialize Ok?") ) {
 		if ( VarMode ) {
-			for ( i=0; i<26; i++) LocalInt[i+small][0]=value;
+			for ( i=0; i<26; i++) LocalInt[i+small][0]=value.real;
 		} else {
 			for ( i=0; i<26; i++) LocalDbl[i+small][0]=value;
 		}
@@ -749,7 +757,9 @@ int SetVarCharStr( char *buffer, int VarMode, int k) {
 }
 
 int SetVar(int select){		// ----------- Set Variable
-	char buffer[32];
+	char buffer[64];
+	char buffer2[64];
+	char buffer3[64];
 	unsigned int key;
 	int	cont=1;
 	int scrl=0;
@@ -758,10 +768,11 @@ int SetVar(int select){		// ----------- Set Variable
 	int selectreplay=-1;
 	int opNum=25+3,lnum;
 	int small=0;
-	double value=0;
-	int VarMode=CB_INT;	// 0:double  1:int
+	complex value={0,0};
+	int VarMode=CB_INT;	// 0:double or complex  1:int  
 	int hex=0;	// 0:normal  1:hex
 
+	if ( VarMode==2 ) VarMode=0;	// complex ->double
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
 	if ( select >= IsExtVar ) select=IsExtVar;
@@ -795,8 +806,8 @@ int SetVar(int select){		// ----------- Set Variable
 					else	sprintG(buffer, (double)LocalInt[k][0], 18,LEFT_ALIGN);
 			} else {
 				locate(x, 1+i);		// dbl
-				if ( hex )	SetVarDblToHex( buffer, LocalDbl[k][0] );
-					else	sprintG(buffer, (double)LocalDbl[k][0], 18,LEFT_ALIGN);
+				if ( hex )	SetVarDblToHex( buffer, LocalDbl[k][0].real );
+				else Cplx_sprintGR1cutlim( buffer, LocalDbl[k][0], 19,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 			}
 			Print((unsigned char*)buffer);
 		}
@@ -854,16 +865,16 @@ int SetVar(int select){		// ----------- Set Variable
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
 					if ( VarMode ) 
-						LocalInt[k][0]= InputNumD_fullhex( x, y, 18, (double)LocalInt[k][0], hex);
+						LocalInt[k][0]= InputNumC_fullhex( x, y, 18, Int2Cplx(LocalInt[k][0]), hex).real;
 					else
-						LocalDbl[k][0]= InputNumD_fullhex( x, y, 19, (double)LocalDbl[k][0], hex);
+						LocalDbl[k][0]= InputNumC_fullhex( x, y, 19, LocalDbl[k][0], hex);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
 				break;
 				
 			case KEY_CTRL_LEFT:
-				if (selectreplay<0) break;
+				if (selectreplay<0) { PutKey( KEY_CTRL_RIGHT, 1 ); PutKey( KEY_CTRL_DOWN, 1 ); break; }
 				SetVarSel(VarMode,y);
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
@@ -872,7 +883,7 @@ int SetVar(int select){		// ----------- Set Variable
 					if ( VarMode ) 
 						LocalInt[k][0]= InputNumD_replay( x, y, 18, (double)LocalInt[k][0]);
 					else
-						LocalDbl[k][0]= InputNumD_replay( x, y, 19, (double)LocalDbl[k][0]);
+						LocalDbl[k][0]= InputNumC_replay( x, y, 19, LocalDbl[k][0]);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -890,7 +901,7 @@ int SetVar(int select){		// ----------- Set Variable
 					if ( VarMode ) 
 						LocalInt[k][0]= InputNumD_Char( x, y, 18, (double)LocalInt[k][0], key);
 					else
-						LocalDbl[k][0]= InputNumD_Char( x, y, 19, (double)LocalDbl[k][0], key);
+						LocalDbl[k][0]= InputNumC_Char( x, y, 19, LocalDbl[k][0], key);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -951,19 +962,23 @@ void TimePrintSetMode(int set){	// 1:on  0:off
 }
 //--------------------------------------------------------------
 
-int SelectNum2( char*msg, int n ,int min, int max) {		// 
+int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key ) {		// 
 	char buffer[32];
-	unsigned int key;
 	int n0=n;
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 3,5); sprintf(buffer,"%s[%d~%d]:",msg,min,max); Print((unsigned char *)buffer);
 	while (1) {
-		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &(*key));		// 0123456789
+		if ( n == n0 ) break;
 		if ( (min<=n)&&(n<=max) ) break;
 		n=n0;
 	}
 	return n ; // ok
+}
+int SelectNum2( char*msg, int n ,int min, int max ) {		// 
+	unsigned int key;
+	return SelectNum1( msg, n ,min, max, &key );
 }
 int SelectNum3( int n ) {		// 
 	unsigned int key;
@@ -972,7 +987,8 @@ int SelectNum3( int n ) {		//
 	locate( 3,3); Print((unsigned char *)"SkipUp/Dw Number");
 	locate( 6,5); Print((unsigned char *)"[1~9999]:");
 	while (1) {
-		n=InputNumD(15, 5, 4, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD(15, 5, 4, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &key);		// 0123456789
+		if ( n == n0 ) break;
 		if ( (1<=n)&&(n<=9999) ) break;
 		n=n0;
 	}
@@ -986,7 +1002,8 @@ int SelectNum4( int n ) {		//
 	locate( 3,3); Print((unsigned char *)"RefrshTime n/128s");
 	locate( 4,5); Print((unsigned char *)"[0=\x7F\x53,1~128]:");
 	while (1) {
-		n=InputNumD(16, 5, 3, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD(16, 5, 3, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &key);		// 0123456789
+		if ( n == n0 ) break;
 		if ( (0<=n)&&(n<=128) ) break;
 		n=n0;
 	}
@@ -996,59 +1013,62 @@ int SelectNum4( int n ) {		//
 //--------------------------------------------------------------
 
 #define SETUP_Angle			0
-#define SETUP_DrawType		1
-#define SETUP_Coord			2
-#define SETUP_Grid			3
-#define SETUP_Axes			4
-#define SETUP_Label			5
-#define SETUP_Derivative	6
-#define SETUP_Background	7
-#define SETUP_Sketch		8
-#define SETUP_Display		9
-#define SETUP_RecoverSetup	10
-#define SETUP_CMDINPUT		11
-#define SETUP_MaxMemMode	12
-#define SETUP_EnableExtFONT	13
-#define SETUP_EditTopLine	14
-#define SETUP_EditExtFont	15
-#define SETUP_EditFontSize	16
-#define SETUP_EditLineNum	17
-#define SETUP_EditListChar	18
-#define SETUP_UseHidnRam	19
-#define SETUP_HidnRamInit	20
-#define SETUP_ExtendPict	21
-#define SETUP_ExtendList	22
-#define SETUP_AutoDebugMode	23
-#define SETUP_BreakStop		24
-#define SETUP_ExecTimeDsp	25
-#define SETUP_IfEndCheck	26
-#define SETUP_ACBreak		27
-#define SETUP_ForceReturnMode	28
-#define SETUP_Key1sttime	29
-#define SETUP_KeyReptime	30
-#define SETUP_SkipUpDown	31
-#define SETUP_MatDspmode	32
-#define SETUP_Matrixbase	33
-#define SETUP_Pictmode		34
-#define SETUP_DATE			35
-#define SETUP_TIME			36
-#define SETUP_Storagemode	37
-#define SETUP_AutoSaveMode	38
-#define SETUP_Forceg1msave	39
-#define SETUP_RefrshCtlDD	40
-#define SETUP_DefaultWaitcount	41
-#define SETUP_Executemode	42
+#define SETUP_ComplexMode	1
+#define SETUP_DrawType		2
+#define SETUP_Coord			3
+#define SETUP_Grid			4
+#define SETUP_Axes			5
+#define SETUP_Label			6
+#define SETUP_Derivative	7
+#define SETUP_Background	8
+#define SETUP_Sketch		9
+#define SETUP_Display		10
+#define SETUP_RecoverSetup	11
+#define SETUP_CMDINPUT		12
+#define SETUP_MaxMemMode	13
+#define SETUP_EnableExtFONT	14
+#define SETUP_EditTopLine	15
+#define SETUP_EditExtFont	16
+#define SETUP_EditFontSize	17
+#define SETUP_EditLineNum	18
+#define SETUP_EditListChar	19
+#define SETUP_UseHidnRam	20
+#define SETUP_HidnRamInit	21
+#define SETUP_ExtendPict	22
+#define SETUP_ExtendList	23
+#define SETUP_AutoDebugMode	24
+#define SETUP_BreakStop		25
+#define SETUP_ExecTimeDsp	26
+#define SETUP_IfEndCheck	27
+#define SETUP_ACBreak		28
+#define SETUP_ForceReturnMode	29
+#define SETUP_Key1sttime	30
+#define SETUP_KeyReptime	31
+#define SETUP_SkipUpDown	32
+#define SETUP_MatDspmode	33
+#define SETUP_Matrixbase	34
+#define SETUP_Pictmode		35
+#define SETUP_DATE			36
+#define SETUP_TIME			37
+#define SETUP_Storagemode	38
+#define SETUP_AutoSaveMode	39
+#define SETUP_Forceg1msave	40
+#define SETUP_RefrshCtlDD	41
+#define SETUP_DefaultWaitcount	42
+#define SETUP_Executemode	43
 
+const char *CBmode[]    ={"DBL#","INT%","CPLX"};
+    
 int SetupG(int select){		// ----------- Setup 
+    const char *degrad[]  ={"Deg","Rad","Grad"};
+    const char *cplxmode[]={"Real","a+b\x7F\x50","r\x7F\x54\xE6\x47"};
     const char *onoff[]   ={"off","on"};
     const char *draw[]    ={"Connect","Plot"};
     const char *style[]   ={"Normal","Thick","Broken","Dot"};
-    const char *degrad[]  ={"Deg","Rad","Grad"};
     const char *display[] ={"Nrm","Fix","Sci"};
     const char *ENGmode[] ={"  ","/E","  ","/3"};
     const char *CMDinput[] ={"C.Basic","Standard"};
     const char *CharSize[] ={"Standard","Mini","Mini Rev","Mini_","Mini_Rev"};
-    const char *mode[]    ={"DBL#","INT%"};
     const char *Matmode[]    ={"[m,n]","[X,Y]"};
     const char *Matbase[]    ={"0","1"};
     const char *Pictmode[]    ={"S.Mem","Heap","Both"};
@@ -1091,41 +1111,45 @@ int SetupG(int select){		// ----------- Setup
 			locate(14, cnt-scrl); Print((unsigned char*)degrad[Angle]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Draw Type   :");		// 1
+			locate( 1, cnt-scrl); Print((unsigned char*)"Complex Mode:");		// 1
+			locate(14, cnt-scrl); Print((unsigned char*)cplxmode[ComplexMode]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Draw Type   :");		// 2
 			locate(14, cnt-scrl); Print((unsigned char*)draw[(int)DrawType]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Coord:      :");		// 2
+			locate( 1, cnt-scrl); Print((unsigned char*)"Coord       :");		// 3
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Coord]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Grid        :");		// 3
+			locate( 1, cnt-scrl); Print((unsigned char*)"Grid        :");		// 4
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Grid]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Axes        :");		// 4
+			locate( 1, cnt-scrl); Print((unsigned char*)"Axes        :");		// 5
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Axes]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Label       :");		// 5
+			locate( 1, cnt-scrl); Print((unsigned char*)"Label       :");		// 6
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Label]);
 		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Derivative  :");		// 6
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1, cnt-scrl); Print((unsigned char*)"Derivative  :");		// 7
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Derivative]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Background  :");		// 7
+			locate( 1, cnt-scrl); Print((unsigned char*)"Background  :");		// 8
 			if ( BG_Pict_No == 0 )	sprintf((char*)buffer,"None");
 			else					sprintf((char*)buffer,"Pict%d",BG_Pict_No);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Sketch Line :");		// 8
+			locate( 1, cnt-scrl); Print((unsigned char*)"Sketch Line :");		// 9
 			locate(14, cnt-scrl); Print((unsigned char*)style[S_L_Style]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Display     :");		// 9
+			locate( 1, cnt-scrl); Print((unsigned char*)"Display     :");		// 10
 			locate(14, cnt-scrl); Print((unsigned char*)display[CB_Round.MODE]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
@@ -1134,148 +1158,148 @@ int SetupG(int select){		// ----------- Setup
 			Print((unsigned char*)ENGmode[ENG]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"SetupRecover:");		// 10
+			locate( 1, cnt-scrl); Print((unsigned char*)"SetupRecover:");		// 11
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[CB_RecoverSetup]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Command Inpt:");		// 11
+			locate( 1, cnt-scrl); Print((unsigned char*)"Command Inpt:");		// 12
 			locate(14, cnt-scrl); Print((unsigned char*)CMDinput[CommandInputMethod]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Max Mem Mode:");		// 12
+			locate( 1,cnt-scrl); Print((unsigned char*)"Max Mem Mode:");		// 13
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[MaxMemMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EnableExFont:");		// 13
+			locate( 1, cnt-scrl); Print((unsigned char*)"EnableExFont:");		// 14
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[EnableExtFont]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit TopLine:");		// 14
+			locate( 1, cnt-scrl); Print((unsigned char*)"Edit TopLine:");		// 15
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[EditTopLine]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			CB_Print_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont );		// 15
+			CB_Print_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont );		// 16
 			CB_Print_ext(14,cnt-scrl,(unsigned char*)onoff[EditExtFont], EditExtFont );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditFontSize:");		// 16
+			locate( 1, cnt-scrl); Print((unsigned char*)"EditFontSize:");		// 17
 			locate(14, cnt-scrl); Print((unsigned char*)CharSize[EditFontSize & 0x0F ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit LineNum:");		// 17
+			locate( 1, cnt-scrl); Print((unsigned char*)"Edit LineNum:");		// 18
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[(EditFontSize & 0xF0)>>4 ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditListChar:");		// 18
+			locate( 1, cnt-scrl); Print((unsigned char*)"EditListChar:");		// 19
 			CB_Print(14, cnt-scrl, (unsigned char*)ListChar[EditListChar]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 19
+			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 20
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[UseHiddenRAM&0x0F]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"HidnRAM Init:");		// 20
+			locate( 1,cnt-scrl); Print((unsigned char*)"HidnRAM Init:");		// 21
 			locate(14,cnt-scrl);
 			if ( UseHiddenRAM&0x0F ) Print((unsigned char*)onoff[!(UseHiddenRAM&0xF0)]);
 			else                     Print((unsigned char*)"---");
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max Pict No:");		// 21
+			locate( 1, cnt-scrl); Print((unsigned char*)"Max Pict No:");		// 22
 			sprintf((char*)buffer,"%d",20+ExtendPict);
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max List No:");		// 22
+			locate( 1, cnt-scrl); Print((unsigned char*)"Max List No:");		// 23
 			sprintf((char*)buffer,"%d",52+ExtendList*52);
 			locate(14, cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 23
+			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 24
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[!AutoDebugMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 24
+			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 25
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[BreakCheckDefault]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 25
+			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 26
 			locate(14,cnt-scrl); Print((unsigned char*)ExecTimemode[TimeDsp]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 26
+			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 27
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[CheckIfEnd]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 27
+			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 28
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 28
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 29
 			locate(14,cnt-scrl); Print((unsigned char*)Returnmode[ForceReturnMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 29
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 30
 			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 30
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 31
 			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 31
+			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 32
 			sprintf((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 32
+			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 33
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 33
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 34
 			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 34
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 35
 			locate(14,cnt-scrl); if ( StorageMode ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 35
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 36
 			DateCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 36
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 37
 			TimeCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 37
+			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 38
 			locate(14,cnt-scrl); Print((unsigned char*)Stragemode[StorageMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 38
+			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 39
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[AutoSaveMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 39
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 40
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 40
+			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 41
 			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 41
+			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 42
 			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
 			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 42
-			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 43
+			locate(14,cnt-scrl); Print((unsigned char*)CBmode[CB_INTDefault]);
 		}
 		y = select-scrl;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
@@ -1283,8 +1307,11 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_DrawType: // Draw Type
 				Fkey_Icon( FKeyNo1, 357 );	//	Fkey_dispN( FKeyNo1, "Con");
 				Fkey_Icon( FKeyNo2, 358 );	//	Fkey_dispN( FKeyNo2, "Plot");
-				FkeyClear( FKeyNo3 );
-				FkeyClear( FKeyNo4 );
+				break;
+			case SETUP_ComplexMode: // complex mode
+				Fkey_Icon( FKeyNo1, 942 );	//	Fkey_dispN( FKeyNo1, "Real");
+				Fkey_Icon( FKeyNo2, 125 );	//	Fkey_dispN( FKeyNo2, "a+bi");
+				Fkey_Icon( FKeyNo3, 126 );	//	Fkey_dispN( FKeyNo3, "r_theta");
 				break;
 			case SETUP_Coord: // Coord
 			case SETUP_Grid: // Grid	
@@ -1307,8 +1334,6 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_RecoverSetup: // Setup Mode 
 				Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
 				Fkey_Icon( FKeyNo2, 18 );	//	Fkey_dispN( FKeyNo2, " Off");
-				FkeyClear( FKeyNo3 );
-				FkeyClear( FKeyNo4 );
 				break;
 			case SETUP_ExecTimeDsp: // TimeDsp
 				Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
@@ -1398,6 +1423,7 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_Executemode: // Execute Mode
 				Fkey_dispN( FKeyNo1, "DBL#");
 				Fkey_dispN( FKeyNo2, "INT%");
+				Fkey_dispN( FKeyNo3, "CPLX");
 				break;
 			case SETUP_EditListChar:
 				Fkey_dispN( FKeyNo1, "List");
@@ -1406,7 +1432,7 @@ int SetupG(int select){		// ----------- Setup
 				ML_vertical_line( 2*21+4+4, 7*8+2, 7*8+6, ML_BLACK);
 				break;
 			case SETUP_ForceReturnMode:
-				Fkey_dispN( FKeyNo1, "None");
+				Fkey_Icon( FKeyNo1, 362 );	//	Fkey_dispN( FKeyNo1, "None");
 				Fkey_dispN( FKeyNo2, " F1");
 				Fkey_dispN( FKeyNo3, "EXE");
 				Fkey_dispN( FKeyNo4, "Both");
@@ -1453,8 +1479,14 @@ int SetupG(int select){		// ----------- Setup
 				break;
 				
 			case KEY_CTRL_F1:
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
+					case SETUP_Angle: // Angle
+						Angle = 0 ; // Deg
+						break;
+					case SETUP_ComplexMode: // complex mode
+						ComplexMode = 0;	// Real
+						break;
 					case SETUP_DrawType: // Draw Type connect
 						DrawType = 0 ;
 						break;
@@ -1478,9 +1510,6 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_Sketch: // Sketch Line	normal
 						S_L_Style = 0 ;
-						break;
-					case SETUP_Angle: // Angle
-						Angle = 0 ; // Deg
 						break;
 					case SETUP_Display: // Display
 						CB_Round.DIGIT=SelectNum2("Fix",CB_Round.DIGIT,0,15);
@@ -1611,14 +1640,21 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_Executemode: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
+						ComplexMode = 0;	// real
 						break;
 					default:
 						break;
 				}
 				break;
 			case KEY_CTRL_F2:
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
+					case SETUP_Angle: // Angle
+						Angle = 1 ; // Rad
+						break;
+					case SETUP_ComplexMode: // complex mode
+						ComplexMode = 1;	// a+bi
+						break;
 					case SETUP_DrawType: // Draw Type Plot
 						DrawType = 1 ;
 						break;
@@ -1642,9 +1678,6 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_Sketch: // Sketch Line	Thick
 						S_L_Style = 1 ; 
-						break;
-					case SETUP_Angle: // Angle
-						Angle = 1 ; // Rad
 						break;
 					case SETUP_Display: // Display
 						CB_Round.DIGIT=SelectNum2("Sci",CB_Round.DIGIT,0,15);
@@ -1777,19 +1810,23 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_Executemode: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
+						ComplexMode = 0;	// real
 						break;
 					default:
 						break;
 				}
 				break;
 			case KEY_CTRL_F3:
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
-					case SETUP_Sketch: // Sketch Line	Broken
-						S_L_Style = 2 ; 
-						break;
 					case SETUP_Angle: // Angle
 						Angle = 2 ; // Grad
+						break;
+					case SETUP_ComplexMode: // complex mode
+						ComplexMode = 2;	// r_theta
+						break;
+					case SETUP_Sketch: // Sketch Line	Broken
+						S_L_Style = 2 ; 
 						break;
 					case SETUP_Display: // Display
 						CB_Round.DIGIT=SelectNum2("Nrm",CB_Round.DIGIT,0,15);
@@ -1837,12 +1874,16 @@ int SetupG(int select){		// ----------- Setup
 						DefaultWaitcount =  SelectNum2( "Wait", DefaultWaitcount, 0, 9999);
 						Waitcount=DefaultWaitcount;
 						break;
+					case SETUP_Executemode: // CB mode
+						CB_INTDefault = 2 ; // complex
+						CB_INT = CB_INTDefault;
+						break;
 					default:
 						break;
 				}
 				break;
 			case KEY_CTRL_F4:
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
 					case SETUP_Sketch: // Sketch  Line	Dot
 						S_L_Style = 3 ; 
@@ -1894,7 +1935,7 @@ int SetupG(int select){		// ----------- Setup
 				}
 				break;
 			case KEY_CTRL_F5:
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// mini

@@ -1,24 +1,4 @@
-#include "fxlib.h"
-#include "timer.h"
-#include "stdio.h"
-#include "string.h"
-
-#include "CB_io.h"
-#include "CB_error.h"
-
-#include "CB_inp.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_Eval.h"
-#include "CBI_Eval.h"
-#include "CB_Matrix.h"
-#include "CB_setup.h"
-#include "CB_TextConv.h"
-#include "CB_Str.h"
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
+#include "CB.h"
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int ReadBmpHeader( unsigned char *filebase, int *bfOffBits, int *biWidth, int *biHeight ){	// 1 bit mono bmp file 
@@ -366,6 +346,10 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 				break;
 			case 64:
 				width = dimB*64;
+				height= dimA;
+				break;
+			case 128:
+				width = dimB*128;
 				height= dimA;
 				break;
 			default:

@@ -1,38 +1,14 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v1.2
+ Casio Basic interpreter for fx-9860G series    v1.8x
 
- copyright(c)2015 by sentaro21
+ copyright(c)2015/2016/2017/2018 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
 */
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_Eval.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_setup.h"
-#include "CB_Time.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
-
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_error.h"
-#include "fx_syscall.h"
-#include "MonochromeLib.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 //int VGObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
@@ -447,7 +423,7 @@ void CB_Screen( char *SRC ){	// Screen.G   Screen.T
 	  	if ( ScrOp[2]-ScrOp[3] == 0 ) { CB_Error(RangeERR); return; }
 		py =  63 - ( (y-ScrOp[2])* 62.0/(ScrOp[3]-ScrOp[2]) - 0.49999999999999 ) ;
 		WriteListAns2( px, py );	//	->List Ans{px,py}
-//		if ( CB_INT )	{ regintX=px;regintY=py; } else { regX=px; regY=py; }
+//		if (CB_INT==1)	{ regintX=px;regintY=py; } else { regX.real=px; regY.real=py; }
 	} else
 	if ( c == '%' ) {	// Screen(PX,PY[,Xmin][,Xmax][,Ymin][,Ymax] -> ViewWindow(X,Y)
 	  scrCod2:
@@ -671,7 +647,7 @@ void CB_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 	if ( ( x-floor(x) ) || ( (px)<MatBase ) || ( (px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
 
 	BdispSetPointVRAM2(px, py, mode);
-	PXYtoVW(px, py, &regX, &regY);
+	PXYtoVW(px, py, &regX.real, &regY.real);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 //----------------------------------------------------------------------------------------------
@@ -717,8 +693,8 @@ void CB_Plot( char *SRC ) { //	Plot
 	}
 	Plot_X = x;
 	Plot_Y = y;
-	regX = x;
-	regY = y;
+	regX.real = x;
+	regY.real = y;
 	regintX = x;
 	regintY = y;
 	PlotPreviousPXY();
@@ -1465,10 +1441,10 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 	regintX=dimA;			// regint X
 	regintY=dimB;			// regint Y
 	if ( CB_INT == 0 ) { 
-		LocalDbl[23][0]=startx;	// reg x
-		LocalDbl[24][0]=starty;	// reg y
-		regX=dimA;			// reg X
-		regY=dimB;			// reg Y
+		LocalDbl[23][0].real=startx;	// reg x
+		LocalDbl[24][0].real=starty;	// reg y
+		regX.real=dimA;			// reg X
+		regY.real=dimB;			// reg Y
 	}
 	if ( scrmode==0 ) CB_SelectTextVRAM();	// Select Text Screen
 }
@@ -1573,7 +1549,7 @@ int CB_Norm( char *SRC ){
 	return tmp ;
 }
 void CB_Rnd(){
-	CB_CurrentValue = Round( CB_CurrentValue, CB_Round.MODE, CB_Round.DIGIT );
+	CB_CurrentValue = Cplx_Round( CB_CurrentValue, CB_Round.MODE, CB_Round.DIGIT );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1705,11 +1681,13 @@ unsigned int GWait( int exit_cancel ) {
 
 int CB_Disp( char *SRC ){		// Disp "A=",A
 	char buffer[CB_StrBufferMax];
+	char buffer2[64];
 	int c;
-	double value;
+	complex value;
 	
 	CB_ChangeTextMode( SRC );	// Select Text Mode
 	loop:
+		buffer2[0]='\0';
 		if ( CursorX >1 ) Scrl_Y();
 		
 		CB_StrBufferCNT=0;			// String buffer clear
@@ -1717,12 +1695,15 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 		if ( c ) {	// string
 			CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 		} else {	// expression
-			value = CB_EvalDbl( SRC );
-			sprintGR(buffer, value, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+			value = CB_Cplx_EvalDbl( SRC );
+			Cplx_sprintGR2SRC( SRC, buffer, buffer2, value, 22-CursorX );
 		}
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
+		if ( buffer2[0] != '\0' ){
+			Scrl_Y();
+			locate( CursorX, CursorY); Print((unsigned char*)buffer2);
+		}
 		CursorX=21;
-		
 	c=SRC[ExecPtr];
 	if ( c == ',' ) { ExecPtr++; goto loop; }
 
@@ -1732,8 +1713,9 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 }
 
 int CB_Disps( char *SRC , short dspflag ){	// Disps command
-	char buffer[32];
-	int c,reg;
+	char buffer[64];
+	char buffer2[64];
+	int c,reg,p;
 	unsigned int key=0;
 	int scrmode;
 	
@@ -1743,11 +1725,20 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	if ( dspflag == 2 ) {
 		CB_SelectTextVRAM();	// Select Text Screen
 		if ( CursorX >1 ) Scrl_Y();
-		if ( CB_INT )
+		buffer2[0]='\0';
+		if (CB_INT==1)
 			sprintGR(buffer, CBint_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
-		else
-			sprintGR(buffer, CB_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+		else { p=ExecPtr; ExecPtr--; c=SRC[--ExecPtr];
+			while ( (c==0x0D) || (c==' ' ) ) c=SRC[--ExecPtr];
+			if ( (0x05<=c)&&(c<=0x07) && ( SRC[ExecPtr-1]==0xFFFFFFF9 ) ) { ExecPtr--; }	// >dms >a+bi or >r_theta
+			Cplx_sprintGR2SRC( SRC, buffer, buffer2, CB_CurrentValue, 22-CursorX );
+			ExecPtr=p;
+		}
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
+		if ( buffer2[0] != '\0' ){
+			Scrl_Y();
+			locate( CursorX, CursorY); Print((unsigned char*)buffer2);
+		}
 		CursorX=21;
 		scrmode=ScreenMode;
 	} else
@@ -1790,7 +1781,8 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 }
 
 void CB_end( char *SRC ){
-	char buffer[32];
+	char buffer[64];
+	char buffer2[64];
 	int c,t,reg;
 	unsigned int key=0;
 	int scrmode=ScreenMode;
@@ -1804,14 +1796,22 @@ void CB_end( char *SRC ){
 	CB_SelectTextVRAM();	// Select Text Screen
 	if ( dspflag == 2 ) {
 		if ( CursorX >1 ) Scrl_Y();
-		if ( CB_INT )
+		buffer2[0]='\0';
+		if (CB_INT==1)
 			sprintGR(buffer, CBint_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
-		else
-			sprintGR(buffer, CB_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+		else { c=SRC[--ExecPtr];
+			while ( (c==0x00) || (c==0x0D) || (c==' ' ) ) c=SRC[--ExecPtr];
+			if ( (0x05<=c)&&(c<=0x07) && ( SRC[ExecPtr-1]==0xFFFFFFF9 ) ) { ExecPtr--; }	// >dms >a+bi or >r_theta
+			Cplx_sprintGR2SRC( SRC, buffer, buffer2, CB_CurrentValue, 22-CursorX );
+		}
 		locate( CursorX, CursorY); Print((unsigned char*)buffer);
+		if ( buffer2[0] != '\0' ){
+			Scrl_Y();
+			locate( CursorX, CursorY); Print((unsigned char*)buffer2);
+		}
 		CursorX=21;
 	} else
-	if ( dspflag >= 3 ) { 	// Matrix List display		Mat A  List 1
+	if ( ( scrmode == 0 ) && ( dspflag >= 3 ) ) { 	// Matrix List display		Mat A  List 1
 		CB_SaveTextVRAM();
 		EditMatrix( MatdspNo, 1 );	// Ans
 		CB_RestoreTextVRAM();	// Resotre Graphic screen
@@ -1821,7 +1821,7 @@ void CB_end( char *SRC ){
 	if ( ( dspflag == 0 ) ) CB_Done();
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
 	if ( UseGraphic ) if ( ( UseGraphic != 1 ) &&( UseGraphic != 2 ) && ( UseGraphic != 9 ) ) { UseGraphic=UseGraphic&0xF; CB_SelectTextVRAM(); }
-	Bdisp_PutDisp_DD();
+//	Bdisp_PutDisp_DD();
 
 	while ( 1 ) {
 		key=GWait(EXIT_CANCEL_OFF);
@@ -2114,15 +2114,15 @@ int CB_GraphXYEval( char *SRC ) {
 void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
 	int listreg1,listreg2;
 	int errflag=0;
-	double regTback=regT;
+	double regTback=regT.real;
 	
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	
 	GraphX=SRC+ExecPtr;
-	regT=TThetamin;
+	regT.real=TThetamin;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	listreg1=CB_GraphXYEval( SRC );
-	regT=regTback;
+	regT.real=regTback;
     ErrorPtr= 0;
 	errflag=ErrorNo;	// error cancel
 
@@ -2130,9 +2130,9 @@ void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
 	ExecPtr++;
 
 	GraphY=SRC+ExecPtr;
-	regT=TThetamin;
+	regT.real=TThetamin;
 	listreg2=CB_GraphXYEval( SRC );
-	regT=regTback;
+	regT.real=regTback;
     ErrorPtr= 0;
 	ErrorNo = 0;	// error cancel
 

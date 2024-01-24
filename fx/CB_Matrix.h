@@ -30,20 +30,20 @@ extern char listdsp;	// Mat:0  list:1
 
 //------------------------------------------------------------------------------
 int ReadMatrixInt( int reg, int dimA, int dimB);				// 0-
-double ReadMatrix( int reg, int dimA, int dimB);				// 0-
 void WriteMatrixint( int reg, int dimA, int dimB, int value);	// 0-
+double ReadMatrix( int reg, int dimA, int dimB);				// 0-
 void WriteMatrix( int reg, int dimA, int dimB, double value);	// 0-
 
 char *  MatrixPtr( int reg, int m, int n );						// 0-
 int	MatrixSize( int reg, int sizeA, int sizeB ) ;	// size 1-
 
+int DefaultElemetSize();
 int DimMatrixSub( int reg, int ElementSize, int dimA, int dimA, int base ) ;	// 1-
 int DimMatrix( int reg, int dimA, int dimB, int base ) ;						// 1-
 int MatElementPlus( int reg, int m, int n ) ;	// 1-
 void CopyMatrix( int reg2, int reg ) ;	// reg -> reg2
 
 void DeleteMatrix( int reg ) ;
-void InitMatSub( int reg, double value );
 void InitMatIntSub( int reg, int value );
 void NumToHex( char *buffer, unsigned int n, int digit) ;
 void EditMatrix(int reg, int ans );		// ----------- Edit Matrix
@@ -95,8 +95,6 @@ void CB_List2Mat( char *SRC ) ;	// List>Mat( List 1, List 2,..) -> List 5
 double CB_MinMax( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max
 double CB_Mean( char *SRC ) ;	// Mean( List 1 )
 double CB_Median( char *SRC ) ;	// Median( List 1, List 2 )
-double CB_Sum( char *SRC ) ;	// Sum( List 1 )
-double CB_Prod( char *SRC ) ;	// Prod( List 1 )
 
 void CB_SeqInt( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_MinMaxInt( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max

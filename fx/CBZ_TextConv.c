@@ -1,27 +1,4 @@
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_Eval.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_setup.h"
-#include "CB_Time.h"
-
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_error.h"
-#include "fx_syscall.h"
-#include "CB_Matrix.h"
-
+#include "CB.h"
 
 //-----------------------------------------------------------------------------
 const char ConvList0000[][8]={
@@ -1542,7 +1519,7 @@ int codecnvF700( char *srcbase, char *text, int *ofst, int *textofst ) {
 	}
 	return c;	// no matching
 }
-int codecnvF900( char *srcbase, char *text, int *ofst, int *textofst, unsigned short start, unsigned short end  ) {
+int codecnvF900( char *srcbase, char *text, int *ofst, int *textofst, int start, int end  ) {
 	char *opstr;
 	unsigned short code;
 	int len;
@@ -1608,12 +1585,12 @@ int codecnv0000( char *srcbase, char *text, int *ofst, int *textofst ) {
 	}
 	return c;	// no matching
 }
-int codecnv0080( char *srcbase, char *text, int *ofst, int *textofst ) {
+int codecnv0080( char *srcbase, char *text, int *ofst, int *textofst, int start, int end  ) {
 	char *opstr;
 	unsigned short code;
 	int len;
 	int c=text[(*textofst)];
-	for ( code=0x0000; code<=0x007E; code++) {		// 0x0080 - 0x00FE
+	for ( code=start-0x80; code<=end-0x80; code++) {		// 0x0080 - 0x00EF
 		opstr=ConvList0080[code];
 		if ( c == opstr[0] ) {
 			len = strlen( opstr );
@@ -1784,6 +1761,8 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 				goto tokenloop;
 		} else
 		if ( c != '(' ) {
+			c=codecnv0080( srcbase, text, &ofst, &textofst, 0xF2, 0xFE ) ;	// 0x00F2 - 0x00FE
+			if ( c==0 ) goto extvar;
 			c=codecnv0000( srcbase, text, &ofst, &textofst ) ;	// 0x0001 - 0x002F
 			if ( c==0 ) {
 				if ( flag_ == 0 ) goto tokenloop;
@@ -1794,7 +1773,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 			}
 		}
 		
-		c=codecnv0080( srcbase, text, &ofst, &textofst ) ;	// 0x0080 - 0x00FE
+		c=codecnv0080( srcbase, text, &ofst, &textofst, 0x80, 0xF1 ) ;	// 0x0080 - 0x00F1
 		if ( c==0 ) goto extvar;
 		
 		c=ex_codecnv( srcbase, text, &ofst, &textofst ) ;	// ext

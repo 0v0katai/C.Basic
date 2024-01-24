@@ -1,36 +1,14 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.99
+ Casio Basic interpreter for fx-9860G series    v1.8x
 
- copyright(c)2015 by sentaro21
+ copyright(c)2015/2016/2017/2018 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
 */
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_error.h"
-#include "CB_inp.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_interpreter.h"
-#include "CB_Eval.h"
-#include "CB_Time.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
-
-#include "CBI_Eval.h"
-#include "CBI_interpreter.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 //		Interpreter
@@ -57,14 +35,14 @@ void CBint_Store( char *SRC ){	// ->
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[ExecPtr];
-				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalDbl[ i ][0] = CBint_CurrentValue; }
+				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalDbl[ i ][0] = Int2Cplx( CBint_CurrentValue ); }
 				} else
 				if ( c=='%' ) ExecPtr++;
 				for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalInt[ i ][0] = CBint_CurrentValue; }
 			}
 		} else {
 			if ( REGtype[reg] == 1 ) { CB_Error(DuplicateDefERR); return; }	// Duplicate Definition	// const Var
-			if ( c=='#' ) { ExecPtr++;  LocalDbl[ reg ][0] = CBint_CurrentValue ; }
+			if ( c=='#' ) { ExecPtr++;  LocalDbl[ reg ][0] = Int2Cplx( CBint_CurrentValue ); }
 			else
 			if ( c=='[' ) { goto Matrix; }
 			else
@@ -89,7 +67,7 @@ void CBint_Store( char *SRC ){	// ->
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
-				InitMatSub( reg, CBint_CurrentValue);		// 10 -> Mat A
+				InitMatSub( reg, Int2Cplx( CBint_CurrentValue ) );		// 10 -> Mat A
 			} else {
 			Matrix:
 				ExecPtr++;
@@ -108,7 +86,7 @@ void CBint_Store( char *SRC ){	// ->
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; dspflag=0; return ; }	// ListAns -> List 1
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
-				InitMatSub( reg, CBint_CurrentValue);		// 10 -> List 1
+				InitMatSub( reg, Int2Cplx( CBint_CurrentValue ) );		// 10 -> List 1
 			} else {
 				ExecPtr++;
 				MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
@@ -203,9 +181,9 @@ void CBint_Store( char *SRC ){	// ->
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
-				if ( CB_CurrentValue == 0 ) { CB_Error(RangeERR); return; }	// Range error
+				if ( CBint_CurrentValue == 0 ) { CB_Error(RangeERR); return; }	// Range error
 				ExecPtr+=2;
-				Xdot = CB_CurrentValue ;
+				Xdot = CBint_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
 		} else
 		if ( c == 0x0E ) {	// 123->Const _ABC
@@ -213,7 +191,7 @@ void CBint_Store( char *SRC ){	// ->
 			reg=RegVarAliasEx( SRC ) ;
 			REGtype[reg]=1;		// const
 			if ( c=='#' ) { ExecPtr++;
-				LocalDbl[reg][0] = CBint_CurrentValue ;
+				LocalDbl[reg][0] = Int2Cplx( CBint_CurrentValue );
 			} else {
 				if ( c=='%' ) ExecPtr++;
 				LocalInt[reg][0] = CBint_CurrentValue ;
@@ -247,8 +225,8 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		c=SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
-			LocalDbl[reg][0] --;
-			CBint_CurrentValue = LocalDbl[reg][0] ;
+			LocalDbl[reg][0].real --;
+			CBint_CurrentValue = LocalDbl[reg][0].real ;
 		} else
 		if ( c=='[' ) { 
 			ExecPtr++;
@@ -313,8 +291,8 @@ void CBint_Isz( char *SRC ) { //	Isz
 		c=SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
-			LocalDbl[reg][0] ++;
-			CBint_CurrentValue = LocalDbl[reg][0] ;
+			LocalDbl[reg][0].real ++;
+			CBint_CurrentValue = LocalDbl[reg][0].real ;
 		} else
 		if ( c=='[' ) { 
 			ExecPtr++;
@@ -676,7 +654,7 @@ int CB_VarPtr( char *SRC ) {
 		} else
 		if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; }
 		else
-		if (CB_INT)	result=(int)&LocalInt[reg][0]; else result=(int)&LocalDbl[reg][0];
+		if (CB_INT==1)	result=(int)&LocalInt[reg][0]; else result=(int)&LocalDbl[reg][0];
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat
 		ExecPtr+=2;

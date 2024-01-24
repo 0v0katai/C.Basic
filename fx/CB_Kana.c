@@ -2,26 +2,7 @@
 //	http://www.d-b.ne.jp/~k-kita/fx_sdk_005.html
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <fxlib.h>
-
-#include "CB_io.h"
-#include "CB_error.h"
-
-#include "CB_inp.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_Eval.h"
-#include "CBI_Eval.h"
-#include "CB_Matrix.h"
-#include "CB_setup.h"
-#include "CB_TextConv.h"
-#include "CB_Str.h"
+#include "CB.h"
 
 //------------------------------------------------------------------------------
 

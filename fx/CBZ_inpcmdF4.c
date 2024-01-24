@@ -1,4 +1,4 @@
-#include "CB_inp.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 void GetGenuineCmdF4( unsigned int *code ){
@@ -73,6 +73,11 @@ void GetGenuineCmdF4( unsigned int *code ){
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F5A;return;	// ColSize
+			} break;
+		case CMD_OPTN_CPLX:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F23;return;	// Conjg
+				case 1: (*code)=0xF906;return;	// a+bi
 			} break;
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
@@ -194,6 +199,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 				case 0: CommandType=CMD_SETUP_AXES;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_DERV;CommandPage=0;break;
 				case 3: (*code)=0xF942;return;	// TIME
+				case 4: (*code)=0x7FCF;return;	// System(
 			} break;
 		case CMD_SETUP_DISP:
 			switch ( CommandPage ) {

@@ -1,31 +1,14 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series     v0.88
+ Casio Basic RUNTIME library for fx-9860G series     v1.8x
 
- copyright(c)2015 by sentaro21
+ copyright(c)2015/2016/2017/2018 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
 */
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "fx_syscall.h"
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_Eval.h"
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_error.h"
-#include "CB_Matrix.h"
+#include "CB.h"
 
 //-----------------------------------------------------------------------------
 void BdispSetPointVRAM2( int px, int py, int mode){
@@ -80,13 +63,21 @@ void Bdisp_PutDisp_DD_DrawBusy() {
 	HourGlass();
 //	DrawBusy();
 }
-void Bdisp_PutDisp_DD_DrawBusy_skip() {
+int Check_skip_count( void ) {
+									// 1:DD  0;none
 	unsigned int t;
 	if ( Refreshtime >= 0 ) {
 		t=RTC_GetTicks();
 		if ( abs(t-skip_count)>Refreshtime ) { skip_count=t;		// default 128/3=42  1/42s
-			Bdisp_PutDisp_DD_DrawBusy();
+			return 1;
 		}
+	}
+	return 0;
+}
+void Bdisp_PutDisp_DD_DrawBusy_skip() {
+	unsigned int t;
+	if ( Check_skip_count() ) {
+		Bdisp_PutDisp_DD_DrawBusy();
 	}
 }
 //void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
@@ -253,14 +244,14 @@ void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax
 	GraphAxesGrid();
 
 	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
-//	regX =fabs(Xmin+Xmax)/2; regY =fabs(Ymin+Ymax)/2;	// ViewWindow Current  XY
+//	regX.real =fabs(Xmin+Xmax)/2; regY.real =fabs(Ymin+Ymax)/2;	// ViewWindow Current  XY
 }
 
 
 void ZoomIn(){
 	double c,y,dx,dy,cx,cy;
 
-	dx   = (Xmax+Xmin)/2-regX;
+	dx   = (Xmax+Xmin)/2-regX.real;
 	Xmin = Xmin-dx;	// move center
 	Xmax = Xmax-dx;
 	
@@ -270,7 +261,7 @@ void ZoomIn(){
 	Xmax = cx+dx;
 	Xdot = (Xmax-Xmin)/126.0;
 	
-	dy   = (Ymax+Ymin)/2-regY;	// move center
+	dy   = (Ymax+Ymin)/2-regY.real;	// move center
 	Ymin = Ymin-dy;
 	Ymax = Ymax-dy;
 	
@@ -280,15 +271,15 @@ void ZoomIn(){
 	Ymax = cy+dy;
 	Ydot = (Ymax-Ymin)/ 62.0;
 	
-	regX = (Xmax+Xmin)/2; // center
-	regY = (Ymax+Ymin)/2; // center
-	regintX=regX; regintY=regY;
+	regX.real = (Xmax+Xmin)/2; // center
+	regY.real = (Ymax+Ymin)/2; // center
+	regintX=regX.real; regintY=regY.real;
 }
 
 void ZoomOut(){
 	double dx,dy,cx,cy;
 	
-	dx   = (Xmax+Xmin)/2-regX;
+	dx   = (Xmax+Xmin)/2-regX.real;
 	Xmin = Xmin-dx;	// move center
 	Xmax = Xmax-dx;
 	
@@ -298,7 +289,7 @@ void ZoomOut(){
 	Xmax = cx+dx;
 	Xdot = (Xmax-Xmin)/126.0;
 	
-	dy   = (Ymax+Ymin)/2-regY;	// move center
+	dy   = (Ymax+Ymin)/2-regY.real;	// move center
 	Ymin = Ymin-dy;
 	Ymax = Ymax-dy;
 	
@@ -308,9 +299,9 @@ void ZoomOut(){
 	Ymax = cy+dy;
 	Ydot = (Ymax-Ymin)/ 62.0;
 	
-	regX = (Xmax+Xmin)/2; // center
-	regY = (Ymax+Ymin)/2; // center
-	regintX=regX; regintY=regY;
+	regX.real = (Xmax+Xmin)/2; // center
+	regY.real = (Ymax+Ymin)/2; // center
+	regintX=regX.real; regintY=regY.real;
 }
 
 //------------------------------------------------------------------------------ PLOT
@@ -319,8 +310,8 @@ void PlotSub(double x, double y, int mode){
 	if ( VWtoPXY( x,y, &px, &py) == 0) {
 		BdispSetPointVRAM2(px, py, mode);
 	}
-	regX=x; regY=y;
-	regintX=regX; regintY=regY;
+	regX.real=x; regY.real=y;
+	regintX=regX.real; regintY=regY.real;
 }
 
 void PlotOn_VRAM(double x, double y){
@@ -347,8 +338,8 @@ void PlotChg_VRAM(double x,  double y){
 	if ( Bdisp_GetPoint_VRAM(px, py) )
 		 Bdisp_SetPoint_VRAM(px, py, 0);
 	else Bdisp_SetPoint_VRAM(px, py, 1);
-	regX=x; regY=y;
-	regintX=regX; regintY=regY;
+	regX.real=x; regY.real=y;
+	regintX=regX.real; regintY=regY.real;
 }
 */
 //void PlotChg_DDVRAM(double x, double y){
@@ -358,27 +349,27 @@ void PlotChg_VRAM(double x,  double y){
 /*
 void PxlOn_VRAM(int py, int px){
 	Bdisp_SetPoint_VRAM(px, py, 1);
-	PXYtoVW(px, py, &regX, &regY);
+	PXYtoVW(px, py, &regX.real, &regY.real);
 }
 //void PxlOn_DD(int py, int px){
 //	Bdisp_SetPoint_DD(px, py, 1);
-//	PXYtoVW(px, py, &regX, &regY);
+//	PXYtoVW(px, py, &regX.real, &regY.real);
 //}
 //void PxlOn_DDVRAM(int py, int px){
 //	Bdisp_SetPoint_DDVRAM(px, py, 1);
-//	PXYtoVW(px, py, &regX, &regY);
+//	PXYtoVW(px, py, &regX.real, &regY.real);
 //}
 void PxlOff_VRAM(int py, int px){
 	Bdisp_SetPoint_VRAM(px, py, 0);
-	PXYtoVW(px, py, &regX, &regY);
+	PXYtoVW(px, py, &regX.real, &regY.real);
 }
 //void PxlOff_DD(int py, int px){
 //	Bdisp_SetPoint_DD(px, py, 0);
-//	PXYtoVW(px, py, &regX, &regY);
+//	PXYtoVW(px, py, &regX.real, &regY.real);
 //}
 //void PxlOff_DDVRAM(int py, int px){
 //	Bdisp_SetPoint_DDVRAM(px, py, 0);
-//	PXYtoVW(px, py, &regX, &regY);
+//	PXYtoVW(px, py, &regX.real, &regY.real);
 //}
 void PxlChg_VRAM(int py, int px){
 //	if (Bdisp_GetPoint_VRAM(px, py)) 
@@ -386,7 +377,7 @@ void PxlChg_VRAM(int py, int px){
 //	else
 //		Bdisp_SetPoint_VRAM(px, py, 1);
 	BdispSetPointVRAM2(px, py, 2);
-	PXYtoVW(px, py, &regX, &regY);
+	PXYtoVW(px, py, &regX.real, &regY.real);
 }
 */
 int PxlTest(int py, int px) {
@@ -661,7 +652,7 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 	Plot_X = r+x;
 	Plot_Y = 0+y;
 	for(i=1;i<=n;i++){
-		angle=PI*2*i/n;
+		angle=const_PI*2*i/n;
 		Plot_X=cos(angle)*r+x;
 		Plot_Y=sin(angle)*r+y;
 		if ( ( VWtoPXY( Plot_X, Plot_Y, &px, &py) ==0 ) && ( (prev_px0!=px)||(prev_py0!=py) ) ) {
@@ -679,9 +670,9 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 		}
 		if ( drawflag )	Bdisp_PutDisp_DD_DrawBusy_skip();
 	}
-	regX=Plot_X;
-	regY=Plot_Y;
-	regintX=regX; regintY=regY;
+	regX.real=Plot_X;
+	regY.real=Plot_Y;
+	regintX=regX.real; regintY=regY.real;
 }
 
 //----------------------------------------------------------------------------------------------

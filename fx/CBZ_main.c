@@ -1,29 +1,14 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 1.40 
+ Casio Basic Interpreter (& Compiler) ver 1.8x 
 
- copyright(c)2015/2016 by sentaro21
+ copyright(c)2015/2016/2017/2018 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <fxlib.h>
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_Str.h"
-
-#include "CB_interpreter.h"
-#include "CB_error.h"
-#include "CB_setup.h"
-#include "CB_Kana.h"
-#include "fx_syscall.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 
@@ -69,7 +54,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	traceAry         = (double *)((char*)AliasVarCodeLbl+ sizeof(ALIAS_VAR)*ALIASVARMAXLBL );		// 130*8+4 ;
 	ClipBuffer       = (char *)((char*)traceAry+130*8+4 );
-	HiddenRAM_Top    = (char *)ClipBuffer+ ClipMax;		// Heap RAM TOP
+	CB_StrBuffer	 = (char *)ClipBuffer+ ClipMax;		//[CB_StrBufferCNTMax][CB_StrBufferMax]
+	HiddenRAM_Top    = (char *)CB_StrBuffer+ ( CB_StrBufferCNTMax * CB_StrBufferMax ) ;		// Heap RAM TOP
 	
 	HiddenRAM_MatAryInit();	// RAM Initialize
 	
@@ -86,6 +72,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			for (j=0; j<ArgcMAX; j++)	ProgLocalVar[i][j]=-1;
 		}
 
+		CB_INT = CB_INTDefault;
 		ExecPtr=0;	
 		DebugMode=0;
 		DebugScreen=0;

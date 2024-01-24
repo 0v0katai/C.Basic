@@ -1,20 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <fxlib.h>
-#include <timer.h>
-#include "fx_syscall.h"
-#include "CB_io.h"
-#include "CB_error.h"
-
-#include "CB_inp.h"
-#include "CB_edit.h"
-#include "CB_file.h"
-#include "CB_interpreter.h"
-#include "CB_Matrix.h"
-#include "CB_setup.h"
-#include "MonochromeLib.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 //char ClipBuffer[ClipMax];
@@ -814,7 +798,7 @@ void jumpmenu(){
 //	Fkey_Icon( FKeyNo2, 394 );	//	Fkey_dispN( FKeyNo2, "BTM");
 	Fkey_Icon( FKeyNo1, 965 );	//	Fkey_dispN( FKeyNo1, "TOP ");
 	Fkey_Icon( FKeyNo2, 967 );	//	Fkey_dispN( FKeyNo2, "BTM");
-	Fkey_dispN( FKeyNo3, "GOTO");
+	Fkey_Icon( FKeyNo3, 964 );	//	Fkey_dispN( FKeyNo3, "GOTO");
 	Fkey_dispN_aA( FKeyNo5, "Skp\xE6\x92");
 	Fkey_dispN_aA( FKeyNo6, "Skp\xE6\x93");
 }
@@ -840,7 +824,7 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 	i=strlen(buffer)+3;
 	n=0;
 	while (1) {
-		n=InputNumD( i, 5, 5, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD( i, 5, 5, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &key);		// 0123456789
  		if ( (1<=n)&&(n<=lineAll) ) break;
  		if ( n==0 ) break;
  		if ( n < 0 ) n=1;
@@ -998,7 +982,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			if (dumpflg==2) {
 				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
 					else             { i=CB_INTDefault; j=MatBaseDefault; }
-					sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
+					sprintf(buffer, "==%-8s==[%s%d]", buffer2, CBmode[i], j);
 			} else 	{
 					sprintf(buffer, "==%-8s==%08X ", buffer2, SrcBase);
 			}
@@ -1040,7 +1024,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					}
 			} else {
-			if ( ClipStartPtr>=0 ) {
+				if ( ClipStartPtr>=0 ) {
 					Fkey_Icon( FKeyNo1,  52 );	//	Fkey_dispN( FKeyNo1, "COPY ");
 					Fkey_Icon( FKeyNo2, 105 );	//	Fkey_dispN( FKeyNo2, "CUT ");
 					Fkey_Icon( FKeyNo3,   9 );	//	Fkey_dispN( FKeyNo2, "DEL ");
@@ -1124,6 +1108,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			} else { GetKey_DisableMenu(&key); }
 		}						
 		
+		if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 		MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 //		Cursor_SetFlashMode(0); 			// cursor flashing off
 		switch (dumpflg) {
@@ -1763,11 +1748,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							key=0;
 							break;
 					case KEY_CTRL_PASTE:
-							EditPaste( filebase, ClipBuffer, &csrPtr);
-							offset=csrPtr;
-							offset_y=0;
-							PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
-							UpdateLineNum=1;
+							if ( ClipBuffer != NULL ) {
+								EditPaste( filebase, ClipBuffer, &csrPtr);
+								offset=csrPtr;
+								offset_y=0;
+								PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
+								UpdateLineNum=1;
+							}
 							key=0;
 							break;
 							
@@ -1891,7 +1878,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				if ( ClipStartPtr >= 0 ) { 
 						ClipStartPtr = -1 ;		// ClipMode cancel			
 				} else {
-					if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 //					if ( key == KEY_CHAR_POW )   key='^';
 					if ( key == KEY_CTRL_XTT  )   key='X'; // 
 					if ( CursorStyle < 0x6 ) {		// insert mode

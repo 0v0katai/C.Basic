@@ -1,26 +1,4 @@
-
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "fx_syscall.h"
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_Eval.h"
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_file.h"
-#include "CB_Edit.h"
-#include "CB_error.h"
-#include "CB_setup.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
+#include "CB.h"
 
 //------------------------------------------------------------------------------
 int GCursorflag = 1;	// GCursor Pixel ON:1 OFF:0
@@ -272,9 +250,9 @@ unsigned int Plot()
 	Bkey_Set_RepeatTime(FirstCount,NextCount);	// restore repeat time
 	RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 //	if ( retcode==0 ) Bdisp_SetPoint_VRAM( GCursorX, GCursorY, 1);
-	regX = Plot_X ;
-	regY = Plot_Y ;
-	regintX=regX; regintY=regY;
+	regX.real = Plot_X ;
+	regY.real = Plot_Y ;
+	regintX=regX.real; regintY=regY.real;
 	return key ;
 }
 
@@ -304,8 +282,8 @@ unsigned int ZoomXY() {
 	long FirstCount;	// pointer to repeat time of first repeat
 	long NextCount; 	// pointer to repeat time of second repeat
 
-	regX=(Xmax+Xmin)/2; regY=(Ymax+Ymin)/2;		// center
-	if ( VWtoPXY( regX, regY, &GCursorX, &GCursorY) ) return;	// VW(X,Y) to  graphic cursor XY
+	regX.real=(Xmax+Xmin)/2; regY.real=(Ymax+Ymin)/2;		// center
+	if ( VWtoPXY( regX.real, regY.real, &GCursorX, &GCursorY) ) return;	// VW(X,Y) to  graphic cursor XY
 	
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(FirstCount,2);				// set graphic cursor repeat time  (count * 25ms)
@@ -315,14 +293,14 @@ unsigned int ZoomXY() {
 	while ( cont ) {	
 		RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
-		PXYtoVW(GCursorX, GCursorY, &regX, &regY);	// graphic cursor XY  to  VW(X,Y)
-		if ( fabs(regX*1e10)<Xdot ) regX=0;	// zero adjust
-		if ( fabs(regY*1e10)<Ydot ) regY=0;	// zero adjust
+		PXYtoVW(GCursorX, GCursorY, &regX.real, &regY.real);	// graphic cursor XY  to  VW(X,Y)
+		if ( fabs(regX.real*1e10)<Xdot ) regX.real=0;	// zero adjust
+		if ( fabs(regY.real*1e10)<Ydot ) regY.real=0;	// zero adjust
 		if ( Coord ) {
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintGRS(buffer, regX, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, regX.real, 13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
-			sprintGRS(buffer, regY, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, regY.real, 13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
 		DrawGCSR(GCursorX,GCursorY); 	// draw graphic cursor
 		Bdisp_PutDisp_DD();
@@ -359,7 +337,7 @@ unsigned int ZoomXY() {
 	GCursorSetFlashMode(0);	// graphic cursor flashing off
 	Bkey_Set_RepeatTime(FirstCount,NextCount);	// restore repeat time
 	RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
-	regintX=regX; regintY=regY;
+	regintX=regX.real; regintY=regY.real;
 	return key ;
 }
 //--------------------------------------------------------------
@@ -409,8 +387,8 @@ unsigned int Trace(int *index ) {
 
 	if ( *index <   1 ) *index=  0;
 	if ( *index > 127 ) *index=128;
-	PXYtoVW(*index, 0, &regX, &regY);	// graphic cursor X  to  VW(X,dummy)
-	VWtoPXY( regX, traceAry[*index], &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
+	PXYtoVW(*index, 0, &regX.real, &regY.real);	// graphic cursor X  to  VW(X,dummy)
+	VWtoPXY( regX.real, traceAry[*index], &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
 	
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(FirstCount,2);				// set graphic cursor repeat time  (count * 25ms)
@@ -420,14 +398,14 @@ unsigned int Trace(int *index ) {
 	while ( cont ) {	
 		RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
-		PXYtoVW(GCursorX, 0, &regX, &regY);	// graphic cursor X  to  VW(X,dummy)
-		if ( fabs(regX)*1e10<Xdot ) regX=0;	// zero adjust
-		VWtoPXY( regX, traceAry[GCursorX], &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
+		PXYtoVW(GCursorX, 0, &regX.real, &regY.real);	// graphic cursor X  to  VW(X,dummy)
+		if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
+		VWtoPXY( regX.real, traceAry[GCursorX], &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
 		if ( Coord ) {
 			sprintf((char*)buffer, "PX=%d", GCursorX);	PrintMini(  0,0,(unsigned char*)buffer,MINI_OVER);
 			sprintf((char*)buffer, "PY=%d", GCursorY);	PrintMini( 64,0,(unsigned char*)buffer,MINI_OVER);
 			PrintMini(  0,58,(unsigned char*)"X=",MINI_OVER);
-			sprintGRS(buffer, regX,             13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
+			sprintGRS(buffer, regX.real,             13,LEFT_ALIGN, Norm,10); PrintMini(  8,58,(unsigned char*)buffer,MINI_OVER);
 			PrintMini( 64,58,(unsigned char*)"Y=",MINI_OVER);
 			sprintGRS(buffer,traceAry[GCursorX],13,LEFT_ALIGN, Norm,10); PrintMini( 72,58,(unsigned char*)buffer,MINI_OVER);
 		}
@@ -502,7 +480,7 @@ unsigned int Trace(int *index ) {
 	Bkey_Set_RepeatTime(FirstCount,NextCount);	// restore repeat time
 	RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 	*index=GCursorX;
-	regintX=regX; regintY=regY;
+	regintX=regX.real; regintY=regY.real;
 	return key ;
 }
 
@@ -515,26 +493,26 @@ void Graph_Draw(){
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
 	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	regX   = Xmin-Xdot;
+	regX.real   = Xmin-Xdot;
 	for ( i=0; i<=128; i++) {
 		//-----------------------------
 		traceAry[i]=CB_EvalStrDBL(GraphY,1);		// function
 		if ( ErrorNo ) return ;
 		//-----------------------------
 		if ( fabs(traceAry[i])*1e10<Ydot ) traceAry[i]=0;	// zero adjust
-		if ( i==0 ) { Previous_X = regX; Previous_Y = traceAry[0]; }
+		if ( i==0 ) { Previous_X = regX.real; Previous_Y = traceAry[0]; }
 		if ( ( 0<i ) && ( i<128 ) ) {
-			PlotOn_VRAM( regX, traceAry[i]);
-			Plot_X=regX;
-			Plot_Y=regY;
+			PlotOn_VRAM( regX.real, traceAry[i]);
+			Plot_X=regX.real;
+			Plot_Y=regY.real;
 			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
 				Line( style , 1, 0);	// No error check
 			}
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 		}
-		regX += Xdot;
+		regX.real += Xdot;
 	}
-	regintX=regX; regintY=regY;
+	regintX=regX.real; regintY=regY.real;
 	Previous_X=p_x;
 	Previous_Y=p_y;
 	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
@@ -607,7 +585,7 @@ unsigned int Graph_trace_sub(int *tracex){
 		}
 	}
 	*tracex=tx;
-	regintX=regX; regintY=regY;
+	regintX=regX.real; regintY=regY.real;
 	return key;
 }
 
@@ -732,12 +710,12 @@ double GraphXYEval( char *buffer ) {
 	int Ansreg=CB_MatListAnsreg;
 	dspflag=0;
 	ExecPtr=0;
-	result=EvalsubTop( buffer );
+	result=EvalsubTopReal( buffer );
 	if ( dspflag>=3 ) {
 		CB_MatListAnsreg=Ansreg;
 		ExecPtr=0; ListEvalsubTop( buffer );	// List calc
 		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
-		result=ReadMatrix( CB_MatListAnsreg, regT, MatAry[CB_MatListAnsreg].Base );
+		result=ReadMatrix( CB_MatListAnsreg, regT.real, MatAry[CB_MatListAnsreg].Base );
 	}
 	ExecPtr=excptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
@@ -745,7 +723,7 @@ double GraphXYEval( char *buffer ) {
 }
 
 void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 2)
-	double tmpT=regT;
+	double tmpT=regT.real;
 	double tmpX,tmpY;
 	double p_x=Previous_X;
 	double p_y=Previous_Y;
@@ -761,39 +739,39 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 	if ( sizeA > sizeA2 ) sizeA=sizeA2;
 	
 //	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	tmpT=regT;
+	tmpT=regT.real;
 	c = base;
 	for ( c=base; c<sizeA+base; c++ ) {
-		regT=TThetamin;
+		regT.real=TThetamin;
 		at1st=0;
-		while ( regT<=TThetamax ) {
+		while ( regT.real<=TThetamax ) {
 			//-----------------------------
 			if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 			tmpX=GraphXYEval(GraphX);		// function
 			tmpY=GraphXYEval(GraphY);		// function
 			if ( ErrorPtr ) return ;
 			//-----------------------------
-			if ( xlistreg )	regX=ReadMatrix( xlistreg, c, base );
-			else 			regX=tmpX;
-			if ( ylistreg )	regY=ReadMatrix( ylistreg, c, base2 );
-			else			regY=tmpY;
-			if ( fabs(regX)*1e10<Xdot ) regX=0;	// zero adjust
-			if ( fabs(regY)*1e10<Ydot ) regY=0;	// zero adjust
-			if ( at1st==0 ) { Previous_X = regX; Previous_Y = regY; at1st=1; }
-			PlotOn_VRAM( regX, regY );
-			Plot_X=regX;
-			Plot_Y=regY;
+			if ( xlistreg )	regX.real=ReadMatrix( xlistreg, c, base );
+			else 			regX.real=tmpX;
+			if ( ylistreg )	regY.real=ReadMatrix( ylistreg, c, base2 );
+			else			regY.real=tmpY;
+			if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
+			if ( fabs(regY.real)*1e10<Ydot ) regY.real=0;	// zero adjust
+			if ( at1st==0 ) { Previous_X = regX.real; Previous_Y = regY.real; at1st=1; }
+			PlotOn_VRAM( regX.real, regY.real );
+			Plot_X=regX.real;
+			Plot_Y=regY.real;
 			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
 				Line( style , 1, 0);	// No error check
 			}
 //			Bdisp_PutDisp_DD();
-			regT+=TThetaptch;
+			regT.real += TThetaptch;
 		}
 	}
 	Previous_X=p_x;
 	Previous_Y=p_y;
-	regintX=regX; regintY=regY;
-	regT=tmpT;
+	regintX=regX.real; regintY=regY.real;
+	regT.real=tmpT;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 
@@ -832,8 +810,8 @@ void DrawStat_PlotOn_VRAM(double x, double y, int Type){
 				break;
 		}
 	}
-	regX=x; regY=y;
-	regintX=regX; regintY=regY;
+	regX.real=x; regY.real=y;
+	regintX=regX.real; regintY=regY.real;
 }
 
 void DrawStat(){	// DrawStat
@@ -846,7 +824,7 @@ void DrawStat(){	// DrawStat
 	int at1st;
 	int xlistreg,ylistreg;
 
-	tmpX=regX; tmpY=regY;
+	tmpX=regX.real; tmpY=regY.real;
 //	ML_clear_vram();
 //	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 
@@ -861,14 +839,14 @@ void DrawStat(){	// DrawStat
 			if ( sizeA > sizeA2 ) sizeA=sizeA2;
 			c = base;
 			for ( c=base; c<sizeA+base; c++ ) {
-				regX=ReadMatrix( xlistreg, c, base );
-				regY=ReadMatrix( ylistreg, c, base2 );
-				if ( fabs(regX)*1e10<Xdot ) regX=0;	// zero adjust
-				if ( fabs(regY)*1e10<Ydot ) regY=0;	// zero adjust
-				if ( at1st==0 ) { Previous_X = regX; Previous_Y = regY; at1st=1; }
-				DrawStat_PlotOn_VRAM(regX, regY, Sgraph[No].MarkType);
-				Plot_X=regX;
-				Plot_Y=regY;
+				regX.real=ReadMatrix( xlistreg, c, base );
+				regY.real=ReadMatrix( ylistreg, c, base2 );
+				if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
+				if ( fabs(regY.real)*1e10<Ydot ) regY.real=0;	// zero adjust
+				if ( at1st==0 ) { Previous_X = regX.real; Previous_Y = regY.real; at1st=1; }
+				DrawStat_PlotOn_VRAM(regX.real, regY.real, Sgraph[No].MarkType);
+				Plot_X=regX.real;
+				Plot_Y=regY.real;
 				if ( Sgraph[No].GraphType == 1 ) {	// 1:xyLine
 					Line( S_L_Normal , 1, 1);	// error check
 				}
@@ -876,10 +854,10 @@ void DrawStat(){	// DrawStat
 			}
 		}
 	}
-//	regintX=regX; regintY=regY;
+//	regintX=regX.real; regintY=regY.real;
 	Previous_X=p_x;
 	Previous_Y=p_y;
-	regX=tmpX; regY=tmpY;
+	regX.real=tmpX; regY.real=tmpY;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 

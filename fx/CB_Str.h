@@ -4,7 +4,7 @@ extern char  *CB_CurrentStr2;	//
 #define CB_StrBufferCNTMax 8
 #define CB_StrBufferMax 256
 extern char   CB_StrBufferCNT;
-extern char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+extern char  *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 extern char   defaultStrAry;
 extern char   defaultStrAryN;
@@ -33,23 +33,30 @@ int StrUpr( char *str1, char *str2 ) ;		// Upr$(str2, n) -> str1
 int OpcodeCopy(char *buffer, char *SRC, int Maxlen) ;
 void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) ;	// Opcode String  ->  Ascii String
 
+void StrDMSsub( char *buffer, double a ) ;	// 
 //-----------------------------------------------------------------------------
 // Casio Basic
 //-----------------------------------------------------------------------------
+char* NewStrBuffer();
+
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 
 int CB_IsStr( char *SRC, int execptr ) ;
 char* CB_GetOpStr1( char *SRC ,int *maxlen ) ;		// String -> buffer	return
 char* CB_GetOpStr( char *SRC, int *maxoplen ) ;	// Get opcode String 
 double CB_EvalStrDBL( char *buffer, int calcflag ); //
-double CB_EvalStr( char *SRC, int calcflag) ;		// Eval str -> double
+double CB_EvalStr( char *SRC, int calcflag) ;		// Eval str -> complex
+complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ); //
+complex CB_Cplx_EvalStr( char *SRC, int calcflag) ;		// Eval str -> complex
 int CBint_EvalStr( char *SRC, int calcflag) ;		// Eval str -> int
 void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;
 
-double CB_GraphYStr( char *SRC, int calcflag ) ;	//
+double  CB_GraphYStr( char *SRC, int calcflag ) ;	//
 int CBint_GraphYStr( char *SRC, int calcflag ) ;	// 
 double CB_FnStr( char *SRC, int calcflag ) ;	//
 int CBint_FnStr( char *SRC, int calcflag ) ;	// 
+complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) ;	//
+complex CB_Cplx_FnStr( char *SRC, int calcflag ) ;	//
 
 void CB_StorStr( char *SRC ) ;	// ->Stor
 void CB_Str( char *SRC );		// "" ""
@@ -72,7 +79,7 @@ int CB_StrShift( char *SRC ) ;
 int CB_StrRotate( char *SRC ) ;
 int CB_Sprintf( char *SRC ) ;	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 
-int CB_StrDMS( char *SRC ) ;
+//int CB_StrDMS( char *SRC ) ;
 
 void StorDATE( char *buffer ) ;	// "2017/01/17" -> DATE
 void StorTIME( char *buffer ) ;	// "23:59:59" -> TIME

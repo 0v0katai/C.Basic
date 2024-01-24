@@ -1,26 +1,4 @@
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_Eval.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_setup.h"
-#include "CB_Time.h"
-#include "CB_Matrix.h"
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_error.h"
-#include "CB_Str.h"
-#include "fx_syscall.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 //		Interpreter inside
@@ -28,7 +6,7 @@
 char   *CB_CurrentStr;	//
 
 char   CB_StrBufferCNT;
-char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+char   *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 char   defaultStrAry=26;	// <r>
 char   defaultStrAryN=20;
@@ -168,34 +146,38 @@ int StrCmp( char *str1, char *str2 ) {	// str1==str0 ->0   str1>str2 ->1   str1<
 	return 0;
 }
 
-int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){	// strptr:1-
-	int opbkup,csrptr;
+int StrSrcSub( char *SrcBase, char *searchstr, int *strptr, int size, int *csrptr ){	// strptr:1-
+	int opbkup;
 	int sptr,cptr;
 	int opcode=1,srccode;
 
-	csrptr=StrOpcodePtr( SrcBase, (*strptr) ); 	// opptr -> byteptr
+	(*csrptr)=StrOpcodePtr( SrcBase, (*strptr) ); 	// opptr -> byteptr
 	opbkup=(*strptr);
-	while ( (csrptr)<size ) {
+	while ( ((*csrptr))<size ) {
 		sptr=0;
-		opcode =StrGetOpcode( SrcBase, csrptr ) ;
+		opcode =StrGetOpcode( SrcBase, (*csrptr) ) ;
 		srccode=StrGetOpcode( searchstr, sptr ) ;
 		if ( opcode == 0 ) break;	// No search
 		if ( opcode != srccode ) {
-			StrNextOpcode( SrcBase, &(csrptr) ); (*strptr)++;
+			StrNextOpcode( SrcBase, &((*csrptr)) ); (*strptr)++;
 		} else {
 			cptr = (*strptr);
-			while ( (csrptr)<size ) {
+			while ( ((*csrptr))<size ) {
 				StrNextOpcode( searchstr, &sptr );
 				srccode=StrGetOpcode( searchstr, sptr ) ;
 				if ( srccode == 0x00 ) { (*strptr)=cptr; return 1; }	// Search Ok
-				StrNextOpcode( SrcBase, &(csrptr) ); (*strptr)++;
-				opcode =StrGetOpcode( SrcBase, csrptr ) ;
-//				if ( (csrptr) >= size ) { (*strptr)=opbkup; return 0; }	// No search
+				StrNextOpcode( SrcBase, &(*csrptr) ); (*strptr)++;
+				opcode =StrGetOpcode( SrcBase, (*csrptr) ) ;
+//				if ( ((*csrptr)) >= size ) { (*strptr)=opbkup; return 0; }	// No search
 				if ( opcode != srccode ) break ;
 			}
 		}
 	}
 	{ (*strptr)=opbkup; return 0; }	// No search
+}
+int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size ){	// strptr:1-
+	int csrptr;
+	return StrSrcSub( SrcBase, searchstr, &(*strptr), size, &csrptr );
 }
 
 int	StrRepl( char *str1, char *buffer, char *srcstr, char *repstr, int ptr, int maxlen ){	// ptr:1-
@@ -582,7 +564,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 
 char* NewStrBuffer(){
 	if ( CB_StrBufferCNT > CB_StrBufferCNTMax-1 ) { CB_Error(MemoryERR); return NULL; }	// Memory error
-	return CB_StrBuffer[CB_StrBufferCNT++];
+	return CB_StrBuffer+ (CB_StrBufferCNT++)*CB_StrBufferMax;
 }
 
 char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
@@ -613,7 +595,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 				DimMatrixSub( reg, 8, defaultStrAryN+1-MatBase, defaultStrArySize, MatBase );	// byte matrix
 			}
 	str1:	if ( ErrorNo ) return ; // error
-			if ( CB_INT ) dimA = EvalIntsub1( SRC ); else dimA = Evalsub1( SRC );	// str no : Mat s[n,len]
+			if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
 			if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
 			dimB=MatAry[reg].Base;
 			buffer=MatrixPtr( reg, dimA, dimB );
@@ -675,7 +657,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			ExecPtr+=2;
 			(*maxlen)=CB_StrRotate( SRC );
 			return CB_CurrentStr;
-		case 0x40:	// Str(
+		case 0x40:	// ToStr(
 			ExecPtr+=2;
 			(*maxlen)=CB_EvalToStr( SRC );
 			return CB_CurrentStr;
@@ -817,7 +799,7 @@ void StorStrList0( char *SRC ) {	// "String" -> List n[0]
 		if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 	}
 	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+		DimMatrixSub( reg, DefaultElemetSize(), 10-MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 }
@@ -962,12 +944,16 @@ int CB_StrLen( char *SRC ) {
 	int i,maxoplen;
 	int	buffercnt=CB_StrBufferCNT;
 	char *buffer;
+	int	realbyte=0;
+	if ( SRC[ExecPtr] == '@' ) { ExecPtr++; realbyte=1; }		// Force OS Font
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_StrBufferCNT=buffercnt;
+	if  ( realbyte ) return strlenOp( buffer );	// real byte count
 	return StrLen( buffer ,&i );
 }
+
 int CB_StrCmp( char *SRC ) {
 	int maxoplen;
 	int	buffercnt=CB_StrBufferCNT;
@@ -1022,20 +1008,19 @@ int CB_StrAsc( char *SRC ) {	// StrAsc("A")  -> 0x41
 double CB_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> double
 	double result;
 	int execptr=ExecPtr;
-//	int oplen=strlenOp( buffer );
-//	if ( oplen == 0 ) return 0;
 	ExecPtr = 0;
-//	ErrorPtr= 0;
-//	ErrorNo = 0;
     if ( calcflag == 0 ) {
-		if ( CB_INT)	result = EvalIntsub14( buffer );
-		else			result = Evalsub14( buffer );
+		if (CB_INT==1)	result = EvalIntsub14( buffer );
+		else
+		if (CB_INT==0)	result = Evalsub14( buffer );
+		else			result = Cplx_Evalsub14( buffer ).real;
 	}
     else {
-		if ( CB_INT)	result = ListEvalIntsubTop( buffer );	// List calc
-		else			result = ListEvalsubTop( buffer );	// List calc
+		if (CB_INT==1)	result = ListEvalIntsubTop( buffer );	// List calc
+		else
+		if (CB_INT==0)	result = ListEvalsubTop( buffer );			// List calc
+		else			result = Cplx_ListEvalsubTop( buffer ).real;	// List calc
 	}
-//	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
@@ -1045,23 +1030,66 @@ double CB_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> double
 	int execptr=ExecPtr;
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
-		if ( CB_INT)	result = EvalIntsubTop( buffer );
-		else			result = EvalsubTop( buffer );
+		if (CB_INT==1)	result = EvalIntsubTop( buffer );
+		else
+		if (CB_INT==0)	result = EvalsubTop( buffer );
+		else			result = Cplx_EvalsubTop( buffer ).real;
 	}
     else {
-		if ( CB_INT)	result = ListEvalIntsubTop( buffer );	// List calc
-		else			result = ListEvalsubTop( buffer );	// List calc
+		if (CB_INT==1)	result = ListEvalIntsubTop( buffer );	// List calc
+		else
+		if (CB_INT==0)	result = ListEvalsubTop( buffer );	// List calc
+		else			result = Cplx_ListEvalsubTop( buffer ).real;	// List calc
 	}
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
 }
 
+complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> double
+	complex result;
+	int execptr=ExecPtr;
+	ExecPtr = 0;
+    if ( calcflag == 0 ) {
+		if (CB_INT==1)	result = Int2Cplx( EvalIntsub14( buffer ) );
+		else
+		if (CB_INT==0)	result = Dbl2Cplx( Evalsub14( buffer ) );
+		else			result = Cplx_Evalsub14( buffer );
+	}
+    else {
+		if (CB_INT==1)	result = Int2Cplx( ListEvalIntsubTop( buffer ) );	// List calc
+		else
+		if (CB_INT==0)	result = Dbl2Cplx( ListEvalsubTop( buffer ) );	// List calc
+		else			result = Cplx_ListEvalsubTop( buffer );	// List calc
+	}
+    ExecPtr=execptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return Int2Cplx(0); }
+	return result;
+}
+complex CB_Cplx_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> double
+	complex result;
+	int execptr=ExecPtr;
+	ExecPtr = 0;
+    if ( calcflag == 0 ) {
+		if (CB_INT==1)	result = Int2Cplx( EvalIntsubTop( buffer ) );
+		else
+		if (CB_INT==0)	result = Dbl2Cplx( EvalsubTop( buffer ) );
+		else			result = Cplx_EvalsubTop( buffer );
+	}
+    else {
+		if (CB_INT==1)	result = Int2Cplx( ListEvalIntsubTop( buffer ) );	// List calc
+		else
+		if (CB_INT==0)	result = Dbl2Cplx( ListEvalsubTop( buffer ) );	// List calc
+		else			result = Cplx_ListEvalsubTop( buffer );	// List calc
+	}
+    ExecPtr=execptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return Int2Cplx(0); }
+	return result;
+}
+
 int CB_EvalStrInt( char *buffer, int calcflag ) {		// Eval str -> Int
 	int result;
 	int execptr=ExecPtr;
-//	int oplen=strlenOp( buffer );
-//	if ( oplen == 0 ) return 0;	
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
 		result = EvalIntsub14( buffer );
@@ -1069,7 +1097,6 @@ int CB_EvalStrInt( char *buffer, int calcflag ) {		// Eval str -> Int
     else {
 		result = ListEvalIntsubTop( buffer );	// List calc
 	}
-//	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
@@ -1103,6 +1130,20 @@ double CB_EvalStr( char *SRC, int calcflag ) {		// Exp(
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return result;
 }
+complex CB_Cplx_EvalStr( char *SRC, int calcflag ) {		// Exp(	
+	complex result;
+	int c;
+	int maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
+	char *buffer;
+	
+	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
+	if ( ErrorNo ) return Int2Cplx(0);  // error
+	CB_StrBufferCNT=buffercnt;
+	result=CB_Cplx_EvalStrDBL( buffer, calcflag );
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return result;
+}
 int CBint_EvalStr( char *SRC, int calcflag ) {		// Exp(			Eval str -> int
 	int result;
 	int c;
@@ -1119,7 +1160,6 @@ int CBint_EvalStr( char *SRC, int calcflag ) {		// Exp(			Eval str -> int
 }
 
 char* CB_GraphYStrSub( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnAry
-	double result;
 	int dimA,dimB;
 	int base=MatAry[reg].Base;
 	dimA=Eval_atoi( SRC, SRC[ExecPtr] );
@@ -1137,6 +1177,17 @@ double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	return CB_EvalStrDBL2( ptr, calcflag );
 }
 
+complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
+	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
+	if ( ErrorNo ) return Int2Cplx(0);
+	return CB_Cplx_EvalStrDBL( ptr, calcflag );
+}
+complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
+	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
+	if ( ErrorNo ) return Int2Cplx(0);
+	return CB_Cplx_EvalStrDBL2( ptr, calcflag );
+}
+
 int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
 	if ( ErrorNo ) return 0;
@@ -1145,7 +1196,7 @@ int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
 	if ( ErrorNo ) return 0;
-	if ( calcflag ) 
+	if ( calcflag == 0 ) return 0;
 	return CB_EvalStrInt2( ptr, calcflag );
 }
 
@@ -1345,9 +1396,9 @@ int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
 }
 
 int CB_EvalToStr( char *SRC ){		// Str( n 
-	double value = CB_EvalDbl( SRC );
+	complex value = CB_Cplx_EvalDbl( SRC );
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	sprintGR(CB_CurrentStr, value, CB_StrBufferMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+	Cplx_sprintGR1(CB_CurrentStr, value, CB_StrBufferMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
@@ -1447,7 +1498,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 			type[i]=2;
 		} else {	// expression
 			c=SRC[ExecPtr];
-			if ( CB_INT ) { 
+			if (CB_INT==1) { 
 				if ( c=='#' ) { type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
 				else {
 				if ( c=='%' ) ExecPtr++;
@@ -1574,25 +1625,27 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 //----------------------------------------------------------------------------------------------
 
 int	StrSplit( char *str1, char *buffer, char *srcstr, int ptr, int maxlen ){	// ptr:1-	->MatAns
-	int buflen,srclen,bufptr,ptrorg=ptr;
+	int buflen,srclen,bufptr,ptrorg=ptr,byteptr,bytebufptr,bytesrclen;
 	int oplen,r,max=0,i;
 	char tmp[CB_StrBufferMax];
 	int dimA,dimB,base=1,element=8;
 	
-	buflen=StrLen( buffer, &oplen );
-	srclen=StrLen( srcstr, &oplen );
+	buflen=StrLen( buffer, &oplen );	// multi byte length
+	srclen=StrLen( srcstr, &oplen );	// multi byte length
+	bytesrclen=oplen;
 	str1[0]='\0';
-	bufptr=ptr;
+	bufptr=ptr;	// multi byte ptr
+	byteptr=StrOpcodePtr( buffer, ptr ); 	// ptr -> byteptr
 	i=1;
 	while ( 1 ) {		// search  for max length 
-		r=StrSrc( buffer, srcstr, &ptr, maxlen );
+		r=StrSrcSub( buffer, srcstr, &ptr, maxlen, &bytebufptr );
+		if ( bytebufptr-byteptr > max ) max = bytebufptr - byteptr;
 		if ( r==0 ) break;
-		if ( ptr-bufptr > max ) max=ptr-bufptr;
-		ptr   = ptr+srclen;
-		bufptr= ptr;
+		byteptr = bytebufptr + bytesrclen;
+		ptr     = ptr + srclen;
+		bufptr  = ptr;
 		i++;
 	}
-	if ( buflen-ptr+1 > max ) max=buflen-ptr+1;
 	
 	dimA=i;
 	dimB=max+1;
@@ -1641,12 +1694,46 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232
 }
 
 //----------------------------------------------------------------------------------------------
+void StrDMSsub( char *buffer, double a ) {	// 
+	double b,c,d;
+	int i=0,j=3,f=1;
+
+	if ( a<0 ) { f=-1; a=-a; }
+	b=floor(a);
+	b=(a-b)*60.;
+	c=floor(b);
+	d=(b-c)*60.;
+	
+	sprintf(buffer, "%d %02d  %05.2f", (int)a*f, (int)c, d);
+
+	i=floor(log10(a));
+	if ( i<0 ) i=0;
+	if ( f<0 ) i++;
+
+	if ( buffer[0] == '-' ) buffer[0]=0x87;	// (-)
+
+	buffer[i+1]=0x9C;
+	
+	buffer[i+4]=0xE5;
+	buffer[i+5]=0x96;
+
+	if ( buffer[i+10] == '0' ) {
+		j--;
+		if ( buffer[i+9] == '0' ) j-=2;
+	}
+
+	buffer[ 8+i+j]=0xE5;
+	buffer[ 9+i+j]=0x98;
+	buffer[10+i+j]='\0';
+
+}
+/*
 int CB_StrDMS( char *SRC ) {
 	double a,b,c,d;
 	int i=0,j=3,f=1;
 	
-	if (CB_INT)	a = CBint_CurrentValue ;
-	else		a = CB_CurrentValue    ;
+	if (CB_INT==1)	a = CBint_CurrentValue ;
+	else		a = CB_CurrentValue.real    ;
 
 	if ( a<0 ) { f=-1; a=-a; }
 	b=floor(a);
@@ -1656,7 +1743,7 @@ int CB_StrDMS( char *SRC ) {
 	
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 
-	sprintf(CB_CurrentStr, "%d %02d  %05.2f", (int)a*f, (int)c, d);
+	sprintf3(CB_CurrentStr, "%d %02d  %05.2f", (int)a*f, (int)c, d);
 
 	i=floor(log10(a));
 	if ( i<0 ) i=0;
@@ -1678,9 +1765,10 @@ int CB_StrDMS( char *SRC ) {
 	CB_CurrentStr[ 9+i+j]=0x98;
 	CB_CurrentStr[10+i+j]='\0';
 
-	CB_StrPrint(SRC, 23-(10+i+j) );
+	CB_StrPrints(SRC, 23-(10+i+j) );
+	return 1;
 }
-
+*/
 int DateToStr( char *buffer) {	// "2017/01/17 TUE"
 	int a, y1,y2,y3,y4, m1,m2, d1,d2;
 	char weekStr[7][4]={"SAT","SUN","MON","TUE","WED","THU","FRI"};

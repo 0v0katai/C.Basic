@@ -25,13 +25,7 @@
 //
 //
 
-#include <stdio.h>
-#include <fxlib.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_setup.h"
-#include "fx_syscall.h"
-#include "CB_interpreter.h"
+#include "CB.h"
 
 void delay( void ){
 int i;
@@ -527,7 +521,7 @@ int GetKey_DisableMenu( unsigned int *key ) {
 	return r;
 }
 
-int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
+int CB_Getkey1(int sdkcode) {			// CasioBasic Getkey SDK compatible
 	unsigned int key;
 	int code;
 	int t,th;
@@ -543,24 +537,25 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 		CB_TicksStart=RTC_GetTicks()-t;				// restart ticks count
 		CB_HiTicksStart=(int)GetTicks32768()-th;	// restart ticks count
 	}
+	if ( sdkcode ) return key;
 	return CB_KeyCodeCnvt( key ) ;
 }
 
-int CB_Getkey2() {			// CasioBasic Getkey SDK compatible with buffer clear
+int CB_Getkey2(int sdkcode) {			// CasioBasic Getkey SDK compatible with buffer clear
 	KeyRecover();
-	return CB_Getkey1() ;
+	return CB_Getkey1(sdkcode) ;
 }
 
 
-int CB_GetkeyN( int n) {			// CasioBasic Getkey 
+int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) {			// CasioBasic Getkey 
 	switch ( n ) {
 		case 0:
 			KeyRecover();
 			return 0;
 		case 1:
-			return CB_Getkey1();
+			return CB_Getkey1(sdkcode);
 		case 2:
-			return CB_Getkey2();
+			return CB_Getkey2(sdkcode);
 		default:
 			return 0;
 	}

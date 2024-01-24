@@ -1,4 +1,4 @@
-#include "CB_inp.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 void GetGenuineCmdF6( unsigned int *code ){
@@ -70,6 +70,11 @@ void GetGenuineCmdF6( unsigned int *code ){
 				case 2: CommandPage=0;break;
 			} break;
 		case CMD_OPTN_MAT:
+			switch ( CommandPage ) {
+				case 0: CommandPage=1;break;
+				case 1: CommandPage=0;break;
+			} break;
+		case CMD_OPTN_CPLX:
 			switch ( CommandPage ) {
 				case 0: CommandPage=1;break;
 				case 1: CommandPage=0;break;
@@ -164,7 +169,8 @@ void GetGenuineCmdF6( unsigned int *code ){
 				case 0: CommandPage=1;break;
 				case 1: CommandPage=2;break;
 				case 2: CommandPage=3;break;
-				case 3: CommandPage=0;break;
+				case 3: CommandPage=4;break;
+				case 4: CommandPage=0;break;
 			} break;
 		default:
 			break;

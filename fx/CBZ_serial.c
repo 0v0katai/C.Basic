@@ -1,28 +1,4 @@
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_glib2.h"
-#include "CB_Eval.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_setup.h"
-#include "CB_Time.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
-
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_error.h"
-#include "fx_syscall.h"
-#include "fxCG_Registers.h"
+#include "CB.h"
 
 char Transfermode=1;		// 0:binmode  1:normal
 
@@ -143,7 +119,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		} else
 		if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; (*length)=8; *type=SERIAL_DOUBLE; }
 		else
-		if (CB_INT)	{ result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; } else { result=(int)&LocalDbl[reg][0]; (*length)=8; *type=SERIAL_DOUBLE; }
+		if (CB_INT==1)	{ result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; } else { result=(int)&LocalDbl[reg][0]; (*length)=8; *type=SERIAL_DOUBLE; }
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat
 		ExecPtr+=2;
@@ -198,7 +174,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		} else {
 			reg=RegVarAliasEx(SRC); if ( reg>=0 ) goto regj;
 			if ( flag )	CB_Error(SyntaxERR) ;  // Syntax error 
-			if ( CB_INT ) { 
+			if (CB_INT==1) { 
 				if ( c=='#' ) goto cdbl;
 				else {
 				if ( c=='%' ) ExecPtr++;
@@ -211,7 +187,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 				else {
 				if ( c=='#' ) ExecPtr++;
 				  cdbl:
-					CB_CurrentValue=CB_EvalDbl(SRC); *type=SERIAL_DOUBLE;
+					CB_CurrentValue=CB_Cplx_EvalDbl(SRC); *type=SERIAL_DOUBLE;
 					result=(int)&CB_CurrentValue; (*length)=8; 
 				}
 			}

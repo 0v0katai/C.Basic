@@ -1,32 +1,14 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series  v1.10
+ Casio Basic RUNTIME library for fx-9860G series  v1.8x
 
- copyright(c)2015/2016/2017 by sentaro21
+ copyright(c)2015/2016/2017/2018 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
 */
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_Eval.h"
-#include "CB_interpreter.h"
-#include "CBI_Eval.h"
-#include "CBI_interpreter.h"
-#include "CB_error.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
-#include "CB_MonochromeLib.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> double
@@ -40,26 +22,47 @@ double ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	complex* MatAryCPLX;
 	int		base=MatAry[reg].Base;
+	int 	r;
+	double result;
 	dimA-=base;
 	dimB-=base;
 	switch ( MatAry[reg].ElementSize ) {
 		case 64:
-			return MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array doubl
+			result = MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array double
+			break;
+		case 128:
+			MatAryCPLX=(complex*)MatAry[reg].Adrs;			// Matrix array 1 bit
+			result = MatAryCPLX[dimA*MatAry[reg].SizeB+dimB].real ;			// Matrix array complex
+			break;
 		case  2:		// Vram
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 1 bit
-			return ( MatAryC[dimB*(((MatAry[reg].SizeA-1)>>3)+1)+(dimA>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+			result = ( MatAryC[dimB*(((MatAry[reg].SizeA-1)>>3)+1)+(dimA>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+			break;
+		case  4:
+			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 4 bit
+			r=MatAryC[dimB*(((MatAry[reg].SizeA-1)>>1)+1)+(dimA>>1)];
+			if ( (dimA&1)==0 )  r = r>>4;
+			else				r = r&0xF;
+			if ( r>=8 ) r -= 16;	// minus
+			result = r;
+			break;
 		case  8:
 			MatAryC=(char*)MatAry[reg].Adrs;
-			return MatAryC[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array char
+			result = MatAryC[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array char
+			break;
 		case 16:
 			MatAryW=(short*)MatAry[reg].Adrs;
-			return MatAryW[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array word
+			result = MatAryW[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array word
+			break;
 		case 32:
 			MatAryI=(int*)MatAry[reg].Adrs;
-			return MatAryI[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array int
+			result = MatAryI[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array int
+			break;
 	}
+	return result;
 }
 //-----------------------------------------------------------------------------
 //int EvalObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
@@ -70,7 +73,8 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	int tmp;
+	complex*	MatAryCPLX;
+	int tmp,vtmp,mask;
 	int mptr;
 	int		base=MatAry[reg].Base;
 	dimA-=base;
@@ -79,6 +83,10 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 		case 64:
 			MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB]  = (double)value ;	// Matrix array double
 			break;
+		case 128:
+			MatAryCPLX=(complex*)MatAry[reg].Adrs;			// Matrix array 128 bit
+			MatAryCPLX[dimA*MatAry[reg].SizeB+dimB] = Dbl2Cplx(value);				// Matrix array complex
+			break;
 		case  2:		// Vram
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;					// Matrix array 1 bit
@@ -86,6 +94,14 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 			mptr=dimB*(((MatAry[reg].SizeA-1)>>3)+1)+((dimA)>>3);
 			if ( value ) 	MatAryC[mptr] |= tmp ;
 			else	 		MatAryC[mptr] &= ~tmp ;
+			break;
+		case  4:
+			MatAryC=(char*)MatAry[reg].Adrs;					// Matrix array 4 bit
+			mptr=dimB*(((MatAry[reg].SizeA-1)>>1)+1)+((dimA)>>1);
+			vtmp=((int)value)&0x0F; mask=0xF0;
+			if ( (dimA&1)==0 ) { vtmp<<=4; mask>>=4; }
+			MatAryC[mptr] &= mask ;
+			MatAryC[mptr] |= vtmp ;
 			break;
 		case  8:
 			MatAryC=(char*)MatAry[reg].Adrs;
@@ -161,7 +177,7 @@ int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// base:0  0-  
 		return -1 ;
 	}
 	ExecPtr++;
-	if ( CB_INT ) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
+	if (CB_INT==1) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
 	return 1;
 }
 //-----------------------------------------------------------------------------
@@ -282,7 +298,7 @@ int MatRegVar( char *SRC ) {	//
 		}
 		i=RegVar( c );
 		if ( i>=0 ) { ExecPtr++;
-			if ( CB_INT ) reg=LocalInt[i][0] ; else reg=LocalDbl[i][0] ;
+			if (CB_INT==1) reg=LocalInt[i][0] ; else reg=LocalDbl[i][0].real ;
 			goto jp1;
 		} else
 		if ( ( '0'<=c )&&( c<='9' ) ) { 
@@ -325,7 +341,7 @@ int ListRegVar( char *SRC ) {	// return reg no
 	int	reg;
 	c=SRC[ExecPtr++];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
-		if ( CB_INT ) reg=LocalInt[c-'A'][0] ; else reg=LocalDbl[c-'A'][0] ;
+		if (CB_INT==1) reg=LocalInt[c-'A'][0] ; else reg=LocalDbl[c-'A'][0].real ;
 		goto jp1;
 	}
 	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
@@ -349,9 +365,9 @@ int ListRegVar( char *SRC ) {	// return reg no
 //-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
-	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  return LocalDbl[c-'A'][0] ;
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  return LocalDbl[c-'A'][0].real ;
 	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
-	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return LocalDbl[c-0xFFFFFFCD+26][0] ;	// <r> or Theta
+	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return LocalDbl[c-0xFFFFFFCD+26][0].real ;	// <r> or Theta
 	CB_Error(SyntaxERR);
 	return -1 ; 	// Syntax error
 }
@@ -403,7 +419,7 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 	int base;
 	MatOprand1sub( SRC, reg, &(*dimA) );
 	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+		DimMatrixSub( reg, DefaultElemetSize(), 10-MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 	base=MatAry[reg].Base;
@@ -427,13 +443,55 @@ int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
-	if (CB_INT) {
+	complex z;
+	if (CB_INT==1) {
 		if ( SRC[ExecPtr]=='#' ) { ExecPtr++;
 			value=EvalsubTop( SRC ); 
 		}
 		else value=EvalIntsubTop( SRC ); 
-	} else	 value=EvalsubTop( SRC ); 	
+	} else
+	if (CB_INT==0)  value=EvalsubTop( SRC ); 
+	else  {
+		z = Cplx_EvalsubTop( SRC );
+		if ( z.imag != 0 ) { CB_Error(NonRealERR); }	// Input value must be a real number
+		value = z.real;
+	}
 	return value;
+}
+
+int CB_EvalCheckZero( char *SRC ) {
+	int judge;
+	if (CB_INT==1) judge  = CB_EvalInt( SRC ) ;
+	else
+	if (CB_INT==0) judge  = CB_EvalDbl( SRC ) ;
+	else		   judge  = CB_Cplx_EvalDblCheckZero( SRC ) ;
+	return judge;
+}
+
+double CB_EvalDblReal( char *SRC ) {	// eval real only
+	double result;
+	complex z;
+	if (CB_INT==0) {
+		result = CB_EvalDbl( SRC ); 
+	} else {
+		z = CB_Cplx_EvalDbl( SRC );
+		if (z.imag != 0 ) { CB_Error(NonRealERR); }	// Input value must be a real number
+		result = z.real;
+	}
+	return result;
+}
+
+double EvalsubTopReal( char *SRC ) {	// eval real only
+	double result;
+	complex z;
+	if (CB_INT==0) {
+		result = EvalsubTop( SRC ); 
+	} else {
+		z = Cplx_EvalsubTop( SRC );
+		if (z.imag != 0 ) { CB_Error(NonRealERR); }	// Input value must be a real number
+		result = z.real;
+	}
+	return result;
 }
 
 int EvalEndCheck( int c ) {
@@ -560,75 +618,91 @@ double frac( double x ) {
 	tmp=x-floor(x);
 	return (floor(tmp*d+.5)/d*sign) ;
 }
+double fint( double x ) {
+	if ( x >= 0 ) return floor(x);
+	return -floor(-x);
+}
 
 double fdegree( double x ) {	//	Rad,Grad ->Deg
 	switch ( Angle ) { 
 		case 0:	// Deg
 			return x;
 		case 1:	// Rad
-			return x*(180./PI);
-		case 2:	// Grad
-			return x*(180/200);
+			return x*(180./const_PI);
+//		case 2:	// Grad
 	}
+	return x*(180/200);
 }
 double finvdegree( double x ) {	//	Deg -> Rad,Grad
 	switch ( Angle ) { 
 		case 0:	// Deg
 			return x;
 		case 1:	// Rad
-			return x*(PI/180.);
-		case 2:	// Grad
-			return x*(200./180.);
+			return x*(const_PI/180.);
+//		case 2:	// Grad
 	}
+	return x*(200./180.);
 }
 double fgrad( double x ) {		//	Deg,Rad -> Grad
 	switch ( Angle ) { 
 		case 0:	// Deg
 			return x*(180./200.);
 		case 1:	// Rad
-			return x*(PI/200.);
-		case 2:	// Grad
-			return x;
+			return x*(const_PI/200.);
+//		case 2:	// Grad
 	}
+	return x;
 }
 double finvgrad( double x ) {		//	Grad -> Deg,Rad
 	switch ( Angle ) { 
 		case 0:	// Deg
 			return x*(180./200.);
 		case 1:	// Rad
-			return x*(PI/200.);
-		case 2:	// Grad
-			return x;
+			return x*(const_PI/200.);
+//		case 2:	// Grad
 	}
+	return x;
 }
 
 double fradian( double x ) {	//	Deg,Grad ->Rad
 	switch ( Angle ) { 
 		case 0:	// Deg
-			return x*(PI/180.);
+			return x/180.*const_PI;
 		case 1:	// Rad
 			return x;
-		case 2:	// Grad
-			return x*(PI/200.);
+//		case 2:	// Grad
 	}
+	return x/200.*const_PI;
 }
 double finvradian( double x ) {	//	Rad -> Deg,Grad
 	switch ( Angle ) { 
 		case 0:	// Deg
-			return x*(180./PI);
+			return x*(180./const_PI);
 		case 1:	// Rad
 			return x;
-		case 2:	// Grad
-			return x*(200./PI);
+//		case 2:	// Grad
 	}
+	return x*(200./const_PI);
+}
+
+double ffsin( double x ) {
+	double y = fmod( x, const_PI );
+	if ( y == 0 ) return 0;
+	return sin( x );
+}
+double ffcos( double x ) {
+	double y = fmod( x-const_hPI, const_PI );
+	if ( y == 0 ) return 0;
+//	if ( fabs(y) <=1e-16 ) return 0;
+	return cos( x );
 }
 double fsin( double x ) {
-	x = sin( fradian(x) );
+	x = ffsin( fradian(x) );
 	CheckMathERR(&x); // Math error ?
 	return x ;
 }
 double fcos( double x ) {
-	x = cos( fradian(x) );
+	x = ffcos( fradian(x) );
 	CheckMathERR(&x); // Math error ?
 	return x ;
 }
@@ -660,7 +734,7 @@ double fpolr( double x, double y ) {	// Pol(x,y) -> r
 }
 double fpolt( double x, double y ) {	// Pol(x,y) -> Theta
 	if ( ( x==0 ) && ( y==0 ) ) return 0;
-	if ( x != 0 ) x = fatan(y/x);
+	if ( x != 0 ) x = finvradian(atan2(y,x));
 	else x = 2*fatan(1);
 	CheckMathERR(&x); // Math error ?
 	return x ;
@@ -698,15 +772,17 @@ double atanh( double x ) {
 	CheckMathERR(&x); // Math error ?
 	return x ;
 }
-double fint( double x ) {
-	if ( x >= 0 ) return floor(x);
-	return -floor(-x);
-}
-double fnot( double x ) {
-	return ! (int) ( x );
+
+double fsqu( double x ) {
+	return x*x;
 }
 double fsqrt( double x ) {
 	x = sqrt( x );
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double fcuberoot( double x ) {
+	x = pow( x, 1.0/3.0 );
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
@@ -730,59 +806,29 @@ double fexp( double x ) {
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
-double fcuberoot( double x ) {
-	x = pow( x, 1.0/3.0 );
+double flogab( double x, double y ) {	// flogab(x,y)
+	double base,tmp,result;
+	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
+	base  = log(x);
+	result = log(y)/base;
+	CheckMathERR(&result); // Math error ?
+	return result ;
+}
+double fpow( double x, double y ) {	// pow(x,y)
+	x = pow( x, y );
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
-double fsqu( double x ) {
-	return x*x;
-}
-double ffact( double x ) {
-	double tmp;
-	tmp = floor( x );
-	if ( ( tmp < 0 ) || ( 170 < tmp ) ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	while ( tmp > 0 ) { x *= tmp; tmp--; }
+double fpowroot( double x, double y ) {	// powroot(x,y)
+	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
+	x = pow( x, 1/y );
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
+
 double frecip( double x ) {	// ^(-1) RECIP
 	if ( x == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 	return 1 / x ;
-}
-double ffemto( double x ) {	// femto
-	return x * 1e-15 ;
-}
-double fpico( double x ) {	// pico
-	return x * 1e-12 ;
-}
-double fnano( double x ) {	// nano
-	return x * 1e-9 ;
-}
-double fmicro( double x ) {	// micro
-	return x * 1e-6 ;
-}
-double fmilli( double x ) {	// milli
-	return x * 1e-3 ;
-}
-double fKiro( double x ) {	// Kiro
-	return x * 1e3 ;
-}
-double fMega( double x ) {	// Mega
-	return x * 1e6 ;
-}
-double fGiga( double x ) {	// Giga
-	return x * 1e9 ;
-}
-double fTera( double x ) {	// Tera
-	return x * 1e12 ;
-}
-double fPeta( double x ) {	// Peta
-	return x * 1e15 ;
-}
-double fExa( double x ) {	// Exa
-	return x * 1e18 ;
 }
 
 double fsign( double x ) {	// -x
@@ -800,6 +846,79 @@ double fMUL( double x, double y ) {	// x * y
 double fDIV( double x, double y ) {	// x / y
 	if ( y == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 	return x/y;
+}
+void fDIVcheck( double *x, double *y ) {	//
+	double tmp,tmp2,result;
+	(*x)  = floor( (*x) +.5);
+	(*y) = floor( (*y) +.5);
+	if ( (*y) == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
+}
+
+double fMOD( double x, double y ) {	// fMOD(x,y)
+	double result;
+	fDIVcheck( &x, &y );
+	result= floor(fabs(fmod( x, y ))+.5);
+	if ( result == y  ) result--;
+	if ( x < 0 ) {
+		result=fabs(y)-result;
+		if ( result == y  ) result=0;
+	}
+	return result ;
+}
+double fIDIV( double x, double y ) {	// (int)x / (int)y
+	double result;
+	fDIVcheck( &x, &y );
+	return floor((x/y)+.5);
+}
+double ffact( double x ) {
+	double tmp;
+	tmp = floor( x );
+	if ( ( tmp < 0 ) || ( 170 < tmp ) ) { CB_Error(MathERR) ; return 0; } // Math error
+	x = 1;
+	while ( tmp > 0 ) { x *= tmp; tmp--; }
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double frand() {
+	return (double)rand()/(double)(RAND_MAX+1.0);
+}
+double fRanNorm( double sd, double mean) {	// RanNorm#
+	double a1,a2,b,g1;
+	do {
+		a1 = 2.0*(double)rand()/(double)RAND_MAX-1.0;
+		a2 = 2.0*(double)rand()/(double)RAND_MAX-1.0;
+		b = a1*a1+a2*a2;
+	} while ( b>=1.0 );
+	b = sqrt( ( -2.0*log(b) ) / b );
+	g1 = a1*b;
+	return g1*sd+mean;
+}
+double fRanBin( double n, double p) {	// RanBin#
+	double a;
+	int i,r,m=0;
+	if ( ( n > 1000000 ) || ( p < 0 ) || ( p > 1 ) ) { CB_Error(MathERR) ; return 0; } // Math error
+	r=(RAND_MAX+1.0)*p;
+	for ( i=0; i<n; i++ ) if ( rand() <= r ) m++;
+	return m;
+}
+double fGCD( double x, double y ) {	// GCD(x,y)
+	double tmp;
+	if ( x<y ) { tmp=x; x=y; y=tmp; }
+	tmp=fMOD(x,y);
+	while( tmp != 0 ) {
+		x=y;
+		y=tmp;
+		tmp=fMOD(x,y);
+	}
+	return y;
+}
+double fLCM( double x, double y ) {	// LCM(x,y)
+	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
+	return x/fGCD(x,y)*y;
+}
+
+double fnot( double x ) {
+	return ! (int) ( x );
 }
 double fAND( double x, double y ) {	// x and y
 	return (int)x & (int)y;
@@ -844,88 +963,47 @@ double fcmpLE( double x, double y ) {	//  x <= y
 	return x <= y;
 }
 
-double fpow( double x, double y ) {	// pow(x,y)
-	x = pow( x, y );
-	CheckMathERR(&x); // Math error ?
-	return x;
+double ffemto( double x ) {	// femto
+	return x * 1e-15 ;
 }
-double fpowroot( double x, double y ) {	// powroot(x,y)
-	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = pow( x, 1/y );
-	CheckMathERR(&x); // Math error ?
-	return x;
+double fpico( double x ) {	// pico
+	return x * 1e-12 ;
 }
-
-void fDIVcheck( double *x, double *y ) {	//
-	double tmp,tmp2,result;
-	(*x)  = floor( (*x) +.5);
-	(*y) = floor( (*y) +.5);
-	if ( (*y) == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
+double fnano( double x ) {	// nano
+	return x * 1e-9 ;
 }
-
-double fMOD( double x, double y ) {	// fMOD(x,y)
-	double result;
-	fDIVcheck( &x, &y );
-	result= floor(fabs(fmod( x, y ))+.5);
-	if ( result == y  ) result--;
-	if ( x < 0 ) {
-		result=fabs(y)-result;
-		if ( result == y  ) result=0;
-	}
-	return result ;
+double fmicro( double x ) {	// micro
+	return x * 1e-6 ;
 }
-double fIDIV( double x, double y ) {	// (int)x / (int)y
-	double result;
-	fDIVcheck( &x, &y );
-	return floor((x/y)+.5);
+double fmilli( double x ) {	// milli
+	return x * 1e-3 ;
 }
-double flogab( double x, double y ) {	// flogab(x,y)
-	double base,tmp,result;
-	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	base  = log(x);
-	result = log(y)/base;
-	CheckMathERR(&result); // Math error ?
-	return result ;
+double fKiro( double x ) {	// Kiro
+	return x * 1e3 ;
 }
-double frand() {
-	return (double)rand()/(double)(RAND_MAX+1.0);
+double fMega( double x ) {	// Mega
+	return x * 1e6 ;
+}
+double fGiga( double x ) {	// Giga
+	return x * 1e9 ;
+}
+double fTera( double x ) {	// Tera
+	return x * 1e12 ;
+}
+double fPeta( double x ) {	// Peta
+	return x * 1e15 ;
+}
+double fExa( double x ) {	// Exa
+	return x * 1e18 ;
 }
 
-double fGCD( double x, double y ) {	// GCD(x,y)
-	double tmp;
-	if ( x<y ) { tmp=x; x=y; y=tmp; }
-	tmp=fMOD(x,y);
-	while( tmp != 0 ) {
-		x=y;
-		y=tmp;
-		tmp=fMOD(x,y);
-	}
-	return y;
+double RoundFix( double x, double digit){
+	return Round( x, Fix, digit+.5 );
 }
-double fLCM( double x, double y ) {	// LCM(x,y)
-	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
-	return x/fGCD(x,y)*y;
+double RoundSci( double x, double digit){
+	return Round( x, Sci, digit+.5 );
 }
 
-double fRanNorm( double sd, double mean) {	// RanNorm#
-	double a1,a2,b,g1;
-	do {
-		a1 = 2.0*(double)rand()/(double)RAND_MAX-1.0;
-		a2 = 2.0*(double)rand()/(double)RAND_MAX-1.0;
-		b = a1*a1+a2*a2;
-	} while ( b>=1.0 );
-	b = sqrt( ( -2.0*log(b) ) / b );
-	g1 = a1*b;
-	return g1*sd+mean;
-}
-double fRanBin( double n, double p) {	// RanBin#
-	double a;
-	int i,r,m=0;
-	if ( ( n > 1000000 ) || ( p < 0 ) || ( p > 1 ) ) { CB_Error(MathERR) ; return 0; } // Math error
-	r=(RAND_MAX+1.0)*p;
-	for ( i=0; i<n; i++ ) if ( rand() <= r ) m++;
-	return m;
-}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int EvalObjectAlignE4ee( unsigned int n ){ return n ; }	// align +4byte
@@ -1031,8 +1109,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 		} else
-		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
-		if ( CB_INT) return LocalInt[reg][0] ; else return LocalDbl[reg][0] ;
+		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0].real ; }
+		if (CB_INT==1) return LocalInt[reg][0] ; else return LocalDbl[reg][0].real ;
 	}
 	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
 		ExecPtr--; return Eval_atof( SRC , c );
@@ -1132,10 +1210,10 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFF86 :		// RndFix(n,digit)
 					tmp=(EvalsubTop( SRC ));
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++ ;	// ',' skip
-					i = EvalsubTop( SRC ) +.5;
+					if ( SRC[++ExecPtr] == 0xFFFFFFE4 ) { ExecPtr++; i=Sci; } else i=Fix;
+					tmp2 = EvalsubTop( SRC );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					result=Round( tmp, Fix, i) ;
+					result=Round( tmp, i, tmp2) ;
 					return result ;
 						
 				case 0xFFFFFFF0 :		// GraphY str
@@ -1173,7 +1251,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return Yfct;
 	
 				case 0x29 :				// Sigma( X, X, 1, 1000)
-					return CB_Sigma( SRC );
+					return CB_Sigma( SRC ).real;
 				case 0x20 :				// Max( List 1 )	Max( { 1,2,3,4,5 } )
 					return CB_MinMax( SRC, 1 );
 				case 0x2D :				// Min( List 1 )	Min( { 1,2,3,4,5 } )
@@ -1181,9 +1259,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x2E :				// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
 					return CB_Mean( SRC );
 				case 0x4C :				// Sum List 1
-					return CB_Sum( SRC );
+					return CB_Sum( SRC ).real;
 				case 0x4D :				// Prod List 1
-					return CB_Prod( SRC );
+					return CB_Prod( SRC ).real;
 				case 0x47:	// Fill(
 					CB_MatFill(SRC);
 					return 3;
@@ -1234,8 +1312,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 //			return CB_CurrentValue ;
 		case '&' :	// & VarPtr
 			return CB_VarPtr( SRC ) ;
-		case 0xFFFFFFD0 :	// PI
-			return PI ;
+		case 0xFFFFFFD0 :	// const_PI
+			return const_PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			return CB_frand( SRC );
 		case 0xFFFFFF97 :	// abs
@@ -1576,7 +1654,7 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFCD ) || // <r>
 			 ( c == 0xFFFFFFCE ) || // Theta
-			 ( c == 0xFFFFFFD0 ) || // PI
+			 ( c == 0xFFFFFFD0 ) || // const_PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
 			 ( c == 0xFFFFFFC1 )) { // Ran#
 				result *= Evalsub4( SRC ) ;
@@ -1883,7 +1961,7 @@ int CB_IsError( char *SRC ){ //	IsError (...)
 	int c,err=0;
   loop:
 	ErrorNo=0;
-	if ( CB_INT ) ListEvalIntsubTopAns( SRC ) ;
+	if (CB_INT==1) ListEvalIntsubTopAns( SRC ) ;
 	else 		  ListEvalsubTopAns( SRC ) ;
 	if ( err==0 ) 	err = ErrorNo;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;	// Clear List Ans

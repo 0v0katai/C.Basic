@@ -1,23 +1,4 @@
-#include "fxlib.h"
-#include "timer.h"
-#include "stdio.h"
-#include "string.h"
-
-#include "CB_io.h"
-#include "CB_error.h"
-
-#include "CB_inp.h"
-#include "CB_file.h"
-#include "CB_edit.h"
-#include "CB_interpreter.h"
-#include "CBI_interpreter.h"
-#include "CB_Eval.h"
-#include "CBI_Eval.h"
-#include "CB_Matrix.h"
-#include "CB_setup.h"
-#include "CB_TextConv.h"
-#include "CB_Str.h"
-#include "CB_kana.h"
+#include "CB.h"
 
 //-------------------------------------------------------------- source code refer to (WSC) file.c
 //---------------------------------------------------------------------------------------------
@@ -2191,7 +2172,8 @@ void ConvertToText( char *fname ){
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-#define ConfigMAX 1080
+#define ConfigMAX  1080
+#define ConfigMAX2  512
 //--------------------------------------------------------------
 
 void SaveFavorites(){
@@ -2208,8 +2190,44 @@ void SaveFavorites(){
 	}
 	SaveConfig();
 }
-//------------------------------------------------------------------------ main memory version
-void SaveConfig(){
+
+int SaveConfigWriteFile( unsigned char *buffer, const unsigned char *fname, int size ) {
+	int state,handle;
+	handle=Bfile_OpenMainMemory(fname);
+	if (handle >= 0) {		// Already Exists
+		Bfile_CloseFile(handle);
+	}
+	if (handle==IML_FILEERR_ENTRYNOTFOUND) {
+		handle=Bfile_CreateMainMemory(fname);
+		if (handle<0) {ErrorMSG("Create Error",handle); return handle; }
+		state=Bfile_CloseFile(handle);
+		if (state<0)  {ErrorMSG("Close Error",state); return handle; }
+	}
+	if (handle<0) {ErrorMSG("Open Error",handle); return handle; }
+
+	handle=Bfile_OpenMainMemory(fname);
+	if (handle<0) {ErrorMSG("Open Error",handle); return;}
+	state=Bfile_WriteFile(handle,buffer,size);
+	if (state<0)  {ErrorMSG("Write Error",state); return;}
+	state=Bfile_CloseFile(handle);
+	if (state<0)  {ErrorMSG("Close Error",state); return;}
+	return handle;
+}
+int LoadConfigReadFile( unsigned char *buffer, const unsigned char *fname, int size ) {
+	int state,handle;
+	handle=Bfile_OpenMainMemory(fname);
+	if (handle<0)  { // Open Error
+		return -1;
+	}
+	state=Bfile_ReadFile(handle, buffer, size, 0);
+	if (state<0)  {ErrorMSG("Read Error",state); return -1;}
+	state=Bfile_CloseFile(handle);
+	if (state<0)  {ErrorMSG("Close Error",state); return -1;}
+	return 0;
+}
+
+//------------------------------------------------------------------------ save to main memory 
+void SaveConfig1(){
 	const unsigned char fname[]="CBasic1";
 	unsigned char buffer[ConfigMAX];
 	unsigned char *sbuf;
@@ -2217,35 +2235,10 @@ void SaveConfig(){
 	int    *bufint =(int*)buffer;
 	double *bufdbl =(double*)buffer;
 	int size,i,r;
-	int handle,state;
 
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle >= 0) {		// Already Exists
-		Bfile_CloseFile(handle);
-	}
-	
-	if (handle==IML_FILEERR_ENTRYNOTFOUND) {
-		handle=Bfile_CreateMainMemory(fname);
-		if (handle<0) {ErrorMSG("Create Error",handle); return;}
-		state=Bfile_CloseFile(handle);
-		if (state<0)  {ErrorMSG("Close Error",state); return;}
-	}
-
-	if (handle<0) {ErrorMSG("Open Error",handle); return;}
-	
 	memset( buffer, 0x00, ConfigMAX );
-	buffer[ 0]='C';
-	buffer[ 1]='B';
-	buffer[ 2]='.';
-	buffer[ 3]='c';
-	buffer[ 4]='o';
-	buffer[ 5]='n';
-	buffer[ 6]='f';
-	buffer[ 7]='i';
-	buffer[ 8]='g';
-	buffer[ 9]='9';
-	buffer[10]='9';
-	buffer[11]='n';
+	strcpy( (char *)buffer, (const char *)"CB.config99n" );
+	
 /*
 typedef struct {
 	char  reserve01;		char  UseHiddenRAM;
@@ -2305,15 +2298,15 @@ typedef struct {
 	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
 */
 
-	buffer[ 12] =ExtendPict;		buffer[ 13]=UseHiddenRAM;		buffer[ 14]=ExtendList;		buffer[ 15]=CB_INTDefault;
-	bufshort[ 8]=RefreshCtrl;										buffer[ 18]=EditListChar;	buffer[ 19]=DrawType;
+	buffer[ 12] =ExtendPict;		buffer[12+1]=UseHiddenRAM;		buffer[ 14] =ExtendList;		buffer[14+1]=CB_INTDefault;
+	bufshort[ 8]=RefreshCtrl;										buffer[ 18] =EditListChar;		buffer[18+1]=DrawType;
 	buffer[ 22] =ForceReturnMode;	buffer[22+1]=Coord;				bufshort[10]=Refreshtime;
-	buffer[ 24] =CB_RecoverSetup;	buffer[24+1]==ENG;				buffer[ 26] =EditExtFont;	buffer[ 27]=Grid;
+	buffer[ 24] =CB_RecoverSetup;	buffer[24+1]=ENG;				buffer[ 26] =EditExtFont;		buffer[26+1]=Grid;
 	bufshort[15]=Axes;												bufshort[14]=CB_Round.MODE;
-	bufshort[17]=Label;												buffer[ 32] =MaxMemMode;		buffer[ 33]=CB_Round.DIGIT-1;
+	bufshort[17]=Label;												buffer[ 32] =MaxMemMode;		buffer[32+1]=CB_Round.DIGIT-1;
 	bufshort[19]=Derivative;										bufshort[18]=DefaultWaitcount;
 	bufshort[21]=S_L_Style;											bufshort[20]=CommandInputMethod;
-	bufshort[23]=Angle;												buffer[ 44]=EnableExtFont;		buffer[ 45]=ForceG1Msave;
+	buffer[ 46] =ComplexMode;		buffer[46+1]=Angle;				buffer[ 44]=EnableExtFont;		buffer[44+1]=ForceG1Msave;
 	bufshort[25]=BreakCheckDefault;									bufshort[24]=StorageMode;
 	bufshort[27]=TimeDsp;											bufshort[26]=PageUpDownNum;
 	bufshort[29]=MatXYmode;											bufshort[28]=1-MatBaseDefault;
@@ -2321,7 +2314,7 @@ typedef struct {
 
 	bufdbl[ 8]=Xfct;
 	bufdbl[ 9]=Yfct;
-	for ( i= 10; i<  10+58 ; i++ ) bufdbl[i]=REG[i-10];
+	for ( i= 10; i<  10+58 ; i++ ) bufdbl[i]=REG[i-10].real;
 	for ( i= 68; i<  68+11 ; i++ ) bufdbl[i]=REGv[i-68];
 	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
 
@@ -2347,18 +2340,35 @@ typedef struct {
 	buffer[1077]= EditFontSize;
 	buffer[1078]= AutoDebugMode;
 	buffer[1079]= 0;
-
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle<0) {ErrorMSG("Open Error",handle); return;}
-	state=Bfile_WriteFile(handle,buffer,ConfigMAX);
-	if (state<0)  {ErrorMSG("Write Error",state); return;}
-	state=Bfile_CloseFile(handle);
-	if (state<0)  {ErrorMSG("Close Error",state); return;}
 	
+	SaveConfigWriteFile( buffer, fname, ConfigMAX ) ;
 }
 
+void SaveConfig2(){
+	const unsigned char fname[]="CBasic2";
+	unsigned char buffer[ConfigMAX2];
+	unsigned char *sbuf;
+	short  *bufshort=(short*)buffer;
+	int    *bufint =(int*)buffer;
+	double *bufdbl =(double*)buffer;
+	int size,i,r;
 
-void LoadConfig(){
+	memset( buffer, 0x00, ConfigMAX2 );
+	strcpy( (char *)buffer, (const char *)"CB.config180" );
+	
+	for ( i= 6; i<  6+58 ; i++ ) bufdbl[i]=REG[i-6].imag;
+
+	SaveConfigWriteFile( buffer, fname, ConfigMAX2 ) ;
+}
+
+void SaveConfig(){
+	SaveConfig1();
+	SaveConfig2();
+}
+
+//------------------------------------------------------------------------ load from main memory
+
+void LoadConfig1(){
 	const unsigned char fname[]="CBasic1";
 	unsigned char buffer[ConfigMAX];
 	unsigned char *sbuf;
@@ -2368,14 +2378,7 @@ void LoadConfig(){
 	int size,i;
 	int handle,state;
 
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle<0)  { // Open Error
-		return;
-	}
-	state=Bfile_ReadFile(handle, buffer, ConfigMAX, 0);
-	if (state<0)  {ErrorMSG("Read Error",state); return;}
-	state=Bfile_CloseFile(handle);
-	if (state<0)  {ErrorMSG("Close Error",state); return;}
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX ) < 0 ) return;
 
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
@@ -2394,17 +2397,17 @@ void LoadConfig(){
 		 ( buffer[10]=='9' ) &&
 		 ( buffer[11]=='n' ) ) {
 									// load config & memory
-		ExtendPict    =buffer[ 12];			UseHiddenRAM  =buffer[ 13];		ExtendList  =buffer[ 14];	CB_INTDefault=buffer[ 15];
-		RefreshCtrl   =bufshort[8];											EditListChar=buffer[ 18];	DrawType     =buffer[ 19];
-		CB_INTDefault =bufshort[ 7];										UseHiddenRAM  =bufshort[6];
-		DrawType      =bufshort[ 9];        								RefreshCtrl   =bufshort[8];
-		ForceReturnMode=buffer[22];			Coord         =buffer[22+1];	Refreshtime   =bufshort[10];
-		CB_RecoverSetup=buffer[24];			ENG           =buffer[24+1];	EditExtFont =buffer[ 26];	Grid         =buffer[ 27];
-		Axes          =bufshort[15];        								CB_Round.MODE =bufshort[14];
-		Label         =bufshort[17];        								MaxMemMode=buffer[ 32];			CB_Round.DIGIT=buffer[ 33]+1;
+		ExtendPict    =buffer[ 12];			UseHiddenRAM  =buffer[12+1];	ExtendList     =buffer[ 14];		CB_INTDefault=buffer[14+1];
+		RefreshCtrl   =bufshort[8];											EditListChar   =buffer[ 18];		DrawType     =buffer[18+1];
+		CB_INTDefault =bufshort[ 7];										UseHiddenRAM   =bufshort[6];
+		DrawType      =bufshort[ 9];        								RefreshCtrl    =bufshort[8];
+		ForceReturnMode=buffer[22];			Coord         =buffer[22+1];	Refreshtime    =bufshort[10];
+		CB_RecoverSetup=buffer[24];			ENG           =buffer[24+1];	EditExtFont    =buffer[ 26];		Grid         =buffer[26+1];
+		Axes          =bufshort[15];        								CB_Round.MODE  =bufshort[14];
+		Label         =bufshort[17];        								MaxMemMode     =buffer[ 32];		CB_Round.DIGIT=buffer[32+1]+1;
 		Derivative    =bufshort[19];        								DefaultWaitcount=bufshort[18];
 		S_L_Style     =bufshort[21];        								CommandInputMethod=bufshort[20];
-		Angle         =bufshort[23];        								EnableExtFont=buffer[ 44];		ForceG1Msave   =buffer[ 45];
+		ComplexMode   =buffer[46];			Angle         =buffer[46+1];	EnableExtFont  =buffer[ 44];		ForceG1Msave   =buffer[44+1];
 		BreakCheckDefault=bufshort[25];        								StorageMode    =bufshort[24];
 		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        								MatBaseDefault=1-bufshort[28];
@@ -2412,9 +2415,9 @@ void LoadConfig(){
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];
-		for ( i= 10; i<  10+58 ; i++ ) REG[i-10]   =bufdbl[i];
-		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]=bufdbl[i];
-		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
+		for ( i= 10; i<  10+58 ; i++ ) REG[i-10].real =bufdbl[i];
+		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]     =bufdbl[i];
+		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]  =bufint[i];
 
 		KeyRepeatFirstCount=bufshort[218*2]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount = 20;
 		KeyRepeatNextCount =bufshort[219*2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount  =  5;
@@ -2441,6 +2444,47 @@ void LoadConfig(){
 	} else {
 		Bfile_DeleteMainMemory(fname);
 	}
+}
+
+void LoadConfig2(){
+	const unsigned char fname[]="CBasic2";
+	unsigned char buffer[ConfigMAX2];
+	unsigned char *sbuf;
+	short  *bufshort;
+	int    *bufint;
+	double *bufdbl;
+	int size,i;
+	int handle,state;
+
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX2 ) < 0 ) return;
+
+	bufshort=(short*)buffer;
+	bufint=(int*)buffer;
+	bufdbl=(double*)buffer;
+	
+	if ( ( buffer[ 0]=='C' ) &&	// file check
+		 ( buffer[ 1]=='B' ) &&
+		 ( buffer[ 2]=='.' ) &&
+		 ( buffer[ 3]=='c' ) &&
+		 ( buffer[ 4]=='o' ) &&
+		 ( buffer[ 5]=='n' ) &&
+		 ( buffer[ 6]=='f' ) &&
+		 ( buffer[ 7]=='i' ) &&
+		 ( buffer[ 8]=='g' ) &&
+		 ( buffer[ 9]=='1' ) &&
+		 ( buffer[10]=='8' ) &&
+		 ( buffer[11]=='0' ) ) {
+									// load config & memory
+		for ( i= 6; i<  6+58 ; i++ ) REG[i-6].imag =bufdbl[i];	//
+		
+	} else {
+		Bfile_DeleteMainMemory(fname);
+	}
+}
+
+void LoadConfig(){
+	LoadConfig1();
+	LoadConfig2();
 }
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -2660,29 +2704,29 @@ int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
@@ -2709,15 +2753,14 @@ void FavoritesDowndummy( int *index ) {
 	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
 	tmp=files[(*index)+1].filesize;
 	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-//	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-//	files[(*index)+1].filesize=files[(*index)].filesize;
-//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-//	files[(*index)].filesize=tmp;
-//	(*index)++;
-//	SaveFavorites();
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	files[(*index)].filesize=tmp;
+	(*index)++;
+	SaveFavorites();
 }
-/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2734,6 +2777,7 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
