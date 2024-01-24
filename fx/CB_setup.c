@@ -39,7 +39,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v0.99u " );
+	locate( 3, 4 ); Print( (unsigned char*)"          v0.99v " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
 	GetKey(&key);
@@ -923,7 +923,7 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[TimeDsp]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd  Check:");		// 12
+			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 12
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[CheckIfEnd]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
@@ -946,11 +946,11 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix  base:");		// 17
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 17
 			locate(15,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict    mode:");		// 18
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 18
 			locate(14,cnt-scrl); Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){

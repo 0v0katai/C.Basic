@@ -1097,7 +1097,7 @@ void CB_MatrixInitsubNoMat( char *SRC, int *reg, int dimA, int dimB , int Elemen
 	int c;
 	int base=MatBase;
 	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		*reg=c-'A';
 		if ( ElementSize<1 ) ElementSize=ElementSizeSelect( SRC, *reg , &base) & 0xFF;
@@ -1330,7 +1330,7 @@ void CB_MatrixInit2Str( char *SRC ) { //	["ABCD","12345","XYZ"]->Mat A[.B]
 
 void CB_ClrMat( char *SRC ) { //	ClrMat A
 	int c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		DeleteMatrix( c-'A' );
 	} else {
@@ -1382,7 +1382,7 @@ int CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 	double	*dptr, *dptr2;
 	
 	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -1402,7 +1402,7 @@ int CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 		}
 		if ( ( c !=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		c =SRC[++ExecPtr];
-		if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+		if ( ( 'A'<=c )&&( c<='z' ) ) {
 			ExecPtr++;
 			reg2=c-'A';
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -1531,7 +1531,7 @@ void CB_MatFill( char *SRC ) { //	Fill(value, Mat A)
 	if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr+=2;
 	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -1554,7 +1554,7 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A
 	if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr+=2;
 	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -1814,24 +1814,34 @@ int CB_VarPtr( char *SRC ) {
 		
 	} else {	// variable
 		c=SRC[ExecPtr++];
-		if ( ( 'A' <= c )&&( c <= 'Z' ) )  {
+		if ( ( 'A'<=c )&&( c<='Z' ) )  {
 				reg=c-'A';
 				c=SRC[ExecPtr];
 				if ( c=='%' ) { ExecPtr++; result=(int)&REGINT[reg]; }
 				else
 				if ( c=='[' ) goto Matrix;
 				else
+				if ( ( '0'<=c )&&( c<='9' ) ) {
+						goto Matrix1;
+				} else
 				if ( c=='#' ) { ExecPtr++; result=(int)&REG[reg]; }
 				else
 				if (CB_INT)	result=(int)&REGINT[reg]; else result=(int)&REG[reg];
 		} else
-		if ( ( 'a' <= c )&&( c <= 'z' ) )  {
+		if ( ( 'a'<=c )&&( c<='z' ) )  {
 				reg=c-'a';
 				c=SRC[ExecPtr];
 				if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; }
 				else
 				if ( c=='[' ) goto Matrix;
 				else
+				if ( ( '0'<=c )&&( c<='9' ) ) {
+					Matrix1:
+						ExecPtr++;
+						dimA=c-'0';
+						MatOprand1( SRC, reg, &dimA, &dimB );
+						goto Matrix2;
+				} else
 				if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; }
 				else
 				if (CB_INT)	result=(int)&LocalInt[reg][0]; else result=(int)&LocalDbl[reg][0];
@@ -1846,6 +1856,7 @@ int CB_VarPtr( char *SRC ) {
 					Matrix:	
 						ExecPtr++;
 						MatOprand2( SRC, reg, &dimA, &dimB );
+					Matrix2:	
 						if ( ErrorNo ) return 1 ; // error
 						result=(int)MatrixPtr( reg, dimA, dimB );
 					} else {

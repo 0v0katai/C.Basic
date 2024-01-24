@@ -481,7 +481,11 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 		case 0x3F:	// Str 1-20
 			reg=defaultStrAry;
 	str1:	ExecPtr+=2;
-			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
+//			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
+			if ( MatAry[reg].SizeA == 0 ) {
+				DimMatrixSub( reg, 8, defaultStrAryN, defaultStrArySize, 1 );	// byte matrix
+				if ( ErrorNo ) return ; // error
+			}
 			if ( CB_INT ) dimA = EvalIntsub1( SRC ); else dimA = Evalsub1( SRC );	// str no : Mat s[n,len]
 			if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
 			dimB=1;

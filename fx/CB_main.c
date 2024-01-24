@@ -24,7 +24,9 @@
 #include "CB_sample.h"
 #include "fx_syscall.h"
 
+//#define loadsdk
 //----------------------------------------------------------------------------------------------
+#ifdef loadsdk
 int LoadFileSDK( char *src ) {	// test source to SDK
 	int size,i;
 	char *buffer;
@@ -46,6 +48,7 @@ int LoadFileSDK( char *src ) {	// test source to SDK
 
 	return 0 ;
 }
+#endif
 //----------------------------------------------------------------------------------------------
 
 //****************************************************************************
@@ -102,6 +105,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		
 		key =( SelectFile( filename ) ) ;
 		switch ( key ) {
+#ifdef loadsdk
 			case FileCMD_Prog:				// -- test for SDK (internal sample program)
 				ProgEntryN=0;						// Main program
 				LoadFileSDK( bas_src );
@@ -111,8 +115,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				LoadFileSDK( bas_src4 );
 				LoadFileSDK( bas_src5 );
 				EditRun(2);		// Program listing & edit
-				SaveConfig();
 				break;
+#endif
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 			case KEY_CTRL_EXE:
@@ -122,7 +126,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				if ( i==0 )	EditRun(1);			// Program run
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
-				SaveConfig();
 				break;
 			case FileCMD_EDIT:
 				ExecPtr=0;
@@ -130,36 +133,30 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				if ( i==0 )	EditRun(2);			// Program listing & edit
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
-				SaveConfig();
 				break;
 			case FileCMD_NEW:
 				if ( NewProg() ) break ;
 				EditRun(2);			// Program listing & edit
-				SaveConfig();
 				break;
 			case FileCMD_RENAME:
 				RenameCopyFile(filename, 0);
-				SaveConfig();
 				break;
 			case FileCMD_DEL:
 				DeleteFileFav(filename);
-				SaveConfig();
 				break;
 			case FileCMD_COPY:
 				RenameCopyFile(filename, 1);
-				SaveConfig();
 				break;
 			case FileCMD_TEXT:
 				ConvertToText(filename);
-				SaveConfig();
 				break;
 			case FileCMD_PASS:
 				NewPassWord(filename);
-				SaveConfig();
 				break;
 			default:
 				break;
 		}
+		SaveConfig();
 		
 		for (i=ProgMax; i>=0; i--) {			// memory free
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
