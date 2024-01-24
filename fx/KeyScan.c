@@ -27,9 +27,9 @@
 
 #include "CB.h"
 
-void delay( void ){
+void delay( int wait ){
 int i;
-  for (i=0;i<20;i++){};
+  for (i=0;i<wait;i++){};
 }
 
 //
@@ -44,6 +44,7 @@ int CheckKeyRow( int row ){
   char cmask;
   char PORTBtmp = *PORTB;
   char PORTMtmp = *PORTM;
+  int  wait=0+(IsSH3==2)*10;	// 9860G or Slim
 
   smask = 0x0003 << ((row%8)*2);
   cmask = ~( 1 << (row%8) );
@@ -52,26 +53,26 @@ int CheckKeyRow( int row ){
         *PORTB_CTRL = 0xAAAA ^ smask;    
 // configure port M as input; port M is inactive with row < 8
         *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;  
-        delay();
+        delay(wait);
         *PORTB = cmask;    // set the "row to check"-bit to 0 on port B
         *PORTM = (*PORTM & 0xF0 ) | 0x0F;    // port M is inactive with row < 8
   }else{
         *PORTB_CTRL = 0xAAAA;  // configure port B as input; port B is inactive with row >= 8
 // configure port M as input, except for the "row to check"-bit, which has to be an output.
         *PORTM_CTRL = ((*PORTM_CTRL & 0xFF00 ) | 0x00AA)  ^ smask;  
-        delay();
+        delay(wait);
         *PORTB = 0xFF;    // port B is inactive with row >= 8 (all to 1)
         *PORTM = (*PORTM & 0xF0 ) | cmask;  // set the "row to check"-bit to 0
   };
-  delay();
+  delay(wait);
   result = ~(*PORTA);   // a pressed key in the row-to-check draws the corresponding bit to 0
-  delay();
+  delay(wait);
 //  *PORTB_CTRL = 0xAAAA;  
 //  *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
-//  delay();
+//  delay(wait);
   *PORTB_CTRL = 0x5555;
   *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x0055;
-  delay();
+  delay(wait);
   *PORTB = PORTBtmp;
   *PORTM = PORTMtmp;
   return result;
@@ -573,15 +574,15 @@ int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) {			// CasioBasic Getke
 
 //----------------------------------------------------------------------------------------------
 int kObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int kObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int kObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int kObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int kObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int kObjectAlign4m( unsigned int n ){ return n; }	// align +4byte

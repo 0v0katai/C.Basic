@@ -2363,7 +2363,7 @@ int CB_ListCalc( char *SRC ) { //	List 1 -> List 2  etc
 			if ( c != 0x7F ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 			c =SRC[++ExecPtr];
 		}
-		if ( ( c !=0x51 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
+//		if ( ( c !=0x51 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 		ExecPtr++;
 		reg2=ListRegVar( SRC );
 		if ( reg2<0 ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
@@ -4783,9 +4783,9 @@ int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M0( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MA( unsigned int n ){ return n; }	// align +4byte

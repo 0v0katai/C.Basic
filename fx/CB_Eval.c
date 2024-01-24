@@ -1485,11 +1485,13 @@ double Evalsub1(char *SRC) {	// 1st Priority
 //			ExecPtr--;
 //			goto Matjmp;
 			
-		case '{':	// { 1,2,3,4,5... }->List Ans
-			CB_List(SRC);
-			return 0;
 		case '[':	// [ [0,1,2][2,3,4] ]->Mat Ans
-			CB_Matrix(SRC);
+//			CB_Matrix(SRC);
+			dspflag=3;
+			return 0;
+		case '{':	// { 1,2,3,4,5... }->List Ans
+//			CB_List(SRC);
+			dspflag=4;
 			return 0;
 
 		case 0xFFFFFFF7:	// F7..

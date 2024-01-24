@@ -29,8 +29,8 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.28\xE6\x41";
-#define VERSION 228
+const char VerMSG[]="C.Basic  v2.29\xE6\x41";
+#define VERSION 229
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );
@@ -1313,7 +1313,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			locate(14, cnt-scrl); Print((unsigned char*)CharSize[EditFontSize & 0x0F ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit TopLine:");		// 18
+			locate( 1, cnt-scrl); Print((unsigned char*)"HideStatLine:");		// 18
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[EditTopLine]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
@@ -1720,7 +1720,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						CB_EditIndent = 0 | i;
 						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
-						EditTopLine=1;
+						EditTopLine=1;		// Hide Status Bar
 						break;
 					case SETUP_EditExtFont: // Use Ext Font (edit)
 						if ( EnableExtFont ) EditExtFont=1;
@@ -1914,7 +1914,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						CB_EditIndent = 1 | i;
 						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
-						EditTopLine=0;
+						EditTopLine=0;		// Status Bar ON
 						break;
 					case SETUP_EditExtFont: // Use Ext Font (edit)
 						EditExtFont=0;

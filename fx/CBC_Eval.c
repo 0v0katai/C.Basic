@@ -955,10 +955,12 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 //			goto Matjmp;
 			
 		case '{':	// { 1,2,3,4,5... }->List Ans
-			CB_List(SRC);
+//			CB_List(SRC);
+			dspflag=4;
 			return Int2Cplx( 0 );
 		case '[':	// [ [0,1,2][2,3,4] ]->Mat Ans
-			CB_Matrix(SRC);
+//			CB_Matrix(SRC);
+			dspflag=3;
 			return Int2Cplx( 0 );
 
 		case 0xFFFFFFF7:	// F7..
@@ -1120,7 +1122,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 //-----------------------------------------------------------------------------
 int EvalObjectAlignE4cgg( unsigned int n ){ return n ; }	// align +4byte
 int EvalObjectAlignE4chh( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAligncE4ii( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAligncE4ii( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAligncE4jj( unsigned int n ){ return n ; }	// align +4byte
 //-----------------------------------------------------------------------------
 
