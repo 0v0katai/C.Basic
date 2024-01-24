@@ -1331,7 +1331,7 @@ int CB_Ticks( char *SRC ) {
 				do {
 					if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
 					t=CB_RTC_GetTicks(high);
-				} while ( abs( t-Hitickstmp ) <= n ) ;
+				} while ( abs( t-Hitickstmp ) < n ) ;
 				Hitickstmp=CB_RTC_GetTicks(high);
 				return Hitickstmp;
 			} else {
@@ -1339,7 +1339,7 @@ int CB_Ticks( char *SRC ) {
 				do {
 					if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
 					t=CB_RTC_GetTicks(high);
-				} while ( abs( t-tickstmp ) <= n ) ;
+				} while ( abs( t-tickstmp ) < n ) ;
 				tickstmp=CB_RTC_GetTicks(high);
 				return tickstmp;
 			}

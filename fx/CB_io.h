@@ -42,6 +42,7 @@ void HiddenRAM_freeProg( void *ptr );
 void HiddenRAM_freeMat( int reg );
 void HiddenRAM_MatAryInit();	// HiddenRAM Initialize
 void HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
+void HiddenRAM_MatAryClear();	// MatAry ptr clear
 int  HiddenRAM_MatAryRestore();	//  HiddenRAM -> MatAry ptr	 1:ok
 void HiddenRAM_ExtFontAryInit() ;
 
