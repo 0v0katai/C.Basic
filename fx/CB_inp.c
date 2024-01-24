@@ -283,31 +283,31 @@ int SelectOpcode( short *oplist, int *select) {
 	
 	return oplist[(*select)];
 }
-
+/*
 const short oplistInp[]={
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
 		0xAB,	// !
+		0x7FB0,	// And
+		0x7FB1,	// Or
+		0x7FB3,	// Not
+		0x7FB4,	// Xor
+		
+		0xC1,	// Ran#
+		0x7F87,	// RanInt#(
+		
+		0x7F3A,	// MOD(
+		0x7F58,	// ElemSize(
+		0x7F59,	// ColSize(
+		0x7F5A,	// RowSize(
+		
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
 		0xB1,	// arcsinh
 		0xB2,	// arccosh
 		0xB3,	// arctanh
-
-		0x7F3A,	// MOD(
-		0x7F46,	// Dim
-
-		0x7FB0,	// And
-		0x7FB1,	// Or
-		0x7FB3,	// Not
-		0x7FB4,	// Xor
-
-		0xD3,	// Rnd
-		0x7F86,	// RndFix(
-		0xC1,	// Ran#
-		0x7F87,	// RanInt#(
 
 		0x01,	// femto
 		0x02,	// pico
@@ -330,8 +330,10 @@ const short oplistInp[]={
 		0x7F06,	// Yscl
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
+		
+		0x0FD,	// Eval(
 		0};
-
+*/
 
 //----------------------------------------------------------------------------------------------
 
@@ -358,6 +360,9 @@ const short oplistOPTN[]={
 		0x7F40,	// Mat	
 		0x7F41,	// Trn 
 		0x7F47,	// Fill(
+		0x7F58,	// ElemSize(
+		0x7F59,	// ColSize(
+		0x7F5A,	// RowSize(
 
 //		0x81,	// sin
 //		0x82,	// cos
@@ -855,10 +860,10 @@ const short oplistCMD[]={
 		0xF71D,	// S-L-Thick
 		0xF71E,	// S-L-Broken
 		0xF71F,	// S-L-Dot
+		0x7F58,	// ElemSize(
 		0x20,	// 				-
-		0x26,	// &
-		0x23,	// #
-		0x25,	// %
+		0x7F59,	// ColSize(
+		0x7F5A,	// RowSize(
 
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
@@ -1132,6 +1137,40 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[2]='D';
 		string[3]='(';
 		string[4]='\0';
+	} else
+	if ( opcode == 0x7F58 ) {	// ElemSize( Mat A )
+		string[0]='E';
+		string[1]='l';
+		string[2]='e';
+		string[3]='m';
+		string[4]='S';
+		string[5]='i';
+		string[6]='z';
+		string[7]='e';
+		string[8]='(';
+		string[9]='\0';
+	} else
+	if ( opcode == 0x7F59 ) {	// ColSize( Mat A )
+		string[0]='C';
+		string[1]='o';
+		string[2]='l';
+		string[3]='S';
+		string[4]='i';
+		string[5]='z';
+		string[6]='e';
+		string[7]='(';
+		string[8]='\0';
+	} else
+	if ( opcode == 0x7F5A ) {	// RowSize( Mat A )
+		string[0]='R';
+		string[1]='o';
+		string[2]='w';
+		string[3]='S';
+		string[4]='i';
+		string[5]='z';
+		string[6]='e';
+		string[7]='(';
+		string[8]='\0';
 	} else
 	if ( opcode == 0x7FB4 ) {	// Xor
 		string[0]=' ';

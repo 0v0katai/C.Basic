@@ -1103,7 +1103,7 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	double step,end;
 	double *dptr;
-	if ( StackFor->Ptr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
+	if ( StackFor->Ptr <= 0 ) { CB_Error(NextWithoutForERR); return; } // Next without for error
 	StackFor->Ptr--;
 	CurrentStruct->CNT--;
 	step = StackFor->Step[StackFor->Ptr];
@@ -1774,6 +1774,7 @@ int  CB_Input( char *SRC ){
 	switch ( flag ) {
 		case 0:	// value
 			CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
+			ErrorNo=0; // error cancel
 			CBint_CurrentValue = CB_CurrentValue ;
 			break;
 		case 1:	// value
@@ -1781,6 +1782,7 @@ int  CB_Input( char *SRC ){
 			locate( CursorX, CursorY); Print((unsigned char*)buffer);
 			Scrl_Y();
 			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
+			ErrorNo=0; // error cancel
 			CBint_CurrentValue = CB_CurrentValue ;
 			if ( flagint ) {
 				CBint_Store( SRC );
@@ -1790,7 +1792,8 @@ int  CB_Input( char *SRC ){
 			break;
 		case 2:	// ? -> str 
 			CB_CurrentStr[0]='\0';
-			InputStr( 1, CursorY, 127,  CB_CurrentStr, ' ', REV_OFF);
+			InputStr( 1, CursorY, CurrentStrMax-1,  CB_CurrentStr, ' ', REV_OFF);
+			ErrorNo=0; // error cancel
 			break;
 		case 3:	// ?str
 			MatAryC=MatrixPtr( reg, dimA, dimB );
@@ -1798,7 +1801,8 @@ int  CB_Input( char *SRC ){
 			locate( CursorX, CursorY); Print((unsigned char*)buffer);
 			Scrl_Y();
 			memcpy( CB_CurrentStr, MatAryC, MatArySizeB[reg] );
-			InputStr( 1, CursorY, 127,  CB_CurrentStr, ' ', REV_OFF);
+			InputStr( 1, CursorY, CurrentStrMax-1,  CB_CurrentStr, ' ', REV_OFF);
+			ErrorNo=0; // error cancel
 			CB_Store( SRC );
 			break;
 	}
@@ -1878,7 +1882,6 @@ void CB_argNum( char *SRC ) {
 int CB_SearchProg( char *name ) { //	Prog search
 	int j,i=1;
 	char *ptr;
-	
 	while ( ProgfileAdrs[i] ) {
 		ptr=ProgfileAdrs[i]+0x3C;
 		for (j=0;j<8;j++) if ( ptr[j] != name[j] ) break;
@@ -1889,7 +1892,7 @@ int CB_SearchProg( char *name ) { //	Prog search
 }
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	int c,i,j;
-	char buffer[32]="";
+	char buffer[32]="\0\0\0\0\0\0\0\0";
 	char *src;
 	char *StackProgSRC;
 	int StackProgExecPtr;
@@ -2303,7 +2306,7 @@ int CB_GetQuotStr( char *SRC, char *buffer, int length ) {
 		ExecPtr++;
 		GetQuotStr(SRC, buffer, length);
 	} else
-	if ( c == '&' ) {
+	if ( c == '&' ) {	// Mat String
 		ExecPtr++;
 		MatrixOprand( SRC, &reg, &dimA, &dimB );
 		if ( ErrorNo ) return -1;			// error
@@ -2321,7 +2324,7 @@ int CB_GetLocateStr( char *SRC, char *buffer, int length ) {
 		ExecPtr++;
 		GetLocateStr(SRC, buffer, length);
 	} else
-	if ( c == '&' ) {
+	if ( c == '&' ) {	// Mat String
 		ExecPtr++;
 		MatrixOprand( SRC, &reg, &dimA, &dimB );
 		if ( ErrorNo ) return -1;			// error
@@ -2370,7 +2373,7 @@ void CB_Quot( char *SRC ){		// "" ""
 	int execptr,len,i=0;
 	
 	execptr=ExecPtr;
-	len=GetQuotOpcode( SRC, CB_CurrentStr, 127 );
+	len=GetQuotOpcode( SRC, CB_CurrentStr, CurrentStrMax-1 );
 	
 	c = SRC[ExecPtr] ; 
 	if ( c == 0x0E ) {	// -> Assign str
@@ -2734,7 +2737,7 @@ int RangeErrorCK( char *SRC ) {
 		Bdisp_AllClr_VRAM();
 		GraphAxesGrid();
 	}
-	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { ErrorNo=RangeERR; PrevOpcode( SRC, &ExecPtr ); ErrorPtr=ExecPtr; return ErrorNo; }	// Range error
+	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { CB_Error(RangeERR); PrevOpcode( SRC, &ExecPtr ); return ErrorNo; }	// Range error
 	return 0;
 }
 void CB_TextOprand( char *SRC, int *py, int *px) {
@@ -3121,7 +3124,7 @@ void StoPictM( int pictNo){
 		pict = PictAry[pictNo] ;						// Matrix array ptr*
 	} else {
 		pict = (unsigned char *) malloc( 1024 );
-		if( pict == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return; }	// Not enough memory error
+		if( pict == NULL ) { CB_Error(NotEnoughMemoryERR); return; }	// Not enough memory error
 		PictAry[pictNo] = pict ;						// Pict array ptr*
 	}
 	ReadVram(pict);

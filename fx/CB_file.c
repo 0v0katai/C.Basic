@@ -882,12 +882,10 @@ void G1M_Basic_header( char *filebase ) {
 }
 
 
-int LoadProgfile( char *name, int searchProg ) {
+int LoadProgfile( char *name, int editsize ) {
 	char *filebase;
 	int fsize,size;
-	int plus=0;
-	if ( searchProg ) plus=EditMaxfree;
-	filebase = loadFile( name , plus );
+	filebase = loadFile( name , editsize );
 	if ( filebase == NULL ) { ErrorMSGfile( "Not enough memory", name ); return 1 ; }
 
 	fsize=0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
@@ -900,10 +898,10 @@ int LoadProgfile( char *name, int searchProg ) {
 	ProgfileAdrs[ProgEntryN]= filebase;
 	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
 	ProgfileEdit[ProgEntryN]= 0;
-	ProgEntryN++;
-	ErrorNo=0;
-	if ( searchProg ) CB_ProgEntry( filebase + 0x56 ) ;		// sub program search
-	if ( ErrorNo ) return ErrorNo; // error
+//	ProgEntryN++;
+//	ErrorNo=0;
+//	if ( searchProg ) CB_ProgEntry( filebase + 0x56 ) ;		// sub program search
+//	if ( ErrorNo ) return ErrorNo; // error
 	ProgNo=0;
 	ExecPtr=0;
 
@@ -1064,7 +1062,7 @@ int RenameFile( char *sname ) {
 	char fname[32],basname[16];
 	int size,i,j;
 
-	if ( LoadProgfile( sname, 0) ) return 1 ; // error
+	if ( LoadProgfile( sname, 0 ) ) return 1 ; // error
 
 	filebase = ProgfileAdrs[0];
 	SnameTofilename8( filebase, basname);
@@ -1101,7 +1099,7 @@ int CopyFile( char *sname ) {
 	char fname[32],basname[16];
 	int size,i,j;
 
-	if ( LoadProgfile( sname, 0) ) return 1 ; // error
+	if ( LoadProgfile( sname, 0 ) ) return 1 ; // error
 
 	filebase = ProgfileAdrs[0];
 	SnameTofilename8( filebase, basname);
@@ -1300,7 +1298,7 @@ int NewProg(){
 	if ( InputFilename( basname, "New File Name?" ) ) return 1 ;
 	if ( ExistG1M( basname ) == 0 ) { // existed file
 		SetFullfilenameExt( fname, basname, "g1m" );
-		LoadProgfile( fname, 1);
+		LoadProgfile( fname, EditMaxfree );
 		return 0;
 	}
 	
@@ -1337,7 +1335,7 @@ void ConvertToText( char *sname ){
 	int textptr;
 	int textsize;
 
-	if ( LoadProgfile( sname, 0) ) return ; // error
+	if ( LoadProgfile( sname, 0 ) ) return ; // error
 
 	filebase = ProgfileAdrs[0];
 	SnameTofilename8( filebase, basname);
@@ -1530,12 +1528,13 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	int StackProgPtr;
 	unsigned int key=0;
 	int srcPrg;
+	int progno=ProgNo;
 
 //	locate( 1, 1); PrintLine(" ",21);						//
 //	sprintf(buffer,"==%-8s==%08X",SRC-0x56+0x3C, SRC-0x56);
 //	locate (1, 1); Print( (unsigned char*)buffer );
 
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) { return ; }
 	ProgNo=ProgEntryN-1;
 	ExecPtr=0;
 	while ( c!=0 ) {
@@ -1560,7 +1559,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 				srcPrg = CB_SearchProg( buffer );
 				if ( srcPrg < 0 ) { 				// undefined Prog
 					SetFullfilenameExt( filename, (char*)buffer, "g1m" );
-					src = loadFile( filename ,EditMaxfree);
+					src = loadFile( filename ,EditMaxProg );
 //					locate( 1, 3); Print(filename);						//
 //					locate( 1, 4); PrintLine(" ",21);					//
 //					sprintf(buffer,"ptr=%08X",src);						//
@@ -1568,13 +1567,14 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 					if ( src == NULL ) { CB_Error(NotfoundProgERR); return ; }  // Not found Prog
 					else {
 						ProgfileAdrs[ProgEntryN]= src;
-						ProgfileMax[ProgEntryN]= SrcSize( src ) +EditMaxfree ;
+						ProgfileMax[ProgEntryN]= SrcSize( src ) +EditMaxProg ;
 						ProgfileEdit[ProgEntryN]= 0;
 						ProgEntryN++;
 						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Memory error
 						StackProgPtr = ExecPtr;
 						CB_ProgEntry( src + 0x56  );		//
 						ExecPtr = StackProgPtr ;
+						if ( ErrorNo ) { ErrorPtr=StackProgPtr; ProgNo=progno; ErrorProg=ProgNo; return ;}
 					}
 				}
 				break;

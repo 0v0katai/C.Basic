@@ -304,6 +304,21 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			} else if ( c == 0x0C ) {	// Yfct
 					ExecPtr+=2;
 					return Yfct;
+			} else if ( c == 0x58 ) {	// ElemSize( Mat A )
+					ExecPtr+=2;
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatAryElementSize[reg];
+			} else if ( c == 0x59 ) {	// ColSize( Mat A )
+					ExecPtr+=2;
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatArySizeA[reg];
+			} else if ( c == 0x5A ) {	// RowSize( Mat A )
+					ExecPtr+=2;
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatArySizeB[reg];
 			}
 			break;
 			

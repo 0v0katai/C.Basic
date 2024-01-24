@@ -41,5 +41,6 @@ void CB_MatTrn( char *SRC ) ; //	Trn Mat A
 void MatOprand2(    char *SRC, int reg, int *dimA, int *dimB );		// 0-
 void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB );		// 0-
 int  MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB );		// 0-
+int MatrixOprandreg( char *SRC, int *reg) ;
 
 int Cellsum( int reg, int x, int y );								// 0-

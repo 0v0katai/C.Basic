@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.96 
+ Casio Basic Interpreter (& Compiler) ver 0.97 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -111,7 +111,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case FileCMD_RUN:
 				Contflag=0;
 				ExecPtr=0;
-				i=LoadProgfile( filename, 1 ) ;
+				i=LoadProgfile( filename, EditMaxfree ) ;
 				if ( i==0 )	EditRun(1);			// Program run
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
@@ -120,7 +120,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case FileCMD_EDIT:
 				Contflag=0;
 				ExecPtr=0;
-				i=LoadProgfile( filename, 1 ) ;
+				i=LoadProgfile( filename, EditMaxfree ) ;
 				if ( i==0 )	EditRun(2);			// Program listing & edit
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit

@@ -44,8 +44,13 @@ int MatOperandIntSub( int c ) {
 	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalInt[c-'a'][0];
 }
 //-----------------------------------------------------------------------------
+//int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
+//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// 0-
 	int c,d;
+	(*dimB)=-1;
 	c=SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( d == ',' ) {										// [a,
@@ -70,11 +75,13 @@ void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// 0-
 	} else {
 		(*dimA) = (EvalIntsubTop( SRC ));
 		c=SRC[ExecPtr];
-		if ( c == ']' ) { ExecPtr++ ; (*dimA)--; (*dimB)=0; return; }
+		if ( c == ']' ) { ExecPtr++ ; (*dimB)=0; }
+		else 
 		if ( c != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
 	}
 	if ( ( (*dimA) < 1 ) || ( MatArySizeA[(reg)] < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 	(*dimA)--;
+	if ( (*dimB)==0 ) return ;
 	c=SRC[++ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( d == ']' ) {										//    b]
@@ -119,6 +126,7 @@ int MatOperandSub( int c ) {
 void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
 	int dst;
 	int c,d;
+	(*dimB)=-1;
 	c=SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( d == ',' ) {										// [a,
@@ -143,11 +151,13 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
 	} else {
 		(*dimA)=(EvalsubTop( SRC ));
 		c=SRC[ExecPtr];
-		if ( c == ']' ) { ExecPtr++ ; (*dimA)--; (*dimB)=0; return; }
+		if ( c == ']' ) { ExecPtr++ ; (*dimB)=0; }
+		else 
 		if ( c != ',' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
 	}
 	if ( ( (*dimA) < 1 ) || ( MatArySizeA[(reg)] < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 	(*dimA)--;
+	if ( (*dimB)==0 ) return ;
 	c=SRC[++ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( d == ']' ) {										//    b]
@@ -178,7 +188,7 @@ void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// 0-
 	ExecPtr++ ;
 }
 
-int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB ) {	// 0-
+int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 	int c;
 	if ( ( SRC[ExecPtr] != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return 0 ; }	// Syntax error
 	ExecPtr+=2;
@@ -188,13 +198,18 @@ int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB ) {	// 0-
 		*reg=c-'A';
 		if ( MatArySizeA[*reg] == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 	} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
+	return 1;
+}
+
+int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// 0-
+	int c;
+	if ( MatrixOprandreg( SRC, &(*reg)) == 0 ) return 0 ;
 	c =SRC[ExecPtr];
 	if ( SRC[ExecPtr] != '[' ) { (*dimA)=0; (*dimB)=0; return -1 ; }	// no element
 	ExecPtr++;
 	if ( CB_INT ) MatOprandInt2( SRC, *reg, &(*dimA), &(*dimB));else MatOprand2( SRC, *reg, &(*dimA), &(*dimB));
 	return 1;
 }
-
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -1489,7 +1504,7 @@ void CB_MatrixInit2Str( char *SRC ) { //	["ABCD","12345","XYZ"]->Mat A[.B]
 		m++;
 	}
 	dimA=m;
-	dimB=maxlen+1;
+	dimB=maxlen+2;
 
 	c=SRC[++ExecPtr];
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -1593,19 +1608,19 @@ void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 			if ( ElementSize == ElementSize2 ) return;
 			dimA =MatArySizeA[reg];
 			dimB =MatArySizeB[reg];
-			dimB2=dimB;
 			dimA2=dimA;
+			dimB2=dimB;
 			switch ( ElementSize2 ) {
 				case  1:
 					switch ( ElementSize ) {
 						case  8:
 							dimA2 *= 8;	break;
 						case 16:
-							dimA2 *=16;	break;
+							dimB2 *=16;	break;
 						case 32:
-							dimA2 *=32;	break;
+							dimB2 *=32;	break;
 						case 64:
-							dimA2 *=64;	break;
+							dimB2 *=64;	break;
 					}
 					break;
 				case  8:
@@ -1613,38 +1628,42 @@ void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 						case  1:
 							dimA2=((dimA2-1)/8)+1;	break;
 						case 16:
-							dimA2 *= 2;	break;
+							dimB2 *= 2;	break;
 						case 32:
-							dimA2 *= 4;	break;
+							dimB2 *= 4;	break;
 						case 64:
-							dimA2 *= 8;	break;
+							dimB2 *= 8;	break;
 					}
 					break;
 				case 16:
 					switch ( ElementSize ) {
 						case  1:
 							dimA2=((dimA2-1)/8)+1;
-						case  8:
 							if ( dimA2 & 1 ) { dimA2=-1; break; }
 							dimA2 /= 2;	break;
+						case  8:
+							if ( dimB2 & 1 ) { dimB2=-1; break; }
+							dimB2 /= 2;	break;
 						case 32:
-							dimA2 *= 2;	break;
+							dimB2 *= 2;	break;
 						case 64:
-							dimA2 *= 4;	break;
+							dimB2 *= 4;	break;
 					}
 					break;
 				case 32:
 					switch ( ElementSize ) {
 						case  1:
 							dimA2=((dimA2-1)/8)+1;
-						case  8:
 							if ( dimA2 & 3 ) { dimA2=-1; break; }
 							dimA2 /= 4;	break;
+						case  8:
+							if ( dimB2 & 3 ) { dimB2=-1; break; }
+							dimB2 /= 4;	break;
 						case 16:
-							if ( dimA2 & 1 ) { dimA2=-1; break; }
-							dimA2 /= 2;	break;
+							if ( dimB2 & 1 ) { dimB2=-1; break; }
+							dimB2 /= 2;	break;
 						case 64:
-							dimA2 *= 2;	break;
+							dimB2 *= 2;	break;
 					}
 					break;
 				case 64:
@@ -1652,20 +1671,21 @@ void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 						case  1:
 							dimA2=((dimA2-1)/8)+1;
 							if ( dimA2 & 7 ) { dimA2=-1; break; }
-						case  8:
 							dimA2 /= 8;	break;
+						case  8:
+							dimB2 /= 8;	break;
 						case 16:
-							if ( dimA2 & 3 ) { dimA2=-1; break; }
-							dimA2 /= 4;	break;
+							if ( dimB2 & 3 ) { dimB2=-1; break; }
+							dimB2 /= 4;	break;
 						case 32:
-							if ( dimA2 & 1 ) { dimA2=-1; break; }
-							dimA2 /= 2;	break;
+							if ( dimB2 & 1 ) { dimB2=-1; break; }
+							dimB2 /= 2;	break;
 					}
 					break;
 			}
-			if ( dimA2 < 0 ) { CB_Error(DimensionERR); return ; }	// Dimension error
+			if ( ( dimA2 < 0 ) || ( dimB2 < 0 ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 			if ( reg != reg2 ) { DimMatrixSub( reg2, ElementSize, dimA, dimB ); CopyMatrix( reg, reg2 ); }
-			MatArySizeA[reg2]=dimA2;
+			if ( ElementSize == 1 ) { MatArySizeA[reg2]=dimA2; } else { MatArySizeB[reg2]=dimB2; }
 			MatAryElementSize[reg2]=ElementSize2;
 			
 		} else {								// Mat A -> Mat B
