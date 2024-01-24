@@ -10,6 +10,13 @@
 */
 #include "CB.h"
 
+#define BE_MAX 7
+
+typedef struct{	//
+	char sname[12];
+	int execptr;
+}beFiles;
+
 //----------------------------------------------------------------------------------------------
 
 //****************************************************************************
@@ -31,8 +38,10 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	char *ptr,*stat;
 	int i,j;
 
-	char filename[64];
+	char filename[32];
 	char *src;
+	char sname[13];
+	beFiles befiles[BE_MAX];
 
 	HeapRAM = (char *)malloc( MAXHEAP );		// 47KB C.Basic area (program & Mat)
 	if ( HeapRAM == NULL )  { Abort(); }
@@ -66,6 +75,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	
 	ClearExtFontflag();
 
+	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
+
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
@@ -92,6 +103,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 		if ( MaxMemMode ) HiddenRAM_freeProg(HiddenRAM_Top);		// Prog memory init	
 		key =( SelectFile( filename ) ) ;
+		memset( sname, 0,12 );
+		SetShortName( sname, filename) ; 
 		if ( MaxMemMode ) { 
 			HiddenRAM_freeProg(HiddenRAM_Top);
 			FileListUpdate=1;
@@ -114,20 +127,37 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 					EditRun(1);			// Program run
 				}else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
+				goto bejmp;
 				break;
 			case FileCMD_EDIT:
 				ExecPtr=0;
 				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 				if ( i==0 )	{
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
+
 					ExecPtr=0;
+					for (j=0; j<BE_MAX; j++) {
+						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { 
+							ExecPtr = befiles[j].execptr;
+							break;
+						}
+					}
 					EditRun(2);			// Program listing & edit
 				} else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
+			  bejmp:
+					for (j=0; j<BE_MAX; j++) {
+						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { j++; break; }
+					}
+					j--;
+					if ( j ) memcpy2( befiles[1].sname, befiles[0].sname, sizeof(beFiles)*j );
+					strncpy( befiles[0].sname, sname, 12);
+					befiles[0].execptr = ExecPtr;
 				break;
 			case FileCMD_NEW:
 				if ( NewProg() ) break ;
 				EditRun(2);			// Program listing & edit
+				goto bejmp;
 				break;
 			case FileCMD_RENAME:
 				RenameCopyFile(filename, 0);

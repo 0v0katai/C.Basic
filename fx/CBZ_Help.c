@@ -5,37 +5,40 @@ char *HelpText;
 
 //----------------------------------------------------------------------------------------------
 char * LoadHelpfile( char *buffer ) {
-	int r;
+	int r,i;
 	char filename[64];
 	char folder16[21];
 	char basname[16];
 	int progno = ProgNo;
 	int storagemode = StorageMode;
+	int progEntryN;
 
-	if ( ProgEntryN >= ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return NULL; } // Too Many Prog error
-	ProgEntryN++;
+	for (i=0; i<=ProgMax; i++) {			// memory free
+		if ( ProgfileAdrs[i] == NULL ) break;		// Prog
+	}
+	progEntryN = i;
+	if ( progEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return NULL; } // Too Many Prog error
 	strcpy( basname, buffer);
 	Setfoldername16( folder16, basname );
 	Getfolder( buffer );
 	SetFullfilenameExt( filename, buffer, "g1m" ) ;		// g1m 1st reading
 	StorageMode &= 1;	// Storage or SD
-	r=LoadProgfile( filename, ProgEntryN, 0, 0 ) ;
+	r=LoadProgfile( filename, progEntryN, 0, 0 ) ;
 	if ( r ) {
 		SaveDisp(SAVEDISP_PAGE1);
 		ErrorNo=0;	// clear error
 		SetFullfilenameExt( filename, buffer, "txt" ) ;	// retry 2nd text file
-		r=LoadProgfile( filename, ProgEntryN, 256, 0 ) ;	// enable convert
+		r=LoadProgfile( filename, progEntryN, 256, 0 ) ;	// enable convert
 		RestoreDisp(SAVEDISP_PAGE1);
 	}
 	Restorefolder();
 	StorageMode = storagemode;
 	ProgNo = progno;
-	ProgEntryN--;
 	if ( ErrorNo ) {	// Can't find
 		ErrorNo=0;	// clear error
 		return NULL;
 	}
-	return ProgfileAdrs[ProgEntryN+1];
+	return ProgfileAdrs[progEntryN];
 }
 
 char * LoadHelp(){

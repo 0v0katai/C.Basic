@@ -1016,6 +1016,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 
  	filebase = ProgfileAdrs[ProgNo];
 	SrcBase  = filebase+0x56;
+//	if ( SrcBase[ExecPtr]== 0 ) ExecPtr = 0;
 	offset = ExecPtr;
 	csrPtr = offset;
 	CursorStyle=0;	// insert mode
@@ -1366,7 +1367,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									ExitDebugModeCheck&=1; 
 									BreakPtr=-7;	// return to main program
 									if ( ProgEntryN == 0 ) ExecPtr=csrPtr;
-								} 
+								} else ExecPtr=csrPtr;
 								cont=0;
 							}
 						}

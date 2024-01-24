@@ -392,7 +392,7 @@ void CB_AliasVar( char *SRC ) ;	// AliasVar A=ƒ¿
 int GetVarName( char *SRC, int *ptr, char *name, int *len );
 
 //-----------------------------------------------------------------------------
-#define GRAPHMAX	6
+#define GRAPHMAX	5
 #define GRAPHLENMAX	64
 typedef struct {
 	char en;		// 
