@@ -1273,7 +1273,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 						if ( x < 128 )	 {	Bdisp_ClearLineVRAM(  x, 8,     x,10    ); Bdisp_DrawLineVRAM(  x,10,   x-2,10    ); }
 				}
 				if ( seltopY+y == dimB ) {	Bdisp_ClearLineVRAM( 16,14+y*8,16,16+y*8); Bdisp_DrawLineVRAM( 16,14+y*8,18, 14+y*8);
-						if ( x < 128 )	 {	Bdisp_ClearLineVRAM(  x,14+y*8, x,16+y*8); Bdisp_DrawLineVRAM(  x,14+y*8,x-2,14+y*8); }
+						if ( x < 128 )	 {	Bdisp_ClearLineVRAM(  x,14+y*8, x,15+y*8); Bdisp_DrawLineVRAM(  x,14+y*8,x-2,14+y*8); }
 				}
 				if ( ( strdisp ) && (ElementSize > 4 ) )  {
 					if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, seltopY+y+base, seltopX  +base), 64-1 );
@@ -1330,13 +1330,14 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		}
 		Fkey_Icon( FKeyNo2, 964 );	//	Fkey_dispN( FKeyNo2, "GOTO");
 		if ( ans==0 ) Fkey_Icon( FKeyNo3,  95 );	//	Fkey_dispR( FKeyNo3, "Init");
+		if ( MatXYmode ) Fkey_dispRS( FKeyNo4, "X,Y"); else Fkey_dispRS( FKeyNo4, "m,n"); 
 //		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "X,Y"); else Fkey_dispN( FKeyNo4, "m,n"); 
-		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "\xE6\x91m,n"); else Fkey_dispN( FKeyNo4, "\xE6\x91x,y"); 
+//		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "\xE6\x91m,n"); else Fkey_dispN( FKeyNo4, "\xE6\x91x,y"); 
 		locate(16, 8); MatAryElementSizePrint( ElementSize ) ;
 
 		y = (selectY-seltopY) ;
 		x = (selectX-seltopX) ;
-		if ( dotedit == 0 ) Bdisp_AreaReverseVRAM(x*dx+20, y*8+9, x*dx+20+dx-5, y*8+15);	// reverse select element
+		if ( dotedit == 0 ) Bdisp_AreaReverseVRAM(x*dx+20-(MaxX==3), y*8+9, x*dx+20+dx-5+(MaxX==3), y*8+15);	// reverse select element
 
 		if ( dotedit  ) {
 			MiniDotCursorX = x*dx+20;
@@ -4974,8 +4975,8 @@ int MatrixObjectAlign4ML( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MM( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MN( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MO( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte

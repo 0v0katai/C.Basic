@@ -1050,8 +1050,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );	// csrY adjust
 	UpdateLineNum=1;
 
-	if ( run == 1 ) { key=KEY_CTRL_F6; goto directrun; }	// direct run
-
 	if ( DebugMode ) DebugMenuSw=1; 
 	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
@@ -1061,6 +1059,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		else 						Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
 		
 	KeyRecover();
+	if ( run == 1 ) { key=KEY_CTRL_F6; goto directrun; }	// direct run
+	
 	while ( cont ) {
 		if ( DebugMode==0 ) DebugMenuSw=0; 
 		mini=(EditFontSize & 0x0F);
@@ -1624,6 +1624,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F6:
+				  directrun:
 					execptr=csrPtr;
 					if ( SearchMode ) goto searchStart;	// Retry search
 					if ( ClipStartPtr >= 0 ) {	// Clip -> del '
@@ -1657,7 +1658,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
 									if ( SrcBase[offset] == 0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
 								} else {
-								  directrun:
 									if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
 										if ( DebugScreen == 1 ) { DebugMenuSw = 1; DebugScreen = 2; }
 										else
@@ -1675,8 +1675,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										} else {
 											ProgNo=0;
 											ExecPtr=0;
-											PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-											PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 											stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
 											if ( ( stat==-7 ) && ( ProgEntryN == 0 ) ) DebugMode=0;
 										}
