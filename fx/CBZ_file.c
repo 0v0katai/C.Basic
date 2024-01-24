@@ -73,6 +73,7 @@ unsigned int SelectFile (char *filename)
 		key = Explorer( size, folder ) ;
 		if ( key == FileCMD_NEW  ) break ;	// new file
 		if ( key == FileCMD_MKDIR ) break ;	// Make Directory
+		if ( key == FileCMD_DELDIR ) break ;	// Delete Directory
 
 		if ( key == KEY_CTRL_EXIT ) {			//to top of list
 			index = 0;
@@ -89,6 +90,7 @@ unsigned int SelectFile (char *filename)
 			index = 0;
 			FileListUpdate = 1 ;
 			redrawsubfolder= 0 ;
+			if ( key == FileCMD_DELDIR ) break ;	// delete Directory
 		} else {										//file
 			strcpy( name,   files[index].filename );
 			if ( strcmp( files[index].folder  ,  folder ) != 0 ) FileListUpdate=1;
@@ -426,8 +428,9 @@ unsigned int Explorer( int size, char *folder )
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
+	if ( index > size - 1 ) index = size - 1;
 	top = index ;
-	
+
 	if ( FileListUpdate ) {
 		for( i=0; i<FavoritesMAX; i++){			//	set  Favorites list
 			strncpy( files[i].filename, Favoritesfiles[i].filename, FILENAMEMAX );
@@ -627,16 +630,17 @@ unsigned int Explorer( int size, char *folder )
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_RUN;
+						cont =0 ;
 						break;
 					case 1:
 						key=FileCMD_TEXT;
+						cont =0 ;
 						break;
 					case 2:
-					  	MakeDirectory();
+					  	if ( MakeDirectory() == 0 )	cont =0 ;	// ok
 						key=FileCMD_MKDIR;
 						break;
 				}
-				cont =0 ;
 				break;
 			case KEY_CTRL_F2:	// edit
 				if ( nofile ) break;
@@ -687,14 +691,19 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F5:	// delete file
-				if ( Isfolder ) break;
 				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
-						key=FileCMD_DEL;
-						cont =0 ;
+						if ( Isfolder )	{
+							if ( DeleteFolder(files[index].filename, 1) == 0 ) cont =0 ;	// ok
+							key=FileCMD_DELDIR;
+						} else	{
+							key=FileCMD_DEL;
+							cont =0 ;
+						}
 						break;
 					case 1:
+						if ( Isfolder ) break;
 						if ( FavCount < 1 ) break;
 						if ( index >= FavoritesMAX-1 ) break;
 						FavoritesDown( &index );
@@ -1469,6 +1478,31 @@ void DeleteFileFav(char *fname, int yesno ) {
 
 }
 
+
+void DeleteDirectory(char *fname) {
+	FONTCHARACTER filename[50];
+	int r;
+
+//	r=strlen(fname)-1;
+//	if ( fname[r] == '\\' ) fname[r]='\0';
+	CharToFont( fname, filename );
+
+	r = Bfile_DeleteDirectory( filename );
+	if( r < 0 ) { ErrorMSGfile( "Can't delete fldr", fname, r ); return ; }
+	FileListUpdate=1;
+}
+
+int DeleteFolder(char *foldername, int yesno ) {	// delete folder
+	char fname[16];
+	int i;
+	
+	if ( yesno ) if ( YesNo2( foldername,"Delete folder?" ) == 0 ) return 1 ; // cancel
+	sprintf( fname, "\\\\%s\\%s", root[StorageMode], foldername );
+	DeleteDirectory( fname );
+	folder[0]='\0';
+	return 0;	// ok
+}
+
 //----------------------------------------------------------------------------------------------
 int MakeDirectory(){
 	char name[16];
@@ -1569,7 +1603,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 void Setfoldername16( char *folder16, char *sname ) {
 	char *cptr;
 	int i=0,j,def=1;
-	if ( ( sname[i]== 0x5C ) || ( sname[i]== '/' ) ) { do sname[i]=sname[++i]; while ( sname[i] ); def=0; }
+	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) { do sname[i]=sname[++i]; while ( sname[i] ); def=0; }
 	for (i=0;i<17+4;i++) folder16[i]=0;
 	cptr=strstr(sname,"\\");
 	if ( cptr==NULL ) { i=0; }	// current folder 
@@ -1904,7 +1938,7 @@ void SaveConfig(){
 	buffer[1075]= AutoSaveMode;
 	buffer[1076]= EditTopLine;
 	buffer[1077]= EditFontSize;
-	buffer[1078]= 0;
+	buffer[1078]= AutoDebugMode;
 	buffer[1079]= 0;
 
 	handle=Bfile_OpenMainMemory(fname);
@@ -1994,6 +2028,7 @@ void LoadConfig(){
 		AutoSaveMode =buffer[1075];
 		EditTopLine  =buffer[1076];
 		EditFontSize =buffer[1077];
+		AutoDebugMode =buffer[1078];
 		
 	} else {
 		Bfile_DeleteMainMemory(fname);
@@ -2147,13 +2182,15 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 				Setfoldername16( folder16, basname );
 				srcPrg = CB_SearchProg( folder16 );
 				if ( srcPrg < 0 ) { 				// undefined Prog
-					SetFullfilenameExt( filename, basname, "g1m" ) ;		// g1m 1st reading
+					Getfolder( buffer );
+					SetFullfilenameExt( filename, buffer, "g1m" ) ;		// g1m 1st reading
 					r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
 					if ( r ) {
 						ErrorNo=0;	// clear error
-						SetFullfilenameExt( filename, basname, "txt" ) ;	// retry 2nd text file
+						SetFullfilenameExt( filename, buffer, "txt" ) ;	// retry 2nd text file
 						r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
 					}
+					Restorefolder();
 					if ( ErrorNo ) {	// Can't find Prog
 						ErrorPtr=ExecPtr;
 						ProgNo=progno;
@@ -2266,8 +2303,8 @@ void FavoritesDowndummy( int *index ) {
 	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
 	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
 	files[(*index)].filesize=tmp;
-	(*index)++;
-	SaveFavorites();
+//	(*index)++;
+//	SaveFavorites();
 }
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;

@@ -914,7 +914,9 @@ int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // カナ対応
 		if ( c < 0x7F ) font=Fontmini[c];
 	} else
 	if ( 0x80 <= a ) if ( a <= 0xDF ) font=Fontmini80[a-0x80];
-	
+
+    kfont_info.width = font[0];
+	if ( mode==0x21 ) goto exit;
 	switch ( mode ) {
 		case MINI_OVER:
 			kfont.WriteModify = IMB_WRITEMODIFY_NORMAL;
@@ -933,14 +935,14 @@ int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // カナ対応
 			kfont.WriteKind = IMB_WRITEKIND_OR;
 			break;
 	}
-    kfont_info.width = font[0];
     kfont_info.height = 6;
     kfont_info.pBitmap = font+2;
     kfont.x = px;
     kfont.y = py-0;
     kfont.GraphData = kfont_info;
-    Bdisp_WriteGraph_VRAM(&kfont);
-    
+    if ( px+kfont_info.width > 127 ) kfont_info.width=127-px; 
+    if ( kfont_info.width > 0 ) Bdisp_WriteGraph_VRAM(&kfont);
+  exit:
     return kfont_info.width;
 }
 //---------------------------------------------------------------------------------------------
@@ -956,5 +958,23 @@ void CB_PrintMini( int px, int py, const unsigned char *str, int mode){
 		if ( px>127 ) break;
 		c=(char)*str;
 	}
+}
+int CB_PrintMiniC( int px, int py, const unsigned char *str, int mode){
+	return	KPrintCharMini( px, py, str , mode );
+}
+
+int CB_PrintMiniLength( const unsigned char *str ){
+	return KPrintCharMini( 0, 0, str , 0x21 );
+}
+int CB_PrintMiniLengthStr( const unsigned char *str ){
+	int i,length=0;
+	int c=(char)*str;
+	while ( c ) {
+		i=CB_PrintMiniLength( str++ );
+		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		length+=i;
+		c=(char)*str;
+	}
+	return length;
 }
 
