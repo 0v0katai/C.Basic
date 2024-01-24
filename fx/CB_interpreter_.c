@@ -3180,22 +3180,22 @@ void  CB_Input( char *SRC ){
 	return ;
 }
 //----------------------------------------------------------------------------------------------
-//int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
