@@ -1093,6 +1093,14 @@ remloop:
 				}
 			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
 		} else
+		if ( c=='5' ){	// 
+				c=SRC[ExecPtr++];
+				if ( ( c=='8' ) )  CB_fx5800P = 1;		// fx-5800P mode on
+		} else
+		if ( c=='9' ){	// 
+				c=SRC[ExecPtr++];
+				if ( ( c=='8' ) )  CB_fx5800P = 0;		// fx-5800P mode off
+		} else
 		if ( c==0x7F ) {
 			c=SRC[ExecPtr++];
 			if ( c==0xFFFFFFF0 ) {	// Graph
@@ -2124,7 +2132,7 @@ void CB_Store( char *SRC ){	// ->
 				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x02 ) {	// Xscl
-				Xscl = CB_CurrentValue.real ;
+				Xscl = fabs(CB_CurrentValue.real) ;
 				goto Graphj;
 		} else if ( c == 0x04 ) {	// Ymin
 				Ymin = CB_CurrentValue.real ;
@@ -2135,7 +2143,7 @@ void CB_Store( char *SRC ){	// ->
 				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x06) {	// Yscl
-				Yscl = CB_CurrentValue.real ;
+				Yscl = fabs(CB_CurrentValue.real) ;
 				goto Graphj;
 		} else if ( c == 0x08) {	// Thetamin
 				TThetamin = CB_CurrentValue.real ;
@@ -2276,7 +2284,7 @@ void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) { //	Prog "...
 	if ( DebugMode == 4 ) { DebugMode = 2;  BreakPtr = -1; }	// step out
 	
 	if ( stat ) {
-		if ( ( DebugMode == 0 ) && ( DisableDebugMode==0 ) ) BreakPtr = 0;
+		if ( ( DebugMode == 0 ) && ( DisableDebugMode==0 ) && ( ErrorNo != StackERR ) ) BreakPtr = 0;
 		if ( ( ErrorNo ) && ( ErrorNo != StackERR ) )return ;			// error
 		else if ( BreakPtr > 0 ) return ;	// break
 	}
@@ -2548,6 +2556,7 @@ int CB_interpreter( char *SRC ) {
 	char	bk_ACBreak    =ACBreak;		// AC Break on/off
 	char	bk_RefreshCtrl=RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
 	char	bk_Refreshtime=Refreshtime;	// Refresh time  (Refreshtime+1)/128s
+	char	bk_CB_fx5800P = CB_fx5800P;
 
 	CB_INT = CB_INTDefault;
 	Waitcount=DefaultWaitcount;
@@ -2575,7 +2584,10 @@ int CB_interpreter( char *SRC ) {
 	CB_AliasVarClr();
 	DeleteMatListAnsAll();	// Ans init	
 	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
-		
+
+	for ( c=0; c<GRAPHMAX; c++ ) GraphStat[c].en = 0;
+	GraphPtr=0;	// reset
+
 	CB_TicksAdjust = 0 ;	// 
 	CB_HiTicksAdjust = 0 ;	// 
 	CB_ResetExecTicks();
@@ -2586,6 +2598,7 @@ int CB_interpreter( char *SRC ) {
 	ACBreak    =bk_ACBreak;		// AC Break on/off
 	RefreshCtrl=bk_RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
 	Refreshtime=bk_Refreshtime;	// Refresh time  (Refreshtime+1)/128s
+	CB_fx5800P =bk_CB_fx5800P;
 
 	if ( CB_RecoverSetup ) {
 		CB_Round.MODE =bk_RoundMODE;
@@ -2603,6 +2616,7 @@ int CB_interpreter( char *SRC ) {
 	}
 	KeyRecover(); 
 //	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
+//	if ( ErrorNo==StackERR ) CB_ErrMsg(StackERR);
 	return stat;
 }
 

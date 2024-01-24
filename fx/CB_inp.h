@@ -21,6 +21,10 @@
 #define  PAL_ON       1
 #define  EXIT_CANCEL_OFF 0
 #define  EXIT_CANCEL_ON  1
+#define  AC_CANCEL_OFF 0
+#define  AC_CANCEL_ON  1
+#define  FN_CANCEL_OFF 0
+#define  FN_CANCEL_ON  1
 #define  LEFT_ALIGN   0
 #define  RIGHT_ALIGN  1
 
@@ -190,7 +194,9 @@ extern short selectPRGM;
 extern char lowercase;
 
 void PutAlphamode1( int CursorStyle );
-int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
+int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel );
+int InputStrSubFn(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel );
+int InputStrSub_status(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel ) ;
 
 double Round( double num, int round_mode, int digit);
 void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit, int cplx ) ; // + round   + i

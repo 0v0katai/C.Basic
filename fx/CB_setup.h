@@ -26,6 +26,7 @@ extern char  EnableExtFont ;	// enable external font
 extern char  MaxMemMode ;		// Maximam memory mode
 extern char  ComplexMode ;		// Complex mode  real:0   a+bi:1  a_b:2
 extern const char *CBmode[];    //{"DBL#","INT%","CPLX"};
+extern char  CB_fx5800P ;		// fx-5800P mode
 
 //------------------------------------------------------------------------------
 void VerDispSub() ;

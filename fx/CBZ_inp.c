@@ -1042,13 +1042,13 @@ int SelectOpcode( int listselect, int flag ) {
 					}
 					break;
 				case KEY_CTRL_F3:	// :
+					RestoreDisp(SAVEDISP_PAGE1);
 					if ( flag ) return 0;
 					key=SelectOpcode5800P( 1 );
 					if ( key > 0x10000 ) { 
 						listselect=key-0x10000; key=0;
 						cont=0;
 					}
-					RestoreDisp(SAVEDISP_PAGE1);
 					if ( key ) return key & 0xFFFF;
 				break;
 				default:
@@ -1113,6 +1113,7 @@ const short oplistOPTN[]={
 		0x7F42,	// *Row
 		0x7F43,	// *Row+
 		0x7F44,	// Row+
+		0x7F48,	// Identity
 		0x7F58,	// ElemSize(
 		0x7F59,	// RowSize(
 		0x7F5A,	// ColSize(
@@ -1564,7 +1565,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F42,	// *Row
 		0x7F43,	// *Row+
 		0x7F44,	// Row+
-		0x23,	// #
+		0x7F48,	// Identity
 		0x25,	// %
 
 //											6
@@ -1813,7 +1814,7 @@ const short oplistCMD[]={		// 5800P like
 		0x25,	// %
 
 //											23	EX
-		0xF90F,	// AliasVar
+		0xF90F,	// Alias
 		0x7F5F,	// Ticks
 		0xF941,	// DATE
 		0xF942,	// TIME
@@ -1823,7 +1824,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF7EF,	// Load(
 		0xF7FC,	// PutDispDD
 		0xF94F,	// Wait 
-		0xF90D,	// Define 
+		0x23,	// #
 		0xF90E,	// Const 
 		
 		0xF7FB,	// Screen
@@ -2111,12 +2112,14 @@ int SelectOpcode5800P( int flag ) {
 				cont=0;
 				break;
 			case KEY_CTRL_OPTN:
+				RestoreDisp(SAVEDISP_PAGE1);
 				if ( flag ) return 0x10000+CMDLIST_OPTN;
 				key=SelectOpcode( CMDLIST_OPTN, 1);
 				if ( key ) return key & 0xFFFF;
 				break;
 			case KEY_CTRL_VARS:
 			case KEY_CTRL_PRGM:
+				RestoreDisp(SAVEDISP_PAGE1);
 				if ( flag ) {
 					if ( shift )	return 0x10000+CMDLIST_PRGM;
 					else			return 0x10000+CMDLIST_VARS;
@@ -2576,6 +2579,7 @@ int InsertOpcode1( char *buffer, int Maxstrlen, int ptr, int opcode ){
 			buffer[ptr+1]=opL;
 			break;
 	}
+	AddOpcodeRecent( opcode ) ;
 	return 0;
 }
 void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr){
@@ -2698,7 +2702,7 @@ short selectVARS=0;
 short selectPRGM=0;
 char lowercase=0;
 
-int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
+int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel, int fn_cancel) {
 	char buffer2[CB_StrBufferMax];
 	char buf[22];
 	char fnbuf[16*8];
@@ -2797,7 +2801,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					break;
 					
 			case KEY_CTRL_AC:
-				if ( length==0 ) cont=0;
+				if ( length==0 ) cont = ac_cancel;
 				ptrX=0; offsetX=0;
 				buffer[0]='\0';
 				alphalock = 0 ;
@@ -2869,7 +2873,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					EditCopy1( buffer, ClipBuffer, ptrX, ClipStartPtr, ClipEndPtr );
 				} else 
 				if ( CommandType ) GetGenuineCmdF1( &key );
-				else if ( length ) cont=0;
+				else if ( length ) cont= fn_cancel;
 			F1j:alphalock = 0 ;
 				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
@@ -2882,7 +2886,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					EditCutDel1( buffer, ClipBuffer, &ptrX, ClipStartPtr, ClipEndPtr, 0, MaxStrlen );	// cut
 				} else
 				if ( CommandType ) GetGenuineCmdF2( &key );
-				else if ( length ) cont=0;
+				else if ( length ) cont= fn_cancel;
 			F2j:alphalock = 0 ;
 				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
@@ -2897,7 +2901,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				} else 
 				if ( CommandType ) GetGenuineCmdF3( &key );
 				else {
-//					if ( displaystatus ) if ( length ) cont=0;
+//					if ( displaystatus ) if ( length ) cont=( fn_cancel==0 );
 					if ( CommandInputMethod ) { 
 						CommandType=CMD_MENU; CommandPage=0;
 					} else {
@@ -3176,20 +3180,39 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	return key ;	// EXE:0
 }
 
+int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel) {
+	int key;
+	key=InputStrSubC( x, y, width, ptrX, buffer, MaxStrlen, SPC, rev_mode, float_mode, exp_mode, alpha_mode, hex_mode, pallet_mode, exit_cancel, ac_cancel, FN_CANCEL_ON );
+	return key;
+}
+int InputStrSubFn(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel) {
+	int key;
+	key=InputStrSubC( x, y, width, ptrX, buffer, MaxStrlen, SPC, rev_mode, float_mode, exp_mode, alpha_mode, hex_mode, pallet_mode, exit_cancel, ac_cancel, FN_CANCEL_OFF );
+	return key;
+}
+int InputStrSub_status(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel ) {
+	int key;
+	key=InputStrSubC( x, y, width, ptrX, buffer, MaxStrlen, SPC, rev_mode, float_mode, exp_mode, alpha_mode, hex_mode, pallet_mode, exit_cancel, AC_CANCEL_OFF, FN_CANCEL_OFF );
+	return key;
+}
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode, unsigned int *key ) {		// 0123456789.(-)exp
 	char buffer[64];
 	int csrX=0;
-	
+	double result;
 	buffer[csrX]='\0';
 	if ( defaultNum != 0 ) {
 		sprintG(buffer, defaultNum, width, LEFT_ALIGN);
 		csrX=strlenOp(buffer);
 	}
-	*key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
-	if ( ( *key == KEY_CTRL_EXIT ) || ( *key != KEY_CTRL_EXE ) ) return (defaultNum);  // exit
-	return Eval( (char*)buffer );
+	do {
+		*key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_OFF ) ;
+		if ( ( *key == KEY_CTRL_EXIT ) || ( *key != KEY_CTRL_EXE ) ) return (defaultNum);
+		result = Eval( buffer );
+		csrX   = ErrorPtr;
+	} while ( ErrorNo || (buffer[0]=='\0') );	// error loop
+	return result; // value ok
 }
 
 unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char* SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
@@ -3198,7 +3221,7 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, cha
 	
 	buffer[width]='\0';
 	csrX=strlenOp(buffer);
-	key= InputStrSub( x, y, width, csrX, buffer, MaxStrlen, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	key= InputStrSub( x, y, width, csrX, buffer, MaxStrlen, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_OFF);
 	return ( key );
 }
 
@@ -3206,14 +3229,12 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, cha
 complex InputNumC_sub(int x, int y, int width, int ptrX, complex defaultNum) {		//  1st char key in
 	unsigned int key;
 	complex result;
-	key= InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
-	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
-	result = Cplx_Eval( ExpBuffer );
-	while ( ErrorNo ) {	// error loop
-		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	do {
+		key= InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_OFF ) ;
 		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 		result = Cplx_Eval( ExpBuffer );
-	}
+		ptrX   = ErrorPtr;
+	} while ( ErrorNo || (ExpBuffer[0]=='\0') );	// error loop
 	CB_CurrentValue = result ;
 	return result; // value ok
 }
@@ -3268,36 +3289,28 @@ complex InputNumC_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV,
 	unsigned int key;
 	complex result;
 	ExpBuffer[0]='\0';
-	key=InputStrSub( x, y, width, 0, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
-	result = Cplx_Eval( ExpBuffer );
-	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
-		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+	ErrorPtr=0;
+	do {
+		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON, AC_CANCEL_OFF );
 		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
 		result = Cplx_Eval( ExpBuffer );
-	}
+	} while ( ErrorNo || (ExpBuffer[0]=='\0') ) ;		// error loop
 	return result; // value ok
 }
 complex InputNumC_CB_sub(int x, int y, int width, int MaxStrlen, int ptrX, char* SPC, int REV, complex defaultNum ) {		//  Basic Input sub
 	unsigned int key;
 	complex result;
-	int csrX;
-	key=InputStrSub( x, y, width, ptrX, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
-	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) {
-	  exit:
-		result=(defaultNum);
-		goto exit2;
-	}
-	result = Cplx_Eval( ExpBuffer );
-	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
-		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+	int csrX,i;
+	do {
+		key=InputStrSub( x, y, width, ptrX, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON, AC_CANCEL_OFF );
 		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
-		if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE  ) goto exit;
+		if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE  ) { result=(defaultNum); goto exit2; }
 		result = Cplx_Eval( ExpBuffer );
-	}
+		ptrX   = ErrorPtr;
+	} while ( ErrorNo || (ExpBuffer[0]=='\0') ) ;	// error loop
   exit2:
-	PrintOpcode(x, y, ExpBuffer, width, 0, 0, &csrX, REV , " ", -1,-1);
+	i=PrintOpcode(x, y, ExpBuffer, width, 0, 0, &csrX, REV , " ", -1,-1);
+	if ( i==0 ) Cplx_sprintGR1cutlim( ExpBuffer, result, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );	//
 	return result; // value ok
 }
 complex InputNumC_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) {		//  Basic Input 1
@@ -3311,6 +3324,6 @@ complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV
 	return InputNumC_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy
-//int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

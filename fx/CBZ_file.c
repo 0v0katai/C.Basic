@@ -1031,7 +1031,7 @@ int ExistG1M( const char *sname ) {
 }
 int ExistG1Mext( const char *sname, char *ext ) {
 	char fname[32];
-	SetFullfilenameExt( fname, sname, "g1m" );
+	SetFullfilenameExt( fname, sname, ext );
 	if ( ext[0] == 'M' ) return MCS_ExistFile( fname );
 	return ExistFile( fname ); // r==0 existed 
 }
@@ -1054,7 +1054,7 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer 
 	buffer[width]='\0';
 	csrX=strlenOp((char*)buffer);
   	do {
-		key=InputStrSub( x, y, width, csrX, buffer, maxLen, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+		key=InputStrSub_status( x, y, width, csrX, buffer, maxLen, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( (key!=KEY_CTRL_EXIT)&&(key!=KEY_CTRL_QUIT)&&(buffer[0]=='\0') ) ;
 	for( i=0; i<strlenOp((char*)buffer); i++ ) {	// kana cancel
 		if ( buffer[i]==0xFFFFFFFF ) { 
@@ -1102,7 +1102,9 @@ int InputFilename( char * buffer, char* msg) {		//
 	FkeyClear( FKeyNo2 );
 	FkeyClear( FKeyNo3 );
 	Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
-	key=InputStrFilename( 5, 4, 12, 18, buffer ) ;
+	do {
+		key=InputStrFilename( 5, 4, 12, 18, buffer ) ;
+	} while ( (key==KEY_CTRL_F1)||(key==KEY_CTRL_F2)||(key==KEY_CTRL_F3) );
 //	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; return 1; }
@@ -2224,16 +2226,24 @@ void ConvertToText( char *fname ){
 	int textptr;
 	int textsize;
 	int buffersize;
+	char ext[8],ext2[8];
 
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file -> G1M
+	  	SetExt( ext );	// set ext ( g1m,g3m,MCS )
 		if ( LoadProgfile( fname, 0, EditMaxfree, 1 ) ) return ; // error
 		filebase = ProgfileAdrs[0];
 		G1MHeaderTobasname8( filebase, basname);
-		SetFullfilenameExt( fname, basname, "g1m" );
+		if ( InputFilenameG1MorG3M( basname, "Convert", ext ) ) return ; // cancel
+		SetFullfilenameExt( fname, basname, (char*)ext );
 		basname8ToG1MHeader( filebase, basname);
-		if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwritefile(fname) ) return  ; // cancel	
-		if ( SaveBasG1M( filebase ) ) return ;
+		if ( ExistG1Mext( basname, ext ) ==0 ) if ( YesNoOverwritefile(name) ) return ; // cancel
+		if ( SaveBasG1MorG3M( filebase, ext ) ) return ;
+	  	FileListUpdate = 1;
+		if ( ext[0]=='M' ) {
+			SetFullfilenameExt( fname, basname, "g1m" );
+			StorageMode |= 2; 
+		} else StorageMode &= 0xFD;
 		
 	} else {	// G1M file -> Text
 		MSG1("Wait a moment...");
@@ -2256,6 +2266,10 @@ void ConvertToText( char *fname ){
 			Bdisp_PutDisp_DD();
 		}
 		storeFile( fname, (unsigned char*)text, textsize );
+		if ( StorageMode == 2 ) {	// MCS->text
+			StorageMode &= 0xFD;
+		  	FileListUpdate = 1;
+		}
 	}
 
 	ErrorMSGfile( "Convert Complete!", fname, 0);
@@ -2394,7 +2408,7 @@ typedef struct {
 
 	buffer[ 12] =ExtendPict;		buffer[12+1]=UseHiddenRAM;		buffer[ 14] =ExtendList;		buffer[14+1]=CB_INTDefault;
 	bufshort[ 8]=RefreshCtrl;										buffer[ 18] =EditListChar;		buffer[18+1]=DrawType;
-	buffer[ 22] =ForceReturnMode;	buffer[22+1]=Coord;				bufshort[10]=Refreshtime;
+	buffer[ 22] =ForceReturnMode;	buffer[22+1]=Coord;				buffer[ 20]=CB_fx5800P;			buffer[20+1]=Refreshtime;
 	buffer[ 24] =CB_RecoverSetup;	buffer[24+1]=ENG;				buffer[ 26] =EditExtFont;		buffer[26+1]=Grid;
 	bufshort[15]=Axes;												bufshort[14]=CB_Round.MODE;
 	bufshort[17]=Label;												buffer[ 32] =MaxMemMode;		buffer[32+1]=CB_Round.DIGIT-1;
@@ -2495,7 +2509,7 @@ void LoadConfig1(){
 		RefreshCtrl   =bufshort[8];											EditListChar   =buffer[ 18];		DrawType     =buffer[18+1];
 		CB_INTDefault =bufshort[ 7];										UseHiddenRAM   =bufshort[6];
 		DrawType      =bufshort[ 9];        								RefreshCtrl    =bufshort[8];
-		ForceReturnMode=buffer[22];			Coord         =buffer[22+1];	Refreshtime    =bufshort[10];
+		ForceReturnMode=buffer[22];			Coord         =buffer[22+1];	CB_fx5800P     =buffer[ 20];		Refreshtime   =buffer[20+1];
 		CB_RecoverSetup=buffer[24];			ENG           =buffer[24+1];	EditExtFont    =buffer[ 26];		Grid         =buffer[26+1];
 		Axes          =bufshort[15];        								CB_Round.MODE  =bufshort[14];
 		Label         =bufshort[17];        								MaxMemMode     =buffer[ 32];		CB_Round.DIGIT=buffer[32+1]+1;
@@ -2792,24 +2806,24 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
@@ -2855,7 +2869,6 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2920,4 +2933,53 @@ void FavoritesDowndummy5( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+void FavoritesDowndummy6( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
+}
+void FavoritesDowndummy7( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
+}
+void FavoritesDowndummy8( int *index ) {
+	unsigned short tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
+}
+/*
 */

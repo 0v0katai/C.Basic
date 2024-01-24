@@ -2096,6 +2096,9 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+tgraphstat GraphStat[GRAPHMAX];
+int	GraphPtr;
+//----------------------------------------------------------------------------------------------
 void CB_DrawGraph(  char *SRC ){
 	int reg,dimA,base;
 	int i;
@@ -2112,11 +2115,45 @@ void CB_DrawGraph(  char *SRC ){
 	GraphY=GraphY2;
 }
 
+void GraphYOprand( char *SRC ){	// Graph Y=sin x + cos x
+	int exptr=ExecPtr;
+	int errflag=1;
+	int i,j,len;
+	char *buffer;
+	complex tmpX=regX;
+	double data;
+  	regX.real=Xmin; regX.imag=0;
+	data=CB_EvalDbl( SRC );	// dummy read
+	if ( ErrorNo == 0 ) errflag=0;
+	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( errflag ) if ( ErrorNo ) return ;	// fatal error
+	errflag=ErrorNo;	// error?
+	regX=tmpX;
+	buffer=NewStrBuffer(); if ( buffer==NULL ) return ;
+	len = ExecPtr-exptr; if ( len == 0 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	i=0; j=exptr;
+	while ( i<CB_StrBufferMax-1 ) {
+		buffer[i++]=SRC[j++];
+		if ( i>=len ) break;
+	}
+	buffer[i]='\0';
+	CB_CurrentStr=buffer;
+}
 void CB_GraphY( char *SRC ){
-	CB_Str( SRC );				// graph text print
+	int len;
+	if ( SRC[ExecPtr] == '"' ) {
+		CB_Str( SRC );				// graph text print
+	} else {
+		GraphYOprand( SRC );
+	}
 	if ( ErrorNo ) return ;  // error
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
-	GraphY=CB_CurrentStr;
+	len=strlen(CB_CurrentStr); if ( len >= GRAPHLENMAX ) len=GRAPHLENMAX;
+	memcpy( GraphStat[GraphPtr].gstr, CB_CurrentStr, len );
+	GraphY=(char *)GraphStat[GraphPtr].gstr;
+	if ( tmp_Style >= 0 ) GraphStat[GraphPtr].style = tmp_Style; else GraphStat[GraphPtr].style = S_L_Style;
+	GraphStat[GraphPtr].en = 1;
+	GraphPtr++; if ( GraphPtr >= GRAPHMAX ) GraphPtr=0;	// reset
 	Graph_Draw();
 }
 
