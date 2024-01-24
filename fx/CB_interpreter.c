@@ -134,7 +134,7 @@ CchRem	CacheRem;
 void ClrCahche();
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte

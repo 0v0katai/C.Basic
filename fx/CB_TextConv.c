@@ -37,7 +37,7 @@ const char ConvList0000[][8]={
 "Tera",		// 09
 "Peta",		// 0A
 "Exa",		// 0B
-"Disps",// 0C
+"Disps",	// 0C
 "\r\n",		// 0D
 "->",		// 0E
 "Exp",		// 0F
@@ -559,7 +559,7 @@ const char ConvListF700[][17]={
 "Bar",				// F73C
 "@F73D",			// F73D
 "@F73E",			// F73E
-"dotGet(",				// F73F
+"DotGet(",				// F73F
 
 "1-Variable ",		// F740
 "2-Variable ",		// F741
@@ -576,7 +576,7 @@ const char ConvListF700[][17]={
 "S-Gph3 ",			// F74C
 "Square",			// F74D
 "Cross",			// F74E
-"dotTrim(",				// F74F
+"DotTrim(",				// F74F
 
 "Scatter",			// F750
 "xyLine",			// F751
@@ -731,7 +731,7 @@ const char ConvListF700[][17]={
 "@F7DE",			// F7DE
 "@F7DF",			// F7DF
 
-"dotLife(",				// F7E0
+"DotLife(",				// F7E0
 "Rect ",				// F7E1
 "FillRect ",			// F7E2
 "LocateYX ",			// F7E3
@@ -748,7 +748,7 @@ const char ConvListF700[][17]={
 "Save ",				// F7EE
 "Load(",				// F7EF
 
-"dotShape(",			// F7F0
+"DotShape(",			// F7F0
 "Local ",				// F7F1
 "@F7F2",			// F7F2
 "@F7F3",			// F7F3
@@ -847,7 +847,7 @@ const char ConvListF900[][17]={
 "@F948",			// F948
 "@F949",			// F949
 "@F94A",			// F94A
-"dotPut(",				// F94B
+"DotPut(",				// F94B
 "@F94C",			// F94C
 "@F94D",			// F94D
 "@F94E",			// F94E
@@ -1465,7 +1465,7 @@ int IsHex( char c ){
 }
 
 int str2hex4( char *buffer ,int *ofst) {
-	char hex[16]="0123456789ABCDEF";
+	char hex[16]="0123456789AB";		// only align use
 	int a,b,c,d;
 	a=buffer[(*ofst)];
 	a=IsHex(a);
@@ -1504,10 +1504,10 @@ int codecnv7F00( char *srcbase, char *text, int *ofst, int *textofst ) {
 }
 int codecnvF700( char *srcbase, char *text, int *ofst, int *textofst ) {
 	char *opstr;
-	unsigned short code;
+	int code;
 	int len;
 	int c=text[(*textofst)];
-	for ( code=0x0000; code<=0x00FF; code++) {		// 0xF700 - 0xF7FF
+	for ( code=0x00FF; code>=0x0000; code--) {		// 0xF700 - 0xF7FF
 		opstr=ConvListF700[code];
 		if ( c == opstr[0] ) {
 			len = strlen( opstr );
@@ -1657,10 +1657,10 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		c=codecnv7F00( srcbase, text, &ofst, &textofst ) ;	// 0x7F00 - 0x7FFF
 		if ( c==0 ) goto tokenloop;
 
-		c=codecnvF700( srcbase, text, &ofst, &textofst ) ;	// 0xF700 - 0xF7FF
+		c=codecnvF900( srcbase, text, &ofst, &textofst ) ;	// 0xF900 - 0xF9FF
 		if ( c==0 ) goto tokenloop;
 
-		c=codecnvF900( srcbase, text, &ofst, &textofst ) ;	// 0xF900 - 0xF9FF
+		c=codecnvF700( srcbase, text, &ofst, &textofst ) ;	// 0xF700 - 0xF7FF
 		if ( c==0 ) goto tokenloop;
 
 		if ( ( c=='[' ) || ( c=='@' ) ) {
