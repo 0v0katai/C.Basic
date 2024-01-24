@@ -6,6 +6,8 @@
  .EXPORT _PutKey
  .EXPORT _Keyboard_ClrBuffer
  .EXPORT _Keyboard_GetKeyWait
+ .EXPORT _EnableGetkeyToMainFunctionReturn
+ .EXPORT _DisableGetkeyToMainFunctionReturn
 ; .EXPORT _CatalogDialog
  .EXPORT _HourGlass
  .EXPORT _Cursor_SetPosition
@@ -83,6 +85,18 @@ _Keyboard_ClrBuffer:
 _Keyboard_GetKeyWait:
 	mov.l SYSCALL,r1
 	mov.l #H'247,r0
+	jmp @r1
+	nop
+
+_EnableGetkeyToMainFunctionReturn:
+	mov.l SYSCALL,r1
+	mov.l #H'477,r0
+	jmp @r1
+	nop
+
+_DisableGetkeyToMainFunctionReturn:
+	mov.l SYSCALL,r1
+	mov.l #H'478,r0
 	jmp @r1
 	nop
 

@@ -207,8 +207,8 @@ void CB_ML_Circle( char *SRC, int fill ) { // ML_Circle x, y, radius, color
 	int color;
 	CB_GetOprand4( SRC, &x, &y, &radius, &color);
 	if ( ErrorNo ) return ;
-	if ( fill ) ML_circle( x, y, radius, color);
-	else		ML_filled_circle( x, y, radius, color);
+	if ( fill ) ML_filled_circle( x, y, radius, color);
+	else		ML_circle( x, y, radius, color);
 }
 
 //----------------------------------------------------------------------------------------------
@@ -222,8 +222,8 @@ void CB_ML_Ellipse( char *SRC, int fill ) { // ML_Ellipse x, y, radius1, radius2
 	ExecPtr++;
 	color=CB_EvalInt( SRC );
 	if ( ErrorNo ) return ;
-	if ( fill ) ML_ellipse( x, y, radius1, radius2, color);
-	else		ML_filled_ellipse( x, y, radius1, radius2, color);
+	if ( fill ) ML_filled_ellipse( x, y, radius1, radius2, color);
+	else		ML_ellipse( x, y, radius1, radius2, color);
 }
 
 void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x2, y2, color
@@ -234,8 +234,8 @@ void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x
 	ExecPtr++;
 	color=CB_EvalInt( SRC );
 	if ( ErrorNo ) return ;
-	if ( fill ) ML_ellipse_in_rect( x1, y1, x2, y2, color);
-	else		ML_filled_ellipse_in_rect( x1, y1, x2, y2, color);
+	if ( fill ) ML_filled_ellipse_in_rect( x1, y1, x2, y2, color);
+	else		ML_ellipse_in_rect( x1, y1, x2, y2, color);
 }
 
 //----------------------------------------------------------------------------------------------

@@ -166,6 +166,7 @@ void PlotGrid(double x, double y){
 void GraphAxesGrid(){
 	double x,y;
 
+	if ( BG_Pict_No ) RclPict(BG_Pict_No, 0);	// no error check
 	if ( Axes ) {
 		Horizontal(0, S_L_Normal,1);
 		Vertical(0, S_L_Normal,1);
@@ -227,7 +228,6 @@ void GraphAxesGrid(){
 		PrintMini(124,43,(unsigned char*)"X",MINI_OVER);
 	}
 	
-	if ( BG_Pict_No ) RclPict(BG_Pict_No, 0);	// no error check
 //	Bdisp_PutDisp_DD();
 }
 
@@ -243,7 +243,7 @@ void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax
 	Ydot  =(Ymax-Ymin)/ 62.0;
 
 //	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
-	ML_clear_vram();
+//	ML_clear_vram();
 	
 	GraphAxesGrid();
 
@@ -430,8 +430,8 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 	int Styleflag=1;
 	int tmp;
 
-	if ( ( px1 <  -1024 ) || ( px1 > 1024 ) || ( py1 < -1024 ) || ( py1 >  1024 ) ) return;
-	if ( ( px2 <  -1024 ) || ( px2 > 1024 ) || ( py2 < -1024 ) || ( py2 >  1024 ) ) return;
+	if ( ( px1 <  -500 ) || ( px1 > 500 ) || ( py1 < -500 ) || ( py1 >  500 ) ) return;
+	if ( ( px2 <  -500 ) || ( px2 > 500 ) || ( py2 < -500 ) || ( py2 >  500 ) ) return;
 
 	prev_px0=-1;	// Prev Thick dot clear
 	prev_px1=-1;

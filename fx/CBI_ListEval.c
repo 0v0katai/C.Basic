@@ -22,15 +22,17 @@
 //-----------------------------------------------------------------------------
 typedef int (*FXPTR)( int x );
 int EvalFxInt( FXPTR fxptr, int result ) { 
-	int i;
+	int i,j;
 	int base;
 	int resultreg=CB_MatListAnsreg;
 	if ( dspflag == 4 ) {	// Listresult
 		base=MatAry[resultreg].Base;
 		for (i=base; i<MatAry[resultreg].SizeA+base; i++ ) {
-			result = ReadMatrixInt( resultreg, i, base );
-			result = (fxptr)( result );
-			WriteMatrixInt( resultreg, i, base, result ) ;	// Fx(Listresult) -> Listresult
+			for (j=base; j<MatAry[resultreg].SizeB+base; j++ ) {
+				result = ReadMatrixInt( resultreg, i, j );
+				result = (fxptr)( result );
+				WriteMatrixInt( resultreg, i, j, result ) ;	// Fx(Listresult) -> Listresult
+			}
 		}
 	} else {	// result
 		result = (fxptr)( result ) ;
@@ -40,7 +42,7 @@ int EvalFxInt( FXPTR fxptr, int result ) {
 
 typedef int (*FXPTR2)( int x, int y );
 int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int tmp ) { 
-	int i;
+	int i,j;
 	int base;
 	int tmpreg=CB_MatListAnsreg;
 	if ( dspflag == 4 ) {	// Listtmp
@@ -48,15 +50,19 @@ int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int 
 		if ( *resultflag == 4 ) {
 			if ( CheckAnsMatList(*resultreg) ) return 0;	// Not same List error
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
-				result = ReadMatrixInt( *resultreg, i, base);
-				tmp    = ReadMatrixInt( tmpreg, i, base);
-				WriteMatrixInt( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
+				for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
+					result = ReadMatrixInt( *resultreg, i, j);
+					tmp    = ReadMatrixInt( tmpreg, i, j);
+					WriteMatrixInt( *resultreg, i, j, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
+				}
 			}
 			DeleteMatListAns();
 		} else {
 			for (i=base; i<MatAry[tmpreg].SizeA+base; i++ ) {
-				tmp    = ReadMatrixInt( tmpreg, i, base);
-				WriteMatrixInt( tmpreg, i, base, (fxptr2)(result,tmp) ) ;	// result * Listtmp -> Listresult
+				for (j=base; j<MatAry[tmpreg].SizeB+base; j++ ) {
+					tmp    = ReadMatrixInt( tmpreg, i, j);
+					WriteMatrixInt( tmpreg, i, j, (fxptr2)(result,tmp) ) ;	// result * Listtmp -> Listresult
+				}
 			}
 			*resultflag=dspflag;
 			*resultreg=tmpreg;
@@ -65,8 +71,10 @@ int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int 
 		if ( *resultflag == 4 ) { // 4:Listresult
 			base=MatAry[*resultreg].Base;
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
-				result = ReadMatrixInt( *resultreg, i, base);
-				WriteMatrixInt( *resultreg, i, base, (fxptr2)(result,tmp) ) ;	// Listresult * tmp -> Listresult
+				for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
+					result = ReadMatrixInt( *resultreg, i, j);
+					WriteMatrixInt( *resultreg, i, j, (fxptr2)(result,tmp) ) ;	// Listresult * tmp -> Listresult
+				}
 			}
 			dspflag = *resultflag ;
 		} else	{

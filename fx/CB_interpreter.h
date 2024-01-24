@@ -115,6 +115,12 @@ extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
 
 extern char BG_Pict_No;
 
+#define PictbaseCountMAX 7
+#define PictbaseMAX 3
+extern unsigned char *Pictbase[PictbaseMAX];
+extern short PictbasePtr;
+extern short PictbaseCount;
+
 //------------------------------------------------------------------------------
 extern int  REGINT[26+6+26];
 

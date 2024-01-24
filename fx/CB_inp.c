@@ -884,6 +884,8 @@ const short oplistVARS[]={
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
+		0xF778,	// BG-None
+		0xF779,	// BG-Pict
 		0xF91B,	// fn
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph

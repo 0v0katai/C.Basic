@@ -56,19 +56,16 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	CB_INT=0;	// double mode default
 	
 	HiddenRAM();	// Check HiddenRAM
-	TVRAM = (char *)malloc( 1024 );
+	TVRAM = (char *)malloc( 2048+4 );
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-	GVRAM = (char *)malloc( 1024 );
+	GVRAM = TVRAM+1024;;
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-	ClipBuffer = (char *)malloc( ClipMax+1 );
+	ClipBuffer = (char *)malloc( ClipMax+1+4 );
 //	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-	traceAry = (double *)malloc( 130*8 );
+	traceAry = (double *)malloc( 130*8+4 );
 //	if ( traceAry == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
 
-	for (i=1; i<=PictMax; i++) {
-		PictAry[i]=NULL;		// Pict ptr clear
-	}
 	PictAry[0]=GetVRAMAddress();
 	
 	while (1) {
@@ -83,6 +80,12 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		ExecPtr=0;	
 		DebugMode=0;
 		DebugScreen=0;
+		
+		PictbasePtr=-1;
+		PictbaseCount=PictbaseCountMAX;
+		for (i=1; i<=PictMax; i++) {
+			PictAry[i]=NULL;		// Pict ptr clear
+		}
 		
 		key =( SelectFile( filename ) ) ;
 		switch ( key ) {
@@ -140,11 +143,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				HiddenRAM_freeProg(ptr);
 			ProgfileAdrs[i]=NULL;
 		}
-		for (i=PictMax; i>=1; i--) {			// Pict memory free
-			ptr=(char*)PictAry[i];
+		for (i=PictbaseMAX-1; i>=0; i--) {			// Pict memory free
+			ptr=(char*)Pictbase[i];
 			if ( ptr != NULL )
 				free(ptr);
-			PictAry[i]=NULL;
+			Pictbase[i]=NULL;
 		}
 	}
 }

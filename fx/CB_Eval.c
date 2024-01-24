@@ -289,7 +289,7 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 }
 
 //----------------------------------------------------------------------------------------------
-int EvalObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {

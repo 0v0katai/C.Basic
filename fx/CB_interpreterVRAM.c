@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.99
+ Casio Basic interpreter for fx-9860G series    v1.2
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -132,30 +132,6 @@ void CB_PopUpWin( char *SRC ){	// PopUpWin(
 	PopUpWin(n); 
 }
 
-void CB_Screen( char *SRC ){	// Screen.G   Screen.T
-	int c;
-	c=SRC[ExecPtr++];
-	if ( c == '.' ) { c=SRC[ExecPtr++];
-		if ( ( c=='G' ) || ( c=='g' ) ) { CB_SelectGraphVRAM(); return; }	// Select Graphic Screen
-		if ( ( c=='T' ) || ( c=='t' ) ) { CB_SelectTextVRAM();  return; }	// Select Text Screen
-		{ ExecPtr--; CB_Error(SyntaxERR); return; }	// Syntax error
-	} else 
-	if ( ( c==0 ) || ( c==0x0D ) || ( c==0x0C ) || ( c==':' ) ) {
-			if ( ScreenMode == 0 )  { CB_SelectGraphVRAM(); return; }	// Select Graphic Screen
-			else					{ CB_SelectTextVRAM();  return; }	// Select Text Screen
-
-	} else { ExecPtr--;
-		switch ( CB_EvalInt( SRC ) ) {
-			case 0:
-				CB_SelectTextVRAM();	// Select Text Screen
-				break;
-			case 1:
-				CB_SelectGraphVRAM();	// Select Graphic Screen
-				break;
-		}
-	}
-}
-
 void Scrl_Y(){
 	CursorY++;
 	if ( CursorY > 7 ) {		// scroll
@@ -206,32 +182,6 @@ int CB_GotoEndPtr( char *SRC ) {		// goto Program End Ptr
 }
 */
 
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-
-void CB_Cls( char *SRC ){
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-//	Bdisp_AllClr_VRAM();
-	ML_clear_vram();
-//	GraphAxesGrid();
-	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
-//	CB_SelectTextVRAM();	// Select Text Screen
-//	Bdisp_PutDisp_DD_DrawBusy_through( SRC );
-}
-void CB_ClrText( char *SRC ){
-	CB_SelectTextVRAM();	// Select Text Screen
-	CursorX=1;
-	CursorY=1;
-//	Bdisp_AllClr_VRAM();
-	ML_clear_vram();
-	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
-}
-void CB_ClrGraph( char *SRC ){
-	CB_SelectGraphVRAM();	// Select Graphic Screen
-	SetVeiwWindowInit();
-	CB_Cls( SRC );
-}
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int CB_ChangeTextMode( char *SRC ) {
@@ -288,34 +238,90 @@ void CB_Locate( char *SRC ){
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
 
-//-----------------------------------------------------------------------------
-
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 int CB_ChangeGraphicMode( char *SRC ) {
 	int c=SRC[ExecPtr];
 	if ( c == '@' ) {	// Only Vram Operation
 		ExecPtr++;
 		return 1 ;
 	} else {
-		if ( ( UseGraphic == 0 ) ) {
-			if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
-//			Bdisp_AllClr_VRAM();
+		if ( UseGraphic == 3 ) {	// Cls or ViewWindow
+			CB_SelectGraphVRAM();	// Select Graphic Screen
+		//	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
 			ML_clear_vram();
 			GraphAxesGrid();
+			return 0;
 		}
-		CB_SelectGraphVRAM();	// Select Graphic Screen
+		if ( ScreenMode == 1 ) {	// Graphic Mode
+			return 0;
+		} else {
+			CB_SelectGraphVRAM();	// Select Graphic Screen
+			if ( UseGraphic == 0 ) {
+				GraphAxesGrid();
+			}
+		}
 	}
 	return 0;
 }
-
 int RangeErrorCK( char *SRC ) {
 	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { CB_Error(RangeERR); PrevOpcode( SRC, &ExecPtr ); return ErrorNo; }	// Range error
 	return 0;
 }
 int CB_RangeErrorCK_ChangeGraphicMode( char *SRC ) {
-	if ( RangeErrorCK( SRC ) ) return 1;
+	if ( RangeErrorCK( SRC ) ) return RangeERR;
 	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
 	return 0;
 }
+
+void CB_Cls( char *SRC ){
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+	CB_ChangeViewWindow();
+//	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+//	Bdisp_AllClr_VRAM();
+//	ML_clear_vram();
+//	GraphAxesGrid();
+	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
+//	CB_SelectTextVRAM();	// Select Text Screen
+//	Bdisp_PutDisp_DD_DrawBusy_through( SRC );
+}
+void CB_ClrText( char *SRC ){
+	CB_SelectTextVRAM();	// Select Text Screen
+	CursorX=1;
+	CursorY=1;
+//	Bdisp_AllClr_VRAM();
+	ML_clear_vram();
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
+}
+void CB_ClrGraph( char *SRC ){
+	SetVeiwWindowInit();
+	CB_Cls( SRC );
+}
+void CB_Screen( char *SRC ){	// Screen.G   Screen.T
+	int c;
+	c=SRC[ExecPtr++];
+	if ( c == '.' ) { c=SRC[ExecPtr++];
+		if ( ( c=='G' ) || ( c=='g' ) ) { CB_ChangeGraphicMode( SRC ); UseGraphic=9; return; }	// Select Graphic Screen
+		if ( ( c=='T' ) || ( c=='t' ) ) { CB_SelectTextVRAM();  return; }	// Select Text Screen
+		{ ExecPtr--; CB_Error(SyntaxERR); return; }	// Syntax error
+	} else 
+	if ( ( c==0 ) || ( c==0x0D ) || ( c==0x0C ) || ( c==':' ) ) {
+			if ( ScreenMode == 0 )  { CB_ChangeGraphicMode( SRC ); UseGraphic=9; return; }	// Select Graphic Screen
+			else					{ CB_SelectTextVRAM();  return; }	// Select Text Screen
+
+	} else { ExecPtr--;
+		switch ( CB_EvalInt( SRC ) ) {
+			case 0:
+				CB_SelectTextVRAM();	// Select Text Screen
+				break;
+			case 1:
+				CB_ChangeGraphicMode( SRC ); UseGraphic=9;	// Select Graphic Screen
+				break;
+		}
+	}
+}
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 
 void CB_TextOprand( char *SRC, int *py, int *px) {
 	int x,y;
@@ -337,7 +343,7 @@ void CB_Text( char *SRC ) { //	Text
 	int kanamini=1;
 
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
-	if ( SRC[ExecPtr] == '@' ) { ExecPtr++; kanamini=0; }		// OS PrintMini
+	if ( SRC[ExecPtr] == '_' ) { ExecPtr++; kanamini=0; }		// OS PrintMini
 	CB_TextOprand( SRC, &py, &px);
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -401,10 +407,12 @@ void CB_LocateYX( char *SRC ){
 //----------------------------------------------------------------------------------------------
 
 void CB_ChangeViewWindow() {
-	int scrmode=ScreenMode;
-	if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
+//	int scrmode=ScreenMode;
+//	if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
+	CB_SelectGraphVRAM();	// Select Graphic Screen
 	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	if ( scrmode == 0 )	CB_SelectTextVRAM();	// Select Text Screen
+	UseGraphic=3;
+//	if ( scrmode == 0 )	CB_SelectTextVRAM();	// Select Text Screen
 }
 void CB_ViewWindow( char *SRC ) { //	ViewWindow
 	int c;
@@ -632,12 +640,20 @@ void RclPictSmem( int pictNo){
 	WriteVram( pict+0x4C );
 	free(pict);
 }
+
 unsigned char * GetheapPict(){
 	unsigned char *pict;
-	pict = (unsigned char *) malloc( 1024 );
-	if( pict == NULL ) { CB_Error(NotEnoughMemoryERR); return; }	// Not enough memory error
+	if ( PictbaseCount >= PictbaseCountMAX ) {
+		if ( PictbasePtr < PictbaseMAX ) Pictbase[++PictbasePtr] = (unsigned char *) malloc( 1024 * PictbaseMAX +4 );
+		else { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
+		if( Pictbase[PictbasePtr] == NULL ) { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
+		PictbaseCount=0;
+	}
+	pict = Pictbase[PictbasePtr] + 1024 * PictbaseCount;
+	PictbaseCount++;
 	return pict;
 }
+
 void StoPict( int pictNo){
 	int i,stat;
 	unsigned char *pict;
@@ -705,16 +721,17 @@ void CB_RclPict( char *SRC ) { //	RclPict
 }
 
 void CB_BG_None( char *SRC ) { //	BG_None
-	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+//	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	BG_Pict_No=0;
 }
 void CB_BG_Pict( char *SRC ) { //	BG_Pict
 	int n;
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+//	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	BG_Pict_No=n;
-}
+	if ( UseGraphic != 3 ) UseGraphic = 0;	// Cls or ViewWindow
+	}
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -1317,9 +1334,11 @@ int CB_Sci( char *SRC ){
 }
 int CB_Norm( char *SRC ){
 	int tmp;
-	tmp=CB_EvalInt( SRC );
-	if ( tmp < 0 ) if ( CB_Round.MODE == Norm ) return CB_Round.DIGIT; else return -1;
-	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	if ( EvalEndCheck(SRC[ExecPtr]) ) { 
+		tmp=CB_EvalInt( SRC );
+		if ( tmp < 0 ) if ( CB_Round.MODE == Norm ) return CB_Round.DIGIT; else return -1;
+		if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else tmp=1;
 	CB_Round.MODE = Norm ;
 	CB_Round.DIGIT= tmp ;
 	return tmp ;
@@ -1512,15 +1531,14 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 		scrmode=ScreenMode;
 		goto exitj;
 	}
-	if (scrmode) {	// Graphic mode
+	if ( (scrmode) || ( UseGraphic == 3 ) ) {	// Graphic mode
 		CB_SelectTextVRAM();	// Select Text Screen
 		PrintDone();
 	}
-	if ( UseGraphic == 3 ) CB_SelectTextVRAM();	// Select Text Screen ( cls )
 	
 	if ( CursorX >1 ) Scrl_Y();
 	locate( CursorX, CursorY); Print((unsigned char*)"             - Disp -");
-	if ( ( scrmode ) && ( UseGraphic != 3 ) ) CB_SelectGraphVRAM();	// Select Graphic Screen	not ( cls )
+	if ( ( scrmode ) && ( UseGraphic != 3 ) ) CB_SelectGraphVRAM();	// Select Graphic Screen	not ( clrgraph )
 	if (UseGraphic>0x10) UseGraphic=UseGraphic&0xF; 
 	Bdisp_PutDisp_DD();
 	
@@ -1979,11 +1997,11 @@ void CB_RclVWin( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-//int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

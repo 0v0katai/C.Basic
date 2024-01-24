@@ -660,6 +660,22 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
+void StorStrList0( char *SRC ) {	// "String" -> List n[0]
+	int reg,dimA,dimB;
+	reg=ListRegVar( SRC );
+	if ( reg>=0 ) {
+		if ( SRC[ExecPtr]!='[' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+		ExecPtr++;
+		dimA = CB_EvalInt( SRC );
+		if ( dimA != 0 ) { CB_Error(ArgumentERR); return; }  // Argument error
+		if ( MatAry[reg].SizeA == 0 ) { 
+			DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+			if ( ErrorNo ) return ; // error
+		}
+	} else { CB_Error(SyntaxERR); return ; }  // Syntax error
+	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
+}
+
 void StorDATE( char *buffer ) {	// "2017/01/17" -> DATE
 	int a,hour,min,sec;
 	unsigned char datestr[8];
@@ -703,7 +719,6 @@ void StorTIME( char *buffer ) {	// "23:59:59" -> TIME
 	CB_TicksStart=RTC_GetTicks();	// init
 }
 
-
 void CB_StorStr( char *SRC ) {
 	int c;
 	c=CB_IsStr( SRC, ExecPtr );
@@ -733,7 +748,15 @@ void CB_StorStr( char *SRC ) {
 			StorStrGraphY( SRC ) ;
 			break;
 		default:
-			{ CB_Error(SyntaxERR); return ; }  // Syntax error
+			c=SRC[ExecPtr];
+			if ( c == 0x7F ) {
+				c=SRC[ExecPtr+1];
+				if ( c == 0x51 ) {	// List [0]?
+					ExecPtr+=2;
+					StorStrList0( SRC ) ;
+					return;
+				}
+			} else { CB_Error(SyntaxERR); return ; }  // Syntax error
 	}
 }
 
