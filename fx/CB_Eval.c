@@ -35,8 +35,8 @@ char ExpBuffer[ExpMax+1];
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int MatrixObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
@@ -224,71 +224,71 @@ double EvalsubTop( char *SRC ) {	// eval 1
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
 	result=Evalsub1(SRC);
 	c=SRC[ExecPtr];
-	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result;
+	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result;
 	else 
 	if ( c==0xFFFFFF89 ) { // +
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result+dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result+dst;
 	} else
 	if ( c==0xFFFFFF99 ) { // -
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result-dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result-dst;
 	} else
 	if ( c=='=') { // ==
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result == dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result == dst;
 	} else
 	if ( c=='>') { // >
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result > dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result > dst;
 	} else
 	if ( c=='<') { // <
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result < dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result < dst;
 	} else
 	if ( c==0x11) { // !=
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result != dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result != dst;
 	} else
 	if ( c==0x12) { // >=
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result >= dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result >= dst;
 	} else
 	if ( c==0x10) { // <=
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result <= dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result <= dst;
 	} else
 	if ( c==0xFFFFFFA9 ) { // ~
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result*dst;
 	} else
 	if ( c==0xFFFFFFB9 ) { // €
 		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
 		if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result/dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result/dst;
 	} else
 	if ( c==0xFFFFFF8B ) { // ^2
 		c=SRC[++ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*result;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result*result;
 	} else
 	if ( c==0xFFFFFF9B ) { // ^(-1) RECIP
 		if ( result == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
 		c=SRC[++ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return 1/result;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return 1/result;
 	} else
 	if ( c==0x7F ) { // 
 		c=SRC[++ExecPtr];
 		if ( c==0xFFFFFFB0 ) { // And
 			ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result & (int)dst;
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result & (int)dst;
 		} else
 		if ( c==0xFFFFFFB1 ) { // Or
 			ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result | (int)dst;
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result | (int)dst;
 		} else
 		if ( c==0xFFFFFFB4 ) { // Xor
 			ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result ^ (int)dst;
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result ^ (int)dst;
 		}
 	}
 	
@@ -316,8 +316,8 @@ double EvalsubTop( char *SRC ) {	// eval 1
 }
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int MatrixObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 /*
 int lastrandom=0x12345678;
@@ -402,8 +402,8 @@ void CheckMathERR( double *result ) {
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int MatrixObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
-//int MatrixObjectAlignE4f( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4f( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
@@ -844,8 +844,8 @@ double DmsToDec( char *SRC, double h ) {
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-int MatrixObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
-//int MatrixObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...

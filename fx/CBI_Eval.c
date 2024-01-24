@@ -194,66 +194,66 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
 	result=EvalIntsub1(SRC);
 	c=SRC[ExecPtr];
-	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result;
+	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result;
 	else 
 	if ( c==0xFFFFFF89 ) { // +
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result+dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result+dst;
 	} else
 	if ( c==0xFFFFFF99 ) { // -
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result-dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result-dst;
 	} else
 	if ( c=='=') { // ==
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result == dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result == dst;
 	} else
 	if ( c=='>') { // >
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result > dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result > dst;
 	} else
 	if ( c=='<') { // <
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result < dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result < dst;
 	} else
 	if ( c==0x11) { // !=
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result != dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result != dst;
 	} else
 	if ( c==0x12) { // >=
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result >= dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result >= dst;
 	} else
 	if ( c==0x10) { // <=
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result <= dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result <= dst;
 	} else
 	if ( c==0xFFFFFFA9 ) { // ~
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result*dst;
 	} else
 	if ( c==0xFFFFFFB9 ) { // €
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result/dst;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result/dst;
 	} else
 	if ( c==0xFFFFFF8B ) { // ^2
 		c=SRC[++ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*result;
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result*result;
 	} else
 	if ( c==0x7F ) { // 
 		c=SRC[++ExecPtr];
 		if ( c==0xFFFFFFB0 ) { // And
 			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result & (int)dst;
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result & (int)dst;
 		} else
 		if ( c==0xFFFFFFB1 ) { // Or
 			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result | (int)dst;
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result | (int)dst;
 		} else
 		if ( c==0xFFFFFFB4 ) { // Xor
 			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result ^ (int)dst;
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return (int)result ^ (int)dst;
 		}
 	}
 
@@ -279,6 +279,10 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 		} else return result;
 	}
 }
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+int EvalintObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
+//int EvalintObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 int Eval_atod(char *SRC, int c ) {
 	int	result=0;
