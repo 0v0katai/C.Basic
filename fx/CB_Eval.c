@@ -331,7 +331,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 								return  MatAryI[(x-1)*i+y-1] + MatAryI[(x-1)*i+y] + MatAryI[(x-1)*i+y+1] + MatAryI[(x+1)*i+y-1] + MatAryI[(x+1)*i+y] + MatAryI[(x+1)*i+y+1] + MatAryI[(x)*i+y-1] + MatAryI[(x)*i+y+1] ;
 								break;
 							case 8:														// Matrix array doubl
-								MatAryF=(char*)MatAry[reg];
+								MatAryF=(double*)MatAry[reg];
 								return  MatAryF[(x-1)*i+y-1] + MatAryF[(x-1)*i+y] + MatAryF[(x-1)*i+y+1] + MatAryF[(x+1)*i+y-1] + MatAryF[(x+1)*i+y] + MatAryF[(x+1)*i+y+1] + MatAryF[(x)*i+y-1] + MatAryF[(x)*i+y+1] ;
 								break;
 						}

@@ -33,18 +33,18 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
-int CB_INTDefault=0;	// default mode  0:normal  1: integer mode
-int CB_INT=0;			// current mode  0:normal  1: integer mode
+short CB_INTDefault=0;	// default mode  0:normal  1: integer mode
+short CB_INT=0;			// current mode  0:normal  1: integer mode
 
-int	DrawType    = 0;	// 0:connect  1:Plot
-int	Coord       = 1;	// 0:off 1:on
-int	Grid        = 1;	// 0:off 1:on
-int	Axes        = 1;	// 0:off 1:on
-int	Label       = 1;	// 0:off 1:on
-int	Derivative  = 1;	// 0:off 1:on
-int S_L_Style   = S_L_Normal;
-int tmp_Style   = S_L_Normal;
-int Angle       = 1;	// 0:deg   1:rad  2:grad
+short	DrawType    = 0;	// 0:connect  1:Plot
+short	Coord       = 1;	// 0:off 1:on
+short	Grid        = 1;	// 0:off 1:on
+short	Axes        = 1;	// 0:off 1:on
+short	Label       = 1;	// 0:off 1:on
+short	Derivative  = 1;	// 0:off 1:on
+short	S_L_Style   = S_L_Normal;
+short	tmp_Style   = S_L_Normal;
+short	Angle       = 1;	// 0:deg   1:rad  2:grad
 
 double Previous_X=1e308 ;	// Plot Previous X
 double Previous_Y=1e308 ;	// Plot Previous Y
@@ -53,8 +53,8 @@ int    Previous_PY=-1   ;	// Plot Previous PY
 double Plot_X    =1e308 ;	// Plot Current X
 double Plot_Y    =1e308 ;	// Plot Current Y
 
-int TimeDsp=0;		// Execution Time Display  0:off 1:on
-int MatXYmode=0;		// 0: normal  1:reverse
+short TimeDsp=0;		// Execution Time Display  0:off 1:on
+short MatXYmode=0;		// 0: normal  1:reverse
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
@@ -71,21 +71,20 @@ unsigned char GraphY1[GraphStrMAX];
 unsigned char GraphY2[GraphStrMAX];
 unsigned char GraphY3[GraphStrMAX];
 
-short	MatArySizeA[26];		// Matrix array status
-short	MatArySizeB[26];		// Matrix array status
+short	MatArySizeA[26];		// Matrix array size
+short	MatArySizeB[26];		// Matrix array size
 char	MatAryElementSize[26];		// Matrix array Element size
 double *MatAry[26];		// Matrix array ptr*
 
 
-
 //----------------------------------------------------------------------------------------------
-//		Interpreter
+//		Interpreter inside
 //----------------------------------------------------------------------------------------------
-int ScreenMode;	//  0:Text  1:Graphic
-int UseGraphic=0;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
+short ScreenMode;	//  0:Text  1:Graphic
+short UseGraphic=0;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
 
-int CursorX=1;	// text cursor X
-int CursorY=1;	// text cursor X
+short CursorX=1;	// text cursor X
+short CursorY=1;	// text cursor X
 
 int ExecPtr=0;		// Basic execute ptr
 int BreakPtr=0;		// Basic break ptr
@@ -93,16 +92,17 @@ int BreakPtr=0;		// Basic break ptr
 double CB_CurrentValue=0;	// Ans
 char   CB_CurrentStr[128];	//
 
-int ProgEntryN=0;		// Basic Program ptr (for subroutin)
-int ProgNo=0;			// current Prog No
+short ProgEntryN=0;		// Basic Program ptr (for subroutin)
+short ProgNo=0;			// current Prog No
 unsigned char *ProgfileAdrs[ProgMax+1];
-int ProgfileMax[ProgMax+1] ;	// Max edit filesize 
-int ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
+int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
+short ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 
 int	CB_TicksStart;
 int	CB_TicksEnd;
 
-int BreakCheck=1;	// Break Stop on/off
+short BreakCheck=1;	// Break Stop on/off
+
 //----------------------------------------------------------------------------------------------
 unsigned char GVRAM[1024];
 
@@ -219,16 +219,6 @@ void CB_ClrGraph( unsigned char *SRC ){
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 	SetVeiwWindowInit();
 	CB_Cls(SRC);
-}
-
-void CB_Deg(){
-	Angle = 0;
-}
-void CB_Rad(){
-	Angle = 1;
-}
-void CB_Grad(){
-	Angle = 2;
 }
 
 int RangeErrorCK( unsigned char *SRC ) {
@@ -939,7 +929,7 @@ unsigned int GWait( int exit_cancel ) {
 	return key;
 }
 
-int CB_Disps( unsigned char *SRC ,int dspflag){
+int CB_Disps( unsigned char *SRC ,short dspflag){
 	unsigned char buffer[32];
 	unsigned int c;
 	unsigned int key=0;
@@ -995,7 +985,7 @@ int CB_Disps( unsigned char *SRC ,int dspflag){
 	return 0;
 }
 
-void CB_end( unsigned char *SRC, int dspflag ){
+void CB_end( unsigned char *SRC ){
 	unsigned char buffer[32];
 	unsigned int c,t;
 	unsigned int key=0;
@@ -1091,7 +1081,7 @@ void CB_Locate( unsigned char *SRC ){
 	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
 }
 
-void CB_Text( unsigned char *SRC, int *dspflag ) { //	Text
+void CB_Text( unsigned char *SRC ) { //	Text
 	unsigned int key;
 	unsigned char buffer[64];
 	unsigned int c;
@@ -2334,7 +2324,7 @@ void CB_DotTrim( unsigned char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =
 				
 			for ( px=px1; px<=px2 ; px++) {
 				for ( py=py1; py<=py2 ; py++) {
-					if ( Bdisp_GetPoint_VRAM(px,py) ) {
+					if ( Bdisp_GetPoint_VRAM(px+1,py+1) ) {
 						if ( py<starty ) starty=py;
 						if ( py>endy   ) endy  =py;
 						if ( px<startx ) startx=px;
@@ -2414,27 +2404,27 @@ void CB_DotTrim( unsigned char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =
 				MatAryC=(char*)MatAry[reg2];
 				for ( px=px1; px<=px2 ; px++) {
 					mptr=MatArySizeB[reg2]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) MatAryC[mptr++]=Bdisp_GetPoint_VRAM(px,py);
+					for ( py=py1; py<=py2 ; py++) MatAryC[mptr++]=Bdisp_GetPoint_VRAM(px+1,py+1);
 				}
 				break;
 			case 2:
 				MatAryW=(short*)MatAry[reg2];
 				for ( px=px1; px<=px2 ; px++) {
 					mptr=MatArySizeB[reg2]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) MatAryW[mptr++]=Bdisp_GetPoint_VRAM(px,py);
+					for ( py=py1; py<=py2 ; py++) MatAryW[mptr++]=Bdisp_GetPoint_VRAM(px+1,py+1);
 				}
 				break;
 			case 4:
 				MatAryI=(int*)MatAry[reg2];
 				for ( px=px1; px<=px2 ; px++) {
 					mptr=MatArySizeB[reg2]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) MatAryI[mptr++]=Bdisp_GetPoint_VRAM(px,py);
+					for ( py=py1; py<=py2 ; py++) MatAryI[mptr++]=Bdisp_GetPoint_VRAM(px+1,py+1);
 				}
 				break;
 			case 8:
 				for ( px=px1; px<=px2 ; px++) {
 					mptr=MatArySizeB[reg2]*x+y; x++;
-					for ( py=py1; py<=py2 ; py++) MatAry[reg2][mptr++]=Bdisp_GetPoint_VRAM(px,py);
+					for ( py=py1; py<=py2 ; py++) MatAry[reg2][mptr++]=Bdisp_GetPoint_VRAM(px+1,py+1);
 				}
 				break;
 		}
@@ -2810,7 +2800,7 @@ double CB_UnaryEval( unsigned char *SRC ) {	// eval 1
 }
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int dspflag=0;		// 0:nondsp  1:str  2:num
+short dspflag=0;		// 0:nondsp  1:str  2:num
 
 int CB_interpreter_sub( unsigned char *SRC ) {
 	int cont=1;
@@ -2980,7 +2970,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 						break;
 					case 0xA5:	// Text
 						dspflag=0;
-						CB_Text(SRC, &dspflag);
+						CB_Text(SRC);
 						UseGraphic=99;
 						break;
 					case 0xA6:	// Circle
@@ -3139,7 +3129,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 				dspflag=0;
 				break;
 			case 0x0C:	// dsps
-				if ( CB_Disps(SRC, dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
+				if ( CB_Disps(SRC,dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
 				break;
 			case 0xD1:	// Cls
 				CB_Cls(SRC);
@@ -3241,7 +3231,7 @@ int CB_interpreter_sub( unsigned char *SRC ) {
 		}
 	}
 	CB_TicksEnd=RTC_GetTicks();	// 
-	CB_end(SRC, dspflag);
+	CB_end(SRC);
 	return -1;
 }
 //----------------------------------------------------------------------------------------------
