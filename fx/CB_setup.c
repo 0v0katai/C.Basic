@@ -38,7 +38,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.99i" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.99j" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
 	GetKey(&key);
@@ -724,27 +724,29 @@ int SetVar(int select){		// ----------- Set Variable
 //-----------------------------------------------------------------------------
 int SelectNum2( char*msg, int n ) {		// 
 	unsigned int key;
+	int n0=n;
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 6,5); Print((unsigned char *)msg);
 	locate( 9,5); Print((unsigned char *)"[0~15]:");
 	while (1) {
 		n=InputNumD(17, 5, 2, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
- 		if ( (0<=n)&&(n<=15) ) break;
- 		n=0;
- 	}
+		if ( (0<=n)&&(n<=15) ) break;
+		n=n0;
+	}
 	return n ; // ok
 }
 int SelectNum3( int n ) {		// 
 	unsigned int key;
+	int n0=n;
 	PopUpWin(3);
-	locate( 3,3); Print((unsigned char *)"PageUp/Dw Number");
+	locate( 3,3); Print((unsigned char *)"SkipUp/Dw Number");
 	locate( 6,5); Print((unsigned char *)"[1~9999]:");
 	while (1) {
 		n=InputNumD(15, 5, 4, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
- 		if ( (1<=n)&&(n<=9999) ) break;
- 		n=0;
- 	}
+		if ( (1<=n)&&(n<=9999) ) break;
+		n=n0;
+	}
 	return n ; // ok
 }
 
@@ -838,7 +840,7 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"PageUp/Down :");		// 14
+			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 14
 			sprintf((char*)buffer," %d",PageUpDownNum);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;

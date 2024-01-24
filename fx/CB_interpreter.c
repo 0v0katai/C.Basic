@@ -134,7 +134,7 @@ CchRem	CacheRem;
 void ClrCahche();
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
@@ -190,6 +190,7 @@ int CB_interpreter_sub( char *SRC ) {
 		CB_StrBufferCNT=0;			// Quot String buffer clear
 		if ( ErrorNo || BreakPtr ) { 
 			if ( CB_BreakStop() ) return -7 ;
+			if ( SRC[ExecPtr] == 0x0C ) ExecPtr++; // disps
 			ClrCahche();
 		}
 		c=SRC[ExecPtr++];
@@ -680,7 +681,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_MatrixInit2(SRC);
 				dspflag=0;
 				break;
-			case 0x0C:	// dsps
+			case 0x0C:	// disps
 				if ( CB_Disps(SRC,dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
 				CB_TicksStart=RTC_GetTicks();	// 
 				c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
@@ -2825,6 +2826,9 @@ void CB_PlotChg( char *SRC ) { //	PlotChg
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 void CB_PxlOprand( char *SRC, int *py, int *px) {
 	double x,y;
