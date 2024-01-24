@@ -480,9 +480,11 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispR( 0, "Var");
 				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
-				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
-				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
-				Fkey_dispN( 5, "Fav.");
+				Fkey_Clear( 3 );
+				Fkey_Clear( 4 );
+//				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
+//				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
+				Fkey_dispN( 5, "Debg");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CHAR_POWROOT:
@@ -506,22 +508,24 @@ unsigned int Explorer( int size, char *folder )
 							SetViewWindow();
 							SaveFavorites();
 							break;
+//					case KEY_CTRL_F4:	//
+//					case KEY_CTRL_F5:	//
+					case KEY_CTRL_F6:
+//							VerDisp();
+//							redraw = 1;
+//							FavoritesFunc( &index );
+							key=FileCMD_DebugRUN;
+							cont =0 ;
+							break;
 					case KEY_CTRL_PAGEUP:	// up
-					case KEY_CTRL_F4:	// up
 							if ( index <= StartLine ) break;
 							if ( index >= FavoritesMAX-1 ) break;
 							FavoritesUp( &index );
 							break;
 					case KEY_CTRL_PAGEDOWN:	// down
-					case KEY_CTRL_F5:	// down
 							if ( FavCount < 1 ) break;
 							if ( index >= FavoritesMAX-1 ) break;
 							FavoritesDown( &index );
-							break;
-					case KEY_CTRL_F6:
-//							VerDisp();
-//							redraw = 1;
-							FavoritesFunc( &index );
 							break;
 					case KEY_CHAR_ASIN:
 							if ( CB_INTDefault ) CBint_test(); else CB_test();

@@ -123,7 +123,7 @@ char  ProgLocalN[ProgMax+1];
 char  ProgLocalVar[ProgMax+1][26];
 
 //----------------------------------------------------------------------------------------------
-//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
@@ -192,15 +192,20 @@ int CB_interpreter_sub( char *SRC ) {
 		dspflagtmp=0;
 		CB_StrBufferCNT=0;			// Quot String buffer clear
 		if ( ErrorNo  ) return ErrorPtr;
-		if ( BreakPtr ) { if ( CB_BreakStop() ) return -1 ; }
+		if ( BreakPtr ) { if ( CB_BreakStop() ) return -7 ; }
 		c=SRC[ExecPtr++];
-		if ( c==':'  ) { c=SRC[ExecPtr++]; if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
+		if ( c==':'  ) { c=SRC[ExecPtr++]; }
+//		if ( c==':'  ) { c=SRC[ExecPtr++]; if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
 		if ( c==0x0D ) {
 				while ( c==0x0D ) c=SRC[ExecPtr++];
-//				while ( c==0x20 ) c=SRC[ExecPtr++];
 				if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); }	// [AC] break?
 		}
-		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryN )  return -1;  else  break; }
+		if ( c==0x00 ) { ExecPtr--;
+			if ( ProgEntryN )  { 
+				if ( BreakPtr ) CB_BreakStop();
+				return -1;
+			} else  break;
+		}
 		
 		while ( c==0x20 ) c=SRC[ExecPtr++];
 		switch (c) {
@@ -273,7 +278,10 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x0C:	// Return
 						if ( GosubNestN > 0 ) { ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return form subroutin 
-						if ( ProgEntryN ) return -1 ; //	return from  sub Prog
+						if ( ProgEntryN ) {	//	return from  sub Prog
+							if ( BreakPtr ) CB_BreakStop();
+							return -2 ; 
+						}
 						cont=0;
 						break;
 					case 0x10:	// Locate
@@ -573,12 +581,12 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case 0xFFFFFFFE:	// Gosub
 				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs, localvarInt, localvarDbl );
-				if ( BreakPtr ) return BreakPtr;
+				if ( BreakPtr >0 ) return BreakPtr;
 				dspflag=0;
 				break;
 			case 0xFFFFFFED:	// Prog "..."
 				CB_Prog(SRC, localvarInt, localvarDbl );
-				if ( BreakPtr ) return BreakPtr;
+				if ( BreakPtr > 0 ) return BreakPtr;
 				ClrCahche();
 				dspflag=0;
 				break;
@@ -734,7 +742,13 @@ int CB_interpreter( char *SRC ) {
 	GosubNestN=0;	// Gosub clear
 	ErrorPtr=0;
 	ErrorNo= 0;
-	BreakPtr=0;
+//	BreakPtr=0;
+//	defaultStrAry='s'-'A';
+//	defaultStrAryN=20;
+//	defaultStrArySize=64+1;
+//	defaultGraphAry='y'-'A';
+//	defaultGraphAryN=5;
+//	defaultGraphArySize=64+1;
 	Bdisp_PutDisp_DD_DrawBusy();
 	KeyRecover(); 
 	Argc=0;	// 
@@ -806,7 +820,9 @@ void Skip_block( char *SRC ){
 
 //----------------------------------------------------------------------------------------------
 void Skip_rem( char *SRC ){	// skip '...
-	int c=SRC[ExecPtr];
+	int c;
+remloop:
+	c=SRC[ExecPtr];
 	if ( c=='/' ) { 	// '/ execute C.Basic only
 		ExecPtr++;
 		return;
@@ -819,6 +835,32 @@ void Skip_rem( char *SRC ){	// skip '...
 			if ( ( c=='i' ) || ( c=='I' ) ) CB_INT=1;
 			else
 			if ( ( c=='d' ) || ( c=='D' ) || ( c=='a' ) || ( c=='A' ) ) CB_INT=0;
+		} else
+		if ( ( c==0xFFFFFFF9 ) && ( SRC[ExecPtr+1]==0x3F ) ) {	// Str
+			ExecPtr+=2;
+			c=SRC[ExecPtr++];
+			if ( ( 'A' <= c ) && ( c <= 'z' ) ) defaultStrAry= c-'A';
+			if ( SRC[ExecPtr] == ',') {
+				ExecPtr++;
+				defaultStrAryN=Eval_atod( SRC, c );
+				if ( SRC[ExecPtr] == ',') {
+					ExecPtr++;
+					defaultStrArySize=Eval_atod( SRC, c );
+				}
+			}
+		} else
+		if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0xFFFFFFF0 ) ) {	// Graph
+			ExecPtr+=2;
+			c=SRC[ExecPtr++];
+			if ( ( 'A' <= c ) && ( c <= 'z' ) ) defaultGraphAry= c-'A';
+			if ( SRC[ExecPtr] == ',') {
+				ExecPtr++;
+				defaultGraphAryN=Eval_atod( SRC, c );
+				if ( SRC[ExecPtr] == ',') {
+					ExecPtr++;
+					defaultGraphArySize=Eval_atod( SRC, c );
+				}
+			}
 		}
 /*
 		if ( strncmp( (char*)SRC+ExecPtr,"CBint",3)  == 0 ) { ExecPtr+=3; CB_INT=1; }
@@ -841,9 +883,10 @@ void Skip_rem( char *SRC ){	// skip '...
 				ExecPtr--;
 //			case 0x3A:	// <:>
 			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
 				return ;
-				break;
+			case 0x0D:	// <CR>
+				if ( SRC[ExecPtr] == 0x27 ) { ExecPtr++; goto remloop; }
+				return;
 			case 0x22:	// "
 				Skip_quot(SRC);
 				break;
@@ -1760,7 +1803,7 @@ int  CB_Input( char *SRC ){
 				flag=1;
 		} else if ( c == 0xFFFFFFF0 ) {	// GraphY
 			ExecPtr+=2;
-			reg='y'-'A';
+			reg=defaultGraphAry;
 			if ( MatArySizeA[reg] == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
 			dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
 			if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return; }  // Argument error
@@ -1774,7 +1817,7 @@ int  CB_Input( char *SRC ){
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x3F ) {	// Str 1-20
 			ExecPtr+=2;
-			reg='s'-'A';
+			reg=defaultStrAry;
 			if ( MatArySizeA[reg] == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
 			dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
 			if ( ( dimA < 1 ) || ( dimA > MatArySizeA[reg] ) ) { CB_Error(ArgumentERR); return; }  // Argument error
@@ -1818,7 +1861,7 @@ int  CB_Input( char *SRC ){
 			}
 			break;
 		case 2:	// ? -> str 
-			CB_CurrentStr=CB_StrBuffer;
+			CB_CurrentStr=CB_StrBuffer[0];
 			CB_CurrentStr[0]='\0';
 			InputStr( 1, CursorY, CB_StrBufferMax-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel

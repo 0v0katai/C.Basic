@@ -26,10 +26,16 @@
 //		Interpreter inside
 //----------------------------------------------------------------------------------------------
 char   *CB_CurrentStr;	//
-char   *CB_CurrentStr2;	//
 
 char   CB_StrBufferCNT;
 char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+
+char   defaultStrAry='s'-'A';
+char   defaultStrAryN=20;
+char   defaultStrArySize=64+1;
+char   defaultGraphAry='y'-'A';
+char   defaultGraphAryN=5;
+char   defaultGraphArySize=64+1;
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int StrGetOpcode( char *SRC, int ptr ){
@@ -493,7 +499,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			(*maxlen)=MatArySizeB[reg];
 			break;
 		case 0x3F:	// Str 1-20
-			reg='s'-'A';
+			reg=defaultStrAry;
 	str1:	ExecPtr+=2;
 			if ( MatArySizeA[reg] == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
 			if ( CB_INT ) dimA = EvalIntsub1( SRC ); else dimA = Evalsub1( SRC );	// str no : Mat s[n,len]
@@ -503,12 +509,12 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			(*maxlen)=MatArySizeB[reg];
 			break;
 		case 0xFFFFFFF0:	// GraphY
-			reg='y'-'A';
+			reg=defaultGraphAry;
 			goto str1;
 			break;
 		case 0x30:	// StrJoin(
 			ExecPtr+=2;
-			(*maxlen)=CB_StrJoin( SRC );	// CB_CurrentStr + CB_CurrentStr2 -> CB_CurrentStr
+			(*maxlen)=CB_StrJoin( SRC );
 			return CB_CurrentStr;
 		case 0x34:	// StrLeft(
 			ExecPtr+=2;
@@ -598,9 +604,9 @@ void StorStrMat( char *SRC ) {	// ->&Mat A
 void StorStrStr( char *SRC ) {	// ->Sto 1-20
 	int reg,dimA,dimB;
 	char *MatAryC;
-	reg='s'-'A';
+	reg=defaultStrAry;
 	if ( MatArySizeA[reg] == 0 ) {
-		DimMatrixSub( reg, 8, 20, 64+1 );	// byte matrix
+		DimMatrixSub( reg, 8, defaultStrAryN, defaultStrArySize );	// byte matrix
 		if ( ErrorNo ) return ; // error
 	}
 	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
@@ -613,9 +619,9 @@ void StorStrStr( char *SRC ) {	// ->Sto 1-20
 void StorStrGraphY( char *SRC ) {	// GraphY 1-5
 	int reg,dimA,dimB;
 	char *MatAryC;
-	reg='y'-'A';
+	reg=defaultGraphAry;
 	if ( MatArySizeA[reg] == 0 ) {
-		DimMatrixSub( reg, 8, 5, 64+1 );	// byte matrix
+		DimMatrixSub( reg, 8, defaultGraphAryN, defaultGraphArySize );	// byte matrix
 		if ( ErrorNo ) return ;
 	}
 	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
@@ -929,7 +935,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 		} else {	// expression
 			c=SRC[ExecPtr];
 			if ( CB_INT ) { 
-				if ( c=='#' ) { ExecPtr++; type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
+				if ( c=='#' ) { type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
 				else {
 				if ( c=='%' ) ExecPtr++;
 				type[i]=1; intval[i]=CB_EvalInt( SRC );

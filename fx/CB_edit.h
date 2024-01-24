@@ -7,7 +7,7 @@
 extern char *ClipBuffer;
 //extern char ClipBuffer[ClipMax];
 
-extern int Contflag;	// Continue mode    0:disable  1:enable
+extern char Contflag;	// Continue mode    0:disable  1:enable
 
 int SrcSize( char *src ) ;
 
