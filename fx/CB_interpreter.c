@@ -524,6 +524,10 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_MatFill(SRC);
 						dspflag=0;
 						break;
+//					case 0x51:	// List
+//						dspflagtmp=CB_ListCalc(SRC);
+//						dspflag=0;
+//						break;
 					default:
 						ExecPtr-=2;
 						dspflagtmp=2;
@@ -584,7 +588,7 @@ int CB_interpreter_sub( char *SRC ) {
 				ClrCahche();
 				goto jpgsb;
 				break;
-			case 0xFFFFFFFE:	// Gosub
+			case 0xFFFFFFFA:	// Gosub
 				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs );
 		jpgsb:	if ( BreakPtr > 0 ) return BreakPtr;
 				dspflag=0;
