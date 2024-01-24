@@ -47,7 +47,26 @@ void SetSrcSize( char *src, int size ) {
 }
 int SrcEndPtr( char *src ) {
 	return ( SrcSize( src ) - 0x56 - 1 ) ;
-}	
+}
+
+
+int SizeOfSrc( char *SRC, int ptr, int endPtr ){
+	while ( SRC[ptr] ) {
+		if ( ptr >= endPtr ) return endPtr ;
+		NextLine( SRC, &ptr );
+	}
+	return ptr;
+}
+int FixSrcSize( char *filebase ) {
+	int size;
+	char *srcptr=filebase+0x56;
+	int endPtr=SrcEndPtr( filebase );
+	size = SizeOfSrc( srcptr, 0, endPtr ) +1;
+	srcptr[size  ]=0x00;
+	srcptr[size+1]=0x00;
+	srcptr[size+2]=0x00;
+	return size;
+}
 
 //----------------------------------------------------------------------------------------------
 
@@ -107,11 +126,7 @@ int EndOfSrc( char *SRC, int ptr ) {
 	srcbase=filebase+0x56;
 	endPtr=SrcEndPtr( filebase );
 	if (SRC < srcbase ) SRC=srcbase;
-	while ( SRC[ptr] ) {
-		if ( ptr >= endPtr ) return endPtr ;
-		NextLine( SRC, &ptr );
-	}
-	return ptr;
+	return SizeOfSrc( SRC, ptr, endPtr );
 }
 
 //---------------------------------------------------------------------------------------------
