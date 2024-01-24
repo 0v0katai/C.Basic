@@ -3331,6 +3331,8 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFED:	// Prog "..."
+				c =SRC[ExecPtr];
+				if ( c != 0x22 ) break;
 				ExecPtr++;	// " skip
 				CB_GetQuotOpcode(SRC, buffer, 32);	// Prog name
 				strcpy( basname, buffer);
@@ -3533,9 +3535,9 @@ int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
