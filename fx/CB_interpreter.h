@@ -223,6 +223,7 @@ typedef struct {		// 16 bytes
 #define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
 //------------------------------------------------------------------------------
 void ClrCahche();
+void InitsmallVar();
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."

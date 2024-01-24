@@ -536,11 +536,11 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			if ( c == 0xFFFFFFF5 ) {	// Call(
 					return  CB_Call( SRC );
 			} else
-			if ( c == 0xFFFFFFF9 ) {	// RefreshTime
-					return  Refreshtime+1;
-			} else
-			if ( c == 0xFFFFFFFA ) {	// RefreshCtrl
+			if ( c == 0xFFFFFFF8 ) {	// RefreshCtrl
 					return  RefreshCtrl;
+			} else
+			if ( c == 0xFFFFFFFA ) {	// RefreshTime
+					return  Refreshtime+1;
 			} else
 			if ( c == 0xFFFFFFFB ) {	// Screen
 					return  ScreenMode;
@@ -576,6 +576,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	}
 	if ( c == '#') {
 		result = EvalsubTop( SRC );
+//		result = Evalsub1( SRC );
 		return result;
 	}
 	ExecPtr--;

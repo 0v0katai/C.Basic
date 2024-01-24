@@ -1375,7 +1375,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	edit_exit:
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
-	RestoreScreenModeEdit();
+//	RestoreScreenModeEdit();
 	return key;
 }
 
@@ -1446,8 +1446,8 @@ int CB_BreakStop() {
 }
 
 //----------------------------------------------------------------------------------------------
-//int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
