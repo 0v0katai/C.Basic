@@ -40,8 +40,8 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 4 bit
 			r=MatAryC[dimB*(((MatAry[reg].SizeA-1)>>1)+1)+(dimA>>1)];
 			if ( (dimA&1)==0 )  r = r>>4;
-			else				r = r&0xF;
-			if ( r>=8 ) r -= 16;	// minus
+			r = r&0xF;
+//			if ( r>=8 ) r -= 16;	// minus
 			return r;
 		case  8:
 			MatAryC=(char*)MatAry[reg].Adrs;
@@ -61,7 +61,10 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	}
 }
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlign4c0( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlign4c1( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4c2( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4c3( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign6d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    base:1 1-

@@ -45,8 +45,8 @@ double ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 4 bit
 			r=MatAryC[dimB*(((MatAry[reg].SizeA-1)>>1)+1)+(dimA>>1)];
 			if ( (dimA&1)==0 )  r = r>>4;
-			else				r = r&0xF;
-			if ( r>=8 ) r -= 16;	// minus
+			r = r&0xF;
+//			if ( r>=8 ) r -= 16;	// minus
 			result = r;
 			break;
 		case  8:
@@ -65,8 +65,9 @@ double ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	return result;
 }
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4a0( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4a1( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4b1( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    base:1 1-
@@ -974,7 +975,7 @@ double fMOD( double x, double y ) {	// fMOD(x,y)
 double fIDIV( double x, double y ) {	// floor( floor(x) / floor(y) )
 	double result;
 	fDIVcheck( &x, &y );
-	return fint((x/y));
+	return floor((x/y));
 }
 double ffact( double x ) {
 	double tmp;
