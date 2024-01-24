@@ -499,6 +499,7 @@ unsigned int Explorer( int size, char *folder )
 	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
 	if ( index > size - 1 ) index = size - 1;
+	if ( size == FavoritesMAX+1 ) index = 0;
 	top = index ;
 
 	if ( FileListUpdate ) {
@@ -579,7 +580,7 @@ unsigned int Explorer( int size, char *folder )
 		}
 														PrintMini(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
 		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
-		if( size < 1+FavoritesMAX+1 ){
+		if( size < 2+FavoritesMAX-FavCount ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
 			nofile=1;
@@ -593,8 +594,10 @@ unsigned int Explorer( int size, char *folder )
 			if( top > index )
 				top = index;
 			if( index > top + N_LINE - 1 )
-				top = index - N_LINE + 1;
+				top = index - N_LINE + 1 ;
 			if( top < StartLine )
+				top = StartLine;
+			if( size - StartLine <= N_LINE )
 				top = StartLine;
 
 			for(i = 0;i < N_LINE && i + top < size; ++i ){
@@ -1450,7 +1453,7 @@ int SaveProgfile( int progNo ){
 		basname8ToG1MHeader( filebase, basname);
 		sprintf(sname, "%s.g1m", basname );
 		r=SaveBasG1MorG3M( filebase, ext );	// S.mem / MCS
-		if ( ext[0] != ext2[0] ) { FileListUpdate = 0 ; return 1; }	// no refesh list
+//		if ( ext[0] != ext2[0] ) { FileListUpdate = 0 ; return 1; }	// no refesh list
 		if ( ext[0]=='M' ) StorageMode |= 2; else StorageMode &= 0xFD;
 
 	} else
@@ -1894,6 +1897,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		if ( SaveBasG1MorG3M( filebase, ext ) == 0 ) { 
 			if ( select == 0 ) DeleteFile( fname ) ;	// (rename) delete original file
 		} else return 1;
+	  	FileListUpdate = 1;
 //		if ( ext[0] != ext2[0] ) { FileListUpdate = 0 ; return 1; }	// no refesh list
 		if ( ext[0]=='M' ) StorageMode |= 2; else StorageMode &= 0xFD;
 	}
@@ -2428,7 +2432,7 @@ typedef struct {
 	buffer[1075]= AutoSaveMode;
 	buffer[1076]= EditTopLine;
 	buffer[1077]= EditFontSize;
-	buffer[1078]= AutoDebugMode;
+	buffer[1078]= DisableDebugMode;
 	buffer[1079]= 0;
 	
 	SaveConfigWriteFile( buffer, fname, ConfigMAX ) ;
@@ -2529,7 +2533,7 @@ void LoadConfig1(){
 		AutoSaveMode =buffer[1075];
 		EditTopLine  =buffer[1076];
 		EditFontSize =buffer[1077];
-		AutoDebugMode =buffer[1078];
+		DisableDebugMode =buffer[1078];
 		
 	} else {
 		Bfile_DeleteMainMemory(fname);
@@ -2797,12 +2801,12 @@ int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
@@ -2835,6 +2839,7 @@ int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2867,7 +2872,6 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

@@ -460,8 +460,8 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 		CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
 		len = strlen( (char*)tmpbuf ) ;
 		i=0;
+		if ( ptr+len > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
-		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 	}
 	buffer[ptr]='\0' ;
 }
@@ -767,13 +767,14 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 }
 
 void StorStrList0( char *SRC ) {	// "String" -> List n[0]
-	int reg,dimA;
+	int reg,dimA,base;
 	reg=ListRegVar( SRC );
 	if ( reg<0 ) { CB_Error(SyntaxERR); return ; }  // Syntax error
 	if ( SRC[ExecPtr]=='[' ) {
 		ExecPtr++;
 		dimA = CB_EvalInt( SRC );
-		if ( dimA != 0 ) { CB_Error(ArgumentERR); return; }  // Argument error
+		if ( MatAry[reg].SizeA == 0 ) base=MatBase; else base=MatAry[reg].Base;
+		if ( dimA >= base ) { CB_Error(ArgumentERR); return; }  // Argument error
 		if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 	}
 	if ( MatAry[reg].SizeA == 0 ) { 
@@ -872,7 +873,9 @@ void CB_StorStr( char *SRC ) {
 void CB_StrPrint( char *SRC , int csrX ) {
 	char buffer[CB_StrBufferMax];
 	int c,d,i=0;
+	int extAnkfont=0x100;
 	
+	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// Force OS Font
 	c = SRC[ExecPtr] ; 
 	if ( c == 0x0E ) {	// -> store str
 		ExecPtr++;
@@ -885,7 +888,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		CursorX+=csrX;
 		while ( buffer[i] ) {
 			if ( ( CursorX > 21 ) ) Scrl_Y();
-			CB_PrintC( CursorX, CursorY, (unsigned char*)buffer+i );
+			CB_PrintC_ext( CursorX, CursorY, (unsigned char*)buffer+i, extAnkfont );
 			CursorX++;
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
@@ -1835,6 +1838,6 @@ int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

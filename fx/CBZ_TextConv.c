@@ -770,7 +770,7 @@ const char ConvListF900[][17]={
 "c0",				// F915
 "c1",				// F916
 "c2",				// F917
-"CnStart",			// F918
+"cnStart",			// F918
 "IneqTypeIntsect",	// F919
 "@F91A",			// F91A
 "fn",				// F91B
@@ -1354,7 +1354,7 @@ const char cbasicstr[]="'ProgramMode:RUN\r\n";
 int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 	int i,cont=1;
 	unsigned short code;
-	int c=1;
+	int c=1,n;
 	int ofst=0,len;
 	int textofst=18;
 	char *opstr;
@@ -1384,6 +1384,17 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 				text[textofst++] = code;
 				ofst++;
 				code = srcbase[ofst] ;
+			}
+			n=srcbase[ofst+1];
+			if ( ( ('a'<=code)&&(code<='c')&&('0'<=n)&&(n<='2') ) ||
+				 ( ('x'<=code)&&(code<='y')&&('1'<=n)&&(n<='3') ) ||
+				 ( (code=='n')&&('1'<=n)&&(n<='2') ) ||
+				 ( (code=='f')&&('1'<=n)&&(n<='6') ) ||
+				 ( (code=='Q')&&(('1'==n)||(n=='3')) ) ) {
+					text[textofst++] = code;
+					ofst++;
+					text[textofst++] = 0x5C;
+					code=n;
 			}
 			text[textofst++] = code;
 			ofst++;
@@ -1634,7 +1645,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	char *srcbase;
 	int i,cont=1;
 	unsigned short opcode,code;
-	int c=1,d,e;
+	int c=1,d,e,n;
 	int ofst=0;
 	int textofst=0;
 	char *opstr;
@@ -1796,13 +1807,26 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 					textofst++;
 				}
 			} else {
+				d=text[textofst+1];
+				n=text[textofst+2];
+				if ( (
+				 ( ('a'<=c)&&(c<='c')&&('0'<=n)&&(n<='2') ) ||
+				 ( ('x'<=c)&&(c<='y')&&('1'<=n)&&(n<='3') ) ||
+				 ( (c=='n')&&('1'<=n)&&(n<='2') ) ||
+				 ( (c=='f')&&('1'<=n)&&(n<='6') ) ||
+				 ( (c=='Q')&&(('1'==n)||(n=='3')) ) ) && ( d==0x5C )
+				 ) {
+						srcbase[ofst++] = c;
+						textofst+=2;
+						c=n;
+				}
 				if ( c == 0x5C ) {
 					srcbase[ofst++] = c;
 					textofst++;
 					c = text[textofst];
 				}
-					srcbase[ofst++] = c;
-					textofst++;
+				srcbase[ofst++] = c;
+				textofst++;
 			}
 		} else 
 		if ( ( 0xFFFFFFA0 <= c ) && ( c <= 0xFFFFFFDF ) ) {	// kana

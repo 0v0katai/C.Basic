@@ -94,9 +94,9 @@ void CB_MatRowPlus( char *SRC ) ;	// Row+ A,2,3
 void CB_Mat2List( char *SRC ) ;	// Mat>List( Mat A, m) -> List n
 void CB_List2Mat( char *SRC ) ;	// List>Mat( List 1, List 2,..) -> List 5
 
-double CB_MinMax( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max
-double CB_Mean( char *SRC ) ;	// Mean( List 1 )
-double CB_Median( char *SRC ) ;	// Median( List 1, List 2 )
+//double CB_MinMax( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max
+//double CB_Mean( char *SRC ) ;	// Mean( List 1 )
+//double CB_Median( char *SRC ) ;	// Median( List 1, List 2 )
 
 void CB_SeqInt( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_MinMaxInt( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max

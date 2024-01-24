@@ -33,12 +33,12 @@ char ACBreak=1;		// AC Break on/off
 
 char TimeDsp=0;		// Execution Time Display  0:off 1:on
 char MatXYmode=0;		// 0: normal  1:reverse
-char PictMode=3;	// StoPict/RclPict  StrageMem:0  heap:1  both:2  MSC:3
+char PictMode=3;	// StoPict/RclPict  StrageMem:0  heap:1  both:2  MSC:3(default)
 char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
 
 char CommandInputMethod=1;	//	0:C.Basic  1:Genuine
 
-char  RefreshCtrl=1;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
+char  RefreshCtrl=0;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
 char  Refreshtime=2;	// Refresh time  (Refreshtime+1)/128s
 
 short DefaultWaitcount=0;	// wait control
@@ -192,7 +192,10 @@ int CB_interpreter_sub( char *SRC ) {
 		if ( ( c==':'  ) || ( c==0x0D )|| ( c==0x20 ) ) {
 				c=SRC[ExecPtr++];
 				while ( ( c==0x0D ) || ( c==0x20 ) ) c=SRC[ExecPtr++];
-				if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakPtr == 0 ) BreakPtr=ExecPtr-1; }	// [AC] break?
+				if ( BreakCheck )if ( KeyScanDownAC() ) {	// [AC] break?
+					KeyRecover();
+					if ( BreakPtr == 0 ) BreakPtr=ExecPtr-1;
+				}
 		}
 		if ( c==0x00 ) { ExecPtr--;
 			if ( ProgEntryN ) return -1;
@@ -277,8 +280,8 @@ int CB_interpreter_sub( char *SRC ) {
 							dspflagtmp=dspflag;
 							if ( EvalEndCheck( SRC[ExecPtr] ) == 0 ) CB_Error(SyntaxERR) ; // Syntax error 
 						}
-						if ( GosubNestN > 0 ) { 
-							ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
+						if ( GosubNestN > 0 ) {				//	return from subroutin 
+							ExecPtr=StackGosubAdrs[--GosubNestN] ; break; }
 						if ( ProgEntryN ) { return -2 ; }	//	return from  sub Prog
 						cont=0;
 						break;
@@ -603,12 +606,11 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0xFFFFFFED:	// Prog "..."
 				CB_Prog(SRC, localvarInt, localvarDbl );
 				ClrCahche();
+				if ( BreakPtr > 0 ) return BreakPtr;
 				goto jpgsb;
-				break;
 			case 0xFFFFFFFA:	// Gosub
 				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs );
-		jpgsb:	if ( BreakPtr > 0 ) return BreakPtr;
-				dspflagtmp=dspflag;
+		jpgsb:	dspflagtmp=dspflag;
 				break;
 			case 0xFFFFFFD1:	// Cls
 				CB_Cls(SRC);
@@ -685,7 +687,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Input(SRC);
 				CB_ResetExecTicks();
 				dspflagtmp=2;
-//				if ( BreakPtr > 0 ) break;
+//				if ( BreakPtr ) break;
 //				c=SRC[ExecPtr++];
 //				if ( c == 0x0E ) {		// ->
 //					if (CB_INT==1)	CBint_Store(SRC); else CB_Store(SRC);
@@ -2115,22 +2117,22 @@ void CB_Store( char *SRC ){	// ->
 				goto StoreTicks;
 		} else if ( c == 0x00 ) {	// Xmin
 				Xmin = CB_CurrentValue.real ;
-				Xdot = (Xmax-Xmin)/126.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x01 ) {	// Xmax
 				Xmax = CB_CurrentValue.real ;
-				Xdot = (Xmax-Xmin)/126.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x02 ) {	// Xscl
 				Xscl = CB_CurrentValue.real ;
 				goto Graphj;
 		} else if ( c == 0x04 ) {	// Ymin
 				Ymin = CB_CurrentValue.real ;
-				Ydot = (Ymax-Ymin)/62.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x05 ) {	// Ymax
 				Ymax = CB_CurrentValue.real ;
-				Ydot = (Ymax-Ymin)/62.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x06) {	// Yscl
 				Yscl = CB_CurrentValue.real ;
@@ -2273,6 +2275,7 @@ void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) { //	Prog "...
 	if ( DebugMode == 4 ) { DebugMode = 2;  BreakPtr = -1; }	// step out
 	
 	if ( stat ) {
+		if ( ( DebugMode == 0 ) && ( DisableDebugMode==0 ) ) BreakPtr = 0;
 		if ( ( ErrorNo ) && ( ErrorNo != StackERR ) )return ;			// error
 		else if ( BreakPtr > 0 ) return ;	// break
 	}
@@ -2831,6 +2834,7 @@ void  CB_Input( char *SRC ){
 				CB_CurrentValue = InputNumC_CB( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
 			}
 			ExecPtr++;
+			if ( CB_INT==1 ) flagint=1;
 		  vinp:
 			ErrorNo=0; // error cancel
 			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }

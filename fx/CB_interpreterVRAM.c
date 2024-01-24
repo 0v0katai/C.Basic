@@ -280,10 +280,10 @@ void CB_Locate( char *SRC ){
 	double value;
 	int mode;
 	int maxoplen;
-	int extAnkfont=0x1;
+	int extAnkfont=0x100;
 	
 	CB_ChangeTextMode( SRC );	// Select Text Mode
-	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// OS PrintMini
+	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// OS Print
 	lx = CB_EvalInt( SRC );
 	if ( ( lx < 1 ) || ( lx > 21 ) ) { CB_Error(ArgumentERR); return; }	// Argument error
 	c=SRC[ExecPtr];
@@ -1698,8 +1698,10 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 	char buffer2[64];
 	int c;
 	complex value;
+	int extAnkfont=0x100;
 	
 	CB_ChangeTextMode( SRC );	// Select Text Mode
+	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// OS PrintMini
 	loop:
 		buffer2[0]='\0';
 		if ( CursorX >1 ) Scrl_Y();
@@ -1712,10 +1714,12 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 			value = CB_Cplx_EvalDbl( SRC );
 			Cplx_sprintGR2SRC( SRC, buffer, buffer2, value, 22-CursorX );
 		}
-		locate( CursorX, CursorY); Print((unsigned char*)buffer);
+//		locate( CursorX, CursorY); Print((unsigned char*)buffer);
+		CB_Print_ext( CursorX, CursorY, (unsigned char*)buffer, extAnkfont );	// ext
 		if ( buffer2[0] != '\0' ){
 			Scrl_Y();
-			locate( CursorX, CursorY); Print((unsigned char*)buffer2);
+//			locate( CursorX, CursorY); Print((unsigned char*)buffer2);
+			CB_Print_ext( CursorX, CursorY, (unsigned char*)buffer2, extAnkfont );	// ext
 		}
 		CursorX=21;
 	c=SRC[ExecPtr];
@@ -2005,7 +2009,11 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 		Bdisp_AreaReverseVRAM( 8, y*8+6, 122, y*8+13);	// reverse select line 
 		GetKey_DisableMenu(&key);
 		switch (key) {
-//			case KEY_CTRL_EXIT:
+			case KEY_CTRL_EXIT:
+			case KEY_CTRL_QUIT:
+				select=0;
+				scrl=0;
+				break;
 			case KEY_CTRL_AC:
 				BreakPtr=ExecPtr;
 			case KEY_CTRL_EXE:
@@ -2277,22 +2285,22 @@ void CB_DrawStat( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 void StoVwin( int n ) {
-	memcpy( &VWIN[n][0], &REGv[0], 11*8 ) ;
-	VWinflag[n] = 1;
+	memcpy( &VWIN[n-1][0], &REGv[0], 11*8 ) ;
+	VWinflag[n-1] = 1;
 }
 void RclVwin( int n ) {
-	if ( VWinflag[n] == 0 ) { CB_Error(MemoryERR); return; }	// Memory error
-	memcpy( &REGv[0], &VWIN[n][0], 11*8 ) ;
+	if ( VWinflag[n-1] == 0 ) { CB_Error(MemoryERR); return; }	// Memory error
+	memcpy( &REGv[0], &VWIN[n-1][0], 11*8 ) ;
 }
 
 void CB_StoVWin( char *SRC ) {
 	int n=CB_EvalInt( SRC );
-	if ( ( n<0 ) || ( n>5 ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( n<1 ) || ( n>6 ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 	StoVwin( n );
 }
 void CB_RclVWin( char *SRC ) {
 	int n=CB_EvalInt( SRC );
-	if ( ( n<0 ) || ( n>5 ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( n<1 ) || ( n>6 ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 	RclVwin( n );
 	CB_ChangeViewWindow() ;
 }

@@ -35,9 +35,9 @@ extern char ACBreak;	// AC Break on/off
 
 extern char TimeDsp;
 extern char MatXYmode;
-extern char PictMode;	// StoPict/RclPict  StrageMem:0  heap:1
+extern char PictMode;	// StoPict/RclPict  StrageMem:0  heap:1  MCS:3
 extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
-extern char RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
+extern char RefreshCtrl;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
 extern char Refreshtime;	// Refresh time  n/128
 
 extern short DefaultWaitcount;	// wait control
@@ -367,9 +367,9 @@ typedef struct {		// 16 bytes
 	char	name[9];
 } ALIAS_VAR;
 
-#define ALIASVARMAX 32
-#define ALIASVARMAXMAT 16
-#define ALIASVARMAXLBL 16
+#define ALIASVARMAX 64
+#define ALIASVARMAXMAT 26
+#define ALIASVARMAXLBL 26
 extern	ALIAS_VAR	*AliasVarCode;
 extern	ALIAS_VAR	*AliasVarCodeMat;
 extern	ALIAS_VAR	*AliasVarCodeLbl;

@@ -72,6 +72,7 @@ char * Load1st2nd( char *name, char *dir2nd, char *ext );
 
 int SavePicture( char *filebase, int pictNo );
 char * LoadPicture( int pictNo );
+char * LoadPictureMCS( int pictNo, int *length );
 
 int SaveCapture( char *filebase, int pictNo );
 char * LoadCapture( int pictNo );
@@ -137,6 +138,6 @@ int MCS_DeleteG1M( char *fname  ) ;	// delete g1m
 int MCS_ExistFile( char *fname  ) ;	// exist?
 int MCS_Free();
 char * MCS_LoadCAPT( char *pictname ) ;
-char * MCS_LoadPICT( char *pictname ) ;
+char * MCS_LoadPICT( char *pictname, int *length ) ;
 int MCS_SaveCAPT( char *pictname, char *filebase  ) ;
 int MCS_SavePICT( char *pictname, char *filebase  ) ;

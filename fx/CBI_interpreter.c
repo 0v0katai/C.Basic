@@ -125,22 +125,22 @@ void CBint_Store( char *SRC ){	// ->
 				goto StoreTicks;
 		} else if ( c == 0x00 ) {	// Xmin
 				Xmin = CBint_CurrentValue ;
-				Xdot = (Xmax-Xmin)/126.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x01 ) {	// Xmax
 				Xmax = CBint_CurrentValue ;
-				Xdot = (Xmax-Xmin)/126.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x02 ) {	// Xscl
 				Xscl = CBint_CurrentValue ;
 				goto Graphj;
 		} else if ( c == 0x04 ) {	// Ymin
 				Ymin = CBint_CurrentValue ;
-				Ydot = (Ymax-Ymin)/62.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x05 ) {	// Ymax
 				Ymax = CBint_CurrentValue ;
-				Ydot = (Ymax-Ymin)/62.0;
+				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x06) {	// Yscl
 				Yscl = CBint_CurrentValue ;

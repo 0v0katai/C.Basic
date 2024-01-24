@@ -3,7 +3,7 @@
 //----------------------------------------------------------------------------------------------
 //char ClipBuffer[ClipMax];
 char *ClipBuffer;
-char AutoDebugMode=1;	// 0:disable debug mode
+char DisableDebugMode=0;	// 0:enable debug mode
 char ForceDebugMode;
 char DebugMode=0;	// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
 char ScreenModeEdit=0;
@@ -191,6 +191,7 @@ int AddComment( char *filebase, int ptr, int startp, int endp ){
 	char *srcbase=filebase+0x56;
 	int c; 
 	int flag=0;
+	if ( startp<0 ) return ptr;
 	if ( startp==0 ) flag=1;
 	PrevLine( srcbase, &startp );
 	ptr=startp;
@@ -227,6 +228,7 @@ int DelComment( char *filebase, int ptr, int startp, int endp ){
 	int len,i,j,plus=0;
 	char *srcbase=filebase+0x56;
 	int c; 
+	if ( startp<0 ) return ptr;
 	ptr=startp;
 	if ( srcbase[ptr]==0x27 ) {
 		DeleteOpcode( filebase, &ptr );
@@ -750,7 +752,7 @@ int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr, int next){
 void srcmenu(){
 	editmenu();
 	Fkey_Icon( FKeyNo1, 165 );	//	Fkey_dispN( FKeyNo1, "SRC ");
-	FkeyClear( FKeyNo2 );
+	Fkey_dispN( FKeyNo2, "REPL");
 }
 
 int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	// SRC repstr:NULL 
@@ -762,20 +764,19 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	
   loop:
 	Bdisp_AllClr_DDVRAM();
 	locate(1,1); Print((unsigned char*)"Search For Text");
-	locate(1,2); Print((unsigned char*)"----------------------");
-	locate(1,4); Print((unsigned char*)"----------------------");
+	locate(1,2); Print((unsigned char*)"---------------------");
+	locate(1,4); Print((unsigned char*)"---------------------");
 	Bdisp_PutDisp_DD_DrawBusy();
 	KeyRecover(); 
 	do {
 		srcmenu();
-		Fkey_dispN( FKeyNo2, "REPL");
 		key= InputStrSub( 1, 3, 21, strlenOp(searchstr), searchstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( key == KEY_CTRL_AC ) ;	// AC
 	if ( key == KEY_CTRL_EXIT ) return 0;	// exit
 	if ( strlenOp(searchstr) == 0 ) goto loop;
 	if ( key == KEY_CTRL_F2 ) {
 		locate(1,1); Print((unsigned char*)"Replacement Text");
-		locate(1,6); Print((unsigned char*)"----------------------");
+		locate(1,6); Print((unsigned char*)"---------------------");
 		Bdisp_PutDisp_DD_DrawBusy();
 		KeyRecover(); 
 		do {
@@ -1967,7 +1968,7 @@ int CB_BreakStop() {
 	char buf[22];
 	int stat;
 	int scrmode=ScreenMode;
-	int dbgmode= ( ( AutoDebugMode == 0 ) || ( ForceDebugMode ) ) ;
+	int dbgmode= ( ( DisableDebugMode == 0 ) || ( ForceDebugMode ) ) ;
 
 	if ( BreakPtr == -9999) return BreakPtr;	// stack error
 
@@ -2028,7 +2029,6 @@ int CB_BreakStop() {
 	if ( ForceReturn ) return 1;	// force program end
 	if ( dbgmode  ) key=EditRun(2);	// Program listing & edit
 
-//	if ( ( key == KEY_CTRL_QUIT ) || ( key == KEY_CTRL_EXIT ) ) { 
 	if ( ( dbgmode == 0 ) ||  ( key == KEY_CTRL_EXIT ) ) { 
 		if ( ProgEntryN == 0 ) DebugMode=0;
 		BreakPtr=-999;

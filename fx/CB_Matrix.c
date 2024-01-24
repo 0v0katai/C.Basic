@@ -132,6 +132,7 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 			if ( CheckAdrsAlignError( ElementSize, (int)adrs ) ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 		} else {
 			dptr = (double*)HiddenRAM_mallocMat( matsize );
+			mats = matsize;
 			if( dptr == NULL ) { CB_Error(NotEnoughMemoryERR); return 0; }	// Not enough memory error
 		}
 		MatAry[reg].SizeA       = m;						// Matrix array size
@@ -2185,6 +2186,18 @@ int CB_ListCalc( char *SRC ) { //	List 1 -> List 2  etc
 		
 		dspflagtmp=0;
 	} else {
+		if ( c == '[' ) {	// [
+			ExecPtr++;
+			dimA = CB_EvalInt( SRC );
+			if ( MatAry[reg].SizeA == 0 ) base=MatBase; else base=MatAry[reg].Base;
+			if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
+			if ( dimA < MatAry[reg].Base ) {		// List 1[0]->"ABCDEF"
+				CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;
+				memcpy( CB_CurrentStr, MatAry[reg].name, 8);
+				CB_StrPrint( SRC , 0 ) ;
+				return 0;
+			}
+		}
 		ExecPtr=excptr;
 		dspflagtmp=2;
 	}
@@ -2236,12 +2249,12 @@ void CB_MatSwap( char *SRC ) {	// Swap Mat A,2,3
 	dimB       =MatAry[reg].SizeB+base;
 	
 	a = CB_EvalInt( SRC );
-	if ( ( a < base ) || ( dimA+base <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( a < base ) || ( dimA <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	b = CB_EvalInt( SRC );
-	if ( ( b < base ) || ( dimA+base <= b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( b < base ) || ( dimA <= b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
@@ -2294,7 +2307,7 @@ void CB_MatxRow( char *SRC ) {	// *Row 5,A,2
 	dimB       =MatAry[reg].SizeB+base;
 	
 	a = CB_EvalInt( SRC );
-	if ( ( a < base ) || ( dimA+base <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( a < base ) || ( dimA <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
@@ -2340,12 +2353,12 @@ void CB_MatxRowPlus( char *SRC ) {	// *Row+ 5,A,2,3
 	dimB       =MatAry[reg].SizeB+base;
 	
 	a = CB_EvalInt( SRC );
-	if ( ( a < base ) || ( dimA+base <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( a < base ) || ( dimA <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	b = CB_EvalInt( SRC );
-	if ( ( b < base ) || ( dimA+base <= b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( b < base ) || ( dimA <= b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
@@ -2387,12 +2400,12 @@ void CB_MatRowPlus( char *SRC ) {	// Row+ A,2,3
 	dimB       =MatAry[reg].SizeB+base;
 	
 	a = CB_EvalInt( SRC );
-	if ( ( a < base ) || ( dimA+base <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( a < base ) || ( dimA <= a ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	b = CB_EvalInt( SRC );
-	if ( ( b < base ) || ( dimA+base <= b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( ( b < base ) || ( dimA <= b ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
@@ -2569,7 +2582,7 @@ void CB_Mat2List( char *SRC ) {	// Mat>List( Mat A, m) -> List Ans
 	ElementSize  = MatAry[reg ].ElementSize;
 	if ( ElementSize  == 2 ) ElementSize  == 1;
 
-	if ( ( n<base ) || ( n>sizeB+base ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	if ( ( n<base ) || ( n>=sizeB+base ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 	
 	NewMatListAns( sizeA, 1, base, ElementSize );
 	if ( ErrorNo ) return ;
@@ -2599,7 +2612,7 @@ void List2Mat( int *reg, int tmpreg, int sizeB ) {	// List>Mat( List 1[,List 2][
 	do {
 		for ( m=base ; m<sizeA +base ; m++ ) Cplx_WriteMatrix( tmpreg, m, n, Cplx_ReadMatrix( reg[i] , m, base ) );
 		n++; i++;
-	} while ( i < sizeB-1 );
+	} while ( i < sizeB );
 }
 
 void CB_List2Mat( char *SRC ) {	// List>Mat( List 1[,List 2][,List 3]...) -> Mat Ans
@@ -2628,6 +2641,7 @@ void CB_List2Mat( char *SRC ) {	// List>Mat( List 1[,List 2][,List 3]...) -> Mat
 			if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
 			areg[i++] = CB_MatListAnsreg;
 		} else  areg[i++] = reg;
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(ArgumentERR); } // Argument error
 		if ( i>8 ) { CB_Error(TooMuchData); }
 		if ( ErrorNo ) return ;
 	}
@@ -2719,11 +2733,13 @@ double CB_RanBin( char *SRC ) {		// RanBin#( n, p [,m] ) -> List Ans
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CB_ArgumentMat( char *SRC, int reg ) {	// Argument( Mat A, Mat B )	
-	int reg2,reg3;
+	int reg2;
 	int m,n,i;
 	int sizeA,sizeB,sizeA2,sizeB2,sizeB3;
 	int ElementSize,ElementSize2;
 	int base,base2;
+	int tmpreg=Mattmpreg;
+	int ansreg=CB_MatListAnsreg;
 
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -2746,23 +2762,27 @@ void CB_ArgumentMat( char *SRC, int reg ) {	// Argument( Mat A, Mat B )
 	if ( ( sizeA != sizeA2 ) || ( base != base2 ) || ( ElementSize != ElementSize2 ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 
 	sizeB3 = sizeB + sizeB2 ;
-	NewMatListAns( sizeA, sizeB3, base, ElementSize );
+	DimMatrixSub( tmpreg, ElementSize, sizeA, sizeB3, base);	//
 	if ( ErrorNo ) return ;
-	reg3=CB_MatListAnsreg;
 	i=base;
 	for ( m=base ; m<sizeA +base ; m++ ) 
-		for ( n=base ; n<sizeB +base ; n++ ) Cplx_WriteMatrix( reg3, m, n, Cplx_ReadMatrix( reg , m, n ) );
+		for ( n=base ; n<sizeB +base ; n++ ) Cplx_WriteMatrix( tmpreg, m, n, Cplx_ReadMatrix( reg , m, n ) );
 	for ( m=base ; m<sizeA+base ; m++ ) 
-		for ( n=base ; n<sizeB2 +base ; n++ ) Cplx_WriteMatrix( reg3, m, n+sizeB, Cplx_ReadMatrix( reg2, m, n) );
+		for ( n=base ; n<sizeB2 +base ; n++ ) Cplx_WriteMatrix( tmpreg, m, n+sizeB, Cplx_ReadMatrix( reg2, m, n) );
 	
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_MatListAnsreg=ansreg;
+	CopyMatList2Ans( tmpreg );		// tmpreg -> CB_MatListAnsreg
+	dspflag = 3;
 }
 void CB_ArgumentList( char *SRC, int reg ) {	// Argument( List1, List2 )	
-	int reg2,reg3;
+	int reg2;
 	int m,n,i;
 	int sizeA,sizeB,sizeA2,sizeB2,sizeA3;
 	int ElementSize,ElementSize2;
 	int base,base2;
+	int tmpreg=Mattmpreg;
+	int ansreg=CB_MatListAnsreg;
 
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -2785,14 +2805,16 @@ void CB_ArgumentList( char *SRC, int reg ) {	// Argument( List1, List2 )
 	if ( ( sizeB != sizeB2 ) || ( base != base2 ) || ( ElementSize != ElementSize2 ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 
 	sizeA3 = sizeA + sizeA2 ;
-	NewMatListAns( sizeA3, sizeB, base, ElementSize );
+	DimMatrixSub( tmpreg, ElementSize, sizeA3, sizeB, base);	//
 	if ( ErrorNo ) return ;
-	reg3=CB_MatListAnsreg;
 	i=base;
-	for ( m=base ; m<sizeA +base ; m++ ) Cplx_WriteMatrix( reg3, i++, base, Cplx_ReadMatrix( reg , m, base ) );
-	for ( m=base ; m<sizeA2+base ; m++ ) Cplx_WriteMatrix( reg3, i++, base, Cplx_ReadMatrix( reg2, m, base ) );
+	for ( m=base ; m<sizeA +base ; m++ ) Cplx_WriteMatrix( tmpreg, i++, base, Cplx_ReadMatrix( reg , m, base ) );
+	for ( m=base ; m<sizeA2+base ; m++ ) Cplx_WriteMatrix( tmpreg, i++, base, Cplx_ReadMatrix( reg2, m, base ) );
 	
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_MatListAnsreg=ansreg;
+	CopyMatList2Ans( tmpreg );		// tmpreg -> CB_MatListAnsreg
+	dspflag = 4;
 }
 
 void CB_Argument( char *SRC ) {	// Argument( List1, List2 )		Argument( Mat A, Mat B)
@@ -2811,18 +2833,34 @@ void CB_Argument( char *SRC ) {	// Argument( List1, List2 )		Argument( Mat A, Ma
 
 int qsortA_cplx( const void *p1, const void *p2 ){
 	complex a,b;
+	double  c,d;
 	a = *(complex*)p1;
 	b = *(complex*)p2;
-	if ( a.real==b.real ) return 0;
-	if ( a.real> b.real ) return 1;
+	if ( ( a.imag != 0 ) || ( b.imag != 0 ) ) {
+		c = fabsz(a);
+		d = fabsz(b);
+		if ( c == d ) return 0;
+		if ( c >  d ) return 1;
+	} else {
+		if ( a.real == b.real ) return 0;
+		if ( a.real >  b.real ) return 1;
+	}
 	return -1;
 }
 int qsortB_cplx( const void *p1, const void *p2 ){
 	complex a,b;
+	double  c,d;
 	a = *(complex*)p1;
 	b = *(complex*)p2;
-	if ( b.real==a.real ) return 0;
-	if ( b.real> a.real ) return 1;
+	if ( ( a.imag != 0 ) || ( b.imag != 0 ) ) {
+		c = fabsz(a);
+		d = fabsz(b);
+		if ( d == c ) return 0;
+		if ( d >  c ) return 1;
+	} else {
+		if ( b.real == a.real ) return 0;
+		if ( b.real >  a.real ) return 1;
+	}
 	return -1;
 }
 int qsortA_dbl( const void *p1, const void *p2 ){
@@ -2947,7 +2985,7 @@ void CB_SortAD( char *SRC, int flagAD) {	// SortA( List 1 [,List 2][,List 3]...)
 			if ( i>8 ) { CB_Error(TooMuchData); }
 			if ( ErrorNo ) return ;
 		}
-		List2Mat( &areg[0], tmpreg, i+1 );
+		List2Mat( &areg[0], tmpreg, i );
 		if ( ErrorNo ) return ;
 		sizeA        = MatAry[tmpreg ].SizeA;
 		sizeB        = MatAry[tmpreg ].SizeB;
@@ -2960,7 +2998,7 @@ void CB_SortAD( char *SRC, int flagAD) {	// SortA( List 1 [,List 2][,List 3]...)
 		do {
 			for ( m=base ; m<sizeA +base ; m++ ) Cplx_WriteMatrix( areg[i] , m, base, Cplx_ReadMatrix( tmpreg , m, n ) );
 			n++; i++;
-		} while ( i < sizeB-1 );
+		} while ( i < sizeB );
 	}
 	
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -2995,17 +3033,17 @@ int CB_EvalSortAD( char *SRC, int flagAD) {	// SortA( List 1 ) or 	// SortD( Lis
 	return 1;
 }
 
-double CB_MinMax( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
+complex CB_MinMax( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	int reg,reg2,reg3;
 	int m,n;
 	int sizeA,sizeB;
 	int ElementSize;
 	int base;
-	double min,tmp;
+	complex min,tmp;
 	int dspflagtmp=dspflag;
 	
 	ListEvalsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
 	reg=CB_MatListAnsreg;
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
@@ -3014,26 +3052,42 @@ double CB_MinMax( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		ListEvalsub1(SRC);
-		if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+		if ( dspflag < 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
 		reg2=CB_MatListAnsreg;
-		if ( sizeA != MatAry[reg2].SizeA ) { CB_Error(DimensionERR); return 0; }	// Dimension error
+		if ( sizeA != MatAry[reg2].SizeA ) { CB_Error(DimensionERR); return Int2Cplx(0); }	// Dimension error
 		for ( m=base; m<sizeA+base; m++) {
-			min=ReadMatrix( reg,  m, base ) ;
-			tmp=ReadMatrix( reg2, m, base ) ;
-			if ( flag )	{ 
-				if ( min < tmp ) WriteMatrix( reg,m, base , tmp ) ;	// max
+			min=Cplx_ReadMatrix( reg,  m, base ) ;
+			tmp=Cplx_ReadMatrix( reg2, m, base ) ;
+			if ( ( min.imag != 0 ) || ( tmp.imag != 0 ) ) {
+				if ( flag )	{ 
+					if ( fabsz(min) < fabsz(tmp) ) Cplx_WriteMatrix( reg,m, base , tmp ) ;	// max cplx
+				} else {
+					if ( fabsz(min) > fabsz(tmp) ) Cplx_WriteMatrix( reg,m, base , tmp ) ;	// min cplx
+				}
 			} else {
-				if ( min > tmp ) WriteMatrix( reg,m, base , tmp ) ;	// min
+				if ( flag )	{ 
+					if ( min.real < tmp.real )     Cplx_WriteMatrix( reg,m, base , tmp ) ;	// max
+				} else {
+					if ( min.real > tmp.real )     Cplx_WriteMatrix( reg,m, base , tmp ) ;	// max
+				}
 			}
 		}
 	} else {
-		min = ReadMatrix( reg, base, base ) ;
+		min = Cplx_ReadMatrix( reg, base, base ) ;
 		for ( m=base; m<sizeA+base; m++) {
-			tmp=ReadMatrix( reg, m, base ) ;
-			if ( flag )	{
-				if ( min < tmp ) min=tmp;	// max
+			tmp=Cplx_ReadMatrix( reg, m, base ) ;
+			if ( ( min.imag != 0 ) || ( tmp.imag != 0 ) ) {
+				if ( flag )	{
+					if ( fabsz(min) < fabsz(tmp) ) min=tmp;	// max
+				} else {
+					if ( fabsz(min) > fabsz(tmp) ) min=tmp;	// min
+				}
 			} else {
-				if ( min > tmp ) min=tmp;	// min
+				if ( flag )	{
+					if ( min.real < tmp.real ) min=tmp;	// max
+				} else {
+					if ( min.real > tmp.real ) min=tmp;	// min
+				}
 			}
 		}
 		dspflag=dspflagtmp; 
@@ -3042,32 +3096,33 @@ double CB_MinMax( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return min;
 }
-double CB_Mean( char *SRC ) {	// Mean( List 1 )
+
+complex CB_Mean( char *SRC ) {	// Mean( List 1 )
 	int reg,reg2,reg3;
 	int m,n;
 	int sizeA,sizeB;
 	int ElementSize;
 	int base;
-	double result;
+	complex result={0,0};
 	int dspflagtmp=dspflag;
 	
 	ListEvalsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
 	reg=CB_MatListAnsreg;
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
 	base         = MatAry[reg ].Base;
 	
-	result=0;
 	for ( m=base; m<sizeA+base; m++) {
-		result += ReadMatrix( reg, m, base ) ;
+		result = Cplx_fADD( result, Cplx_ReadMatrix( reg, m, base ) );
 	}
 	
 	DeleteMatListAns();
 	dspflag=dspflagtmp; 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	return result / sizeA ;
+	return Cplx_fDIV( result, Int2Cplx(sizeA) ) ;
 }
+
 complex CB_Sum( char *SRC ) {	// Sum List 1 
 	int reg;
 	int m,n;
@@ -3602,8 +3657,8 @@ int CB_MatBase( char *SRC ){	// MatBase( Mat A )
 int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
