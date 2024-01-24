@@ -25,6 +25,8 @@
 int KeyRepeatFirstCount=20;		// pointer to repeat time of first repeat (20:default)
 int KeyRepeatNextCount = 5;		// pointer to repeat time of second repeat( 5:default)
 
+short PageUpDownNum = PageUpDownNumDefault;	// PageUp/Down counter
+
 int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
@@ -36,7 +38,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.99h" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.99i" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
 	GetKey(&key);
@@ -731,7 +733,18 @@ int SelectNum2( char*msg, int n ) {		//
  		if ( (0<=n)&&(n<=15) ) break;
  		n=0;
  	}
-
+	return n ; // ok
+}
+int SelectNum3( int n ) {		// 
+	unsigned int key;
+	PopUpWin(3);
+	locate( 3,3); Print((unsigned char *)"PageUp/Dw Number");
+	locate( 6,5); Print((unsigned char *)"[1~9999]:");
+	while (1) {
+		n=InputNumD(15, 5, 4, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+ 		if ( (1<=n)&&(n<=9999) ) break;
+ 		n=0;
+ 	}
 	return n ; // ok
 }
 
@@ -750,7 +763,7 @@ int SetupG(int select){		// ----------- Setup
 	int	cont=1;
 	int scrl=select-6;
 	int y,cnt;
-	int listmax=18;
+	int listmax=19;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -825,23 +838,28 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 14
+			locate( 1,cnt-scrl); Print((unsigned char*)"PageUp/Down :");		// 14
+			sprintf((char*)buffer," %d",PageUpDownNum);
+			locate(14,cnt-scrl); Print((unsigned char*)buffer);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 15
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix  base:");		// 15
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix  base:");		// 16
 			locate(15,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict    mode:");		// 16
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict    mode:");		// 17
 			locate(14,cnt-scrl); Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 17
+			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 18
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 18
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 19
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -861,7 +879,7 @@ int SetupG(int select){		// ----------- Setup
 			case 9: // BreakCheck
 			case 10: // TimeDsp
 			case 11: // IfEnd Check
-			case 17: // ACBreak Check
+			case 18: // ACBreak Check
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
@@ -888,19 +906,25 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_DISPN( 1," -");
 				Fkey_dispN( 3, "Init");
 				break;
-			case 14: // Mat display mode
+			case 14: // RollUp/Down number
+				Fkey_DISPN( 0," +");
+				Fkey_DISPN( 1," -");
+				Fkey_dispN( 2, "Num");
+				Fkey_dispN( 3, "Init");
+				break;
+			case 15: // Mat display mode
 				Fkey_dispN( 0, "m.n ");
 				Fkey_dispN( 1, "X,Y ");
 				break;
-			case 15: // Mat base
+			case 16: // Mat base
 				Fkey_dispN( 0, " 0 ");
 				Fkey_dispN( 1, " 1 ");
 				break;
-			case 16: // Pict mode
+			case 17: // Pict mode
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
-			case 18: // Execute Mode
+			case 19: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -979,20 +1003,23 @@ int SetupG(int select){		// ----------- Setup
 						KeyRepeatNextCount += 1 ;
 						if ( KeyRepeatNextCount > 20 ) KeyRepeatNextCount=20;
 						break;
-					case 14: // Matrix Display mode
+					case 14: // Roolup/down count +
+						PageUpDownNum++; if ( PageUpDownNum > 9999 ) PageUpDownNum = 9999;
+						break;
+					case 15: // Matrix Display mode
 						MatXYmode = 0 ; // m,n
 						break;
-					case 15: // Matrix base
+					case 16: // Matrix base
 						MatBaseDefault = 0 ; // 
 						MatBase = MatBaseDefault;
 						break;
-					case 16: // Pict mode
+					case 17: // Pict mode
 						PictMode = 0 ; // Memory mode
 						break;
-					case 17: // ACBreak
+					case 18: // ACBreak
 						ACBreak = 1 ; // on
 						break;
-					case 18: // CB mode
+					case 19: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
 						break;
@@ -1048,20 +1075,23 @@ int SetupG(int select){		// ----------- Setup
 						KeyRepeatNextCount -= 1 ;
 						if ( KeyRepeatNextCount < 1 ) KeyRepeatNextCount=1;
 						break;
-					case 14: // Matrix display mode
+					case 14: // Roolup/down count -
+						PageUpDownNum--; if ( PageUpDownNum < PageUpDownNumDefault ) PageUpDownNum = PageUpDownNumDefault;
+						break;
+					case 15: // Matrix display mode
 						MatXYmode = 1 ; // x,y
 						break;
-					case 15: // Matrix base
+					case 16: // Matrix base
 						MatBaseDefault = 1 ; // base
 						MatBase = MatBaseDefault;
 						break;
-					case 16: // Pict mode
+					case 17: // Pict mode
 						PictMode = 1 ; // heap mode
 						break;
-					case 17: // ACBreak
+					case 18: // ACBreak
 						ACBreak = 0 ; // off
 						break;
-					case 18: // CB mode
+					case 19: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
 						break;
@@ -1082,6 +1112,9 @@ int SetupG(int select){		// ----------- Setup
 						CB_Round.DIGIT=SelectNum2("Nrm",CB_Round.DIGIT);
 						CB_Round.MODE =Norm;
 						break;
+					case 14: // Roolup/down count init
+						PageUpDownNum = SelectNum3( PageUpDownNum );
+						break;
 					default:
 						break;
 				}
@@ -1100,6 +1133,9 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case 13: // Key Repeat Next Count *ms
 						KeyRepeatNextCount  = 5 ;
+						break;
+					case 14: // Roolup/down count init
+						PageUpDownNum = PageUpDownNumDefault ;
 						break;
 					default:
 						break;
