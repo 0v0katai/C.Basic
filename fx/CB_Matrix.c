@@ -275,7 +275,7 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 	unsigned int key;
 	int	cont=1;
 	int select=0;
-	int y;
+	int y,e;
 
 	*base=MatBase;
 
@@ -338,13 +338,17 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 				y++;
 				switch (select) {
 					case 0: // dim m
+						e = *dimA;
 						do {
+							*dimA = e;
 							*dimA  =InputNumD_full( 9, y, 10, *dimA);	// 
 						} while ( *dimA<1 ) ;
 						select++;	if ( list ) select++;
 						break;
 					case 1: // dim n
+						e = *dimB;
 						do {
+							*dimB = e;
 							*dimB  =InputNumD_full( 9, y, 10, *dimB);	// 
 						} while ( *dimB<1 ) ;
 						break;
@@ -371,13 +375,17 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 				y++;
 				switch (select) {
 					case 0: // dim m
+						e = *dimA;
 						do {
+							*dimA = e;
 							*dimA  =InputNumD_full( 9, y, 10, *dimA);	// 
 						} while ( *dimA<1 ) ;	
 						select++;	if ( list ) select++;
 						break;
 					case 1: // dim n
+						e = *dimB;
 						do {
+							*dimB = e;
 							*dimB  =InputNumD_full( 9, y, 10, *dimB);	// 
 						} while ( *dimB<1 ) ;
 						break;
@@ -408,25 +416,33 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 				y++;
 				switch (select) {
 					case 0: // dim m
+						e = *dimA;
 						do {
+							*dimA = e;
 							*dimA  =InputNumD_Char( 9, y, 10, *dimA, key);	// 
 							key=0;
 						} while ( *dimA<1 ) ;
 						select++;	if ( list ) select++;
 						break;
 					case 1: // dim n
+						e = *dimB;
 						do {
+							*dimB = e;
 							*dimB  =InputNumD_Char( 9, y, 10, *dimB, key);	// 
 							key=0;
 						} while ( *dimB<1 ) ;
 						break;
 					case 2: // size
+						e = *Elsize;
 						do	{
+							*Elsize = e;
 							*Elsize =InputNumD_Char( 9, y, 10, (*Elsize), key);	// 
-						} while ( (*Elsize!=1)&&(*Elsize!=2)&&(*Elsize!=8)&&(*Elsize!=16)&&(*Elsize!=32)&&(*Elsize!=64) ) ;
+						} while ( (*Elsize!=1)&&(*Elsize!=2)&&(*Elsize!=4)&&(*Elsize!=8)&&(*Elsize!=16)&&(*Elsize!=32)&&(*Elsize!=64) ) ;
 						break;
 					case 3: // base
+						e = *base;
 						do	{
+							*base = e;
 							*base =InputNumD_Char( 9, y, 10, *base, key);	// 
 						} while ( (*base!=0)&&(*base!=1) ) ;
 						break;
@@ -1598,11 +1614,19 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				
 			case KEY_CTRL_UP:
 				select--;
-				if ( select < 0 )  { select = opNum; }
+				if ( select < 0 )  select = opNum;
 				break;
 			case KEY_CTRL_DOWN:
 				select++;
 				if ( select > opNum ) select =0;
+				break;
+			case KEY_CTRL_PAGEUP:
+				select-=7;
+				if ( select < 0 )  select = 0;
+				break;
+			case KEY_CTRL_PAGEDOWN:
+				select+=7;
+				if ( select > opNum ) select = opNum;
 				break;
 
 			case KEY_CTRL_OPTN:
@@ -3802,7 +3826,7 @@ int CB_ElemSize( char *SRC ){	// ElemSize( Mat A )
 	MatrixOprandreg( SRC, &reg );
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	i=MatAry[reg].ElementSize;
-	if (i <= 4 ) i=1;
+	if (i < 4 ) i=1;
 	return i;
 }
 int CB_RowSize( char *SRC ){	// RowSize( Mat A )

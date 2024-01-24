@@ -771,7 +771,7 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	
 	KeyRecover(); 
 	do {
 		srcmenu();
-		key= InputStrSub( 1, 3, 21, strlenOp(searchstr), searchstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+		key= InputStrSubFn( 1, 3, 21, strlenOp(searchstr), searchstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_ON);
 	} while ( key == KEY_CTRL_AC ) ;	// AC
 	if ( key == KEY_CTRL_EXIT ) return 0;	// exit
 	if ( strlenOp(searchstr) == 0 ) goto loop;
@@ -782,7 +782,7 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	
 		KeyRecover(); 
 		do {
 			srcmenu();
-			key= InputStrSub( 1, 5, 21, strlenOp(repstr), repstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+			key= InputStrSubFn( 1, 5, 21, strlenOp(repstr), repstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_ON);
 		} while ( key == KEY_CTRL_AC ) ;	// AC
 		if ( key == KEY_CTRL_EXIT ) return 0;	// exit
 		srcmode=2;	// replace
@@ -1021,9 +1021,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 						case 3:
 						case 4:
-//							FkeyClear( FKeyNo1 );
-							FkeyClear( FKeyNo2 );
-//							FkeyClear( FKeyNo4 );
+							FkeyClearAll();
 							locate (11,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode
 							break;
 					}
@@ -1083,7 +1081,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			if ( SearchMode == 3 ) {	//  replace all mode
 				if ( KeyScanDownAC() == 0 ) {
 					PutKey( KEY_CTRL_F2, 1 );
-				} else SearchMode = 2;
+				} else { 
+					while ( KeyScanDownAC() );
+					KeyRecover();
+					PutKey( KEY_CTRL_NOP, 1 );
+					SearchMode = 2;
+				}
 			}
 
 			if ( dumpflg == 2 ) {
@@ -1341,6 +1344,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F4:
 					if ( SearchMode == 2 ) {
+						FkeyClearAll();
 						if ( YesNo( "Replace All Ok?" ) == 0 ) break;
 						SearchMode = 3; //	Replace All
 					} else {
@@ -1380,6 +1384,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F5:
 					if ( SearchMode == 2 ) {
+						FkeyClearAll();
 						if ( YesNo2( "Not Display mode", "Replace All Ok?") == 0 ) break;
 						locate (11,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode not display
 						Bdisp_PutDisp_DD;
@@ -1391,6 +1396,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
 							if ( i==0 ) { SearchMode=0; break; }
 						}
+						while ( KeyScanDownAC() );
+						KeyRecover(); 
+						offset   = csrPtr;
+						offset_y = 0;
+						PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );	// csrY adjust
 						UpdateLineNum=1;
 					} else {
 						if ( SearchMode ) break;;
@@ -1983,6 +1993,7 @@ int CB_BreakStop() {
 	int dbgmode= ( ( DisableDebugMode == 0 ) || ( ForceDebugMode ) ) ;
 
 	if ( BreakPtr == -9999) return BreakPtr;	// stack error
+//	if ( ErrorNo == StackERR ) { BreakPtr=-999; return BreakPtr; }	// stack error
 
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	Bdisp_PutDisp_DD();
@@ -2011,7 +2022,7 @@ int CB_BreakStop() {
 		locate(6,5); Print((unsigned char *) "Press:[EXIT]");
 //		locate(6,6); Print((unsigned char *) " Cont:[EXE]");
 		PrintMini(26,46,(unsigned char *)"Continue : [EXE]/[F1]",MINI_OVER);
-		Bdisp_PutDisp_DD();
+//		Bdisp_PutDisp_DD();
 		
 		KeyRecover(); 
 		while ( KeyCheckAC() ) ;

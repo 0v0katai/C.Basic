@@ -109,7 +109,7 @@ extern	int			*LocalInt[VARMAXSIZE];		// local var ptr
 
 extern double	*traceAry;		// Graph trace array
 
-#define GraphStrMAX 64
+#define GraphStrMAX 256
 extern char *GraphY;
 extern char *GraphX;
 
@@ -384,6 +384,17 @@ void CB_AliasVar( char *SRC ) ;	// AliasVar A=ƒ¿
 int GetVarName( char *SRC, int *ptr, char *name, int *len );
 
 //-----------------------------------------------------------------------------
+#define GRAPHMAX	6
+#define GRAPHLENMAX	64
+typedef struct {
+	char en;		// 
+	char style;			//
+	unsigned short color;	//
+	char gstr[GRAPHLENMAX];		//
+} tgraphstat;
+extern	tgraphstat GraphStat[GRAPHMAX];
+extern	int	GraphPtr;
+
 typedef struct {
 	char Draw;			// 0:off  1:on
 	char GraphType;		// 0;Scatter 1:xyline  2:

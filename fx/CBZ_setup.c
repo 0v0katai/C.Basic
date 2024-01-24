@@ -19,13 +19,14 @@ char  ExtendList=0;	// 0:52(default) 1:+16 ~ 63:+1008	( use hidden ram only )
 char  ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
 char  ForceReturn;		// 0:none  1:return
 char  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
+char  CB_fx5800P = 0;		// fx-5800P mode
 
 int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.81\xE6\x41";
-#define VERSION 181
+const char VerMSG[]="C.Basic  v1.82\xE6\x41";
+#define VERSION 182
 
 //---------------------------------------------------------------------------------------------
 
@@ -415,9 +416,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 				PutKey( KEY_CTRL_DOWN, 1 );
 			case KEY_CTRL_RIGHT:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				FkeyClear( FKeyNo1 );
-				FkeyClear( FKeyNo2 );
-				FkeyClear( FKeyNo3 );
+				FkeyClearAll();
 				y++;
 				switch (select) {
 					case 0: // Xmin
@@ -429,7 +428,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 						SetXdotYdot();
 						break;
 					case 2: // Xscl
-						Xscl      =InputNumD_full( 8, y, 14, Xscl);	// 
+						Xscl      =fabs(InputNumD_full( 8, y, 14, Xscl));	// 
 						break;
 					case 3: // Xdot
 						Xdot      =InputNumD_full( 8, y, 14, Xdot);	// 
@@ -444,7 +443,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 						SetXdotYdot();
 						break;
 					case 6: // Yscl
-						Yscl      =InputNumD_full( 8, y, 14, Yscl);	// 
+						Yscl      =fabs(InputNumD_full( 8, y, 14, Yscl));	// 
 						break;
 					case 7: // TThetamin
 						TThetamin =InputNumD_full( 8, y, 14, TThetamin);	// 
@@ -467,9 +466,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 		key=MathKey( key );
 		if ( key ) {
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				FkeyClear( FKeyNo1 );
-				FkeyClear( FKeyNo2 );
-				FkeyClear( FKeyNo3 );
+				FkeyClearAll();
 				y++;
 				switch (select) {
 					case 0: // Xmin
@@ -481,7 +478,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 						SetXdotYdot();
 						break;
 					case 2: // Xscl
-						Xscl      =InputNumD_Char( 8, y, 14, Xscl, key);	// 
+						Xscl      =fabs(InputNumD_Char( 8, y, 14, Xscl, key));	// 
 						break;
 					case 3: // Xdot
 						Xdot      =InputNumD_Char( 8, y, 14, Xdot, key);	// 
@@ -496,7 +493,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 						SetXdotYdot();
 						break;
 					case 6: // Yscl
-						Yscl      =InputNumD_Char( 8, y, 14, Yscl, key);	// 
+						Yscl      =fabs(InputNumD_Char( 8, y, 14, Yscl, key));	// 
 						break;
 					case 7: // TThetamin
 						TThetamin =InputNumD_Char( 8, y, 14, TThetamin, key);	// 
@@ -892,6 +889,16 @@ int SetVar(int select){		// ----------- Set Variable
 				if ( select > opNum ) select =0;
 				selectreplay = -1; // replay cancel
 				break;
+			case KEY_CTRL_PAGEUP:
+				select-=7;
+				if ( select < 0 ) select = 0;
+				selectreplay = -1; // replay cancel
+				break;
+			case KEY_CTRL_PAGEDOWN:
+				select+=7;
+				if ( select > opNum ) select =opNum;
+				selectreplay = -1; // replay cancel
+				break;
 				
 			case KEY_CTRL_RIGHT:
 				SetVarSel(VarMode,y);
@@ -1106,7 +1113,7 @@ int SetupG(int select){		// ----------- Setup
     const char *style[]   ={"Normal","Thick","Broken","Dot"};
     const char *display[] ={"Nrm","Fix","Sci"};
     const char *ENGmode[] ={"  ","/E","  ","/3"};
-    const char *CMDinput[] ={"C.Basic","Standard"};
+    const char *CMDinput[] ={"C.Basic","Standard","CB5800","Std5800"};
     const char *CharSize[] ={"Standard","Mini","Mini Rev","Mini_","Mini_Rev"};
     const char *Matmode[]    ={"[m,n]","[X,Y]"};
     const char *Matbase[]    ={"0","1"};
@@ -1202,7 +1209,7 @@ int SetupG(int select){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1, cnt-scrl); Print((unsigned char*)"Command Inpt:");		// 12
-			locate(14, cnt-scrl); Print((unsigned char*)CMDinput[CommandInputMethod]);
+			locate(14, cnt-scrl); Print((unsigned char*)CMDinput[CommandInputMethod + 2*CB_fx5800P]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Max Mem Mode:");		// 13
@@ -1392,6 +1399,7 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_CMDINPUT: // Command input method
 				Fkey_dispN( FKeyNo1, "CBas");
 				Fkey_dispN( FKeyNo2, "Std");
+				if ( CB_fx5800P ) Fkey_dispN( FKeyNo4, ">98G"); else Fkey_dispN( FKeyNo4, ">58P"); 
 				break;
 			case SETUP_EditFontSize: // Edit Char Size
 				Fkey_dispN( FKeyNo1, "Std");
@@ -1506,12 +1514,14 @@ int SetupG(int select){		// ----------- Setup
 			case KEY_CTRL_UP:
 				select-=1;
 				if ( select < 0 ) {select=(listmax); scrl=select-6;}
+			  upj:
 				if ( select < scrl ) scrl-=1;
 				if ( scrl < 0 ) scrl=0;
 				break;
 			case KEY_CTRL_DOWN:
 				select+=1;
 				if ( select > (listmax) ) {select=0; scrl=0;}
+			  downj:
 				if ((select - scrl) > 6 ) scrl+=1;
 				if ( scrl > (listmax) ) scrl=(listmax)-6;
 				break;
@@ -1524,6 +1534,23 @@ int SetupG(int select){		// ----------- Setup
 				scrl=select-6;
 				break;
 				
+			case KEY_CTRL_PAGEUP:
+				for ( i=0; i<7; i++) {
+					select--;
+					if ( select < 0 ) {select=0; scrl=0; break;}
+					if ( select < scrl ) scrl-=1;
+					if ( scrl < 0 ) scrl=0;
+				}
+				break;
+			case KEY_CTRL_PAGEDOWN:
+				for ( i=0; i<7; i++) {
+					select++;
+					if ( select > (listmax) ) {select=listmax; scrl=select-6; break; }
+					if ((select - scrl) > 6 ) scrl+=1;
+					if ( scrl > (listmax) ) scrl=(listmax)-6;
+				}
+				break;
+
 			case KEY_CTRL_F1:
 //				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 				switch (select) {
@@ -1920,7 +1947,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_TIME: // Time sec
 						sec = (TimeStr[6]-'0')*10+(TimeStr[7]-'0');
-						sec = SelectNum2("Min",sec,0,59);
+						sec = SelectNum2("Sec",sec,0,59);
 						TimeStr[6]=(sec/10)%10+'0';
 						TimeStr[7]=(sec)%10+'0';
 						StorTIME( TimeStr );
@@ -1953,6 +1980,9 @@ int SetupG(int select){		// ----------- Setup
 						ENG++;
 						if ( ENG>3 ) ENG=0;
 						if ( ENG>1 ) ENG=3;
+						break;
+					case SETUP_CMDINPUT: // Command input method (fx5800P mode change)
+						CB_fx5800P = 1-CB_fx5800P;
 						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// mini

@@ -83,7 +83,7 @@ int PictSelectNum2( char*msg ) {		//
 
 	buffer[0]='\0';
 	while (1) {
-		key= InputStrSub( 17, 5, 2, 0, buffer, 2, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		key= InputStrSub( 17, 5, 2, 0, buffer, 2, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_OFF) ;
 		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return -1;  // exit
 		n=atof( (char*)buffer );
  		if ( (1<=n)&&(n<=20) ) break;
@@ -493,7 +493,6 @@ void Graph_Draw(){
 	double p_y=Previous_Y;
 	int style=S_L_Style;
 	if ( tmp_Style >= 0 ) style=tmp_Style;
-	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	regX.real   = Xmin-Xdot;
 	for ( i=0; i<=127; i++) {
 		//-----------------------------
@@ -517,13 +516,14 @@ void Graph_Draw(){
 	regintX=regX.real; regintY=regY.real;
 	Previous_X=p_x;
 	Previous_Y=p_y;
-	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 void Graph_reDraw(){
 	int i;
 	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
+	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	Graph_Draw();
+	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 //--------------------------------------------------------------
 unsigned int Graph_trace_sub(int *tracex){
@@ -599,6 +599,7 @@ unsigned int Graph_main(){
 	int cont=1;
 	int tx=64;	// trace center 
 	
+	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	Graph_Draw();
 	
 //	while( KeyCheckEXE() );

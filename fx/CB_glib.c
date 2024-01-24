@@ -148,6 +148,9 @@ int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(
 }
 
 //-----------------------------------------------------------------------------
+//short prev_Grid_px;
+//short prev_Grid_py;
+
 void PlotGrid(double x, double y){
 	int px,py;
 //	if ( ( x==0 ) && ( y==0 ) ) return;
@@ -158,10 +161,26 @@ void PlotGrid(double x, double y){
 	if (py> 63) py= 63;
 	Bdisp_SetPoint_VRAM( px, py, 1);
 }
+void PlotGrid2(double x, double y){
+	int px,py;
+//	if ( ( x==0 ) && ( y==0 ) ) return;
+	VWtoPXY( x,y, &px, &py);
+	if ( px<MatBase ) px=MatBase;
+	if ( py<MatBase ) py=MatBase;
+	if (px>127) px=127;
+	if (py> 63) py= 63;
+//	if ( ( abs(px-prev_Grid_px) >=5 ) || ( abs(py-prev_Grid_py) >=5 ) ) {
+		Bdisp_SetPoint_VRAM( px, py, 1);
+//	}
+//	prev_Grid_px=px;
+//	prev_Grid_py=py;
+}
 
 void GraphAxesGrid(){
 	double x,y;
 
+//	prev_Grid_px=1000;
+//	prev_Grid_py=1000;
 	if ( BG_Pict_No ) RclPict(BG_Pict_No, 0);	// no error check
 	if ( Axes ) {
 		Horizontal(0, S_L_Normal,1);
@@ -184,34 +203,34 @@ void GraphAxesGrid(){
 		if ( ( Xscl > 0 ) && ( Yscl > 0 ) ) {
 			if ( Xmin < 0 ) { 
 					for ( x=0; x>=Xmin; x-=Xscl ) {
-						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
-						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid2(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid2(x,y);
 					}
 			}
 			if ( Xmin >= 0 ) {
 					for ( x=0; x<=Xmin; x+=Xscl) {
-						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
-						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid2(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid2(x,y);
 					}
 			}
 			if ( Xmax < 0 ) {
 					for ( x=0; x>=Xmax; x-=Xscl) {
-						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
-						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid2(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid2(x,y);
 					}
 			}
 			if ( Xmax >= 0 ) {
 					for ( x=0; x<=Xmax; x+=Xscl) {
-						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid(x,y);
-						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid(x,y);
-						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid(x,y);
+						if ( Ymin <= 0 ) for ( y=0; y>=Ymin; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymin >  0 ) for ( y=0; y<=Ymin; y+=Yscl )	PlotGrid2(x,y);
+						if ( Ymax <= 0 ) for ( y=0; y>=Ymax; y-=Yscl )	PlotGrid2(x,y);
+						if ( Ymax >  0 ) for ( y=0; y<=Ymax; y+=Yscl )	PlotGrid2(x,y);
 					}
 			}
 		}

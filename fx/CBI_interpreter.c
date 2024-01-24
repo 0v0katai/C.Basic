@@ -132,7 +132,7 @@ void CBint_Store( char *SRC ){	// ->
 				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x02 ) {	// Xscl
-				Xscl = CBint_CurrentValue ;
+				Xscl = abs(CBint_CurrentValue) ;
 				goto Graphj;
 		} else if ( c == 0x04 ) {	// Ymin
 				Ymin = CBint_CurrentValue ;
@@ -143,7 +143,7 @@ void CBint_Store( char *SRC ){	// ->
 				SetXdotYdot();
 				goto Graphj;
 		} else if ( c == 0x06) {	// Yscl
-				Yscl = CBint_CurrentValue ;
+				Yscl = abs(CBint_CurrentValue) ;
 				goto Graphj;
 		} else if ( c == 0x08) {	// Thetamin
 				TThetamin = CBint_CurrentValue ;

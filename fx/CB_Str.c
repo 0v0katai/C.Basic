@@ -869,10 +869,13 @@ void CB_StorStr( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-
+void ClrLine5800P( int CsrX ){
+	if ( CB_fx5800P == 0 ) locate(CsrX,CursorY); PrintLine((unsigned char*)" ",21);
+}
 void CB_StrPrint( char *SRC , int csrX ) {
 	char buffer[CB_StrBufferMax];
 	int c,d,i=0;
+	int px,code;
 	int extAnkfont=0x100;
 	
 	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// Force OS Font
@@ -885,17 +888,19 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		OpcodeStringToAsciiString( buffer, CB_CurrentStr, CB_StrBufferMax-1 );
 		CB_SelectTextVRAM();	// Select Text Screen
 		if ( ( CursorX >1 ) ) Scrl_Y();
-		CursorX+=csrX;
+		CursorX+=csrX; px=0;
+		if ( CB_fx5800P == 0 ) locate(1,CursorY); PrintLine((unsigned char*)" ",21);
 		while ( buffer[i] ) {
-			if ( ( CursorX > 21 ) ) Scrl_Y();
+			if ( ( CursorX > 21 ) ) { Scrl_Y(); px=0; }
 			CB_PrintC_ext( CursorX, CursorY, (unsigned char*)buffer+i, extAnkfont );
-			CursorX++;
+			CursorX++; px=CursorX;
 			c = buffer[i] ;
-			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
+			if ( ( c==0x0C ) || ( c==0x0D ) ) { ClrLine5800P( CursorX ); Scrl_Y(); px=0; }
 			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
 			i++;
 			Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		}
+		if ( ( buffer[0]==0 ) || ( px ) ) ClrLine5800P( CursorX );
 		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		if ( CursorX == 22 ) {
 			if ( CursorY < 7 ) {
