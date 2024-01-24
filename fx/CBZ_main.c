@@ -36,7 +36,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	unsigned int key;
 //	char buffer[32];
 	char *ptr,*stat;
-	int i,j;
+	int i,j,run;
 
 	char filename[32];
 	char *src;
@@ -113,28 +113,27 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 				ForceDebugMode=1;
+
 			case FileCMD_RUN_F1:
 				if ( ForceReturnMode & 1 ) ForceReturn=1;
 				goto runjp;
+
 			case FileCMD_RUN:
 //			case KEY_CTRL_EXE:
 				if ( ForceReturnMode & 2 ) ForceReturn=1;
-		runjp:
+		runjp:	run=1;
 				i=LoadProgfile( filename, 0, EditMaxProg, 1 ) ;
-				if ( i==0 )	{
-					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
-					ExecPtr=0;
-					EditRun(1);			// Program run
-				}else
-				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
-				goto bejmp;
+				goto bejmp1;
 				break;
+
 			case FileCMD_EDIT:
+				run=2;
+			  bejmp1:
 				ExecPtr=0;
 				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 				if ( i==0 )	{
+				  bejmp2:
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
-
 					ExecPtr=0;
 					for (j=0; j<BE_MAX; j++) {
 						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { 
@@ -142,10 +141,9 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 							break;
 						}
 					}
-					EditRun(2);			// Program listing & edit
+					EditRun(run);			// Program listing & edit
 				} else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
-			  bejmp:
 					for (j=0; j<BE_MAX; j++) {
 						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { j++; break; }
 					}
@@ -154,11 +152,13 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 					strncpy( befiles[0].sname, sname, 12);
 					befiles[0].execptr = ExecPtr;
 				break;
+
 			case FileCMD_NEW:
 				if ( NewProg() ) break ;
-				EditRun(2);			// Program listing & edit
-				goto bejmp;
+				run=2;
+				goto bejmp2;
 				break;
+
 			case FileCMD_RENAME:
 				RenameCopyFile(filename, 0);
 				break;

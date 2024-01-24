@@ -1008,6 +1008,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int mini;
 	int help_code=0;
 	int indent;
+	int execptr;
 
 	cUndo Undo;
 
@@ -1046,7 +1047,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );	// csrY adjust
 	UpdateLineNum=1;
 
-	if ( run == 1 ) { ProgNo=0; ExecPtr=0; key=KEY_CTRL_F6; }	// direct run
+	if ( run == 1 ) { key=KEY_CTRL_F6; }	// direct run
 
 	if ( DebugMode ) DebugMenuSw=1; 
 
@@ -1615,6 +1616,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F6:
+					execptr=csrPtr;
 					if ( SearchMode ) goto searchStart;	// Retry search
 					if ( ClipStartPtr >= 0 ) {	// Clip -> del '
 						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
@@ -1671,7 +1673,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										SaveConfig();
 										filebase = ProgfileAdrs[ProgNo];
 										SrcBase  = filebase+0x56;
-										if ( ForceReturn ) { cont=0; break; }	// force program end
+										if ( ForceReturn ) { goto finish; }	// force program end
 										if ( stat ) {
 											if ( ErrorNo ) offset = ErrorPtr ;			// error
 											else if ( BreakPtr ) offset = ExecPtr ;	// break
@@ -1682,7 +1684,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										run=2; // edit mode
 										if ( dumpflg == 2 ) {
 											PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
-											if ( stat == -1 ) cont=0;	// program finish
+											if ( stat == -1 ) {
+											  finish:
+												cont=0;	// program finish
+												ExecPtr=execptr; 
+											}
 										}
 									}
 								}
