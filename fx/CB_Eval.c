@@ -24,93 +24,10 @@
 #include "CBI_interpreter.h"
 #include "CB_error.h"
 
-//------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> double
 //----------------------------------------------------------------------------------------------
 char ExpBuffer[ExpMax+1];
-//----------------------------------------------------------------------------------------------
-/*
-int lastrandom=0x12345678;
-unsigned int random( int seed  ){
-    if (seed) lastrandom=seed;
-    lastrandom = ( 0x41C64E6D*lastrandom ) + 0x3039; // + RTC_GetTicks();
-    return ( ( lastrandom >> 16 ) & 0xFFFF );
-}
-*/
-
-/*
-#define floor2 floor2
-double floor2( double x ) {
-	double result;
-	unsigned char *row;
-	int tmp,exp;
-	int i,j,bt;
-	unsigned char *ptr;
-
-	ptr=(unsigned char *)(&x);
-	row=(unsigned char *)(&result);
-	result=x;
-
-	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
-	exp=tmp-1023; // 
-	if ( ( 0 <= exp ) && ( exp <= 51 ) ) {
-		tmp=52-exp;
-		i=7; j=0; bt=0xFE;
-		while ( tmp ) {
-			if (tmp>7) {
-				 tmp-=8; row[i]=0; i--;
-			} else {
-				row[i]&=bt;
-				bt=bt<<1;
-				j++;
-				tmp--;
-			}
-		}
-	}
-	return ( result ); 
-}
-*/
-double frac( double x ) {
-	double sign=1,tmp,d;
-	if ( x <0 ) { sign=-1; x=-x; }
-	if ( x<1e1 ) d= 1e15;
-	else if ( x>=1e15 ) d= 1;
-	else if ( x>=1e14 ) d= 1e1;
-	else if ( x>=1e13 ) d= 1e2;
-	else if ( x>=1e12 ) d= 1e3;
-	else if ( x>=1e11 ) d= 1e4;
-	else if ( x>=1e10 ) d= 1e5;
-	else if ( x>=1e9 ) d= 1e6;
-	else if ( x>=1e8 ) d= 1e7;
-	else if ( x>=1e7 ) d= 1e8;
-	else if ( x>=1e6 ) d= 1e9;
-	else if ( x>=1e5 ) d= 1e10;
-	else if ( x>=1e4 ) d= 1e11;
-	else if ( x>=1e3 ) d= 1e12;
-	else if ( x>=1e2 ) d= 1e13;
-	else if ( x>=1e1 ) d= 1e14;
-	tmp=x-floor(x);
-	return (floor(tmp*d+.5)/d*sign) ;
-}
-
-double asinh( double x ) {
-	return ( (exp(x)+exp(-x))/2. );
-}
-double acosh( double x ) {
-	return ( (exp(x)-exp(-x))/2. );
-}
-double atanh( double x ) {
-	double ep=exp(x);
-	double em=exp(-x);
-	return ( (ep-em)/(ep+em) );
-}
-
-void CheckMathERR( double *result ) {
-	char * pt;
-	pt=(char *)(result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
-}
-
 //----------------------------------------------------------------------------------------------
 double EvalsubTop( char *SRC ) {	// eval 1
 	int c;
@@ -209,6 +126,88 @@ double EvalsubTop( char *SRC ) {	// eval 1
 			}
 		} else return result;
 	}
+}
+
+//----------------------------------------------------------------------------------------------
+/*
+int lastrandom=0x12345678;
+unsigned int random( int seed  ){
+    if (seed) lastrandom=seed;
+    lastrandom = ( 0x41C64E6D*lastrandom ) + 0x3039; // + RTC_GetTicks();
+    return ( ( lastrandom >> 16 ) & 0xFFFF );
+}
+*/
+
+/*
+#define floor2 floor2
+double floor2( double x ) {
+	double result;
+	unsigned char *row;
+	int tmp,exp;
+	int i,j,bt;
+	unsigned char *ptr;
+
+	ptr=(unsigned char *)(&x);
+	row=(unsigned char *)(&result);
+	result=x;
+
+	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
+	exp=tmp-1023; // 
+	if ( ( 0 <= exp ) && ( exp <= 51 ) ) {
+		tmp=52-exp;
+		i=7; j=0; bt=0xFE;
+		while ( tmp ) {
+			if (tmp>7) {
+				 tmp-=8; row[i]=0; i--;
+			} else {
+				row[i]&=bt;
+				bt=bt<<1;
+				j++;
+				tmp--;
+			}
+		}
+	}
+	return ( result ); 
+}
+*/
+double frac( double x ) {
+	double sign=1,tmp,d;
+	if ( x <0 ) { sign=-1; x=-x; }
+	if ( x<1e1 ) d= 1e15;
+	else if ( x>=1e15 ) d= 1;
+	else if ( x>=1e14 ) d= 1e1;
+	else if ( x>=1e13 ) d= 1e2;
+	else if ( x>=1e12 ) d= 1e3;
+	else if ( x>=1e11 ) d= 1e4;
+	else if ( x>=1e10 ) d= 1e5;
+	else if ( x>=1e9 ) d= 1e6;
+	else if ( x>=1e8 ) d= 1e7;
+	else if ( x>=1e7 ) d= 1e8;
+	else if ( x>=1e6 ) d= 1e9;
+	else if ( x>=1e5 ) d= 1e10;
+	else if ( x>=1e4 ) d= 1e11;
+	else if ( x>=1e3 ) d= 1e12;
+	else if ( x>=1e2 ) d= 1e13;
+	else if ( x>=1e1 ) d= 1e14;
+	tmp=x-floor(x);
+	return (floor(tmp*d+.5)/d*sign) ;
+}
+
+double asinh( double x ) {
+	return ( (exp(x)+exp(-x))/2. );
+}
+double acosh( double x ) {
+	return ( (exp(x)-exp(-x))/2. );
+}
+double atanh( double x ) {
+	double ep=exp(x);
+	double em=exp(-x);
+	return ( (ep-em)/(ep+em) );
+}
+
+void CheckMathERR( double *result ) {
+	char * pt;
+	pt=(char *)(result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
 }
 
 //-----------------------------------------------------------------------------

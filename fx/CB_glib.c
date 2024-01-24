@@ -56,7 +56,7 @@ void Bdisp_PutDisp_DD_DrawBusy() {
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip() {
 	int t=RTC_GetTicks();
-	if ( t > skip_count ) { skip_count=t+2;
+	if ( abs(t-skip_count)>2 ) { skip_count=t;
 		Bdisp_PutDisp_DD_DrawBusy();
 	}
 }

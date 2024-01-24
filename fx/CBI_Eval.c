@@ -26,10 +26,103 @@
 
 #include "CBI_Eval.h"
 #include "CBI_interpreter.h"
-//------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> int
 //----------------------------------------------------------------------------------------------
+int EvalIntsubTop( char *SRC ) {	// eval 1
+	int c;
+	int excptr=ExecPtr;
+	int  result,dst;
+
+	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
+	result=EvalIntsub1(SRC);
+	c=SRC[ExecPtr];
+	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result;
+	else 
+	if ( c==0xFFFFFF89 ) { // +
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result+dst;
+	} else
+	if ( c==0xFFFFFF99 ) { // -
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result-dst;
+	} else
+	if ( c=='=') { // ==
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result == dst;
+	} else
+	if ( c=='>') { // >
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result > dst;
+	} else
+	if ( c=='<') { // <
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result < dst;
+	} else
+	if ( c==0x11) { // !=
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result != dst;
+	} else
+	if ( c==0x12) { // >=
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result >= dst;
+	} else
+	if ( c==0x10) { // <=
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result <= dst;
+	} else
+	if ( c==0xFFFFFFA9 ) { // ~
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*dst;
+	} else
+	if ( c==0xFFFFFFB9 ) { // €
+		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+		if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result/dst;
+	} else
+	if ( c==0xFFFFFF8B ) { // ^2
+		c=SRC[++ExecPtr];
+		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*result;
+	} else
+	if ( c==0x7F ) { // 
+		c=SRC[++ExecPtr];
+		if ( c==0xFFFFFFB0 ) { // And
+			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result & (int)dst;
+		} else
+		if ( c==0xFFFFFFB1 ) { // Or
+			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result | (int)dst;
+		} else
+		if ( c==0xFFFFFFB4 ) { // Xor
+			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
+			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result ^ (int)dst;
+		}
+	}
+
+	ExecPtr=excptr;
+	result = EvalIntsub13( SRC );
+	while ( 1 ) {
+		c = SRC[ExecPtr];
+		if ( c == 0x7F ) {
+			c = SRC[ExecPtr+1];
+			switch ( c ) {
+				case 0xFFFFFFB1 :	// Or
+					ExecPtr+=2;
+					result = ( (int)result | (int)EvalIntsub13( SRC ) );
+					break;
+				case 0xFFFFFFB4 :	// Xor
+					ExecPtr+=2;
+					result = ( (int)result ^ (int)EvalIntsub13( SRC ) );
+					break;
+				default:
+					return result;
+					break;
+			}
+		} else return result;
+	}
+}
+//-----------------------------------------------------------------------------
 int Eval_atod(char *SRC, int c ) {
 	int	result=0;
 	if ( c == '0' ) {
@@ -546,96 +639,3 @@ int EvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 	}
 }
 
-int EvalIntsubTop( char *SRC ) {	// eval 1
-	int c;
-	int excptr=ExecPtr;
-	int  result,dst;
-
-	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
-	result=EvalIntsub1(SRC);
-	c=SRC[ExecPtr];
-	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result;
-	else 
-	if ( c==0xFFFFFF89 ) { // +
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result+dst;
-	} else
-	if ( c==0xFFFFFF99 ) { // -
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result-dst;
-	} else
-	if ( c=='=') { // ==
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result == dst;
-	} else
-	if ( c=='>') { // >
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result > dst;
-	} else
-	if ( c=='<') { // <
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result < dst;
-	} else
-	if ( c==0x11) { // !=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result != dst;
-	} else
-	if ( c==0x12) { // >=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result >= dst;
-	} else
-	if ( c==0x10) { // <=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result <= dst;
-	} else
-	if ( c==0xFFFFFFA9 ) { // ~
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*dst;
-	} else
-	if ( c==0xFFFFFFB9 ) { // €
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-		if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result/dst;
-	} else
-	if ( c==0xFFFFFF8B ) { // ^2
-		c=SRC[++ExecPtr];
-		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result*result;
-	} else
-	if ( c==0x7F ) { // 
-		c=SRC[++ExecPtr];
-		if ( c==0xFFFFFFB0 ) { // And
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result & (int)dst;
-		} else
-		if ( c==0xFFFFFFB1 ) { // Or
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result | (int)dst;
-		} else
-		if ( c==0xFFFFFFB4 ) { // Xor
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
-			if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return (int)result ^ (int)dst;
-		}
-	}
-
-	ExecPtr=excptr;
-	result = EvalIntsub13( SRC );
-	while ( 1 ) {
-		c = SRC[ExecPtr];
-		if ( c == 0x7F ) {
-			c = SRC[ExecPtr+1];
-			switch ( c ) {
-				case 0xFFFFFFB1 :	// Or
-					ExecPtr+=2;
-					result = ( (int)result | (int)EvalIntsub13( SRC ) );
-					break;
-				case 0xFFFFFFB4 :	// Xor
-					ExecPtr+=2;
-					result = ( (int)result ^ (int)EvalIntsub13( SRC ) );
-					break;
-				default:
-					return result;
-					break;
-			}
-		} else return result;
-	}
-}
