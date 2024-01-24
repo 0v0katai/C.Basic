@@ -101,7 +101,7 @@ unsigned int SelectFile (char *filename)
 
 void FileListfree() {
 	if ( FileListUpdate ) {
-		if ( files != NULL ) free( files );
+		if ( UseHiddenRAM == 0 ) if ( files != NULL ) free( files );
 	}
 }
 
@@ -132,11 +132,14 @@ static int ReadFile( char *folder )
 	}
 	
 /*				Get Name & Size			*/
-	i = FavoritesMAX ;
-	files = (Files *)HiddenRAM();
+	if ( UseHiddenRAM ) if ( IsHiddenRAM )  files = (Files *)HiddenRAM();
 	if ( files == NULL ) files = (Files *)malloc( size*sizeof(Files) );
+	if ( files == NULL ) { 
+		while (1) MSG2("Not enough Memory","Please Restart");
+	}
 	memset( files, 0, size*sizeof(Files) );
 
+	i = FavoritesMAX ;
 	r =	Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
 	if ( r == 0 ) {
 		if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) ){
@@ -387,7 +390,7 @@ unsigned int Explorer( int size, char *folder )
 				PrintXY( 120, N_LINE*8, (unsigned char*)"\xE6\x93" , top + N_LINE - 1 == index );
 		}
 
-		if ( files[index].filesize == 0xFFFF ) Isfolder=1;
+		Isfolder= ( files[index].filesize == 0xFFFF ) ;
 		
 		GetKey(&key);
 		if ( KEY_CTRL_XTT  == key ) key='A';
@@ -711,8 +714,7 @@ char * loadFile( const char *name , int editMax)
 	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
 	if( buffer == NULL )
 	{
-		CB_Error(NotEnoughMemoryERR);
-		CB_ErrMsg( ErrorNo );
+		CB_ErrMsg(NotEnoughMemoryERR);
 		Bfile_CloseFile( handle );
 		return NULL;
 	}
@@ -1291,7 +1293,7 @@ void SaveConfig(){
 	buffer[10]='9';
 	buffer[11]='n';
 
-	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=0;
+	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=1-UseHiddenRAM;
 	bufshort[ 9]=DrawType;			bufshort[ 8]=0;
 	bufshort[11]=Coord;				bufshort[10]=0;
 	bufshort[13]=Grid;				bufshort[12]=0;
@@ -1375,7 +1377,7 @@ void LoadConfig(){
 		 ( buffer[10]=='9' ) &&
 		 ( buffer[11]=='n' ) ) {
 									// load config & memory
-		CB_INTDefault =bufshort[ 7];		
+		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =1-bufshort[6];
 		DrawType      =bufshort[ 9];        
 		Coord         =bufshort[11];        
 		Grid          =bufshort[13];        

@@ -760,7 +760,7 @@ const char ConvListF700[][17]={
 "",					// F7F9
 "@F7FA",			// F7FA
 "@F7FB",			// F7FB
-"@F7FC",			// F7FC
+"PutDispDD",			// F7FC
 "FkeyMenu(",			// F7FD
 "BackLight ",			// F7FE
 "",			// F7FF

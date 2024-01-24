@@ -480,6 +480,11 @@ int CB_interpreter_sub( char *SRC ) {
 						Skip_block(SRC);
 						dspflag=0;
 						break;
+					case 0xFFFFFFFC:	// PutDispDD
+						Bdisp_PutDisp_DD_DrawBusy();
+						dspflag=0;
+						UseGraphic=99;
+						break;
 					case 0xFFFFFFFD:	// Fkey(
 						CB_Fkey( SRC );
 						dspflag=0;
@@ -530,7 +535,7 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_MatFill(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFF0:	// graphY
+					case 0xFFFFFFE8:	// Dummy
 						goto strjp;
 //					case 0x51:	// List
 //						dspflagtmp=CB_ListCalc(SRC);

@@ -10,6 +10,8 @@
 
 struct st_round CB_Round = { Norm , 1} ; // Round
 int ENG=0;	// ENG flag
+char UseHiddenRAM=1;
+char IsHiddenRAM=0;
 
 //---------------------------------------------------------------------------------------------
 int CPU_check(void) {					// SH3:3 SH4A:4
@@ -27,8 +29,8 @@ void * HiddenRAM(void){
 	int KAA=0xAAAA;
 	char * HidAddress=NULL;
 
+	IsHiddenRAM=0;
 	a= *NorRAM;
-
 	*NorRAM=K55;
 	*HidRAM=KAA;
 	if ( *NorRAM != *HidRAM ) {
@@ -36,11 +38,11 @@ void * HiddenRAM(void){
 		*HidRAM=K55;
 		if ( *NorRAM != *HidRAM ) {
 			HidAddress=(char*)HidRAM;	// Hidden RAM Exist
-			*HidRAM=0;
+			IsHiddenRAM=1;
 		}
 	}
 	*NorRAM=a;
-	return HidAddress+16;
+	return HidAddress;
 }
 
 //---------------------------------------------------------------------------------------------
