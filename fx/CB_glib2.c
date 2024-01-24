@@ -875,48 +875,63 @@ double GraphXYEval( char *buffer, int *add ) {
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
 }
-int Graph_Draw_XY_List_sub( char *graph, double *dadd, int *listdirect ) {
+int Graph_Draw_XY_List_sub( char *graph, double *dadd, double *dmul, int *listdirect ) {
 	int c,reg,gp = 0;
 	int excptr = ExecPtr;
 	dspflag = 0;
 	ExecPtr = 0;
 	*dadd = 0.0;
+	*dmul = 1.0;
 	if (graph[0]=='{') {
-		gp = 1;
-		*listdirect = 1;
+		goto checklist;
 	} else {		// A+{ etc
 		CB_MatListAnsreg=28;
 		*dadd = Cplx_Evalsub1(graph).real;
 		if ( dspflag<3 ) {
-			c = graph[ExecPtr++];
+			c = graph[ExecPtr];
 			if ( c == 0xFFFFFF89 ) {	// +
+				ExecPtr++;
 				if ( graph[ExecPtr] == '{' ) {
+				  checklist:
 					gp = ExecPtr +1;
-//					Cplx_Evalsub1(graph);
 					Cplx_ListEvalsub1(graph);
 					c = graph[ExecPtr];
 					if ( ( c==',' ) || ( c==':' ) || ( c==')' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0x00 ) ) {
 						(*listdirect) = 1;
 						goto exit;
 					}
+				} else {
+				 checkmul:
+					*dmul = Cplx_Evalsub1(graph).real;
+					if ( dspflag<3 ) {
+						if ( graph[ExecPtr] == 0xFFFFFFA9 ) ExecPtr++;	// x
+						if ( graph[ExecPtr] == '{' ) goto checklist;	//A*{...}
+					}
 				}
+			} else {
+				if ( c == 0xFFFFFFA9 ) ExecPtr++;	// x
+				*dmul = *dadd;
+				*dadd = 0.0;
+				if ( graph[ExecPtr] == '{' ) goto checklist;	//A*{...}
 			}
 		}
 		gp = 0;
 		*dadd = 0;
+		*dmul = 1.0;
 	}
   exit:
 	ExecPtr = excptr;
 	return gp;
 }
 
-void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 2)
+void Graph_Draw_XY_List(int xlistreg, int ylistreg, int skipf ){	// Graph XY ( List 1, List 2)
 	double tmpX,tmpY;
 	double p_x=Previous_X;
 	double p_y=Previous_Y;
 	char *graphX=GraphX;
 	char *graphY=GraphY;
 	double xdadd=0,ydadd=0;
+	double xdmul=1,ydmul=1;
 	int XlistDirect=0,YlistDirect=0;
 	int sizeA,sizeA2;
 	int base=1,base2=1;
@@ -929,13 +944,13 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 		sizeA = 1;
 	} else {
 		sizeA = MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base;
-		graphX += Graph_Draw_XY_List_sub( graphX, &xdadd, &XlistDirect );
+		graphX += Graph_Draw_XY_List_sub( graphX, &xdadd, &xdmul, &XlistDirect );
 	}
 	if ( ylistreg==0 ) {
 		sizeA2 = 1;
 	} else {
 		sizeA2 = MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base;
-		graphY += Graph_Draw_XY_List_sub( graphY, &ydadd, &YlistDirect );
+		graphY += Graph_Draw_XY_List_sub( graphY, &ydadd, &ydmul, &YlistDirect );
 	}
 	if ( xlistreg && ylistreg ) {
 		if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -953,10 +968,10 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 		if ( TThetaptch == 0 ) return ;
 		while ( regT.real<=TThetamax ) {
 			//-----------------------------
-			regX.real = GraphXYEval(graphX, &addX) + xdadd;		// function
-			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( xlistreg, c, base );
-			regY.real = GraphXYEval(graphY, &addY) + ydadd;		// function
-			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( ylistreg, c, base2 );
+			regX.real = GraphXYEval(graphX, &addX)*xdmul + xdadd;		// function
+			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( CB_MatListAnsreg, c, base );
+			regY.real = GraphXYEval(graphY, &addY)*ydmul + ydadd;		// function
+			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( CB_MatListAnsreg, c, base2 );
 			if ( ErrorNo ) return ;
 			//-----------------------------
 //			if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
@@ -968,7 +983,7 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
 				Line( style , 1, 0);	// No error check
 			}
-//			Bdisp_PutDisp_DD();
+//			if ( skipf==0 ) Bdisp_PutDisp_DD_DrawBusy_skip();
 			regT.real += TThetaptch;
 			regintT   += TThetaptch;
 		}
@@ -1089,10 +1104,10 @@ int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4n( unsigned int n ){ return n; }	// align +4byte

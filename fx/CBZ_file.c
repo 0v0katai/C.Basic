@@ -684,7 +684,7 @@ unsigned int Explorer( int size, char *folder )
 		}
 //		locate(1, 1);Print((unsigned char*)"File List  [        ]");
 //		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
-		locate(1,1);Print((unsigned char*)"[        ]");
+		locate(1, 1);Print((unsigned char*)"[        ]");
 		if ( StorageMode & 2 ) {
 			locate(2,1);Print((unsigned char*)"Main Mem");
 		} else {
@@ -959,7 +959,7 @@ unsigned int Explorer( int size, char *folder )
 			
 			case KEY_CTRL_EXIT:
 				if ( ( nofile ) || ( index == StartLine ) ) key=KEY_CTRL_QUIT;
-				index = size;
+//				index = size;
 				cont =0 ;
 				break;
 				
@@ -1722,7 +1722,7 @@ void SetExt( char *ext ) {
 int SaveProgfile( int progNo ){
 	char *filebase;
 	char fname[64],fname2[64],sname[32],basname[32],basname2[32];
-	int size,i,r;
+	int size,i,r=1;
 	char *text;
 	int textptr;
 	int textsize;
@@ -1779,6 +1779,7 @@ int SaveProgfile( int progNo ){
 	  savetext:
 		storeFile( fname, (unsigned char*)text, textsize );
 		SetShortName( sname, fname);
+		r=0;
 	}
 	
 	strncpy( renamename, sname, FILENAMEMAX);
@@ -3065,7 +3066,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 	HiddenRAM_freeProg( filebase );
 	filebase = (char*)HiddenRAM_mallocProg( maxsize );
 	if ( filebase == NULL ) { CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } // 
-	memcpy2( filebase+maxsize-size, filebase, size );
+	memcpy2( filebase+maxsize-size, filebase, size+1 );
 	
 	SRC  = filebase+maxsize-size +0x56;
 	dest = filebase +0x56;
@@ -3625,17 +3626,17 @@ int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte

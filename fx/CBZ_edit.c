@@ -1368,7 +1368,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									if ( (ExitDebugModeCheck&2) ) {
 										if ( YesNo( "Exit Debug mode ?" )==0 ) break;
 									}
-									ExitDebugModeCheck&=1; 
+//									ExitDebugModeCheck&=1; 
 									BreakPtr=-7;	// return to main program
 									if ( ProgEntryN == 0 ) ExecPtr=csrPtr;
 								} else ExecPtr=csrPtr;

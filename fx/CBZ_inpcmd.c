@@ -406,7 +406,8 @@ void DispGenuineCmdMenu(){
 			switch ( CommandPage ) {
 				case 1:
 					FkeyClear( FKeyNo1 );
-					FkeyClear( FKeyNo2 );
+//					Fkey_Icon( FKeyNo1, 185 );	//  d/dx
+					Fkey_Icon( FKeyNo2, 187 );	//  Integral
 					Fkey_Icon( FKeyNo3, 190 );	//	Fkey_dspRB( FKeyNo3, " \xE5\x51( ");	// sigma
 					Fkey_Icon( FKeyNo4, 410 );	//	Fkey_dspRB( FKeyNo4, "logab");
 					FkeyClear( FKeyNo5 );

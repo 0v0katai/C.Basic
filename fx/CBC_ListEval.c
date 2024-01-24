@@ -382,6 +382,9 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 					CB_Mat2List( SRC );
 					return Int2Cplx( 0 );
 					
+				case 0x26 :				// dx/dy
+					return Dbl2Cplx( CB_Differ( SRC ) );
+					
 				case 0xFFFFFFCF :				// System(
 					return Int2Cplx( CB_System( SRC ) );
 				case 0xFFFFFFDF :				// Version
@@ -496,6 +499,9 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 			return Cplx_EvalFxDbl( &Cplx_facosh, Cplx_ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFFB3 :	// atanh
 			return Cplx_EvalFxDbl( &Cplx_fatanh, Cplx_ListEvalsub5( SRC ) ) ; 
+			
+		case 0xFFFFFF8D :	// integral
+			return  Dbl2Cplx( CB_Integral( SRC ) );
 			
 		case 0xFFFFFF80 :	// Pol( x, y ) -> r=List Ans[1] , Theta=List Ans[2]
 			tmp=Cplx_NoListEvalsubTop( SRC );
@@ -762,7 +768,8 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 			 ( c == 0xFFFFFFCE ) || // Theta
 			 ( c == 0xFFFFFFD0 ) || // const_PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
-			 ( c == 0xFFFFFFC1 )) { // Ran#
+			 ( c == 0xFFFFFFC1 ) || // Ran#
+			 ( c == 0xFFFFFF8D )) { // integral
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
 			c = SRC[ExecPtr+1];
@@ -818,6 +825,7 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 				case 0x6D :		// List4
 				case 0x6E :		// List5
 				case 0x6F :		// List6
+				case 0x26 :				// dx/dy
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 					break;
 				default:
