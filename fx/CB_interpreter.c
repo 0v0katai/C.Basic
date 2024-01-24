@@ -2716,177 +2716,6 @@ void CB_RclPict( char *SRC ) { //	RclPict
 	Bdisp_PutDisp_DD_DrawBusy();
 }
 
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-double CB_BinaryEval( char *SRC ) {	// eval 2
-	int c,op;
-	int reg,mptr,opPtr;
-	double src,dst;
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	
-	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='%' ) {
-			ExecPtr++;
-			src = REGINT[reg] ;
-		} else {
-			if ( c=='#' ) ExecPtr++;
-			src = REG[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x40 ) {	// Mat A[a,b]
-			ExecPtr+=2;
-			mptr=MatOprand( SRC, &reg);
-			if ( ErrorNo ) return ; // error
-			switch ( MatAryElementSize[reg] ) {
-				case 8:			// Matrix array doubl
-					src    = MatAry[reg][mptr] ;
-					break;
-				case 1:			// Matrix array char
-					MatAryC=(char*)MatAry[reg];
-					src    = MatAryC[mptr] ;
-					break;
-				case 2:			// Matrix array word
-					MatAryW=(short*)MatAry[reg];
-					src    = MatAryW[mptr] ;
-					break;
-				case 4:			// Matrix array int
-					MatAryI=(int*)MatAry[reg];
-					src    = MatAryI[mptr] ;
-					break;
-			}
-		}
-	} else  src = CB_Eval1(SRC);
-
-	opPtr=ExecPtr;
-	op=SRC[ExecPtr++];	
-	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='%' ) {
-			ExecPtr++;
-			dst = REGINT[reg] ;
-		} else {
-			if ( c=='#' ) ExecPtr++;
-			dst = REG[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x40 ) {	// Mat A[a,b]
-			ExecPtr+=2;
-			mptr=MatOprand( SRC, &reg);
-			if ( ErrorNo ) return ; // error
-			switch ( MatAryElementSize[reg] ) {
-				case 8:
-					dst = MatAry[reg][mptr] ;		// Matrix array doubl
-					break;
-				case 1:
-					MatAryC=(char*)MatAry[reg];
-					dst = MatAryC[mptr] ;			// Matrix array char
-					break;
-				case 2:
-					MatAryW=(short*)MatAry[reg];
-					dst = MatAryW[mptr] ;			// Matrix array word
-					break;
-				case 4:
-					MatAryI=(int*)MatAry[reg];
-					dst = MatAryI[mptr] ;			// Matrix array int
-					break;
-			}
-		}
-	} else  dst = CB_Eval1(SRC);
-
-//	ExecPtr++;
-	switch ( op ) {
-			case 0xFFFFFF89 :		// +
-				return src + dst;
-			case 0xFFFFFF99 :		// -
-				return src - dst;
-			case 0xFFFFFFA9 :		// ~
-				return src * dst;
-			case 0xFFFFFFB9 :		// €
-				if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				return src / dst;
-			case '=' :	// =
-				return src == dst;
-			case '>' :	// >
-				return src >  dst;
-			case '<' :	// <
-				return src <  dst;
-			case 0x11 :	// !=
-				return src != dst;
-			case 0x12 :	// >=
-				return src >= dst;
-			case 0x10 :	// <=
-				return src <= dst;
-			case 0xFFFFFFB0 :	// And
-				return (int)src & (int)dst;
-			case 0xFFFFFFB1 :	// Or
-				return (int)src | (int)dst;
-			default:
-				{ ErrorNo=SyntaxERR; ErrorPtr=opPtr; return; }  // Syntax error
-				break;
-	}
-}
-
-double CB_UnaryEval( char *SRC ) {	// eval 1
-	int c,op;
-	int reg,mptr,opPtr;
-	double src,dst;
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	
-	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='%' ) {
-			ExecPtr++;
-			return REGINT[reg] ;
-		} else {
-			if ( c=='#' ) ExecPtr++;
-			return REG[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x40 ) {	// Mat A[a,b]
-			ExecPtr+=2;
-			mptr=MatOprand( SRC, &reg);
-			if ( ErrorNo ) return ; // error
-			switch ( MatAryElementSize[reg] ) {
-				case 8:
-					return  MatAry[reg][mptr] ;		// Matrix array double
-					break;
-				case 1:
-					MatAryC=(char*)MatAry[reg];
-					return  MatAryC[mptr] ;			// Matrix array char
-					break;
-				case 2:
-					MatAryW=(short*)MatAry[reg];
-					return  MatAryW[mptr] ;			// Matrix array word
-					break;
-				case 4:
-					MatAryI=(int*)MatAry[reg];
-					return  MatAryI[mptr] ;			// Matrix array int
-					break;
-			}
-		}
-	} else  return CB_Eval1(SRC);
-}
-
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -3405,6 +3234,177 @@ void CB_Prog( char *SRC ) { //	Prog "..."
 	ExecPtr = StackProgExecPtr ;
 	ProgNo  = ProgNo_bk;
 }
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+double CB_BinaryEval( char *SRC ) {	// eval 2
+	int c,op;
+	int reg,mptr,opPtr;
+	double src,dst;
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	
+	c=SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+		ExecPtr++;
+		reg=c-'A';
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
+			src = REGINT[reg] ;
+		} else {
+			if ( c=='#' ) ExecPtr++;
+			src = REG[reg] ;
+		}
+	} else 
+	if ( c==0x7F ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( c == 0x40 ) {	// Mat A[a,b]
+			ExecPtr+=2;
+			mptr=MatOprand( SRC, &reg);
+			if ( ErrorNo ) return ; // error
+			switch ( MatAryElementSize[reg] ) {
+				case 8:			// Matrix array doubl
+					src    = MatAry[reg][mptr] ;
+					break;
+				case 1:			// Matrix array char
+					MatAryC=(char*)MatAry[reg];
+					src    = MatAryC[mptr] ;
+					break;
+				case 2:			// Matrix array word
+					MatAryW=(short*)MatAry[reg];
+					src    = MatAryW[mptr] ;
+					break;
+				case 4:			// Matrix array int
+					MatAryI=(int*)MatAry[reg];
+					src    = MatAryI[mptr] ;
+					break;
+			}
+		}
+	} else  src = CB_Eval1(SRC);
+
+	opPtr=ExecPtr;
+	op=SRC[ExecPtr++];	
+	c=SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+		ExecPtr++;
+		reg=c-'A';
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
+			dst = REGINT[reg] ;
+		} else {
+			if ( c=='#' ) ExecPtr++;
+			dst = REG[reg] ;
+		}
+	} else 
+	if ( c==0x7F ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( c == 0x40 ) {	// Mat A[a,b]
+			ExecPtr+=2;
+			mptr=MatOprand( SRC, &reg);
+			if ( ErrorNo ) return ; // error
+			switch ( MatAryElementSize[reg] ) {
+				case 8:
+					dst = MatAry[reg][mptr] ;		// Matrix array doubl
+					break;
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					dst = MatAryC[mptr] ;			// Matrix array char
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					dst = MatAryW[mptr] ;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					dst = MatAryI[mptr] ;			// Matrix array int
+					break;
+			}
+		}
+	} else  dst = CB_Eval1(SRC);
+
+//	ExecPtr++;
+	switch ( op ) {
+			case 0xFFFFFF89 :		// +
+				return src + dst;
+			case 0xFFFFFF99 :		// -
+				return src - dst;
+			case 0xFFFFFFA9 :		// ~
+				return src * dst;
+			case 0xFFFFFFB9 :		// €
+				if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+				return src / dst;
+			case '=' :	// =
+				return src == dst;
+			case '>' :	// >
+				return src >  dst;
+			case '<' :	// <
+				return src <  dst;
+			case 0x11 :	// !=
+				return src != dst;
+			case 0x12 :	// >=
+				return src >= dst;
+			case 0x10 :	// <=
+				return src <= dst;
+			case 0xFFFFFFB0 :	// And
+				return (int)src & (int)dst;
+			case 0xFFFFFFB1 :	// Or
+				return (int)src | (int)dst;
+			default:
+				{ ErrorNo=SyntaxERR; ErrorPtr=opPtr; return; }  // Syntax error
+				break;
+	}
+}
+
+double CB_UnaryEval( char *SRC ) {	// eval 1
+	int c,op;
+	int reg,mptr,opPtr;
+	double src,dst;
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	
+	c=SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+		ExecPtr++;
+		reg=c-'A';
+		c=SRC[ExecPtr];
+		if ( c=='%' ) {
+			ExecPtr++;
+			return REGINT[reg] ;
+		} else {
+			if ( c=='#' ) ExecPtr++;
+			return REG[reg] ;
+		}
+	} else 
+	if ( c==0x7F ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( c == 0x40 ) {	// Mat A[a,b]
+			ExecPtr+=2;
+			mptr=MatOprand( SRC, &reg);
+			if ( ErrorNo ) return ; // error
+			switch ( MatAryElementSize[reg] ) {
+				case 8:
+					return  MatAry[reg][mptr] ;		// Matrix array double
+					break;
+				case 1:
+					MatAryC=(char*)MatAry[reg];
+					return  MatAryC[mptr] ;			// Matrix array char
+					break;
+				case 2:
+					MatAryW=(short*)MatAry[reg];
+					return  MatAryW[mptr] ;			// Matrix array word
+					break;
+				case 4:
+					MatAryI=(int*)MatAry[reg];
+					return  MatAryI[mptr] ;			// Matrix array int
+					break;
+			}
+		}
+	} else  return CB_Eval1(SRC);
+}
+
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
