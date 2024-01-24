@@ -421,29 +421,11 @@ int CB_GetLocatetOpcode(char *SRC, char *buffer, int Maxlen) {
 }
 
 void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) {
-	char tmpbuf[18];
-	int i,j=0,len,ptr=0;
-	int c=1;
-	while ( c != '\0' ) {
-		c = SRC[ExecPtr++] ; 
-		if ( c==0x22 ) break ; // "
-		else
-		if ( c==0x0D ) break ; // <CR>
-		else
-		if ( c==0x5C ) // Backslash
-			c = SRC[ExecPtr++]&0xFF ;
-		else
-		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) 
-			c = ( ( c & 0xFF )<< 8 ) + (SRC[ExecPtr++]&0xFF);
-		else c = c & 0xFF;
-
-		CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
-		len = strlen( (char*)tmpbuf ) ;
-		i=0;
-		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
-		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
-	}
-	buffer[ptr]='\0' ;
+	int i,maxoplen;
+	char *buffer2;
+	buffer2 = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return ;			// error
+	OpcodeStringToAsciiString( buffer, buffer2, Maxlen );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1109,6 +1091,46 @@ int CB_StrDMS( char *SRC ) {
 	CB_CurrentStr[10+i+j]='\0';
 
 	CB_StrPrint(SRC, 23-(10+i+j) );
+}
+
+
+//--------------------------------------------------------------
+
+void CB_Fkey( char *SRC) {
+	char buffer[9];
+	int c;
+	int n;
+
+	if ( RangeErrorCK(SRC) ) return;
+	CB_SelectGraphVRAM();	// Select Graphic Screen
+	n=CB_EvalInt( SRC );
+	if ( ( n<1 )||(n>6) ) { CB_Error(ArgumentERR); return; }	// Argumenterror
+	c=SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	ExecPtr++;
+	CB_GetLocateStr( SRC, buffer, 8 );		// String -> buffer	return 
+	c=SRC[ExecPtr];
+	if ( c != ',' )	Fkey_dispN( n-1 ,buffer);	// Normal
+	else {
+		ExecPtr++;	
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 'C':
+			case 'c':
+				Fkey_Clear( n-1 );			// clear
+				break;
+			case 'R':
+			case 'r':
+				Fkey_dispR( n-1 ,buffer);	// Reverse
+				break;
+			case 'N':
+			case 'n':
+				Fkey_dispN( n-1 ,buffer);	// Normal
+				break;
+		}
+	}
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
 }
 
 //----------------------------------------------------------------------------------------------

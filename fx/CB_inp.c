@@ -638,6 +638,7 @@ const short oplistVARS[]={
 		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
+		0xF7FD, // FKey(
 		0xF7FE,	// BackLight
 		0};
 
@@ -937,7 +938,7 @@ const short oplistCMD[]={
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
-		0x5C,	// 
+		0xF7FD, // FKey(
 		0x23,	// #
 		0x25,	// %
 
@@ -1276,6 +1277,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7EF, "Load(" }, 
 	{ 0xF7F0, "DotShape(" }, 
 	{ 0xF7F1, "Local " }, 
+	{ 0xF7FD, "FKeyMenu(" }, 
 	{ 0xF7FE, "BackLight " }, 
 	{ 0xF930, "StrJoin(" }, 
 	{ 0xF931, "StrLen(" }, 
@@ -1472,7 +1474,8 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 		}
 		
 		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
-		if ( ( pallet_mode ) && ( alpha_mode ) ) Fkey_dispR(4,"CHAR");
+		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_dispR(4,"CHAR"); }
+
 
 		CursorStyle=Cursor_GetFlashStyle();
 		if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
@@ -1536,6 +1539,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					key=SelectChar( &ContinuousSelect);
 					if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
+				break;
+			case KEY_CTRL_F6:	// !=
+				key='/';
 				break;
 			case KEY_CTRL_SHIFT:
 				alphalock = 0 ;
