@@ -52,7 +52,7 @@ void VerDispSub( int flag ) {
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2020" );
 
-	PrintMini(13*6+2, 2*8+1, (unsigned char*)" build 06", MINI_OVER );
+	PrintMini(13*6+2, 2*8+1, (unsigned char*)" build 12", MINI_OVER );
 	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
@@ -87,6 +87,9 @@ int CB_System( char *SRC ) {	// System( n )
 	switch ( CB_EvalInt( SRC ) ) {
 		case -9:
 			r=TryFlag; if ( r>1 ) r--;
+			break;
+		case -7:
+			r=IsEmu;
 			break;
 		case -5:
 			r=GetMemFree();
@@ -875,6 +878,7 @@ int SetVar(int select){		// ----------- Set Variable
 	int opNum=25+3,lnum;
 	int small=0;
 	complex value={0,0};
+	int bk_CB_INT=CB_INT;
 	int VarMode=CB_INT;	// 0:double or complex  1:int
 	int hex=0;	// 0:normal  1:hex
 
@@ -926,10 +930,21 @@ int SetVar(int select){		// ----------- Set Variable
 		if ( small == 58  ) Fkey_dispN( FKeyNo1, "_Var");
 
 		Fkey_Icon( FKeyNo2,  95 );	//	Fkey_dispN( FKeyNo2, "Init");
-		if ( VarMode ) Fkey_dispN_aA( 2, "D<>I"); else Fkey_dispN_Aa( 2, "D<>I");
+//		if ( VarMode ) Fkey_dispN_aA( 2, "D<>I"); else Fkey_dispN_Aa( 2, "D<>I");
 		if ( hex ) Fkey_dispN( FKeyNo6, "\xE6\x91\x44\x65\x63"); else Fkey_dispN( FKeyNo6, "\xE6\x91Hex");
 
-		locate(12,8); SetVarDsp(VarMode);
+//		locate(12,8); SetVarDsp(VarMode);
+		Fkey_dispN( FKeyNo3, "INT%");
+		Fkey_dispN( FKeyNo4, "DBL#");
+		Fkey_dispN( FKeyNo5, "CPLX");
+		if ( VarMode ) {
+//			locate(12,8); Prints((unsigned char*)"[INT%]");
+//			CB_PrintMinix3( 4*12, 8*7+1, (unsigned char*)"[INT%]");
+			Fkey_dspRB( FKeyNo3, "INT%");
+		} else {
+			if ( CB_INT==0 ) Fkey_dspRB( FKeyNo4, "DBL#");
+			else	Fkey_dspRB( FKeyNo5, "CPLX");
+		}
 
 		y = (select-seltop) ;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
@@ -974,7 +989,19 @@ int SetVar(int select){		// ----------- Set Variable
 				InitVar(value,VarMode, small);
 				break;
 			case KEY_CTRL_F3:
-				VarMode=1-VarMode;
+				CB_INT = 1;		// INT#
+				VarMode=1;
+				ExpBuffer[0]='\0';
+				break;
+			case KEY_CTRL_F4:
+				CB_INT = 0;		// DBL#
+				VarMode=0;
+				ExpBuffer[0]='\0';
+				break;
+			case KEY_CTRL_F5:
+				CB_INT = 2;		// CPLX
+				VarMode=0;
+				ExpBuffer[0]='\0';
 				break;
 			case KEY_CTRL_F6:
 				hex=1-hex;

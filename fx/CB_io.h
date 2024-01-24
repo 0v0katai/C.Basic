@@ -67,10 +67,17 @@ void Fkey_dispR(int ,char *);
 void Fkey_DISPN(int ,char *);
 void Fkey_DISPR(int ,char *);
 void FkeyClear(int );
+void FkeyClearN(int n, int m);
 void FkeyClearAll();
 void Fkey_Icon(int n, int IconNo);
 void Fkey_dispN_Aa(int n, char *buffer) ;
 void Fkey_dispN_aA(int n, char *buffer) ;
+void Fkey_dispN_ext(int ,char *, int ofset, int extend);
+void Fkey_dispR_ext(int ,char *, int ofset, int extend);
+void Fkey_dispRB_ext(int ,char *, int ofset, int extend);
+void Fkey_dispRS_ext(int ,char *, int ofset, int extend);
+void PrintMiniXY(int X, int Y, char*buf, int mode, int xlength ) ;	// xlength : 19 fkeyicon
+void FkeyMask(int n) ;
 
 
 void Hex8PrintXY(int , int , char *, unsigned int );

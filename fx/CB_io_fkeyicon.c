@@ -85,9 +85,12 @@ void Fkey_Icon(int n, int IconNo){
 void FkeyClear(int n) {
 	Fkey_Icon(n, 0 );	// clear
 }
+void FkeyClearN(int n, int m){
+	int i;
+	for (i=n; i<=n+m; i++ ) FkeyClear( i );
+}
 void FkeyClearAll(){
-	int n;
-	for (n=0; n<6; n++ ) FkeyClear( n );
+	FkeyClearN( 0, 5 );
 }
 void Fkey_dispN(int n,char *buffer) {
 	FkeyClear(n);
@@ -95,7 +98,6 @@ void Fkey_dispN(int n,char *buffer) {
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
-//	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
 }
 void Fkey_dspRB(int n,char *buffer) {
 	int i;
@@ -117,7 +119,6 @@ void Fkey_DISPN(int n,char *buffer) {
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
-//	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
 }
 void Fkey_DISPR(int n,char *buffer) {
 	FkeyClear(n);
@@ -134,3 +135,51 @@ void Fkey_dispN_aA(int n, char *buffer) {
 	Bdisp_AreaReverseVRAM( n*21+15, 7*8+1, n*21+20, 7*8+7);	// reverse
 }
 
+void Fkey_dispN_ext(int n,char *buf, int ofset, int extend ) {
+	int m=(n+extend);
+	FkeyClearN(n, extend);
+	PrintMiniXY(n*21+4-(ofset!=0), 7*8+2, buf, MINI_OVER | 0x100, 16 +(ofset!=0)*3 +21*extend );
+	Bdisp_DrawLineVRAM(n*21+2, 7*8+0, m*21+20, 7*8+0);
+	Bdisp_DrawLineVRAM(n*21+2, 7*8+0, n*21+2 , 7*8+7);
+//	Bdisp_ClearLineVRAM(n*21+3, 7*8+1, n*21+3, 7*8+7);
+}
+void Fkey_dispR_ext(int n,char *buf, int ofset, int extend ) {
+	int m=(n+extend);
+	Fkey_dispRB_ext(n, buf, ofset, extend );
+	Bdisp_ClearLineVRAM(m*21+20,7*8+5,m*21+20,7*8+5);
+	Bdisp_ClearLineVRAM(m*21+19,7*8+6,m*21+20,7*8+6);
+	Bdisp_ClearLineVRAM(m*21+18,7*8+7,m*21+20,7*8+7);
+}
+
+void Fkey_dispRB_ext(int n,char *buf, int ofset, int extend ) {
+	int m=(n+extend);
+	int i;
+	FkeyClearN(n, extend);
+	for (i=0;i<8;i++) Bdisp_DrawLineVRAM(n*21+2, 7*8+i, m*21+20, 7*8+i);
+	PrintMiniXY(n*21+4-(ofset!=0), 7*8+2, buf, MINI_REV | 0x100, 16 +(ofset!=0)*3 +21*extend );
+	Bdisp_ClearLineVRAM(m*21+21, 7*8+0, m*21+21, 7*8+7);
+	Bdisp_ClearLineVRAM(m*21+22, 7*8+0, m*21+22, 7*8+7);
+}
+void Fkey_dispRS_ext(int n,char *buf, int ofset, int extend ) {	// black select
+	int m=(n+extend);
+	Fkey_dispN_ext(n, buf, ofset, extend );
+	Bdisp_DrawLineVRAM(n*21+2,  7*8+7, m*21+20, 7*8+7);
+	Bdisp_DrawLineVRAM(m*21+20, 7*8+0, m*21+20, 7*8+7);
+	
+}
+
+void PrintMiniXY(int X, int Y, char*buf, int mode, int xlength ) {	// xlength : 19 fkeyicon 
+	int k,i,j;
+	j=CB_PrintMiniLengthStr( (unsigned char *)buf, mode );
+	i=(xlength +j)/2-j; if ( i<0 ) i=0;
+	CB_PrintMini( X+i, Y, (unsigned char *)buf, mode  );	// extflag on
+}
+
+void FkeyMask(int n ) {
+	int x,y;
+	for( y=7*8; y<=7*8+7; y++) {
+		for( x=n*21+0; x<=n*21+20; x++) {
+			if(y&1^x&1) BdispSetPointVRAM2(x,y,0);	//Clear
+		}
+	}
+}

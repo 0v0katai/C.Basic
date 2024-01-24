@@ -276,7 +276,7 @@ void Cplx_sprintGR1s( char* buffer, complex num, int width, int align_mode, int 
 	int i,w,oplen;
 	a = num.real;
 	b = num.imag;
-	if ( b==0 ) sprintGR( buffer, a, width, align_mode, round_mode, round_digit);	// real
+	if ( ( CB_INT==0 ) || ( b==0 ) ) sprintGR( buffer, a, width, align_mode, round_mode, round_digit);	// real
 	else {
 		if ( ComplexMode == 2 ) { // r_theta
 			r = fpolr( a, b);
@@ -324,7 +324,7 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 	char buffer2[64];
 	char buffer3[64];
 	int k,oplen,rlen,ilen,rwidth,iwidth;
-	if ( ( num.real==0 ) || (num.imag==0) ) {
+	if ( ( CB_INT==0 ) || ( num.real==0 ) || (num.imag==0) ) {
 		Cplx_sprintGR1( buffer, num, width, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
 	} else {
@@ -384,7 +384,7 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 		}
 		goto GR2j;
 	} else
-	if ( b==0 ) {
+	if ( ( CB_INT==0 ) || ( b==0 ) ) {
 		sprintGR( buffer, a, width, align_mode, round_mode, round_digit);	// real
 		buffer2[0]='\0';
 	} else { buffer[0]='\0'; 
@@ -446,7 +446,9 @@ void Cplx_sprintGR2SRC( char* SRC, char* buffer, char* buffer2, complex num, int
 		if ( c==0x07 ) { ExecPtr++; ComplexMode = 2; }	// >r_theta
 	}
 	Cplx_sprintGR2(buffer, buffer2, num, width, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo==0 ) { strcpy( CB_CurrentStr, buffer ); strcat( CB_CurrentStr, buffer2 ); }
+	if ( ComplexMode == 3 ) {
+		CB_CurrentStr=NewStrBuffer(); if ( ErrorNo==0 ) { strcpy( CB_CurrentStr, buffer ); strcat( CB_CurrentStr, buffer2 ); }
+	}
 	ComplexMode=Cplx_bk;
 }
 //----------------------------------------------------------------------------------------------
