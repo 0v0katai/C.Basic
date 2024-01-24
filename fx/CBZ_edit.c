@@ -1016,7 +1016,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 
  	filebase = ProgfileAdrs[ProgNo];
 	SrcBase  = filebase+0x56;
-//	if ( SrcBase[ExecPtr]== 0 ) ExecPtr = 0;
+	i = EndOfSrc( SrcBase, 0 );
+	if ( i < ExecPtr ) ExecPtr = i;
 	offset = ExecPtr;
 	csrPtr = offset;
 	CursorStyle=0;	// insert mode
@@ -2025,7 +2026,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								EditPaste( filebase, ClipBuffer, &csrPtr, &Undo );
 								x=1; y=0; ptr=0;
 								OpcodeLineN( ClipBuffer, &ptr, &x, &y );
-								if ( ( y >= (ymax-cy) ) || ( y >= ymax ) ) {
+								if ( ( y >= (ymaxpos-cy) ) || ( y >= ymax ) ) {
 									offset=csrPtr;
 									offset_y=0;
 									PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust

@@ -334,6 +334,7 @@ void CB_PlotSub( char *SRC, int mode ); //	mode  1:PlotOn  0:PlotOff  2:PlotChg
 void CB_Circle( char *SRC ) ; //	Circle
 void CB_PxlSub( char *SRC, int mode ) ; //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 
+void RclPictOr( char *pict ) ;
 void StoPict( int pictNo);
 void RclPict( int pictNo, int errorcheck);
 void CB_DrawGraph(  char *SRC );
