@@ -1628,25 +1628,28 @@ void CB_If( char *SRC, CchIf *Cache ){
 	j=0; i=Cache->TOP;
 	while ( j<Cache->CNT ) {
 		if ( Cache->Ptr[i]==ExecPtr ) { 	// adrs ok
-			if ( i==Cache->TOP ) { ExecPtr=Cache->Adrs[i]; return ; }	// top of cache
+			if ( i==Cache->TOP ) { ExecPtr=Cache->Adrs[i]; goto exit; }	// top of cache
 			ii=i-1; if ( ii < 0 ) ii=IfCntMax-1;
 			execptr=Cache->Adrs[i];	// 2nd- of cache level up
 			Cache->Ptr[i]=Cache->Ptr[ii];
 			Cache->Adrs[i]=Cache->Adrs[ii];
 			Cache->Ptr[ii]=ExecPtr;
 			Cache->Adrs[ii]=execptr;
-			ExecPtr=execptr; return;
+			ExecPtr=execptr;
+		  exit:
+			if ( SRC[ExecPtr-1]==0x0F ) goto loop;	// ElseIf
+			return;
 		}
 		j++;
 		i++; if ( i >= IfCntMax ) i=0;
 	}
 	execptr=ExecPtr;
 	stat=Search_ElseIfEnd( SRC );
-	if ( stat == 0x0F ) goto loop; 	// ElseIf
 	if ( Cache->CNT < IfCntMax ) Cache->CNT++;
 	Cache->TOP--; if ( Cache->TOP<0 ) Cache->TOP=IfCntMax-1;
 	Cache->Ptr[Cache->TOP] =execptr;
 	Cache->Adrs[Cache->TOP]=ExecPtr;
+	if ( stat == 0x0F )  goto loop;	// ElseIf
 }
 
 void CB_Else( char *SRC, CchIf *Cache ){
@@ -3006,9 +3009,9 @@ int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
