@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.10                                       */
+/*   inp Library  ver 1.11                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -82,13 +82,13 @@ short CharKANA[]= {
 short *oplist=CharMATH;
 int CharPtr=0;
 
-unsigned int SelectChar() {
+int SelectChar( int *ContinuousSelect ) {
 
 	int cont=1, x,y,cx,cy,ptr,scrl=0;
 	unsigned int key;
 	char tmpbuf[18];
 	short opcode;
-	int opNum=0 ;
+	int opNum=0, n ;
 
 	SaveDisp(SAVEDISP_PAGE1);		// --------
 	Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -97,10 +97,15 @@ unsigned int SelectChar() {
 		opNum=0;
 		while ( oplist[opNum++] ) ;
 		opNum-=2;
+		if ( CharPtr > opNum ) CharPtr=opNum;
 		if ( scrl == 0 ) if ( CharPtr>=114 ) scrl=1;
 		if ( scrl == 1 ) if ( CharPtr<  19 ) scrl=0;
 		Bdisp_AllClr_VRAM();
-		locate(1,1); Print((unsigned char*)"==Character Select===");
+		if ( *ContinuousSelect ) {
+			locate(1,1); PrintRev((unsigned char*)"==Continuous Select==");
+		} else {
+			locate(1,1);    Print((unsigned char*)"==Character Select===");
+		}
 		x=2; y=2;
 		opcode=1;
 		while ( opcode ) {
@@ -126,6 +131,16 @@ unsigned int SelectChar() {
 		Fkey_dispN( 4, "ABC");
 		Fkey_KDISPN(5, "\xFF\xA7\xFF\xA8\xFF\xA9");
 		
+		if ( *ContinuousSelect ) {
+			if ( oplist == CharMATH ) n=0;
+			if ( oplist == CharSYBL ) n=1;
+			if ( oplist == CharABT  ) n=2;
+			if ( oplist == Charabr  ) n=3;
+			if ( oplist == CharABC  ) n=4;
+			if ( oplist == CharKANA ) n=5;
+			Bdisp_AreaReverseVRAM( n*21+3, 7*8+1, n*21+20, 7*8+7);	// reverse Fkey
+		}
+		
 		cx=(CharPtr%19)+2;
 		cy=(CharPtr/19)+2-scrl;
 		locate(cx,cy);
@@ -134,38 +149,41 @@ unsigned int SelectChar() {
 		switch (key) {
 			case KEY_CTRL_AC:
 				RestoreDisp(SAVEDISP_PAGE1);	// --------
+				*ContinuousSelect=0;
 				return 0;	// input cancel
 				break;
 			case KEY_CTRL_EXIT:
+			case KEY_CTRL_QUIT:
 				RestoreDisp(SAVEDISP_PAGE1);	// --------
+				*ContinuousSelect=0;
 				return 0;	// input cancel
 				break;
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
 			case KEY_CTRL_F1:	// CharMATH
+				if (oplist==CharMATH) *ContinuousSelect=1-*ContinuousSelect;
 				oplist=CharMATH;
-				CharPtr=0;
 				break;
 			case KEY_CTRL_F2:	// CharSYBL
+				if (oplist==CharSYBL) *ContinuousSelect=1-*ContinuousSelect;
 				oplist=CharSYBL;
-				CharPtr=0;
 				break;
 			case KEY_CTRL_F3:	// CharABT
+				if (oplist==CharABT) *ContinuousSelect=1-*ContinuousSelect;
 				oplist=CharABT;
-				CharPtr=0;
 				break;
 			case KEY_CTRL_F4:	// Charabr
+				if (oplist==Charabr) *ContinuousSelect=1-*ContinuousSelect;
 				oplist=Charabr;
-				CharPtr=0;
 				break;
 			case KEY_CTRL_F5:	// CharABC
+				if (oplist==CharABC) *ContinuousSelect=1-*ContinuousSelect;
 				oplist=CharABC;
-				CharPtr=0;
 				break;
 			case KEY_CTRL_F6:	// CharKANA
+				if (oplist==CharKANA) *ContinuousSelect=1-*ContinuousSelect;
 				oplist=CharKANA;
-				CharPtr=0;
 				break;
 			case KEY_CTRL_LEFT:
 				CharPtr--; if ( CharPtr < 0 ) CharPtr=opNum;
@@ -174,11 +192,16 @@ unsigned int SelectChar() {
 				CharPtr++; if ( CharPtr > opNum ) CharPtr=0;
 				break;
 			case KEY_CTRL_UP:
+			case KEY_CTRL_PAGEUP:
 				CharPtr-=19; if ( CharPtr < 0 ) CharPtr=opNum;
 				break;
 			case KEY_CTRL_DOWN:
+			case KEY_CTRL_PAGEDOWN:
 				if ( CharPtr == opNum ) { CharPtr= 0; break; }
 				CharPtr+=19; if ( CharPtr > opNum ) CharPtr=opNum;
+				break;
+			case KEY_CTRL_SHIFT:
+				*ContinuousSelect=1-*ContinuousSelect;
 				break;
 			default:
 				break;
@@ -186,7 +209,7 @@ unsigned int SelectChar() {
 	}
 	
 	RestoreDisp(SAVEDISP_PAGE1);	// --------
-	return ( oplist[ CharPtr ] );
+	return ( (unsigned int)oplist[ CharPtr ] );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -228,6 +251,7 @@ int SelectOpcode( short *oplist, int *select) {
 		GetKey( &key );
 		switch (key) {
 			case KEY_CTRL_EXIT:
+			case KEY_CTRL_QUIT:
 				RestoreDisp(SAVEDISP_PAGE1);
 				return 0;
 			case KEY_CTRL_EXE:
@@ -576,6 +600,7 @@ int SelectOpcode5800P( short *oplist, int *select) {
 		GetKey( &key );
 		switch (key) {
 			case KEY_CTRL_EXIT:
+			case KEY_CTRL_QUIT:
 				RestoreDisp(SAVEDISP_PAGE1);
 				return 0;
 			case KEY_CTRL_EXE:
@@ -614,10 +639,12 @@ int SelectOpcode5800P( short *oplist, int *select) {
 				*select = opNum;
 				break;
 			case KEY_CTRL_UP:
+			case KEY_CTRL_PAGEUP:
 				(*select)-=12;
 				if ( *select < 0 ) *select = opNum;
 				break;
 			case KEY_CTRL_DOWN:
+			case KEY_CTRL_PAGEDOWN:
 				(*select)+=12;
 				if ( *select >= opNum ) *select =0;
 				break;
@@ -1321,6 +1348,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	int oplen,oplenL,oplenR;
 	int selectOPTN=0;
 	int alphalock = 0 ;
+	int ContinuousSelect=0;
 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
@@ -1359,7 +1387,8 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 //		sprintf(buf,"len=%2d ptr=%2d off=%2d   csr=%2d  ",length,ptrX,offsetX,csrX); PrintMini( 0,7*8+2,(unsigned char *)buf, MINI_OVER);
 
-		GetKey(&key);
+		if ( ContinuousSelect ) key=KEY_CTRL_F5; else GetKey(&key);
+		
 		switch (key) {
 			case KEY_CTRL_AC:
 				if ( length==0 ) cont=0;
@@ -1368,6 +1397,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				alphalock = 0 ;
 				break;
 			case KEY_CTRL_EXIT:
+			case KEY_CTRL_QUIT:
 			 	if ( exit_cancel == 0 ) {
 					cont=0;
 					for(i=0; i<=MaxStrlen; i++) buffer[i]=buffer2[i]; // restore
@@ -1407,7 +1437,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 			case KEY_CTRL_F5:
 				Cursor_SetFlashMode(0); 		// cursor flashing off
 				if ( ( pallet_mode ) && ( alpha_mode ) ) {
-					key=SelectChar();
+					key=SelectChar( &ContinuousSelect);
 					if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
 				break;
