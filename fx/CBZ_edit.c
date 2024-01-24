@@ -4,6 +4,7 @@
 //char ClipBuffer[ClipMax];
 char *ClipBuffer;
 char DisableDebugMode=0;	// 0:enable debug mode
+char ExitDebugModeCheck=0;  // ExitDebugModeCheck
 char ForceDebugMode;
 char DebugMode=0;	// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
 char ScreenModeEdit=0;
@@ -910,6 +911,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		
 	KeyRecover();
 	while ( cont ) {
+		if ( DebugMode==0 ) DebugMenuSw=0; 
 		mini=(EditFontSize & 0x0F);
 		if ( mini ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
 		if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; }
@@ -1006,7 +1008,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					Fkey_Icon( FKeyNo1, 165 );	//	Fkey_dispR( FKeyNo1, "SRC ");
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo5 );
-					FkeyClear( FKeyNo6 );
+					Fkey_Icon( FKeyNo6,  276 );	//	Fkey_dispN( FKeyNo6, "RETRY");
 					switch ( SearchMode ) {
 						case 1:
 							FkeyClear( FKeyNo2 );
@@ -1174,6 +1176,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_EXIT:
 					while ( KeyCheckEXIT() ) ;
+				  exitjp:
 					if ( SearchMode ) {
 						SearchMode=0;		//	Search mode cancel
 					} else {
@@ -1184,7 +1187,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						} else { 
 							if ( JumpMenuSw  ) { JumpMenuSw  = 0; break; }
 							if ( DebugScreen ) { DebugScreen = 0; break; }
-							if ( ClipEndPtr < 0 ) cont=0;
+							if ( ClipEndPtr < 0 ) {
+								if ( DebugMode >=1 ) {	// debug mode
+									if ( ( ExitDebugModeCheck==0 ) || ( YesNo( "Exit Debug mode ?" ) ) ) cont=0;
+								} else cont=0;
+							}
 						}
 					}
 					ClipStartPtr = -1 ;		// ClipMode cancel
@@ -1245,6 +1252,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( i==0 ) SearchMode=0; 
 							KeyRecover(); 
 					} else {
+						if ( SearchMode ) break;;
 						if ( ClipStartPtr >= 0 ) {
 							if ( ClipEndPtr < 0 ) goto F2j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
@@ -1275,6 +1283,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 												break;
 										}
 									} else {	// Search for text
+									 searchStart:
 //										searchbuf[0]='\0';
 										SearchMode = SearchForText(  SrcBase, searchbuf, &csrPtr, replacebuf ) ;
 									}
@@ -1290,6 +1299,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( SearchMode == 2 ) {	// replace all
 						break;
 					} else {
+						if ( SearchMode ) break;;
 						if ( ClipStartPtr >= 0 ) {
 						  F3del:					// clip delete
 							if ( ClipEndPtr < 0 ) goto F3j;
@@ -1334,6 +1344,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( YesNo( "Replace All Ok?" ) == 0 ) break;
 						SearchMode = 3; //	Replace All
 					} else {
+						if ( SearchMode ) break;;
 						if ( ClipStartPtr >= 0 ) {	// Clip -> Search for text
 							if ( ClipEndPtr < 0 ) goto F4j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
@@ -1382,6 +1393,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						}
 						UpdateLineNum=1;
 					} else {
+						if ( SearchMode ) break;;
 						if ( ClipStartPtr >= 0 ) {	// Clip -> add '
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 							csrPtr = AddComment( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
@@ -1416,7 +1428,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F6:
-					if ( SearchMode ) break;;
+					if ( SearchMode ) goto searchStart;	// Retry search
 					if ( ClipStartPtr >= 0 ) {	// Clip -> del '
 						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 						csrPtr = DelComment( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
@@ -1645,7 +1657,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &pcx, &cy, ClipStartPtr, ClipEndPtr);
 				 }
 				if ( SearchMode ) break;;
-				if ( SearchMode ) break;;
 				ShiftF6loop:
 				DebugScreen = 0;
 				alphalock_bk = alphalock;
@@ -1661,7 +1672,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
 				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
 				if ( lowercase  ) Fkey_dispN_aA( FKeyNo5, "A<>a"); else Fkey_dispN_Aa( FKeyNo5, "A<>a");
-				if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
+				if ( ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) || ( CommandInputMethod==0 ) ) {		// ====== Debug Mode ======
 					Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 				} else {
 					Fkey_Icon( FKeyNo6, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
@@ -1677,7 +1688,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //							key = KEY_CTRL_EXIT;
 //							ClipStartPtr = -1 ;		// ClipMode cancel
 							CommandType=0; CommandPage=0;
-							cont=0;
+							goto exitjp;
 							break;
 							
 					case KEY_CTRL_ALPHA:
@@ -1784,7 +1795,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F6:	// G<>T
-							if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
+							if ( ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) || ( CommandInputMethod==0 ) ) {		// ====== Debug Mode ======
 							  chgGT:
 								Cursor_SetFlashMode(0); 			// cursor flashing off
 								ScreenModeEdit=1-ScreenModeEdit;
@@ -1947,6 +1958,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					DebugScreen = 0;
 				}
 			}
+			if ( key == KEY_CTRL_AC ) SearchMode=0;
 //		} else
 //		if ( dumpflg==4 ) {
 //				key=0;
@@ -1966,7 +1978,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 int CB_BreakStop() {
 	unsigned int key=1;
 	char buf[22];
-	int stat;
+	int r=0;
 	int scrmode=ScreenMode;
 	int dbgmode= ( ( DisableDebugMode == 0 ) || ( ForceDebugMode ) ) ;
 
@@ -2032,7 +2044,7 @@ int CB_BreakStop() {
 	if ( ( dbgmode == 0 ) ||  ( key == KEY_CTRL_EXIT ) ) { 
 		if ( ProgEntryN == 0 ) DebugMode=0;
 		BreakPtr=-999;
-		return BreakPtr;
+		r = BreakPtr;
 	}
 	cont:
 	KeyRecover(); 
@@ -2046,7 +2058,7 @@ int CB_BreakStop() {
 		CB_RestoreTextVRAM();	// Resotre Text screen
 	}
 	Bdisp_PutDisp_DD_DrawBusy();
-	return 0;
+	return r;
 }
 
 //----------------------------------------------------------------------------------------------

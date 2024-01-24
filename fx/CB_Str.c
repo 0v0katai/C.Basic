@@ -1376,10 +1376,16 @@ int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
 	return CB_StrBufferMax-1;
 }
 
-int CB_EvalToStr( char *SRC ){		// Str( n 
+int CB_EvalToStr( char *SRC ){		// ToStr( n 
+	int dms=0;
 	complex value = CB_Cplx_EvalDbl( SRC );
+	if ( ( SRC[ExecPtr] == 0xFFFFFFF9 ) && ( SRC[ExecPtr+1] == 0x05 ) ) {	// >DMS
+		ExecPtr+=2;
+		dms=1;
+	}
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	Cplx_sprintGR1(CB_CurrentStr, value, CB_StrBufferMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+	if ( dms )	StrDMSsub( CB_CurrentStr, value.real ) ;
+	else		Cplx_sprintGR1(CB_CurrentStr, value, CB_StrBufferMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }

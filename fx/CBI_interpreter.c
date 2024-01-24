@@ -152,6 +152,7 @@ void CBint_Store( char *SRC ){	// ->
 				TThetamax = CBint_CurrentValue ;
 				goto Graphj;
 		} else if ( c == 0x0A) {	// Thetaptch
+				if ( CBint_CurrentValue == 0 ) { CB_Error(RangeERR); return; }	// Range error
 				TThetaptch = CBint_CurrentValue ;
 				goto Graphj;
 		} else if ( c == 0x0B ) {	// Xfct

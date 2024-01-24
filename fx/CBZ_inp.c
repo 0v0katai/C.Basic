@@ -567,12 +567,11 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 			if (x>20) { x=2; y++; if ( y>7 ) break ; }
 //			Bdisp_PutDisp_DD();
 		}
-		if ( opNum>=114 ) {
-			if ( scrl ) {
-				locate(21,2); Print((unsigned char*)"\xE6\x92"); // 
-			} else {
-				locate(21,7); Print((unsigned char*)"\xE6\x93"); // 
-			}
+		if ( scrl ) {
+			CB_Print(21,2, (unsigned char*)"\xE6\x92"); // up
+		} 
+		if ( ( opNum/19- 6 - scrl >= 0 ) ) {
+			CB_Print(21,7, (unsigned char*)"\xE6\x93"); // dw
 		}
 		Fkey_Icon( FKeyNo1, 120 );	//	Fkey_dispN( FKeyNo1, "MATH");
 		Fkey_Icon( FKeyNo2, 308 );	//	Fkey_dispN( FKeyNo2, "SYBL");
@@ -824,6 +823,9 @@ int SelectOpcodeRecent( int listselect ) {
 			}
 			Bdisp_PutDisp_DD();	
 			
+			if ( seltop <= opNum-7 ) { locate(19,7); Print((unsigned char*)"\xE6\x93"); } // dw
+			if ( seltop >= 1 )       { locate(19,2); Print((unsigned char*)"\xE6\x92"); } // up
+
 			y = (select-seltop) + 1 ;
 			Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
 			Bdisp_PutDisp_DD();
@@ -972,6 +974,9 @@ int SelectOpcode( int listselect, int flag ) {
 				}
 			}
 			Bdisp_PutDisp_DD();	
+			
+			if ( seltop <= opNum-6 ) { locate(19,7); Print((unsigned char*)"\xE6\x93"); } // dw
+			if ( seltop >= 1 )       { locate(19,2); Print((unsigned char*)"\xE6\x92"); } // up
 			
 			y = ((*select)-seltop) + 1 ;
 			Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 

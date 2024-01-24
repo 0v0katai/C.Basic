@@ -343,16 +343,17 @@ int MatRegVar( char *SRC ) {	//
 }
 
 int SearchListname( char *SRC ) {
-	int reg,j;
+	int reg,j,len;
 	char name[10];
 	CB_GetQuotOpcode( SRC, name, 9 );
+	len = strlen( name ) +1;
 	for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
-		for( j=0; j<8; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
-		if ( j>=8 ) return reg;	// matching!
+		for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break; 
+		if ( j==len ) return reg;	// matching!
 	}
 	for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
-		for( j=0; j<8; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
-		if ( j>=8 ) return reg;	// matching!
+		for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
+		if ( j==len ) return reg;	// matching!
 	}
 	return -1;	// not matching!
 }
@@ -457,8 +458,8 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 
 //----------------------------------------------------------------------------------------------
 int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
@@ -1298,6 +1299,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x41:	// Trn
 					CB_MatTrn(SRC);
 					return 3;
+				case 0x21:	// Det
+					return CB_MatDet(SRC).real;
 
 				case 0x46 :				// Dim
 					result=CB_Dim( SRC );
@@ -1716,6 +1719,7 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x0B:	// Xfct
 				case 0x0C:	// Yfct
 				case 0x20 :			// Max( List 1 )	Max( { 1,2,3,4,5 } )
+				case 0x21 :			// Det Mat A
 				case 0x29 :			// Sigma( X, X, 1, 1000)
 				case 0x2D :			// Min( List 1 )	Min( { 1,2,3,4,5 } )
 				case 0x2E :			// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
