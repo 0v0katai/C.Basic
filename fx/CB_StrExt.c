@@ -77,7 +77,7 @@ char* CB_RecallString(int type ){			// ----------- Recall String  type: 0:string
 	if ( dimA == 0 ) {
 		string = NULL;
 	} else { 
-		n = SelectMemoryNum( type, opNum, 1, &key );
+		n = SelectMemoryNum( type, opNum, 0, &key );
 		if ( key == KEY_CTRL_EXIT ) return 0;
 		if ( dimA >= n ) {
 			string = MatrixPtr(reg, n,  1);
