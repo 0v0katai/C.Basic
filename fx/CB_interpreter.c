@@ -918,10 +918,15 @@ int CB_F7sub( char *SRC, int c ) {
 //----------------------------------------------------------------------------------------------
 void ClrCahche(){
 	CacheIf.CNT=0;
+	CacheIf.TOP=0;
 	CacheElse.CNT=0;
+	CacheElse.TOP=0;
 	CacheElseIf.CNT=0;
+	CacheElseIf.TOP=0;
 	CacheRem.CNT=0;
+	CacheRem.TOP=0;
 	CacheSwitch.CNT=0;
+	CacheSwitch.TOP=0;
 }
 
 void InitLocalVar() {
@@ -1144,21 +1149,24 @@ remloop:
 }
 
 void CB_Rem( char *SRC, CchRem *CacheRem ){
-	int i;
+	int i,j,execptr;
 	int c=SRC[ExecPtr];
 	if ( c=='#' ) { 	// C.Basic command
 		Skip_rem( SRC );
 		return;
 	}
-	for ( i=0; i<CacheRem->CNT; i++ ) {
+	j=0; i=CacheRem->TOP;
+	while ( j<CacheRem->CNT ) {
 		if ( CacheRem->Ptr[i]==ExecPtr ) { ExecPtr=CacheRem->Adrs[i]; return ; }	// adrs ok
+		j++;
+		i++; if ( i >= RemCntMax ) i=0;
 	}
-	CacheRem->Ptr[CacheRem->CNT]=ExecPtr;
+	execptr=ExecPtr;
 	Skip_rem( SRC );
-	if ( CacheRem->CNT < RemCntMax ) {
-		CacheRem->Adrs[CacheRem->CNT]=ExecPtr;
-		CacheRem->CNT++;
-	} else CacheRem->CNT=0;	// over reset
+	if ( CacheRem->CNT < RemCntMax ) CacheRem->CNT++;
+	CacheRem->TOP--; if ( CacheRem->TOP<0 ) CacheRem->TOP=RemCntMax-1;
+	CacheRem->Ptr[CacheRem->TOP] =execptr;
+	CacheRem->Adrs[CacheRem->TOP]=ExecPtr;
 }
 //-----------------------------------------------------------------------------
 
@@ -1334,7 +1342,7 @@ int Search_ElseIfEnd( char *SRC ){
 }
 
 void CB_If( char *SRC, CchIf *CacheIf ){
-	int c,i,stat;
+	int c,i,j,stat,execptr;
 	int value;
   loop:
 	value = CB_EvalInt( SRC ) ;
@@ -1344,30 +1352,35 @@ void CB_If( char *SRC, CchIf *CacheIf ){
 	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
 	if ( value ) return ; // true
 	
-	for ( i=0; i<CacheIf->CNT; i++ ) {
+	j=0; i=CacheIf->TOP;
+	while ( j<CacheIf->CNT ) {
 		if ( CacheIf->Ptr[i]==ExecPtr ) { ExecPtr=CacheIf->Adrs[i]; return ; }	// adrs ok
-	} 
-	CacheIf->Ptr[CacheIf->CNT]=ExecPtr;
+		j++;
+		i++; if ( i >= IfCntMax ) i=0;
+	}
+	execptr=ExecPtr;
 	stat=Search_ElseIfEnd( SRC );
-	if ( stat == 3 ) { CacheIf->Ptr[CacheIf->CNT]++; goto loop; }	// ElseIf
-	
-	if ( CacheIf->CNT < IfCntMax ) {
-		CacheIf->Adrs[CacheIf->CNT]=ExecPtr;
-		CacheIf->CNT++;
-	} else CacheIf->CNT=0;	// over reset
+	if ( stat == 3 ) goto loop; 	// ElseIf
+	if ( CacheIf->CNT < IfCntMax ) CacheIf->CNT++;
+	CacheIf->TOP--; if ( CacheIf->TOP<0 ) CacheIf->TOP=IfCntMax-1;
+	CacheIf->Ptr[CacheIf->TOP] =execptr;
+	CacheIf->Adrs[CacheIf->TOP]=ExecPtr;
 }
 
 void CB_Else( char *SRC, CchIf *CacheElse ){
-	int i;
-	for ( i=0; i<CacheElse->CNT; i++ ) {
+	int i,j,execptr;
+	j=0; i=CacheElse->TOP;
+	while ( j<CacheElse->CNT ) {
 		if ( CacheElse->Ptr[i]==ExecPtr ) { ExecPtr=CacheElse->Adrs[i]; return ; }	// adrs ok
+		j++;
+		i++; if ( i >= IfCntMax ) i=0;
 	}
-	CacheElse->Ptr[CacheElse->CNT]=ExecPtr;
+	execptr=ExecPtr;
 	Search_IfEnd( SRC );
-	if ( CacheElse->CNT < IfCntMax ) {
-		CacheElse->Adrs[CacheElse->CNT]=ExecPtr;
-		CacheElse->CNT++;
-	} else CacheElse->CNT=0;	// over reset
+	if ( CacheElse->CNT < IfCntMax ) CacheElse->CNT++;
+	CacheElse->TOP--; if ( CacheElse->TOP<0 ) CacheElse->TOP=IfCntMax-1;
+	CacheElse->Ptr[CacheElse->TOP] =execptr;
+	CacheElse->Adrs[CacheElse->TOP]=ExecPtr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1718,26 +1731,39 @@ int Search_CaseEnd( char *SRC ){
 }
 
 void CB_Switch( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ,CchIf *CacheSwitch ) {
-	int wPtr;
+	int wPtr,execptr;
 	int c,i,j,value;
 	value=CB_EvalInt( SRC );
 //	c=SRC[ExecPtr];
 //	if ( ( c!=0x0D ) && ( c!=':' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 //	ExecPtr++;
 	wPtr=ExecPtr;
-
+/*
 	for ( i=0; i<CacheSwitch->CNT; i++ ) {
 		if ( CacheSwitch->Ptr[i]==ExecPtr ) break; 	// adrs ok
 	}
 	if ( i >= CacheSwitch->CNT ) {
-		CacheSwitch->Ptr[CacheSwitch->CNT]=ExecPtr;
+		execptr=ExecPtr;
 		if ( Search_SwitchEnd(SRC) == 0 ) { CB_Error(SwitchWithoutSwitchEndERR); return; }  // Switch without SwitchEnd error
-		if ( CacheSwitch->CNT < IfCntMax ) {
-			CacheSwitch->Adrs[CacheSwitch->CNT]=ExecPtr;
-			CacheSwitch->CNT++;
-		} else CacheSwitch->CNT=0;	// over reset
+		if ( CacheSwitch->CNT >= IfCntMax ) CacheSwitch->CNT=0;	// over reset
+		CacheSwitch->Ptr[CacheSwitch->CNT] =execptr;
+		CacheSwitch->Adrs[CacheSwitch->CNT]=ExecPtr;
+		CacheSwitch->CNT++;
 	} else  ExecPtr = CacheSwitch->Adrs[i];	// Break out adrs set
-	
+*/	
+	j=0; i=CacheSwitch->TOP;
+	while ( j<CacheSwitch->CNT ) {
+		if ( CacheSwitch->Ptr[i]==ExecPtr ) { ExecPtr=CacheSwitch->Adrs[i]; goto next; }	// adrs ok
+		j++;
+		i++; if ( i >= IfCntMax ) i=0;
+	}
+	execptr=ExecPtr;
+	if ( Search_SwitchEnd(SRC) == 0 ) { CB_Error(SwitchWithoutSwitchEndERR); return; }  // Switch without SwitchEnd error
+	if ( CacheSwitch->CNT < IfCntMax ) CacheSwitch->CNT++;
+	CacheSwitch->TOP--; if ( CacheSwitch->TOP<0 ) CacheSwitch->TOP=IfCntMax-1;
+	CacheSwitch->Ptr[CacheSwitch->TOP] =execptr;
+	CacheSwitch->Adrs[CacheSwitch->TOP]=ExecPtr;
+  next:
 	StackSwitch->EndAdrs[StackSwitch->Ptr] = ExecPtr;	// Break out adrs set
 	StackSwitch->Value[StackSwitch->Ptr] = value;
 	StackSwitch->flag[StackSwitch->Ptr] = 0;	// case through clear
@@ -2346,7 +2372,7 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 		StackGosubAdrs[GosubNestN] = ExecPtr;	// return adrs
 		ExecPtr=execptr;
 	} else {
-		StackGosubAdrs[GosubNestN] = ExecPtr+1;	// return adrs
+		StackGosubAdrs[GosubNestN] = ExecPtr;	// return adrs
 	}
 	GosubNestN++;
 	if ( GosubNestN > StackGosubMax ) { CB_Error(NestingERR);  return; }	// Nesting  error

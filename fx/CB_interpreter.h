@@ -215,23 +215,25 @@ extern  char *GVRAM;
 #define TYPE_Switch_Case		4
 
 typedef struct {		// 8 bytes
-	short	CNT;
+	char	CNT;
+	char	TOP;
 	short	Prg;
-	short	Ptr[IfCntMax];
-	short	Adrs[IfCntMax];
+	unsigned short	Ptr[IfCntMax];
+	unsigned short	Adrs[IfCntMax];
 } CchIf;
 
 typedef struct {		// 8 bytes
-	short	CNT;
+	char	CNT;
+	char	TOP;
 	short	Prg;
-	short	Ptr[RemCntMax];
-	short	Adrs[RemCntMax];
+	unsigned short	Ptr[RemCntMax];
+	unsigned short	Adrs[RemCntMax];
 } CchRem;
 
 typedef struct {		// 32 bytes
 	short	Ptr;
 	int		*Var[StackForMax];
-	short	Adrs[StackForMax];
+	unsigned short	Adrs[StackForMax];
 	int	IntEnd[StackForMax];
 	int	IntStep[StackForMax];
 	double End[StackForMax];
@@ -241,14 +243,14 @@ typedef struct {		// 32 bytes
 typedef struct {		// 8 bytes
 	short	WhilePtr;
 	short	DoPtr;
-	short	WhileAdrs[StackWhileMax];
-	short	DoAdrs[StackDoMax];
+	unsigned short	WhileAdrs[StackWhileMax];
+	unsigned short	DoAdrs[StackDoMax];
 } StkWhileDo;
 
 typedef struct {		// 8 bytes
 	char	Ptr;
 	char	flag[StackSwitchMax];
-	short	EndAdrs[StackSwitchMax];
+	unsigned short	EndAdrs[StackSwitchMax];
 	int		Value[StackSwitchMax];
 } StkSwitch;
 
