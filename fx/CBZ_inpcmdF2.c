@@ -1,4 +1,4 @@
-#include "CB_inp.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 
@@ -83,6 +83,11 @@ void GetGenuineCmdF2( unsigned int *code ){
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F58;return;	// ElemSize(
+			} break;
+		case CMD_OPTN_CPLX:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x0097;return;	// Abs
+				case 1: (*code)=0x7F25;return;	// ImP
 			} break;
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
@@ -249,6 +254,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_SETUP_COOR;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_SL;  CommandPage=0;break;
+				case 2: CommandType=CMD_SETUP_CPLX;CommandPage=0;break;
 				case 3: (*code)=0xF7FA;return;	// RefreshTime
 			} break;
 		case CMD_SETUP_ANGL:
@@ -302,6 +308,10 @@ void GetGenuineCmdF2( unsigned int *code ){
 		case CMD_SETUP_SL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF71D;return;	// S-L-Thick
+			} break;
+		case CMD_SETUP_CPLX:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF909;return;	// a+bi
 			} break;
 
 		default:

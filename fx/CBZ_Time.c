@@ -1,9 +1,4 @@
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "CB_io.h"
-#include "CB_Time.h"
-#include "CB_error.h"
+#include "CB.h"
 
 int IntToBcd( int x ) {
 	int h,l;

@@ -1,12 +1,4 @@
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_error.h"
-#include "CB_interpreter.h"
+#include "CB.h"
 
 //-----------------------------------------------------------------------------
 // Casio Basic inside
@@ -56,7 +48,7 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR(" Syntax ERROR");
 			break;
 		case MathERR:
-			ERROR(" Math ERROR");
+			ERROR(" Ma ERROR");
 			break;
 		case GoERR:
 			ERROR(" Go ERROR");
@@ -190,6 +182,9 @@ void CB_ErrMsg(int ErrNo) {
 		case AlignmentERR:
 //			ERROR("Alignment ERR");
 			ERROR("Address Align ERR");
+			break;
+		case NonRealERR:
+			ERROR("Non-Real ERROR");
 			break;
 			
 		default:

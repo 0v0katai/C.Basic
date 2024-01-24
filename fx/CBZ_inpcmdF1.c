@@ -1,4 +1,4 @@
-#include "CB_inp.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 void GetGenuineCmdF1( unsigned int *code ){
@@ -64,6 +64,7 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_OPTN:		//	------------------------------------------------------------OPTN_F1
 			switch ( CommandPage ) {
 				case 0:	CommandType=CMD_OPTN_LIST;CommandPage=0;break;
+				case 1:  (*code)=0x0040;return;	// @
 				case 2: CommandType=CMD_OPTN_ESYM;CommandPage=0;break;
 			} break;
 		case CMD_OPTN_LIST:
@@ -79,6 +80,11 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F5B;return;	// MatBase
+			} break;
+		case CMD_OPTN_CPLX:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F50;return;	// i
+				case 1: (*code)=0x7F24;return;	// ReP
 			} break;
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
@@ -313,6 +319,10 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_SETUP_SL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF71C;return;	// S-L-Normal
+			} break;
+		case CMD_SETUP_CPLX:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF908;return;	// Real
 			} break;
 
 		default:

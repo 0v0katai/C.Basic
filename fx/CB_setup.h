@@ -23,6 +23,9 @@ extern char  CB_RecoverSetup;	// setup recover flag 0:none 1:recover
 
 extern char  EnableExtFont ;	// enable external font
 extern char  MaxMemMode ;		// Maximam memory mode
+extern char  ComplexMode ;		// Complex mode  real:0   a+bi:1  a_b:2
+extern const char *CBmode[];    //{"DBL#","INT%","CPLX"};
+
 //------------------------------------------------------------------------------
 void VerDispSub() ;
 void VerDisp() ;
@@ -41,6 +44,6 @@ int SetVar(int select);
 int SetupG(int select);
 int SetVarChar( char *buffer, int c ) ;
 
-int SelectNum2( char*msg, int n ,int min, int max) ;		// 
+int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key) ;		// 
 
 //------------------------------------------------------------------------------

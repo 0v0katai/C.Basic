@@ -22,6 +22,8 @@ double fgrad( double x ) ;		//	Deg,Rad -> Grad
 double finvgrad( double x ) ;		//	Grad -> Deg,Rad
 double fradian( double x ) ;	//	Deg,Grad ->Rad
 double finvradian( double x ) ;	//	Rad -> Deg,Grad
+double ffsin( double x ) ;
+double ffcos( double x ) ;
 double fsin( double x ) ;
 double fcos( double x ) ;
 double ftan( double x ) ;
@@ -88,6 +90,9 @@ double fRanBin( double n, double p) ;	// RanBin#
 double CB_frand( char *SRC ) ;
 int CB_rand( char *SRC ) ;
 
+double RoundFix( double x, double digit);
+double RoundSci( double x, double digit);
+
 double Eval_atof(char *SRC, int c) ;
 
 double Eval(char *SRC);
@@ -115,6 +120,8 @@ int Get2Eval( char *SRC, double *tmp, double *tmp2);
 int RegVarAliasEx( char *SRC ) ;
 
 int CB_IsError( char *SRC ); //	IsError (...)
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void NewMatListAns( int dimA, int dimB, int base, int element );
 void DeleteMatListAns() ;
@@ -144,7 +151,6 @@ double ListEvalsubTop(char *SRC) ;
 int ListEvalsub1Ans(char *SRC) ;	//  
 int ListEvalsubTopAns(char *SRC) ;	//  
 
-double CB_Sigma( char *SRC ) ; //	Sigma(X^2,X,1.10)
 int CB_SigmaInt( char *SRC ) ; //	Sigma(X^2,X,1.10)
 
 

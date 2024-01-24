@@ -56,7 +56,7 @@ int fGCDint( int x, int y ) ;	// GCD(x,y)
 int fLCMint( int x, int y ) ;	// LCM(x,y)
 //-----------------------------------------------------------------------------
 int InputNumI_full(int x, int y, int width, int defaultNum) ;
-int InputNumI_Char(int x, int y, int width, int defaultNum, char code) ;
+int InputNumI_Char(int x, int y, int width, int defaultNum, int code) ;
 int InputNumI_replay(int x, int y, int width, int defaultNum) ;
 int InputNumI_CB(int x, int y, int width, int defaultNum) ;
 int InputNumI_CB1(int x, int y, int width, int defaultNum) ;

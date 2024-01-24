@@ -1,4 +1,4 @@
-#include "CB_inp.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 
 		case CMD_OPTN:		//	------------------------------------------------------------OPTN_F3
 			switch ( CommandPage ) {
-				case 0: CommandType=CMD_OPTN_EXT; CommandPage=0;break;
+				case 0: CommandType=CMD_OPTN_CPLX;CommandPage=0;break;
 				case 1: CommandType=CMD_OPTN_PROB;CommandPage=0;break;
 				case 2: CommandType=CMD_OPTN_FMEM;CommandPage=0;break;
 			} break;
@@ -75,6 +75,11 @@ void GetGenuineCmdF3( unsigned int *code ){
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
 				case 1: (*code)=0x7F47;return;	// Fill(
+			} break;
+		case CMD_OPTN_CPLX:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F22;return;	// Arg
+				case 1: (*code)=0xF907;return;	// I>R_Theta
 			} break;
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
@@ -240,6 +245,10 @@ void GetGenuineCmdF3( unsigned int *code ){
 		case CMD_SETUP_SL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF71E;return;	// S-L-Broken
+			} break;
+		case CMD_SETUP_CPLX:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF90A;return;	// r+theta
 			} break;
 
 		default:

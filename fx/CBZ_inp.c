@@ -1,23 +1,11 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.4                                        */
+/*   inp Library  ver 1.8                                        */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
 /*****************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <fxlib.h>
-#include "fx_syscall.h"
-#include "CB_inp.h"
-#include "CB_io.h"
-#include "CB_Kana.h"
-#include "CB_interpreter.h"
-#include "CB_Eval.h"
-#include "CB_setup.h"
-#include "CB_error.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 //int inpObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
@@ -59,8 +47,20 @@ double Round( double num, int round_mode, int digit){
 	}
 	return num;
 }
+complex Cplx_Round( complex num, int round_mode, int digit){
+	return Dbl2Cplx2( Round( num.real, round_mode, digit ),Round( num.imag, round_mode, digit ) );
+}
 
-void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
+void RightAlign( char *buffer, int width ){
+	int i;
+	char buffer2[64];
+	for (i=0;i<32;i++) buffer2[i]=' ';
+	buffer2[i]='\0';
+	strcat( buffer2, buffer );
+	StrRight( buffer, buffer2, width );
+}
+
+void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit, int cplx ) { // + round   + i
 	int i,j,w,adj,minus=0,p,digit=round_digit;
 	char buffer2[32],fstr[16],tmp[16];
 	double fabsnum,pw;
@@ -70,6 +70,7 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 	double dpoint=0.01;
 
 	if ( num < 0 ) minus=-1;
+	if ( cplx ) { width--; minus=-1; }
 	switch ( round_mode ) {
 		case Norm:
 			if ( round_digit==1 ) { dpoint=0.01;        digit=10; }
@@ -113,6 +114,7 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 	
 	p=0;
 	fstr[p++]='%';
+	if ( cplx ) fstr[p++]='+';
 	fstr[p++]='.';
 	if ( i >= 10 ) fstr[p++]='0'+i/10;
 	fstr[p++]='0'+i%10;
@@ -160,37 +162,44 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 		} while ( buffer2[j] ) ;
 		buffer[i]='\0';
 	}
-	align:
-	if ( align_mode == RIGHT_ALIGN ) {
-		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
-		w=strlen((char*)buffer2);
-		if ( w < width ) {
-			for ( i=1; i<=w; i++)
-			 buffer2[width-i]=buffer2[w-i];
-			for ( i=0; i<width-w; i++) buffer2[i]=' ';
-		}
-		for(i=0; i<22; i++) buffer[i]=buffer2[i]; // 
-	}
 	
-	buffer[width]='\0';
-
+  align:
 	i=-1;
+	if ( cplx ) {
+		if ( buffer[0]=='-' ) buffer[++i]=0x99;	// (-)minus
+		if ( (buffer[1]=='1')&&(buffer[2]=='\0') ) buffer[1]='\0';
+	}
+	buffer[width]='\0';
 	while (i<width) {
 		c=buffer[++i];
 		switch ( c ) {
+			case 0:
+				goto exit;
 			case '-':
-				buffer[i]=0x87;	// (-)
+				buffer[i]=0x87;	// (-)sign
 				break;
-//			case '+':
-//				buffer[i]=0x89;	// (+)
-//				break;
+			case '+':
+				buffer[i]=0x89;	// (+)
+				break;
 			case 'e':	// exp
 				buffer[i]=0x0F;	// (exp)
 				break;
 		}
 	}
+  exit:
+	if ( cplx ) { 
+		buffer[  i]=0x7f;	// (i)
+		buffer[++i]=0x50;	// (i)
+		buffer[++i]='\0';	//
+	}
 
+	if ( align_mode == RIGHT_ALIGN ) RightAlign( buffer, width );
 	return ;
+}
+
+
+void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
+	sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, 0);
 }
 
 void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
@@ -224,10 +233,193 @@ void sprintGR( char* buffer, double num, int width, int align_mode, int round_mo
 }
 
 void sprintG( char* buffer, double num, int width, int align_mode) {
-	sprintGRS(buffer, num, width, align_mode, Norm, 15); // + round
+	sprintGRS(buffer, num, width, align_mode, Norm, 15 ); // + round
+}
+void sprintGi( char* buffer, double num, int width, int align_mode) {
+	sprintGRSi( buffer, num, width, align_mode, Norm, 15, 1);	// imag
 }
 
+void Cplx_sprintGR1s( char* buffer, complex num, int width, int align_mode, int round_mode, int round_digit, int cut ) { // + round  ENG  + i
+	char buffer2[32];
+	char bufferR[]="\x7F\x54";
+	double a,b,r,t;
+	int i,w,oplen;
+	a = num.real;
+	b = num.imag;
+	if ( b==0 ) sprintGR( buffer, a, width, align_mode, round_mode, round_digit);	// real
+	else {
+		if ( ComplexMode == 2 ) { // r_theta
+			r = fpolr( a, b);
+//			if ( r==0 ) { sprintGR( buffer, a, width, align_mode, round_mode, round_digit); return; }	// zero
+			t = fpolt( a, b);
+			if ( ErrorNo ) ErrorNo=0;
+			sprintGRSi( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
+			sprintGRSi( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
+			strcat(buffer, bufferR );	// /_
+			strcat(buffer, buffer2 );
+		} else {	// a+bi
+			sprintGRSi( buffer,  a, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+			sprintGRSi( buffer2, b, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+			if ( a==0 ) { buffer[0]='\0'; 
+				if ( buffer2[0]==0xFFFFFF99 ) buffer2[0]=0x87;	// (-)sign
+				if ( buffer2[0]==0xFFFFFF89 ) { strcat( buffer, buffer2+1 ); goto next; }
+			}
+			strcat( buffer, buffer2 );
+		}
+	  next:
+		w=StrLen( buffer, &oplen);
+		if ( w<=width ) {
+			if ( align_mode == RIGHT_ALIGN ) RightAlign( buffer, width );
+		} else {
+			if ( cut ) {	// limited
+				while ( w+1>width ) PrevOpcode( buffer, &w );
+				buffer[w  ]='>';
+				buffer[w+1]='\0';
+			}
+		}
+	}
+}
+void Cplx_sprintGR1( char* buffer, complex num, int width, int align_mode, int round_mode, int round_digit ) { // + round  ENG  + i
+	Cplx_sprintGR1s(buffer, num, width, align_mode, round_mode, round_digit, 0 ); // + round
+}
+void Cplx_sprintG( char* buffer, complex num, int width, int align_mode ) {
+	Cplx_sprintGR1(buffer, num, width, align_mode, CB_Round.MODE, CB_Round.DIGIT); // + round
+}
+//void Cplx_sprintGR1cut( char* buffer, complex num, int width, int align_mode, int round_mode, int round_digit ) { // + round  ENG  + i+ limited
+//	Cplx_sprintGR1s(buffer, num, width, align_mode, round_mode, round_digit, 1 ); // + round  + limited
+//}
+//void Cplx_sprintGcut( char* buffer, complex num, int width, int align_mode ) {
+//	Cplx_sprintGR1cut(buffer, num, width, align_mode, CB_Round.MODE, CB_Round.DIGIT ); // + round  + limited
+//}
+void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode, int round_mode, int round_digit ) { // + round  ENG  + i
+	char buffer2[64];
+	char buffer3[64];
+	int k,oplen,rlen,ilen,rwidth,iwidth;
+	if ( ( num.real==0 ) || (num.imag==0) ) {
+		Cplx_sprintGR1( buffer, num, width, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
+	} else {
+		sprintGRSi( buffer, num.real, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
+		rlen = StrLen( buffer2, &oplen );
+		if ( num.imag ) sprintGRSi( buffer, num.imag, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+		else buffer[0]='\0';
+		OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
+		ilen = StrLen( buffer3, &oplen );
+		k = width/2;
+		if ( ( rlen>k )&&( ilen>k ) ) {
+			rwidth = k;
+			iwidth = k;
+			if ( rwidth+iwidth < width ) iwidth++;
+		} else
+		if ( rlen>k ) {
+			iwidth = ilen;
+			rwidth = width - iwidth;
+		} else {
+			rwidth = rlen;
+			iwidth = width - rwidth;
+		}
+	  next:
+		sprintGRSi( buffer, num.real, rwidth, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
+		if ( num.imag ) sprintGRSi( buffer, num.imag, iwidth, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+		else buffer[0]='\0';
+		OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
+		if ( ( num.real==0 ) && ( num.imag!=0 ) ) {
+			buffer2[0]='\0';
+			if ( buffer3[0]==0xFFFFFF89 ) strcat( buffer2, buffer3+1 );
+		} else	strcat( buffer2, buffer3 );
+	}
+	strcpy( buffer, buffer2);
+	if ( align_mode == RIGHT_ALIGN ) RightAlign( buffer, width );
+}
 
+void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG  + i
+	char buffer3[64];
+	char buffer4[64];
+	char bufferR[]="\x7F\x54";
+	double a,b,r,t;
+	int i,w,oplen;
+	a = num.real;
+	b = num.imag;
+	if ( ComplexMode == 3 ) { // >DMS
+		if ( b==0 ) {	// real only
+			StrDMSsub( buffer3, a ) ;
+			w=1;
+		} else {		// real + imag
+			StrDMSsub( buffer,  a ) ;
+			StrDMSsub( buffer3, b ) ;
+			if ( b>=0 ) sprintf( buffer2, "+%s\x7F\x50", buffer3 );
+			else		sprintf( buffer2, "-%s\x7F\x50", buffer3 );
+			w=100;
+		}
+		goto GR2j;
+	} else
+	if ( b==0 ) {
+		sprintGR( buffer, a, width, align_mode, round_mode, round_digit);	// real
+		buffer2[0]='\0';
+	} else { buffer[0]='\0'; 
+		if ( ComplexMode == 2 ) { // r_theta
+			r = fpolr( a, b);
+			t = fpolt( a, b);
+			if ( ErrorNo ) ErrorNo=0;
+			sprintGRSi( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
+			sprintGRSi( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
+			buffer3[0]='\0';
+			strcat(buffer3, bufferR );	// /_
+			strcat(buffer3, buffer2 );
+			strcpy(buffer2, buffer3 );
+
+			buffer3[0]='\0';
+			strcat(buffer3, buffer  );
+			strcat(buffer3, buffer2 );
+			
+		} else {		// a+bi
+			if ( a!=0 )	sprintGRSi( buffer,  a, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+			if ( b!=0 ) sprintGRSi( buffer2, b, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+			else buffer2[0]='\0';
+
+			if ( buffer2[0]==0xFFFFFF89 ) buffer2[0]='+';
+			if ( buffer2[0]==0xFFFFFF99 ) buffer2[0]='-';
+			buffer3[0]='\0';
+			if ( a==0 ) {
+				if ( buffer2[0]=='-' ) buffer2[0]=0x87;	// (-)sign
+				if ( buffer2[0]=='+' ) strcat( buffer3, buffer2+1 ); else strcat( buffer3, buffer2 ); 
+			} else {
+				strcat(buffer3, buffer  );
+				strcat(buffer3, buffer2 );
+			}
+		}
+		w=StrLen( buffer3, &oplen );
+	  GR2j:
+		if ( w > 21 ) {		// 2 line 
+			if ( align_mode == RIGHT_ALIGN ) {
+				RightAlign( buffer , 21 );
+				RightAlign( buffer2, 21 );
+			}
+			return ;
+		}
+		if ( align_mode == RIGHT_ALIGN ) RightAlign( buffer3 , 21 );
+		strcpy(buffer, buffer3);	// 1 line 
+		buffer2[0]='\0';
+	}
+}
+
+void Cplx_sprintGR2SRC( char* SRC, char* buffer, char* buffer2, complex num, int width ) { // + round  ENG  + i
+	int c=SRC[ExecPtr];
+	int Cplx_bk=ComplexMode;
+	if ( c==0xFFFFFFF9 ) {
+		c=SRC[++ExecPtr];
+		if ( c==0x05 ) { ExecPtr++; ComplexMode = 3; }	// >DMS
+		else
+		if ( c==0x06 ) { ExecPtr++; ComplexMode = 1; }	// >a+bi
+		else
+		if ( c==0x07 ) { ExecPtr++; ComplexMode = 2; }	// >r_theta
+	}
+	Cplx_sprintGR2(buffer, buffer2, num, width, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo==0 ) { strcpy( CB_CurrentStr, buffer ); strcat( CB_CurrentStr, buffer2 ); }
+	ComplexMode=Cplx_bk;
+}
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void Fkey_KDISPN(int n,char *buffer) {
@@ -2361,13 +2553,72 @@ void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr){
 	for ( i=(*ptr); i<=Maxstrlen; i++ ) buffer[i]=buffer[i+len];
 }
 
+//---------------------------------------------------------------------------------------------
+void EditPaste1( char *srcbase, char *Buffer, int *ptr, int maxlength ){
+	int len,i,j,clipPtr;
+	int opcode;
+
+	if ( Buffer[0]=='\0' ) return ;	// no clip data
+	len=strlenOp(Buffer);
+	if ( (*ptr)+len > maxlength ) {
+		i= (*ptr)+len - maxlength ;
+		len -= i; if ( i<0 ) return ;	// no area 
+	}
+	j=(*ptr)+len;
+	for ( i=maxlength; i>=j; i-- ) srcbase[i]=srcbase[i-len];
+		 
+	for ( i=0; i<len; i++ ) srcbase[i+(*ptr)]=Buffer[i];	// copy from Buffer
+
+	(*ptr)=(*ptr)+len;
+}
+
+void EditCopy1( char *srcbase, char *Buffer, int ptr, int startp, int endp ){
+	int len,i,j;
+	
+	PrevOpcode( srcbase, &endp ); if ( startp>endp ) return;
+	i=OpcodeLen( GetOpcode(srcbase, endp ) );
+	len=(endp)-(startp)+i;
+	if ( len <=0 ) return;
+//	if ( len > ClipMax ) {
+//		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
+//		CB_ErrMsg(ErrorNo);
+//		return ;
+//	}
+	for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i+startp];	// copy to Buffer
+	Buffer[i]='\0';
+}
+
+void EditCutDel1( char *srcbase, char *Buffer, int *ptr, int startp, int endp, int del, int maxlength ){	// del:1 delete
+	int len,i,flag=0;
+
+	if ( startp>endp ) { i=startp; startp=endp; endp=i; flag=1; }
+	PrevOpcode( srcbase, &endp ); if ( startp>endp ) return;
+	i=OpcodeLen( GetOpcode(srcbase, endp )  );
+	len=(endp)-(startp)+i;
+	if ( len <=0 ) return;
+	if ( del == 0 ) {
+//		if ( len > ClipMax ) {
+//			ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
+//			CB_ErrMsg(ErrorNo);
+//			return ;
+//		}
+		for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i+startp];	// copy to Buffer
+		Buffer[i]='\0';
+	}
+	for ( i=(startp); i<=maxlength; i++ ) srcbase[i]=srcbase[i+len];
+
+	(*ptr)=(startp);
+}
+
 //----------------------------------------------------------------------------------------------
-int PrintOpcode(int x, int y, char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char *SPC) {
+int PrintOpcode(int x, int y, char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char *SPC, int ClipStartPtr, int ClipEndPtr) {
 	char tmpbuf[18],*tmpb;
-	int i,len,xmax=x+width;
+	int i,len,xmax=x+width,rev;
 	int opcode=1;
 	int  c=1;
+	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 	while ( 1 ) {
+		rev=(rev_mode); if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst < ClipEndPtr ) ) rev=(rev_mode==0);
 		if (ofst==ptrX) *csrX=x;
 		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
@@ -2379,8 +2630,8 @@ int PrintOpcode(int x, int y, char *buffer, int width, int ofst, int ptrX, int *
 		tmpb=tmpbuf;
 		while ( i < len ) {
 			if ( x < xmax ) {
-				if ( rev_mode ) CB_PrintRevC( x,y, (unsigned char*)(tmpb+i) ) ;
-					else        CB_PrintC(    x,y, (unsigned char*)(tmpb+i) ) ;
+				if ( rev ) CB_PrintRevC( x,y, (unsigned char*)(tmpb+i) ) ;
+					else   CB_PrintC(    x,y, (unsigned char*)(tmpb+i) ) ;
 				x++ ;
 			}
 			c=tmpb[i]&0xFF;
@@ -2409,7 +2660,7 @@ short selectPRGM=0;
 char lowercase=0;
 
 int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
-	char buffer2[256];
+	char buffer2[CB_StrBufferMax];
 	char buf[22];
 	char fnbuf[16*8];
 	unsigned int key=0;
@@ -2427,6 +2678,8 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	int alphalock = 0 ;
 	int ContinuousSelect=0;
 	int displaystatus=0;
+	int ClipStartPtr = -1 ;
+	int ClipEndPtr   = -1 ;
 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
@@ -2451,22 +2704,39 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	while (cont) {
 		RestoreDisp(SAVEDISP_PAGE1);
 		memcpy( GetVRAMAddress()+16*8*7, fnbuf, 16*8);		// fn key image restore
+		if ( ( ClipStartPtr >=0 ) ) { CommandType=0; CommandPage=0; }
 		
 		Cursor_SetFlashMode(1);			// cursor flashing on
 		length=strlenOp( buffer );
 		if ( ptrX > length-1 ) ptrX=length;
 		csrX=0;
 		while (1) {
-			PrintOpcode(x, y, buffer, width, offsetX, ptrX, &csrX, rev_mode , SPC);
+			PrintOpcode(x, y, buffer, width, offsetX, ptrX, &csrX, rev_mode , SPC, ClipStartPtr, ClipEndPtr );
 			if ( ( 0 < csrX ) && ( csrX < 22 ) )   break;
 			if ( offsetX < ptrX )	NextOpcode( buffer, &offsetX);
 				else				PrevOpcode( buffer, &offsetX);
 		}
 		
-		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
-		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_Icon( FKeyNo5, 673 ); }	//	Fkey_dispR( FKeyNo5, "CHAR");
-		if ( CommandInputMethod ) DispGenuineCmdMenu();
-
+		if ( ClipStartPtr>=0 ) {
+			Fkey_Icon( FKeyNo1,  52 );	//	Fkey_dispN( FKeyNo1, "COPY ");
+			Fkey_Icon( FKeyNo2, 105 );	//	Fkey_dispN( FKeyNo2, "CUT ");
+			Fkey_Icon( FKeyNo3,   9 );	//	Fkey_dispN( FKeyNo2, "DEL ");
+			FkeyClear( FKeyNo4 );
+			FkeyClear( FKeyNo5 );
+			FkeyClear( FKeyNo6 );
+		} else {
+			ClipEndPtr   = -1 ;		// ClipMode cancel
+			if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
+			if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_Icon( FKeyNo5, 673 ); }	//	Fkey_dispR( FKeyNo5, "CHAR");
+			if ( CommandInputMethod ) DispGenuineCmdMenu();
+		}
+		
+		Cursor_SetFlashMode(1);			// cursor flashing on
+		if (Cursor_GetFlashStyle()<0x6) {
+			if ( ClipStartPtr>=0 ) 	Cursor_SetFlashOn(0x05);	// ClipMode cursor
+		} else { 
+			if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
+		}
 		CursorStyle=Cursor_GetFlashStyle();
 		if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
 		if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
@@ -2478,14 +2748,22 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 		SaveDisp(SAVEDISP_PAGE1);
 		if ( ContinuousSelect ) key=KEY_CTRL_F5; else GetKey_DisableMenu(&key);
+		if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 		
 		switch (key) {
+			case KEY_CTRL_NOP:
+					ClipStartPtr = -1 ;		// ClipMode cancel+
+					alphalock = 0 ;
+					break;
+					
 			case KEY_CTRL_AC:
 				if ( length==0 ) cont=0;
 				ptrX=0; offsetX=0;
 				buffer[0]='\0';
 				alphalock = 0 ;
+				ClipStartPtr = -1 ;		// ClipMode cancel+
 				break;
+				
 			case KEY_CTRL_EXIT:
 				if ( CommandType ) {
 					CommandType>>=4;
@@ -2497,42 +2775,86 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 						for(i=0; i<=MaxStrlen; i++) buffer[i]=buffer2[i]; // restore
 					}
 				}
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
+
 			case KEY_CTRL_DEL:
 				if ( length ) {
-					if ( CursorStyle < 0x6 ) {		// insert mode
-						PrevOpcode( buffer, &ptrX );
-						if ( offsetX ) if ( ptrX == offsetX ) PrevOpcode( buffer, &offsetX );
+					if ( ClipStartPtr >= 0 ) {
+						goto F3del;
+					} else {
+						if ( CursorStyle < 0x6 ) {		// insert mode
+							PrevOpcode( buffer, &ptrX );
+							if ( offsetX ) if ( ptrX == offsetX ) PrevOpcode( buffer, &offsetX );
+						}
+						DeleteOpcode1( buffer, MaxStrlen, &ptrX );
 					}
-					DeleteOpcode1( buffer, MaxStrlen, &ptrX );
 				}
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
+			case 0x755A:		// ClipMode LEFT
 			case KEY_CTRL_LEFT:
 				PrevOpcode( buffer, &ptrX );
+				if ( ClipStartPtr>=0 ) ClipEndPtr=ptrX;
 				break;
+				
+			case 0x755B:		// ClipMode RIGHT
 			case KEY_CTRL_RIGHT:
 				if ( buffer[ptrX] != 0x00 )	NextOpcode( buffer, &ptrX );
+				if ( ClipStartPtr>=0 ) ClipEndPtr=ptrX;
 				break;
+				
+			case 0x7559:		// ClipMode UP
 			case KEY_CTRL_UP:
-					ptrX=0;
-					offsetX=0;
+				ptrX=0;
+				offsetX=0;
+				if ( ClipStartPtr>=0 ) ClipEndPtr=ptrX;
 				break;
+				
+			case 0x755C:		// ClipMode DOWN
 			case KEY_CTRL_DOWN:
-					ptrX=length;
+				ptrX=length;
+				if ( ClipStartPtr>=0 ) ClipEndPtr=ptrX;
 				break;
+				
 			case KEY_CTRL_F1:
+				if ( ClipStartPtr >= 0 ) {
+					if ( ClipEndPtr < 0 ) goto F1j;
+					if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+					EditCopy1( buffer, ClipBuffer, ptrX, ClipStartPtr, ClipEndPtr );
+				} else 
 				if ( CommandType ) GetGenuineCmdF1( &key );
 				else if ( length ) cont=0;
+			F1j:alphalock = 0 ;
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
 			case KEY_CTRL_F2:
+			case 0x7563:		// ClipMode F2
+				if ( ClipStartPtr >= 0 ) {
+					if ( ClipEndPtr < 0 ) goto F2j;
+					if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+					EditCutDel1( buffer, ClipBuffer, &ptrX, ClipStartPtr, ClipEndPtr, 0, MaxStrlen );	// cut
+				} else
 				if ( CommandType ) GetGenuineCmdF2( &key );
 				else if ( length ) cont=0;
+			F2j:alphalock = 0 ;
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
 			case KEY_CTRL_F3:
 				if ( displaystatus ) break;
+				if ( ClipStartPtr >= 0 ) {
+				  F3del:					// clip delete
+					if ( ClipEndPtr < 0 ) goto F3j;
+					if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+					EditCutDel1( buffer, ClipBuffer, &ptrX, ClipStartPtr, ClipEndPtr, 1, MaxStrlen );	// delete
+				} else 
 				if ( CommandType ) GetGenuineCmdF3( &key );
 				else {
 					if ( CommandInputMethod ) { 
@@ -2542,8 +2864,11 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 						if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 					}
 				}
+			F3j:ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
 			case KEY_CTRL_F4:
+				if ( ClipStartPtr >= 0 ) ClipStartPtr = -1 ;		// ClipMode cancel
 				if ( CommandType ) GetGenuineCmdF4( &key );
 				else {
 					if ( ( pallet_mode ) && ( alpha_mode ) ) {
@@ -2552,7 +2877,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					}
 				}
 				break;
+				
 			case KEY_CTRL_F5:
+				if ( ClipStartPtr >= 0 ) ClipStartPtr = -1 ;		// ClipMode cancel
 				if ( CommandType ) { GetGenuineCmdF5( &key );
 					if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); CommandType=0; }
 				} else {
@@ -2563,10 +2890,13 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					}
 				}
 				break;
+				
 			case KEY_CTRL_F6:	// !=
+				if ( ClipStartPtr >= 0 ) ClipStartPtr = -1 ;		// ClipMode cancel
 				if ( CommandType ) GetGenuineCmdF6( &key );
 				else key='/';
 				break;
+				
 			case KEY_CTRL_SHIFT:
 				alphalock = 0 ;
 				if ( CommandInputMethod ) if ( displaystatus == 0 ) Menu_SHIFT_MENU();
@@ -2574,21 +2904,37 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				switch (key) {
 					case KEY_CTRL_QUIT:
 						goto inpexit;
+						
+					case KEY_CTRL_CLIP:
+						ClipStartPtr=ptrX;
+						key=0;
+						break;
+
+					case KEY_CTRL_PASTE:
+						if ( ClipBuffer != NULL ) {
+							EditPaste1( buffer, ClipBuffer, &ptrX, MaxStrlen);
+						}
+						key=0;
+						break;
+
 					case KEY_CTRL_ALPHA:
 						if ( ( pallet_mode ) && ( alpha_mode ) ) alphalock = 1 ;
 						break;
+
 					case KEY_CTRL_F3:
 							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
 								CommandType=CMD_SHIFT_VWIN; CommandPage=0;
 							}
 							break;
+							
 					case KEY_CTRL_F4:
 							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
 								CommandType=CMD_SHIFT_SKTCH; CommandPage=0;
 							}
 							break;
+							
 //					case KEY_CTRL_F5:
 //							break;
 //					case KEY_CTRL_F6:
@@ -2601,6 +2947,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 								selectSetup=SetupG(selectSetup);
 							}
 							break;
+							
 					case KEY_CTRL_PRGM:
 							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
@@ -2623,7 +2970,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					key=SelectOpcode( CMDLIST_OPTN, 0 );
 					if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
 			case KEY_CTRL_VARS:
 				if ( displaystatus ) break;
 				if ( CommandInputMethod ) { 
@@ -2632,10 +2981,13 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					key=SelectOpcode( CMDLIST_VARS, 0 );
 					if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+
 			case KEY_CTRL_MENU:
 				if ( displaystatus ) break;
 				key=SelectOpcodeRecent( CMDLIST_RECENT );
+				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
 
 			default:
@@ -2653,6 +3005,10 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				case 0xE6:		// 
 				case 0xE7:		// 
 				case 0xFF:	// 
+					if (ClipStartPtr>=0) { 
+						ClipStartPtr = -1 ;		// ClipMode cancel			
+						break;
+					}
 					if ( CursorStyle < 0x6 ) {		// insert mode
 						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
 					} else {					// overwrite mode
@@ -2714,25 +3070,29 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 			if ( displaystatus ) {
 				if ( ( 0x21<=key )&&( key<=0x7E )&&(key!='"')&&(key!='*')&&(key!=':')&&(key!='<')&&(key!='>')&&(key!='?')&&(key!='|') ) goto codeok;
 			} else {
-				if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 				if ( hex_mode && ( KEY_CTRL_XTT == key ) ) key=KEY_CHAR_A;
 				if ( hex_mode && ( KEY_CHAR_LOG == key ) ) key=KEY_CHAR_B;
 				if ( hex_mode && ( KEY_CHAR_LN  == key ) ) key=KEY_CHAR_C;
 				if ( hex_mode && ( KEY_CHAR_SIN == key ) ) key=KEY_CHAR_D;
 				if ( hex_mode && ( KEY_CHAR_COS == key ) ) key=KEY_CHAR_E;
 				if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
+				if ( hex_mode && ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) ) key+=('a'-'A');
 //				if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
-				if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 				if ( ( key == KEY_CTRL_XTT ) )   key='X'; // ^
 			  codeok:
-				if ( CursorStyle < 0x6 ) {		// insert mode
+				if (ClipStartPtr>=0) { 
+					ClipStartPtr = -1 ;		// ClipMode cancel			
+					break;
+				} else {
+					if ( CursorStyle < 0x6 ) {		// insert mode
+							i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+					} else {					// overwrite mode
+						if ( buffer[ptrX] != 0x00 ) DeleteOpcode1( buffer, MaxStrlen, &ptrX);
 						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
-				} else {					// overwrite mode
-					if ( buffer[ptrX] != 0x00 ) DeleteOpcode1( buffer, MaxStrlen, &ptrX);
-					i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+					}
+					if ( i==0 ) NextOpcode( buffer, &ptrX );
+					key=0;
 				}
-				if ( i==0 ) NextOpcode( buffer, &ptrX );
-				key=0;
 			}
 		}
 
@@ -2748,19 +3108,18 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
+double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode, unsigned int *key ) {		// 0123456789.(-)exp
 	char buffer[32];
 	int csrX=0;
-	unsigned int key;
-
+	
 	buffer[csrX]='\0';
 	if ( defaultNum != 0 ) {
 		sprintG(buffer, defaultNum, width, LEFT_ALIGN);
 		csrX=strlenOp(buffer);
 	}
-	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
-	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);  // exit
-	return atof( (char*)buffer );
+	*key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	if ( ( *key == KEY_CTRL_EXIT ) || ( *key != KEY_CTRL_EXE ) ) return (defaultNum);  // exit
+	return Eval( (char*)buffer );
 }
 
 unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char* SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
@@ -2774,95 +3133,112 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, cha
 }
 
 //----------------------------------------------------------------------------------------------
-double InputNumD_sub(int x, int y, int width, int ptrX, double defaultNum) {		//  1st char key in
+complex InputNumC_sub(int x, int y, int width, int ptrX, complex defaultNum) {		//  1st char key in
 	unsigned int key;
-	double result;
+	complex result;
 	key= InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
-	result = Eval( ExpBuffer );
+	result = Cplx_Eval( ExpBuffer );
 	while ( ErrorNo ) {	// error loop
 		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
-		result = Eval( ExpBuffer );
+		result = Cplx_Eval( ExpBuffer );
 	}
 	CB_CurrentValue = result ;
 	return result; // value ok
 }
-double InputNumD_fullsub(int x, int y, int width, double defaultNum ) {		// full number display
-	return InputNumD_sub(x, y, width, 0, defaultNum );
+complex InputNumC_fullsub(int x, int y, int width, complex defaultNum ) {		// full number display
+	return InputNumC_sub(x, y, width, 0, defaultNum );
+}
+complex InputNumC_full(int x, int y, int width, complex defaultNum) {		// full number display
+	int eng=ENG;
+	if (ENG==3) ENG=0;
+	Cplx_sprintG(ExpBuffer, defaultNum, ExpMax-1, LEFT_ALIGN);
+	ENG=eng;
+	return InputNumC_sub(x, y, width, 0, defaultNum );
 }
 double InputNumD_full(int x, int y, int width, double defaultNum) {		// full number display
 	int eng=ENG;
 	if (ENG==3) ENG=0;
 	sprintG(ExpBuffer, defaultNum, ExpMax-1, LEFT_ALIGN);
 	ENG=eng;
-	return InputNumD_sub(x, y, width, 0, defaultNum );
+	return InputNumC_sub(x, y, width, 0, Dbl2Cplx(defaultNum) ).real;
 }
-double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) {		// full number display hex
+complex InputNumC_fullhex(int x, int y, int width, complex defaultNum, int hex) {		// full number display hex
 	if ( hex ) {
-		if ( ( (defaultNum-floor(defaultNum))==0 ) && ( -2147483648. <= defaultNum ) && ( defaultNum <= 2147483647. ) ) {
-			sprintf(ExpBuffer,"0x%08X",(int)defaultNum);
-			return InputNumD_sub(x, y, width, 0, defaultNum);
+		if ( ( defaultNum.imag==0 ) && ( (defaultNum.real-floor(defaultNum.real))==0 ) && ( -2147483648. <= defaultNum.real ) && ( defaultNum.real <= 2147483647. ) ) {
+			sprintf(ExpBuffer,"0x%08X",(int)defaultNum.real);
+			return InputNumC_sub(x, y, width, 0, Dbl2Cplx(defaultNum.real) );
 		}
 	}
-	return InputNumD_full(x, y, width, defaultNum);
+	return InputNumC_full(x, y, width, defaultNum);
 }
 
-double InputNumD_Char(int x, int y, int width, double defaultNum, char code) {		//  1st char key in
-	ExpBuffer[0]=code;
-	ExpBuffer[1]='\0';
-	return InputNumD_sub( x, y, width, 1, defaultNum);
+double InputNumD_Char(int x, int y, int width, double defaultNum, int code) {		//  1st char key in
+	ExpBuffer[0]='\0';
+	InsertOpcode1( ExpBuffer, ExpMax, 0, code );
+	return InputNumC_sub( x, y, width, OpcodeLen(code), Dbl2Cplx(defaultNum) ).real;
 }
 
 double InputNumD_replay(int x, int y, int width, double defaultNum) {		//  replay expression
-	return InputNumD_sub( x, y, width, strlenOp((char*)ExpBuffer), defaultNum);
+	return InputNumC_sub( x, y, width, strlenOp((char*)ExpBuffer), Dbl2Cplx(defaultNum) ).real;
+}
+complex InputNumC_Char(int x, int y, int width, complex defaultNum, int code) {		//  1st char key in
+	ExpBuffer[0]='\0';
+	InsertOpcode1( ExpBuffer, ExpMax, 0, code );
+	return InputNumC_sub( x, y, width, OpcodeLen(code), defaultNum);
+}
+
+complex InputNumC_replay(int x, int y, int width, complex defaultNum) {		//  replay expression
+	return InputNumC_sub( x, y, width, strlenOp((char*)ExpBuffer), defaultNum);
 }
 
 //-----------------------------------------------------------------------------
-double InputNumD_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input
+complex InputNumC_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) {		//  Basic Input
 	unsigned int key;
-	double result;
+	complex result;
 	ExpBuffer[0]='\0';
 	key=InputStrSub( x, y, width, 0, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
-	result = Eval( ExpBuffer );
+	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
+	result = Cplx_Eval( ExpBuffer );
 	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
-		result = Eval( ExpBuffer );
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
+		result = Cplx_Eval( ExpBuffer );
 	}
 	return result; // value ok
 }
-double InputNumD_CB_sub(int x, int y, int width, int MaxStrlen, int ptrX, char* SPC, int REV, double defaultNum ) {		//  Basic Input sub
+complex InputNumC_CB_sub(int x, int y, int width, int MaxStrlen, int ptrX, char* SPC, int REV, complex defaultNum ) {		//  Basic Input sub
 	unsigned int key;
-	double result;
+	complex result;
 	int csrX;
 	key=InputStrSub( x, y, width, ptrX, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
+	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
 	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) {
 	  exit:
-		PrintOpcode(x, y, ExpBuffer, width, 0, 0, &csrX, REV , " ");
-		return (defaultNum);
+		result=(defaultNum);
+		goto exit2;
 	}
-	result = Eval( ExpBuffer );
+	result = Cplx_Eval( ExpBuffer );
 	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
 		if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE  ) goto exit;
-		result = Eval( ExpBuffer );
+		result = Cplx_Eval( ExpBuffer );
 	}
-	PrintOpcode(x, y, ExpBuffer, width, 0, 0, &csrX, REV , " ");
+  exit2:
+	PrintOpcode(x, y, ExpBuffer, width, 0, 0, &csrX, REV , " ", -1,-1);
 	return result; // value ok
 }
-double InputNumD_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input 1
+complex InputNumC_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) {		//  Basic Input 1
 	ExpBuffer[0]='\0';
-	return InputNumD_CB_sub( x, y, width, MaxStrlen, 0, SPC, REV, defaultNum);
+	return InputNumC_CB_sub( x, y, width, MaxStrlen, 0, SPC, REV, defaultNum);
 }
 
-double InputNumD_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input 2
-	if ( defaultNum==0 ) ExpBuffer[0]='\0';
-	else sprintGR(ExpBuffer, defaultNum, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-	return InputNumD_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
+complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) {		//  Basic Input 2
+	if ( Cplx_fcmpEQ_0( defaultNum ).real ) ExpBuffer[0]='\0';
+	else Cplx_sprintGR1s(ExpBuffer, defaultNum, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT ,0 );
+	return InputNumC_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy
 //int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte

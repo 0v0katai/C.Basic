@@ -1,22 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <fxlib.h>
-#include "fx_syscall.h"
-
-#include "CB_interpreter.h"
-#include "CB_edit.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_error.h"
-#include "CB_Kana.h"
-#include "CB_Matrix.h"
-#include "CB_glib.h"
-#include "CB_setup.h"
-#include "CB_file.h"
-#include "KeyScan.h"
-#include "MonochromeLib.h"
+#include "CB.h"
 
 struct st_round CB_Round = { Norm , 1} ; // Round
 char ENG=0;	// ENG flag  1:ENG  3:3digit separate

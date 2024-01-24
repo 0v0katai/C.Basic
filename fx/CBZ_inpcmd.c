@@ -1,19 +1,11 @@
 /*****************************************************************/
 /*                                                               */
-/*   Genuine Command input Library  ver 1.0                      */
+/*   Genuine Command input Library  ver 1.8x                     */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
 /*****************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <fxlib.h>
-#include "fx_syscall.h"
-#include "CB_inp.h"
-#include "CB_io.h"
-#include "CB_Kana.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -287,14 +279,14 @@ void DispGenuineCmdMenu(){
 				case 0:
 					Fkey_Icon( FKeyNo1, 178 );	//	Fkey_dispR( FKeyNo1, "LIST");
 					Fkey_Icon( FKeyNo2, 179 );	//	Fkey_dispR( FKeyNo2, "MAT ");
-					Fkey_dispN( FKeyNo3, "Extd");
+					Fkey_Icon( FKeyNo3, 180  );	//	Fkey_dispR( FKeyNo3, "CPLX");
 					Fkey_Icon( FKeyNo4, 2 );	//	Fkey_dispR( FKeyNo4, "CALC");
-					Fkey_dispN( FKeyNo5, " @ ");
+					Fkey_dispN( FKeyNo5, "Extd");
 //					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					FkeyClear( FKeyNo1 );
+					Fkey_dispN( FKeyNo1, " @ ");
 					Fkey_Icon( FKeyNo2, 142 );	//	Fkey_dispR( FKeyNo2, "HYP");
 					Fkey_Icon( FKeyNo3, 143 );	//	Fkey_dispR( FKeyNo3, "PROB");
 					Fkey_Icon( FKeyNo4, 144 );	//	Fkey_dispR( FKeyNo4, "NUM");
@@ -373,6 +365,27 @@ void DispGenuineCmdMenu(){
 					break;
 			}
 			break;
+		case CMD_OPTN_CPLX:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 207 );	//	Fkey_dspRB( FKeyNo1, " i");
+					Fkey_Icon( FKeyNo2, 157 );	//	Fkey_dspRB( FKeyNo2, "Abs");
+					Fkey_Icon( FKeyNo3, 209 );	//	Fkey_dspRB( FKeyNo3, "Arg");
+					Fkey_Icon( FKeyNo4, 210 );	//	Fkey_dspRB( FKeyNo4, "Conjg");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 1:
+					Fkey_Icon( FKeyNo1, 211 );	//	Fkey_dspRB( FKeyNo1, "ReP");
+					Fkey_Icon( FKeyNo2, 212 );	//	Fkey_dspRB( FKeyNo2, "ImP");
+					Fkey_Icon( FKeyNo3, 109 );	//	Fkey_dspRB( FKeyNo3, ">R_Theta");
+					Fkey_Icon( FKeyNo4, 110 );	//	Fkey_dspRB( FKeyNo4, ">a+bi");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+			}
+			break;
+		
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
 				case 1:
@@ -574,8 +587,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 565 );	//	Fkey_dispR( FKeyNo2, "FACT");
 					Fkey_dispN( FKeyNo3, "Extd");
 					Fkey_Icon( FKeyNo4,   1 );	//	Fkey_dispR( FKeyNo4, "GRPH");
-					Fkey_dispN( FKeyNo5, "SETUP");
-//					Fkey_Icon( FKeyNo5, 172 );	//	Fkey_dispN( FKeyNo5, "Setup");
+					Fkey_Icon( FKeyNo5, 172 );	//	Fkey_dispN( FKeyNo5, "SETUP");
 					Fkey_Icon( FKeyNo6,   6 );	//	Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
@@ -998,7 +1010,7 @@ void DispGenuineCmdMenu(){
 					break;
 				case 2:
 					Fkey_Icon( FKeyNo1, 761 );	//	Fkey_dispR( FKeyNo1, "FUNC");
-					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo2, 180 );	//	Fkey_dispR( FKeyNo2, "CPLX");
 					Fkey_Icon( FKeyNo3, 762 );	//	Fkey_dispR( FKeyNo3, "SWin");
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );
@@ -1112,6 +1124,18 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 492 );	//	Fkey_dspRB( FKeyNo1, "Auto");
 					Fkey_Icon( FKeyNo2, 493 );	//	Fkey_dspRB( FKeyNo2, "Man");
 					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
+		case CMD_SETUP_CPLX:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 277 );	//	Fkey_dspRB( FKeyNo1, "Real");
+					Fkey_Icon( FKeyNo2, 278 );	//	Fkey_dspRB( FKeyNo2, "a+bi");
+					Fkey_Icon( FKeyNo3, 279 );	//	Fkey_dspRB( FKeyNo3, "r+theta");
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );

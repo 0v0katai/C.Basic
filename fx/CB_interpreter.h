@@ -47,7 +47,7 @@ extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
 #define VARMAXSIZE 26+6+26+26
-extern double  REG[VARMAXSIZE];
+extern complex  REG[VARMAXSIZE];
 extern double  REGv[11];
 extern double  VWIN[6][11];
 extern char VWinflag[6];		// VWin flag
@@ -104,8 +104,8 @@ extern	double Xfct;
 extern	double Yfct;
 
 #define ArgcMAX 10
-extern	double 	*LocalDbl[VARMAXSIZE];		// local var ptr
-extern	int		*LocalInt[VARMAXSIZE];		// local var ptr
+extern	complex 	*LocalDbl[VARMAXSIZE];		// local var ptr
+extern	int			*LocalInt[VARMAXSIZE];		// local var ptr
 
 extern double	*traceAry;		// Graph trace array
 
@@ -113,7 +113,9 @@ extern double	*traceAry;		// Graph trace array
 extern char *GraphY;
 extern char *GraphX;
 
-#define PI 3.1415926535897932
+#define const_PI  3.1415926535897932
+#define const_hPI 1.5707963267948966
+#define const_qPI 0.78539816339744831
 
 #define PictMax 99
 extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
@@ -179,7 +181,7 @@ extern int ExecPtr;
 extern int BreakPtr;
 
 extern int CBint_CurrentValue;	// Ans
-extern double CB_CurrentValue;	// Ans
+extern complex CB_CurrentValue;	// Ans
 
 #define ProgMax 31
 extern char ProgEntryN;		// how many subroutin
@@ -252,7 +254,7 @@ void ClrCahche();
 void InitLocalVar();
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
-void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."
+void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) ; //	Prog "..."
 void CB_Gosub( char *SRC, int *StackGotoAdrs, int *StackGosubAdrs ); //	Gosub N
 
 void Skip_quot( char *SRC ); // skip "..."

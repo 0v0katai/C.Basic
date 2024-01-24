@@ -1,22 +1,4 @@
-#include <ctype.h>
-#include <fxlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <timer.h>
-#include "KeyScan.h"
-#include "CB_io.h"
-#include "CB_inp.h"
-#include "CB_glib.h"
-#include "CB_Eval.h"
-#include "CB_interpreter.h"
-#include "CBI_Eval.h"
-#include "CBI_interpreter.h"
-#include "CB_error.h"
-#include "CB_Matrix.h"
-#include "CB_Str.h"
-#include "CB_MonochromeLib.h"
+#include "CB.h"
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -140,7 +122,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 		reg=c-'A';
 	  regj:
 		c=SRC[ExecPtr];
-		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
+		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0].real ; }
 		else
 		if ( c=='[' ) { goto Matrix; }
 		else
@@ -359,8 +341,8 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					break;
 			}
 			break;
-		case 0xFFFFFFD0 :	// PI
-			return PI ;
+		case 0xFFFFFFD0 :	// const_PI
+			return const_PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			return CB_rand( SRC );
 		case 0xFFFFFF97 :	// abs
@@ -478,7 +460,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 			break;
 	}
 	if ( c == '#') {
-		result = EvalsubTop( SRC );
+		result = EvalsubTopReal( SRC );
 		return result;
 	}
 	ExecPtr--;
@@ -564,7 +546,7 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFCD ) || // <r>
 			 ( c == 0xFFFFFFCE ) || // Theta
-			 ( c == 0xFFFFFFD0 ) || // PI
+			 ( c == 0xFFFFFFD0 ) || // const_PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
 			 ( c == 0xFFFFFFC1 )) { // Ran#
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;

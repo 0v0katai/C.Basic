@@ -67,7 +67,7 @@
 #define CMD_OPTN_LIST	0x200
 #define CMD_OPTN_MAT	0x201
 #define CMD_OPTN_MAT_SIZE	0x20110
-//#define CMD_OPTN_CPLX	0x202
+#define CMD_OPTN_CPLX	0x202
 #define CMD_OPTN_CHR	0x202
 #define CMD_OPTN_CALC	0x203
 #define CMD_OPTN_STAT	0x204
@@ -193,23 +193,17 @@ void PutAlphamode1( int CursorStyle );
 int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );
 
 double Round( double num, int round_mode, int digit);
+void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit, int cplx ) ; // + round   + i
 void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ; 
 void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode 
 void sprintG( char* buffer, double num, int width, int align_mode);
 
-double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode);
+double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode, unsigned  *key);
 unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char* SPC, int rev_mode) ;		// ABCDEF0123456789.(-)exp
 
-double InputNumD_fullsub(int x, int y, int width, double defaultNum ) ;
-double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) ;
 double InputNumD_full(int x, int y, int width, double defaultNum) ;
-double InputNumD_Char(int x, int y, int width, double defaultNum, char code) ;
-double InputNumD_replay(int x, int y, int width, double defaultNum) ;
-
-double InputNumD_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) ;		//  Basic Input
-double InputNumD_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) ;		//  Basic Input 1
-double InputNumD_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) ;		//  Basic Input 2
-	
+double InputNumD_Char(int x, int y, int width, double defaultNum, int code) ;		//  1st char key in
+double InputNumD_replay(int x, int y, int width, double defaultNum) ;		//  replay expression
 
 extern int CommandType;
 extern char CommandPage;

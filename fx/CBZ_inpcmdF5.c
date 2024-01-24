@@ -1,4 +1,4 @@
-#include "CB_inp.h"
+#include "CB.h"
 
 //----------------------------------------------------------------------------------------------
 void GetGenuineCmdF5( unsigned int *code ){
@@ -52,7 +52,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 
 		case CMD_OPTN:		//	------------------------------------------------------------OPTN_F5
 			switch ( CommandPage ) {
-				case 0:  (*code)=0x0040;return;	// @
+				case 0: CommandType=CMD_OPTN_EXT ; CommandPage=0;break;
 				case 1: CommandType=CMD_OPTN_ANGL; CommandPage=0;break;
 				case 2: CommandType=CMD_OPTN_CAPT; CommandPage=0;break;
 			} break;
