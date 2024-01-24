@@ -3006,6 +3006,7 @@ int CB_interpreter( unsigned char *SRC ) {
 	ErrorNo= 0;
 	BreakPtr=0;
 	Bdisp_PutDisp_DD_DrawBusy();
+	KeyRecover(); 
 	stat = CB_interpreter_sub( SRC );
 	KeyRecover(); 
     if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }

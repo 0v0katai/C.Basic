@@ -259,7 +259,9 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 			} else if ( c == 0x8F ) {	// Getkey
 					ExecPtr+=2;
 					c = SRC[ExecPtr];
+					if ( c=='0' ) {	ExecPtr++ ; result = CB_Getkey0() ; if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } }
 					if ( c=='1' ) {	ExecPtr++ ; result = CB_Getkey1() ; if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } }
+					if ( c=='2' ) {	ExecPtr++ ; result = CB_Getkey2() ; if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } }
 					else		  	result = CB_Getkey() ;
 					return result ;
 			} else if ( c == 0x86 ) {	// RndFix(n,digit)
