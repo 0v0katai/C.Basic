@@ -1519,6 +1519,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										ProgEntryN=1;
 //										MSG1("Prog Loading.....");
 										CB_AliasVarClr();
+										StoreRoot2();
 										CB_ProgEntry( SrcBase ) ;		// sub program search
 										if ( ErrorNo ) { 
 											ProgNo=ErrorProg; 
@@ -1529,6 +1530,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 											stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
 											if ( ( stat==-7 ) && ( ProgEntryN == 0 ) ) DebugMode=0;
 										}
+										RestoreRoot2();
 										SaveConfig();
 										filebase = ProgfileAdrs[ProgNo];
 										SrcBase  = filebase+0x56;

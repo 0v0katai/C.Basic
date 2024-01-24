@@ -76,7 +76,8 @@ void CB_ML_DispVRAM( char*SRC ){	// ML_DispVRAM
 		ExecPtr++;
 		if ( Check_skip_count() == 0 ) return ;
 	}
-	ML_display_vram();
+	if ( Is35E2 ) Bdisp_PutDisp_DD();
+	else	ML_display_vram();
 	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
 
 }
@@ -1030,7 +1031,7 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 			break;
 		case 0xFFFFFFC1:	// _ClrScreen
 //			CB_ML_ClrScreen();
-			ML_clear_screen();
+			if ( Is35E2 == 0 ) ML_clear_screen();
 			break;
 		case 0xFFFFFFC2:	// _DispVRAM
 			CB_ML_DispVRAM( SRC );
@@ -1137,20 +1138,20 @@ int MLObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 int MLObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 int MLObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 int MLObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

@@ -842,6 +842,7 @@ unsigned int Graph_main(){
 }
 
 //----------------------------------------------------------------------------------------------
+/*
 double GraphXYEval( char *buffer, int *add ) {
 	double result;
 	int excptr=ExecPtr;
@@ -852,13 +853,59 @@ double GraphXYEval( char *buffer, int *add ) {
 	if ( dspflag>=3 ) {
 		CB_MatListAnsreg=Ansreg;
 		ExecPtr=0; Cplx_ListEvalsubTop( buffer );	// List calc
-		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 		result=ReadMatrix( CB_MatListAnsreg, regT.real, MatAry[CB_MatListAnsreg].Base );
 	}
 	*add = ExecPtr+1;
 	ExecPtr=excptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
+}
+*/
+double GraphXYEval( char *buffer, int *add ) {
+	double result;
+	int excptr=ExecPtr;
+	int Ansreg=CB_MatListAnsreg;
+	dspflag=0;
+	ExecPtr=0;
+	result = Cplx_ListEvalsubTop( buffer ).real;
+	*add = ExecPtr+1;
+	ExecPtr=excptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	return result;
+}
+int Graph_Draw_XY_List_sub( char *graph, double *dadd, int *listdirect ) {
+	int c,reg,gp = 0;
+	int excptr = ExecPtr;
+	dspflag = 0;
+	ExecPtr = 0;
+	*dadd = 0.0;
+	if (graph[0]=='{') {
+		gp = 1;
+		*listdirect = 1;
+	} else {		// A+{ etc
+		*dadd = Cplx_Evalsub1(graph).real;
+		if ( dspflag<3 ) {
+			c = graph[ExecPtr++];
+			if ( c == 0xFFFFFF89 ) {	// +
+				if ( graph[ExecPtr] == '{' ) {
+					gp = ExecPtr +1;
+					CB_MatListAnsreg=28;
+					Cplx_Evalsub1(graph);
+					c = graph[ExecPtr];
+					if ( ( c==',' ) || ( c==':' ) || ( c==')' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0x00 ) ) {
+						*listdirect = 1;
+						goto exit;
+					}
+				}
+			}
+		}
+		gp = 0;
+		*dadd = 0;
+	}
+  exit:
+	ExecPtr = excptr;
+	return gp;
 }
 
 void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 2)
@@ -867,6 +914,7 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 	double p_y=Previous_Y;
 	char *graphX=GraphX;
 	char *graphY=GraphY;
+	double xdadd,ydadd;
 	int XlistDirect=0,YlistDirect=0;
 	int sizeA,sizeA2;
 	int base=1,base2=1;
@@ -879,13 +927,13 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 		sizeA = 1;
 	} else {
 		sizeA = MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base;
-		if (graphX[0]=='{') { graphX+=1; XlistDirect=1; }
+		graphX += Graph_Draw_XY_List_sub( graphX, &xdadd, &XlistDirect );
 	}
 	if ( ylistreg==0 ) {
 		sizeA2 = 1;
 	} else {
 		sizeA2 = MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base;
-		if (graphY[0]=='{') { graphY+=1; YlistDirect=1; }
+		graphY += Graph_Draw_XY_List_sub( graphY, &ydadd, &YlistDirect );
 	}
 	if ( xlistreg && ylistreg ) {
 		if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -904,14 +952,14 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 		while ( regT.real<=TThetamax ) {
 			//-----------------------------
 			if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
-			regX.real = GraphXYEval(graphX, &addX);		// function
-			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( xlistreg, c, base );
-			regY.real = GraphXYEval(graphY, &addY);		// function
-			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( ylistreg, c, base2 );
+			regX.real = GraphXYEval(graphX, &addX) + xdadd;		// function
+			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( CB_MatListAnsreg, c, base );
+			regY.real = GraphXYEval(graphY, &addY) + ydadd;		// function
+			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( CB_MatListAnsreg, c, base2 );
 			if ( ErrorNo ) return ;
 			//-----------------------------
-			if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
-			if ( fabs(regY.real)*1e10<Ydot ) regY.real=0;	// zero adjust
+//			if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
+//			if ( fabs(regY.real)*1e10<Ydot ) regY.real=0;	// zero adjust
 			if ( at1st==0 ) { Previous_X = regX.real; Previous_Y = regY.real; at1st=1; }
 			PlotOn_VRAM( regX.real, regY.real );
 			Plot_X=regX.real;
@@ -1037,8 +1085,39 @@ int glib2ObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4N( unsigned int n ){ return n; }	// align +4byte

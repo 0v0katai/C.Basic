@@ -3,12 +3,10 @@
 //---------------------------------------------------------------------------------------------
 char *HelpText;
 
-extern const char root[][5];
-
 //----------------------------------------------------------------------------------------------
 char * LoadHelpfile( char *buffer ) {
 	int r;
-	char filename[32];
+	char filename[64];
 	char folder16[21];
 	char basname[16];
 	int progno = ProgNo;

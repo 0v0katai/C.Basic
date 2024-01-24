@@ -31,7 +31,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	char *ptr,*stat;
 	int i,j;
 
-	char filename[50];
+	char filename[64];
 	char *src;
 
 	HeapRAM = (char *)malloc( MAXHEAP );		// 47KB C.Basic area (program & Mat)

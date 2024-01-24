@@ -670,12 +670,14 @@ void PlotXYtoPrevPXY() {
 		Previous_Y2= Plot_Y;
 		VWtoPXY( Plot_X, Plot_Y, &Previous_PX, &Previous_PY );
 }
-void PlotPreviousPXY() {
+void PlotPreviousPXYs() {
 	if ( Previous_PX > 0 ) LinesubSetPoint(Previous_PX, Previous_PY,1);
+}
+void PlotPreviousPXY() {
+	PlotPreviousPXYs();
 	PlotXYtoPrevPXY();
 }
 void PlotCurrentXY(){
-	PlotXYtoPrevPXY();
 	if ( ScreenMode == 0 ) {	//Text mode
 		CB_SelectGraphVRAM();	// Select Graphic Screen
 		PlotPreviousPXY();
@@ -707,7 +709,10 @@ void CB_Plot( char *SRC ) { //	Plot
 	regY.real = y;
 	regintX = x;
 	regintY = y;
-	PlotPreviousPXY();
+	c=SRC[ExecPtr];
+	if ( ( c != 0 ) && ( c != 0x0C ) ) {  //  end or Disps
+		PlotPreviousPXY();
+	}
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 
@@ -1630,7 +1635,7 @@ unsigned int GWait( int exit_cancel ) {
 					if ( ScreenMode==0 ) cont=0;
 					else { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; }	// G<>T
 				} else { cont=0;
-					if ( UseGraphic == 1 ) PlotXYtoPrevPXY();
+//					if ( UseGraphic == 1 ) PlotXYtoPrevPXY();
 				}
 				break;
 			case KEY_CTRL_EXIT:
@@ -1638,7 +1643,7 @@ unsigned int GWait( int exit_cancel ) {
 					if ( ScreenMode==0 ) cont =0 ;
 					else { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; }	// G<>T
 				} else { key=0; key2=0;
-					if ( UseGraphic == 1 ) PlotXYtoPrevPXY();
+//					if ( UseGraphic == 1 ) PlotXYtoPrevPXY();
 				}
 				break;
 			case KEY_CTRL_SHIFT:
@@ -1675,6 +1680,7 @@ unsigned int GWait( int exit_cancel ) {
 								else		CB_SelectGraphVRAM();	// Select Graphic Screen
 							if (ScreenMode) {
 								if (UseGraphic==1) {
+									PlotPreviousPXYs();
 									key=Plot();	// Plot
 									if ( key==KEY_CTRL_EXE ) {
 //										if (exit_cancel==0) { //  end program
@@ -1818,7 +1824,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	CursorX=1;
 	if ( scrmode ) CB_SelectGraphVRAM();	// Select Graphic Screen
   exitj:
-	if ( UseGraphic == 1 ) PlotXYtoPrevPXY(); // Plot
+//	if ( UseGraphic == 1 ) PlotXYtoPrevPXY(); // Plot
 	if ( UseGraphic ) UseGraphic=(UseGraphic | 0x10);  // 
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0;
@@ -2443,14 +2449,14 @@ int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

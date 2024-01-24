@@ -196,6 +196,8 @@ void CB_ErrMsg(int ErrNo) {
 			break;
 			
 		default:
+//		case FileERR:
+			ERROR("File ERROR");
 			break;
 	}
 }
