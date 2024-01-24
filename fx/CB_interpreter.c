@@ -525,6 +525,12 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_MatFill(SRC);
 						dspflag=0;
 						break;
+					case 0xFFFFFFF0:	// graphY
+						goto strjp;
+//						ExecPtr-=2;
+//						CB_Str(SRC) ;
+//						dspflag=0;
+//						break;
 //					case 0x51:	// List
 //						dspflagtmp=CB_ListCalc(SRC);
 //						dspflag=0;
@@ -552,6 +558,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x3D:	// StrRotate(
 					case 0x3E:	// ToStr(
 					case 0x3F:	// Str
+					strjp:
 						ExecPtr-=2;
 						CB_Str(SRC) ;
 						dspflag=0;
@@ -763,8 +770,8 @@ int CB_interpreter( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_quot( char *SRC ){ // skip "..."
@@ -1678,11 +1685,12 @@ void CB_Store( char *SRC ){	// ->
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
 			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
-			if ( SRC[ExecPtr] != '[' ) { 
+			if ( SRC[ExecPtr] != '[' ) { // -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatSub( reg, CB_CurrentValue);
 			} else {
 			Matrix:
+				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				ExecPtr++;
 				MatOprand2( SRC, reg, &dimA, &dimB);
 				if ( ErrorNo ) return ; // error
