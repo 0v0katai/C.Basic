@@ -50,7 +50,7 @@ char * LoadPicture( int pictNo );
 
 int  RenameFile(char *name) ;
 void DeleteFile(char *name) ;
-void DeleteFileFav(char *sname) ;
+void DeleteFileFav(char *sname, int yesno) ;
 int CopyFile( char *sname ) ;
 
 void ConvertToText( char *sname );
@@ -66,6 +66,7 @@ void LoadConfig();
 int CB_IsExist( char *SRC ) ;	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
 void CB_Save( char *SRC ) ; //	Save "TEST",Mat A[1,3]
 void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3] 
+void CB_Delete( char *SRC ) ;	// Delete "ABC.bin"[,Q]
 
 void Setfoldername16( char *folder16, char *sname ) ;
 int CheckPassWord( char *filebase );	// 1:cancel  0:Ok  -1:no pass

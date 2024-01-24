@@ -54,6 +54,7 @@ int PrevLine( char *SRC, int *offset );
 int strlenOp( char *buffer ) ;
 
 int CB_MB_ElementCount( char *str);
+int CB_MB_strlen( char *str ) ;
 int CB_OpcodeToStr( int opcode, char *string );
 
 extern int selectCMD;

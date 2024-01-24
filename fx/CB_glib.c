@@ -226,6 +226,8 @@ void GraphAxesGrid(){
 		PrintMini(124,43,(unsigned char*)" ",MINI_OVER);
 		PrintMini(124,43,(unsigned char*)"X",MINI_OVER);
 	}
+	
+	if ( BG_Pict_No ) if ( PictAry[BG_Pict_No] != NULL ) RclPict(BG_Pict_No);
 //	Bdisp_PutDisp_DD();
 }
 
@@ -240,7 +242,8 @@ void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax
 	Yscl  =yscl;
 	Ydot  =(Ymax-Ymin)/ 62.0;
 
-	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
+//	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
+	ML_clear_vram();
 	
 	GraphAxesGrid();
 
@@ -426,6 +429,9 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 	int wx, wy; // width x,y
 	int Styleflag=1;
 	int tmp;
+
+	if ( ( px1 <  -1024 ) || ( px1 > 1024 ) || ( py1 < -1024 ) || ( py1 >  1024 ) ) return;
+	if ( ( px2 <  -1024 ) || ( px2 > 1024 ) || ( py2 < -1024 ) || ( py2 >  1024 ) ) return;
 
 	prev_px0=-1;	// Prev Thick dot clear
 	prev_px1=-1;
@@ -707,7 +713,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 void Line(int style, int mode, int errorcheck ) {
 	int px1,px2,py1,py2;
 	int i,j;
-	if ( Previous_X > 1e307 ) { 
+	if ( ( Previous_X > 1e8 ) || ( Previous_X > 1e8 ) ) { 
 		 Previous_X = Plot_X;
 		 Previous_Y = Plot_Y;
 		return;

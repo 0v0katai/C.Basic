@@ -532,7 +532,7 @@ void Graph_Draw(){
 void Graph_reDraw(){
 	int i;
 	ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
-	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
+//	Bdisp_AllClr_VRAM();			// ------ Clear VRAM 
 	Graph_Draw();
 }
 //--------------------------------------------------------------
@@ -715,3 +715,71 @@ unsigned int Graph_main(){
 	return key;
 }
 
+//----------------------------------------------------------------------------------------------
+double GraphXYEval( char *buffer ) {
+	double result;
+	int excptr=ExecPtr;
+	int Ansreg=CB_MatListAnsreg;
+	dspflag=0;
+	ExecPtr=0;
+	result=CB_EvalDbl( buffer );
+	if ( dspflag>=3 ) {
+		CB_MatListAnsreg=Ansreg;
+		ExecPtr=0; ListEvalsubTop( buffer );	// List calc
+		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		result=ReadMatrix( CB_MatListAnsreg, regT, 1 );
+	}
+	ExecPtr=excptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	return result;
+}
+
+void Graph_Draw_XY_List(int list1reg, int list2reg){	// Graph XY ( List 1, List 2)
+	double tmpT=regT;
+	double tmpX,tmpY;
+	int sizeA,sizeA2;
+	int base=0,base2=0;
+	int c;
+	int at1st;
+	if ( list1reg==0 ) sizeA =1; else { sizeA =MatAry[list1reg].SizeA; base =MatAry[list1reg].Base; }
+	if ( list2reg==0 ) sizeA2=1; else { sizeA2=MatAry[list2reg].SizeA; base2=MatAry[list2reg].Base; }
+	if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( sizeA > sizeA2 ) sizeA=sizeA2;
+	
+	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
+	tmpT=regT;
+	c = base;
+	for ( c=base; c<sizeA+base; c++ ) {
+		regT=TThetamin;
+		at1st=0;
+		while ( regT<=TThetamax ) {
+			//-----------------------------
+			if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
+			tmpX=GraphXYEval(GraphX);		// function
+			tmpY=GraphXYEval(GraphY);		// function
+			if ( ErrorPtr ) return ;
+			//-----------------------------
+			if ( list1reg )	regX=ReadMatrix( list1reg, c, base );
+			else 			regX=tmpX;
+			if ( list2reg )	regY=ReadMatrix( list2reg, c, base2 );
+			else			regY=tmpY;
+			if ( fabs(regX)*1e10<Xdot ) regX=0;	// zero adjust
+			if ( fabs(regY)*1e10<Ydot ) regY=0;	// zero adjust
+			if ( at1st==0 ) { Previous_X = regX; Previous_Y = regY; at1st=1; }
+			PlotOn_VRAM( regX, regY );
+			Plot_X=regX;
+			Plot_Y=regY;
+			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
+				Line( S_L_Default , 1, 0);	// No error check
+			}
+//			Bdisp_PutDisp_DD();
+			regT+=TThetaptch;
+		}
+	}
+	regintX=regX; regintY=regY;
+	regT=tmpT;
+//	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
+}
+
+
+//--------------------------------------------------------------

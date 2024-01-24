@@ -27,6 +27,7 @@
 
 #include <fxlib.h>
 #include "KeyScan.h"
+#include "CB_interpreter.h"
 
 
 void delay( void ){
@@ -84,7 +85,6 @@ int CheckKeyRow7305( int row ){
 	return result & 0xFF ;
 }
 
-
 int KeyScanDown(int keyscan_code){
 	int row,col,rowdata;
 	row = keyscan_code & 0x0F;
@@ -96,6 +96,18 @@ int KeyScanDown(int keyscan_code){
 	else {
 		return ( CheckKeyRow7305(row) & col ) ;		//SH4A
 	}
+}
+int KeyScanDownAC(){
+	int result=0;
+	int n,s,t;
+	n=Waitcount;
+	if ( n<=0 ) return KeyScanDown(KEYSC_AC) ;
+	while ( n ) {
+		result = KeyScanDown(KEYSC_AC);
+		if ( result ) break;
+		n--;
+	}
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------

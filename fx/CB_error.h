@@ -60,6 +60,7 @@ extern int ErrorNo;
 #define SwitchWithoutSwitchEndERR 52
 #define SwitchEndWithoutSwitchERR 53
 #define CantFindFileERR 54
+#define ElementSizeERR 55
 
 #define FileERR 100
 
