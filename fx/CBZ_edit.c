@@ -1312,10 +1312,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 
 		UpdateLineNum=0;
 		
-		if ( alphastatus == 1 ) if ( KeyCheckDEL() ) {
-			key=30045;		// KEY_CTRL_UNDO:
-			alphastatus = 0;
-			alphalock = 0 ; 
+		if ( alphastatus == 1 ) {
+			if ( KeyCheckDEL() ) {
+				key=30045;		// KEY_CTRL_UNDO:
+				alphastatus = 0;
+				alphalock = 0 ; 
+			} else 
+			if ( KeyCheckPMINUS() ) {
+				key = '%';
+			}
 		}
 		
 		switch (key) {
@@ -2189,6 +2194,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					if ( key == KEY_CHAR_POW )   key='^';
 					if ( key == KEY_CTRL_XTT  )   key='X'; // 
 					
+					help_code=key;
 					do {
 						if ( ( CursorStyle < 0x6 ) || ( indent ) ) {	// insert mode
 								InsertOpcode( filebase, csrPtr, key );
@@ -2202,12 +2208,19 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					} while ( indent >= 0 ) ;
 					
 					if ( alphalock == 0 ) alphastatus = 0;
-					help_code=key;
 					key=0;
 					SearchMode=0;
 					DebugScreen = 0;
 					UpdateLineNum=1;
 					Undo.enable = 0;
+					if ( help_code == 0x0D ) {
+						if ( alphalock ) {
+							PutKey( KEY_CTRL_SHIFT, 1 );
+							PutKey( KEY_CTRL_ALPHA, 1 );
+							alphalock   = 0;
+							alphastatus = 0;
+						}
+					}	
 				}
 			} else {
 				if ( key == KEY_CTRL_AC ) SearchMode=0;
