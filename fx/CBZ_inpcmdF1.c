@@ -77,6 +77,8 @@ void GetGenuineCmdF1( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F40;return;	// Mat 
 				case 1: (*code)=0x7F48;return;	// Identity
+				case 2: (*code)=0x7F84;return;	// Vct
+				case 3: (*code)=0xF95B;return;	// Norm(
 			} break;
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {

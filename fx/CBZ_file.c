@@ -2676,9 +2676,9 @@ void PP_ReplaceCode( char *SRC ){
 				break;
 			case 0xFFFFFFF9:	// 
 				c=SRC[ExecPtr++];
-				if ( c==0x4B ) { 
-					SRC[ExecPtr-2]=0xFFFFFFF7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
-				else
+//				if ( c==0x4B ) { 
+//					SRC[ExecPtr-2]=0xFFFFFFF7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
+//				else
 				if ( c==0x3E ) SRC[ExecPtr-1]=0x43;	// Sprintf(  F93E -> F943
 				break;				
 		}
@@ -2799,17 +2799,17 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 }
 
 //---------------------------------------------------------------------------------------------- align dummy
-int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
@@ -2851,6 +2851,7 @@ int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2979,5 +2980,4 @@ void FavoritesDowndummy8( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 */

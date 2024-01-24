@@ -1770,7 +1770,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 		scrmode=ScreenMode;
 		goto exitj;
 	} else
-	if ( (scrmode) || ( UseGraphic == 3 ) ) {	// Graphic mode
+	if ( (scrmode) ) {	// Graphic mode
 		CB_SelectTextVRAM();	// Select Text Screen
 		PrintDone();
 	}

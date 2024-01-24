@@ -736,6 +736,10 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					}
 					return Cplx_ReadMatrix( reg, dimA, dimB);
 						
+				case 0xFFFFFF84 :	// Vct A[a,b]
+					reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+					goto Matrix1;
+
 				case 0x51 :		// List 1~26
 					reg=ListRegVar( SRC );
 				  Listj:
@@ -883,12 +887,12 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					return Int2Cplx( 3 );
 				case 0x2C:	// Seq
 					CB_Seq(SRC);
-					return Int2Cplx( 4 );
+					return Int2Cplx( 3 );
 				case 0x41:	// Trn
 					CB_MatTrn(SRC);
 					return Int2Cplx( 3 );
 				case 0x21:	// Det
-					return CB_MatDet(SRC);
+					return Cplx_CB_MatDet(SRC);
 
 				case 0x46 :				// Dim
 					result.real = CB_Dim( SRC );
@@ -1073,6 +1077,20 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					return Dbl2Cplx( Xdot );
 				case 0x1B :		// fn str
 					return CB_Cplx_FnStr( SRC, 0 );
+					
+				case 0x4B:	// DotP(
+					return Cplx_CB_DotP( SRC );
+				case 0x4A:	// CrossP(
+					Cplx_CB_CrossP( SRC );
+					return Int2Cplx( 0 );
+				case 0x6D:	// Angle(
+					return Cplx_CB_AngleV( SRC );
+				case 0x5E:	// UnitV(
+					Cplx_CB_UnitV( SRC );
+					return Int2Cplx( 0 );
+				case 0x5B:	// Norm(
+					return Cplx_CB_NormV( SRC );
+					
 				default:
 					ExecPtr--;	// error
 					break;
@@ -1248,6 +1266,7 @@ complex Cplx_Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x40:	// Mat A[a,b]
+				case 0xFFFFFF84 :	// Vct A[a,b]
 				case 0x50:	// i
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
@@ -1389,7 +1408,7 @@ complex Cplx_Evalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 //				result = Cplx_fnCr( result, Cplx_Evalsub7( SRC ) );
 //				break;
 			case 0x7F:
-				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
+				c = SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x54:	// /_ Angle
 						result = Cplx_fAngle( result, Cplx_Evalsub7( SRC ) );
@@ -1426,7 +1445,7 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = Cplx_fDIV( result, tmp );
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
+				c = SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						result = Cplx_fIDIV( result, Cplx_Evalsub8( SRC ) );

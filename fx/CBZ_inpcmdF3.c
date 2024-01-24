@@ -68,14 +68,15 @@ void GetGenuineCmdF3( unsigned int *code ){
 				case 0: (*code)=0x7F46;return;	// Dim
 				case 1: (*code)=0x7F2E;return;	// Mean(
 			} break;
-		case CMD_OPTN_MAT_SIZE:
-			switch ( CommandPage ) {
-				case 0: (*code)=0x7F59;return;	// RowSize
-			} break;
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F21;return;	// Det
 				case 1: (*code)=0x7F47;return;	// Fill(
+				case 2: (*code)=0xF94A;return;	// CrossP(
+			} break;
+		case CMD_OPTN_MAT_SIZE:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F59;return;	// RowSize
 			} break;
 		case CMD_OPTN_CPLX:
 			switch ( CommandPage ) {

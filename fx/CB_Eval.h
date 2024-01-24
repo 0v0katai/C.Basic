@@ -115,6 +115,8 @@ double EvalsubTop(char *SRC);
 double CB_EvalDbl( char *SRC ) ;
 int RegVar( int c ) ;
 int MatRegVar( char *SRC ) ;	// 
+int RegVarVct( int c ) ;
+int VctRegVar( char *SRC ) ;	// 
 int ListRegVar( char *SRC ) ;	// return reg no
 int Get2Eval( char *SRC, double *tmp, double *tmp2);
 int RegVarAliasEx( char *SRC ) ;

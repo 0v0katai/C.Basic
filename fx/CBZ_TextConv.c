@@ -1504,10 +1504,15 @@ int codecnv7F00( char *srcbase, char *text, int *ofst, int *textofst ) {
 		if ( c == opstr[0] ) {
 			len = strlen( opstr );
 			if ( strncmp( text+(*textofst), opstr, len ) == 0 )  {
-				srcbase[(*ofst)++] = 0x7F;
-				srcbase[(*ofst)++] = code ;
-				(*textofst) += len;
-				return 0;	 	// matching
+				if ( code==0x54 ) {	// Angle( ?
+					if ( text[(*textofst)+len] !='(' ) goto exit;
+				} else {
+				  exit:
+					srcbase[(*ofst)++] = 0x7F;
+					srcbase[(*ofst)++] = code ;
+					(*textofst) += len;
+					return 0;	 	// matching
+				}
 			}
 		}
 	}

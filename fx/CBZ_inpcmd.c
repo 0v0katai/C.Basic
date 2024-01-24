@@ -33,7 +33,7 @@ void Menu_CMD_MENU_EXT(){
 					Fkey_Icon( FKeyNo2, 510 );	//	Fkey_DISPR( FKeyNo2, " \x0C ");
 					Fkey_Icon( FKeyNo3, 515 );	//	Fkey_DISPR( FKeyNo3, " :");
 					Fkey_Icon( FKeyNo4, 534 );	//	Fkey_DISPR( FKeyNo4, " \x13 ");
-					Fkey_DISPR( FKeyNo5, " ' ");
+					Fkey_Icon( FKeyNo5, 398 );	//	Fkey_DISPR( FKeyNo5, " ' ");
 					Fkey_Icon( FKeyNo6, 402 );	//	FFkey_DISPR( FKeyNo6, " / ");
 }
 
@@ -143,7 +143,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 541 );	//	Fkey_dspRB( FKeyNo2, "Grph");		// ClrGraph
 					Fkey_Icon( FKeyNo3, 162 );	//	Fkey_dspRB( FKeyNo3, "List");		// ClrList
 					Fkey_Icon( FKeyNo4, 200 );	//	Fkey_dspRB( FKeyNo4, "Mat ");		// ClrMat
-					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo5,1112 );	//	Fkey_dspRB( FKeyNo5, "Vct ");		// ClrVct
 					FkeyClear( FKeyNo6 );
 					break;
 			}
@@ -227,7 +227,7 @@ void DispGenuineCmdMenu(){
 			switch ( CommandPage ) {
 				case 0:
 					Fkey_Icon( FKeyNo1, 268 );	//	Fkey_dspRB( FKeyNo1, "Str");		// Str
-					Fkey_dspRB( FKeyNo2, "Str(");		// Str(
+					Fkey_dspRB( FKeyNo2, "ToStr");		// Str(
 					Fkey_dspRB( FKeyNo3, "Sptf");		// Sprintf
 					Fkey_Icon( FKeyNo4, 176 );	//	Fkey_DISPR( FKeyNo4, " % ");
 					Fkey_Icon( FKeyNo5, 403 );	//	Fkey_DISPR( FKeyNo5, " # ");
@@ -349,6 +349,22 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo3, 206 );	//	Fkey_dspRB( FKeyNo3, "Fill");
 					FkeyClear( FKeyNo4 );
 					Fkey_Icon( FKeyNo5, 790 );	//	Fkey_dispR( FKeyNo5, "SIZE");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 2:
+					Fkey_Icon( FKeyNo1,1112 );	//	Fkey_dspRB( FKeyNo1, "Vct");
+					Fkey_Icon( FKeyNo2,1111 );	//	Fkey_dspRB( FKeyNo2, "DotP(");
+					Fkey_Icon( FKeyNo3,1110 );	//	Fkey_dspRB( FKeyNo3, "CrossP(");
+					Fkey_Icon( FKeyNo4,1109 );	//	Fkey_dspRB( FKeyNo3, "Angle(");
+					Fkey_Icon( FKeyNo5,1107 );	//	Fkey_dispR( FKeyNo5, "UnitV(");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 3:
+					Fkey_Icon( FKeyNo1,1108 );	//	Fkey_dspRB( FKeyNo1, "Norm(");
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}

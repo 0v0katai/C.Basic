@@ -64,6 +64,7 @@ void CBint_Store( char *SRC ){	// ->
 			c=SRC[ExecPtr];
 			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+			Matrix0:
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -79,6 +80,10 @@ void CBint_Store( char *SRC ){	// ->
 				}
 				WriteMatrixInt( reg, dimA, dimB, CBint_CurrentValue);
 			}
+		} else if ( c == 0xFFFFFF84 ) {	// Vct A[a,b]
+			ExecPtr+=2;
+			reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+			goto Matrix0;
 		} else if ( c == 0x51 ) {	// List
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
@@ -109,13 +114,14 @@ void CBint_Store( char *SRC ){	// ->
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				} else
-				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// {10,5} -> Dim Mat A
+				if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// {10,5} -> Dim Mat A   -> Dim Vct A
 					CB_MatrixInit( SRC, dimdim );
 					return ;
 				} else {
-					if ( CBint_CurrentValue ) 			// 15->Dim Mat A
-							CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0, dimdim );
-					else {								//  0->Dim Mat A
+					if ( CBint_CurrentValue ) {			// 15->Dim Mat A
+						reg=MatRegVar(SRC);
+						CB_MatrixInitsubNoMat( SRC, reg, CBint_CurrentValue, 1, 0, dimdim );
+					} else {							//  0->Dim Mat A
 						reg=MatRegVar(SRC);
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
@@ -245,7 +251,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) || ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or List
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -311,7 +317,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) || ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or List
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -688,11 +694,12 @@ int CB_VarPtr( char *SRC ) {
 		else
 		if (CB_INT==1)	result=(int)&LocalInt[reg][0]; else result=(int)&LocalDbl[reg][0];
 	} else
-	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat or Vct
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
 		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+		Matrix0:
 		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
 			ExecPtr++;
@@ -703,6 +710,12 @@ int CB_VarPtr( char *SRC ) {
 		} else {
 			result=(int)MatAry[reg].Adrs;	// Mat A
 		}
+	} else
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) {	// Vct
+		ExecPtr+=2;
+		c=SRC[ExecPtr];
+		reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+		goto Matrix0;
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
 		ExecPtr+=2;
@@ -734,22 +747,21 @@ int CB_VarPtr( char *SRC ) {
 
 int CB_ProgPtr( char *SRC ) { //	ProgPtr(
 	int c;
-	char buffer[32],folder16[21];
+	char *buffer,folder16[21];
+	int maxoplen;
 	int progno;
 
-	c=SRC[ExecPtr];
-	if ( c != 0x22 ) { 
-		if ( c != ')' ) { ExecPtr++; return 0; }	// ProgPtr()
-		ExecPtr++;
-		return (int)ProgfileAdrs[ProgNo];
+	c=CB_IsStr( SRC, ExecPtr );
+	if ( c ) {	// string
+		buffer=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
+		if ( ErrorNo ) return 1;			// error
+		Setfoldername16( folder16, buffer );
+		progno = CB_SearchProg( folder16 );
+		if ( progno < 0 ) { CB_Error(NotfoundProgERR); return 0 ; }  // Not found Prog
+	} else {
+		progno=CB_EvalInt( SRC );
+		if ( ErrorNo ) return 1;			// error
 	}
-	ExecPtr++;
-	CB_GetQuotOpcode(SRC, buffer,32);	// Prog name
-	
-	Setfoldername16( folder16, buffer );
-	progno = CB_SearchProg( folder16 );
-	if ( progno < 0 ) { CB_Error(NotfoundProgERR); return 0 ; }  // Not found Prog
-
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	return  (int)ProgfileAdrs[progno];
 }

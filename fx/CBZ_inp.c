@@ -2340,6 +2340,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F88, "RanList#(" }, 	// SDK emu not support
 	{ 0x7F89, "RanBin#(" }, 	// SDK emu not support
 	{ 0x7F8A, "RanNorm#(" }, 	// SDK emu not support
+	{ 0x7F84, "Vct " }, 		// SDK emu not support
 	{ 0x7F58, "ElemSize(" }, 
 	{ 0x7F59, "RowSize(" }, 
 	{ 0x7F5A, "ColSize(" }, 
@@ -2412,6 +2413,12 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF93C, "StrShift(" }, 		// SDK emu not support
 	{ 0xF93D, "StrRotate(" }, 		// SDK emu not support
 	{ 0xF93F, "Str " }, 			// SDK emu not support
+	{ 0xF93E, "ClrVct " }, 			// SDK emu not support
+	{ 0xF94B, "DotP(" }, 			// SDK emu not support
+	{ 0xF94A, "CrossP(" }, 			// SDK emu not support
+	{ 0xF96D, "Angle(" }, 			// SDK emu not support
+	{ 0xF95E, "UnitV(" }, 			// SDK emu not support
+	{ 0xF95B, "Norm(" }, 			// SDK emu not support
 	{ 0xF940, "ToStr(" }, 
 	{ 0xF941, "DATE" }, 
 	{ 0xF942, "TIME" }, 

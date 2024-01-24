@@ -46,6 +46,8 @@ void SetFactor();
 int SetVar(int select);
 int SetupG(int select);
 int SetVarChar( char *buffer, int c ) ;
+int SetVarCharMat( char *buffer, int c ) ;
+int SetVarCharVct( char *buffer, int c ) ;
 
 int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key) ;		// 
 
