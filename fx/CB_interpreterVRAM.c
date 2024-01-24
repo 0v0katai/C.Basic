@@ -1938,6 +1938,12 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 	n=CB_EvalInt( SRC );
 	if ( ( n<1 )||(n>6) ) { CB_Error(ArgumentERR); return; }	// Argumenterror
 	c=SRC[ExecPtr];
+	if ( c == '~' ) { ExecPtr++;
+			(extend) = CB_EvalInt( SRC )-n;
+			if ( (extend)+n>6 )  (extend) = 6-n;
+			if ( 0>(extend) ) (extend) = 0;
+	}
+	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 
@@ -1960,15 +1966,16 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 			else if ( ( c=='N' ) || ( c=='n' ) ) { ExecPtr++; r='N'; }
 			else if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; (ofset) |= 0x10;}
 			else if ( ( c=='U' ) || ( c=='u' ) ) { ExecPtr++; (ofset) |= 1;}
-			else if ( ( c=='M' ) || ( c=='m' ) ) { ExecPtr++; mask=1; }
+			else if ( ( c=='M' ) || ( c=='M' ) ) { ExecPtr++; mask=1; }
+			else if ( ( c=='m' ) || ( c=='m' ) ) { ExecPtr++; mask=2; }
 			else if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; cls =1; }
 			else if ( ( c=='T' ) || ( c=='t' ) ) { ExecPtr++; UseGraphic=0; CB_SelectTextVRAM(); }	// Select Text Screen
 		}
-		if ( c==',' ) { c=SRC[++ExecPtr];
-			(extend) = CB_EvalInt( SRC )-n;
-			if ( (extend)+n>6 )  (extend) = 6-n;
-			if ( 0>(extend) ) (extend) = 0;
-		}
+//		if ( c==',' ) { c=SRC[++ExecPtr];
+//			(extend) = CB_EvalInt( SRC )-n;
+//			if ( (extend)+n>6 )  (extend) = 6-n;
+//			if ( 0>(extend) ) (extend) = 0;
+//		}
 	}
 	if ( direct ) Fkey_Icon( n-1, IconNo);
 	else {
@@ -1987,7 +1994,8 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 				break;
 		}
 	}
-	if ( mask ) for (c=0; c<=extend; c++ ) FkeyMask(  n-1+c );	// mask
+	if ( mask==1 ) for (c=0; c<=extend; c++ ) FkeyMask( n-1+c );	// mask
+	if ( mask==2 ) FkeyMaskm( n-1, n-1+extend );					// mask2
 	if ( cls  ) for (c=0; c<=extend; c++ ) FkeyClear( n-1+c );	// clear
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 //	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );

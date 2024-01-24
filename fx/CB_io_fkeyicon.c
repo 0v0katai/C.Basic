@@ -99,6 +99,9 @@ void Fkey_dispN(int n,char *buffer) {
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
 }
+void Fkey_dispRR(int n,char *buf) {
+	Fkey_dspRB( n, buf);
+}
 void Fkey_dspRB(int n,char *buffer) {
 	int i;
 	FkeyClear(n);
@@ -156,7 +159,7 @@ void Fkey_dispRB_ext(int n,char *buf, int ofset, int extend ) {
 	int i;
 	FkeyClearN(n, extend);
 	for (i=0;i<8;i++) Bdisp_DrawLineVRAM(n*21+2, 7*8+i, m*21+20, 7*8+i);
-	PrintMiniXY(n*21+4-(ofset!=0), 7*8+2, buf, MINI_REV | 0x100, 16 +(ofset!=0)*3 +21*extend );
+	PrintMiniXY(n*21+3-(ofset!=0), 7*8+2, buf, MINI_REV | 0x100, 16 +(ofset!=0)*3 +21*extend );
 	Bdisp_ClearLineVRAM(m*21+21, 7*8+0, m*21+21, 7*8+7);
 	Bdisp_ClearLineVRAM(m*21+22, 7*8+0, m*21+22, 7*8+7);
 }
@@ -167,7 +170,10 @@ void Fkey_dispRS_ext(int n,char *buf, int ofset, int extend ) {	// black select
 	Bdisp_DrawLineVRAM(m*21+20, 7*8+0, m*21+20, 7*8+7);
 	
 }
-
+void Fkey_dispRS(int n,char *buf ) {	// black select
+	Fkey_dispRS_ext(n, buf, 0, 0 ) ;
+}
+	
 void PrintMiniXY(int X, int Y, char*buf, int mode, int xlength ) {	// xlength : 19 fkeyicon 
 	int k,i,j;
 	j=CB_PrintMiniLengthStr( (unsigned char *)buf, mode );
@@ -175,6 +181,24 @@ void PrintMiniXY(int X, int Y, char*buf, int mode, int xlength ) {	// xlength : 
 	CB_PrintMini( X+i, Y, (unsigned char *)buf, mode  );	// extflag on
 }
 
+void FkeyMaskm(int n, int m ) {
+	int x,y=7*8,i=0;
+	for( x=n*21+0; x<=m*21+21; x++) {
+		if (i&1) {
+			BdispSetPointVRAM2(x,y,  0);	//Clear
+			BdispSetPointVRAM2(x,y+7,0);	//Clear
+		}
+		i++;
+	}
+	i=1;
+	for( y=7*8+1; y<=7*8+7; y++) {
+		if (i&1) {
+			BdispSetPointVRAM2(n*21+ 2,y,  0);	//Clear
+			BdispSetPointVRAM2(m*21+20,y,  0);	//Clear
+		}
+		i++;
+	}
+}
 void FkeyMask(int n ) {
 	int x,y;
 	for( y=7*8; y<=7*8+7; y++) {
