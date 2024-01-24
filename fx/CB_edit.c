@@ -291,6 +291,7 @@ void NextLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
 		if ( SrcBase[(*offset)] == 0 ) break;
 		NextLinePhy( SrcBase, &(*offset), &(*offset_y) );
 	}
+	return ;
 }
 void PrevLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
 	int i;
@@ -410,18 +411,6 @@ void DumpMix( char *SrcBase, int offset){
 		}
 	}
 }
-/*
-void DumpAsc( char *SrcBase, int offset){
-	int 	i,j;
-	for (j=0; j<6 ; j++){
-		Hex4PrintXY( 1, j+2, "", ((int)offset+j*16)&0xFFFF);
-		locate( 5,j+2); Print((unsigned char*)"/                ");
-		for (i=0; i<16 ; i++){
-				CB_PrintC(6+i,j+2,(unsigned char*)SrcBase+offset+i+j*16);
-		}
-	}
-}
-*/
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr){
@@ -493,11 +482,50 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr){
 
 //---------------------------------------------------------------------------------------------
 void editmenu( char lowercase ){
-	Fkey_dispN( 0, "TOP ");
-	Fkey_dispN( 1, "BTM");
+	Fkey_dispR( 0, "JUMP");
+	Fkey_dispR( 1, "SRC");
 	Fkey_dispR( 2, "CMD");
 	if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
 	Fkey_dispR( 4, "CHAR");
+}
+void jumpmenu(){
+	Fkey_dispN( 0, "TOP ");
+	Fkey_dispN( 1, "BTM");
+	Fkey_dispR( 2, "Goto");
+	Fkey_dispN_aA( 4, "Skp\xE6\x92");
+	Fkey_dispN_aA( 5, "Skp\xE6\x93");
+}
+
+int JumpGoto( char * SrcBase ) {
+	unsigned int key;
+	char buffer[32];
+	int lineAll,curline;
+	int ofst,ofsty;
+	int i,n;
+
+	PopUpWin(3);
+	locate( 3,3); Print((unsigned char *)"Goto Line Number");
+	Bdisp_PutDisp_DD_DrawBusy();
+	
+	ofst=0; ofsty=0;
+	for ( lineAll=0; lineAll<99999999; lineAll++ ) {
+		if ( SrcBase[ofst] == 0 ) break;
+		NextLinePhy( SrcBase, &ofst, &ofsty );
+	}
+	lineAll++;
+	
+	sprintf(buffer,"[1~%d]:",lineAll);
+	locate( 3,5); Print((unsigned char *)buffer);
+	i=strlen(buffer)+3;
+	n=0;
+	while (1) {
+		n=InputNumD( i, 5, 5, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+ 		if ( (1<=n)&&(n<=lineAll) ) break;
+ 		if ( n==0 ) break;
+ 		if ( n < 0 ) n=1;
+ 		if ( n > lineAll ) n=lineAll;
+ 	}
+	return n ; // ok
 }
 
 
@@ -525,6 +553,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char SearchMode=0;
 	int ContinuousSelect=0;
 	char DebugMenuSw=0;
+	char JumpMenuSw=0;
 	
 
 	long FirstCount;		// pointer to repeat time of first repeat
@@ -638,15 +667,24 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								Fkey_dispN( 2, "Step");
 								Fkey_dispN( 3, "S.ot");
 								Fkey_dispN( 4, "L<>S");
+								Fkey_DISPN( 5," \xE6\x9E ");
 								break;
 							case 0:
-								editmenu(lowercase );
+								if ( JumpMenuSw ) {		// Jump Mode
+									jumpmenu(lowercase );
+								} else {
+									editmenu(lowercase );
+									Fkey_DISPN( 5," \xE6\x9E ");
+								}
 								break;
 						}
-						Fkey_DISPN( 5," \xE6\x9E ");
 					} else {	// normal mode
-						editmenu(lowercase );
-						Fkey_dispN( 5, "EXE");
+						if ( JumpMenuSw ) {		// Jump Mode
+							jumpmenu(lowercase );
+						} else {
+							editmenu(lowercase );
+							Fkey_dispN( 5, "EXE");
+						}
 					}
 				}
 			}
@@ -730,6 +768,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					ClipStartPtr = -1 ;		// ClipMode cancel
 //					break;
 			case KEY_CTRL_EXIT:
+					if ( JumpMenuSw  ) { JumpMenuSw  = 0; break; }
 					if ( DebugScreen ) { DebugScreen = 0; break; }
 //			case KEY_CTRL_QUIT:
 					cont=0;
@@ -750,18 +789,22 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								BreakPtr=0;
 								DebugMode=1;		// cont mode
 							} else {
-								offset=0;
-								offset_y=0;
-								csrPtr=0;
-								switch (dumpflg) {
-									case 2: 		// Opcode
-										break;
-									case 4: 		// hex dump
-									case 16:		// Ascii dump
-										cx=6; cy=2;
-										break;
-									default:
-										break;
+								if ( JumpMenuSw ) {		// ====== Jump Mode
+									offset=0;
+									offset_y=0;
+									csrPtr=0;
+									switch (dumpflg) {
+										case 2: 		// Opcode
+											break;
+										case 4: 		// hex dump
+										case 16:		// Ascii dump
+											cx=6; cy=2;
+											break;
+										default:
+											break;
+									}
+								} else {
+									JumpMenuSw = 1;
 								}
 							}
 						}
@@ -783,19 +826,33 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								BreakPtr=-1;
 								DebugMode=2;		// trace into mode
 						} else {
-							offset=EndOfSrc( SrcBase, offset );
-							csrPtr=offset;
-							offset_y=0;
-							switch (dumpflg) {
-								case 2: 		// Opcode
-									PrevLinePhyN( 6, SrcBase, &offset, &offset_y ) ;
-									break;
-								case 4: 		// hex dump
-								case 16:		// Ascii dump
-									cx=6; cy=2;
-									break;
-								default:
-									break;
+							if ( JumpMenuSw ) {		// ====== Jump Mode
+								offset=EndOfSrc( SrcBase, offset );
+								csrPtr=offset;
+								offset_y=0;
+								switch (dumpflg) {
+									case 2: 		// Opcode
+										PrevLinePhyN( 6, SrcBase, &offset, &offset_y ) ;
+										break;
+									case 4: 		// hex dump
+									case 16:		// Ascii dump
+										cx=6; cy=2;
+										break;
+									default:
+										break;
+								}
+							} else {	// Search for text
+								if ( ClipEndPtr >= 0 ) {
+									if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+									EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+									ClipBuffer[63]='\0';
+									i=SearchForText(  SrcBase, ClipBuffer, &csrPtr) ;
+								} else {
+									searchbuf[0]='\0';
+									i=SearchForText(  SrcBase, searchbuf, &csrPtr) ;
+								}
+								if ( i ) SearchMode=1; 
+								else	 SearchMode=0;
 							}
 						}
 					}
@@ -812,8 +869,18 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								DebugMode=3;		// step over mode
 						key=0;
 					} else {
-						key=SelectOpcode5800P(oplistCMD,&selectCMD);
-						if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+						if ( JumpMenuSw ) {		// ====== Jump Mode
+							i=JumpGoto( SrcBase );					// Goto
+							if ( i>0 ) { 
+								offset=0; offset_y=0;
+								NextLinePhyN( i-1, SrcBase, &offset, &offset_y );
+								csrPtr=offset;
+								if ( SrcBase[csrPtr]==0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
+							}
+						} else {	// command select
+							key=SelectOpcode5800P(oplistCMD,&selectCMD);
+							if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+						}
 					}
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
@@ -825,8 +892,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								BreakPtr=0;
 								DebugMode=4;		// step out mode
 					} else {
-						lowercase=1-lowercase;
-						if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+						if ( JumpMenuSw ) {		// ====== Jump Mode
+						} else {
+							lowercase=1-lowercase;
+							if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+						}
 					}
 					key=0;
 					ClipStartPtr = -1 ;		// ClipMode cancel
@@ -837,8 +907,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( DebugScreen )  DebugScreen=0; else DebugScreen=1;	// swap list <---> screen
 						key=0;
 					} else {
-						key=SelectChar( &ContinuousSelect);
-						if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+						if ( JumpMenuSw ) {		// ====== Jump Mode
+								PrevLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );	// Skip Up
+								csrPtr=offset;
+						} else {
+							key=SelectChar( &ContinuousSelect);
+							if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+						}
 					}
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
@@ -859,34 +934,38 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							else
 							DebugMenuSw = 1-DebugMenuSw;
 						} else {
-							if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
-							ProgEntryN=1;
-							MSG1("Prog Loading.....");
-//							Bdisp_PutDisp_DD_DrawBusy();
-							CB_ProgEntry( SrcBase ) ;		// sub program search
-//							if ( ErrorNo == FileERR ) cont=0;
-							if ( ErrorNo ) { 
-								ProgNo=ErrorProg; 
-								stat=1;
+							if ( JumpMenuSw ) {		// ====== Jump Mode
+								NextLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );	// Skip Down
+								csrPtr=offset;
+								if ( SrcBase[offset] == 0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 							} else {
-								ProgNo=0;
-								ExecPtr=0;
-								stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
-							}
-							SaveConfig();
-							FileBase = ProgfileAdrs[ProgNo];
-							SrcBase  = FileBase+0x56;
-							if ( stat ) {
-								if ( ErrorNo ) offset = ErrorPtr ;			// error
-								else if ( BreakPtr ) offset = ExecPtr ;	// break
-							} else offset = 0;
-							if ( stat == -1 ) offset = ExecPtr-1;	// program  no error return
-							csrPtr = offset;
-							offset_y=0;
-							run=2; // edit mode
-							if ( dumpflg == 2 ) {
-								PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
-								if ( stat == -1 ) cont=0;	// program finish
+								if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
+								ProgEntryN=1;
+								MSG1("Prog Loading.....");
+								CB_ProgEntry( SrcBase ) ;		// sub program search
+								if ( ErrorNo ) { 
+									ProgNo=ErrorProg; 
+									stat=1;
+								} else {
+									ProgNo=0;
+									ExecPtr=0;
+									stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
+								}
+								SaveConfig();
+								FileBase = ProgfileAdrs[ProgNo];
+								SrcBase  = FileBase+0x56;
+								if ( stat ) {
+									if ( ErrorNo ) offset = ErrorPtr ;			// error
+									else if ( BreakPtr ) offset = ExecPtr ;	// break
+								} else offset = 0;
+								if ( stat == -1 ) offset = ExecPtr-1;	// program  no error return
+								csrPtr = offset;
+								offset_y=0;
+								run=2; // edit mode
+								if ( dumpflg == 2 ) {
+									PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
+									if ( stat == -1 ) cont=0;	// program finish
+								}
 							}
 						}
 					}
@@ -1051,6 +1130,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
 				if ( dumpflg==2 ) Fkey_dispN( 3, "Dump"); else Fkey_dispN( 3, "List");
+//				Fkey_Clear( 4 );
 				Fkey_dispR( 4, "SRC" );
 				Fkey_dispN( 5, "G<>T");
 				GetKey(&key);
@@ -1065,7 +1145,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_PAGEUP:
 							switch (dumpflg) {
 								case 2: 		// Opcode
-									PrevLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );
+									PrevLinePhyN( 6, SrcBase, &offset, &offset_y );	// Page Up
 									csrPtr=offset;
 									break;
 								case 4: 		// hex dump
@@ -1083,7 +1163,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_PAGEDOWN:
 							switch (dumpflg) {
 								case 2: 		// Opcode
-									NextLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );
+									NextLinePhyN( 6, SrcBase, &offset, &offset_y );	// Page Down
 									csrPtr=offset;
 									if ( SrcBase[offset] == 0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 									break;
@@ -1293,9 +1373,11 @@ int CB_BreakStop() {
 	}
 	
 	if ( ( DebugMode < 2 ) && ( BreakPtr > -999) ) {
-		PopUpWin(4);
+		PopUpWin(6);
 		locate(9,3); Print((unsigned char *)"Break");
 		locate(6,5); Print((unsigned char *) "Press:[EXIT]");
+//		locate(6,6); Print((unsigned char *) " Cont:[EXE]");
+		PrintMini(26,46,"Continue : [EXE]/[F1]",MINI_OVER);
 		Bdisp_PutDisp_DD();
 		
 		KeyRecover(); 
@@ -1306,6 +1388,7 @@ int CB_BreakStop() {
 			if ( key == KEY_CTRL_AC    ) break ;
 			if ( key == KEY_CTRL_RIGHT ) break ;
 			if ( key == KEY_CTRL_LEFT  ) break ;
+			if ( ( key == KEY_CTRL_F1 ) || ( key == KEY_CTRL_EXE ) ) { DebugMode=0; BreakPtr=0; goto cont; }
 		}
 		DebugMode=2;	// enable debug mode
 		DebugScreen = 0;
@@ -1321,7 +1404,7 @@ int CB_BreakStop() {
 		BreakPtr=-999;
 		return BreakPtr;
 	}
-	
+	cont:
 	if ( DebugMode == 1 ) DebugMode=0;
 	CB_RestoreTextVRAM();	// Resotre Text screen
 	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
@@ -1330,9 +1413,15 @@ int CB_BreakStop() {
 }
 
 //----------------------------------------------------------------------------------------------
-void edeitdummy(int x, int y){
-	locate(x,y  ); Print((unsigned char *) "1234");
+int eObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
+int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//void edeitdummy(int x, int y){
+//	locate(x,y  ); Print((unsigned char *) "1234");
 //	locate(x,y+1); Print((unsigned char *) "5678");
 //	locate(x,y+2); Print((unsigned char *) "ABCD");
-}
+//}
 
