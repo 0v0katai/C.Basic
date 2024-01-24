@@ -3,8 +3,6 @@
 //-----------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void CBint_Store( char *SRC );
-void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
-void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
 void CBint_Dsz( char *SRC ) ; //	Dsz
 void CBint_Isz( char *SRC ) ; //	Isz
 

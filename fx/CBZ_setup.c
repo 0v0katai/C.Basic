@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.90\xE6\x41";
-#define VERSION 190
+const char VerMSG[]="C.Basic  v1.91\xE6\x41";
+#define VERSION 191
 
 //---------------------------------------------------------------------------------------------
 
@@ -741,7 +741,7 @@ int SetVarCharMat( char *buffer, int c ) {
 	}
 	return ptr;
 }
-
+/*
 int SetVarCharVct( char *buffer, int c ) {
 	int ptr=0,len;
 	short alias_code;
@@ -778,7 +778,7 @@ int SetVarCharVct( char *buffer, int c ) {
 	}
 	return ptr;
 }
-
+*/
 int SetVarChar( char *buffer, int c ) {
 	int ptr=0,len;
 	short alias_code;

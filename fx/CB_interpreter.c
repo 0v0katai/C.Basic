@@ -149,9 +149,6 @@ int CB_interpreter_sub( char *SRC ) {
 	int StackGosubAdrs[StackGosubMax];
 	
 	CurrentStk	CurrentStruct;
-	StkFor		StackFor;
-	StkWhileDo	StackWhileDo;
-	StkSwitch	StackSwitch;
 	
 	complex	localvarDbl[ArgcMAX];	//	local var
 	int		localvarInt[ArgcMAX];	//	local var
@@ -174,10 +171,10 @@ int CB_interpreter_sub( char *SRC ) {
 	}
 	
 	CurrentStruct.CNT=0;
-	StackFor.Ptr=0;
-	StackWhileDo.WhilePtr=0;
-	StackWhileDo.DoPtr=0;
-	StackSwitch.Ptr=0;
+	CurrentStruct.ForPtr=0;
+	CurrentStruct.WhilePtr=0;
+	CurrentStruct.DoPtr=0;
+	CurrentStruct.SwitchPtr=0;
 	
 	while (cont) {
 		dspflagtmp=0;
@@ -210,7 +207,7 @@ int CB_interpreter_sub( char *SRC ) {
 
 		switch (c) {
 			case 0xFFFFFFEC:	// Goto
-				CB_Goto(SRC, StackGotoAdrs, &StackFor, &StackWhileDo, &StackSwitch, &CurrentStruct );
+				CB_Goto(SRC, StackGotoAdrs, &CurrentStruct );
 				break;
 			case 0xFFFFFFE8:	// Dsz
 				CB_Dsz(SRC) ;
@@ -237,40 +234,40 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x03:	// IfEnd
 						break;
 					case 0x07:	// Next
-						CB_Next(SRC, &StackFor, &CurrentStruct );
+						CB_Next(SRC, &CurrentStruct );
 						break;
 					case 0x09:	// WhileEnd
-						CB_WhileEnd(SRC, &StackWhileDo, &CurrentStruct );
+						CB_WhileEnd(SRC, &CurrentStruct );
 						break;
 					case 0x0B:	// LpWhile
-						CB_LpWhile(SRC, &StackWhileDo, &CurrentStruct );
+						CB_LpWhile(SRC, &CurrentStruct );
 						break;
 					case 0x04:	// For
-						CB_For(SRC, &StackFor, &CurrentStruct );
+						CB_For(SRC, &CurrentStruct );
 //						ClrCahche();
 						break;
 					case 0x08:	// While
-						CB_While(SRC, &StackWhileDo, &CurrentStruct );
+						CB_While(SRC, &CurrentStruct );
 //						ClrCahche();
 						break;
 					case 0x0A:	// Do
-						CB_Do(SRC, &StackWhileDo, &CurrentStruct );
+						CB_Do(SRC, &CurrentStruct );
 //						ClrCahche();
 						break;
 					case 0xFFFFFFEA:	// Switch
-						CB_Switch(SRC, &StackSwitch, &CurrentStruct, &CacheSwitch );
+						CB_Switch(SRC, &CurrentStruct, &CacheSwitch );
 						break;
 					case 0xFFFFFFEB:	// Case
-						CB_Case(SRC, &StackSwitch, &CurrentStruct );
+						CB_Case(SRC, &CurrentStruct );
 						break;
 					case 0xFFFFFFEC:	// Default
-						CB_Default(SRC, &StackSwitch, &CurrentStruct );
+						CB_Default(SRC, &CurrentStruct );
 						break;
 					case 0xFFFFFFED:	// SwitchEnd
-						CB_SwitchEnd(SRC, &StackSwitch, &CurrentStruct );
+						CB_SwitchEnd(SRC, &CurrentStruct );
 						break;
 					case 0x0D:	// Break
-						CB_Break(SRC, &StackFor, &StackWhileDo, &StackSwitch, &CurrentStruct );
+						CB_Break(SRC, &CurrentStruct );
 						dspflag=0;
 						break;
 					case 0x0C:	// Return
@@ -982,13 +979,13 @@ void InitLocalVar() {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_block( char *SRC ){
@@ -1320,15 +1317,17 @@ int Search_Lbl( char *SRC, int lc ){
 	return 0;
 }
 
-void CB_Goto( char *SRC, int *StackGotoAdrs, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
+int Search_Next( char *SRC );
+int Search_WhileEnd( char *SRC );
+int Search_LpWhile( char *SRC );
+int Search_SwitchEnd( char *SRC );
+
+void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) {
 	int c;
 	int label;
 	int ptr;
-	int count=0;
-	while ( ( SRC[ExecPtr]==0xFFFFFF87 ) || ( SRC[ExecPtr]==0xFFFFFF99 ) ) {	// (-)		// Goto -A	// Goto --A
-		ExecPtr++;
-		count++;
-	}
+	int execbuf;
+	int endp;
 	label = CB_CheckLbl( SRC );
 	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 	
@@ -1339,29 +1338,65 @@ void CB_Goto( char *SRC, int *StackGotoAdrs, StkFor *StackFor, StkWhileDo *Stack
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
 
-	if ( count==0 ) return;	// out of loop count == 0
-	
 	if ( CurrentStruct->CNT <= 0 ) return;  // Not in Loop
 	do {
-		CurrentStruct->CNT--;
-		switch ( CurrentStruct->TYPE[CurrentStruct->CNT] ) {
+		if ( CurrentStruct->GosubNest[CurrentStruct->CNT-1] < GosubNestN ) break; 	//	Check Gosub level
+		switch ( CurrentStruct->TYPE[CurrentStruct->CNT-1] ) {
 			case TYPE_For_Next:			// For Next
-				StackFor->Ptr--;
+				c = CurrentStruct->ForPtr-1;
+				endp = CurrentStruct->NextAdrs[c];
+				if ( endp==0 ) {
+					execbuf = ExecPtr;
+					if ( Search_Next(SRC) == 0 ) endp=0x7FFFFFF;   // For without Next 
+					else {
+						endp = ExecPtr;
+						CurrentStruct->NextAdrs[c] = endp;
+					}
+					ExecPtr = execbuf;
+				}
+				if ( ( CurrentStruct->ForAdrs[c] < ExecPtr ) && ( ExecPtr < endp ) ) return;
+				CurrentStruct->ForPtr--;
 				break ;
 			case TYPE_While_WhileEnd:	// While WhileEnd
-				StackWhileDo->WhilePtr--;
+				c = CurrentStruct->WhilePtr-1;
+				endp = CurrentStruct->WhileEndAdrs[c];
+				if ( endp==0 ) {
+					execbuf = ExecPtr;
+					if ( Search_WhileEnd(SRC) == 0 ) endp=0x7FFFFFF;   // While without WhileEnd 
+					else {
+						endp = ExecPtr;
+						CurrentStruct->WhileEndAdrs[c] = endp;
+					}
+					ExecPtr = execbuf;
+				}
+				if ( ( CurrentStruct->WhileAdrs[c] < ExecPtr ) && ( ExecPtr < endp ) ) return;
+				CurrentStruct->WhilePtr--;
 				break ;
 			case TYPE_Do_LpWhile:		// DO LpWhile
-				StackWhileDo->DoPtr--;
+				c = CurrentStruct->DoPtr-1;
+				endp = CurrentStruct->LpWhileAdrs[c];
+				if ( endp==0 ) {
+					execbuf = ExecPtr;
+					if (  Search_LpWhile(SRC) == 0 ) endp=0x7FFFFFF;   // Do without LpWhile 
+					else {
+						endp = ExecPtr;
+						CurrentStruct->LpWhileAdrs[c] = endp;
+					}
+					ExecPtr = execbuf;
+				}
+				if ( ( CurrentStruct->DoAdrs[c] < ExecPtr ) && ( ExecPtr < endp ) ) return;
+				CurrentStruct->DoPtr--;
 				break ;
 			case TYPE_Switch_Case:		// Switch
-				StackSwitch->Ptr--;
+				c = CurrentStruct->SwitchPtr-1;
+				if ( ( CurrentStruct->SwitchAdrs[c] < ExecPtr ) && ( ExecPtr < CurrentStruct->SwitchEndAdrs[c] ) ) return;
+				CurrentStruct->SwitchPtr--;
 				break ;
 			default:
 				break;
 		}
-		count--;
-	} while ( ( count > 0 ) && ( CurrentStruct->CNT > 0 ) );
+		CurrentStruct->CNT--;
+	} while ( CurrentStruct->CNT > 0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -1514,12 +1549,21 @@ int Search_Next( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem(SRC);
 				break;
+			case 0x13:	// =>
+				Skip_block(SRC);
+				break;
 			case 0xFFFFFFF7:	// 
-				if ( SRC[ExecPtr] == 0x04 ) { ExecPtr++;				// For
+				c=SRC[ExecPtr++];
+				if ( c == 0x00 ) { 		// If
+					Search_IfEnd(SRC);
+				} else
+				if ( c == 0x04 ) {		// For
 					Search_Next(SRC);
-					break;
+				} else
+				if ( c == 0x07 ) { 	// Next
+					return 1; 
 				}
-				if ( SRC[ExecPtr] == 0x07 ) { ExecPtr++; return 1; }	// Next
+				break;
 			case 0x7F:	// 
 			case 0xFFFFFFF9:	// 
 			case 0xFFFFFFE5:	// 
@@ -1533,9 +1577,9 @@ int Search_Next( char *SRC ){
 	return 0;
 }
 
-void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
+void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 	int c,reg,expbuf;
-	if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
+	if ( CurrentStruct->ForPtr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
 	if (CB_INT==1) {		//					------------ INT mode
 		CBint_CurrentValue = EvalIntsubTop( SRC );
 		c=SRC[ExecPtr];
@@ -1545,32 +1589,35 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		reg=RegVarAliasEx(SRC);
 		if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr=expbuf;
-		StackFor->Var[StackFor->Ptr]=LocalInt[reg];
+		CurrentStruct->Var[CurrentStruct->ForPtr]=LocalInt[reg];
 		CBint_Store(SRC);
 		c=SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
-		StackFor->IntEnd[StackFor->Ptr] = EvalIntsubTop( SRC );
+		CurrentStruct->IntEnd[CurrentStruct->ForPtr] = EvalIntsubTop( SRC );
 		c=SRC[ExecPtr];
 		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
-			StackFor->IntStep[StackFor->Ptr] = EvalIntsubTop( SRC );
+			CurrentStruct->IntStep[CurrentStruct->ForPtr] = EvalIntsubTop( SRC );
 		} else {
-			StackFor->IntStep[StackFor->Ptr] = 1;
+			CurrentStruct->IntStep[CurrentStruct->ForPtr] = 1;
 		}
-		if ( StackFor->IntStep[StackFor->Ptr] > 0 ) { 	// step +
-			if ( CBint_CurrentValue > StackFor->IntEnd[StackFor->Ptr] ) {  // for next cancel
-				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+		
+		CurrentStruct->NextAdrs[CurrentStruct->ForPtr] = 0;
+		
+		if ( CurrentStruct->IntStep[CurrentStruct->ForPtr] > 0 ) { 	// step +
+			if ( CBint_CurrentValue > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) {  // for next cancel
+				if ( Search_Next(SRC) == 0 ) { CB_Error(ForWithoutNextERR); return; }  // For without Next error
 				return;
 			}
 		}
 		else {									// step -
-			if ( CBint_CurrentValue < StackFor->IntEnd[StackFor->Ptr] ) {  // for next cancel
-				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+			if ( CBint_CurrentValue < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) {  // for next cancel
+				if ( Search_Next(SRC) == 0 ) { CB_Error(ForWithoutNextERR); return; }  // For without Next error
 				return;
 			}
 		}
-		
+
 	} else {			//					------------ Double mode
 		CB_CurrentValue.real = EvalsubTopReal( SRC );
 		CB_CurrentValue.imag = 0;
@@ -1581,72 +1628,77 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		reg=RegVarAliasEx(SRC);
 		if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr=expbuf;
-		StackFor->Var[StackFor->Ptr]=(int*)LocalDbl[reg];
+		CurrentStruct->Var[CurrentStruct->ForPtr]=(int*)LocalDbl[reg];
 		CB_Store(SRC);
 		c=SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
-		StackFor->End[StackFor->Ptr] = EvalsubTopReal( SRC );
+		CurrentStruct->End[CurrentStruct->ForPtr] = EvalsubTopReal( SRC );
 		c=SRC[ExecPtr];
 		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
-			StackFor->Step[StackFor->Ptr] = EvalsubTopReal( SRC );
+			CurrentStruct->Step[CurrentStruct->ForPtr] = EvalsubTopReal( SRC );
 		} else {
-			StackFor->Step[StackFor->Ptr] = 1;
+			CurrentStruct->Step[CurrentStruct->ForPtr] = 1;
 		}
-		if ( StackFor->Step[StackFor->Ptr] > 0 ) { 	// step +
-			if ( CB_CurrentValue.real > StackFor->End[StackFor->Ptr] ) { // for next cancel
-				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+		
+		CurrentStruct->NextAdrs[CurrentStruct->ForPtr] = 0;
+		
+		if ( CurrentStruct->Step[CurrentStruct->ForPtr] > 0 ) { 	// step +
+			if ( CB_CurrentValue.real > CurrentStruct->End[CurrentStruct->ForPtr] ) { // for next cancel
+				if ( Search_Next(SRC) == 0 ) { CB_Error(ForWithoutNextERR); return; }  // For without Next error
 				return;
 			}
 		}
 		else {									// step -
-			if ( CB_CurrentValue.real < StackFor->End[StackFor->Ptr] ) { // for next cancel
-				if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+			if ( CB_CurrentValue.real < CurrentStruct->End[CurrentStruct->ForPtr] ) { // for next cancel
+				if ( Search_Next(SRC) == 0 ) { CB_Error(ForWithoutNextERR); return; }  // For without Next error
 				return;
 			}
 		}
 	}
-	StackFor->Adrs[StackFor->Ptr] = ExecPtr;
-	StackFor->Ptr++;
+	CurrentStruct->ForAdrs[CurrentStruct->ForPtr] = ExecPtr;
+	CurrentStruct->ForPtr++;
 	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
+	CurrentStruct->GosubNest[CurrentStruct->CNT] = GosubNestN;
 	CurrentStruct->CNT++;
 }
 
-void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
+void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 	double step;
 	double *dptr;
 	int stepint;
 	int i;
 	int *iptr;
-	if ( StackFor->Ptr <= 0 ) { CB_Error(NextWithoutForERR); return; } // Next without for error
-//	if ( StackFor->Ptr <= 0 ) { return; } // Next without for through (no error)
-	StackFor->Ptr--;
+//	if ( CurrentStruct->ForPtr <= 0 ) { CB_Error(NextWithoutForERR); return; } // Next without for error
+	if ( CurrentStruct->ForPtr <= 0 ) { return; } // Next without for through (no error)
+	CurrentStruct->ForPtr--;
 	CurrentStruct->CNT--;
 	if (CB_INT==1) {		//					------------ INT mode
-		stepint = StackFor->IntStep[StackFor->Ptr];
-		iptr=StackFor->Var[StackFor->Ptr];
+		stepint = CurrentStruct->IntStep[CurrentStruct->ForPtr];
+		iptr=CurrentStruct->Var[CurrentStruct->ForPtr];
 		(*iptr) += stepint;
 		if ( stepint > 0 ) { 	// step +
-			if ( *iptr > StackFor->IntEnd[StackFor->Ptr] ) { (*iptr) -= step; return ;} // exit
+			if ( *iptr > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; return ;} // exit
 		}
 		else {					// step -
-			if ( *iptr < StackFor->IntEnd[StackFor->Ptr] ) { (*iptr) -= step; return ;} // exit
+			if ( *iptr < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; return ;} // exit
 		}
 	} else {			//					------------ Double mode
-		step = StackFor->Step[StackFor->Ptr];
-		dptr=(double*)StackFor->Var[StackFor->Ptr];
+		step = CurrentStruct->Step[CurrentStruct->ForPtr];
+		dptr=(double*)CurrentStruct->Var[CurrentStruct->ForPtr];
 		(*dptr) += step;
 		if ( step > 0 ) { 		// step +
-			if ( (*dptr) > StackFor->End[StackFor->Ptr] ) { (*dptr) -= step; return ;} // exit
+			if ( (*dptr) > CurrentStruct->End[CurrentStruct->ForPtr] ) { (*dptr) -= step; return ;} // exit
 		}
 		else {					// step -
-			if ( (*dptr) < StackFor->End[StackFor->Ptr] ) { (*dptr) -= step; return ;} // exit
+			if ( (*dptr) < CurrentStruct->End[CurrentStruct->ForPtr] ) { (*dptr) -= step; return ;} // exit
 		}
 	}
-	ExecPtr = StackFor->Adrs[StackFor->Ptr];
-	StackFor->Ptr++;		// continue
-	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
+	CurrentStruct->NextAdrs[CurrentStruct->ForPtr] = ExecPtr;
+	ExecPtr = CurrentStruct->ForAdrs[CurrentStruct->ForPtr];
+	CurrentStruct->ForPtr++;		// continue
+//	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_For_Next;
 	CurrentStruct->CNT++;
 }
 
@@ -1671,12 +1723,21 @@ int Search_WhileEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem(SRC);
 				break;
+			case 0x13:	// =>
+				Skip_block(SRC);
+				break;
 			case 0xFFFFFFF7:	// 
-				if ( SRC[ExecPtr] == 0x08 ) { ExecPtr++;				// While
+				c=SRC[ExecPtr++];
+				if ( c == 0x00 ) {		// If
+					Search_IfEnd(SRC);
+				} else
+				if ( c == 0x08 ) {		// While
 					Search_WhileEnd(SRC);
-					break;
+				} else
+				if ( c == 0x09 ) {		// WhileEnd
+					return 1;
 				}
-				if ( SRC[ExecPtr] == 0x09 ) { ExecPtr++; return 1; }	// WhileEnd
+				break;
 			case 0x7F:	// 
 			case 0xFFFFFFF9:	// 
 			case 0xFFFFFFE5:	// 
@@ -1703,12 +1764,21 @@ int Search_LpWhile( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem(SRC);
 				break;
+			case 0x13:	// =>
+				Skip_block(SRC);
+				break;
 			case 0xFFFFFFF7:	// 
-				if ( SRC[ExecPtr] == 0x0A ) { ExecPtr++;				// Do
+				c=SRC[ExecPtr++];
+				if ( c == 0x00 ) {		// If
+					Search_IfEnd(SRC);
+				} else
+				if ( c == 0x0A ) {		// Do
 					Search_LpWhile(SRC);
-					break;
+				} else
+				if ( c == 0x0B ) {		// LpWhile
+					return 1; 
 				}
-				if ( SRC[ExecPtr] == 0x0B ) { ExecPtr++; return 1; }	// LpWhile
+				break;
 			case 0x7F:	// 
 			case 0xFFFFFFF9:	// 
 			case 0xFFFFFFE5:	// 
@@ -1721,50 +1791,60 @@ int Search_LpWhile( char *SRC ){
 	}
 	return 0;
 }
-void CB_While( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) {
+void CB_While( char *SRC, CurrentStk *CurrentStruct ) {
 	int wPtr=ExecPtr;
 	if ( CB_EvalCheckZero( SRC ) == 0 ) {		// false
 		if ( Search_WhileEnd(SRC) == 0 ) { CB_Error(WhileWithoutWhileEndERR); return; }  // While without WhileEnd error
 		return ; // exit
 	}
-	if ( StackWhileDo->WhilePtr >= StackWhileMax ) { CB_Error(NestingERR); return; }  //  nesting error
-	StackWhileDo->WhileAdrs[StackWhileDo->WhilePtr] = wPtr;
-	StackWhileDo->WhilePtr++;
+	if ( CurrentStruct->WhilePtr >= StackWhileMax ) { CB_Error(NestingERR); return; }  //  nesting error
+	
+	CurrentStruct->WhileEndAdrs[CurrentStruct->WhilePtr] = 0;
+	CurrentStruct->WhileAdrs[CurrentStruct->WhilePtr] = wPtr;
+	CurrentStruct->WhilePtr++;
 	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_While_WhileEnd;
+	CurrentStruct->GosubNest[CurrentStruct->CNT] = GosubNestN;
 	CurrentStruct->CNT++;
 }
 
-void CB_WhileEnd( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) {
+void CB_WhileEnd( char *SRC, CurrentStk *CurrentStruct ) {
 	int exitPtr=ExecPtr;
-	if ( StackWhileDo->WhilePtr <= 0 ) { CB_Error(WhileEndWithoutWhileERR); return; }  // WhileEnd without While error
-	StackWhileDo->WhilePtr--;
+//	if ( CurrentStruct->WhilePtr <= 0 ) { CB_Error(WhileEndWithoutWhileERR); return; }  // WhileEnd without While error
+	if ( CurrentStruct->WhilePtr <= 0 ) { return; }  // WhileEnd without While  through (no error)
+	CurrentStruct->WhilePtr--;
 	CurrentStruct->CNT--;
-	ExecPtr = StackWhileDo->WhileAdrs[StackWhileDo->WhilePtr] ;
+	CurrentStruct->WhileEndAdrs[CurrentStruct->WhilePtr] = exitPtr;
+	ExecPtr = CurrentStruct->WhileAdrs[CurrentStruct->WhilePtr] ;
 	if ( CB_EvalCheckZero( SRC ) == 0 ) {		// false
 		ExecPtr=exitPtr;
 		return ; // exit
 	}
-	StackWhileDo->WhilePtr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_While_WhileEnd;
+	CurrentStruct->WhilePtr++;
+//	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_While_WhileEnd;
 	CurrentStruct->CNT++;
 }
 
-void CB_Do( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) {
-	if ( StackWhileDo->DoPtr >= StackDoMax ) { CB_Error(NestingERR); return; }  //  nesting error
-	StackWhileDo->DoAdrs[StackWhileDo->DoPtr] = ExecPtr;
-	StackWhileDo->DoPtr++;
+void CB_Do( char *SRC, CurrentStk *CurrentStruct ) {
+	if ( CurrentStruct->DoPtr >= StackDoMax ) { CB_Error(NestingERR); return; }  //  nesting error
+
+	CurrentStruct->LpWhileAdrs[CurrentStruct->DoPtr] = 0;
+	CurrentStruct->DoAdrs[CurrentStruct->DoPtr] = ExecPtr;
+	CurrentStruct->DoPtr++;
 	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Do_LpWhile;
+	CurrentStruct->GosubNest[CurrentStruct->CNT] = GosubNestN;
 	CurrentStruct->CNT++;
 }
 
-void CB_LpWhile( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) {
-	if ( StackWhileDo->DoPtr <= 0 ) { CB_Error(LpWhileWithoutDoERR); return; }  // LpWhile without Do error
-	StackWhileDo->DoPtr--;
+void CB_LpWhile( char *SRC, CurrentStk *CurrentStruct ) {
+//	if ( CurrentStruct->DoPtr <= 0 ) { CB_Error(LpWhileWithoutDoERR); return; }  // LpWhile without Do error
+	if ( CurrentStruct->DoPtr <= 0 ) { return; }  // LpWhile without Do  through (no error)
+	CurrentStruct->DoPtr--;
 	CurrentStruct->CNT--;
 	if ( CB_EvalCheckZero( SRC ) == 0  ) return ; // exit
-	ExecPtr = StackWhileDo->DoAdrs[StackWhileDo->DoPtr] ;				// true
-	StackWhileDo->DoPtr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Do_LpWhile;
+	CurrentStruct->LpWhileAdrs[CurrentStruct->DoPtr] = ExecPtr;
+	ExecPtr = CurrentStruct->DoAdrs[CurrentStruct->DoPtr] ;				// true
+	CurrentStruct->DoPtr++;
+//	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Do_LpWhile;
 	CurrentStruct->CNT++;
 }
 
@@ -1836,7 +1916,7 @@ int Search_CaseEnd( char *SRC ){
 	return 0;
 }
 
-void CB_Switch( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ,CchIf *Cache ) {
+void CB_Switch( char *SRC, CurrentStk *CurrentStruct ,CchIf *Cache ) {
 	int wPtr,execptr;
 	int c,i,ii,j,value;
 	value=CB_EvalInt( SRC );
@@ -1867,22 +1947,24 @@ void CB_Switch( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ,Cc
 	Cache->Ptr[Cache->TOP] =execptr;
 	Cache->Adrs[Cache->TOP]=ExecPtr;
   next:
-	StackSwitch->EndAdrs[StackSwitch->Ptr] = ExecPtr;	// Break out adrs set
-	StackSwitch->Value[StackSwitch->Ptr] = value;
-	StackSwitch->flag[StackSwitch->Ptr] = 0;	// case through clear
+	CurrentStruct->SwitchEndAdrs[CurrentStruct->SwitchPtr] = ExecPtr;	// Break out adrs set
+	CurrentStruct->SwitchValue[CurrentStruct->SwitchPtr] = value;
+	CurrentStruct->Switchflag[CurrentStruct->SwitchPtr] = 0;	// case through clear
 	
-	if ( StackSwitch->Ptr >= StackSwitchMax ) { CB_Error(NestingERR); return; }  //  nesting error
-	StackSwitch->Ptr++;
+	if ( CurrentStruct->SwitchPtr >= StackSwitchMax ) { CB_Error(NestingERR); return; }  //  nesting error
+	CurrentStruct->SwitchPtr++;
 	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
+	CurrentStruct->GosubNest[CurrentStruct->CNT] = GosubNestN;
 	CurrentStruct->CNT++;
 	ExecPtr=wPtr;
 	
 }
-void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
+
+void CB_Case( char *SRC, CurrentStk *CurrentStruct ) {
 	int exitPtr=ExecPtr;
 	int c,value;
-	if ( StackSwitch->Ptr <= 0 ) { CB_Error(CaseWithoutSwitchERR); return; }  // Case without Switch error
-	StackSwitch->Ptr--;
+	if ( CurrentStruct->SwitchPtr <= 0 ) { CB_Error(CaseWithoutSwitchERR); return; }  // Case without Switch error
+	CurrentStruct->SwitchPtr--;
 
 //	c=SRC[ExecPtr];
 //	value=Eval_atoi( SRC, c );
@@ -1891,56 +1973,69 @@ void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
 //	if ( ( c!=0x0D ) && ( c!=':' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 //	ExecPtr++;
 
-	if ( StackSwitch->flag[StackSwitch->Ptr] == 0 ) {
-		if ( value != StackSwitch->Value[StackSwitch->Ptr] ) {		// false
+	if ( CurrentStruct->Switchflag[CurrentStruct->SwitchPtr] == 0 ) {
+		if ( value != CurrentStruct->SwitchValue[CurrentStruct->SwitchPtr] ) {		// false
 			Search_CaseEnd(SRC);
 		} else {	// true
-			StackSwitch->flag[StackSwitch->Ptr]=1;	// case through set
+			CurrentStruct->Switchflag[CurrentStruct->SwitchPtr]=1;	// case through set
 		}
 	}
-	StackSwitch->Ptr++;
-	CurrentStruct->CNT--;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
-	CurrentStruct->CNT++;
+	CurrentStruct->SwitchPtr++;
+//	CurrentStruct->CNT--;
+//	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
+//	CurrentStruct->CNT++;
 }
 
-void CB_Default( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
+void CB_Default( char *SRC, CurrentStk *CurrentStruct ) {
 	int exitPtr=ExecPtr;
 	int c,i;
-	if ( StackSwitch->Ptr <= 0 ) { CB_Error(DefaultWithoutSwitchERR); return; }  // Default without Switch error
-	CurrentStruct->CNT--;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
-	CurrentStruct->CNT++;
+	if ( CurrentStruct->SwitchPtr <= 0 ) { CB_Error(DefaultWithoutSwitchERR); return; }  // Default without Switch error
+//	CurrentStruct->CNT--;
+//	CurrentStruct->TYPE[CurrentStruct->CNT]=TYPE_Switch_Case;
+//	CurrentStruct->CNT++;
 }
 
-void CB_SwitchEnd( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
+void CB_SwitchEnd( char *SRC, CurrentStk *CurrentStruct ) {
 	int exitPtr=ExecPtr;
 	int c,i;
-	if ( StackSwitch->Ptr <= 0 ) { CB_Error(SwitchEndWithoutSwitchERR); return; }  // SwitchEnd without Switch error
-	StackSwitch->Ptr--;
+	if ( CurrentStruct->SwitchPtr <= 0 ) { CB_Error(SwitchEndWithoutSwitchERR); return; }  // SwitchEnd without Switch error
+	CurrentStruct->SwitchPtr--;
 	CurrentStruct->CNT--;
 }
 
-void CB_Break( char *SRC, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
-	
+
+void CB_Break( char *SRC, CurrentStk *CurrentStruct ) {
+	int expbuf=ExecPtr;
 	if ( CurrentStruct->CNT <=0 ) { CB_Error(NotLoopERR); return; }  // Not Loop error
 	CurrentStruct->CNT--;
 	switch ( CurrentStruct->TYPE[CurrentStruct->CNT] ) {
 		case TYPE_For_Next:			// For Next
-			if ( Search_Next(SRC) == 0 )     { CB_Error(ForWithoutNextERR); return; }  // For without Next error
-			StackFor->Ptr--;
+			CurrentStruct->ForPtr--;
+			ExecPtr = CurrentStruct->NextAdrs[CurrentStruct->ForPtr];
+			if ( ExecPtr==0 ) {
+				ExecPtr = expbuf;
+				if ( Search_Next(SRC) == 0 ) { CB_Error(ForWithoutNextERR); return; }  // For without Next error
+			}
 			return ;
 		case TYPE_While_WhileEnd:	// While WhileEnd
-			if ( Search_WhileEnd(SRC) == 0 ) { CB_Error(WhileWithoutWhileEndERR); return; }  // While without WhileEnd error
-			StackWhileDo->WhilePtr--;
+			CurrentStruct->WhilePtr--;
+			ExecPtr = CurrentStruct->WhileEndAdrs[CurrentStruct->WhilePtr];
+			if ( ExecPtr==0 ) {
+				ExecPtr = expbuf;
+				if ( Search_WhileEnd(SRC) == 0 ) { CB_Error(WhileWithoutWhileEndERR); return; }  // While without WhileEnd error
+			}
 			return ;
 		case TYPE_Do_LpWhile:		// DO LpWhile
-			if ( Search_LpWhile(SRC) == 0 )  { CB_Error(DoWithoutLpWhileERR); return; }  // Do without LpWhile error
-			StackWhileDo->DoPtr--;
+			CurrentStruct->DoPtr--;
+			ExecPtr = CurrentStruct->LpWhileAdrs[CurrentStruct->DoPtr];
+			if ( ExecPtr==0 ) {
+				ExecPtr = expbuf;
+				if ( Search_LpWhile(SRC) == 0 )  { CB_Error(DoWithoutLpWhileERR); return; }  // Do without LpWhile error
+			}
 			return ;
 		case TYPE_Switch_Case:		// Switch
-			StackSwitch->Ptr--;
-			ExecPtr=StackSwitch->EndAdrs[StackSwitch->Ptr];
+			CurrentStruct->SwitchPtr--;
+			ExecPtr = CurrentStruct->SwitchEndAdrs[CurrentStruct->SwitchPtr];
 			return ;
 		default:
 			break;
@@ -3004,7 +3099,7 @@ int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

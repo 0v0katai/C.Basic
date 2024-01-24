@@ -220,35 +220,33 @@ typedef struct {		// 10 bytes
 	int		Adrs[IfCntMax];
 } CchIf;
 
-typedef struct {		// 34 bytes
-	short	Ptr;
+typedef struct {		// 34+4 bytes
+	char	CNT;
+	char	TYPE[20];
+	char	GosubNest[20];
+	
+	char	ForPtr;
 	int	*Var[StackForMax];
-	int	Adrs[StackForMax];
+	int	ForAdrs[StackForMax];
+	int	NextAdrs[StackForMax];
 	int	IntEnd[StackForMax];
 	int	IntStep[StackForMax];
 	double End[StackForMax];
 	double Step[StackForMax];
-} StkFor;
 
-typedef struct {		// 10 bytes
 	char	WhilePtr;
 	char	DoPtr;
 	int	WhileAdrs[StackWhileMax];
+	int	WhileEndAdrs[StackWhileMax];
 	int	DoAdrs[StackDoMax];
-} StkWhileDo;
+	int	LpWhileAdrs[StackDoMax];
 
-typedef struct {		// 10 bytes
-	char	Ptr;
-	char	flag[StackSwitchMax];
-	int		EndAdrs[StackSwitchMax];
-	int		Value[StackSwitchMax];
-} StkSwitch;
-
-typedef struct {		// 16+8 bytes
-	short	CNT;
-	char	TYPE[14];
-//	int		TopAdrs[14];
-//	int		EndAdrs[14];
+	char	SwitchPtr;
+	char	Switchflag[StackSwitchMax];
+	int		SwitchAdrs[StackSwitchMax];
+	int		SwitchEndAdrs[StackSwitchMax];
+	int		SwitchValue[StackSwitchMax];
+	
 } CurrentStk;
 
 //-----------------------------------------------------------------------------
@@ -266,20 +264,20 @@ void Skip_block( char *SRC );
 void Skip_rem( char *SRC );	// skip '...
 void CB_Rem( char *SRC, CchIf *CacheRem );
 void CB_Lbl( char *SRC, int *StackGotoAdrs );
-void CB_Goto( char *SRC, int *StackGotoAdrs, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
+void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) ;
 void CB_If( char *SRC, CchIf *CacheIf );
 void CB_Else( char *SRC, CchIf *CacheElse );
-void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
-void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
-void CB_While( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
-void CB_WhileEnd( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
-void CB_Do( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
-void CB_LpWhile( char *SRC, StkWhileDo *StackWhileDo, CurrentStk *CurrentStruct ) ;
-void CB_Switch( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ,CchIf *CacheSwitch ) ;
-void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
-void CB_Default( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
-void CB_SwitchEnd( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
-void CB_Break( char *SRC, StkFor *StackFor, StkWhileDo *StackWhileDo, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) ;
+void CB_For( char *SRC, CurrentStk *CurrentStruct );
+void CB_Next( char *SRC, CurrentStk *CurrentStruct );
+void CB_While( char *SRC, CurrentStk *CurrentStruct ) ;
+void CB_WhileEnd( char *SRC, CurrentStk *CurrentStruct ) ;
+void CB_Do( char *SRC, CurrentStk *CurrentStruct ) ;
+void CB_LpWhile( char *SRC, CurrentStk *CurrentStruct ) ;
+void CB_Switch( char *SRC, CurrentStk *CurrentStruct ,CchIf *CacheSwitch ) ;
+void CB_Case( char *SRC, CurrentStk *CurrentStruct ) ;
+void CB_Default( char *SRC, CurrentStk *CurrentStruct ) ;
+void CB_SwitchEnd( char *SRC, CurrentStk *CurrentStruct ) ;
+void CB_Break( char *SRC, CurrentStk *CurrentStruct ) ;
 
 void CB_SaveTextVRAM() ;
 void CB_RestoreTextVRAM() ;
