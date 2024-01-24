@@ -104,29 +104,7 @@ void CBint_Store( char *SRC ){	// ->
 				ExecPtr++;
 				MatOprandInt2( SRC, reg, &dimA, &dimB);
 				if ( ErrorNo ) return ; // error
-/*				if ( MatAryElementSize[reg] >= 8 ) {
-					mptr=dimA*MatArySizeB[(reg)]+dimB;
-					if ( ErrorNo ) return ; // error
-					switch ( MatAryElementSize[reg] ) {
-						case 64:						// Matrix array double
-							MatAry[reg][mptr] = CBint_CurrentValue;
-							break;
-						case 32:						// Matrix array int
-							MatAryI=(int*)MatAry[reg];
-							MatAryI[mptr] = CBint_CurrentValue;
-							break;
-						case  8:						// Matrix array char
-							MatAryC=(char*)MatAry[reg];
-							MatAryC[mptr] = CBint_CurrentValue;
-							break;
-						case 16:						// Matrix array word
-							MatAryW=(short*)MatAry[reg];
-							MatAryW[mptr] = CBint_CurrentValue;
-							break;
-					}
-				} else {
-*/					WriteMatrixInt( reg, dimA, dimB, CBint_CurrentValue);
-//				}
+				WriteMatrixInt( reg, dimA, dimB, CBint_CurrentValue);
 			}
 		} else if ( c == 0x00 ) {	// Xmin
 				ExecPtr+=2;

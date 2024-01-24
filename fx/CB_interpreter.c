@@ -1484,29 +1484,7 @@ void CB_Store( char *SRC ){	// ->
 				ExecPtr++;
 				MatOprand2( SRC, reg, &dimA, &dimB);
 				if ( ErrorNo ) return ; // error
-/*				if ( MatAryElementSize[reg] >= 8 ) {
-					mptr=dimA*MatArySizeB[(reg)]+dimB;
-					if ( ErrorNo ) return ; // error
-					switch ( MatAryElementSize[reg] ) {
-						case 64:						// Matrix array double
-							MatAry[reg][mptr] = CB_CurrentValue;
-							break;
-						case 32:						// Matrix array int
-							MatAryI=(int*)MatAry[reg];
-							MatAryI[mptr] = CB_CurrentValue;
-							break;
-						case  8:						// Matrix array char
-							MatAryC=(char*)MatAry[reg];
-							MatAryC[mptr] = CB_CurrentValue;
-							break;
-						case 16:						// Matrix array word
-							MatAryW=(short*)MatAry[reg];
-							MatAryW[mptr] = CB_CurrentValue;
-							break;
-					}
-				} else {
-*/					WriteMatrix( reg, dimA, dimB, CB_CurrentValue);
-//				}
+				WriteMatrix( reg, dimA, dimB, CB_CurrentValue);
 			}
 		} else if ( c == 0x00 ) {	// Xmin
 				ExecPtr+=2;
@@ -2831,7 +2809,7 @@ void CB_WriteGraph( char *SRC ){	// WriteGraph x,y,wx,wy,Mat A ([2,2]),modify,ki
 	short*	MatAryW;
 	int*	MatAryI;
 	double*	MatAryD;
-	int reg,i;
+	int reg,i,dimA;
 	int x,y;
 	unsigned char  *Gptr;
 	int ElementSize;
@@ -2867,26 +2845,27 @@ void CB_WriteGraph( char *SRC ){	// WriteGraph x,y,wx,wy,Mat A ([2,2]),modify,ki
 			ExecPtr++;
 			ElementSize=MatAryElementSize[reg];
 			x--; y--;
+			dimA=MatArySizeA[reg];
 			switch ( ElementSize ) {
 				case  1:
 					MatAryC=(char*)MatAry[reg];
-					Gptr=(unsigned char *)(MatAryC+(MatArySizeB[reg]>>3)*x+(y>>3));
+					Gptr=(unsigned char *)(MatAryC+((dimA-1)>>3)*y+(x>>3));
 					break;
 				case  8:
 					MatAryC=(char*)MatAry[reg];
-					Gptr=(unsigned char *)(MatAryC+MatArySizeB[reg]*x+y);
+					Gptr=(unsigned char *)(MatAryC+dimA*y+x);
 					break;
 				case 16:
 					MatAryW=(short*)MatAry[reg];
-					Gptr=(unsigned char *)(MatAryW+MatArySizeB[reg]*x+y);
+					Gptr=(unsigned char *)(MatAryW+dimA*y+x);
 					break;
 				case 32:
 					MatAryI=(int*)MatAry[reg];
-					Gptr=(unsigned char *)(MatAryI+MatArySizeB[reg]*x+y);
+					Gptr=(unsigned char *)(MatAryI+dimA*y+x);
 					break;
 				case 64:
 					MatAryD=(double*)MatAry[reg];
-					Gptr=(unsigned char *)(MatAryD+MatArySizeB[reg]*x+y);
+					Gptr=(unsigned char *)(MatAryD+dimA*y+x);
 					break;
 			}
 		}

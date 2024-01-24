@@ -418,8 +418,24 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	}
 	return code;
 }
+
 int CB_Getkey2() {			// CasioBasic Getkey SDK compatible with buffer clear
 	KeyRecover();
 	return CB_Getkey1() ;
 }
+
+
+int CB_GetkeyN( int n) {			// CasioBasic Getkey 
+	switch ( n ) {
+		case 0:
+			KeyRecover();
+			return 0;
+		case 1:
+			return CB_Getkey1();
+		case 2:
+			KeyRecover();
+			return CB_Getkey1();
+	}
+}
+
 
