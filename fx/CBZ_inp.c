@@ -2950,6 +2950,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 						CommandType=CMD_MENU; CommandPage=0;
 					} else {
 						key=SelectOpcode5800P( 0 );
+					  F3ja:
 						if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 					}
 				}
@@ -2987,6 +2988,10 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 				break;
 				
 			case KEY_CTRL_SHIFT:
+				if ( ClipStartPtr >= 0 ) {
+					ClipStartPtr = -1 ; 		// ClipMode cancel
+					break;
+				}
 				alphalock_bk = alphalock;
 				alphalock = 0 ;
 				FkeyClearAll();
@@ -3062,7 +3067,8 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 								CommandType=CMD_PRGM; CommandPage=0;
 							} else {
 								key=SelectOpcode( CMDLIST_PRGM, 0 );
-								if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+								goto F3ja;
+//								if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 							}
 							break;
 					case KEY_CHAR_3:
@@ -3368,10 +3374,12 @@ complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV
 	return InputNumC_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy
-//int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
