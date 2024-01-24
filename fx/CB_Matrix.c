@@ -725,6 +725,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				key=SetDimension(select,&dimA,&dimB,&ElementSize);
 				if ( key==KEY_CTRL_EXIT ) break;
 				if ( DimMatrixSub(select,ElementSize,dimA,dimB) ) CB_ErrMsg(NotEnoughMemoryERR);
+				EditMatrix(select);
 				break;
 			case KEY_CTRL_F4:
 				MatDefaultValue = InitMatrix( select, MatDefaultValue ,ElementSize ) ;
