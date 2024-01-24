@@ -1200,11 +1200,10 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	i=MatrixOprand( SRC, &reg, &dimA, &dimB );
+	MatrixOprand( SRC, &reg, &dimA, &dimB );
 	if ( ErrorNo ) return ; // error
-	if ( i ) { dimA=1; dimB=1; }	// no element
 	FilePtr=MatrixPtr( reg, dimA, dimB );
-	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA, dimB ) + MatrixSize( reg, 1, 1 );
+	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA+1, dimB+1 ) + MatrixSize( reg, 1, 1 );
 
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
@@ -1249,11 +1248,10 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	c =SRC[ExecPtr];
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	i=MatrixOprand( SRC, &reg, &dimA, &dimB );
+	MatrixOprand( SRC, &reg, &dimA, &dimB );
 	if ( ErrorNo ) return ; // error
-	if ( i ) { dimA=1; dimB=1; }	// no element
 	FilePtr=MatrixPtr( reg, dimA, dimB );	
-	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA, dimB ) + MatrixSize( reg, 1, 1 );
+	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA+1, dimB+1 ) + MatrixSize( reg, 1, 1 );
 
 	CharToFont( fname, filename );
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
@@ -1273,6 +1271,36 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 }
 
 //----------------------------------------------------------------------------------------------
+void CB_Local( char *SRC ) {
+	int c=1,i,j,st,en;
+	i=0;
+	while ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
+		c=SRC[ExecPtr];
+		if ( ( 'a' <= c ) && ( c <='z' ) ) {
+			st=c-'a';
+			c=SRC[++ExecPtr];
+			if ( c == 0x7E ) {		// '~'
+				c=SRC[++ExecPtr];
+				if ( ( 'a' <= c ) && ( c <='z' ) ) {
+					ExecPtr++;
+					en=c-'a';
+					if ( en<st ) { CB_Error(SyntaxERR); return; }	// Syntax error
+					c=SRC[++ExecPtr];
+					if ( i+st > 25 ) st=25-i;
+					if ( i+en > 25 ) en=25-i;
+					for ( j=st; j<=en; j++) ProgLocalVar[ProgEntryN-1][i+j] = st+j ;
+				}
+			} else ProgLocalVar[ProgEntryN-1][i] = st;	// local var set
+		} 
+		i++;
+		c=SRC[ExecPtr];
+		if ( c != ',' ) break; 	// 
+		ExecPtr++;
+		if ( i > 26 ) { CB_Error(TooMuchData); break; }	// too much error
+	}
+	ProgLocalN[ProgEntryN-1] = i;
+}
+
 void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	int c=1;
 	char buffer[32]="";
@@ -1330,8 +1358,10 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 					}
 				}
 				break;
-			case 0x7F:	// 
 			case 0xFFFFFFF7:	// 
+				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
+				break;
+			case 0x7F:	// 
 			case 0xFFFFFFF9:	// 
 			case 0xFFFFFFE5:	// 
 			case 0xFFFFFFE6:	// 
