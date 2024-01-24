@@ -30,6 +30,37 @@
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> double
 //----------------------------------------------------------------------------------------------
+int Eval_atod(char *SRC, int c ) {
+	int	result=0;
+	if ( c == '0' ) {
+		c = SRC[++ExecPtr];
+		if ( (  c=='x' ) || ( c=='X' ) ) {
+			c=SRC[++ExecPtr];
+			while ( ( ('0'<=c)&&(c<='9') ) || ( ('A'<=c)&&(c<='F') ) || ( ('a'<=c)&&(c<='f') ) ) {
+				if ( ('0'<=c)&&(c<='9') ) result = result*16 +(c-'0');
+				else
+				if ( ('A'<=c)&&(c<='F') ) result = result*16 +(c-'A'+10);
+				else
+				if ( ('a'<=c)&&(c<='f') ) result = result*16 +(c-'a'+10);
+				c=SRC[++ExecPtr];
+			}
+		}
+		else
+		if ( (  c=='b' ) || ( c=='B' ) ) {
+			c=SRC[++ExecPtr];
+			while ( ('0'<=c)&&(c<='1') ) {
+				result = result*2 +(c-'0');
+				c=SRC[++ExecPtr];
+			}
+		}
+	} else {
+		while ( ('0'<=c)&&(c<='9') ) {
+			result = result*10 +(c-'0');
+			c=SRC[++ExecPtr];
+		}
+	}
+	return result ;
+}
 //-----------------------------------------------------------------------------
 
 int EvalIntsub1(char *SRC) {	// 1st Priority
@@ -62,15 +93,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			if ( c=='%' ) ExecPtr++;
 			return REGINT[reg] ;
 	}
-	if ( ( '0' <= c )&&( c <= '9' ) ) {
-//		return  Eval_atof( SRC );
-		result=0;
-		while ( ('0'<=c)&&(c<='9') ) {
-			result = result*10 +(c-'0');
-			c=SRC[++ExecPtr];
-		}
-		return result ;
-	}
+	if ( ( '0' <= c )&&( c <= '9' ) ) return  Eval_atod( SRC, c );
+	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
 			c = SRC[ExecPtr+1];

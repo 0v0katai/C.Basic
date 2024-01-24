@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.87.00 
+ Casio Basic Interpreter (& Compiler) ver 0.88 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -24,7 +24,7 @@
 #include "fx_syscall.h"
 
 //----------------------------------------------------------------------------------------------
-int LoadFileSDK( char *src ) {
+int LoadFileSDK( char *src ) {	// test source to SDK
 	int size,i;
 	char *buffer;
 

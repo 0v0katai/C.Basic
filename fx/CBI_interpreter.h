@@ -53,5 +53,3 @@ int CBint_BinaryEval( char *SRC ) ;
 int CBint_UnaryEval( char *SRC ) ;
 
 int CBint_interpreter( char *SRC) ;
-
-void CBint_test() ;

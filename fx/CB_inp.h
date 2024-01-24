@@ -50,13 +50,6 @@ int strlenOp( char *buffer ) ;
 int CB_MB_ElementCount( char *str);
 int CB_OpcodeToStr( int opcode, char *string );
 
-void CB_Print( int x, int y, const unsigned char *str);
-void CB_PrintRev( int x, int y, const unsigned char *str);
-void CB_PrintC( int x, int y, const unsigned char *c);
-void CB_PrintRevC( int x, int y, const unsigned char *c);
-void CB_PrintXYC( int px, int py,const unsigned char *c );
-void CB_PrintXY( int px, int py, const unsigned char *str);
-
 extern int selectCMD;
 extern int selectOPTN;
 extern int selectVARS;

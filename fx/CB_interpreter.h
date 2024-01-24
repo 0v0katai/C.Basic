@@ -188,6 +188,7 @@ int RangeErrorCK( char *SRC ) ;
 
 void Skip_quot( char *SRC ); // skip "..."
 void Skip_rem( char *SRC );	// skip '...
+void CB_Rem( char *SRC, CchRem *CacheRem );
 
 void PlotXYtoPrevPXY() ;
 void PlotPreviousPXY() ;
@@ -200,6 +201,18 @@ double CB_UnaryEval( char *SRC ) ;	// eval 1
 
 void CB_Prog( char *SRC ) ; //	Prog "..."
 
+void CB_Store( char *SRC );	// ->
+int  CB_Input( char *SRC );
+void CB_Cls( char *SRC );
+void CB_ClrText( char *SRC );
+void CB_ClrGraph( char *SRC );
+int CB_Fix( char *SRC );
+int CB_Sci( char *SRC );
+int CB_Norm( char *SRC );
+void CB_Rnd();
+void CB_Quot( char *SRC );		// "" ""
+int CB_Disps( char *SRC ,short dspflag);
+void CB_end( char *SRC );
 void CB_ViewWindow( char *SRC ) ; //	ViewWindow
 void CB_FLine( char *SRC) ; //	F-Line
 void CB_Line( char *SRC ) ; //	Line
@@ -219,6 +232,11 @@ void CB_GraphY( char *SRC );
 void CB_StoPict( char *SRC ) ; //	StoPict
 void CB_RclPict( char *SRC ) ; //	RclPict
 
+void CB_Locate( char *SRC ) ;
+void CB_LocateYX( char *SRC );
+void CB_Text( char *SRC ) ; //	Text
+void CB_ReadGraph( char *SRC );	// ReadGraph(px1,py1, px2,py2)->Mat C
+void CB_WriteGraph( char *SRC );	// WriteGraph x,y,wx,wy,Mat A ([2,2]),modify,kind
 void CB_Rect( char *SRC ) ; 	// Rect x1,y1,x2,y2,mode 
 void CB_FillRect( char *SRC ) ; // FillRect x1,y1,x2,y2,mode 
 void CB_DotShape( char *SRC ) ; // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern1,pattern2)
@@ -227,4 +245,3 @@ void CB_DotPut( char *SRC );	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 void CB_DotTrim( char *SRC );	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 void CB_DotLife( char *SRC ) ;
 
-void CB_test() ;

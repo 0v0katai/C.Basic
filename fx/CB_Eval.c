@@ -138,6 +138,7 @@ void CheckMathERR( double *result ) {
 	char * pt;
 	pt=(char *)(result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
 }
+
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
@@ -159,7 +160,7 @@ unsigned int Eval_atofNumMult(char *SRC, int c, double *num ){
 double Eval_atof(char *SRC) {
 	double mantissa=0,exponent=0;
 	double sign=1;
-	int c = SRC[ExecPtr];
+	int c = SRC[ExecPtr],d;
 		if ( c == '.'  )   {	// .123456
 				c = SRC[++ExecPtr];
 				c=Eval_atofNumDiv(SRC, c, &mantissa);
@@ -167,11 +168,15 @@ double Eval_atof(char *SRC) {
 				mantissa = 1.0;
 				goto lblexp;
 		} else { 	// 123456
-				c=Eval_atofNumMult(SRC, c, &mantissa);	// 123456
-				if ( c == '.'  ) {
-				c = SRC[++ExecPtr];
-					c=Eval_atofNumDiv(SRC, c, &mantissa);	// 123456.789
-				}
+			if ( c == '0' ) {
+				d = SRC[ExecPtr+1];
+				if ( (  d=='x' ) || ( d=='X' ) || (  d=='b' ) || ( d=='B' ) ) return Eval_atod( SRC, d );
+			}
+			c=Eval_atofNumMult(SRC, c, &mantissa);	// 123456
+			if ( c == '.'  ) {
+			c = SRC[++ExecPtr];
+				c=Eval_atofNumDiv(SRC, c, &mantissa);	// 123456.789
+			}
 		}
 		lblexp:
 		if ( c == 0x0F  ) { // exp
