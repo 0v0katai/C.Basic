@@ -5,6 +5,7 @@
 #include <fxlib.h>
 
 #include "CB_io.h"
+#include "CB_Matrix.h"
 #include "CB_glib.h"
 #include "KeyScan.h"
 
@@ -76,25 +77,26 @@ void * HiddenRAM_mallocMat( size_t size ){
 	char * ptr;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		ptr = HiddenRAM_MatTopPtr;
-		HiddenRAM_MatTopPtr -= ( (size&0xFFFFFFF0) +16);
-		if ( HiddenRAM_MatTopPtr < HiddenRAM_ProgNextPtr ) return NULL;
-		return HiddenRAM_MatTopPtr;
+		ptr -= ( (size&0xFFFFFFF0) +16);
+		if ( ptr < HiddenRAM_ProgNextPtr ) return NULL;
+		HiddenRAM_MatTopPtr = ptr;
+		return ptr;
 	} else {
 		return malloc( size );
 	}
 }
 
 void HiddenRAM_freeProg( void *ptr ){
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
+	else 
 		HiddenRAM_ProgNextPtr=HiddenRAM_Top;	// Hidden RAM Prog next ptr
-	} else {
-		if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
-	}
 }
-void HiddenRAM_freeMat( void *ptr ){
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-	} else {
-		if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
+void HiddenRAM_freeMat( int reg ){
+	char *ptr = MatAry[reg].Adrs;
+	int	size = MatAry[reg].Maxbyte; 
+	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
+	else {
+		if ( (int)HiddenRAM_MatTopPtr == (int)ptr ) HiddenRAM_MatTopPtr += ( (size&0xFFFFFFF0) +16);
 	}
 }
 
@@ -369,7 +371,8 @@ int IObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int IObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int IObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int IObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

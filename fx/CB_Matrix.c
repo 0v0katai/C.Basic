@@ -176,7 +176,7 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
 		MatAry[reg].ElementSize = ElementSize;				// Matrix array Elementsize
 		MatAry[reg].Base        = base;						// Matrix array base
 	} else {
-		if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat(MatAry[reg].Adrs);	// free
+		if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );	// free
 		dptr = HiddenRAM_mallocMat( matsize );
 		if( dptr == NULL ) { CB_Error(NotEnoughMemoryERR); return ErrorNo; }	// Not enough memory error
 		MatAry[reg].SizeA       = m;						// Matrix array size
@@ -233,7 +233,7 @@ void DeleteMatrix( int reg ) {
 	double *ptr;
 	if ( ( 0 <= reg ) && ( reg < MatAryMax ) ) {
 			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
-			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat(ptr);
+			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );
 			MatAry[reg].SizeA       = 0;				// Matrix array size
 			MatAry[reg].SizeB       = 0;				// Matrix array size
 			MatAry[reg].ElementSize = 0;				// Matrix array Elementsize
@@ -242,7 +242,7 @@ void DeleteMatrix( int reg ) {
 	} else {
 		for ( reg=0; reg<MatAryMax; reg++){
 			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
-			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat(ptr);
+			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );
 			MatAry[reg].SizeA       = 0;				// Matrix array size
 			MatAry[reg].SizeB       = 0;				// Matrix array size
 			MatAry[reg].ElementSize = 0;				// Matrix array Elementsize

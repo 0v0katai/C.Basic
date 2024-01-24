@@ -46,8 +46,6 @@ double ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 		case 64:
 			return MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB] ;			// Matrix array doubl
 		case  2:		// Vram
-//			dimA+=base;
-//			dimB+=base;
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 1 bit
 			return ( MatAryC[dimB*(((MatAry[reg].SizeA-1)>>3)+1)+(dimA>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
@@ -64,7 +62,7 @@ double ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 }
 //-----------------------------------------------------------------------------
 //int EvalObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    base:1 1-
@@ -81,8 +79,6 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 			MatAry[reg].Adrs[dimA*MatAry[reg].SizeB+dimB]  = (double)value ;	// Matrix array double
 			break;
 		case  2:		// Vram
-//			dimA+=base;
-//			dimB+=base;
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;					// Matrix array 1 bit
 			tmp=( 128>>(dimA&7) );
