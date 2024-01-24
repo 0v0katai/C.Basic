@@ -77,7 +77,7 @@ unsigned int SelectFile (char *filename)
 			index = 0;
 			SaveConfig();
 		} else
-		if( files[index].filesize == -1 ){				//folder
+		if( files[index].filesize == 0xFFFF ){				//folder
 			strcpy( folder, files[index].filename );
 			index = 0;
 			FileListUpdate = 1 ;
@@ -255,6 +255,7 @@ unsigned int Explorer( int size, char *folder )
 	int StartLine;
 	int filemode=0;
 	char *str;
+	int nofile=0;
 	
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -321,6 +322,7 @@ unsigned int Explorer( int size, char *folder )
 		if( size < 1+FavoritesMAX+1 ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
+			nofile=1;
 		}
 		else{
 			char buf[22],buf2[22];
@@ -341,7 +343,7 @@ unsigned int Explorer( int size, char *folder )
 				if ( files[i + top].filesize == 0xFFFE ) {
 					sprintf( buf, "------Favorites------");
 				} else
-				if( files[i + top].filesize == -1 ) {
+				if( files[i + top].filesize == 0xFFFF ) {
 					sprintf( buf, " [%s]", files[i + top].filename );
 				} else {
 					strncpy( buf2, files[i + top].filename, FILENAMEMAX );
@@ -354,7 +356,7 @@ unsigned int Explorer( int size, char *folder )
 					}
 					sprintf( buf, " %-12s:%6u ", buf2, k );
 				}
-				if( i + top < StartLine ) if ( strcmp( Favoritesfiles[i + top].folder, folder ) != 0 ) buf[0]='/';
+//				if( i + top < StartLine ) if ( strcmp( Favoritesfiles[i + top].folder, folder ) != 0 ) buf[0]='/';
 				locate( 1, i + 2 ); Print( (unsigned char*)buf );
 			}
 			Bdisp_AreaReverseVRAM( 0, (index-top+1)*8 , 127, (index-top+2)*8-1 );
@@ -393,7 +395,7 @@ unsigned int Explorer( int size, char *folder )
 		if ( ( 'A' <= key ) && ( key <= 'Z' ) ) {
 			i=FavoritesMAX;
 			while ( i<size ) {
-				if ( files[i].filesize == -1 ) i++;
+				if ( files[i].filesize == 0xFFFF ) i++;
 				else if ( files[i].filename[0]==key ) {
 						index = i;
 						top = index;
@@ -403,12 +405,14 @@ unsigned int Explorer( int size, char *folder )
 		}
 		switch ( key ) {
 			case KEY_CTRL_UP:
+				if ( nofile ) break;
 				do {
 					if( --index < StartLine  )
 						index = size - 1;
 				} while ( files[index].filesize == 0xFFFE ) ;
 				break;
 			case KEY_CTRL_DOWN:
+				if ( nofile ) break;
 				do {
 					if( ++index > size - 1 )
 						index = StartLine ;
@@ -417,6 +421,7 @@ unsigned int Explorer( int size, char *folder )
 			case KEY_CTRL_EXE:
 				if ( filemode != 0 ) break;
 			case KEY_CTRL_F1:	// run
+				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_RUN;
@@ -428,6 +433,7 @@ unsigned int Explorer( int size, char *folder )
 				cont =0 ;
 				break;
 			case KEY_CTRL_F2:	// edit
+				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_EDIT;
@@ -450,6 +456,7 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F4:	// Copy file
+				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_COPY;
@@ -463,6 +470,7 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F5:	// delete file
+				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_DEL;
@@ -476,15 +484,17 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_OPTN:		// ------- Favorites list
+				if ( nofile ) break;
 				filemode = 0 ;
 				FavoritesFunc( &index );
 				break;
 			case KEY_CTRL_F6:		// ------- change function
+				if ( nofile ) break;
 				filemode = 1-filemode ;
 				break;
 			
 			case KEY_CTRL_EXIT:
-				if ( index == StartLine ) key=KEY_CTRL_QUIT;
+				if ( ( nofile ) || ( index == StartLine ) ) key=KEY_CTRL_QUIT;
 				index = size;
 				cont =0 ;
 				break;
@@ -528,6 +538,7 @@ unsigned int Explorer( int size, char *folder )
 //					case KEY_CTRL_F4:	//
 //					case KEY_CTRL_F5:	//
 					case KEY_CTRL_F6:
+							if ( nofile ) break;
 //							VerDisp();
 //							redraw = 1;
 //							FavoritesFunc( &index );
@@ -535,11 +546,13 @@ unsigned int Explorer( int size, char *folder )
 							cont =0 ;
 							break;
 					case KEY_CTRL_PAGEUP:	// up
+							if ( nofile ) break;
 							if ( index <= StartLine ) break;
 							if ( index > FavoritesMAX-1 ) break;
 							FavoritesUp( &index );
 							break;
 					case KEY_CTRL_PAGEDOWN:	// down
+							if ( nofile ) break;
 							if ( FavCount < 1 ) break;
 							if ( index >= FavoritesMAX-1 ) break;
 							FavoritesDown( &index );
@@ -577,11 +590,11 @@ static int FileCmp( const void *p1, const void *p2 )
 	Files *f1 = (Files *)p1;
 	Files *f2 = (Files *)p2;
 
-	if( f1->filesize == -1 && f2->filesize == -1 )
+	if( f1->filesize == 0xFFFF && f2->filesize == 0xFFFF )
 		return strcmp( f1->filename + 1, f2->filename + 1);
-	else if( f1->filesize == -1 )
+	else if( f1->filesize == 0xFFFF )
 		return 1;
-	else if( f2->filesize == -1 )
+	else if( f2->filesize == 0xFFFF )
 		return -1;
 	else
 		return strcmp( f1->filename, f2->filename );
@@ -1808,7 +1821,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 }
 
 //----------------------------------------------------------------------------------------------
-int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
