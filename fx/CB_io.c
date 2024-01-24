@@ -311,9 +311,9 @@ void Hex2PrintXY(int x, int y, char *str, unsigned int hex){
 
 int YesNo2sub( char*buffer, char*buffer2){
 	unsigned int key;
-	int y;
-
-	SaveDisp(SAVEDISP_PAGE1);
+	int i,y;
+	char buf[1024];
+	SaveVRAM( buf );
 	if ( buffer2[0]=='\0' ) {
 		PopUpWin(4); 
 		y=4;
@@ -335,7 +335,7 @@ int YesNo2sub( char*buffer, char*buffer2){
 		if ( key == KEY_CTRL_AC  ) break ;
 		if ( key == KEY_CTRL_EXE ) break ;
 	}
-	RestoreDisp(SAVEDISP_PAGE1);
+	RestoreVRAM( buf );
 	if ( key == KEY_CTRL_F1  ) return 1 ; // Yes
 	if ( key == KEY_CTRL_EXE ) return 1 ; // Yes
 //	Bdisp_PutDisp_DD();

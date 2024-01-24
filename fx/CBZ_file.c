@@ -1107,10 +1107,10 @@ void G1M_header( char *filebase ,int *size ) {
 	filebase[0x0D]=0xFF;
 	filebase[0x0E]=(0xBE-*size)&0xFF;
 	filebase[0x0F]=0xFE;
-	filebase[0x10]=0xFF;
-	filebase[0x11]=0xFF;
-	filebase[0x12]=((0xFFFF-*size)>>8)&0xFF;	//
-	filebase[0x13]=((0xFFFF-*size))&0xFF;		//
+	filebase[0x10]=((0xFFFFFFFF-*size)>>24)&0xFF;	//
+	filebase[0x11]=((0xFFFFFFFF-*size)>>16)&0xFF;	//
+	filebase[0x12]=((0xFFFFFFFF-*size)>>8)&0xFF;	//
+	filebase[0x13]=((0xFFFFFFFF-*size))&0xFF;		//
 	filebase[0x14]=(0x47-*size)&0xFF;			//
 	filebase[0x15]=0x00;
 	filebase[0x16]=0x00;
@@ -1276,7 +1276,7 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 		GetKey( &key );
 		return 1;
 	}
-	fsize = 0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
+	fsize = 0xFFFFFFFF-(((filebase[0x10]&0xFF)<<24)+((filebase[0x11]&0xFF)<<16)+((filebase[0x12]&0xFF)<<8)+(filebase[0x13]&0xFF));
 	size  = SrcSize( filebase ) ;
 	if ( ( fsize != size ) || ( filebase[0x20] != 'P' ) || ( filebase[0x21] != 'R' ) ) { 
 		if ( ( filebase[0x20] == 'P' ) && ( filebase[0x21] == 'I' ) && ( filebase[0x22] == 'C' ) ) {
@@ -1404,8 +1404,6 @@ int SaveProgfile( int progNo ){
 	
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
-	strncpy( tmpfolder, folder, FOLDERMAX );
-	strncpy( folder, filebase+0x3C-8, 8 );
 	
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
@@ -1417,7 +1415,6 @@ int SaveProgfile( int progNo ){
 		Favoritesfiles[i].filesize = SrcSize(filebase);
 	}
 
-	strncpy( folder, tmpfolder, FOLDERMAX );
 	return r;
 }
 
@@ -2612,24 +2609,24 @@ int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
@@ -2656,7 +2653,6 @@ int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
-/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2721,6 +2717,7 @@ void FavoritesDowndummy4( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy5( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

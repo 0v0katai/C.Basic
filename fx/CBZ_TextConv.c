@@ -437,7 +437,7 @@ const char ConvList7F00[][16]={
 "P/Year",			// 7FCC
 "C/Year",			// 7FCD
 "Fb",				// 7FCE
-"@7FCF",			// 7FCF
+"System(",			// 7FCF
 					
 "F-Value",			// 7FD0
 "z-Value",			// 7FD1
@@ -454,7 +454,7 @@ const char ConvList7F00[][16]={
 "SSe",				// 7FDC
 "MSe",				// 7FDD
 "Fab",				// 7FDE
-"@7FDF",			// 7FDF
+"Version",			// 7FDF
 					
 "Bdf",				// 7FE0
 "ABdf", 			// 7FE1
@@ -868,7 +868,7 @@ const char ConvListF900[][17]={
 "@F95C",			// F95C
 "@F95D",			// F95D
 "UnitV(",			// F95E		// ver.2.04~
-"@F95F",			// F95F
+"IsError(",				// F95F	
 
 "GetFont(",				// F960
 "SetFont ",				// F961

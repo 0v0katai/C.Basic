@@ -440,6 +440,11 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x4B :				// Mat>List( Mat A, m) -> List n
 					CB_Mat2List( SRC );
 					return 0;
+					
+				case 0xFFFFFFCF :				// System(
+					return CB_System( SRC );
+				case 0xFFFFFFDF :				// Version
+					return CB_Version();		//
 				default:
 					ExecPtr--;	// error
 					break;
@@ -590,6 +595,8 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return CB_EvalStr(SRC, 1 );
 				case 0x50:	// StrAsc(
 					return CB_StrAsc( SRC );
+				case 0x5F:	// IsError(
+					return CB_IsError(SRC);
 				case 0x60:	// GetFont(
 					return CB_GetFont(SRC);
 				case 0x62:	// GetFontMini(

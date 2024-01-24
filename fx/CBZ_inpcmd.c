@@ -126,7 +126,8 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo2, "ACBrk");
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
-					FkeyClear( FKeyNo5 );
+//					FkeyClear( FKeyNo5 );
+					Fkey_dspRB( FKeyNo5, "IsError(");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
@@ -1009,6 +1010,14 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo3, "DATE");
 					Fkey_dspRB( FKeyNo4, "TIME");
 					Fkey_dspRB( FKeyNo5, "Wait");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 4:
+					FkeyClear( FKeyNo1 );
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					Fkey_dspRB( FKeyNo4, "System(");
+					Fkey_dspRB( FKeyNo5, "Version");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}

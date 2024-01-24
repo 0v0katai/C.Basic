@@ -1220,6 +1220,11 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x4B :				// Mat>List( Mat A, m) -> List n
 					CB_Mat2List( SRC );;
 					return 0;
+					
+				case 0xFFFFFFCF :				// System(
+					return CB_System( SRC );
+				case 0xFFFFFFDF :				// Version
+					return CB_Version();		//
 				default:
 					ExecPtr--;	// error
 					break;
@@ -1377,6 +1382,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return CB_EvalStr(SRC, 0 );
 				case 0x50:	// StrAsc(
 					return CB_StrAsc( SRC );
+				case 0x5F:	// IsError(
+					return CB_IsError(SRC);
 				case 0x60:	// GetFont(
 					return CB_GetFont(SRC);
 				case 0x62:	// GetFontMini(
@@ -1431,7 +1438,7 @@ double DmsToDec( char *SRC, double h ) {	// 12"34"56 -> 12.5822222
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
 int EvalObjectAlignE4hh( unsigned int n ){ return n+n; }	// align +6byte
 //int EvalObjectAlignE4ii( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4jj( unsigned int n ){ return n ; }	// align +4byte
@@ -1870,3 +1877,26 @@ double Eval(char *SRC) {		// Eval temp
 	return Eval2( SRC, &ptr);
 }
 
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int CB_IsError( char *SRC ){ //	IsError (...)
+	int c,err=0;
+  loop:
+	ErrorNo=0;
+	if ( CB_INT ) ListEvalIntsubTopAns( SRC ) ;
+	else 		  ListEvalsubTopAns( SRC ) ;
+	if ( err==0 ) 	err = ErrorNo;
+	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;	// Clear List Ans
+	c=SRC[ExecPtr];
+	if ( ( c==':' ) || ( c==')' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0x00 ) ) {
+		if ( c==')' ) ExecPtr++;
+	} else {
+		if ( ErrorNo ) { 
+			ExecPtr=ErrorPtr;
+			NextOpcode( SRC, &ExecPtr );
+			goto loop;
+		}
+	}
+	ErrorNo=0;
+	return err;
+}

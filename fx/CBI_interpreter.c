@@ -426,15 +426,15 @@ double CB_Peek( char *SRC, int adrs ) {	// Peek(123456).f
 	wsize=WordSizeSelect( SRC );
 	switch ( wsize ) {
 		case 64:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			dptr=(double *)adrs;
 			return *dptr;
 		case 32:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			iptr=(int *)adrs;
 			return *iptr;
 		case 16:
-			if ( adrs & 1 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			if ( adrs & 1 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			sptr=(short *)adrs;
 			return *sptr;
 		default:
@@ -442,6 +442,7 @@ double CB_Peek( char *SRC, int adrs ) {	// Peek(123456).f
 			return *cptr;
 	}
 }
+
 int CB_PeekInt( char *SRC, int adrs ) {	// Peek(123456).w
 	int wsize;
 	char *cptr;
@@ -452,15 +453,15 @@ int CB_PeekInt( char *SRC, int adrs ) {	// Peek(123456).w
 	wsize=WordSizeSelect( SRC );
 	switch ( wsize ) {
 		case 64:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			dptr=(double *)adrs;
 			return *dptr;
 		case 32:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			iptr=(int *)adrs;
 			return *iptr;
 		case 16:
-			if ( adrs & 1 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+			if ( adrs & 1 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			sptr=(short *)adrs;
 			return *sptr;
 		default:
@@ -479,17 +480,17 @@ void CB_PokeSub( char *SRC, double data, int adrs ) {	// Poke(123456).f
 	wsize=WordSizeSelect( SRC );
 	switch ( wsize ) {
 		case 64:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			dptr=(double *)adrs;
 			*dptr=data;
 			break;
 		case 32:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			iptr=(int *)adrs;
 			*iptr=data;
 			break;
 		case 16:
-			if ( adrs & 1 ) { CB_Error(ArgumentERR); return; }  // Argument error
+			if ( adrs & 1 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			sptr=(short *)adrs;
 			*sptr=data;
 			break;
@@ -509,17 +510,17 @@ void CB_PokeSubInt( char *SRC, int data, int adrs ) {	// Poke(123456).w
 	wsize=WordSizeSelect( SRC );
 	switch ( wsize ) {
 		case 64:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			dptr=(double *)adrs;
 			*dptr=data;
 			break;
 		case 32:
-			if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			iptr=(int *)adrs;
 			*iptr=data;
 			break;
 		case 16:
-			if ( adrs & 1 ) { CB_Error(ArgumentERR); return; }  // Argument error
+			if ( adrs & 1 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			sptr=(short *)adrs;
 			*sptr=data;
 			break;
@@ -544,19 +545,19 @@ void CB_Poke( char *SRC ) {	// Poke(123456).w,123,...
 		ExecPtr++;
 		switch ( wsize ) {
 			case 64:
-				if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+				if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 				dptr=(double *)adrs;
 				*dptr=CB_EvalDbl( SRC );
 				adrs+=8;
 				break;
 			case 32:
-				if ( adrs & 3 ) { CB_Error(ArgumentERR); return; } // Argument error
+				if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 				iptr=(int *)adrs;
 				*iptr=CB_EvalInt( SRC );
 				adrs+=4;
 				break;
 			case 16:
-				if ( adrs & 1 ) { CB_Error(ArgumentERR); return; }  // Argument error
+				if ( adrs & 1 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 				sptr=(short *)adrs;
 				*sptr=CB_EvalInt( SRC );
 				adrs+=2;
@@ -629,7 +630,7 @@ int CB_SysCall( char *SRC ) {	// SysCall( No,r4,r5,r6,r7 )
 int CB_Call( char *SRC ) {	// Call( adrs,r5,r6,r7 )
 	int adrs=CB_EvalInt( SRC );
 	int r4=0,r5=0,r6=0,r7=0;
-	if ( adrs & 1 ) CB_Error(ArgumentERR);  // Argument error
+	if ( adrs & 1 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 	if ( SRC[ExecPtr]==',' ) { 
 		ExecPtr++;
 		r4=CB_EvalIntStrPtr( SRC );

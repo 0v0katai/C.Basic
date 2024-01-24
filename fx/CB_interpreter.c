@@ -2622,10 +2622,6 @@ int CB_interpreter( char *SRC ) {
 	Waitcount=DefaultWaitcount;
 	MatBase = MatBaseDefault;
 	BreakCheck =BreakCheckDefault;	// Break Stop on/off
-	CB_ResetExecTicks();
-	CB_TicksAdjust = 0 ;	// 
-	CB_HiTicksAdjust = 0 ;	// 
-	srand( CB_TicksStart ) ;	// rand seed
 	ScreenMode = 0;	// Text mode
 	UseGraphic = 0;
 	PxlMode = 1;		// Pxl  1:set  0:clear	
@@ -2648,6 +2644,11 @@ int CB_interpreter( char *SRC ) {
 	DeleteMatListAnsAll();	// Ans init	
 	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
 		
+	CB_TicksAdjust = 0 ;	// 
+	CB_HiTicksAdjust = 0 ;	// 
+	CB_ResetExecTicks();
+	srand( CB_TicksStart ) ;	// rand seed
+	
 	stat = CB_interpreter_sub( SRC );
 	
 	ACBreak    =bk_ACBreak;		// AC Break on/off
@@ -2705,7 +2706,7 @@ void  CB_Input( char *SRC ){
 		}
 		c=SRC[++ExecPtr];
 		if ( c!=',' ) {
-			CursorY=CB_EvalInt( SRC ); if ( ( CursorY<1 ) || (  7<CursorY ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+			CursorY=CB_EvalInt( SRC ); if ( ( CursorY<1 ) || (  8<CursorY ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 			c=SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
@@ -2956,7 +2957,7 @@ void  CB_Input( char *SRC ){
 			goto Inpj2;
 			break;
 	}
-	Scrl_Y();
+	if ( option == 0 ) Scrl_Y();
 	Bdisp_PutDisp_DD_DrawBusy();
 	return ;
 }
