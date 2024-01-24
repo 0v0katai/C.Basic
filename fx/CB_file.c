@@ -448,7 +448,7 @@ unsigned int Explorer( int size, char *folder )
 						break;
 					case 1:
 						if ( index <= StartLine ) break;
-						if ( index >= FavoritesMAX-1 ) break;
+						if ( index > FavoritesMAX-1 ) break;
 						FavoritesUp( &index );
 						break;
 				}
@@ -526,7 +526,7 @@ unsigned int Explorer( int size, char *folder )
 							break;
 					case KEY_CTRL_PAGEUP:	// up
 							if ( index <= StartLine ) break;
-							if ( index >= FavoritesMAX-1 ) break;
+							if ( index > FavoritesMAX-1 ) break;
 							FavoritesUp( &index );
 							break;
 					case KEY_CTRL_PAGEDOWN:	// down
@@ -1459,7 +1459,7 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	CharToFont( fname, filename );
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
-		ErrorMSGfile( "Can't find file", fname);
+		ErrorMSGfile( "Can't Load file", fname);
 		CB_Error(FileERR); return ;
 	}
 	
