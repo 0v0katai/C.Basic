@@ -1118,19 +1118,19 @@ void SaveConfig(){
 	buffer[10]='6';
 	buffer[11]='0';
 
-	bufint[ 3]=CB_INTDefault;		// 3	6:7
-	bufint[ 4]=DrawType;			// 4	8:9
-	bufint[ 5]=Coord;
-	bufint[ 6]=Grid;
-	bufint[ 7]=Axes;
-	bufint[ 8]=Label;
-	bufint[ 9]=Derivative;
-	bufint[10]=S_L_Style;
-	bufint[11]=Angle;
-	bufint[12]=BreakCheck;
-	bufint[13]=TimeDsp;
-	bufint[14]=MatXYmode;
-	bufint[15]=PictMode;
+	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=0;
+	bufshort[ 9]=DrawType;			bufshort[ 8]=0;
+	bufshort[11]=Coord;				bufshort[10]=0;
+	bufshort[13]=Grid;				bufshort[12]=0;
+	bufshort[15]=Axes;				bufshort[14]=0;
+	bufshort[17]=Label;				bufshort[16]=0;
+	bufshort[19]=Derivative;		bufshort[18]=0;
+	bufshort[21]=S_L_Style;			bufshort[20]=0;
+	bufshort[23]=Angle;				bufshort[22]=0;
+	bufshort[25]=BreakCheck;		bufshort[24]=0;
+	bufshort[27]=TimeDsp;			bufshort[26]=0;
+	bufshort[29]=MatXYmode;			bufshort[28]=0;
+	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
 
 	bufdbl[ 8]=Xfct;
 	bufdbl[ 9]=Yfct;
@@ -1194,20 +1194,20 @@ void LoadConfig(){
 		 ( buffer[ 9]=='0' ) &&
 		 ( buffer[10]=='6' ) &&
 		 ( buffer[11]=='0' ) ) {
-		
-		CB_INTDefault =bufint[ 3];
-		DrawType  =bufint[ 4];	// load config & memory
-		Coord     =bufint[ 5];
-		Grid      =bufint[ 6];
-		Axes      =bufint[ 7];
-		Label     =bufint[ 8];
-		Derivative=bufint[ 9];
-		S_L_Style =bufint[10];
-		Angle     =bufint[11];
-		BreakCheck=bufint[12];
-		TimeDsp   =bufint[13];
-		MatXYmode =bufint[14];
-		PictMode  =bufint[15];
+									// load config & memory
+		CB_INTDefault =bufshort[ 7];		
+		DrawType      =bufshort[ 9];        
+		Coord         =bufshort[11];        
+		Grid          =bufshort[13];        
+		Axes          =bufshort[15];        
+		Label         =bufshort[17];        
+		Derivative    =bufshort[19];        
+		S_L_Style     =bufshort[21];        
+		Angle         =bufshort[23];        
+		BreakCheck    =bufshort[25];        
+		TimeDsp       =bufshort[27];        
+		MatXYmode     =bufshort[29];        
+		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];

@@ -19,9 +19,11 @@ void CB_PrintC( int x, int y,const unsigned char *c ){
 	if ( *c == 0xFF ) {
 		*c++;
 		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xDF ) ) KPrintChar( (--x)*6, (--y)*8, *c );
-		else	goto jmp;
+		else {
+			locate (x,y);
+			Print( (unsigned char*)"@" );
+		}
 	} else {
-		jmp:
 		locate (x,y);
 		PrintC( c );
 	}
@@ -30,7 +32,10 @@ void CB_PrintRevC( int x, int y,const unsigned char *c ){
 	if ( *c == 0xFF ) {
 		*c++;
 		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xDF ) ) KPrintRevChar( (--x)*6, (--y)*8, *c );
-		else	goto jmp;
+		else	{
+			locate (x,y);
+			PrintRev( (unsigned char*)"@" );
+		}
 	} else {
 		jmp:
 		locate (x,y);

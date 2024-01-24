@@ -118,9 +118,25 @@ void CB_ErrMsg(int ErrNo) {
 		case TooManyProgERR:
 			ERROR("Too many SubProg");
 			break;
+		case IfWithoutIfEndERR:
+			ERROR("If without IfEnd");
+			break;
 		case ThenWithoutIfERR:
 			ERROR("Then without If");
 			break;
+		case CaseWithoutSwitchERR:
+			ERROR("Case w.out Switch");
+			break;
+		case DefaultWithoutSwitchERR:
+			ERROR("Default wo Switch");
+			break;
+		case SwitchWithoutSwitchEndERR:
+			ERROR("Without SwitchEnd");
+			break;
+		case SwitchEndWithoutSwitchERR:
+			ERROR("Without Switch");
+			break;
+			
 		default:
 			break;
 	}

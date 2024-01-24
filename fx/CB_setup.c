@@ -35,7 +35,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.88 " );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.89 " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -722,8 +722,8 @@ int SetupG(int select){		// ----------- Setup
 	unsigned int key;
 	int	cont=1;
 	int scrl=select-6;
-	int y;
-	int listmax=15;
+	int y,cnt;
+	int listmax=16;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -733,78 +733,82 @@ int SetupG(int select){		// ----------- Setup
 
 	while (cont) {
 		Bdisp_AllClr_VRAM();
-		if ( scrl <=0 ) {
-			locate( 1, 1-scrl); Print((unsigned char*)"Draw Type   :");
-			locate(14, 1-scrl); Print((unsigned char*)draw[(int)DrawType]);
-		}
-		if ( scrl <=1 ) {
-			locate( 1, 2-scrl); Print((unsigned char*)"Coord:      :");
-			locate(14, 2-scrl); Print((unsigned char*)onoff[Coord]);
-		}
-		if ( scrl <=2 ) {
-			locate( 1, 3-scrl); Print((unsigned char*)"Grid        :");
-			locate(14, 3-scrl); Print((unsigned char*)onoff[Grid]);
-		}
-		if ( scrl <=3 ) {
-			locate( 1, 4-scrl); Print((unsigned char*)"Axes        :");
-			locate(14, 4-scrl); Print((unsigned char*)onoff[Axes]);
-		}
-		if ( scrl <=4 ) {
-			locate( 1, 5-scrl); Print((unsigned char*)"Label       :");
-			locate(14, 5-scrl); Print((unsigned char*)onoff[Label]);
-		}
-		if ( scrl <=5 ) {
-			locate( 1, 6-scrl); Print((unsigned char*)"Derivative  :");
-			locate(14, 6-scrl); Print((unsigned char*)onoff[Derivative]);
-		}
-		if ( scrl <=6 ) {
-			locate( 1, 7-scrl); Print((unsigned char*)"Sketch Line :");
-			locate(14, 7-scrl); Print((unsigned char*)style[S_L_Style]);
-		}
-		if ( ( scrl >=1 ) && ( 8-scrl > 0 ) ){
-			locate( 1, 8-scrl); Print((unsigned char*)"Angle       :");
-			locate(14, 8-scrl); Print((unsigned char*)degrad[Angle]);
-		}
-		if ( ( scrl >=2 ) && ( 9-scrl > 0 ) ){
-			locate( 1, 9-scrl); Print((unsigned char*)"Display     :");
-			locate(14, 9-scrl); Print((unsigned char*)display[CB_Round.MODE]);
+		cnt=1;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Draw Type   :");		// 0
+			locate(14, cnt-scrl); Print((unsigned char*)draw[(int)DrawType]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Coord:      :");		// 1
+			locate(14, cnt-scrl); Print((unsigned char*)onoff[Coord]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Grid        :");		// 2
+			locate(14, cnt-scrl); Print((unsigned char*)onoff[Grid]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Axes        :");		// 3
+			locate(14, cnt-scrl); Print((unsigned char*)onoff[Axes]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Label       :");		// 4
+			locate(14, cnt-scrl); Print((unsigned char*)onoff[Label]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Derivative  :");		// 5
+			locate(14, cnt-scrl); Print((unsigned char*)onoff[Derivative]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Sketch Line :");		// 6
+			locate(14, cnt-scrl); Print((unsigned char*)style[S_L_Style]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1, cnt-scrl); Print((unsigned char*)"Angle       :");		// 7
+			locate(14, cnt-scrl); Print((unsigned char*)degrad[Angle]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1, cnt-scrl); Print((unsigned char*)"Display     :");		// 8
+			locate(14, cnt-scrl); Print((unsigned char*)display[CB_Round.MODE]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
-			locate(17, 9-scrl); Print((unsigned char*)buffer);
-			locate(19, 9-scrl); 
+			locate(17, cnt-scrl); Print((unsigned char*)buffer);
+			locate(19, cnt-scrl); 
 			if (ENG) Print((unsigned char*)"/E");
-		}
-		if ( ( scrl >=3 ) && (10-scrl > 0 ) ){
-			locate( 1,10-scrl); Print((unsigned char*)"Break Stop  :");
-			locate(14,10-scrl); Print((unsigned char*)onoff[BreakCheck]);
-		}
-		if ( ( scrl >=4 ) && (11-scrl > 0 ) ){
-			locate( 1,11-scrl); Print((unsigned char*)"TimeDsp     :");
-			locate(14,11-scrl); Print((unsigned char*)onoff[TimeDsp]);
-		}
-		if ( ( scrl >=5 ) && (14-scrl > 0 ) ){
-			locate( 1,12-scrl); Print((unsigned char*)"Key 1st time:");
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 9
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[BreakCheck]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 10
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[TimeDsp]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd  Check:");		// 11
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[CheckIfEnd]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 12
 			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
-			locate(14,12-scrl); Print((unsigned char*)buffer);
-		}
-		if ( ( scrl >=6 ) && (15-scrl > 0 ) ){
-			locate( 1,13-scrl); Print((unsigned char*)"Key Rep time:");
+			locate(14,cnt-scrl); Print((unsigned char*)buffer);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 13
 			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
-			locate(14,13-scrl); Print((unsigned char*)buffer);
+			locate(14,cnt-scrl); Print((unsigned char*)buffer);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix  mode:");		// 14
+			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict    mode:");		// 15
+			locate(14,cnt-scrl); Print((unsigned char*)Pictmode[PictMode]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 16
+			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
-		if ( ( scrl >=7 ) && (12-scrl > 0 ) ){
-			locate( 1,14-scrl); Print((unsigned char*)"Matrix  mode:");
-			locate(14,14-scrl); Print((unsigned char*)Matmode[MatXYmode]);
-		}
-		if ( ( scrl >=8 ) && (13-scrl > 0 ) ){
-			locate( 1,15-scrl); Print((unsigned char*)"Pict    mode:");
-			locate(14,15-scrl); Print((unsigned char*)Pictmode[PictMode]);
-		}
-		if ( ( scrl >=9 ) && (16-scrl > 0 ) ){
-			locate( 1,16-scrl); Print((unsigned char*)"Execute mode:");
-			locate(14,16-scrl); Print((unsigned char*)mode[CB_INTDefault]);
-		}
-
 		y = select-scrl;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		switch (select) {
@@ -821,6 +825,7 @@ int SetupG(int select){		// ----------- Setup
 			case 5: // Derivative
 			case 9: // BreakCheck
 			case 10: // TimeDsp
+			case 11: // IfEnd Check
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
@@ -841,21 +846,21 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispR( 2, "Nrm ");
 				Fkey_dispN( 3, "Eng ");
 				break;
-			case 11: // Key Repeat mode
 			case 12: // Key Repeat mode
+			case 13: // Key Repeat mode
 				Fkey_DISPN( 0," +");
 				Fkey_DISPN( 1," -");
 				Fkey_dispN( 3, "Init");
 				break;
-			case 13: // Mat mode
+			case 14: // Mat mode
 				Fkey_dispN( 0, "m.n ");
 				Fkey_dispN( 1, "X,Y ");
 				break;
-			case 14: // Mat mode
+			case 15: // Mat mode
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
-			case 15: // Execute Mode
+			case 16: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -923,21 +928,24 @@ int SetupG(int select){		// ----------- Setup
 					case 10: // TimeDsp
 						TimeDsp = 1 ; // on
 						break;
-					case 11: // Key Repeat First Count *ms
+					case 11: // IfEnd Check
+						CheckIfEnd = 1 ; // on
+						break;
+					case 12: // Key Repeat First Count *ms
 						KeyRepeatFirstCount += 1 ;
 						if ( KeyRepeatFirstCount > 40 ) KeyRepeatFirstCount=40;
 						break;
-					case 12: // Key Repeat Next Count *ms
+					case 13: // Key Repeat Next Count *ms
 						KeyRepeatNextCount += 1 ;
 						if ( KeyRepeatNextCount > 20 ) KeyRepeatNextCount=20;
 						break;
-					case 13: // Matrix mode
+					case 14: // Matrix mode
 						MatXYmode = 0 ; // m,n
 						break;
-					case 14: // Pict mode
+					case 15: // Pict mode
 						PictMode = 0 ; // Memory mode
 						break;
-					case 15: // CB mode
+					case 16: // CB mode
 						CB_INTDefault = 0 ; // normal
 						break;
 					default:
@@ -981,21 +989,24 @@ int SetupG(int select){		// ----------- Setup
 					case 10: // TimeDsp
 						TimeDsp = 0 ; // off
 						break;
-					case 11: // Key Repeat First Count *ms
+					case 11: // IfEnd Check
+						CheckIfEnd = 0 ; // off
+						break;
+					case 12: // Key Repeat First Count *ms
 						KeyRepeatFirstCount -= 1 ;
 						if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=1;
 						break;
-					case 12: // Key Repeat Next Count *ms
+					case 13: // Key Repeat Next Count *ms
 						KeyRepeatNextCount -= 1 ;
 						if ( KeyRepeatNextCount < 1 ) KeyRepeatNextCount=1;
 						break;
-					case 13: // Matrix mode
+					case 14: // Matrix mode
 						MatXYmode = 1 ; // x,y
 						break;
-					case 14: // Pict mode
+					case 15: // Pict mode
 						PictMode = 1 ; // heap mode
 						break;
-					case 15: // CB mode
+					case 16: // CB mode
 						CB_INTDefault = 1 ; // int
 						break;
 					default:
@@ -1028,10 +1039,10 @@ int SetupG(int select){		// ----------- Setup
 					case 8: // Display
 						ENG=1-ENG;
 						break;
-					case 11: // Key Repeat First Count *ms
+					case 12: // Key Repeat First Count *ms
 						KeyRepeatFirstCount = 20 ;
 						break;
-					case 12: // Key Repeat Next Count *ms
+					case 13: // Key Repeat Next Count *ms
 						KeyRepeatNextCount  = 5 ;
 						break;
 					default:

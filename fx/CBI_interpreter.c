@@ -219,7 +219,7 @@ void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	}
 	StackFor->Adrs[StackFor->Ptr] = ExecPtr;
 	StackFor->Ptr++;
-	CurrentStruct->loop[CurrentStruct->CNT]=1;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
 	CurrentStruct->CNT++;
 }
 void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
@@ -233,14 +233,14 @@ void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 		if ( REGINT[StackFor->Var[StackFor->Ptr]] > StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
 		ExecPtr = StackFor->Adrs[StackFor->Ptr];
 		(StackFor->Ptr)++;		// continue
-	CurrentStruct->loop[CurrentStruct->CNT]=1;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
 	CurrentStruct->CNT++;
 	}
 	else {									// step -
 		if ( REGINT[StackFor->Var[StackFor->Ptr]] < StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
 		ExecPtr = StackFor->Adrs[StackFor->Ptr];
 		StackFor->Ptr++;		// continue
-	CurrentStruct->loop[CurrentStruct->CNT]=1;
+	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
 	CurrentStruct->CNT++;
 	}
 }
@@ -311,7 +311,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		else {
 			Skip_block(SRC);
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
 void CBint_Isz( char *SRC ) { //	Isz
@@ -379,7 +379,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 		else {
 			Skip_block(SRC);
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
 //----------------------------------------------------------------------------------------------

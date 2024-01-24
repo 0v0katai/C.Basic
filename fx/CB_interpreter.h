@@ -32,6 +32,7 @@ extern char BreakCheck;	// Break Stop on/off
 extern char TimeDsp;
 extern char MatXYmode;
 extern char PictMode;	// StoPict/RclPict  StrageMem:0  heap:1
+extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
 
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
@@ -136,23 +137,24 @@ extern double CB_CurrentValue;	// Ans
 #define StackForMax 8
 #define StackWhileMax 8
 #define StackDoMax 8
+#define StackSwitchMax 4
 
 typedef struct {
-	int	CNT;
+	int		CNT;
 	short	Ptr[IfCntMax];
 	short	Adrs[IfCntMax];
 } CchIf;
 
 typedef struct {
-	int	CNT;
+	int		CNT;
 	short	Ptr[RemCntMax];
 	short	Adrs[RemCntMax];
 } CchRem;
 
 typedef struct {
-	int	Ptr;
-	short	Adrs[StackForMax];
+	int		Ptr;
 	short	Var[StackForMax];
+	short	Adrs[StackForMax];
 	int	IntEnd[StackForMax];
 	int	IntStep[StackForMax];
 	double End[StackForMax];
@@ -167,8 +169,15 @@ typedef struct {
 } StkWhileDo;
 
 typedef struct {
-	int	CNT;
-	char	loop[28];
+	int		Ptr;
+	short	flag[StackSwitchMax];
+	short	EndAdrs[StackSwitchMax];
+	int		Value[StackSwitchMax];
+} StkSwitch;
+
+typedef struct {
+	int		CNT;
+	char	TYPE[28];
 } CurrentStk;
 
 //------------------------------------------------------------------------------
@@ -201,6 +210,8 @@ double CB_UnaryEval( char *SRC ) ;	// eval 1
 
 void CB_Prog( char *SRC ) ; //	Prog "..."
 
+void CB_Dsz( char *SRC ) ; //	Dsz
+void CB_Isz( char *SRC ) ; //	Isz
 void CB_Store( char *SRC );	// ->
 int  CB_Input( char *SRC );
 void CB_Cls( char *SRC );
