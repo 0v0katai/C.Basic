@@ -1211,7 +1211,7 @@ void SaveConfig(){
 	bufshort[21]=S_L_Style;			bufshort[20]=0;
 	bufshort[23]=Angle;				bufshort[22]=0;
 	bufshort[25]=BreakCheck;		bufshort[24]=0;
-	bufshort[27]=TimeDsp;			bufshort[26]=0;
+	bufshort[27]=TimeDsp;			bufshort[26]=PageUpDownNum;
 	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
 	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
 
@@ -1223,8 +1223,8 @@ void SaveConfig(){
 	for ( i=160; i< 160+26 ; i++ ) bufint[i]=REGINT[i-160];
 	for ( i=192; i< 192+26 ; i++ ) bufint[i]=REGINTsmall[i-192];
 
-	bufshort[218*2  ]=(short)KeyRepeatFirstCount;
-	bufshort[218*2+2]=(short)KeyRepeatNextCount;
+	bufshort[218*2]=(short)KeyRepeatFirstCount;
+	bufshort[219*2]=(short)KeyRepeatNextCount;
 	
 	sbuf=buffer+220*4;
 	
@@ -1290,7 +1290,7 @@ void LoadConfig(){
 		S_L_Style     =bufshort[21];        
 		Angle         =bufshort[23];        
 		BreakCheck    =bufshort[25];        
-		TimeDsp       =bufshort[27];        
+		TimeDsp       =bufshort[27];        PageUpDownNum=bufshort[26];  if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
 		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
 
@@ -1302,8 +1302,8 @@ void LoadConfig(){
 		for ( i=160; i< 160+26 ; i++ ) REGINT[i-160]=bufint[i];
 		for ( i=192; i< 192+26 ; i++ ) REGINTsmall[i-192]=bufint[i];
 
-		KeyRepeatFirstCount=bufshort[218*2  ]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=20;
-		KeyRepeatNextCount =bufshort[218*2+2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount =5;
+		KeyRepeatFirstCount=bufshort[218*2]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount = 20;
+		KeyRepeatNextCount =bufshort[219*2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount  =  5;
 
 		sbuf=buffer+220*4;
 

@@ -285,9 +285,19 @@ void PrevLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 	}
 }
 
+void NextLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
+	int i;
+	for ( i=0; i<n; i++ ) {
+		if ( SrcBase[(*offset)] == 0 ) break;
+		NextLinePhy( SrcBase, &(*offset), &(*offset_y) );
+	}
+}
 void PrevLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
 	int i;
-	for ( i=0; i<n; i++ ) PrevLinePhy( SrcBase, &(*offset), &(*offset_y) );
+	for ( i=0; i<n; i++ ) {
+		if ( ( (*offset) == 0 ) && ( (*offset_y) == 0 ) ) break;
+		PrevLinePhy( SrcBase, &(*offset), &(*offset_y) );
+	}
 }
 
 int PrintOpcodeLine1( int csry, int n, char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
@@ -377,7 +387,7 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, 
 		count--;
 		if ( count<50 ) if ( csrPtr > 0 ) csrPtr--;
 		if ( count==0 ) {  // error reset
-			(*offset)=0; (*offset_y)=0; (*cx)=1; (*cy)=1; return -1; 
+			(*offset)=0; (*offset_y)=0; (*cx)=1; (*cy)=2; return -1; 
 		}
 	}
 	
@@ -721,7 +731,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					break;
 			case KEY_CTRL_EXIT:
 					if ( DebugScreen ) { DebugScreen = 0; break; }
-			case KEY_CTRL_QUIT:
+//			case KEY_CTRL_QUIT:
 					cont=0;
 					break;
 			case KEY_CTRL_F1:
@@ -1045,37 +1055,37 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_dispN( 5, "G<>T");
 				GetKey(&key);
 				switch (key) {
-					case KEY_CTRL_EXIT:
+//					case KEY_CTRL_EXIT:
 					case KEY_CTRL_QUIT:
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel
+							cont=0;
 							break;
 							
 					case KEY_CTRL_PAGEUP:
 							switch (dumpflg) {
 								case 2: 		// Opcode
-									for ( i=0; i<50; i++ ) PrevLine( SrcBase, &csrPtr );
+									PrevLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );
+									csrPtr=offset;
 									break;
 								case 4: 		// hex dump
 									csrPtr-=0x100;
 									cx=6; cy=2;
+									offset=csrPtr;
+									offset_y=0;
 									break;
 								default:
 									break;
 							}
-							offset=csrPtr;
-							offset_y=0;
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_PAGEDOWN:
 							switch (dumpflg) {
 								case 2: 		// Opcode
-									PrevLine( SrcBase, &csrPtr );
-									for ( i=0; i<50; i++ ) NextLine( SrcBase, &csrPtr );;
-									offset=csrPtr;
-									offset_y=0;
-									PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
+									NextLinePhyN( PageUpDownNum*6, SrcBase, &offset, &offset_y );
+									csrPtr=offset;
+									if ( SrcBase[offset] == 0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 									break;
 								case 4: 		// hex dump
 									csrPtr+=0x100;
@@ -1322,7 +1332,7 @@ int CB_BreakStop() {
 //----------------------------------------------------------------------------------------------
 void edeitdummy(int x, int y){
 	locate(x,y  ); Print((unsigned char *) "1234");
-	locate(x,y+1); Print((unsigned char *) "5678");
+//	locate(x,y+1); Print((unsigned char *) "5678");
 //	locate(x,y+2); Print((unsigned char *) "ABCD");
 }
 
