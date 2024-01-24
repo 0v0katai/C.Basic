@@ -49,19 +49,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	char filename[50];
 	char *src;
 
-	TVRAM = (char *)malloc( 1024 + 1024 + 128*8*4  +4 );
-	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-	GVRAM = TVRAM+1024;
-	ExtAnkFontFX     =(unsigned char *)GVRAM         + 1024  ;		// Ext Ascii font
-	ExtAnkFontFXmini =(unsigned char *)ExtAnkFontFX    + 128*8 ;		// Ext Ascii font
-	ExtKanaFontFX    =(unsigned char *)ExtAnkFontFXmini+ 128*8 ;		// Ext Kana & Gaiji font
-	ExtKanaFontFXmini=(unsigned char *)ExtKanaFontFX   + 128*8 ;		// Ext Kana & Gaiji font
-
-	AliasVarCode   =(ALIAS_VAR *)malloc( sizeof(ALIAS_VAR)*ALIASVARMAX    );		// 
-	AliasVarCodeMat=(ALIAS_VAR *)malloc( sizeof(ALIAS_VAR)*ALIASVARMAXMAT );		// 
-	AliasVarCodeLbl=(ALIAS_VAR *)malloc( sizeof(ALIAS_VAR)*ALIASVARMAXLBL );		// 
-
+	HeapRAM = (char *)malloc( MAXHEAP );		// 47KB C.Basic area (program & Mat)
+	if ( HeapRAM == NULL )  { Abort(); }
+	
 	IsSH3=CPU_check();
+	HiddenRAM();	// Check HiddenRAM
 	SetVeiwWindowInit();
 	for ( i=0; i<6; i++) VWinflag[i]=0;
 //	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
@@ -69,13 +61,17 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	LoadConfig();
 	CB_INT=0;	// double mode default
 	
-	HiddenRAM();	// Check HiddenRAM
-//	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
-	HiddenRAM_MatAryInit();	// HiddenRAM Initialize
+	TVRAM = HeapRAM;
+	GVRAM = TVRAM+1024;
+	AliasVarCode     =(ALIAS_VAR *)((char*)GVRAM + 1024 ) ;
+	AliasVarCodeMat  =(ALIAS_VAR *)((char*)AliasVarCode   + sizeof(ALIAS_VAR)*ALIASVARMAX );
+	AliasVarCodeLbl  =(ALIAS_VAR *)((char*)AliasVarCodeMat+ sizeof(ALIAS_VAR)*ALIASVARMAXMAT );
 
-	ClipBuffer = (char *)malloc( ClipMax+1 );		// normal heap
-	traceAry = (double *)malloc( 130*8+4 );
-//	if ( traceAry == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+	traceAry         = (double *)((char*)AliasVarCodeLbl+ sizeof(ALIAS_VAR)*ALIASVARMAXLBL );		// 130*8+4 ;
+	ClipBuffer       = (char *)((char*)traceAry+130*8+4 );
+	HiddenRAM_Top    = (char *)ClipBuffer+ ClipMax;		// Heap RAM TOP
+	
+	HiddenRAM_MatAryInit();	// RAM Initialize
 	
 	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
 	
@@ -87,7 +83,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
 			ProgfileEdit[i]=0;		// Prog Edit flag clear
-			for (j=0; j<26; j++)	ProgLocalVar[i][j]=-1;
+			for (j=0; j<ArgcMAX; j++)	ProgLocalVar[i][j]=-1;
 		}
 
 		ExecPtr=0;	
@@ -97,14 +93,17 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		ForceReturn=0;
 		CB_AliasVarClr();
 		
-		PictbasePtr=-1;
-		PictbaseCount=PictbaseCountMAX;
 		for (i=1; i<=PictMax; i++) {
 			if ( !( (UseHiddenRAM&0xF0) && ( UseHiddenRAM ) && ( IsHiddenRAM ) ) )
 			PictAry[i]=NULL;		// Pict ptr clear
 		}
 		
+		if ( MaxMemMode ) HiddenRAM_freeProg(HiddenRAM_Top);		// Prog memory init	
 		key =( SelectFile( filename ) ) ;
+		if ( MaxMemMode ) { 
+			HiddenRAM_freeProg(HiddenRAM_Top);
+			FileListUpdate=1;
+		}
 		switch ( key ) {
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
@@ -166,17 +165,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		
 		for (i=ProgMax; i>=0; i--) {			// memory free
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
-			ptr=ProgfileAdrs[i];
-			if ( ptr != NULL ) 
-				HiddenRAM_freeProg(ptr);
-			ProgfileAdrs[i]=NULL;
-		}
-		for (i=PictbaseMAX-1; i>=0; i--) {			// Pict memory free
-			ptr=(char*)Pictbase[i];
-			if ( ptr != NULL )
-				free(ptr);
-			Pictbase[i]=NULL;
-		}
+			if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
+		}	
 	}
 }
 

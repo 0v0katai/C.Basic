@@ -14,6 +14,11 @@ extern unsigned char *ExtAnkFontFXmini;	// Ext Ank font mini
 extern unsigned char *ExtKanaFontFX;		// Ext Kana & Gaiji font
 extern unsigned char *ExtKanaFontFXmini;	// Ext Kana & Gaiji font mini
 
+extern const unsigned char Font00[][8] ;
+extern const unsigned char KanaFont[][8] ;
+extern const unsigned char Fontmini[][8] ;
+extern const unsigned char KanaFontmini[][8];
+
 int Make_FontFoloder();
 void LoadExtFontKana(  int flag, char* sname, int no );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 void LoadExtFontGaiji( int flag, char* sname, int no );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6

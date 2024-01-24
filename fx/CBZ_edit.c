@@ -1000,7 +1000,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					else             { i=CB_INTDefault; j=MatBaseDefault; }
 					sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
 			} else 	{
-					sprintf(buffer, "==%-8s==%08X", buffer2, SrcBase);
+					sprintf(buffer, "==%-8s==%08X ", buffer2, SrcBase);
 			}
 			if ( (dumpflg!=2) || (ymin==2) ) {
 					locate (1,1); Print(    (unsigned char*)buffer );
@@ -1906,9 +1906,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					DebugScreen = 0;
 				}
 			}
-		} else
-		if ( dumpflg==4 ) {
-				key=0;
+//		} else
+//		if ( dumpflg==4 ) {
+//				key=0;
 		}
 
 	}

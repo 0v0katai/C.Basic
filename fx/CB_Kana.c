@@ -41,7 +41,7 @@ unsigned char *ExtKanaFontFXmini;	// Ext Kana & Gaiji font mini
 //------------------------------------------------------------------------------
 
 // カナフォント 6x8
-static const unsigned char Font00[][8] = {
+const unsigned char Font00[][8] = {
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}// 0000
    ,{0x0C,0x10,0x38,0x10,0x10,0x10,0x10,0x00}// 0001 f
    ,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}// 0002 p
@@ -170,7 +170,7 @@ static const unsigned char Font00[][8] = {
    ,{0x10,0x08,0x08,0x04,0x08,0x08,0x10,0x00}// 007D }
    ,{0x00,0x00,0x24,0x54,0x48,0x00,0x00,0x00}// 007E ~
 };
-static const unsigned char KanaFont[][8] = {
+const unsigned char KanaFont[][8] = {
     {0x00,0x00,0x00,0xF8,0x00,0x00,0x00,0x00}// 80
    ,{0x00,0x00,0x00,0xF8,0x00,0x00,0x00,0x00}// 81
    ,{0x00,0x00,0x00,0xF8,0x00,0x00,0x00,0x00}// 82
@@ -284,7 +284,7 @@ static const unsigned char KanaFont[][8] = {
    ,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}// EE
    ,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}// EF
 };
-static const unsigned char FontE7[][8] = {
+const unsigned char FontE7[][8] = {
     {0,0,0x70,0x08,0x68,0x98,0x70,0x00}// 40 @
    ,{0,0,0x20,0x50,0x70,0x50,0x50,0x00}// 41 A
    ,{0,0,0x60,0x50,0x60,0x50,0x60,0x00}// 42 B
@@ -405,7 +405,7 @@ void KPrintRevChar( int px, int py, unsigned char *c) { //カナ一文字表示	px,py  
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 // mini font 2x6~6x6
-static const unsigned char Fontmini[][8] = {
+const unsigned char Fontmini[][8] = {
     {4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// 00
    ,{4,0,0x20,0x40,0xE0,0x40,0x40,0x00}// 01 f
    ,{4,0,0x00,0xC0,0xA0,0xC0,0x80,0x00}// 02 p
@@ -535,7 +535,7 @@ static const unsigned char Fontmini[][8] = {
    ,{5,0,0x00,0x50,0xA0,0x00,0x00,0x00}// 7E ~
 };
 
-static const unsigned char Fontmini80[][8] = {
+const unsigned char Fontmini80[][8] = {
     {4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// 80				//	F0: 1111_0000
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// 81              //	E0: 1110_0000
    ,{4,0,0x00,0x00,0x00,0x00,0x80,0x00}// 82              //	D0: 1101_0000
@@ -633,16 +633,16 @@ static const unsigned char Fontmini80[][8] = {
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// DE
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// DF
 };
-static const unsigned char Fontmini7F50[8] = 
+const unsigned char Fontmini7F50[8] = 
     {4,0,0x40,0x00,0xC0,0x40,0xE0,0x00}  ;// 7F50
-static const unsigned char Fontmini7F53[8] = 
+const unsigned char Fontmini7F53[8] = 
     {6,0,0x00,0x50,0xA8,0xA8,0x50,0x00}  ;// 7F53
-static const unsigned char Fontmini7F54[8] = 
+const unsigned char Fontmini7F54[8] = 
     {4,0,0x00,0x00,0x20,0x40,0xE0,0x00}  ;// 7F54
-static const unsigned char Fontmini7FC7[8] = 
+const unsigned char Fontmini7FC7[8] = 
     {4,0,0x40,0xC0,0xA0,0xC0,0x80,0x00}  ;// 7FC7
 
-static const unsigned char FontminiE5[][8] = {
+const unsigned char FontminiE5[][8] = {
     {4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// E500				//	F0: 1111_0000
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// E501              //	E0: 1110_0000
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// E502              //	D0: 1101_0000
@@ -871,7 +871,7 @@ static const unsigned char FontminiE5[][8] = {
    ,{4,0,0xE0,0x20,0xE0,0x20,0xE0,0x00}// E5DF 3
 };
 
-static const unsigned char FontminiE6[][8] = {
+const unsigned char FontminiE6[][8] = {
     {4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// E600				//	F0: 1111_0000
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// E601              //	E0: 1110_0000
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// E602              //	D0: 1101_0000
@@ -1100,7 +1100,7 @@ static const unsigned char FontminiE6[][8] = {
    ,{6,0,0x28,0x50,0xA0,0x00,0x00,0x00}// E6DE
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }// E6DF
 };
-static const unsigned char FontminiE7[][8] = {
+const unsigned char FontminiE7[][8] = {
     {6,0,0x70,0x08,0x68,0x98,0x70,0x00}// E740 @
    ,{4,0,0x40,0xA0,0xE0,0xA0,0xA0,0x00}// E741 A
    ,{4,0,0xC0,0xA0,0xC0,0xA0,0xC0,0x00}// E742 B
@@ -1168,7 +1168,7 @@ static const unsigned char FontminiE7[][8] = {
 
 
 // カナフォント 4x6
-static const unsigned char KanaFontmini[][8] = {
+const unsigned char KanaFontmini[][8] = {
     {4,0,0x00,0x00,0xE0,0x00,0x00,0x00}// FF80
    ,{4,0,0x00,0x00,0xE0,0x00,0x00,0x00}// FF81
    ,{4,0,0x00,0x00,0xE0,0x00,0x00,0x00}// FF82
@@ -1559,6 +1559,7 @@ void CB_SetFont( char *SRC ){	// SetFont 0xFFA0,Mat C
 
 	fontptr=CB_SetFontSub( SRC, &reg, 0 );
 	if ( ErrorNo ) return ;
+	if ( EnableExtFont==0 ) return ;
 	matptr=(char*)MatAry[reg].Adrs;
 	for ( py=0; py<8 ; py++) {
 		*(fontptr++)=*(matptr++);
@@ -1573,6 +1574,7 @@ void CB_SetFontMini( char *SRC ){	// SetFont 0xFFA0,Mat C
 	
 	fontptr=CB_SetFontSub( SRC, &reg, 1 );
 	if ( ErrorNo ) return ;
+	if ( EnableExtFont==0 ) return ;
 	matptr=(char*)MatAry[reg].Adrs;
 	width=MatAry[reg].SizeA;
 	*(fontptr++)=width;
@@ -1651,12 +1653,11 @@ int LoadExtFontKana_sub( char* name, char *font, int line ){		// LFONTK.bmp -> f
 	if ( FilePtr == NULL ) return 0;
 
 	bit=ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );
-	if ( ( bit != 1 ) || ( width > 8*16 ) || ( height > 8*line ) ) { free( FilePtr ); return 0; }
+	if ( ( bit != 1 ) || ( width > 8*16 ) || ( height > 8*line ) ) { return 0; }
 	DimMatrixSub( reg, 1, width, height, 0 ) ;	// ElementSize=1  base=0
-	if ( ErrorNo ) { free( FilePtr ); return 0; } // error
+	if ( ErrorNo ) { return 0; } // error
 	matptr=(char*)MatAry[reg].Adrs;
 	DecodeBmp2mem( matptr , FilePtr+offset, width, height );	//	bmpformat -> bmp
-	free( FilePtr );
 
 //	memset( font, 0, line*16*8 );
 	i=0;
@@ -1666,6 +1667,7 @@ int LoadExtFontKana_sub( char* name, char *font, int line ){		// LFONTK.bmp -> f
 			i+=(8);
 		}
 	}
+	DeleteMatrix( reg );
 	return 1;
 }
 
@@ -1684,12 +1686,11 @@ int LoadExtFontKanaMini_sub( char* name, char *font, int line ){			// MFONTK.bmp
 	if ( FilePtr == NULL ) return 0;
 
 	bit=ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );
-	if ( ( bit != 1 ) || ( width > 8*16 ) || ( height > 8*line ) ) { free( FilePtr ); return 0; }
+	if ( ( bit != 1 ) || ( width > 8*16 ) || ( height > 8*line ) ) { return 0; }
 	DimMatrixSub( reg, 1, width, height, 0 ) ;	// ElementSize=1  base=0
-	if ( ErrorNo ) { free( FilePtr ); return 0; } // error
+	if ( ErrorNo ) { return 0; } // error
 	matptr=(char*)MatAry[reg].Adrs;
 	DecodeBmp2mem( matptr , FilePtr+offset, width, height );	//	bmpformat -> bmp
-	free( FilePtr );
 
 	for ( y=0; y<line; y++ ) {
 		mx=0;
@@ -1704,6 +1705,7 @@ int LoadExtFontKanaMini_sub( char* name, char *font, int line ){			// MFONTK.bmp
 			font += (2+6);
 		}
 	}
+	DeleteMatrix( reg );
 	return 1;
 }
 
@@ -1713,6 +1715,7 @@ void LoadExtFontKana( int flag, char* sname, int no ){		// FONTK8L.bmp -> font 6
 	strcpy( sname2, sname );
 	memcpy( ExtKanaFontFX, KanaFont, (32+64+3)*8 );				// kana copy
 	memcpy( ExtKanaFontFXmini, KanaFontmini, (32+64+3)*8 );		// kana mini copy
+	if ( EnableExtFont==0 ) return ;
 	if ( sname[0]=='\0' ) {
 		if ( ( no < 0 )||( 9 < no ) )	sprintf(sname2 ,"FONTK8L");				// FX font
 		else							sprintf(sname2 ,"FONTK8L%d", no );
@@ -1729,6 +1732,7 @@ void LoadExtFontKana( int flag, char* sname, int no ){		// FONTK8L.bmp -> font 6
 void LoadExtFontGaiji( int flag, char* sname, int no ){		// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
 	char sname2[32];
 	strcpy( sname2, sname );
+	if ( EnableExtFont==0 ) return ;
 	if ( sname[0]=='\0' ) {
 		if ( ( no < 0 )||( 9 < no ) )	sprintf(sname2 ,"FONTG8L");				// FX font
 		else							sprintf(sname2 ,"FONTG8L%d", no );
@@ -1746,8 +1750,9 @@ void LoadExtFontAnk( int flag, char* sname, int no ){		// FONTA8L.bmp -> font 6x
 	char sname2[32];
 	strcpy( sname2, sname );
 	memcpy( (char*)ExtAnkFontFX,     (char*)Font00  +32*8, (95)*8 );		// Ank Font copy   FX font 
-	ExtCharAnkFX = 1;
 	memcpy( (char*)ExtAnkFontFXmini, (char*)Fontmini+32*8, (95)*8 );		// Ank mini copy   FX font 
+	if ( EnableExtFont==0 ) return ;
+	ExtCharAnkFX = 1;
 	ExtCharAnkMiniFX = 1;
 	if ( sname[0]=='\0' ) {
 		if ( ( no < 0 )||( 9 < no ) )	sprintf(sname2 ,"FONTA8L");				// FX font
@@ -1852,6 +1857,7 @@ void SaveExtFontKanaMini_sub( char* sname, char *font, int line, int check ){			
 
 void SaveExtFontKana( int flag, char* sname, int folder, int no, int check ){		// font 6x8 -> FONTK8L.bmp    font 6x6 -> FONTK6M.bmp
 	char sname2[32];
+	if ( EnableExtFont==0 ) return ;
 	strcpy( sname2, sname );
 	if ( sname[0]=='\0' ) {
 		if ( folder ) {
@@ -1878,6 +1884,7 @@ void SaveExtFontKana( int flag, char* sname, int folder, int no, int check ){		/
 
 void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check ){		// font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
 	char sname2[32];
+	if ( EnableExtFont==0 ) return ;
 	strcpy( sname2, sname );
 	if ( sname[0]=='\0' ) {
 		if ( folder ) {
@@ -1904,6 +1911,7 @@ void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check ){		
 
 void SaveExtFontAnk( int flag, char* sname, int folder, int no, int check ){			// font 6x8 -> FONTA8L.bmp    font 6x6 -> FONTA6M.bmp
 	char sname2[32];
+	if ( EnableExtFont==0 ) return ;
 	strcpy( sname2, sname );
 	if ( sname[0]=='\0' ) {
 		if ( folder ) {

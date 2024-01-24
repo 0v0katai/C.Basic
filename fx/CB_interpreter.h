@@ -120,12 +120,6 @@ extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
 
 extern char BG_Pict_No;
 
-#define PictbaseCountMAX 7
-#define PictbaseMAX 3
-extern unsigned char *Pictbase[PictbaseMAX];
-extern short PictbasePtr;
-extern short PictbaseCount;
-
 //------------------------------------------------------------------------------
 extern int  REGINT[VARMAXSIZE];
 
@@ -187,7 +181,7 @@ extern int BreakPtr;
 extern int CBint_CurrentValue;	// Ans
 extern double CB_CurrentValue;	// Ans
 
-#define ProgMax 30
+#define ProgMax 31
 extern char ProgEntryN;		// how many subroutin
 extern char ProgNo;			// current Prog No
 extern char *ProgfileAdrs[ProgMax+1];
@@ -195,8 +189,10 @@ extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize
 extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 extern char  ProgfileMode[ProgMax+1];	// g1m : 0    text : 1
 extern char  ProgLocalN[ProgMax+1];
-extern char  ProgLocalVar[ProgMax+1][26];
+extern char  ProgLocalVar[ProgMax+1][ArgcMAX];
 
+#define MAXHEAP 47*1024		// use heap max byte
+extern  char *HeapRAM;
 extern  char *TVRAM;
 extern  char *GVRAM;
 //------------------------------------------------------------------------------
@@ -213,34 +209,34 @@ extern  char *GVRAM;
 #define TYPE_Do_LpWhile			3
 #define TYPE_Switch_Case		4
 
-typedef struct {		// 8 bytes
+typedef struct {		// 6 bytes
 	char	CNT;
 	char	TOP;
 	unsigned short	Ptr[IfCntMax];
 	unsigned short	Adrs[IfCntMax];
 } CchIf;
 
-typedef struct {		// 32 bytes
+typedef struct {		// 34 bytes
 	short	Ptr;
-	int		*Var[StackForMax];
-	unsigned short	Adrs[StackForMax];
+	int	*Var[StackForMax];
+	int	Adrs[StackForMax];
 	int	IntEnd[StackForMax];
 	int	IntStep[StackForMax];
 	double End[StackForMax];
 	double Step[StackForMax];
 } StkFor;
 
-typedef struct {		// 8 bytes
-	short	WhilePtr;
-	short	DoPtr;
-	unsigned short	WhileAdrs[StackWhileMax];
-	unsigned short	DoAdrs[StackDoMax];
+typedef struct {		// 10 bytes
+	char	WhilePtr;
+	char	DoPtr;
+	int	WhileAdrs[StackWhileMax];
+	int	DoAdrs[StackDoMax];
 } StkWhileDo;
 
 typedef struct {		// 8 bytes
 	char	Ptr;
 	char	flag[StackSwitchMax];
-	unsigned short	EndAdrs[StackSwitchMax];
+	int		EndAdrs[StackSwitchMax];
 	int		Value[StackSwitchMax];
 } StkSwitch;
 
@@ -257,14 +253,14 @@ void InitLocalVar();
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."
-void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ); //	Gosub N
+void CB_Gosub( char *SRC, int *StackGotoAdrs, int *StackGosubAdrs ); //	Gosub N
 
 void Skip_quot( char *SRC ); // skip "..."
 void Skip_block( char *SRC );
 void Skip_rem( char *SRC );	// skip '...
 void CB_Rem( char *SRC, CchIf *CacheRem );
-void CB_Lbl( char *SRC, short *StackGotoAdrs );
-void CB_Goto( char *SRC, short *StackGotoAdrs );
+void CB_Lbl( char *SRC, int *StackGotoAdrs );
+void CB_Goto( char *SRC, int *StackGotoAdrs );
 void CB_If( char *SRC, CchIf *CacheIf );
 void CB_Else( char *SRC, CchIf *CacheElse );
 void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
@@ -356,7 +352,7 @@ void CB_DotLife( char *SRC ) ;
 
 void CB_FkeyMenu( char *SRC) ;
 int CB_PopUpWin( char *SRC );	//
-void CB_Menu( char *SRC, short *StackGotoAdrs) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
+void CB_Menu( char *SRC, int *StackGotoAdrs) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
 void CB_Wait( char *SRC ) ;
 
 //-----------------------------------------------------------------------------

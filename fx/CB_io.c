@@ -14,6 +14,7 @@
 #include "CB_Matrix.h"
 #include "CB_glib.h"
 #include "CB_setup.h"
+#include "CB_file.h"
 #include "KeyScan.h"
 #include "MonochromeLib.h"
 
@@ -25,10 +26,10 @@ char IsHiddenRAM=0;
 
 #define PICTBACKSPACE 512	//
 #define HIDDENRAM_TOP 0x88040000
-char * HiddenRAM_Top  =(char*)0x88040000+16+256;	// Hidden RAM TOP
-char * HiddenRAM_End  =(char*)0x88080000-PICTBACKSPACE;	// Hidden RAM END
+char * HiddenRAM_Top  =(char*)0x88040000+16+256;				// Hidden RAM TOP
+char * HiddenRAM_End  =(char*)0x88080000-PICTBACKSPACE;			// Hidden RAM END
 
-char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16+256;	// Hidden RAM Prog next ptr
+char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16+256;			// Hidden RAM Prog next ptr
 char * HiddenRAM_MatTopPtr =(char*)0x88080000-PICTBACKSPACE;	// Hidden RAM Mat top ptr
 
 char IsSH3;	//	3:SH3   4:SH4
@@ -84,64 +85,64 @@ void * HiddenRAM(void){	// Check HiddenRAM
 
 void * HiddenRAM_mallocProg( size_t size ){
 	char * ptr;
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		ptr = HiddenRAM_ProgNextPtr;
-		HiddenRAM_ProgNextPtr += ( (size+3) & 0xFFFFFFFC );	// 4byte align
-		if ( HiddenRAM_ProgNextPtr < HiddenRAM_MatTopPtr ) return ptr;
-		HiddenRAM_ProgNextPtr = ptr;
-		return malloc( size );
-	} else {
-		return malloc( size );
-	}
+	ptr = HiddenRAM_ProgNextPtr;
+	HiddenRAM_ProgNextPtr += ( (size+3) & 0xFFFFFFFC );	// 4byte align
+	if ( HiddenRAM_ProgNextPtr < HiddenRAM_MatTopPtr ) return ptr;
+	HiddenRAM_ProgNextPtr = ptr;
+	return 0;
 }
 
 void * HiddenRAM_mallocMat( size_t size ){
 	char * ptr;
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		ptr = HiddenRAM_MatTopPtr;
-		ptr -= ( (size+7) & 0xFFFFFFF8 );	// 8byte align
-		if ( ptr < HiddenRAM_ProgNextPtr ) return malloc( size );
-		HiddenRAM_MatTopPtr = ptr;
-		return ptr;
-	} else {
-		return malloc( size );
-	}
+	ptr = HiddenRAM_MatTopPtr;
+	ptr -= ( (size+7) & 0xFFFFFFF8 );	// 8byte align
+	if ( ptr < HiddenRAM_ProgNextPtr ) return 0;
+	HiddenRAM_MatTopPtr = ptr;
+	return ptr;
 }
 
-unsigned char * GetheapPict(){
-	unsigned char *pict;
-	if ( PictbaseCount >= PictbaseCountMAX ) {
-		if ( PictbasePtr < PictbaseMAX ) Pictbase[++PictbasePtr] = (unsigned char *) malloc( 1024 * PictbaseMAX +4 );
-		else { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
-		if( Pictbase[PictbasePtr] == NULL ) { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
-		PictbaseCount=0;
-	}
-	pict = Pictbase[PictbasePtr] + 1024 * PictbaseCount;
-	PictbaseCount++;
-	return pict;
-}
 unsigned char *  HiddenRAM_mallocPict( int pictNo ){
 	char *  ptr;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		ptr = HiddenRAM_End-1024*(pictNo);
 		return (unsigned char *)ptr;
 	} else {
-		return GetheapPict();
+		return (unsigned char *)HiddenRAM_mallocProg( 1024 );
 	}
 }
 
 void HiddenRAM_freeProg( void *ptr ){
-	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
-	else 
-		HiddenRAM_ProgNextPtr=HiddenRAM_Top;	// Hidden RAM Prog next ptr
+	if ( ( (int)HiddenRAM_Top <= (int)ptr ) && ( (int)ptr < (int)HiddenRAM_ProgNextPtr ) ) HiddenRAM_ProgNextPtr= (char*)ptr;	// Hidden RAM Prog next ptr
 }
+
+void * memcpy2(void *dest, const void *src, size_t len){
+	char *d = (char*)dest+len-1;
+	const char *s = (char*)src+len-1;
+	while (len--)
+    	*d-- = *s--;
+  	return dest;
+}
+//		HiddenRAM_MatTopPtr
+//		...
+//		ptr
+//		ptr+size
+//		...
+//		
+//
 void HiddenRAM_freeMat( int reg ){
-	char *ptr = (char *)MatAry[reg].Adrs;
-	int	size = MatAry[reg].Maxbyte; 
-	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
-	else {
-		if ( (int)HiddenRAM_MatTopPtr == (int)ptr ) HiddenRAM_MatTopPtr += ( (size+7) & 0xFFFFFFF8 );
-	}
+	int ptr = (int)MatAry[reg].Adrs;
+	int	adrs, size = MatAry[reg].Maxbyte; 
+	if ( (int)HiddenRAM_MatTopPtr == ptr ) goto plus;
+	else
+	if ( ( (int)HiddenRAM_MatTopPtr < ptr ) && ( ptr < (int)HiddenRAM_End ) ) {
+		memcpy2( HiddenRAM_MatTopPtr+size, HiddenRAM_MatTopPtr, ptr-(int)HiddenRAM_MatTopPtr );
+		for ( reg=0; reg<MatAryMax; reg++){
+			adrs = (int)MatAry[reg].Adrs;
+			if ( ( MatAry[reg].SizeA ) && ( adrs > (int)HiddenRAM_ProgNextPtr ) && ( adrs < ptr ) ) MatAry[reg].Adrs =(double*)(adrs+size);
+		}
+	  plus:
+		HiddenRAM_MatTopPtr += size;
+	} 
 }
 
 const char MatAryCheckStr[]="#CBasic163#";
@@ -174,6 +175,23 @@ int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 	}
 	return 0;
 }
+
+void HiddenRAM_ExtFontAryInit() {
+	HiddenRAM_Top = (char *)ClipBuffer+ ClipMax;	// Heap RAM TOP
+	if ( EnableExtFont ) {
+		ExtAnkFontFX     =(unsigned char *)HiddenRAM_Top ;				// Ext Ascii font
+		ExtAnkFontFXmini =(unsigned char *)(ExtAnkFontFX     + 96*8) ;	// Ext Ascii font
+		ExtKanaFontFX    =(unsigned char *)(ExtAnkFontFXmini + 96*8) ;	// Ext Kana & Gaiji font
+		ExtKanaFontFXmini=(unsigned char *)(ExtKanaFontFX    + 112*8) ;	// Ext Kana & Gaiji font
+		HiddenRAM_Top    =((char *)ExtKanaFontFX + 112*8) ;			// Heap RAM top ptr
+		
+	} else {
+		ExtAnkFontFX     =(unsigned char *)Font00   +32*8;	//  Ascii font
+		ExtAnkFontFXmini =(unsigned char *)Fontmini +32*8;	//  Ascii font
+		ExtKanaFontFX    =(unsigned char *)KanaFont ;		//  Kana & Gaiji font
+		ExtKanaFontFXmini=(unsigned char *)KanaFontmini ;	// Ext Kana & Gaiji font
+	}
+}
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	char buffer[10];
 	int *iptr1=(int*)(HIDDENRAM_TOP+12);
@@ -181,29 +199,38 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	MatAryMax=MATARY_MAX +ExtendList*52;
 	Mattmpreg=MatAryMax-1;
 	ExtListMax=MatAryMax-33;
-	EditMaxfree = EDITMAXFREE;
-	EditMaxProg = EDITMAXPROG;
-	NewMax      = NEWMAX;
-	ClipMax     = CLIPMAX;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {		// hidden RAM init
 		EditMaxfree = EDITMAXFREE2;
 		EditMaxProg = EDITMAXPROG2;
 		NewMax      = NEWMAX2;
 		ClipMax     = CLIPMAX2;
+		HiddenRAM_ExtFontAryInit();
+		HiddenRAM_Top         = (char*)0x88040000+16+256;			// Hidden RAM TOP
+		HiddenRAM_End         = (char*)0x88080000-PICTBACKSPACE;	// Hidden RAM END
+		HiddenRAM_ProgNextPtr = HiddenRAM_Top;						// Hidden RAM Prog next ptr
 		OplistRecentFreq=(toplistrecentfreq *)(HIDDENRAM_TOP+16);
 		OplistRecent    =(short *)(HIDDENRAM_TOP+16+128);
 		if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
-		HiddenRAM_MatTopPtr = HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
+		HiddenRAM_MatTopPtr   = HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
 		MatAry = (matary *)HiddenRAM_MatTopPtr;
 		HiddenRAM_MatAryStore();
 		InitOpcodeRecent();
 	} else {		// use heap RAM
-		MatAry = ( matary *)malloc( sizeof(matary)*MatAryMax );
+		EditMaxfree = EDITMAXFREE;
+		EditMaxProg = EDITMAXPROG;
+		NewMax      = NEWMAX;
+		ClipMax     = CLIPMAX;
+		HiddenRAM_ExtFontAryInit();
+		HiddenRAM_End    = HeapRAM+MAXHEAP;			// Heap RAM END
+		HiddenRAM_ProgNextPtr = HiddenRAM_Top;					// Heap RAM Prog next ptr
+		HiddenRAM_MatTopPtr   = HiddenRAM_End - sizeof(matary)*MatAryMax;
+		MatAry = (matary *)HiddenRAM_MatTopPtr;
 		OplistRecentFreq=(toplistrecentfreq *)OplistRecentFreqMem;
 		OplistRecent    =(short *)OplistRecentMem;
 		InitOpcodeRecent();
 	}
 	memset( MatAry, 0, sizeof(matary)*MatAryMax );
+	FileListUpdate=1;
 }
 
 //---------------------------------------------------------------------------------------------

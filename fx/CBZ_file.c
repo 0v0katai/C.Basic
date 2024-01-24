@@ -17,11 +17,12 @@
 #include "CB_setup.h"
 #include "CB_TextConv.h"
 #include "CB_Str.h"
+#include "CB_kana.h"
 
 //-------------------------------------------------------------- source code refer to (WSC) file.c
 //---------------------------------------------------------------------------------------------
 
-static Files *files = NULL;
+Files *files = NULL;
 static int index = 0;
 
 static int ReadFile( char *folder );
@@ -38,7 +39,7 @@ static Files Favoritesfiles[FavoritesMAX];
 char FileListUpdate=1;
 char StorageMode=0;						// 0:Storage memory   1:SD
 char redrawsubfolder=0;
-int recentsize=0;
+//int recentsize=0;
 char ForceG1Msave=0;		//    1: force g1m save 
 char AutoSaveMode=0;		//    1: Auto save ( not pop up )
 
@@ -52,11 +53,19 @@ unsigned int SelectFile (char *filename)
 	Bdisp_AllClr_DDVRAM();
 	while( 1 ){
 		if ( FileListUpdate  ) {
-			MSG2(VerMSG,"Font Reading.....");
-			LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
-			LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
-			LoadExtFontGaiji( 3, "", -1 );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
-			
+			if ( EnableExtFont ) {
+				MSG2(VerMSG,"Font Reading.....");
+				LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
+				LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+				LoadExtFontGaiji( 3, "", -1 );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+			} else {
+				ExtCharAnkFX=0;				// 0:Normal 	1:Ext Ank  font FX
+				ExtCharKanaFX=0;			// 0:Normal 	1:Ext Kana  font FX
+				ExtCharGaijiFX=0;			// 0:Normal 	1:Ext Gaiji font FX
+				ExtCharAnkMiniFX=0;			// 0:Normal 	1:Ext Ank  font FX
+				ExtCharKanaMiniFX=0;		// 0:Normal 	1:Ext Kana  font FX
+				ExtCharGaijiMiniFX=0;		// 0:Normal 	1:Ext Gaiji font FX
+			}
 			MSG2(VerMSG,"File Reading.....");
 			Bdisp_PutDisp_DD();
  			size = ReadFile( folder );
@@ -234,12 +243,18 @@ static int ReadFile( char *folder )
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 //		files = (Files *)HiddenRAM();
 //	} else {
-		if ( recentsize < size ) {
-			if ( files != NULL ) free(files);
-			 files = (Files *)malloc( size*sizeof(Files) );
-			if ( files == NULL ) Abort();
-			recentsize = size;
-		}
+//		if ( recentsize < size ) {
+		  loop:
+			HiddenRAM_freeProg(HiddenRAM_Top);
+			files = (Files *)HiddenRAM_mallocProg( size*sizeof(Files) );
+			if ( files == NULL ) {	// Abort();
+				MSG2("Clear Memory !!  ","File Reading.....");
+				Bdisp_PutDisp_DD();
+				DeleteMatrix( -1 );
+				goto loop;
+			}
+//			recentsize = size;
+//		}
 //	}
 	memset( files, 0, size*sizeof(Files) );
 	
@@ -460,6 +475,15 @@ void GetMediaFreeStr10( char *buffer ) {
 		sprintf(buffer,"%9.3fM",(double)k/1024.0);
 	}
 }
+void GetMemFreeStr10( char *buffer ) {
+	int k;
+	if ( MaxMemMode ) { 
+		k = HiddenRAM_MatTopPtr - HiddenRAM_Top ;
+	} else {
+		k = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
+	}
+	sprintf(buffer,"%7d bytes free ",k);
+}
 
 int CheckSD(){	// SD model  return : 1
 	int freespace[2];	
@@ -488,6 +512,7 @@ unsigned int Explorer( int size, char *folder )
 	int Isfolder=0;
 	char buffer[32];
 	char buffer2[32];
+	char buffer3[32];
 	
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -522,7 +547,7 @@ unsigned int Explorer( int size, char *folder )
 
 	GetMediaFreeStr10(buffer2);
 	
-	while( cont )
+	while( cont && (FileListUpdate==0) )
 	{
 		FavCount=0;
 		for( i=0; i<FavoritesMAX; i++){			//	count Favorites list
@@ -826,6 +851,8 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_Icon( FKeyNo4, 406 );	//	Fkey_dispN( FKeyNo4, "Pass");
 				FkeyClear( FKeyNo5 );
 				Fkey_dispN( FKeyNo6, "Debg");
+				GetMemFreeStr10(buffer3);
+				PrintMini(10*6+1, 1, (unsigned char*)buffer3, MINI_OVER);  // free mem area
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_QUIT:
@@ -912,9 +939,13 @@ char * loadFile( const char *name , int editMax, int disperror, int hiddenflag )
 
 	size = Bfile_GetFileSize( handle );
 
-	if ( hiddenflag )	buffer = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+editMax+4 );
-	else				buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
-	if( buffer == NULL ) Abort();
+	buffer = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+editMax+4 );
+	if( buffer == NULL ) {
+		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)name, handle);
+		CB_Error(NotEnoughMemoryERR); 
+		return NULL;
+//		Abort();
+	}
 	memset( buffer, 0x00,     size*sizeof(char)+editMax+4 );
 
 	Bfile_ReadFile( handle, buffer, size, 0 );
@@ -1424,7 +1455,6 @@ int NewProg(){
 	int size,i;
 
 	size=NewMax;
-//	filebase = (char *)malloc( size*sizeof(char)+4 );
 	filebase = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+4 );
 	if( filebase == NULL ) {
 		CB_ErrMsg(NotEnoughMemoryERR);
@@ -1610,11 +1640,13 @@ char * Load1st2nd( char *name, char *dir2nd, char *ext ){
 		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, name, ext);
 		
 	fileptr = loadFile( fname, 0, 0, 0 );					// no hidden load
+	HiddenRAM_freeProg( fileptr );
 	if ( fileptr  != NULL ) return fileptr;
 
 	ErrorNo=0;	// error cancel
 	sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], dir2nd, name, ext);	// Pict folder 2nd
 	fileptr  = loadFile( fname, 0, 0, 0 );					// no hidden load
+	HiddenRAM_freeProg( fileptr );
 	return fileptr ;
 }
 
@@ -1989,9 +2021,9 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	char* FilePtr;
 	int check=0;
 	
-	c =SRC[ExecPtr];
-	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	CB_GetLocateStr(SRC, sname,22);
+//	c =SRC[ExecPtr];
+//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
 	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -2008,7 +2040,7 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	CB_SaveSub( sname, FilePtr, matsize, check, "bin" );
 }
 
-char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {
+char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {	// load to new buffer
 	char fname[32];
 	int handle;
 	FONTCHARACTER filename[50];
@@ -2025,8 +2057,8 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {
 	
 	(*size) = Bfile_GetFileSize( handle ) -(ptr) ;
 	
-	buffer = ( char *)malloc( (*size)*sizeof(char)+4 );
-	if( buffer == NULL ) Abort();
+	buffer = ( char *)HiddenRAM_mallocProg( (*size)*sizeof(char)+4 );
+	if( buffer == NULL ) { CB_Error(NotEnoughMemoryERR); goto exit; }	// Not enough memory error
 	memset( buffer, 0x00,     (*size)*sizeof(char)+4 );
 
 	Bfile_ReadFile( handle, buffer, (*size), ptr );
@@ -2036,6 +2068,28 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {
 	Restorefolder();
 	return buffer;
 }
+void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extname ) {	// load to buffer
+	char fname[32];
+	int handle;
+	FONTCHARACTER filename[50];
+	int fsize;
+
+	Getfolder( sname );
+	SetFullfilenameBin( fname, sname, extname );
+	CharToFont( fname, filename );
+	
+	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
+	if( handle < 0 ) {
+		CB_Error(CantFindFileERR);  goto exit;
+	}
+	fsize = Bfile_GetFileSize( handle ) -(ptr) ;
+	if ( fsize > size ) fsize=size;
+	Bfile_ReadFile( handle, buffer, fsize, ptr );
+	Bfile_CloseFile( handle );
+	if ( buffer == NULL ) { CB_Error(FileERR); }
+	exit:
+	Restorefolder();
+}
 void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3] 
 	char fname[32],sname[16];
 	int c,i,reg,matsize;
@@ -2043,12 +2097,9 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	char* matptr;
 	int ptr=0,size;
 
-	int handle;
-	FONTCHARACTER filename[50];
-
-	c =SRC[ExecPtr];
-	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	CB_GetLocateStr(SRC, sname,22);
+//	c =SRC[ExecPtr];
+//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
@@ -2063,11 +2114,8 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	matptr = CB_SaveLoadOprand( SRC, &reg, &matsize );
 	if ( ErrorNo ) return ; // error
 
-	FilePtr=CB_LoadSub( sname, ptr, &size, "bin" ) ;
+	CB_LoadSubBuffer( matptr, sname, ptr, matsize, "bin" ) ;
 	if ( ErrorNo ) return ; // error
-	if ( size > matsize ) size=matsize;
-	memcpy( matptr, FilePtr, size );
-	free( FilePtr );	// free
 }
 
 void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
@@ -2075,9 +2123,9 @@ void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
 	int c;
 	int yesno=0;
 
-	c =SRC[ExecPtr];
-	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	CB_GetLocateStr(SRC, sname,22);
+//	c =SRC[ExecPtr];
+//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
@@ -2262,10 +2310,10 @@ typedef struct {
 	buffer[ 22] =ForceReturnMode;	buffer[22+1]=Coord;				bufshort[10]=Refreshtime;
 	buffer[ 24] =CB_RecoverSetup;	buffer[24+1]==ENG;				buffer[ 26] =EditExtFont;	buffer[ 27]=Grid;
 	bufshort[15]=Axes;												bufshort[14]=CB_Round.MODE;
-	bufshort[17]=Label;												bufshort[16]=CB_Round.DIGIT-1;
+	bufshort[17]=Label;												buffer[ 32] =MaxMemMode;		buffer[ 33]=CB_Round.DIGIT-1;
 	bufshort[19]=Derivative;										bufshort[18]=DefaultWaitcount;
 	bufshort[21]=S_L_Style;											bufshort[20]=CommandInputMethod;
-	bufshort[23]=Angle;												bufshort[22]=ForceG1Msave;
+	bufshort[23]=Angle;												buffer[ 44]=EnableExtFont;		buffer[ 45]=ForceG1Msave;
 	bufshort[25]=BreakCheckDefault;									bufshort[24]=StorageMode;
 	bufshort[27]=TimeDsp;											bufshort[26]=PageUpDownNum;
 	bufshort[29]=MatXYmode;											bufshort[28]=1-MatBaseDefault;
@@ -2353,10 +2401,10 @@ void LoadConfig(){
 		ForceReturnMode=buffer[22];			Coord         =buffer[22+1];	Refreshtime   =bufshort[10];
 		CB_RecoverSetup=buffer[24];			ENG           =buffer[24+1];	EditExtFont =buffer[ 26];	Grid         =buffer[ 27];
 		Axes          =bufshort[15];        								CB_Round.MODE =bufshort[14];
-		Label         =bufshort[17];        								CB_Round.DIGIT=bufshort[16]+1;
+		Label         =bufshort[17];        								MaxMemMode=buffer[ 32];			CB_Round.DIGIT=buffer[ 33]+1;
 		Derivative    =bufshort[19];        								DefaultWaitcount=bufshort[18];
 		S_L_Style     =bufshort[21];        								CommandInputMethod=bufshort[20];
-		Angle         =bufshort[23];        								ForceG1Msave   =bufshort[22];
+		Angle         =bufshort[23];        								EnableExtFont=buffer[ 44];		ForceG1Msave   =buffer[ 45];
 		BreakCheckDefault=bufshort[25];        								StorageMode    =bufshort[24];
 		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        								MatBaseDefault=1-bufshort[28];
@@ -2411,7 +2459,7 @@ void CB_Local( char *SRC ) {
 		c=SRC[ExecPtr];
 		if ( c != ',' ) break; 	// 
 		ExecPtr++;
-		if ( i > ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
+		if ( i >= ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
 	}
 	ProgLocalN[ProgEntryN-1] = i;
 }
@@ -2627,14 +2675,14 @@ int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
@@ -2661,14 +2709,15 @@ void FavoritesDowndummy( int *index ) {
 	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
 	tmp=files[(*index)+1].filesize;
 	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	files[(*index)].filesize=tmp;
-	(*index)++;
-	SaveFavorites();
+//	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+//	files[(*index)+1].filesize=files[(*index)].filesize;
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	files[(*index)].filesize=tmp;
+//	(*index)++;
+//	SaveFavorites();
 }
+/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2717,7 +2766,6 @@ void FavoritesDowndummy4( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy5( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

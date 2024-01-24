@@ -21,10 +21,15 @@ extern char  ForceReturn;		// 0:none  1:return
 
 extern char  CB_RecoverSetup;	// setup recover flag 0:none 1:recover
 
+extern char  EnableExtFont ;	// enable external font
+extern char  MaxMemMode ;		// Maximam memory mode
 //------------------------------------------------------------------------------
 void VerDispSub() ;
 void VerDisp() ;
 unsigned int MathKey( unsigned int  key) ;
+
+int CB_Version() ;	// Version
+int CB_System( char *SRC ) ;	// System( n )
 
 void SetVeiwWindowInit();
 void SetVeiwWindowTrig();

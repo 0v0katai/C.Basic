@@ -103,10 +103,6 @@ char *GraphX;
 unsigned char *PictAry[PictMax+1];		// Pict array ptr
 char BG_Pict_No=0;
 
-unsigned char *Pictbase[PictbaseMAX];
-short PictbasePtr;
-short PictbaseCount;
-
 //----------------------------------------------------------------------------------------------
 //		Interpreter inside
 //----------------------------------------------------------------------------------------------
@@ -138,12 +134,13 @@ int   ProgfileMax[ProgMax+1] ;	// Max edit filesize
 char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 char  ProgfileMode[ProgMax+1];	// g1m : 0    text : 1
 char  ProgLocalN[ProgMax+1];
-char  ProgLocalVar[ProgMax+1][26];
+char  ProgLocalVar[ProgMax+1][ArgcMAX];
 
+char *HeapRAM;
 char *TVRAM;
 char *GVRAM;
 //----------------------------------------------------------------------------------------------
-short StackGotoAdrs[StackGotoMax];
+int StackGotoAdrs[StackGotoMax];
 
 CchIf	CacheIf;
 CchIf	CacheElse;
@@ -172,7 +169,7 @@ int CB_interpreter_sub( char *SRC ) {
 	int c,j;
 	int excptr;
 
-	short StackGosubAdrs[StackGosubMax];
+	int StackGosubAdrs[StackGosubMax];
 	
 	CurrentStk	CurrentStruct;
 	StkFor		StackFor;
@@ -1208,7 +1205,7 @@ int CB_CheckLbl( char * SRC ){
 	{ CB_Error(SyntaxERR); return -1; }	// syntax error
 }
 
-void CB_Lbl( char *SRC, short *StackGotoAdrs ){
+void CB_Lbl( char *SRC, int *StackGotoAdrs ){
 	int c;
 	int label;
 	label = CB_CheckLbl( SRC );
@@ -1255,7 +1252,7 @@ int Search_Lbl( char *SRC, int lc ){
 	return 0;
 }
 
-void CB_Goto( char *SRC, short *StackGotoAdrs ){
+void CB_Goto( char *SRC, int *StackGotoAdrs ){
 	int c;
 	int label;
 	int ptr;
@@ -2371,7 +2368,7 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	if ( ErrorNo == StackERR ) { ErrorPtr=ExecPtr; }
 }
 
-void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosub N
+void CB_Gosub( char *SRC, int *StackGotoAdrs, int *StackGosubAdrs ){ //	Gosub N
 	int c,i,j;
 	int label;
 	int ptr;

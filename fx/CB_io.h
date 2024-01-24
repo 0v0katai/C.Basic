@@ -41,6 +41,7 @@ void HiddenRAM_freeMat( int reg );
 void HiddenRAM_MatAryInit();	// HiddenRAM Initialize
 void HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 int  HiddenRAM_MatAryRestore();	//  HiddenRAM -> MatAry ptr	 1:ok
+void HiddenRAM_ExtFontAryInit() ;
 
 void CB_PrintC_ext( int x, int y,const unsigned char *c, int extflag );
 void CB_PrintRevC_ext( int x, int y,const unsigned char *c, int extflag );

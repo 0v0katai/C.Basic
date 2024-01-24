@@ -2426,6 +2426,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	int oplen,oplenL,oplenR;
 	int alphalock = 0 ;
 	int ContinuousSelect=0;
+	int displaystatus=0;
 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
@@ -2440,6 +2441,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	if ( ( float_mode == 0 ) && ( exp_mode == 0 ) && ( alpha_mode ) ) {
 		PutKey( KEY_CTRL_SHIFT, 1 );
 		PutKey( KEY_CTRL_ALPHA, 1 );
+		displaystatus=1;
 	}
 
 	memcpy( fnbuf, GetVRAMAddress()+16*8*7, 16*8);		// fn key image save
@@ -2530,6 +2532,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				else if ( length ) cont=0;
 				break;
 			case KEY_CTRL_F3:
+				if ( displaystatus ) break;
 				if ( CommandType ) GetGenuineCmdF3( &key );
 				else {
 					if ( CommandInputMethod ) { 
@@ -2566,7 +2569,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				break;
 			case KEY_CTRL_SHIFT:
 				alphalock = 0 ;
-				if ( CommandInputMethod ) Menu_SHIFT_MENU();
+				if ( CommandInputMethod ) if ( displaystatus == 0 ) Menu_SHIFT_MENU();
 				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_QUIT:
@@ -2575,11 +2578,13 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 						if ( ( pallet_mode ) && ( alpha_mode ) ) alphalock = 1 ;
 						break;
 					case KEY_CTRL_F3:
+							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
 								CommandType=CMD_SHIFT_VWIN; CommandPage=0;
 							}
 							break;
 					case KEY_CTRL_F4:
+							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
 								CommandType=CMD_SHIFT_SKTCH; CommandPage=0;
 							}
@@ -2589,6 +2594,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 //					case KEY_CTRL_F6:
 //							break;
 					case KEY_CTRL_SETUP:
+							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
 								CommandType=CMD_SETUP; CommandPage=0;
 							} else {
@@ -2596,6 +2602,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 							}
 							break;
 					case KEY_CTRL_PRGM:
+							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
 								CommandType=CMD_PRGM; CommandPage=0;
 							} else {
@@ -2609,6 +2616,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				break;
 
 			case KEY_CTRL_OPTN:
+				if ( displaystatus ) break;
 				if ( CommandInputMethod ) { 
 					CommandType=CMD_OPTN; CommandPage=0;
 				} else {
@@ -2617,6 +2625,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				}
 				break;
 			case KEY_CTRL_VARS:
+				if ( displaystatus ) break;
 				if ( CommandInputMethod ) { 
 					CommandType=CMD_VARS; CommandPage=0;
 				} else {
@@ -2625,6 +2634,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				}
 				break;
 			case KEY_CTRL_MENU:
+				if ( displaystatus ) break;
 				key=SelectOpcodeRecent( CMDLIST_RECENT );
 				break;
 
@@ -2632,7 +2642,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				break;
 		}
 
-		if ( alpha_mode || exp_mode ) {
+		if ( ( displaystatus == 0 ) && ( ( alpha_mode || exp_mode ) ) ) {
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
 			switch ( keyH ) {		// ----- 2byte code -----
@@ -2701,24 +2711,29 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 		   (  ( KEY_CHAR_POW  == key  ) ) ||
 		   (  ( KEY_CTRL_XTT  == key  ) )
 		   ) {
-			if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
-			if ( hex_mode && ( KEY_CTRL_XTT == key ) ) key=KEY_CHAR_A;
-			if ( hex_mode && ( KEY_CHAR_LOG == key ) ) key=KEY_CHAR_B;
-			if ( hex_mode && ( KEY_CHAR_LN  == key ) ) key=KEY_CHAR_C;
-			if ( hex_mode && ( KEY_CHAR_SIN == key ) ) key=KEY_CHAR_D;
-			if ( hex_mode && ( KEY_CHAR_COS == key ) ) key=KEY_CHAR_E;
-			if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
-//			if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
-			if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
-			if ( ( key == KEY_CTRL_XTT ) )   key='X'; // ^
-			if ( CursorStyle < 0x6 ) {		// insert mode
+			if ( displaystatus ) {
+				if ( ( 0x21<=key )&&( key<=0x7E )&&(key!='"')&&(key!='*')&&(key!=':')&&(key!='<')&&(key!='>')&&(key!='?')&&(key!='|') ) goto codeok;
+			} else {
+				if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
+				if ( hex_mode && ( KEY_CTRL_XTT == key ) ) key=KEY_CHAR_A;
+				if ( hex_mode && ( KEY_CHAR_LOG == key ) ) key=KEY_CHAR_B;
+				if ( hex_mode && ( KEY_CHAR_LN  == key ) ) key=KEY_CHAR_C;
+				if ( hex_mode && ( KEY_CHAR_SIN == key ) ) key=KEY_CHAR_D;
+				if ( hex_mode && ( KEY_CHAR_COS == key ) ) key=KEY_CHAR_E;
+				if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
+//				if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
+				if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
+				if ( ( key == KEY_CTRL_XTT ) )   key='X'; // ^
+			  codeok:
+				if ( CursorStyle < 0x6 ) {		// insert mode
+						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+				} else {					// overwrite mode
+					if ( buffer[ptrX] != 0x00 ) DeleteOpcode1( buffer, MaxStrlen, &ptrX);
 					i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
-			} else {					// overwrite mode
-				if ( buffer[ptrX] != 0x00 ) DeleteOpcode1( buffer, MaxStrlen, &ptrX);
-				i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+				}
+				if ( i==0 ) NextOpcode( buffer, &ptrX );
+				key=0;
 			}
-			if ( i==0 ) NextOpcode( buffer, &ptrX );
-			key=0;
 		}
 
 	}

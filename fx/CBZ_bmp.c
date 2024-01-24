@@ -386,14 +386,14 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	}
 	
 	bfSize = ((((width+7)/8)+3)/4)*4 *height +bfOffBits;
-	bmpbuffer = ( char *)malloc( bfSize+4 );
+	bmpbuffer = ( char *)HiddenRAM_mallocProg( bfSize+4 );
 	if( bmpbuffer == NULL ) Abort();
 	memset( bmpbuffer, 0x00, bfSize+4 );
 	WriteBmpHeader( bmpbuffer, width, height );
 	if ( direct == 0 )	EncodeBmp2mem( bmpbuffer+bfOffBits , FilePtr, width, height );
 	else 				EncodeVram2Bmp( bmpbuffer+bfOffBits , width, height, x1, y1 );
 	CB_SaveSub( sname, bmpbuffer, bfSize, check, "bmp" );
-	free( bmpbuffer );	// free
+	HiddenRAM_freeProg( bmpbuffer );	// free
 
 }
 
@@ -484,7 +484,7 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 	matptr=(char*)MatAry[reg].Adrs;
 	DecodeBmp2mem( matptr , FilePtr+offset, width, height );	//	bmpformat -> bmp
   exit:
-	free( FilePtr );	// free
+	HiddenRAM_freeProg( FilePtr );	// free
 
 }
 

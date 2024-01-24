@@ -981,10 +981,8 @@ static void ML_filled_polygon_quicksord(int* t, int p, int r)
 void ML_filled_polygon(const int *x, const int *y, int nb_vertices, ML_Color color)
 {
 	int i, j, dx, dy, ymin, ymax;
-	int *cut_in_line, nb_cut;
-	if(nb_vertices < 3) return;
-	cut_in_line = malloc(nb_vertices*sizeof(int));
-	if(!cut_in_line) return;
+	int cut_in_line[128+1], nb_cut;
+	if( (nb_vertices < 3) || ( 128 < nb_vertices ) ) return ;
 	ymin = ymax = y[0];
 	for(i=1 ; i<nb_vertices ; i++)
 	{
@@ -1023,7 +1021,6 @@ void ML_filled_polygon(const int *x, const int *y, int nb_vertices, ML_Color col
 			j++;
 		}
 	}
-	free(cut_in_line);
 }
 #endif
 
@@ -2299,10 +2296,8 @@ int MLTest_filled_polygon(const int *x, const int *y, int nb_vertices )
 {
 	int i, j, dx, dy, ymin, ymax;
 	int count=0;
-	int *cut_in_line, nb_cut;
-	if(nb_vertices < 3) return 0;
-	cut_in_line = malloc(nb_vertices*sizeof(int));
-	if(!cut_in_line) return 0;
+	int cut_in_line[128+1], nb_cut;
+	if( (nb_vertices < 3) || ( 128 < nb_vertices ) ) return 0;
 	ymin = ymax = y[0];
 	for(i=1 ; i<nb_vertices ; i++)
 	{
@@ -2341,7 +2336,6 @@ int MLTest_filled_polygon(const int *x, const int *y, int nb_vertices )
 			j++;
 		}
 	}
-	free(cut_in_line);
 	return count;
 }
 
