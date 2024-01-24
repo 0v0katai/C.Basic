@@ -2668,19 +2668,19 @@ void PP_ReplaceCode( char *SRC ){
 			case 0xFFFFFFFF:	// 
 				ExecPtr++;
 				break;
-			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
-				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
+//			case 0xFFFFFFF7:	// 
+//				c=SRC[ExecPtr++];
+//				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
 //				else
 //				if ( c==0x4F ) SRC[ExecPtr-1]=0x3D;	// DotTrim(  F74F -> F73D
-				break;
-			case 0xFFFFFFF9:	// 
-				c=SRC[ExecPtr++];
+//				break;
+//			case 0xFFFFFFF9:	// 
+//				c=SRC[ExecPtr++];
 //				if ( c==0x4B ) { 
 //					SRC[ExecPtr-2]=0xFFFFFFF7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
 //				else
-				if ( c==0x3E ) SRC[ExecPtr-1]=0x43;	// Sprintf(  F93E -> F943
-				break;				
+//				if ( c==0x3E ) SRC[ExecPtr-1]=0x43;	// Sprintf(  F93E -> F943
+//				break;				
 		}
 	}
 	return ;
@@ -2799,21 +2799,21 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 }
 
 //---------------------------------------------------------------------------------------------- align dummy
-//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte

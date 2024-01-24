@@ -2548,6 +2548,7 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A -> Mat Ans
 	double value;
 	int base;
 	int ElementSize;
+	int tmpreg=Mattmpreg;
 	
 //	ListEvalsubTop(SRC);
 	ListEvalsub1(SRC);
@@ -2559,9 +2560,9 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A -> Mat Ans
 	base       =MatAry[reg].Base;
 	dimA       =MatAry[reg].SizeA;
 	dimB       =MatAry[reg].SizeB;
-	NewMatListAns( dimB, dimA, base, ElementSize );
+	DimMatrixSub( tmpreg, ElementSize, dimB, dimA, base);	//
 	if ( ErrorNo ) return ;
-	reg2=CB_MatListAnsreg;
+	reg2=tmpreg;
 	
 	switch ( ElementSize ) {
 		case 128:
@@ -2579,7 +2580,6 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A -> Mat Ans
 	MatAry[reg].SizeA = dimB;
 	MatAry[reg].SizeB = dimA;
 	CopyMatrix( reg, reg2 );	// reg2 -> reg
-	DeleteMatListAns();			// delete reg2
 }
 
 void CB_Identity( char *SRC ) { //	Identity 3 -> Mat Ans
@@ -4704,7 +4704,7 @@ int CB_MatBase( char *SRC ){	// MatBase( Mat A )
 //-----------------------------------------------------------------------------
 int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte

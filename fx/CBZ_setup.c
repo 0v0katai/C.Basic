@@ -73,7 +73,7 @@ int CB_System( char *SRC ) {	// System( n )
 			r=OS_Version();
 			break;
 		case -1:	// model 	bit0 :SH3:0  SH4A:1	 256KB bit1		// 9860G:0  9860GII(SH3):2   9860GII(SH4A):3
-			r = 0; if ( IsSH3 ) r = 1 ;
+			r = 1; if ( IsSH3 ) r = 0 ;
 			if ( IsHiddenRAM ) r |= 0x2;;
 			break;
 		case 0:	// Version
