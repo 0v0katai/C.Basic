@@ -415,45 +415,17 @@ int RangeErrorCKint( char *SRC ) {
 */
 //----------------------------------------------------------------------------------------------
 
-void CBint_PxlOprand( char *SRC, int *py, int *px) {
-	int x,y;
-	y = (EvalIntsubTop( SRC ));
-	*py=y;
-	if ( ( (*py)<MatBase ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+void CBint_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn   0:PxlOff   2:PxlChg
+	int px,py;
+	if ( RangeErrorCK(SRC) ) return;
+	py = (EvalIntsubTop( SRC ));
+	if ( ( py<MatBase ) || ( py>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	x = (EvalIntsubTop( SRC ));
-	*px=x;
-	if ( ( (*px)<MatBase ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
+	px = (EvalIntsubTop( SRC ));
+	if ( ( px<MatBase ) || ( px>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
 	CB_SelectGraphVRAM();	// Select Graphic Screen
-}
-void CBint_PxlOn( char *SRC ) { //	PxlOn
-	int x,y;
-	if ( RangeErrorCK(SRC) ) return;
-	CBint_PxlOprand( SRC, &y, &x);
-	BdispSetPointVRAM2(x, y, 1);
-//	regintX = (    px-1)*Xdot  + Xmin ;
-//	regintY = ( 62-py+1)*Ydot  + Ymin ;
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
-void CBint_PxlOff( char *SRC ) { //	PxlOff
-	int x,y;
-	if ( RangeErrorCK(SRC) ) return;
-	CBint_PxlOprand( SRC, &y, &x);
-	BdispSetPointVRAM2(x, y, 0);
-//	regintX = (    px-1)*Xdot  + Xmin ;
-//	regintY = ( 62-py+1)*Ydot  + Ymin ;
-	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
-}
-void CBint_PxlChg( char *SRC ) { //	PxlChg
-	int x,y;
-	if ( RangeErrorCK(SRC) ) return;
-	CBint_PxlOprand( SRC, &y, &x);
-	BdispSetPointVRAM2(x, y, 2);
-//	if (Bdisp_GetPoint_VRAM(x, y)) 
-//		Bdisp_SetPoint_VRAM(x, y, 0);
-//	else
-//		Bdisp_SetPoint_VRAM(x, y, 1);
+	BdispSetPointVRAM2(px, py, mode);
 //	regintX = (    px-1)*Xdot  + Xmin ;
 //	regintY = ( 62-py+1)*Ydot  + Ymin ;
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);

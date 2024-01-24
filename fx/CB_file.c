@@ -64,9 +64,6 @@ unsigned int SelectFile (char *filename)
 	while( 1 ){
 		if ( FileListUpdate  ) {
 			MSG1("File Reading.....");
-//			if ( ( UseHiddenRAM == 0 ) && ( files != NULL ) ) {
-//				free( files );	// *file free
-//			}
  			size = ReadFile( folder );
 			qsort( files, size, sizeof(Files), FileCmp );
 		}
@@ -105,11 +102,6 @@ unsigned int SelectFile (char *filename)
 	return key ;
 }
 
-//void FileListfree() {
-//	if ( FileListUpdate ) {
-//		if ( UseHiddenRAM == 0 ) if ( files != NULL ) free( files );
-//	}
-//}
 
 void Abort(){		// abort program
 	unsigned int key;
@@ -143,16 +135,16 @@ static int ReadFile( char *folder )
 	}
 	
 /*				Get Name & Size			*/
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		files = (Files *)HiddenRAM();
-	} else {
+//	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+//		files = (Files *)HiddenRAM();
+//	} else {
 		if ( recentsize < size ) {
 			if ( files != NULL ) free(files);
 			 files = (Files *)malloc( size*sizeof(Files) );
 			if ( files == NULL ) Abort();
 			recentsize = size;
 		}
-	}
+//	}
 	memset( files, 0, size*sizeof(Files) );
 	
 	i = FavoritesMAX ;
@@ -271,6 +263,13 @@ void FavoritesDown( int *index ) {
 
 //--------------------------------------------------------------
 
+int GetMediaFree(void) {
+		int freespace[2];
+		if ( Bfile_GetMediaFree(DEVICE_STORAGE,freespace) != 0 ) Abort() ;
+		if ( freespace[0]==0 ) freespace[0]=freespace[1];	// GII-2
+		return freespace[0];
+}
+
 unsigned int Explorer( int size, char *folder )
 {
 	int cont=1;
@@ -349,8 +348,12 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_DISPN( 5," \xE6\x9E ");
 				break;
 		}
-		locate(1, 1);Print((unsigned char*)"File List  [        ]");
-		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
+//		locate(1, 1);Print((unsigned char*)"File List  [        ]");
+//		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
+		locate(1,1);Print((unsigned char*)"[        ]");
+		locate(2,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
+		sprintf(buffer, "%10d" ,GetMediaFree());		PrintMini(10*6, 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
+		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6, 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
 		if( size < 1+FavoritesMAX+1 ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
@@ -562,7 +565,6 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispR( 2, "V-W");
 				Fkey_dispN( 3, "Pass");
 				Fkey_Clear( 4 );
-//				sprintf( buffer, "[%d]", size-FavoritesMAX-1); PrintMini(14*6+3, 7*8+2, (unsigned char*)buffer , MINI_OVER);  // number of file 
 //				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
 //				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
 				Fkey_dispN( 5, "Debg");
@@ -738,7 +740,8 @@ char * loadFile( const char *name , int editMax)
 
 	size = Bfile_GetFileSize( handle );
 
-	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
+//	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
+	buffer = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+editMax+4 );
 	if( buffer == NULL ) Abort();
 	memset( buffer, 0x00,     size*sizeof(char)+editMax+4 );
 
@@ -768,10 +771,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	r = Bfile_FindFirst( filename, &handle, buffer, &info );
 	s = Bfile_FindClose( handle );
 	if( r == 0 ) { //already existed, delete it
-		r=Bfile_GetMediaFree(DEVICE_STORAGE,freespace);
-		if ( r != 0 ) { ErrorMSG( "SMEM error", r );	return 1 ; }
-		if ( freespace[0]==0 ) freespace[0]=freespace[1];
-		if ( freespace[0] < size+256 ) { ErrorMSG( "Not enough SMEM", freespace[0] ); return 1 ; }
+		if ( GetMediaFree() < size+256 ) { ErrorMSG( "Not enough SMEM", freespace[0] ); return 1 ; }
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}
@@ -1055,30 +1055,7 @@ int InputFilenamePassname( char *filebase, char *basname, char* msg) {		//
 	filebase[0x55]=0x01;	// pass ok (C.basic)
 	return 0; // ok
 }
-/*
-void NewPassWord( char *fname ){	// New Password command
-	char *filebase;
-	int fsize,size;
-	char sname[16],basname[16];
 
-	SetShortName( sname, fname);
-	if ( strcmp( sname + strlen(sname) - 4, ".g1m") != 0 ) return ;	// not g1mfile
-	filebase = loadFile( fname , 0 );
-//	if ( filebase == NULL ) return ;
-	if ( CheckG1M( filebase ) ) goto exit; // not support g1m
-	G1MHeaderTobasname8( filebase, basname);
-	InputPassPrintbasnamefile( basname, "Program Name");
-	if ( filebase[0x4C] == 0 ) { // new password
-		if ( SetPassWord( 3, filebase, basname, "Set Password" ) ) goto exit; // cancel
-	} else { // unlock password
-		if ( CheckPassWordmsg( filebase , "Unlock password" ) ) goto exit; // cancel
-		memset( filebase+0x4C, 0, 8);	// clear password
-	}
-	if ( SaveBasG1M( filebase ) ==0 ) ErrorMSGstr1("    Complete!");
-	exit:
-	free( filebase );
-}
-*/
 void NewPassWord( char *fname ){	// New Password command
 	char *filebase;
 	int fsize,size;
@@ -1138,14 +1115,14 @@ int LoadProgfile( char *fname, int editsize ) {
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
 			filebase = loadFile( fname , editsize + EditMaxfree);
-//			if ( filebase == NULL ) return 1;
+			if ( filebase == NULL ) return 1;
 			textsize=strlen(filebase);
 			if ( editsize ) ConvertToOpcode( filebase, sname, editsize + EditMaxfree);		// text file -> G1M file
 			progsize = textsize +  editsize ;
 	} else {	// G1M file
 			filebase = loadFile( fname , editsize );
-//			if ( filebase == NULL ) return 1;
-			if ( CheckG1M( filebase ) ) { free( filebase ); return 1; } // not support g1m
+			if ( filebase == NULL ) return 1;
+			if ( CheckG1M( filebase ) ) { HiddenRAM_freeProg( filebase ); return 1; } // not support g1m
 			progsize = SrcSize( filebase ) + editsize ;
 	}
 
@@ -1224,7 +1201,8 @@ int NewProg(){
 	int size,i;
 
 	size=NewMax;
-	filebase = (char *)malloc( size*sizeof(char)+4 );
+//	filebase = (char *)malloc( size*sizeof(char)+4 );
+	filebase = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+4 );
 	if( filebase == NULL ) {
 		CB_ErrMsg(NotEnoughMemoryERR);
 		return 1;
@@ -1957,17 +1935,17 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 					Getfolder( buffer );
 					SetFullfilenameExt( filename, (char*)buffer, "g1m" );
 					filebase = loadFile( filename ,EditMaxProg );
-					strncpy( filebase+0x3C-8, folder16, 8);		// set folder to header
+					if ( filebase != NULL ) strncpy( filebase+0x3C-8, folder16, 8);		// set folder to header
 					Restorefolder();
 //					locate( 1, 3); Print(filename);						//
 //					locate( 1, 4); PrintLine(" ",21);					//
 //					sprintf(buffer,"ptr=%08X",filebase);						//
 //					locate( 1, 4); Print(buffer); GetKey(&key);			//
-					if ( ErrorNo ) {
+					if ( ErrorNo ) {	// Can't find Prog
 						ErrorPtr=ExecPtr;
 						ProgNo=progno;
 						ErrorProg=ProgNo;
-						if ( filebase != NULL ) free( filebase );
+//						if ( filebase != NULL ) HiddenRAM_freeProg( filebase );
 						return;
 					}
 					if ( filebase != NULL ) {
@@ -2011,25 +1989,33 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 //---------------------------------------------------------------------------------------------- align dummy
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-/*
+int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+
 void FavoritesDowndummy( int *index ) {
 	int tmp;
 	char tmpname[FILENAMEMAX];
@@ -2046,6 +2032,7 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
+/*
 
 void FavoritesDowndummy2( int *index ) {
 	int tmp;
@@ -2063,16 +2050,15 @@ void FavoritesDowndummy2( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
-
 void FavoritesDowndummy3( int *index ) {
 	int tmp;
 	char tmpname[FILENAMEMAX];
 	char tmpfolder[FOLDERMAX];
 	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
 	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+//	tmp=files[(*index)+1].filesize;
+//	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+//	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
 //	files[(*index)+1].filesize=files[(*index)].filesize;
 //	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
 //	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );

@@ -52,7 +52,7 @@ void GCursorSetFlashMode(int set)	// 1:on  0:off
 			KillTimer(ID_USER_TIMER1);
 			break;
 		case 1:
-			SetTimer(ID_USER_TIMER1, 250, &GCursorFlashing);
+			SetTimer(ID_USER_TIMER1, 250, (void*)&GCursorFlashing);
 			GCursorflag=1;		// graphic cursor initialize
 			break;
 		default:

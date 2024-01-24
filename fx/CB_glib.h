@@ -24,7 +24,7 @@ int VWtoPXY(double x, double y, int *px, int *py);	// ViewWwindow(x,y) -> pixel(
 void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax, double yscl);
 void ZoomIn();
 void ZoomOut();
-
+/*
 void PlotOn_VRAM(double x, double y);
 void PlotOn_DD(double x, double y);
 void PlotOn_DDVRAM(double x, double y);
@@ -35,17 +35,18 @@ void PlotOff_DDVRAM(double x, double y);
 
 void PlotChg_VRAM(double x,  double y);
 void PlotChg_DDVRAM(double x, double y);
-
+*/
+void PlotSub(double x, double y, int mode);
+/*
 void PxlOn_VRAM(int py, int px);
 void PxlOn_DD(int py, int px);
 void PxlOn_DDVRAM(int py, int px);
-
 void PxlOff_VRAM(int py, int px);
 void PxlOff_DD(int py, int px);
 void PxlOff_DDVRAM(int py, int px);
-
-int PxlTest(int py, int px);
 void PxlChg_VRAM(int py, int px);
+*/
+int PxlTest(int py, int px);
 
 void LinesubSetPoint(int px, int py, int mode) ;
 void Linesub(int px1, int py1, int px2, int py2, int style, int mode) ;
