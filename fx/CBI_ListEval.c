@@ -42,21 +42,45 @@ int EvalFxInt( FXPTR fxptr, int result ) {
 
 typedef int (*FXPTR2)( int x, int y );
 int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int tmp ) { 
-	int i,j;
+	int i,j,k,sum;
+	int colA,rowB;
 	int base;
+	int tmpreg58=58;	// Mattmpreg
 	int tmpreg=CB_MatListAnsreg;
 	if ( dspflag >= 3 ) {	// Listtmp
 		base=MatAry[tmpreg].Base;
 		if ( *resultflag >= 3 ) {
-			if ( CheckAnsMatList(*resultreg) ) return 0;	// Not same List error
-			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
-				for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
-					result = ReadMatrixInt( *resultreg, i, j);
-					tmp    = ReadMatrixInt( tmpreg, i, j);
-					WriteMatrixInt( *resultreg, i, j, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
+			if ( ( *resultflag == 4 ) || ( fxptr2 != fMULint ) ) {
+				if ( CheckAnsMatList(*resultreg) ) return 0;	// Not same List error
+				for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
+					for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
+						result = ReadMatrixInt( *resultreg, i, j);
+						tmp    = ReadMatrixInt( tmpreg, i, j);
+						WriteMatrixInt( *resultreg, i, j, (fxptr2)(result,tmp) ) ;	// Listresult (op) Listtmp -> Listresult
+					}
 				}
+			} else {	// Mat A * Mat B -> Mat C		Matresult * Mattmp -> Matresult
+				if ( MatAry[*resultreg].SizeB != MatAry[tmpreg].SizeA ) { CB_Error(DimensionERR); return 0 ; }	// Dimension error
+				colA=MatAry[*resultreg].SizeA;
+				rowB=MatAry[tmpreg].SizeB;
+				DimMatrixSub( tmpreg58, MatAry[*resultreg].ElementSize, colA, rowB, base);	// Mattmpreg
+				if ( ErrorNo ) return 0; // error
+				for ( i=base; i<colA+base; i++ ){
+					for ( j=base; j<rowB+base; j++ ){
+						sum=0;
+						for ( k=base; k<MatAry[*resultreg].SizeB+base; k++ ){
+							result = ReadMatrixInt( *resultreg, i, k);
+							tmp    = ReadMatrixInt( tmpreg, k, j);
+							sum+=(result*tmp);
+						}
+						WriteMatrixInt( tmpreg58, i, j, sum ) ;
+					}
+				}
+				DimMatrixSub( *resultreg, MatAry[*resultreg].ElementSize, colA, rowB, base);	// Mattmpreg
+				if ( ErrorNo ) return 0; // error
+				CopyMatrix( *resultreg, tmpreg58 );		// tmpreg58 -> Matresult
 			}
-			DeleteMatListAns();
+			DeleteMatListAns();	// delete tmp
 		} else {
 			for (i=base; i<MatAry[tmpreg].SizeA+base; i++ ) {
 				for (j=base; j<MatAry[tmpreg].SizeB+base; j++ ) {

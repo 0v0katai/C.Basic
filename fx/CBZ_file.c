@@ -2125,7 +2125,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 }
 
 //---------------------------------------------------------------------------------------------- align dummy
-//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
@@ -2230,8 +2230,8 @@ void FavoritesDowndummy5( int *index ) {
 	files[(*index)+1].filesize=files[(*index)].filesize;
 	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
 	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-//	(*index)++;
-//	files[(*index)].filesize=tmp;
-//	SaveFavorites();
+	(*index)++;
+	files[(*index)].filesize=tmp;
+	SaveFavorites();
 }
 */
