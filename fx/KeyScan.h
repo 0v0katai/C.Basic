@@ -126,7 +126,9 @@
 int KeyScanDown(int keyscan_code);
 
 int CB_Getkey();
+int CB_Getkey0();
 int CB_Getkey1();
+int CB_Getkey2();
 
 int KeyCheckAC();
 int KeyCheckEXE();

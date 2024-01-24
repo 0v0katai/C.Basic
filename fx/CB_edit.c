@@ -475,24 +475,20 @@ int SearchOpcode( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr)
 	if ( opcode == srccode ) NextOpcode( SrcBase, &(*csrptr) );
 	while ( (*csrptr)<size ) {
 		sptr=0;
-		opcode =SrcBase[(int)(*csrptr)] ;
-		srccode=searchstr[sptr];
+		opcode =GetOpcode( SrcBase, *csrptr ) ;
+		srccode=GetOpcode( searchstr, sptr ) ;
 		if ( opcode != srccode ) {
 			NextOpcode( SrcBase, &(*csrptr) );
 		} else {
 			cptr = *csrptr;
-			opcode =GetOpcode( SrcBase, *csrptr ) ;
-			srccode=GetOpcode( searchstr, sptr ) ;
-			if ( opcode == srccode ) {
-				while ( 1 ) {
-					NextOpcode( searchstr, &sptr );
-					srccode=GetOpcode( searchstr, sptr ) ;
-					if ( srccode == 0x00 ) { *csrptr=cptr; return 1; }	// Search Ok
-					NextOpcode( SrcBase, &(*csrptr) );
-					opcode =GetOpcode( SrcBase, *csrptr ) ;
-					if ( (*csrptr) >= size ) { *csrptr=csrbkup; return 0; }	// No search
-					if ( opcode != srccode ) break ;
-				}
+			while ( (*csrptr)<size ) {
+				NextOpcode( searchstr, &sptr );
+				srccode=GetOpcode( searchstr, sptr ) ;
+				if ( srccode == 0x00 ) { *csrptr=cptr; return 1; }	// Search Ok
+				NextOpcode( SrcBase, &(*csrptr) );
+				opcode =GetOpcode( SrcBase, *csrptr ) ;
+				if ( (*csrptr) >= size ) { *csrptr=csrbkup; return 0; }	// No search
+				if ( opcode != srccode ) break ;
 			}
 		}
 	}
@@ -513,7 +509,9 @@ int SearchForText( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr
 	
 	KeyRecover(); 
 	searchstr[0]='\0';
-	key= InputStrSub( 1, 4, 21, 0, searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	do {
+		key= InputStrSub( 1, 4, 21, 0, searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	} while ( key == KEY_CTRL_AC ) ;	// AC
 	if ( key == KEY_CTRL_EXIT ) return 0;	// exit
 	
 	while ( i==0 ) {	//  not found loop
@@ -522,7 +520,9 @@ int SearchForText( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr
 		if ( i    ) break;
 		if ( i==0 ) ErrorMSGstr1(" Not Found ");
 		sptr=strlenOp(searchstr);
-		key= InputStrSub( 1, 4, 21, sptr, searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		do {
+			key= InputStrSub( 1, 4, 21, sptr, searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		} while ( key == KEY_CTRL_AC ) ;	// AC
 		if ( key == KEY_CTRL_EXIT ) return 0;	// exit
 	}
 	*csrptr=csrp;
@@ -783,8 +783,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						csrPtr = offset;
 						run=2; // edit mode
 						if ( dumpflg == 2 ) {
-						for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
-						if ( stat == -1 ) cont=0;	// 
+							for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
+							if ( stat == -1 ) cont=0;	// 
 						}
 					}
 					key=0;
@@ -936,6 +936,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				SearchMode=0;
 				break;
 				
+				
 			case KEY_CTRL_SHIFT:
 				if ( SearchMode ) break;;
 				alphalock = 0 ;
@@ -951,6 +952,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_EXIT:
 							key=0;
 							break;
+							
 					case KEY_CTRL_PAGEUP:
 							offset=0;
 							csrPtr=0;
@@ -971,12 +973,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							csrPtr=offset;
 							switch (dumpflg) {
 								case 2: 		// Opcode
-									PrevLinePhy( SrcBase, &offset, &offset_y );
-									PrevLinePhy( SrcBase, &offset, &offset_y );
-									PrevLinePhy( SrcBase, &offset, &offset_y );
-									PrevLinePhy( SrcBase, &offset, &offset_y );
-									PrevLinePhy( SrcBase, &offset, &offset_y );
-									PrevLinePhy( SrcBase, &offset, &offset_y );
+								for ( i=0; i<6; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
 									break;
 								case 4: 		// hex dump
 								case 16:		// Ascii dump
@@ -987,6 +984,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							}
 							key=0;
 							break;
+
 					case KEY_CTRL_SETUP:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							selectSetup=SetupG(selectSetup);
@@ -1082,25 +1080,21 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 
 		if ( dumpflg==2 ) {
 			if ( key == KEY_CTRL_F3 )  {
-				Cursor_SetFlashMode(0); 		// cursor flashing off
 				key=SelectOpcode5800P(oplistCMD,&selectCMD);
 				if ( key ) SearchMode=0;
 				if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 			}
 			if ( key == KEY_CTRL_OPTN ) {
-				Cursor_SetFlashMode(0); 		// cursor flashing off
 				key=SelectOpcode(oplistOPTN,&selectOPTN);
 				if ( key ) SearchMode=0;
 				if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 			}
 			if ( key == KEY_CTRL_VARS ) {
-				Cursor_SetFlashMode(0); 		// cursor flashing off
 				key=SelectOpcode(oplistVARS,&selectVARS);
 				if ( key ) SearchMode=0;
 				if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 			}
 			if ( key == KEY_CTRL_PRGM ) {
-				Cursor_SetFlashMode(0); 		// cursor flashing off
 				key=SelectOpcode(oplistPRGM,&selectPRGM);
 				if ( key ) SearchMode=0;
 				if ( alphalock == 0 ) PutAlphamode1(CursorStyle);

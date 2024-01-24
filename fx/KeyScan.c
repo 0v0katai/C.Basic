@@ -52,26 +52,26 @@ int CheckKeyRow( int row ){
         *PORTB_CTRL = 0xAAAA ^ smask;    
 // configure port M as input; port M is inactive with row < 8
         *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;  
-//        delay();
+        delay();
         *PORTB = cmask;    // set the "row to check"-bit to 0 on port B
         *PORTM = (*PORTM & 0xF0 ) | 0x0F;    // port M is inactive with row < 8
   }else{
         *PORTB_CTRL = 0xAAAA;  // configure port B as input; port B is inactive with row >= 8
 // configure port M as input, except for the "row to check"-bit, which has to be an output.
         *PORTM_CTRL = ((*PORTM_CTRL & 0xFF00 ) | 0x00AA)  ^ smask;  
-//        delay();
+        delay();
         *PORTB = 0xFF;    // port B is inactive with row >= 8 (all to 1)
         *PORTM = (*PORTM & 0xF0 ) | cmask;  // set the "row to check"-bit to 0
   };
-//  delay();
+  delay();
   result = ~(*PORTA);   // a pressed key in the row-to-check draws the corresponding bit to 0
-//  delay();
+  delay();
   *PORTB_CTRL = 0xAAAA;  
   *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
-//  delay();
+  delay();
   *PORTB_CTRL = 0x5555;
   *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x0055;
-//  delay();
+  delay();
 
   return result;
 }
@@ -116,7 +116,11 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 		if ( c & 0x02 ) { code=20+row; break; }	//
 	}
 	
-	if (SH3) IsKeyDown( code );		//SH3
+//	if (SH3) {		//SH3
+//		KeyCheckAC();
+//		IsKeyDown( KEY_CTRL_AC );
+//	}
+//	Keyboard_ClrBuffer();
 	
 	return code;
 }
@@ -173,20 +177,27 @@ void KeyRecover() {
 	if (*(volatile unsigned short*)0xFFFFFF80 != 0) 
 		IsKeyDown( KEY_CTRL_AC );		//SH3
 	else	KeyCheckAC();				//SH4
-//	while(KeyCheckEXIT());
+//	KeyCheckAC();
+//	KeyCheckEXE();
+//	KeyCheckEXIT();
 	KeyCheckSHIFT();
 	KeyCheckCHAR4();
 	Keyboard_ClrBuffer();
 //	Sleep(10);
 }
 
+int CB_Getkey0() {			// CasioBasic Getkey 
+	int key=0;
+//	key=CB_Getkey();
+	KeyRecover();
+	return key;
+}
+
 int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	unsigned int key;
 	int code;
 	
-//	KeyRecover();
 	GetKey(&key);
-
 	switch (key) {
 		case KEY_CHAR_0:
 		case KEY_CHAR_IMGNRY:
@@ -403,8 +414,12 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 			break;
 		default:
 			code=0;
-			break;	
+			break;
 	}
 	return code;
+}
+int CB_Getkey2() {			// CasioBasic Getkey SDK compatible with buffer clear
+	KeyRecover();
+	return CB_Getkey1() ;
 }
 
