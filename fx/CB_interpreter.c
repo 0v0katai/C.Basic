@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.90
+ Casio Basic interpreter for fx-9860G series    v0.99
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -123,25 +123,22 @@ char  ProgLocalN[ProgMax+1];
 char  ProgLocalVar[ProgMax+1][26];
 
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+short StackGotoAdrs[StackGotoMax];
+
+CchIf	CacheIf;
+CchIf	CacheElse;
+CchIf	CacheElseIf;
+CchIf	CacheSwitch;
+CchRem	CacheRem;
+
+void ClrCahche();
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
-	short StackGotoAdrs[StackGotoMax];
-	
-	CchIf	CacheIf;
-	CchIf	CacheElse;
-	CchIf	CacheElseIf;
-	CchIf	CacheSwitch;
-	CchRem	CacheRem;
-
-void ClrCahche(){
-	CacheIf.CNT=0;
-	CacheElse.CNT=0;
-	CacheElseIf.CNT=0;
-	CacheRem.CNT=0;
-	CacheSwitch.CNT=0;
-}
 
 int CB_interpreter_sub( char *SRC ) {
 	char cont=1;
@@ -202,12 +199,13 @@ int CB_interpreter_sub( char *SRC ) {
 		}
 		if ( c==0x00 ) { ExecPtr--;
 			if ( ProgEntryN )  { 
-				if ( BreakPtr ) CB_BreakStop();
+//				if ( BreakPtr ) CB_BreakStop();
 				return -1;
 			} else  break;
 		}
 		
 		while ( c==0x20 ) c=SRC[ExecPtr++];
+		
 		switch (c) {
 			case 0xFFFFFFEC:	// Goto
 				CB_Goto(SRC, StackGotoAdrs );
@@ -279,7 +277,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x0C:	// Return
 						if ( GosubNestN > 0 ) { ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return form subroutin 
 						if ( ProgEntryN ) {	//	return from  sub Prog
-							if ( BreakPtr ) CB_BreakStop();
+//							if ( BreakPtr ) CB_BreakStop();
 							return -2 ; 
 						}
 						cont=0;
@@ -485,20 +483,23 @@ int CB_interpreter_sub( char *SRC ) {
 						Skip_block(SRC);
 						dspflag=0;
 						break;
+					case 0xFFFFFFFE:	// Local
+						BackLight( CB_EvalInt( SRC ) );
+						dspflag=0;
+						break;
 					case 0x01:	// Then
 						ExecPtr-=2;
 						CB_Error(ThenWithoutIfERR); // not Then error 
 						break;
 					case 0x17:	// ACBreak
+						if ( ( SRC[ExecPtr]==0xFFFFFFF7 ) && ( SRC[ExecPtr+1]==0x0E ) ) {	// ACBreak Stop;
+							ExecPtr+=2;
+							ACBreak=0;
+							break;
+						}
 						if ( ACBreak ) BreakPtr=ExecPtr;
 						break;
 					case 0x0E:	// Stop
-						if ( ( SRC[ExecPtr]==0xFFFFFFF7 ) && ( SRC[ExecPtr+1]==0x0D ) ) {	// Stop Break;
-							ExecPtr+=2;
-							if ( ACBreak ) BreakPtr=ExecPtr;
-							break;
-						}
-						BreakPtr=ExecPtr;
 						cont=0; 
 						break;
 					default:
@@ -579,15 +580,14 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Rem(SRC, &CacheRem );
 				dspflag=0;
 				break;
-			case 0xFFFFFFFE:	// Gosub
-				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs, localvarInt, localvarDbl );
-				if ( BreakPtr >0 ) return BreakPtr;
-				dspflag=0;
-				break;
 			case 0xFFFFFFED:	// Prog "..."
 				CB_Prog(SRC, localvarInt, localvarDbl );
-				if ( BreakPtr > 0 ) return BreakPtr;
 				ClrCahche();
+				goto jpgsb;
+				break;
+			case 0xFFFFFFFE:	// Gosub
+				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs, localvarInt, localvarDbl );
+		jpgsb:	if ( BreakPtr > 0 ) return BreakPtr;
 				dspflag=0;
 				break;
 			case 0xFFFFFFD1:	// Cls
@@ -652,22 +652,6 @@ int CB_interpreter_sub( char *SRC ) {
 				UseGraphic=2;
 				break;
 				
-//			case 0xFFFFFFFB:	//  P(  Unary Eval operation
-//				dspflagtmp=2;
-//				if (CB_INT)	CBint_CurrentValue = CBint_UnaryEval(SRC);
-//				else		CB_CurrentValue    = CB_UnaryEval(SRC);
-//				break;
-//			case 0xFFFFFFFC:	//  Q(  binaly Eval operation
-//				dspflagtmp=2;
-//				if (CB_INT)	CBint_CurrentValue = CBint_BinaryEval(SRC);
-//				else		CB_CurrentValue    = CB_BinaryEval(SRC);
-//				break;
-//			case 0xFFFFFFFD:	//  Eval(
-//				dspflagtmp=2;
-//				if (CB_INT)	CBint_CurrentValue = CBint_EvalStr(SRC);
-//				else		CB_CurrentValue    = CB_EvalStr(SRC);
-//				break;
-				
 			case '$':	// $Mat
 			case '&':	// &Mat
 			case 0x22:	// " "
@@ -726,6 +710,14 @@ int CB_interpreter_sub( char *SRC ) {
 	return -1;
 }
 //----------------------------------------------------------------------------------------------
+void ClrCahche(){
+	CacheIf.CNT=0;
+	CacheElse.CNT=0;
+	CacheElseIf.CNT=0;
+	CacheRem.CNT=0;
+	CacheSwitch.CNT=0;
+}
+
 int CB_interpreter( char *SRC ) {
 	int flag;
 	int c;
@@ -841,10 +833,10 @@ remloop:
 			c=SRC[ExecPtr++];
 			if ( ( 'A' <= c ) && ( c <= 'z' ) ) defaultStrAry= c-'A';
 			if ( SRC[ExecPtr] == ',') {
-				ExecPtr++;
+				c=SRC[ExecPtr];
 				defaultStrAryN=Eval_atod( SRC, c );
 				if ( SRC[ExecPtr] == ',') {
-					ExecPtr++;
+					c=SRC[ExecPtr];
 					defaultStrArySize=Eval_atod( SRC, c );
 				}
 			}
@@ -854,11 +846,11 @@ remloop:
 			c=SRC[ExecPtr++];
 			if ( ( 'A' <= c ) && ( c <= 'z' ) ) defaultGraphAry= c-'A';
 			if ( SRC[ExecPtr] == ',') {
-				ExecPtr++;
-				defaultGraphAryN=Eval_atod( SRC, c );
+				c=SRC[ExecPtr];
+				defaultGraphAryN=Eval_atod( SRC );
 				if ( SRC[ExecPtr] == ',') {
-					ExecPtr++;
-					defaultGraphArySize=Eval_atod( SRC, c );
+					c=SRC[ExecPtr];
+					defaultGraphArySize=Eval_atod( SRC );
 				}
 			}
 		}
@@ -1395,7 +1387,6 @@ void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
 	if ( StackSwitch->Ptr <= 0 ) { CB_Error(CaseWithoutSwitchERR); return; }  // Case without Switch error
 	StackSwitch->Ptr--;
 
-//	value=CB_EvalInt( SRC );
 	c=SRC[ExecPtr];
 	value=Eval_atod( SRC, c );
 //	c=SRC[ExecPtr];

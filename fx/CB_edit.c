@@ -21,58 +21,6 @@ char Contflag=0;	// Continue mode    0:disable  1:enable   2:step
 char ScreenModeEdit=0;
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-int PP_errptr;
-
-int PP_Search_IfEnd( char *SRC ){
-	int c,i;
-	int PP_ptr;
-	while (1){
-		c=SRC[ExecPtr++];
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-				return 0 ;
-			case 0x27:	// ' rem
-				Skip_rem(SRC);
-				break;
-			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
-				if ( c == 0x00 ) { 			// If
-					PP_ptr=ExecPtr-2;
-					i=PP_Search_IfEnd(SRC) ;
-					if ( ErrorNo ) return;					
-					if ( i != 1  ) { ExecPtr=PP_ptr; CB_Error(IfWithoutIfEndERR); CB_ErrMsg(ErrorNo); return 0; } // not IfEnd error 
-					break;
-				} else
-				if ( c == 0x03 ) return 1 ;	// IfEnd
-				break ;
-			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
-		}
-	}
-	return 0;
-}
-
-void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
-	int c=1,i;
-	int execptr=ExecPtr;
-
-	ErrorNo=0;
-	ExecPtr=0;
-	if ( CheckIfEnd ) PP_Search_IfEnd(SRC);
-	if ( ErrorNo ) return;
-	ExecPtr=execptr;
-}
-
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
 
 int SrcSize( char *src ) {
 	int size ;
@@ -341,14 +289,16 @@ void NextLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 void PrevLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 	int ofst2,x,y;
 	if ( *ofst_y == 0 ) {
-		PrevLine( buffer, &(*ofst));
-		ofst2= *ofst;
-		x=1; y=0;
-		OpcodeLineN( buffer, &ofst2 ,&x ,&y);
-		if ( y==0 ) {
-			*ofst_y = 0;
-		} else {
-			*ofst_y = y;
+		if ( *ofst != 0 ) { 
+			PrevLine( buffer, &(*ofst));
+			ofst2= *ofst;
+			x=1; y=0;
+			OpcodeLineN( buffer, &ofst2 ,&x ,&y);
+			if ( y==0 ) {
+				*ofst_y = 0;
+			} else {
+				*ofst_y = y;
+			}
 		}
 	} else {
 		(*ofst_y)--;
@@ -611,8 +561,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			Bdisp_AllClr_VRAM();
 			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 			buffer2[8]='\0';
-			if (dumpflg==2)	sprintf(buffer,"==%-8s==%s",buffer2, CB_INTDefault?" [INT%] ":" [Double]");
-			else 			sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
+			if (dumpflg==2) {
+				if ( Contflag >=1 )	sprintf(buffer,"==%-8s==%s",buffer2, CB_INT?" [INT%] ":" [Double]");
+				else				sprintf(buffer,"==%-8s==%s",buffer2, CB_INTDefault?" [INT%] ":" [Double]");
+			} else 			sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
 			
 			locate (1,1); Print(    (unsigned char*)buffer );
 			if ( Contflag >=1 ) // debug mode
@@ -629,18 +581,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( Contflag >=1 ) {  // debug mode
 						Fkey_dispN( 0, "Cont");
 						Fkey_dispN( 1, "Step");
-						Fkey_dispR( 2, "CMD");
-						if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
-						Fkey_dispR( 4, "CHAR");
 						Fkey_dispN( 5, "Swap");
 					} else {	// normal mode
 						Fkey_dispN( 0, "TOP ");
 						Fkey_dispN( 1, "BTM");
-						Fkey_dispR( 2, "CMD");
-						if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
-						Fkey_dispR( 4, "CHAR");
 						Fkey_dispN( 5, "EXE");
 					}
+					Fkey_dispR( 2, "CMD");
+					if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
+					Fkey_dispR( 4, "CHAR");
 				}
 			}
 			switch (dumpflg) {
@@ -825,7 +774,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_F6:
 					if ( SearchMode ) break;;
 					Cursor_SetFlashMode(0); 		// cursor flashing off
-					CB_PreProcess( SrcBase ); 
 					if ( ErrorNo ) {
 							offset = ErrorPtr;
 							csrPtr = offset;
@@ -846,9 +794,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							ProgEntryN=1;
 							MSG1("Wait a moment");
 							CB_ProgEntry( SrcBase ) ;		// sub program search
-							ProgNo=0;
-							ExecPtr=0;
-							if ( ErrorNo == 0 ) stat=CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
+							if ( ErrorNo ) { 
+								ProgNo=ErrorProg; 
+								stat=1;
+							} else {
+								ProgNo=0;
+								ExecPtr=0;
+								stat=CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
+							}
 							SaveConfig();
 							FileBase = ProgfileAdrs[ProgNo];
 							SrcBase  = FileBase+0x56;
@@ -1256,12 +1209,13 @@ int CB_BreakStop() {
 	char buf[22];
 	int stat;
 	int scrmode=ScreenMode;
+	Bdisp_PutDisp_DD();
 	CB_SelectTextVRAM();	// Select Text Screen
 	CB_SelectGraphVRAM();	// Select Graphic screen
-	CB_SelectTextDD();	// Select Text Screen
+	CB_SelectTextVRAM();	// Select Text Screen
 //	SaveDisp(SAVEDISP_PAGE1);
 
-	if ( Contflag < 2 ) {
+	if ( ( Contflag < 2 ) && ( BreakPtr != -999) ) {
 		PopUpWin(4);
 		locate(9,3); Print((unsigned char *)"Break");
 		locate(6,5); Print((unsigned char *) "Press:[EXIT]");
@@ -1280,17 +1234,20 @@ int CB_BreakStop() {
 	//	Bdisp_PutDisp_DD();
 		Contflag=1;	// enable Continue
 	} else {	// Step mode
-		BreakPtr=ExecPtr;	// set breakptr
+		if( BreakPtr != -999) BreakPtr=ExecPtr;	// set breakptr
 	}
 	ScreenModeEdit=scrmode;
 	key=EditRun(2);	// Program listing & edit
-	if ( ( ErrorNo ) || ( Contflag == 1 ) ) Contflag=0;	// disable Continue
+	if ( ( ErrorNo ) ) Contflag=0;	// disable Continue
 
-	if ( key == KEY_CTRL_EXIT  ) { BreakPtr=-999; Contflag=0; return BreakPtr; }
-
+	if ( key == KEY_CTRL_EXIT  ) { 
+		if ( ProgEntryN == 0 ) Contflag=0;
+		BreakPtr=-999; return BreakPtr;
+	}
+	
+	if ( Contflag < 2 ) Contflag=0;
 	CB_RestoreTextVRAM();	// Resotre Text screen
 	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
-//	Bdisp_PutDisp_DD();
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0;
 }

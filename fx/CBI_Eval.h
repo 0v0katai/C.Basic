@@ -29,3 +29,4 @@ int EvalIntsubTop(char *SRC);
 int CB_EvalInt( char *SRC ) ;
 
 int EvalInt(char *SRC) ;		// Eval temp
+int CB_Getkey3( char *SRC ) ;

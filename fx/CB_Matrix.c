@@ -30,6 +30,9 @@ char	MatAryElementSize[MatAryMax];		// Matrix array Element size
 double *MatAry[MatAryMax];					// Matrix array ptr*
 
 double MatDefaultValue=0;
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
@@ -96,10 +99,6 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){	// 0-
 	}
 }
 
-//-----------------------------------------------------------------------------
-//int MatrixObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 

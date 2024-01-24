@@ -363,7 +363,7 @@ void CBint_PxlOn( char *SRC ) { //	PxlOn
 	int x,y;
 	if ( RangeErrorCK(SRC) ) return;
 	CBint_PxlOprand( SRC, &y, &x);
-	Bdisp_SetPoint_VRAM(x, y, 1);
+	BdispSetPointVRAM2(x, y, 1);
 //	regintX = (    px-1)*Xdot  + Xmin ;
 //	regintY = ( 62-py+1)*Ydot  + Ymin ;
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
@@ -372,7 +372,7 @@ void CBint_PxlOff( char *SRC ) { //	PxlOff
 	int x,y;
 	if ( RangeErrorCK(SRC) ) return;
 	CBint_PxlOprand( SRC, &y, &x);
-	Bdisp_SetPoint_VRAM(x, y, 0);
+	BdispSetPointVRAM2(x, y, 0);
 //	regintX = (    px-1)*Xdot  + Xmin ;
 //	regintY = ( 62-py+1)*Ydot  + Ymin ;
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
@@ -381,10 +381,11 @@ void CBint_PxlChg( char *SRC ) { //	PxlChg
 	int x,y;
 	if ( RangeErrorCK(SRC) ) return;
 	CBint_PxlOprand( SRC, &y, &x);
-	if (Bdisp_GetPoint_VRAM(x, y)) 
-		Bdisp_SetPoint_VRAM(x, y, 0);
-	else
-		Bdisp_SetPoint_VRAM(x, y, 1);
+	BdispSetPointVRAM2(x, y, 2);
+//	if (Bdisp_GetPoint_VRAM(x, y)) 
+//		Bdisp_SetPoint_VRAM(x, y, 0);
+//	else
+//		Bdisp_SetPoint_VRAM(x, y, 1);
 //	regintX = (    px-1)*Xdot  + Xmin ;
 //	regintY = ( 62-py+1)*Ydot  + Ymin ;
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
