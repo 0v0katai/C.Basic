@@ -396,11 +396,11 @@ void MiniCursorFlashing() {		// timer IRQ handler
 	DISPBOX area;
 	unsigned char CsrDATA[]={ 0xFF,0xFF,0xFF,0xFF,0xFF };
 	DISPGRAPH minicsr;
-	int mini=(EditFontSize & 0x0F);
+	int mini=(EditFontSize & 0x0F),f;
 
 	if ( ( 0<=MiniCursorX ) && ( MiniCursorX<126 ) && ( 0<=MiniCursorY ) && ( MiniCursorY<60 ) ) {
-		switch (MiniCursorflag) {
-			case 0:
+		f = MiniCursorflag & 31;
+		if ( f<16 ) {
 				minicsr.x = MiniCursorX;
 				minicsr.y = MiniCursorY;
 				minicsr.GraphData.width =  2; if  ( CursorStyle >= 0x06 ) minicsr.GraphData.width = 4;
@@ -416,20 +416,10 @@ void MiniCursorFlashing() {		// timer IRQ handler
 					minicsr.GraphData.width = 4;
 				}
 			    Bdisp_WriteGraph_DD(&minicsr); 		// drawing only display driver
-				MiniCursorflag=1;
-				break;
-			case 1:
-//				area.left  = MiniCursorX;
-//				area.top   = MiniCursorY;
-//				area.right = MiniCursorX;
-//				area.bottom= MiniCursorY+5;
-//				Bdisp_PutDispArea_DD(&area);		// 
+		} else {
 				Bdisp_PutDisp_DD();
-				MiniCursorflag=0;
-				break;
-			default:
-				break;
 		}
+		MiniCursorflag++;
 	}
 }
 
@@ -439,7 +429,7 @@ void MiniCursorSetFlashMode(int set) {	// 1:on  0:off
 			KillTimer(ID_USER_TIMER1);
 			break;
 		case 1:
-			SetTimer(ID_USER_TIMER1, 250, (void*)&MiniCursorFlashing);
+			SetTimer(ID_USER_TIMER1, 25, (void*)&MiniCursorFlashing);
 			MiniCursorflag=0;		// mini cursor initialize
 			break;
 		default:
@@ -1111,7 +1101,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							}
 						}
 						if ( DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &pcx, &cy, ClipStartPtr, ClipEndPtr) ) csrPtr=0; //return KEY_CTRL_EXIT;
-    
 //						Bdisp_AreaReverseVRAM(127, 8-8*EditTopLine, 127,55);		// reverse thumb line 
 						d = SrcEndPtr( filebase );					// Csr thumb point display
 						if ( d ) {									//
@@ -1272,9 +1261,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				}
 				if (key < 0x7F00) {
 					if ( ContinuousSelect ) goto F5Continue;
-					else { GetKey_DisableMenu(&key); }
+					else goto gkeyj;
 				}
-			} else { GetKey_DisableMenu(&key); }
+			} else { 
+			  gkeyj:
+				MiniCursorflag=0;
+				GetKey_DisableMenu(&key); 
+			}
 		}						
 		
 		if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
