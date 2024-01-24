@@ -34,6 +34,7 @@ const unsigned char FKEYICON_1112[]={0xFF,0xFF,0xE0, 0xDD,0xFD,0xE0, 0xDD,0x98,0
 
 void Fkey_Icon(int n, int IconNo){
 	unsigned char *pBitmap;
+	int v;
 	switch ( IconNo ) {
 		case  168: pBitmap=FKEYICON_0168;break;	// Int/
 		case  253: pBitmap=FKEYICON_0253;break;	// Menu
@@ -64,9 +65,18 @@ void Fkey_Icon(int n, int IconNo){
 		case 1111: pBitmap=FKEYICON_1111;break;	// DotP
 		case 1112: pBitmap=FKEYICON_1112;break;	// VCT
 		default:
-			if ( ( OS_Version() < 1.05 ) && ( 1017 <= IconNo ) ) IconNo = 0;
-			if ( ( OS_Version() < 200 ) && ( 1044 <= IconNo ) ) IconNo = 0;
-			if ( ( OS_Version() == 200 ) && ( 1101 <= IconNo ) ) IconNo = 0;
+			v = OS_Version();
+			if ( ( v <= 103 ) && ( 1017 <= IconNo ) ) IconNo = 0;
+			else
+			if ( ( v <= 104 ) && ( 1017 <= IconNo ) ) IconNo = 0;
+			else
+			if ( ( v <= 200 ) && ( 1044 <= IconNo ) ) IconNo = 0;
+			else
+			if ( ( v <= 201 ) && ( 1101 <= IconNo ) ) IconNo = 0;
+			else
+			if ( ( v <= 202 ) && ( 1101 <= IconNo ) ) IconNo = 0;
+			else
+			if ( ( v <= 204 ) && ( 1113 <= IconNo ) ) IconNo = 0;
 			GetFKeyIconPointer( IconNo, (unsigned char *)&pBitmap );	// 
 	}
 	DisplayFKeyIcon( n, pBitmap );			// 

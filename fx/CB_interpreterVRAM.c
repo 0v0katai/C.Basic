@@ -1716,6 +1716,8 @@ unsigned int GWait( int exit_cancel ) {
 						break;
 				}
 				break;
+			case KEY_CTRL_F2:
+			  	return key;	// return to edit screen
 			default:
 				key=0; key2=0;
 				break;
@@ -1830,7 +1832,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	return 0;
 }
 
-void CB_end( char *SRC ){
+int CB_end( char *SRC ){
 	char buffer[64];
 	char buffer2[64];
 	int c,t,reg;
@@ -1875,9 +1877,10 @@ void CB_end( char *SRC ){
 
 	while ( 1 ) {
 		key=GWait(EXIT_CANCEL_OFF);
+		if ( key == KEY_CTRL_AC  ) goto exit;
 		if ( key == KEY_CTRL_EXE ) break ;
 		if ( key == KEY_CTRL_EXIT ) break ;
-		if ( key == KEY_CTRL_AC  ) return ;
+		if ( key == KEY_CTRL_F2  ) return 9;	// return to edit screen
 	}
 	
 	CB_SelectTextVRAM();	// Select Text Screen
@@ -1894,14 +1897,17 @@ void CB_end( char *SRC ){
 		locate( 14, CursorY); Print((unsigned char*)buffer);
 		while ( 1 ) {
 			key=GWait(EXIT_CANCEL_OFF);
+			if ( key == KEY_CTRL_AC  ) goto exit;
 			if ( key == KEY_CTRL_EXE ) break ;
 			if ( key == KEY_CTRL_EXIT ) break ;
-			if ( key == KEY_CTRL_AC  ) return ;
+			if ( key == KEY_CTRL_F2  ) return 9;	// return to edit screen
 		}
 	}
 	if ( (UseGraphic&0xF) == 1 ) {	// Plot 
 		PlotXYtoPrevPXY();
 	}
+  exit:
+	return -1;	// normal
 }
 
 //----------------------------------------------------------------------------------------------
@@ -2454,19 +2460,19 @@ int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4B( unsigned int n ){ return n; }	// align +4byte

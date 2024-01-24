@@ -825,7 +825,7 @@ int CB_interpreter_sub( char *SRC ) {
 		if ( dspflagtmp ) dspflag=dspflagtmp & 0x0F;
 	}
 	iend:
-	if ( ProgEntryN == 0 ) CB_end(SRC);
+	if ( ProgEntryN == 0 ) return CB_end(SRC);
 	return -1;
 }
 
@@ -1009,9 +1009,10 @@ void InitLocalVar() {
 //int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+//int ObjectAlign6f( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_block( char *SRC ){
