@@ -154,7 +154,7 @@ unsigned int Explorer( int size, char *folder )
 	long NextCount; 		// pointer to repeat time of second repeat
 
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
-	Bkey_Set_RepeatTime(FirstCount,3);				// set cursor rep
+	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
 	FavCount=0;
 	j=FavoritesMAX-1;
@@ -423,6 +423,7 @@ unsigned int Explorer( int size, char *folder )
 	}
 	
 
+	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
 	return key;
 }
 
@@ -1082,8 +1083,9 @@ void SaveConfig(){
 	const unsigned char fname[]="CBasic";
 	unsigned char buffer[ConfigMAX];
 	unsigned char *sbuf;
-	int    *bufint=(int*)buffer;
-	double *bufdbl=(double*)buffer;
+	short  *bufshort=(short*)buffer;
+	int    *bufint =(int*)buffer;
+	double *bufdbl =(double*)buffer;
 	int size,i,r;
 	int handle,state;
 
@@ -1115,8 +1117,8 @@ void SaveConfig(){
 	buffer[10]='6';
 	buffer[11]='0';
 
-	bufint[ 3]=CB_INTDefault;
-	bufint[ 4]=DrawType;
+	bufint[ 3]=CB_INTDefault;		// 3	6:7
+	bufint[ 4]=DrawType;			// 4	8:9
 	bufint[ 5]=Coord;
 	bufint[ 6]=Grid;
 	bufint[ 7]=Axes;
@@ -1135,6 +1137,9 @@ void SaveConfig(){
 	for ( i= 68; i<  68+11 ; i++ ) bufdbl[i]=REGv[i-68];
 	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
 
+	bufshort[218*2  ]=(short)KeyRepeatFirstCount;
+	bufshort[218*2+2]=(short)KeyRepeatNextCount;
+	
 	sbuf=buffer+220*4;
 	
 	strncpy( (char*)sbuf, folder, FILENAMEMAX);
@@ -1157,6 +1162,7 @@ void LoadConfig(){
 	const unsigned char fname[]="CBasic";
 	unsigned char buffer[ConfigMAX];
 	unsigned char *sbuf;
+	short  *bufshort;
 	int    *bufint;
 	double *bufdbl;
 	int size,i;
@@ -1171,6 +1177,7 @@ void LoadConfig(){
 	state=Bfile_CloseFile(handle);
 	if (state<0)  {ErrorMSG("Close Error",state); return;}
 
+	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
 	bufdbl=(double*)buffer;
 	
@@ -1199,13 +1206,16 @@ void LoadConfig(){
 		BreakCheck=bufint[12];
 		TimeDsp   =bufint[13];
 		MatXYmode =bufint[14];
-		PictMode =bufint[15];
+		PictMode  =bufint[15];
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];
 		for ( i= 10; i<  10+58 ; i++ ) REG[i-10] =bufdbl[i];
 		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]=bufdbl[i];
 		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
+
+		KeyRepeatFirstCount=bufshort[218*2  ]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=20;
+		KeyRepeatNextCount =bufshort[218*2+2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount =5;
 
 		sbuf=buffer+220*4;
 

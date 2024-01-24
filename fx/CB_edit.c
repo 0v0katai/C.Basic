@@ -517,7 +517,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	long NextCount; 		// pointer to repeat time of second repeat
 
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
-	Bkey_Set_RepeatTime(FirstCount,3);				// set cursor rep
+	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
 //	PreProcess(SrcBase);			// Basic source adjust
 
