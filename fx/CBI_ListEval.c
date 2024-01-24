@@ -646,6 +646,7 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			 ( c == 0xFFFFFFC1 )) { // Ran#
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
+				if ( ErrorNo ) goto exitj;
 				c = SRC[ExecPtr+1];
 				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;

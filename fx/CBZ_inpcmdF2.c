@@ -357,10 +357,6 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF909;return;	// a+bi
 			} break;
-		case CMD_SETUP_TVAR:
-			switch ( CommandPage ) {
-				case 0: (*code)=0xF91D;return;	// VarList
-			} break;
 
 		default:
 			break;

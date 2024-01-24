@@ -1305,6 +1305,7 @@ complex Cplx_Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			 ( c == 0xFFFFFF8D )) { // integral
 				result = Cplx_fMUL( result, Cplx_Evalsub4( SRC ) );
 		} else if ( c == 0x7F ) { // 7F..
+				if ( ErrorNo ) goto exitj;
 				c = SRC[ExecPtr+1];
 				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result = Cplx_fMUL( result, Cplx_Evalsub4( SRC ) );

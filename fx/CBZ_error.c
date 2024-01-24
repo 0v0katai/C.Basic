@@ -46,163 +46,162 @@ void ERROR(char *buffer) {
 
 void CB_ErrMsg(int ErrNo) {
 	switch (ErrNo) {
-		case SyntaxERR:
+		case SyntaxERR:					//  1
 			ERROR(" Syntax ERROR");
 			break;
-		case MathERR:
+		case MathERR:					//  2
 			ERROR(" Ma ERROR");
 			break;
-		case GoERR:
+		case GoERR:						//  3
 			ERROR(" Go ERROR");
 			break;
-		case NestingERR:
+		case NestingERR:				//  4
 			ERROR(" Nesting ERROR");
 			break;
-		case StackERR:
+		case StackERR:					//  5
 			ERROR(" Stack ERROR");
 			break;
-		case MemoryERR:
+		case MemoryERR:					//  6
 			ERROR(" Memory ERROR");
 			break;
-		case ArgumentERR:
+		case ArgumentERR:				//  7
 			ERROR(" Argument ERROR");
 			break;
-		case DimensionERR:
+		case DimensionERR:				//  8
 			ERROR(" Dimension ERROR");
 			break;
-		case RangeERR:
+		case RangeERR:					//  9
 			ERROR(" Range ERROR");
 			break;
-		case NonRealERR:
+		case NonRealERR:				// 11
 			ERROR(" Non-Real ERROR");
 			break;
-		case TooMuchData:
-			ERROR(" Too Much Data");
-			break;
-		case ComERR:
+		case ComERR:					// 20
 			ERROR(" Com ERROR");
 			break;
-		case TransmitERR:
+		case TransmitERR:				// 21
 			ERROR(" Transmit ERROR");
 			break;
-		case ReceiveERR:
+		case ReceiveERR:				// 22
 			ERROR(" Receive ERROR");
 			break;
-		case InvalidType:
+		case TooMuchData:				// 28
+			ERROR(" Too Much Data");
+			break;
+		case InvalidType:				// 30
 			ERROR(" Invalid Type");
 			break;
 
-		case NextWithoutForERR:
-			ERROR("Next without For");
+		case NextWithoutForERR:			// 33
+			ERROR("Missing Next");
 			break;
-		case ForWithoutNextERR:
-			ERROR("For without Next");
+		case ForWithoutNextERR:			// 34
+			ERROR("Missing For");
 			break;
-		case WhileWithoutWhileEndERR:
-			ERROR("While w/o W.End");
+		case WhileWithoutWhileEndERR:	// 35
+			ERROR("Missing WhileEnd");
 			break;
-		case WhileEndWithoutWhileERR:
-			ERROR("W.End w/o While");
+		case WhileEndWithoutWhileERR:	// 36
+			ERROR("Missing While");
 			break;
-		case LpWhileWithoutDoERR:
-			ERROR("LpWhile w/o Do");
+		case LpWhileWithoutDoERR:		// 37
+			ERROR("Missing LpWhile");
 			break;
-		case DoWithoutLpWhileERR:
-			ERROR("Do w/o LpWhile");
+		case DoWithoutLpWhileERR:		// 38
+			ERROR("Missing Do");
 			break;
-		case NotLoopERR:
+		case NotLoopERR:				// 39
 			ERROR("Not Loop ERROR");
 			break;
-		case DivisionByZeroERR:
-			ERROR("Division By Zero");
+		case DivisionByZeroERR:			// 40
+			ERROR("Zero Division");
 			break;
-		case UndefinedLabelERR:
+		case UndefinedLabelERR:			// 41
 			ERROR("Undefined Label");
 			break;
-		case NotEnoughMemoryERR:
-			ERROR("Not enough Memory");
+		case NotEnoughMemoryERR:		// 42
+			ERROR("Not Enough Memory");
 			break;
-		case StringTooLongERR:
+		case StringTooLongERR:			// 43
 			ERROR("String Too Long");
 			break;
-		case NoMatrixArrayERR:
-			ERROR("No Matrix array");
+		case NoMatrixArrayERR:			// 44
+			ERROR("No Matrix Array");
 			break;
-		case ArraySizeERR:
-			ERROR("Illegal Ary size");
+		case ArraySizeERR:				// 45
+			ERROR("Invalid Ary Size");
 			break;
-		case NotfoundProgERR:
-			ERROR("Not found Prog");
+		case NotfoundProgERR:			// 46
+			ERROR("Prog Not Found");
 			break;
-		case TooManyProgERR:
-			ERROR("Too many SubProg");
+		case TooManyProgERR:			// 47
+			ERROR("Too Many SubProg");
 			break;
-		case IfWithoutIfEndERR:
-			ERROR("If without IfEnd");
+		case IfWithoutIfEndERR:			// 48
+			ERROR("Missing IfEnd");
 			break;
-		case ThenWithoutIfERR:
-			ERROR("Then without If");
+		case ThenWithoutIfERR:			// 49
+			ERROR("Missing If");
 			break;
-		case CaseWithoutSwitchERR:
-			ERROR("Case w/o Switch  ");
+		case CaseWithoutSwitchERR:		// 50
+			ERROR("Missing Switch ");
 			break;
-		case DefaultWithoutSwitchERR:
-			ERROR("Default w/o Swtch");
+		case DefaultWithoutSwitchERR:	// 51
+			ERROR("Missing Switch ");
 			break;
-		case SwitchWithoutSwitchEndERR:
-			ERROR("Switch w/o S.End ");
+		case SwitchWithoutSwitchEndERR:	// 52
+			ERROR("Missing SwitchEnd");
 			break;
-		case SwitchEndWithoutSwitchERR:
-			ERROR("S.End w/o Switch ");
+		case SwitchEndWithoutSwitchERR:	// 53
+			ERROR("Missing Switch ");
 			break;
-		case CantFindFileERR:
-			ERROR("Can't find file");
+		case CantFindFileERR:			// 54
+			ERROR("File Not Found");
 			break;
-		case ElementSizeERR:
+		case ElementSizeERR:			// 55
 			ERROR("Illegal Element");
 			break;
-		case AlreadyOpenERR:
-			ERROR("Already Opened");
+		case AlreadyOpenERR:			// 56
+			ERROR("Com Opened");
 			break;
-		case ComNotOpenERR:
-			ERROR("Com Not Opened");
+		case ComNotOpenERR:				// 57
+			ERROR("Com Closed");
 			break;
-		case TypeMismatchERR:
-			ERROR("Type Mismatched");
+		case TypeMismatchERR:			// 58
+			ERROR("Invalid Type");
 			break;
-		case OutOfDomainERR:
+		case OutOfDomainERR:			// 59
 			ERROR("Out of Domain ");
 			break;
-		case UndefinedVarERR:
-			ERROR("Undefined Var.");
+		case UndefinedVarERR:			// 60
+			ERROR("Var Undefined");
 			break;
-		case UndefinedFuncERR:
-			ERROR("Undefined Func.");
+		case UndefinedFuncERR:			// 61
+			ERROR("Func Undefined");
 			break;
-		case NotSupportERR:
+		case NotSupportERR:				// 62
 			ERROR("Not Supported");
 			break;
-		case TooManyVarERR:
-			ERROR("Exceed Var. limit");
+		case TooManyVarERR:				// 63
+			ERROR("VarLimit Exceeded");
 			break;
-		case DuplicateDefERR:
-			ERROR("Duplicated Def.");
+		case DuplicateDefERR:			// 64
+			ERROR("Duplicated Def");
 			break;
-		case AlignmentERR:
-//			ERROR("Alignment ERR");
+		case AlignmentERR:				// 65
 			ERROR("Address Align ERR");
 			break;
-		case NotAccuracyERR:
-			ERROR("Not met Accuracy");
+		case NotAccuracyERR:			// 66
+			ERROR("Time Out");
 			break;
-		case TryWithoutExceptERR:
-			ERROR("Try w/o Except  ");
+		case TryWithoutExceptERR:		// 70
+			ERROR("Missing Except");
 			break;
-		case ExcpetWithoutTryERR:
-			ERROR("Except w/o Try  ");
+		case ExcpetWithoutTryERR:		// 71
+			ERROR("Missing Try");
 			break;
-//		case TryEndWithoutTryERR:
-//			ERROR("TryEnd w/o Try ");
+//		case TryEndWithoutTryERR:		// 72
+//			ERROR("Missing Try");
 //			break;
 			
 		default:

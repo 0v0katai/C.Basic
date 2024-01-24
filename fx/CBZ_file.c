@@ -604,6 +604,9 @@ unsigned int Explorer( int size, char *folder )
 	char alphalock_bk ;
 	int searchmode=0;
 	int csrX=0;
+	int n_line=N_LINE;
+	int yk;
+	int miniflag=(EditFontSize & 0x07);
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -655,6 +658,7 @@ unsigned int Explorer( int size, char *folder )
 
 	while( cont && (FileListUpdate==0) )
 	{
+		if ( miniflag ) { n_line=8; yk=18/3; } else { n_line=6; yk=24/3; }
 		if ( StorageMode >= 2 ) memset( folder, 0, FOLDERMAX );
 		FavCount=0;
 		for( i=0; i<FavoritesMAX; i++){			//	count Favorites list
@@ -741,27 +745,35 @@ unsigned int Explorer( int size, char *folder )
 				index = StartLine;
 			if( top > index )
 				top = index;
-			if( index > top + N_LINE - 1 )
-				top = index - N_LINE + 1 ;
+			if( index > top + n_line - 1 )
+				top = index - n_line + 1 ;
 			if( top < StartLine )
 				top = StartLine;
-			if( size - StartLine <= N_LINE )
+			if( size - StartLine <= n_line )
 				top = StartLine;
 
-			for(i = 0;i < N_LINE && i + top < size; ++i ){
+			for(i = 0;i < n_line && i + top < size; ++i ){
 
 				if( files[i + top].filesize == 0 ) {
 					sprintf( buf, "---------------------");
 					goto dsp1;
 				} else
 				if ( files[i + top].filesize == FOLDER_SEPALATOR ) {
-					sprintf( buf, "------Favorites------");
+				  	if ( miniflag ) {
+						sprintf( buf, "----------Favorites----------");
+					} else {
+						sprintf( buf, "------Favorites------");
+					}
 					goto dsp1;
 				} else
 				if( files[i + top].filesize == FOLDER_FLAG ) {
 					sprintf( buf, " [%s]", files[i + top].filename );
 				  dsp1:
-					locate(  1, i + 2 ); Print( (unsigned char*)buf );
+				  	if ( miniflag ) {
+						PrintMini(    2, (i+1)*yk+2, (unsigned char*)buf, MINI_OVER ) ;
+					} else {
+						locate(  1, i + 2 ); Print( (unsigned char*)buf );
+					}
 				} else {
 					strncpy( buf2, files[i + top].filename, FILENAMEMAX );
 					j=strlenOp(files[i + top].filename); if (j<4) j=4;
@@ -787,17 +799,36 @@ unsigned int Explorer( int size, char *folder )
 						strcat(buf2,buf); buf2[14]=0;
 						sprintf( buf, "%-14s ", buf2 );
 					}
-					locate(  1, i + 2 ); Print( (unsigned char*)buf );
-					sprintf( buf, ":%5u ", k );
-					locate( 15, i + 2 ); Print( (unsigned char*)buf );
+				  	if ( miniflag ) {
+						PrintMini(    2, (i+1)*yk+2, (unsigned char*)buf, MINI_OVER ) ;
+					} else {
+						locate(  1, i + 2 ); Print( (unsigned char*)buf );
+					}
+				  	if ( miniflag ) {
+						sprintf( buf, ":%8u ", k );
+						PrintMini(    (22-1)*12/3, (i+1)*yk+2, (unsigned char*)buf, MINI_OVER ) ;
+					} else {
+						sprintf( buf, ":%5u ", k );
+						locate( 15, i + 2 ); Print( (unsigned char*)buf );
+					}
 				}
 			}
 
-			Bdisp_AreaReverseVRAM( 0, (index-top+1)*8 , 127, (index-top+2)*8-1 );
-			if( top > 0 )
-				PrintXY( 120, 8, (unsigned char*)"\xE6\x92", top == index );
-			if( top + N_LINE < size  )
-				PrintXY( 120, N_LINE*8, (unsigned char*)"\xE6\x93" , top + N_LINE - 1 == index );
+			Bdisp_AreaReverseVRAM( 0, (index-top+1)*yk+1 , 127-8*miniflag, (index-top+2)*yk+1-(miniflag==0) );
+			if( top > StartLine ) {
+				if ( miniflag ) {
+					PrintMini( 121, 8, (unsigned char*)"\xE6\x92", MINI_OVER ) ;
+				} else {
+					PrintXY( 120, 8, (unsigned char*)"\xE6\x92", top == index );
+				}
+			}
+			if( top + n_line < size  ) {
+				if ( miniflag ) {
+					PrintMini( 121, n_line*6+2, (unsigned char*)"\xE6\x93", MINI_OVER ) ;
+				} else {
+					PrintXY( 120, n_line*8, (unsigned char*)"\xE6\x93" , top + n_line - 1 == index );
+				}
+			}
 		}
 
 		Isfolder= ( files[index].filesize == FOLDER_FLAG ) ;
@@ -1077,6 +1108,7 @@ unsigned int Explorer( int size, char *folder )
 					case KEY_CTRL_SETUP:
 							i = StorageMode ;
 							selectSetup=SetupG(selectSetup, 0);
+							miniflag=(EditFontSize & 0x07);
 							if ( ( FileListUpdate ) || ( i != StorageMode ) ) { key = KEY_CTRL_EXIT; goto update; }
 							break;
 					case KEY_CTRL_F1:
@@ -3982,7 +4014,6 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -4047,6 +4078,7 @@ void FavoritesDowndummy6( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy7( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

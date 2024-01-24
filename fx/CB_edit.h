@@ -43,3 +43,7 @@ typedef struct {
 extern char *Undo;
 extern int *UndoPtr;
 extern int *UndoLen;
+
+extern char   MiniCursorflag;
+extern short  MiniCursorX;
+extern short  MiniCursorY;

@@ -169,15 +169,19 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 
 complex InputNumC_fullsub(int x, int y, int width, complex defaultNum ) ;
 complex InputNumC_fullhex(int x, int y, int width, complex defaultNum, int hex) ;
-
 complex InputNumC_full(int x, int y, int width, complex defaultNum) ;		// full number display
 complex InputNumC_Char(int x, int y, int width, complex defaultNum, int code) ;
 complex InputNumC_replay(int x, int y, int width, complex defaultNum) ;
 
+complex InputNumC_fullsub_mini(int x, int y, int width, complex defaultNum, int miniflag ) ;
+complex InputNumC_fullhex_mini(int x, int y, int width, complex defaultNum, int hex, int miniflag) ;
+complex InputNumC_full_mini(int x, int y, int width, complex defaultNum, int miniflag) ;		// full number display
+complex InputNumC_Char_mini(int x, int y, int width, complex defaultNum, int code, int miniflag) ;
+complex InputNumC_replay_mini(int x, int y, int width, complex defaultNum, int miniflag) ;
+
 complex InputNumC_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) ;		//  Basic Input
 complex InputNumC_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) ;		//  Basic Input 1
-complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum, int dispzero) ;		//  Basic Input 2
-
+complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum, int miniflag, int dispzero) ;		//  Basic Input 2
 //-----------------------------------------------------------------------------
 
 complex Cplx_ReadMatrix( int reg, int dimA, int dimB);				// 0-

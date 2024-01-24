@@ -254,21 +254,29 @@ int KeyCheckSHIFT() {		// [SHIFT]
 //	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 5, 10 ); // [SHIFT] is down by slim
 	return Bkey_GetKeyWait_sub( 7, 9 ); // [SHIFT] is down
 }
-int KeyCheckCHAR4() {		// [4]
-	if (IsSH3 ) return IsKeyDown(KEY_CHAR_4);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 4, 6 ); // [4] is down by slim
-	return Bkey_GetKeyWait_sub( 7, 4 ); // [4] is down
-}
 int KeyCheckCHAR3() {		// [3]
 	if (IsSH3 ) return IsKeyDown(KEY_CHAR_3);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 3, 4 ); // [3] is down by slim
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 5, 3 ); // [3] is down by slim
 //	return Bkey_GetKeyWait_sub( 5, 3 ); // [3] is down
 	return KeyScanDown(KEYSC_3); // [3] is down
 }
+int KeyCheckCHAR4() {		// [4]
+	if (IsSH3 ) return IsKeyDown(KEY_CHAR_4);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 4 ); // [4] is down by slim
+//	return Bkey_GetKeyWait_sub( 7, 4 ); // [4] is down
+	return KeyScanDown(KEYSC_4); // [4] is down
+}
+int KeyCheckCHAR5() {		// [3]
+	if (IsSH3 ) return IsKeyDown(KEY_CHAR_5);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 6, 4 ); // [5] is down by slim
+//	return Bkey_GetKeyWait_sub( 6, 4 ); // [5] is down
+	return KeyScanDown(KEYSC_5); // [5] is down
+}
 int KeyCheckCHAR6() {		// [6]
 	if (IsSH3 ) return IsKeyDown(KEY_CHAR_6);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 4, 4 ); // [6] is down by slim
-	return Bkey_GetKeyWait_sub( 5, 4 ); // [6] is down
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 5, 4 ); // [6] is down by slim
+//	return Bkey_GetKeyWait_sub( 5, 4 ); // [6] is down
+	return KeyScanDown(KEYSC_6); // [6] is down
 }
 int KeyCheckF1() {		// [F1]
 	if (IsSH3 ) return IsKeyDown(KEY_CTRL_F1);
