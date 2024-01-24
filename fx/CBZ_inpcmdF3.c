@@ -70,7 +70,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 			} break;
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {
-				case 0: (*code)=0x7F59;return;	// ColSize
+				case 0: (*code)=0x7F59;return;	// RowSize
 			} break;
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
@@ -114,7 +114,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 			} break;
 		case CMD_OPTN_EXT:
 			switch ( CommandPage ) {
-				case 0: (*code)='&';return;	// '&'
+				case 0: (*code)=0xF90E;return;	// Const 
 			} break;
 
 		case CMD_VARS:		//	------------------------------------------------------------VARS_F3
@@ -190,6 +190,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9D7;return;	// _Bmp16
 				case 1: (*code)=0xF9DD;return;	// DrawMat
+				case 2: (*code)=0xF962;return;	// SetFontMini(
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F3

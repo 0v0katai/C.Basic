@@ -128,11 +128,15 @@ int CheckKeyRow7305( int row );
 int KeyScanDown(int keyscan_code);
 int KeyScanDownAC();
 int GetKey_DisableMenu( unsigned int *key ) ;
+int CB_KeyCodeCnvt( unsigned int key ) ;			// CasioBasic Getkey SDK compatible
 
 int KeyCheckAC();
 int KeyCheckEXE();
 int KeyCheckEXIT();
-int KeyCheckF1() ;		// [F1]
+int KeyCheckF1();
+int KeyCheckCHAR4();
+int KeyCheckCHAR3();
+int KeyCheckCHAR6();
 
 int CB_Getkey();
 int CB_Getkey0();

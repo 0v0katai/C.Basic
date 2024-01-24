@@ -569,6 +569,8 @@ int CB_IsStr( char *SRC, int execptr ) {
 		else
 		if ( ( 0x34 <= c ) && ( c <= 0x49 ) ) return c;
 		else
+		if ( c == 0x4D ) return c;	// StrSplit
+		else
 		if ( c == 0x1B ) return c;	// fn
 	} else
 	if ( c == 0x7F ) {
@@ -713,6 +715,10 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			ExecPtr+=2;
 			(*maxlen)=CB_StrRepl( SRC );
 			return CB_CurrentStr;
+		case 0x4D:	// StrSplit(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrSplit( SRC );
+			return CB_CurrentStr;
 		default:
 			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
 	}
@@ -755,7 +761,7 @@ void StorStrMat( char *SRC ) {	// "String" -> $Mat A
 	if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 	if ( MatAry[reg].ElementSize != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
 	MatAryC=MatrixPtr( reg, dimA, dimB );
-	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1-dimB );
 }
 
 void StorStrStr( char *SRC ) {	// "String" -> Sto 1-20
@@ -978,7 +984,7 @@ int CB_StrCmp( char *SRC ) {
 }
 
 int CB_StrSrc( char *SRC ) {
-	int sptr=0,slen,maxoplen;
+	int sptr=1,slen,maxoplen;
 	int	buffercnt=CB_StrBufferCNT;
 	char *buffer, *buffer2;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
@@ -992,12 +998,12 @@ int CB_StrSrc( char *SRC ) {
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		sptr = CB_EvalInt( SRC );	//
-		if ( sptr < 1 ) sptr=1;
-		if ( sptr > slen ) sptr=slen;
 	}
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( sptr < 1 ) sptr=1;
+	if ( sptr > slen ) sptr=slen;
 	if ( StrSrc( buffer, buffer2, &sptr, CB_StrBufferMax-1 ) ==0 ) return 0 ; // no found
-	return sptr+1;
+	return sptr;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1273,12 +1279,23 @@ int CB_ExpToStr( char *SRC ) {	//  Exp->Str(
 }
 
 //----------------------------------------------------------------------------------------------
-int CB_StrChar( char *SRC ) {	// StrChar("*"[,n])
-	int n;
+int CB_StrChar( char *SRC ) {	// StrChar("*"[,n]) StrChar( code [,n])
+	int c,n,i=0;
 	int maxoplen,maxoplen2;
 	char *buffer;
 	char *buffer2;
-	buffer = CB_GetOpStr( SRC, &maxoplen );
+	char code[4];
+	c=CB_IsStr( SRC, ExecPtr );
+	if ( c ) {	// string
+		buffer = CB_GetOpStr( SRC, &maxoplen );
+	} else {	// expression
+		n = CB_EvalInt( SRC );
+		c = (n&0xFF00)>>8;
+		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) code[i++] = c; 
+		code[i++] = n&0xFF;
+		code[i++] = '\0';
+		buffer=code;
+	}
 	if ( ErrorNo ) return ;  // error
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
@@ -1289,7 +1306,6 @@ int CB_StrChar( char *SRC ) {	// StrChar("*"[,n])
 	if ( n > 0 ) StrChar( CB_CurrentStr, buffer, n) ;
 	else	CB_CurrentStr[0]='\0';
 	return CB_StrBufferMax-1;
-
 }
 
 int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
@@ -1463,7 +1479,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
 						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
 						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],strval[1]); break;
 					} break;
 				default:         i=sprintf( CB_CurrentStr, buffer, dblval[0]); break;
 			} break;
@@ -1542,6 +1558,74 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 	return CB_StrBufferMax-1;
 }
 
+//----------------------------------------------------------------------------------------------
+
+int	StrSplit( char *str1, char *buffer, char *srcstr, int ptr, int maxlen ){	// ptr:1-	->MatAns
+	int buflen,srclen,bufptr,ptrorg=ptr;
+	int oplen,r,max=0,i;
+	char tmp[CB_StrBufferMax];
+	int dimA,dimB,base=1,element=8;
+	
+	buflen=StrLen( buffer, &oplen );
+	srclen=StrLen( srcstr, &oplen );
+	str1[0]='\0';
+	bufptr=ptr;
+	i=1;
+	while ( 1 ) {		// search  for max length 
+		r=StrSrc( buffer, srcstr, &ptr, maxlen );
+		if ( r==0 ) break;
+		if ( ptr-bufptr > max ) max=ptr-bufptr;
+		ptr   = ptr+srclen;
+		bufptr= ptr;
+		i++;
+	}
+	if ( buflen-ptr+1 > max ) max=buflen-ptr+1;
+	
+	dimA=i;
+	dimB=max+1;
+	NewMatListAns( dimA, dimB, base, element );
+
+	ptr=ptrorg;
+	bufptr=ptr;
+	i=1;
+	while ( 1 ) {
+		r=StrSrc( buffer, srcstr, &ptr, maxlen );
+		if ( r==0 ) break;
+		if ( ptr-bufptr > 0 ) {
+			StrMid( MatrixPtr( CB_MatListAnsreg, i++, 1 ), buffer, bufptr, ptr-bufptr);
+		}
+		ptr   = ptr+srclen;
+		bufptr= ptr;
+	}
+	StrMid( MatrixPtr( CB_MatListAnsreg, i++, 1 ), buffer, bufptr, buflen-ptr+1);
+	str1=MatrixPtr( CB_MatListAnsreg, 1, 1 );
+	return 1;
+}
+
+int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232]["4567"]["89"]]
+	int sptr=1,slen,maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
+	char *buffer, *srcstr;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	slen=StrLen( CB_CurrentStr ,&maxoplen);
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	srcstr  = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0 ;  // error
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		sptr = CB_EvalInt( SRC );	//
+		if ( sptr < 1 ) sptr=1;
+		if ( sptr > slen ) sptr=slen;
+	}
+	
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	StrSplit( CB_CurrentStr, buffer, srcstr, sptr, CB_StrBufferMax-1 );
+	dspflag=3;	// Mat ans
+	return CB_StrBufferMax-1;
+}
 
 //----------------------------------------------------------------------------------------------
 int CB_StrDMS( char *SRC ) {

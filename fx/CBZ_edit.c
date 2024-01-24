@@ -344,7 +344,7 @@ int OpcodeStrLenBufpx(char *buffer, int ofst) {
 	slen = CB_MB_ElementCount( tmpbuf ) ;	// SYSCALL
 	if ( mini == 0 ) return slen*6;
 //	MiniCursorflag=0;		// mini cursor initialize
-	return CB_PrintMiniLengthStr( (unsigned char*)tmpbuf );	// minifont
+	else return CB_PrintMiniLengthStr( (unsigned char*)tmpbuf, EditExtFont);	// minifont ext font mode
 }
 
 int OpcodeLineSub( char *buffer, int *ofst , int *len, char *opstr ) {
@@ -358,7 +358,7 @@ int OpcodeLineSub( char *buffer, int *ofst , int *len, char *opstr ) {
 }
 int OpcodeMinilength( char *str, int *oplen ){
 	int c=(char)*str;
-	int length=CB_PrintMiniLength( (unsigned char *)str++ ); 
+	int length=CB_PrintMiniLength( (unsigned char *)str++, EditExtFont);	// minifont ext font mode
 	(*oplen)=1;
 	if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  (*oplen)++;
 	return length;
@@ -604,22 +604,21 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 					CB_PrintMini( 0, ((*csry)-1)*yk+2, buf, MINI_OVER );
 				}
 				if ( mini == 0 ) { c=px-1+EDITpxNum;
-//					CB_PrintXYC( px-1+EDITpxNum, ((*csry)-1)*8, tmpb, rev ) ;
-					if ( rev )	CB_PrintRevC( c/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
-					else		CB_PrintC(    c/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
+					if ( rev )	CB_PrintRevC_ext( c/6+1 ,(*csry), (unsigned char*)(tmpb), EditExtFont  ) ;
+					else		CB_PrintC_ext(    c/6+1 ,(*csry), (unsigned char*)(tmpb), EditExtFont  ) ;
 					px+=6;
 				} else { c=px+EDITpxNum; d=((*csry)-1)*6+2;
-					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV  ) ;
-					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER ) ;
+					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV  | (0x100*EditExtFont) ) ;
+					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER | (0x100*EditExtFont) ) ;
 				}
 				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; }
 				if ( ( opcode==0x0D ) ) { Numflag=0; (*NumOfset)++; }
 //				Bdisp_PutDisp_DD();
 			} else {
 				if ( mini == 0 ) {
-					px+=6;
+						px+=6;
 				} else {
-					px+=CB_PrintMiniLength( tmpb );
+						px+=CB_PrintMiniLength( tmpb, EditExtFont );	// minifont ext font mode
 				}
 				if ( ( px > EDITpxMAX ) ) { (y)++; px=1; }
 			}
@@ -701,7 +700,9 @@ void DumpMix( char *SrcBase, int offset){
 				Hex2PrintXY( i*3+6, j+(2), "", SrcBase[offset+i+j*4]&0xFF);
 		}
 		for (i=0; i<4 ; i++){
-				CB_PrintC(18+i,j+(2),(unsigned char*)SrcBase+offset+i+j*4);
+//				CB_PrintC(18+i,j+(2),(unsigned char*)SrcBase+offset+i+j*4);
+				locate (18+i,j+(2));
+				PrintC( (unsigned char*)SrcBase+offset+i+j*4 );
 		}
 	}
 }
@@ -1611,6 +1612,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_dispN( FKeyNo5, buffer);
 				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 				GetKey_DisableMenu(&key);
+				if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
+				if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
+				KeyRecover();
 				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				switch (key) {
 //					case KEY_CTRL_EXIT:
@@ -1750,6 +1754,16 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( CursorStyle >= 0x6 )	CursorStyle-=0x6;		//  -> insert mode
 								else 						CursorStyle+=0x6;		//  -> overwrite mode
 							}
+							break;
+					case KEY_CHAR_3:
+							PopUpWin(1);
+							locate(3,4); Print((unsigned char*)"Hit GetKey Code");
+							KeyRecover();
+							GetKey_DisableMenu(&key);
+							MSGpop();
+							sprintf(buffer,"%d",CB_KeyCodeCnvt( key ) );
+							EditPaste( filebase, buffer, &csrPtr);
+							key=0;
 							break;
 					default:
 						break;

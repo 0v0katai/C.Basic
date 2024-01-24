@@ -312,11 +312,11 @@ const char ConvList7F00[][16]={
 "Rref ",			// 7F56
 "Conv", 			// 7F57
 "ElemSize(",			// 7F58
-"ColSize(",				// 7F59
-"RowSize(",				// 7F5A
+"RowSize(",				// 7F59
+"ColSize(",				// 7F5A
 "MatBase(",				// 7F5B
 "ListCmp(",				// 7F5C
-"@7F5D",			// 7F5D
+"GetRGB(",			// 7F5D
 "RGB(",				// 7F5E
 "Ticks",				// 7F5F
 					
@@ -728,7 +728,7 @@ const char ConvListF700[][17]={
 "R SelOff ",		// F7DB
 "DrawOff",			// F7DC
 "@F7DD",			// F7DD
-"@F7DE",			// F7DE
+"BatteryStatus",			// F7DE
 "Delete ",				// F7DF
 
 "DotLife(",				// F7E0
@@ -781,9 +781,9 @@ const char ConvListF900[][17]={
 "re^Theta",			// F90A
 "EngOn",			// F90B
 "EngOff",			// F90C
-"@F90D",			// F90D
-"@F90E",			// F90E
-"AliasVar ",			// F90F
+"Define ",				// F90D
+"Const ",				// F90E
+"Alias ",				// F90F
 
 "Sel a0",			// F910
 "Sel a1",			// F911
@@ -836,7 +836,7 @@ const char ConvListF900[][17]={
 "ClrVct ",			// F93E		//  ver.2.04~
 "Str ",					// F93F
 
-"Str(",					// F940
+"ToStr(",				// F940
 "DATE",					// F941
 "TIME",					// F942
 "Sprintf(",				// F943
@@ -848,8 +848,8 @@ const char ConvListF900[][17]={
 "StrRepl(",				// F949
 "CrossP(",			// F94A		// ver.2.04~
 "DotP(",			// F94B
-"@F94C",			// F94C
-"@F94D",			// F94D
+"Str(",					// F94C
+"StrSplit(",			// F94D
 "@F94E",			// F94E
 "Wait ",				// F94F
 
@@ -870,10 +870,10 @@ const char ConvListF900[][17]={
 "UnitV(",			// F95E		// ver.2.04~
 "@F95F",			// F95F
 
-"@F960",			// F960
-"@F961",			// F961
-"@F962",			// F962
-"@F963",			// F963
+"GetFont(",				// F960
+"SetFont ",				// F961
+"GetFontMini(",			// F962
+"SetFontMini ",			// F963
 "@F964",			// F964
 "@F965",			// F965
 "@F966",			// F966
@@ -1411,11 +1411,13 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			text[textofst++] = code;
 			ofst++;
 		} else
-		if ( ( 0xFFA0 <= code ) && ( code <= 0xFFDF ) ) {	// kana
+		if ( ( 0xFF80 <= code ) && ( code <= 0xFFDF ) ) {	// kana
+				if ( code <= 0xFFA0 ) goto code4;
 				text[textofst++] = code & 0xFF;
 				ofst+=2;
 		} else
 		if ( ( 0xE500 <= code ) && ( code <= 0xE6FF ) ) {	// 2byte
+			  code4:
 				if ( flag ) text[textofst++] ='_';
 				text[textofst++] ='#';
 				NumToHex( text+textofst, code, 4);
@@ -1559,6 +1561,7 @@ int codecnvF900( char *srcbase, char *text, int *ofst, int *textofst ) {
 					} 
 				}
 				srcbase[(*ofst)++] = 0xF9;
+				if ( code==0x4C ) code=0x40;	// Str( -> ToStr(
 				srcbase[(*ofst)++] = code ;
 				(*textofst) += len;
 				return 0;	 	// matching
@@ -1734,7 +1737,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		if ( c == '#' ) {
 				textofst++;
 				d=str2hex4( text, &textofst );
-				if ( (0xE500<=d) && (d<=0xE7FF) ) {
+				if ( ( (0xE500<=d) && (d<=0xE7FF) ) || ( (0xFF80<=d) && (d<=0xFFEF) ) ) {
 					srcbase[ofst++] = d >> 8;
 					srcbase[ofst++] = d & 0xFF;
 				} else {
@@ -1760,9 +1763,9 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		if ( ( 0x20 <= c ) && ( c <= 0x7E ) ) {
 			if ( c == 'C' ) { 	// Char
 				if ( ( text[textofst+1] == 'h' ) && ( text[textofst+2] == 'a' ) && ( text[textofst+3] == 'r' ) ) {
-					c=text[textofst+4];
-					if ( ( c == '!' ) || ( c == '-') ) {
-						srcbase[ofst++] = c;
+					d=text[textofst+4];
+					if ( ( d == '!' ) || ( d == '-') ) {
+						srcbase[ofst++] = d;
 						textofst+=5;
 					} else {
 						srcbase[ofst++] = c;

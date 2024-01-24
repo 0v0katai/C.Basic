@@ -72,7 +72,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			} break;
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {
-				case 0: (*code)=0x7F5A;return;	// RowSize
+				case 0: (*code)=0x7F5A;return;	// ColSize
 			} break;
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
@@ -111,7 +111,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			} break;
 		case CMD_OPTN_EXT:
 			switch ( CommandPage ) {
-				case 0: (*code)='|';return;	// '|'
+				case 0: (*code)='&';return;	// '&'
 			} break;
 
 		case CMD_VARS:		//	------------------------------------------------------------VARS_F4
@@ -163,6 +163,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9D9;return;	// _BmpZoom
 				case 1: (*code)=0xF9DE;return;	// _BmpZoomRotate
+				case 2: (*code)=0xF963;return;	// GetFontMini
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F4

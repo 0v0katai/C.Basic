@@ -51,6 +51,7 @@ char	Angle       = 1;	// 0:deg   1:rad  2:grad
 
 char PxlMode=1;		// Pxl  1:set  0:clear
 
+char BreakCheckDefault=1;	// Break Stop on/off
 char BreakCheck=1;	// Break Stop on/off
 char ACBreak=1;		// AC Break on/off
 
@@ -79,9 +80,10 @@ double Plot_Y    =1e308 ;	// Plot Current Y
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-double  REG[26+6+26];
+double  REG[VARMAXSIZE];
 double  REGv[11];
-int  	REGINT[26+6+26];
+int  	REGINT[VARMAXSIZE];
+char    REGtype[VARMAXSIZE];
 
 double	Xfct     =  2;					// 
 double	Yfct     =  2;					// 
@@ -90,8 +92,8 @@ short 	Argc=0;
 double 	LocalDbltmp[ArgcMAX];
 int		LocalInttmp[ArgcMAX];
 
-double 	*LocalDbl[26+6+26];
-int		*LocalInt[26+6+26];
+double 	*LocalDbl[VARMAXSIZE];
+int		*LocalInt[VARMAXSIZE];
 
 double	*traceAry;		// Graph array X
 
@@ -111,6 +113,9 @@ short PictbaseCount;
 int	CB_TicksStart;
 int	CB_TicksEnd;
 int	CB_TicksAdjust;
+int	CB_HiTicksStart;
+int	CB_HiTicksEnd;
+int	CB_HiTicksAdjust;
 
 int CB_INT=0;		// current mode  0:normal  1: integer mode
 int ExecPtr=0;		// Basic execute ptr
@@ -295,6 +300,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x0C:	// Return
 						c=SRC[ExecPtr];
 						if ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) { 
+							dspflag=2;
 							if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
 							else		CB_CurrentValue    = EvalsubTop( SRC );
 							dspflagtmp=dspflag;
@@ -406,7 +412,7 @@ int CB_interpreter_sub( char *SRC ) {
 						UseGraphic=9;
 						break;
 					case 0xFFFFFFFC:	// PutDispDD
-						Bdisp_PutDisp_DD_DrawBusy();
+						CB_PutDispDD(SRC);
 						dspflag=0;
 						break;
 					case 0xFFFFFFFD:	// Fkeyfunc(
@@ -425,10 +431,10 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_Poke(SRC);
 						dspflag=0;
 						break;
-//					case 0xFFFFFFF2:	// PopUpWin(
-//						CB_PopUpWin(SRC);
-//						dspflag=0;
-//						break;
+					case 0xFFFFFFDD:	// Beep
+						CB_Beep(SRC);
+						dspflag=0;
+						break;
 					case 0x3D:			// DotTirm(
 						CB_DotTrim(SRC);
 						dspflag=0;
@@ -564,6 +570,7 @@ int CB_interpreter_sub( char *SRC ) {
 //					case 0x43:	// Sprintf(
 //					case 0x44:	// StrChar(
 //					case 0x45:	// StrCenter(
+					case 0x4D:	// StrSplit(
 					strjp:
 						ExecPtr-=2;
 						CB_Str(SRC) ;
@@ -595,6 +602,18 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_Wait(SRC);
 						dspflag=0;
 						break;
+					case 0x60:	// GetFont(
+						CB_GetFont(SRC);
+						break;
+					case 0x61:	// SetFont 
+						CB_SetFont(SRC);
+						break;
+					case 0x62:	// GetFontMini(
+						CB_GetFontMini(SRC);
+						break;
+					case 0x63:	// SetFontMini 
+						CB_SetFontMini(SRC);
+						break;
 					default:
 						Evalexit2:
 						ExecPtr-=2;
@@ -615,7 +634,6 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0xFFFFFFFA:	// Gosub
 				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs );
 		jpgsb:	if ( BreakPtr > 0 ) return BreakPtr;
-//				dspflag=0;
 				dspflagtmp=dspflag;
 				break;
 			case 0xFFFFFFD1:	// Cls
@@ -911,7 +929,7 @@ void ClrCahche(){
 
 void InitLocalVar() {
 	int c;
-	for ( c=0; c<58; c++ ) {			// init Local variable
+	for ( c=0; c<VARMAXSIZE; c++ ) {			// init Local variable
 		LocalDbl[c]=&REG[c];
 		LocalInt[c]=&REGINT[c];
 	}
@@ -1059,6 +1077,15 @@ remloop:
 				}
 			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
 		} else
+		if ( c==0xFFFFFFF7 ) {
+			c=SRC[ExecPtr++];
+			if ( c==0x0D ) {	// Break
+				c=SRC[ExecPtr++];
+				if ( ( c=='0' ) || ( c=='1' ) ) {
+					BreakCheck= (c-'0') ;
+				}
+			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
+		} else
 		if ( c==0x7F ) {
 			c=SRC[ExecPtr++];
 			if ( c==0xFFFFFFF0 ) {	// Graph
@@ -1079,6 +1106,14 @@ remloop:
 				c=SRC[ExecPtr++];
 				if ( ( c=='0' ) || ( c=='1' ) ) { 
 					MatBase= c-'0' ;
+				}
+			} else
+			if ( c==0xFFFFFF8F ) {	// GetKey
+				c=SRC[ExecPtr++];
+				if ( ( c=='R' ) || ( c=='r' ) ) {
+					if ( TimeDsp ) TimeDsp = 3 ; // on  reset GetKey1/2 
+				} else {
+					if ( TimeDsp ) TimeDsp = 1 ; // on  cont
 				}
 			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
 
@@ -1103,7 +1138,7 @@ remloop:
 			case 0xFFFFFFE5:	// 
 			case 0xFFFFFFE6:	// 
 			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1130,24 +1165,44 @@ void CB_Rem( char *SRC, CchRem *CacheRem ){
 }
 //-----------------------------------------------------------------------------
 
-int CB_CheckLbl( int c ){
+int CB_CheckLbl( char * SRC ){
+	int i,j,len=32;
+	int alias_code, org_reg;
+	char name[32+1];
+	int c=SRC[ExecPtr];
 	if ( ( '0'<=c )&&( c<='9' ) ) {
 		ExecPtr++;
 		return c-'0';
-	} else if ( ( 'A'<=c )&&( c<='z' ) ) {
+	} else if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		return  c-'A'+10;
 	} else 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) {	// <r> or Theta
 		ExecPtr++;
 		return  c-0xFFFFFFCD+10+26;
-	} else { CB_Error(SyntaxERR); return -1; }	// syntax error
+	} else if ( ( c=='_' ) ) {	// Alias Lbl
+		ExecPtr++;
+		if ( GetVarName( SRC, &ExecPtr, name, &len) ) {
+			for ( i=0; i<=AliasVarMAXLbl; i++ ) {
+				if ( ( len == AliasVarCodeLbl[i].len ) && ( AliasVarCodeLbl[i].alias == 0x4040 ) ) {	// @@
+					for (j=0; j<len; j++) {
+						if ( AliasVarCodeLbl[i].name[j] != name[j] ) break;
+					}
+					if ( j==len ) return AliasVarCodeLbl[i].org;	// Macth!!
+				}
+			}
+		}
+	}
+	ExecPtr += GetOpcodeLen( SRC, ExecPtr ,&alias_code );
+	for ( i=0; i<=AliasVarMAXLbl; i++ ) {
+		if ( AliasVarCodeLbl[i].alias==(short)alias_code ) return AliasVarCodeLbl[i].org;
+	}
+	{ CB_Error(SyntaxERR); return -1; }	// syntax error
 }
 
 void CB_Lbl( char *SRC, short *StackGotoAdrs ){
 	int c;
 	int label;
-	c=SRC[ExecPtr];
-	label = CB_CheckLbl( c );
+	label = CB_CheckLbl( SRC );
 	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 	if ( StackGotoAdrs[label] == 0 ) StackGotoAdrs[label]=ExecPtr;
 }
@@ -1170,16 +1225,19 @@ int Search_Lbl( char *SRC, int lc ){
 				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFE2:	// Lbl
-				c=SRC[ExecPtr++];
+				c = CB_CheckLbl( SRC );
 				if ( c == lc ) return 1 ;
 				break;
+			case 0xFFFFFFF9:	// 
+				c=SRC[ExecPtr++];
+				if ( ( c!=0x0F ) || ( SRC[ExecPtr]!=0xFFFFFFE2 ) )  break;
+				// Alias Lbl skip
 			case 0x7F:	// 
 			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
 			case 0xFFFFFFE5:	// 
 			case 0xFFFFFFE6:	// 
 			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0xFFFFFFFF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1192,13 +1250,12 @@ void CB_Goto( char *SRC, short *StackGotoAdrs ){
 	int c;
 	int label;
 	int ptr;
-	c=SRC[ExecPtr];
-	label = CB_CheckLbl( c );
+	label = CB_CheckLbl( SRC );
 	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 	
 	ptr = StackGotoAdrs[label] ;
 	if ( ptr == 0 ) {
-		if ( Search_Lbl(SRC, c) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
+		if ( Search_Lbl(SRC, label) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
 		ExecPtr++;
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
@@ -1701,8 +1758,9 @@ void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
 	if ( StackSwitch->Ptr <= 0 ) { CB_Error(CaseWithoutSwitchERR); return; }  // Case without Switch error
 	StackSwitch->Ptr--;
 
-	c=SRC[ExecPtr];
-	value=Eval_atoi( SRC, c );
+//	c=SRC[ExecPtr];
+//	value=Eval_atoi( SRC, c );
+	value=CB_EvalInt( SRC );
 //	c=SRC[ExecPtr];
 //	if ( ( c!=0x0D ) && ( c!=':' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 //	ExecPtr++;
@@ -1776,7 +1834,7 @@ void CB_Dsz( char *SRC ) { //	Dsz
 	int*	MatAryI;
 	if (CB_INT) { CBint_Dsz(SRC) ; return; }
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
@@ -1843,7 +1901,7 @@ void CB_Isz( char *SRC ) { //	Isz
 	int*	MatAryI;
 	if (CB_INT) { CBint_Isz(SRC) ; return; }
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
@@ -1909,9 +1967,10 @@ void CB_Store( char *SRC ){	// ->
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	int dimdim=0;
 	
 	int c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
 		ExecPtr++;
 	  aliasj:
@@ -1922,12 +1981,13 @@ void CB_Store( char *SRC ){	// ->
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[ExecPtr];
-				if ( c=='%' ) { ExecPtr++;  for ( i=reg; i<=en; i++) LocalInt[ i ][0] = CB_CurrentValue; }
-				else
+				if ( c=='%' ) { ExecPtr++;  for ( i=reg; i<=en; i++) { if ( REGtype[i] == 0 ) LocalInt[ i ][0] = CB_CurrentValue; }
+				} else
 				if ( c=='#' ) ExecPtr++;
-				for ( i=reg; i<=en; i++) LocalDbl[ i ][0] = CB_CurrentValue;
+				for ( i=reg; i<=en; i++) { if ( REGtype[i] == 0 ) LocalDbl[ i ][0] = CB_CurrentValue; }
 			}
 		} else {					// 
+			if ( REGtype[reg] == 1 ) { CB_Error(DuplicateDefERR); return; }	// Duplicate Definition	// const Var
 			if ( c=='%' ) { ExecPtr++;  LocalInt[reg][0] = CB_CurrentValue ; }
 			else
 			if ( c=='[' ) { goto Matrix; }
@@ -1948,7 +2008,7 @@ void CB_Store( char *SRC ){	// ->
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
 			c=SRC[ExecPtr];
-			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ); MatdspNo=reg;  return ; }	// MatAns -> Mat A
@@ -1985,22 +2045,23 @@ void CB_Store( char *SRC ){	// ->
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
+				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x46 ) ) { ExecPtr+=2; dimdim=1; }	// {24,18}->dim dim
 				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// n -> Dim List
 					ExecPtr+=2;
-					if ( CB_CurrentValue ) 
-							CB_ListInitsub( SRC, &reg, CB_CurrentValue, 0 );
-					else {
+					if ( CB_CurrentValue )  		// 15->Dim List 1
+							CB_ListInitsub( SRC, &reg, CB_CurrentValue, 0, dimdim );
+					else {							//  0->Dim List 1
 						reg=ListRegVar( SRC );
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				} else
 				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// {10,5} -> Dim Mat A
-					CB_MatrixInit( SRC );
+					CB_MatrixInit( SRC, dimdim );
 					return ;
 				} else {
-					if ( CB_CurrentValue ) 
-							CB_MatrixInitsubNoMat( SRC, &reg, CB_CurrentValue, 1, 0 );
-					else {
+					if ( CB_CurrentValue ) 			// 15->Dim Mat A
+							CB_MatrixInitsubNoMat( SRC, &reg, CB_CurrentValue, 1, 0, dimdim );
+					else {							//  0->Dim Mat A
 						reg=MatRegVar(SRC);
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
@@ -2061,11 +2122,7 @@ void CB_Store( char *SRC ){	// ->
 	} else
 	if ( c=='%' ) { ExecPtr++;
 		StoreTicks:
-		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
-		SetRtc( CB_CurrentValue );
-		i=RTC_GetTicks();
-		CB_TicksAdjust=i-CB_CurrentValue ;	// 
-		CB_TicksStart+=(i-1);	// 
+		CB_StoreTicks( SRC, CB_CurrentValue );
 		skip_count=0;
 	} else
 	if ( c==0xFFFFFFF9 ) {
@@ -2075,11 +2132,26 @@ void CB_Store( char *SRC ){	// ->
 				ExecPtr+=2;
 				Xdot = CB_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
+		} else
+		if ( c == 0x0E ) {	// 123->Const _ABC
+			ExecPtr+=2;
+			reg=RegVarAliasEx( SRC ) ;
+			REGtype[reg]=1;		// const
+			if ( c=='%' ) { ExecPtr++;
+				LocalInt[reg][0] = CB_CurrentValue ;
+			} else {
+				if ( c=='#' ) ExecPtr++;
+				LocalDbl[reg][0] = CB_CurrentValue ;
+			}
 		} else goto exitj;
 	} else { 
 	  exitj:
-		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto aliasj;	// variable alias
-		CB_Error(SyntaxERR); return; }	// Syntax error
+		reg=RegVarAliasEx( SRC );
+	  exitj2:
+		if ( reg>=0 ) {
+			goto aliasj;	// variable alias
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	}
 }
 
 //----------------------------------------------------------------------------------------------
@@ -2255,11 +2327,16 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 
 void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosub N
 	int c,i,j;
+	int label;
+	int ptr;
 	int execptr=ExecPtr;
+	
+	label = CB_CheckLbl( SRC );
+	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 
-	c=SRC[ExecPtr+1];
+	c=SRC[ExecPtr];
 	if ( c == ',' ) {	// arg
-		ExecPtr+=2;
+		ExecPtr++;
 		CB_argNum( SRC );	// get local value
 		
 		for ( i=0; i<ProgLocalN[ProgNo]; i++ ) {	// set local variable
@@ -2269,7 +2346,6 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 				LocalInt[j][0]=LocalInttmp[i];
 			}
 		}
-		
 		StackGosubAdrs[GosubNestN] = ExecPtr;	// return adrs
 		ExecPtr=execptr;
 	} else {
@@ -2277,49 +2353,183 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 	}
 	GosubNestN++;
 	if ( GosubNestN > StackGosubMax ) { CB_Error(NestingERR);  return; }	// Nesting  error
-	CB_Goto( SRC, &(*StackGotoAdrs) );	// Goto Sub label
-	
+
+	ptr = StackGotoAdrs[label] ;
+	if ( ptr == 0 ) {
+		if ( Search_Lbl(SRC, label) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
+		ExecPtr++;
+		StackGotoAdrs[label]=ExecPtr;
+	} else  ExecPtr = ptr ;
 }
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-ALIAS_VAR	AliasVarCode[AliasVarMAX];
+ALIAS_VAR	*AliasVarCode;
+ALIAS_VAR	*AliasVarCodeMat;
+ALIAS_VAR	*AliasVarCodeLbl;
+int AliasVarMAX;
+int AliasVarMAXMat;
+int AliasVarMAXLbl;
+unsigned char IsExtVar=26+6+26-1;
 
 void CB_AliasVarClr(){
 	int i;
-	for ( i=0; i<AliasVarMAX; i++ ) AliasVarCode[i].org = -1 ;
+	for ( i=0; i<ALIASVARMAX; i++ ) {
+		AliasVarCode[i].org = -1 ;
+		AliasVarCode[i].alias = -1 ;
+		AliasVarCode[i].name[0] = '\0' ;
+	}
+	for ( i=0; i<ALIASVARMAXMAT; i++ ) {
+		AliasVarCodeMat[i].org = -1 ;
+		AliasVarCodeMat[i].alias = -1 ;
+		AliasVarCodeMat[i].name[0] = '\0' ;
+	}
+	for ( i=0; i<ALIASVARMAXLBL; i++ ) {
+		AliasVarCodeLbl[i].org = -1 ;
+		AliasVarCodeLbl[i].alias = -1 ;
+		AliasVarCodeLbl[i].name[0] = '\0' ;
+	}
+	AliasVarMAX=-1;
+	AliasVarMAXMat=-1;
+	AliasVarMAXLbl=-1;
 }
 
-void CB_AliasVar( char *SRC ) {	// AliasVar A=ƒ¿
-	int c,i,reg,len;
+void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
+	int c,i,j,reg,len;
 	int alias_code, org_reg;
+	char name[32+1];
 	
-	c=SRC[ExecPtr];
-	reg=RegVar(c);
-	org_reg=reg;
-	if ( reg>=0 ) {
-		ExecPtr++;
+	if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// 	Alias Mat A=ƒ¿  or Mat A=_ABCD
+		ExecPtr+=2;
 		c=SRC[ExecPtr];
-		if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
-		ExecPtr++;
-		c=SRC[ExecPtr];
-		i=RegVar(c); if ( i>=0 ) { CB_Error(ArgumentERR); return; }  // Argument error	 ( = default built-in variable )
-		len = GetOpcodeLen( SRC, ExecPtr ,&alias_code );
-		if ( len == 1 ) alias_code &=0xFF;
-		ExecPtr += len;
-		for ( i=0; i<AliasVarMAX; i++ ) {
-			if ( AliasVarCode[i].org<0 ) break;
-			if ( AliasVarCode[i].alias==(short)alias_code ) {
-				if ( AliasVarCode[i].org==org_reg ) return; 	// same : alias cancel
-				break;
+		reg=RegVar(c);
+		org_reg=reg;
+		if ( reg>=0 ) {
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c=='_' ) {	//	_ABCDE   var name
+				ExecPtr++; len=32;
+				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+				if ( AliasVarMAXMat > ALIASVARMAXMAT ) { CB_Error(TooMuchData); return; }
+				for ( i=0; i<=AliasVarMAXMat; i++ ) {	// check already 
+					if ( ( len == AliasVarCodeMat[i].len ) && ( AliasVarCodeMat[i].alias == 0x4040 ) ) {	// @@
+						for (j=0; j<len; j++) {
+							if ( AliasVarCodeMat[i].name[j] != name[j] ) break;
+						}
+						if ( j==len ) return ;	// macth!!
+					}
+				}
+				AliasVarMAXMat++; 
+				AliasVarCodeMat[AliasVarMAXMat].org  =org_reg;
+				AliasVarCodeMat[AliasVarMAXMat].alias=0x4040;	// @@
+				if ( len > 8 ) len=8;
+				AliasVarCodeMat[AliasVarMAXMat].len=len;
+				memcpy( &AliasVarCodeMat[AliasVarMAXMat].name[0], name, len );
+			} else {
+				i=RegVar(c); if ( i>=0 ) { CB_Error(ArgumentERR); return; }  // Argument error	 ( = default built-in variable )
+				len = GetOpcodeLen( SRC, ExecPtr ,&alias_code );
+				if ( len == 1 ) alias_code &=0xFF;
+				ExecPtr += len;
+				for ( i=0; i<=AliasVarMAXMat; i++ ) {	// check already 
+					if ( AliasVarCodeMat[i].alias==(short)alias_code ) return ; 	// macth!!
+				}
+				AliasVarMAXMat++; 
+				if ( AliasVarMAXMat > ALIASVARMAXMAT ) { CB_Error(TooMuchData); return; }
+				AliasVarCodeMat[AliasVarMAXMat].org  =org_reg;
+				AliasVarCodeMat[AliasVarMAXMat].alias=alias_code;
 			}
 		}
-		if ( i >= AliasVarMAX ) { CB_Error(TooMuchData); return; }
-		AliasVarCode[i].org  =org_reg;
-		AliasVarCode[i].alias=alias_code;
+	} else 
+	if ( ( SRC[ExecPtr]==0xFFFFFFE2 ) ) {	// 	Alias Lbl A=ƒ¿  or Lbl A=_ABCD
+		ExecPtr++;
+		c=SRC[ExecPtr];
+		reg=RegVar(c);
+		org_reg=reg;
+		if ( reg>=0 ) {
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c=='_' ) {	//	_ABCDE   var name
+				ExecPtr++; len=32;
+				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+				if ( AliasVarMAXLbl > ALIASVARMAXLBL ) { CB_Error(TooMuchData); return; }
+				for ( i=0; i<=AliasVarMAXLbl; i++ ) {	// check already 
+					if ( ( len == AliasVarCodeLbl[i].len ) && ( AliasVarCodeLbl[i].alias == 0x4040 ) ) {	// @@
+						for (j=0; j<len; j++) {
+							if ( AliasVarCodeLbl[i].name[j] != name[j] ) break;
+						}
+						if ( j==len ) return ;	// macth!!
+					}
+				}
+				AliasVarMAXLbl++; 
+				AliasVarCodeLbl[AliasVarMAXLbl].org  =org_reg+10;
+				AliasVarCodeLbl[AliasVarMAXLbl].alias=0x4040;	// @@
+				if ( len > 8 ) len=8;
+				AliasVarCodeLbl[AliasVarMAXLbl].len=len;
+				memcpy( &AliasVarCodeLbl[AliasVarMAXLbl].name[0], name, len );
+			} else {
+				i=RegVar(c); if ( i>=0 ) { CB_Error(ArgumentERR); return; }  // Argument error	 ( = default built-in variable )
+				len = GetOpcodeLen( SRC, ExecPtr ,&alias_code );
+				if ( len == 1 ) alias_code &=0xFF;
+				ExecPtr += len;
+				for ( i=0; i<=AliasVarMAXLbl; i++ ) {	// check already 
+					if ( AliasVarCodeLbl[i].alias==(short)alias_code ) return ; 	// macth!!
+				}
+				AliasVarMAXLbl++; 
+				if ( AliasVarMAXLbl > ALIASVARMAXLBL ) { CB_Error(TooMuchData); return; }
+				AliasVarCodeLbl[AliasVarMAXLbl].org  =org_reg+10;
+				AliasVarCodeLbl[AliasVarMAXLbl].alias=alias_code;
+			}
+		}
+	} else {
+		c=SRC[ExecPtr];						// Alias A=ƒ¿  or A=_ABCD
+		reg=RegVar(c);
+		org_reg=reg;
+		if ( reg>=0 ) {
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c=='_' ) {	//	_ABCDE   var name
+				ExecPtr++; len=32;
+				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+				if ( AliasVarMAX > ALIASVARMAX ) { CB_Error(TooMuchData); return; }
+				for ( i=0; i<=AliasVarMAX; i++ ) {	// check already 
+					if ( ( len == AliasVarCode[i].len ) && ( AliasVarCode[i].alias == 0x4040 ) ) {	// @@
+						for (j=0; j<len; j++) {
+							if ( AliasVarCode[i].name[j] != name[j] ) break;
+						}
+						if ( j==len ) return ;	// macth!!
+					}
+				}
+				AliasVarMAX++; 
+				AliasVarCode[AliasVarMAX].org  =org_reg;
+				AliasVarCode[AliasVarMAX].alias=0x4040;	// @@
+				if ( len > 8 ) len=8;
+				AliasVarCode[AliasVarMAX].len=len;
+				memcpy( &AliasVarCode[AliasVarMAX].name[0], name, len );
+			} else {
+				i=RegVar(c); if ( i>=0 ) { CB_Error(ArgumentERR); return; }  // Argument error	 ( = default built-in variable )
+				len = GetOpcodeLen( SRC, ExecPtr ,&alias_code );
+				if ( len == 1 ) alias_code &=0xFF;
+				ExecPtr += len;
+				for ( i=0; i<=AliasVarMAX; i++ ) {	// check already 
+					if ( AliasVarCode[i].alias==(short)alias_code ) return ; 	// macth!!
+				}
+				AliasVarMAX++; 
+				if ( AliasVarMAX > ALIASVARMAX ) { CB_Error(TooMuchData); return; }
+				AliasVarCode[AliasVarMAX].org  =org_reg;
+				AliasVarCode[AliasVarMAX].alias=alias_code;
+			}
+		}
 	}
 }
-
 
 
 //----------------------------------------------------------------------------------------------
@@ -2329,11 +2539,30 @@ int CB_interpreter( char *SRC ) {
 	int c;
 	int stat;
 
+	char	bk_RoundMODE   = CB_Round.MODE;
+	char	bk_RoundDIGIT  = CB_Round.DIGIT;
+	char 	bk_ENG         = ENG;	// ENG flag
+	char	bk_DrawType    = DrawType;	// 0:connect  1:Plot
+	char	bk_Coord       = Coord;	// 0:off 1:on
+	char	bk_Grid        = Grid;	// 0:off 1:on
+	char	bk_Axes        = Axes;	// 0:off 1:on
+	char	bk_Label       = Label;	// 0:off 1:on
+	char	bk_Derivative  = Derivative;	// 0:off 1:on
+	char	bk_S_L_Style   = S_L_Style;
+	char	bk_Angle       = Angle;	// 0:deg   1:rad  2:grad
+
+	char	bk_ACBreak    =ACBreak;		// AC Break on/off
+	char	bk_RefreshCtrl=RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
+	char	bk_Refreshtime=Refreshtime;	// Refresh time  (Refreshtime+1)/128s
+
 	CB_INT = CB_INTDefault;
 	Waitcount=DefaultWaitcount;
 	MatBase = MatBaseDefault;
+	BreakCheck =BreakCheckDefault;	// Break Stop on/off
 	CB_TicksStart = RTC_GetTicks();	// 
+	CB_HiTicksStart = (int)GetTicks32768();	// 
 	CB_TicksAdjust = 0 ;	// 
+	CB_HiTicksAdjust = 0 ;	// 
 	srand( CB_TicksStart ) ;	// rand seed
 	ScreenMode = 0;	// Text mode
 	UseGraphic = 0;
@@ -2346,11 +2575,18 @@ int CB_interpreter( char *SRC ) {
 	ErrorNo = 0;
 
 	defaultStrAry=26;	// <r>
-//	defaultStrAryN=20;
-//	defaultStrArySize=255+1;
 	defaultFnAry=27;		// Theta
 	defaultGraphAry=27;		// Theta
 
+	IsExtVar=26+6+26-1;		// Ext Var init
+	for ( c=IsExtVar+1; c<VARMAXSIZE; c++ ) {
+		REG[c]=0;
+		REGINT[c]=0;
+	}
+	for ( c=0; c<VARMAXSIZE; c++ ) {
+		REGtype[c]=0;
+	}
+	
 	CB_MatListAnsreg=27;	//	ListAns init
 	Bdisp_PutDisp_DD_DrawBusy();
 	KeyRecover(); 
@@ -2360,6 +2596,24 @@ int CB_interpreter( char *SRC ) {
 	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
 		
 	stat = CB_interpreter_sub( SRC );
+	
+	ACBreak    =bk_ACBreak;		// AC Break on/off
+	RefreshCtrl=bk_RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
+	Refreshtime=bk_Refreshtime;	// Refresh time  (Refreshtime+1)/128s
+
+	if ( CB_RecoverSetup ) {
+		CB_Round.MODE =bk_RoundMODE;
+		CB_Round.DIGIT=bk_RoundDIGIT;
+		ENG         = bk_ENG;	// ENG flag
+		DrawType    = bk_DrawType;	// 0:connect  1:Plot
+		Coord       = bk_Coord;	// 0:off 1:on
+		Grid        = bk_Grid;	// 0:off 1:on
+		Axes        = bk_Axes;	// 0:off 1:on
+		Label       = bk_Label;	// 0:off 1:on
+		Derivative  = bk_Derivative;	// 0:off 1:on
+		S_L_Style   = bk_S_L_Style;
+		Angle       = bk_Angle;	// 0:deg   1:rad  2:grad
+	}
 	KeyRecover(); 
 //	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
 	return stat;

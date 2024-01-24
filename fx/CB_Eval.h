@@ -111,7 +111,7 @@ double CB_EvalDbl( char *SRC ) ;
 int RegVar( int c ) ;
 int MatRegVar( char *SRC ) ;	// 
 int ListRegVar( char *SRC ) ;	// return reg no
-void Get2Eval( char *SRC, double *tmp, double *tmp2);
+int Get2Eval( char *SRC, double *tmp, double *tmp2);
 
 //-----------------------------------------------------------------------------
 void NewMatListAns( int dimA, int dimB, int base, int element );

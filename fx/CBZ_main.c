@@ -22,6 +22,7 @@
 #include "CB_interpreter.h"
 #include "CB_error.h"
 #include "CB_setup.h"
+#include "CB_Kana.h"
 #include "fx_syscall.h"
 
 //----------------------------------------------------------------------------------------------
@@ -41,12 +42,24 @@
 int AddIn_main(int isAppli, unsigned short OptionNum)
 {
 	unsigned int key;
-	char buffer[32];
+//	char buffer[32];
 	char *ptr,*stat;
 	int i,j;
 
 	char filename[50];
 	char *src;
+
+	TVRAM = (char *)malloc( 1024 + 1024 + 128*8*4  +4 );
+	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+	GVRAM = TVRAM+1024;
+	ExtAnkFontFX     =(unsigned char *)GVRAM         + 1024  ;		// Ext Ascii font
+	ExtAnkFontFXmini =(unsigned char *)ExtAnkFontFX    + 128*8 ;		// Ext Ascii font
+	ExtKanaFontFX    =(unsigned char *)ExtAnkFontFXmini+ 128*8 ;		// Ext Kana & Gaiji font
+	ExtKanaFontFXmini=(unsigned char *)ExtKanaFontFX   + 128*8 ;		// Ext Kana & Gaiji font
+
+	AliasVarCode   =(ALIAS_VAR *)malloc( sizeof(ALIAS_VAR)*ALIASVARMAX    );		// 
+	AliasVarCodeMat=(ALIAS_VAR *)malloc( sizeof(ALIAS_VAR)*ALIASVARMAXMAT );		// 
+	AliasVarCodeLbl=(ALIAS_VAR *)malloc( sizeof(ALIAS_VAR)*ALIASVARMAXLBL );		// 
 
 	IsSH3=CPU_check();
 	SetVeiwWindowInit();
@@ -60,18 +73,10 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 //	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	HiddenRAM_MatAryInit();	// HiddenRAM Initialize
 
-	TVRAM = (char *)malloc( 2048+4 );
-//	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-
-	GVRAM = TVRAM+1024;;
-//	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-
-	ClipBuffer = (char *)malloc( ClipMax+1+4 );		// normal heap
-//	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-
+	ClipBuffer = (char *)malloc( ClipMax+1 );		// normal heap
 	traceAry = (double *)malloc( 130*8+4 );
 //	if ( traceAry == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-
+	
 	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
 	
 	PictAry[0]=GetVRAMAddress();

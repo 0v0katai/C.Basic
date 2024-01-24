@@ -39,6 +39,16 @@
 //int VGObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int VGObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
+void CB_PutDispDD( char*SRC ){	// 
+	int y1,y2,i;
+	int c=SRC[ExecPtr];
+	if ( c == ';' ) {
+		ExecPtr++;
+		Bdisp_PutDisp_DD_DrawBusy_skip(); return ;
+	}
+	Bdisp_PutDisp_DD_DrawBusy();
+}
+
 //----------------------------------------------------------------------------------------------
 // unsigned char GVRAM[1024];
 
@@ -314,8 +324,8 @@ void CB_Locate( char *SRC ){
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, 22-lx,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 	}
-	if ( CB_LocateMode( SRC ) ) CB_PrintRev( lx,ly, (unsigned char*)buffer );
-	else 		   			  CB_Print( lx,ly, (unsigned char*)buffer );
+	if ( CB_LocateMode( SRC ) )	CB_PrintRev_ext( lx,ly, (unsigned char*)buffer, 1 );	// ext
+	else 		   			  	CB_Print_ext(    lx,ly, (unsigned char*)buffer, 1 );	// ext
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
 
@@ -493,7 +503,7 @@ void CB_Text( char *SRC ) { //	Text
 	int kanamini=1;
 
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
-	if ( SRC[ExecPtr] == '_' ) { ExecPtr++; kanamini=0; }		// OS PrintMini
+	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; kanamini=0; }		// OS PrintMini
 	CB_TextOprand( SRC, &py, &px);
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -521,7 +531,7 @@ void CB_Text( char *SRC ) { //	Text
 		if ( ( c == 'V' ) || ( c == 'v' ) )  mode=MINI_REVOR;	// reVerse or
 		else { ExecPtr--; CB_Error(SyntaxERR); return; }  // Syntax error
 	}
-	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode);
+	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode | 0x100 );		// ext
 		else 	       PrintMini( px, py, (unsigned char*)buffer, mode);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
@@ -548,7 +558,7 @@ void CB_LocateYX( char *SRC ){
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, d,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 	}
-	CB_PrintXY(  px,py, (unsigned char*)buffer, CB_LocateMode( SRC ));	
+	CB_PrintXY(  px,py, (unsigned char*)buffer, CB_LocateMode( SRC ) | 0x100 );		// ext
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 
 }
@@ -1052,7 +1062,7 @@ void CB_DotOprand( char *SRC, int *px, int *py) {
 void CB_AddMatPxPy( char *SRC, int reg, int px1, int py1, int px2, int py2, int ElementSize ) {
 		int dimA,dimB,base=1;
 		int dx,dy;
-		ElementSizeSelect( SRC, &base, ElementSize );
+		ElementSize=ElementSizeSelect( SRC, &base, ElementSize );
 		if ( ( px1 == 0 ) || ( py1 == 0 ) ) base=0;
 		if ( ( ElementSize <= 4 ) || ( ElementSize > 0x100 ) ) ElementSize=1;	// 1 bit matrix
 		ElementSize &= 0xFF;
@@ -1418,7 +1428,7 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 	if ( ( startx > endx ) || ( starty > endy ) ) { dimA=0; dimB=0; startx=0; starty=0; goto dottret; }
 	dimA=endx-startx+1;
 	dimB=endy-starty+1;
-	CB_MatrixInitsub( SRC, &reg2, dimA, dimB, 0 );
+	CB_MatrixInitsub( SRC, &reg2, dimA, dimB, 0, 0 );
 	if ( ErrorNo )  return ; 	// error
 
 	px1=startx;
@@ -1817,8 +1827,13 @@ void CB_end( char *SRC ){
 	CB_SelectTextVRAM();	// Select Text Screen
 	if ( TimeDsp ) {
 		if ( CursorX >1 ) Scrl_Y();
-		t=CB_TicksEnd-CB_TicksStart; if ( t<0 ) t+=11059200;
-		sprintGRS(buffer, (double)(t)/128.0, 8,RIGHT_ALIGN, Fix, 2);  // Fix:2
+		if ( TimeDsp & 0x04 ) {
+			t=CB_HiTicksEnd-CB_HiTicksStart; if ( t<0 ) t=-t;
+			sprintGRS(buffer, (double)(t)/32768.0, 8,RIGHT_ALIGN, Fix, 4);  // Fix:2
+		} else {
+			t=CB_TicksEnd-CB_TicksStart; if ( t<0 ) t+=11059200;
+			sprintGRS(buffer, (double)(t)/128.0, 8,RIGHT_ALIGN, Fix, 2);  // Fix:2
+		}
 		locate(  1, CursorY); Print((unsigned char*)"Execute Time=");
 		locate( 14, CursorY); Print((unsigned char*)buffer);
 		while ( 1 ) {
@@ -1904,8 +1919,8 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 	int c,i,j,n;
 	unsigned int key;
 	char buffer[CB_StrBufferMax];
-	char TitleName[18];
-	char BranchName[10][18];
+	char TitleName[40];
+	char BranchName[10][34];
 	int  Branch[10];
 	int label;
 	int ptr;
@@ -1920,8 +1935,7 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 	if ( c ) {	// string
 		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
-	for (i=0; i<16; i++ ) TitleName[i]=buffer[i];
-	TitleName[i]='\0';
+	StrMid( TitleName, buffer, 1, 19 );
 
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -1934,12 +1948,11 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 		if ( c ) {	// string
 			CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-		for (i=0; i<16; i++ ) BranchName[n][i]=buffer[i];
-		BranchName[n][i]='\0';
+		StrMid( &BranchName[n][0], buffer, 1, 16 );
 		c=SRC[ExecPtr];
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr++;
-		Branch[n++]=SRC[ExecPtr++];
+		Branch[n++]=CB_CheckLbl( SRC );
 		c=SRC[ExecPtr];
 		if ( c != ',' ) break;
 		if ( n==9 )	 { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -1958,17 +1971,16 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 		ML_rectangle( 4, 1, 124, 63, 1, 1, 0);
 		ML_line( 125,  2, 125, 63, 1);
 		ML_line(   4, 12, 124, 12, 1);
-		CB_PrintXY( 8, 4, (unsigned char*)TitleName, 0 );
+		CB_PrintXY( 8, 4, (unsigned char*)TitleName, 0+0x100 );
 		n=scrl+6; if (n>=listmax+1) n=listmax+1;
 		y=0;
 		for ( i=scrl; i<n; i++) {
-			sprintf(buffer,"%d:%s               ", i+1, &BranchName[i][0]) ;
-			buffer[18]='\0';
-			CB_PrintXY( 8, y*8+14, (unsigned char*)buffer, 0 );
+			sprintf(buffer,"%d:%s", i+1, &BranchName[i][0]) ;
+			CB_PrintXY( 8, y*8+14, (unsigned char*)buffer, 0+0x100 );
 			y++;
 		}
-		if ( scrl > 0 ) PrintXY( 116, 14, (unsigned char*)"\xE6\x92", 0 );
-		if ( listmax > scrl+5 ) PrintXY( 116, 54, (unsigned char*)"\xE6\x93", 0);
+		if ( scrl > 0 )         PrintXY( 116, 14, (unsigned char*)"\xE6\x92", 0 );
+		if ( listmax > scrl+5 ) PrintXY( 116, 54, (unsigned char*)"\xE6\x93", 0 );
 		y = select-scrl+1;
 		Bdisp_AreaReverseVRAM( 8, y*8+6, 122, y*8+13);	// reverse select line 
 		GetKey_DisableMenu(&key);
@@ -2044,18 +2056,11 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 	
 	if ( BreakPtr ) return ;
 	
-	c=Branch[select];
-	if ( ( '0'<=c )&&( c<='9' ) ) {
-		ExecPtr++;
-		label = c-'0';
-	} else if ( ( 'A'<=c )&&( c<='Z' ) ) {
-		ExecPtr++;
-		label = c-'A'+10;
-	} else { CB_Error(SyntaxERR); return; }	// goto error
+	label=Branch[select];
 	
 	ptr = StackGotoAdrs[label] ;
 	if ( ptr == 0 ) {
-		if ( Search_Lbl(SRC, c) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
+		if ( Search_Lbl(SRC, label) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
 		ExecPtr++;
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;

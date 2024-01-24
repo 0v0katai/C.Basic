@@ -43,9 +43,10 @@ void CBint_Store( char *SRC ){	// ->
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	int dimdim=0;
 	
 	int c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
 		ExecPtr++;
 	  aliasj:
@@ -56,12 +57,13 @@ void CBint_Store( char *SRC ){	// ->
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[ExecPtr];
-				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) LocalDbl[ i ][0] = CBint_CurrentValue; }
-				else
+				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalDbl[ i ][0] = CBint_CurrentValue; }
+				} else
 				if ( c=='%' ) ExecPtr++;
-				for ( i=reg; i<=en; i++) LocalInt[ i ][0] = CBint_CurrentValue;
+				for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalInt[ i ][0] = CBint_CurrentValue; }
 			}
 		} else {
+			if ( REGtype[reg] == 1 ) { CB_Error(DuplicateDefERR); return; }	// Duplicate Definition	// const Var
 			if ( c=='#' ) { ExecPtr++;  LocalDbl[ reg ][0] = CBint_CurrentValue ; }
 			else
 			if ( c=='[' ) { goto Matrix; }
@@ -82,7 +84,7 @@ void CBint_Store( char *SRC ){	// ->
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
 			c=SRC[ExecPtr];
-			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; return ; }	// MatAns -> Mat A
@@ -119,23 +121,23 @@ void CBint_Store( char *SRC ){	// ->
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
+				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x46 ) ) { ExecPtr+=2; dimdim=1; }	// {24,18}->dim dim
 				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// n -> Dim List
 					ExecPtr+=2;
-					if ( CBint_CurrentValue ) 
-							CB_ListInitsub( SRC,  &reg, CBint_CurrentValue, 0 );
-					else {
+					if ( CBint_CurrentValue ) 			// 15->Dim List 1
+							CB_ListInitsub( SRC,  &reg, CBint_CurrentValue, 0, dimdim  );
+					else {								//  0->Dim List 1
 						reg=ListRegVar( SRC );
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				} else
 				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// {10,5} -> Dim Mat A
-					CB_MatrixInit( SRC );
+					CB_MatrixInit( SRC, dimdim );
 					return ;
 				} else {
-					if ( CBint_CurrentValue ) 
-							CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
-					else {
-						c = SRC[ExecPtr];
+					if ( CBint_CurrentValue ) 			// 15->Dim Mat A
+							CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0, dimdim );
+					else {								//  0->Dim Mat A
 						reg=MatRegVar(SRC);
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
@@ -196,25 +198,35 @@ void CBint_Store( char *SRC ){	// ->
 	} else
 	if ( c=='%' ) { ExecPtr++;
 		StoreTicks:
-		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
-		SetRtc( CBint_CurrentValue );
-		i=RTC_GetTicks();
-		CB_TicksAdjust=i-CBint_CurrentValue ;	// 
-		CB_TicksStart+=(i-1);	// 
-		skip_count=0;
+		CB_StoreTicks( SRC, CBint_CurrentValue );
 	} else
 	if ( c==0xFFFFFFF9 ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
-				if ( CBint_CurrentValue == 0 ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return; }	// Range error
+				if ( CB_CurrentValue == 0 ) { CB_Error(RangeERR); return; }	// Range error
 				ExecPtr+=2;
-				Xdot = CBint_CurrentValue ;
+				Xdot = CB_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
+		} else
+		if ( c == 0x0E ) {	// 123->Const _ABC
+			ExecPtr+=2;
+			reg=RegVarAliasEx( SRC ) ;
+			REGtype[reg]=1;		// const
+			if ( c=='#' ) { ExecPtr++;
+				LocalDbl[reg][0] = CBint_CurrentValue ;
+			} else {
+				if ( c=='%' ) ExecPtr++;
+				LocalInt[reg][0] = CBint_CurrentValue ;
+			}
 		} else goto exitj;
-	} else {
+	} else { 
 	  exitj:
-		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto aliasj;	// variable alias
-		CB_Error(SyntaxERR); return; }	// Syntax error
+		reg=RegVarAliasEx( SRC );
+	  exitj2:
+		if ( reg>=0 ) {
+			goto aliasj;	// variable alias
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -228,7 +240,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
@@ -294,7 +306,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
@@ -628,7 +640,7 @@ int CB_VarPtr( char *SRC ) {
 	char *buffer;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {	// variable
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
@@ -650,7 +662,7 @@ int CB_VarPtr( char *SRC ) {
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
-		if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	

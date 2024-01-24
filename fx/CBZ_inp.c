@@ -274,14 +274,22 @@ const short CharABC[]= {
 	0xE76D,0xE76E,0xE76F,0xE770,0xE771,0xE772,0xE773,0xE774,0xE775,0xE776,0xE777,0xE778,0xE779,0xE77A,0x0000 };
 
 const short CharKANA[]= {
-	0x0020,0xFFA1,0xFFA2,0xFFA3,0xFFA4,0xFFA5,0xFFA6,0xFFA7,0xFFA8,0xFFA9,0xFFAA,0xFFAB,0xFFAC,0xFFAD,0xFFAE,0xFFAF,0xFFB0,0xFFB1,0xFFB2,
-	0xFFB3,0xFFB4,0xFFB5,0xFFB6,0xFFB7,0xFFB8,0xFFB9,0xFFBA,0xFFBB,0xFFBC,0xFFBD,0xFFBE,0xFFBF,0xFFC0,0xFFC1,0xFFC2,0xFFC3,0xFFC4,0xFFC5,
-	0xFFC6,0xFFC7,0xFFC8,0xFFC9,0xFFCA,0xFFCB,0xFFCC,0xFFCD,0xFFCE,0xFFCF,0xFFD0,0xFFD1,0xFFD2,0xFFD3,0xFFD4,0xFFD5,0xFFD6,0xFFD7,0xFFD8,
-	0xFFD9,0xFFDA,0xFFDB,0xFFDC,0xFFDD,0xFFDE,0xFFDF,0x0000 };
-	
+	0x0020,0x0021,0x0022,0x0023,0x0024,0x0025,0x0026,0x0027,0x0028,0x0029,0x002A,0x002B,0x002C,0x002D,0x002E,0x002F,0x0020,0x0020,0x0020,
+	0x0030,0x0031,0x0032,0x0033,0x0034,0x0035,0x0036,0x0037,0x0038,0x0039,0x003A,0x003B,0x003C,0x003D,0x003E,0x003F,0x0020,0x0020,0x0020,
+	0x0040,0x0041,0x0042,0x0043,0x0044,0x0045,0x0046,0x0047,0x0048,0x0049,0x004A,0x004B,0x004C,0x004D,0x004E,0x004F,0x0020,0x0020,0x0020,
+	0x0050,0x0051,0x0052,0x0053,0x0054,0x0055,0x0056,0x0057,0x0058,0x0059,0x005A,0x005B,0x005C,0x005D,0x005E,0x005F,0x0020,0x0020,0x0020,
+	0x0060,0x0061,0x0062,0x0063,0x0064,0x0065,0x0066,0x0067,0x0068,0x0069,0x006A,0x006B,0x006C,0x006D,0x006E,0x006F,0x0020,0x0020,0x0020,
+	0x0070,0x0071,0x0072,0x0073,0x0074,0x0075,0x0076,0x0077,0x0078,0x0079,0x007A,0x007B,0x007C,0x007D,0x007E,0x0020,0x0020,0x0020,0x0020,
+	0xFF80,0xFF81,0xFF82,0xFF83,0xFF84,0xFF85,0xFF86,0xFF87,0xFF88,0xFF89,0xFF8A,0xFF8B,0xFF8C,0xFF8D,0xFF8E,0xFF8F,0x0020,0x0020,0x0020,
+	0xFF90,0xFF91,0xFF92,0xFF93,0xFF94,0xFF95,0xFF96,0xFF97,0xFF98,0xFF99,0xFF9A,0xFF9B,0xFF9C,0xFF9D,0xFF9E,0xFF9F,0x0020,0x0020,0x0020,
+	0xFFA0,0xFFA1,0xFFA2,0xFFA3,0xFFA4,0xFFA5,0xFFA6,0xFFA7,0xFFA8,0xFFA9,0xFFAA,0xFFAB,0xFFAC,0xFFAD,0xFFAE,0xFFAF,0x0020,0x0020,0x0020,
+	0xFFB0,0xFFB1,0xFFB2,0xFFB3,0xFFB4,0xFFB5,0xFFB6,0xFFB7,0xFFB8,0xFFB9,0xFFBA,0xFFBB,0xFFBC,0xFFBD,0xFFBE,0xFFBF,0x0020,0x0020,0x0020,
+	0xFFC0,0xFFC1,0xFFC2,0xFFC3,0xFFC4,0xFFC5,0xFFC6,0xFFC7,0xFFC8,0xFFC9,0xFFCA,0xFFCB,0xFFCC,0xFFCD,0xFFCE,0xFFCF,0x0020,0x0020,0x0020,
+	0xFFD0,0xFFD1,0xFFD2,0xFFD3,0xFFD4,0xFFD5,0xFFD6,0xFFD7,0xFFD8,0xFFD9,0xFFDA,0xFFDB,0xFFDC,0xFFDD,0xFFDE,0xFFDF,0x0020,0x0020,0x0020,
+	0xFFE0,0xFFE1,0xFFE2,0x0000 };
 
 short *oplist=CharMATH;
-char CharPtr=0;
+short CharPtr=0;
 
 unsigned int SelectChar( int *ContinuousSelect ) {
 
@@ -300,8 +308,20 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 		while ( oplist[opNum++] ) ;
 		opNum-=2;
 		if ( CharPtr > opNum ) CharPtr=opNum;
-		if ( scrl == 0 ) if ( CharPtr>=114 ) scrl=1;
-		if ( scrl == 1 ) if ( CharPtr<  19 ) scrl=0;
+		if ( scrl == 0 ) if ( CharPtr>=19*6 ) scrl=1;
+		if ( scrl == 1 ) if ( CharPtr>=19*7 ) scrl=2;
+		if ( scrl == 2 ) if ( CharPtr>=19*8 ) scrl=3;
+		if ( scrl == 3 ) if ( CharPtr>=19*9 ) scrl=4;
+		if ( scrl == 4 ) if ( CharPtr>=19*10) scrl=5;
+		if ( scrl == 5 ) if ( CharPtr>=19*11) scrl=6;
+		if ( scrl == 6 ) if ( CharPtr>=19*12) scrl=7;
+		if ( scrl == 7 ) if ( CharPtr< 19*7 ) scrl=6;
+		if ( scrl == 6 ) if ( CharPtr< 19*6 ) scrl=5;
+		if ( scrl == 5 ) if ( CharPtr< 19*5 ) scrl=4;
+		if ( scrl == 4 ) if ( CharPtr< 19*4 ) scrl=3;
+		if ( scrl == 3 ) if ( CharPtr< 19*3 ) scrl=2;
+		if ( scrl == 2 ) if ( CharPtr< 19*2 ) scrl=1;
+		if ( scrl == 1 ) if ( CharPtr< 19   ) scrl=0;
 		Bdisp_AllClr_VRAM();
 		switch ( mini ) {
 			case 2:
@@ -333,16 +353,16 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 			CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
 		switch ( mini ) {
 				case 2:
-					if ( CharPtr == ptr )	CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV );
-					else 					CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER );
+					if ( CharPtr == ptr )	CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV  | 0x100 );
+					else 					CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER | 0x100 );
 					break;
 				case 1:
 					if ( CharPtr == ptr )	PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV );
 					else 					PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER );
 					break;
 				default:
-					if ( CharPtr == ptr )	CB_PrintRevC( x, y, (unsigned char*)tmpbuf );
-					else 					CB_PrintC( x, y, (unsigned char*)tmpbuf );
+					if ( CharPtr == ptr )	CB_PrintRevC_ext( x, y, (unsigned char*)tmpbuf, 1 );	// ext
+					else 					CB_PrintC_ext( x, y, (unsigned char*)tmpbuf, 1 );		// ext
 					break;
 			}
 			x++;
@@ -361,7 +381,8 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 		Fkey_Icon( FKeyNo3, 674 );	//	Fkey_dispN( FKeyNo3, "AB\xCD");
 		Fkey_Icon( FKeyNo4, 307 );	//	Fkey_DISPN( FKeyNo4, "\xE6\x40\xE6\x41\xE6\x42");
 		Fkey_Icon( FKeyNo5,1088 );	//	Fkey_dispN( FKeyNo5, " ABC");
-		Fkey_KDISPN(5, "\xFF\xA7\xFF\xA8\xFF\xA9");
+		if ( ( ExtCharGaijiFX )||( ExtCharGaijiMiniFX )||( ExtCharKanaFX )||( ExtCharKanaMiniFX ) ) Fkey_dispN( FKeyNo6, "ExtC");
+//		Fkey_KDISPN(5, "\xFF\xA7\xFF\xA8\xFF\xA9");
 		
 		if ( *ContinuousSelect ) {
 			if ( oplist == CharMATH ) n=0;
@@ -415,13 +436,17 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 				oplist=CharABC;
 				break;
 			case KEY_CTRL_F6:	// CharKANA
-				if (oplist==CharKANA) *ContinuousSelect=1-*ContinuousSelect;
+				if (oplist==CharKANA) { *ContinuousSelect=1-*ContinuousSelect; break; }
 				oplist=CharKANA;
+//				if ( CharPtr < 0x60 ) CharPtr+=0x60;
+				if ( CharPtr%19 > 15 ) CharPtr-=(CharPtr%19-15);
 				break;
 			case KEY_CTRL_LEFT:
+				if ( (oplist==CharKANA) && ( CharPtr%19 == 0 ) ) CharPtr-=3;
 				CharPtr--; if ( CharPtr < 0 ) CharPtr=opNum;
 				break;
 			case KEY_CTRL_RIGHT:
+				if ( (oplist==CharKANA) && ( CharPtr%19 > 14 ) ) CharPtr+=3;
 				CharPtr++; if ( CharPtr > opNum ) CharPtr=0;
 				break;
 			case KEY_CTRL_UP:
@@ -877,8 +902,8 @@ const short oplistOPTN[]={
 		0x7F43,	// *Row+
 		0x7F44,	// Row+
 		0x7F58,	// ElemSize(
-		0x7F59,	// ColSize(
-		0x7F5A,	// RowSize(
+		0x7F59,	// RowSize(
+		0x7F5A,	// ColSize(
 		0x7F5B,	// MatBase(
 		0x7FE9,	// CellSum(
 
@@ -935,6 +960,7 @@ const short oplistOPTN[]={
 		0xF942,	// TIME
 		0x7F5F,	// Ticks
 		0xF94F,	// Wait 
+		0xF7DD,	// Beep
 
 		0xFFFF,	// 				-
 		0x23,	// #
@@ -1023,6 +1049,8 @@ const short oplistPRGM[]={
 		0xFFFF,	// 				-
 		0x7F9F,	// KeyRow(
 		0xF90F,	// AliasVar
+		0xF90D,	// Define 
+		0xF90E,	// Const 
 		0x7FF5,	// IsExist(
 		0xF7DF,	// Delete 
 		0xF7EE,	// Save
@@ -1053,10 +1081,12 @@ const short oplistPRGM[]={
 		0xF943,	// Sprintf(
 		0xF944,	// StrChar(
 		0xF945,	// StrCenter(
+		0xF949,	// StrRepl(	
+		0xF94D,	// StrSplit(	
 		0xF946,	// Hex(
 		0xF947,	// Bin(
 		0xF948,	// StrBase(
-		0xF940,	// Str(
+		0xF940,	// ToStr(
 		0x5C,	// 
 		0x24,	// $
 		0};
@@ -1326,7 +1356,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF714,	// CloseComport38k
 		0xF715,	// Send38k 
 		0xF716,	// Receive38k 
-		0xFFFF,
+		0xF7DD,	// Beep
 		0xFFFF,
 		0xFFFF,
 		0xFFFF,
@@ -1526,7 +1556,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF944,	// StrChar(
 		0xF945,	// StrCenter(
 		0xF949,	// StrRepl(	
-		0xFFFF,
+		0xF94D,	// StrSplit(	
 		0x5C,	// 
 		0x24,	// $
 		0x23,	// #
@@ -1543,8 +1573,8 @@ const short oplistCMD[]={		// 5800P like
 		0xF7EF,	// Load(
 		0xF7FC,	// PutDispDD
 		0xF94F,	// Wait 
-		0x23,	// #
-		0x25,	// %
+		0xF90D,	// Define 
+		0xF90E,	// Const 
 		
 		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
@@ -1580,8 +1610,8 @@ const short oplistCMD[]={		// 5800P like
 		0xF7FE,	// BackLight
 		0x7F5B,	// MatBase(
 		0x7F58,	// ElemSize(
-		0x7F59,	// ColSize(
-		0x7F5A,	// RowSize(
+		0x7F59,	// RowSize(
+		0x7F5A,	// ColSize(
 		0x23,	// #
 		0x25,	// %
 		
@@ -1622,6 +1652,19 @@ const short oplistCMD[]={		// 5800P like
 		0xF9DD,	// DrawMat
 		0xF9D8,	// _Test
 		0xF9DE,	// _BmpZoomRotate
+		0x25,	// %
+		
+		0xF960,	// GetFont(
+		0xF961,	// GetFontMini(
+		0xF962,	// SetFont 
+		0xF963,	// SetFOntMini
+		0xFFFF,	// 
+		0xFFFF,	// 
+		0xFFFF,	// 
+		0xF7DD,	// Beep
+		0x24,	// $
+		0x26,	// &
+		0x23,	// #
 		0x25,	// %
 		
 		
@@ -2034,6 +2077,9 @@ typedef struct {
 } topcodes;
 
 const topcodes OpCodeStrList[] = {
+	{ 0x7F34, "Red " }, 		//
+	{ 0x7F35, "Blue " }, 		//
+	{ 0x7F36, "Green " }, 		//
 	{ 0x7F3A, "MOD(" }, 		// SDK emu not support
 	{ 0x7F3C, "GCD(" }, 		// SDK emu not support
 	{ 0x7F3D, "LCM(" }, 		// SDK emu not support
@@ -2042,10 +2088,11 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F89, "RanBin#(" }, 	// SDK emu not support
 	{ 0x7F8A, "RanNorm#(" }, 	// SDK emu not support
 	{ 0x7F58, "ElemSize(" }, 
-	{ 0x7F59, "ColSize(" }, 
-	{ 0x7F5A, "RowSize(" }, 
+	{ 0x7F59, "RowSize(" }, 
+	{ 0x7F5A, "ColSize(" }, 
 	{ 0x7F5B, "MatBase(" }, 
 	{ 0x7F5C, "ListCmp(" }, 
+	{ 0x7F5D, "GetRGB(" }, 
 	{ 0x7F5E, "RGB(" }, 
 	{ 0x7F5F, "Ticks" }, 
 	{ 0x7F9F, "KeyRow(" }, 
@@ -2064,6 +2111,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF73E, "DotGet(" }, 
 	{ 0xF79D, "StoCapt " },
 	{ 0xF79E, "Menu " },		// SDK emu not support
+	{ 0xF7DD, "Beep " }, 
+	{ 0xF7DE, "BatteryStatus" }, 
 	{ 0xF7DF, "Delete " }, 
 	{ 0xF7E0, "DotLife(" }, 
 	{ 0xF7E1, "Rect " }, 
@@ -2090,7 +2139,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7FC, "PutDispDD" }, 
 	{ 0xF7FD, "FKeyMenu(" }, 
 	{ 0xF7FE, "BackLight " }, 
-	{ 0xF90F, "AliasVar ",}, 
+	{ 0xF90D, "Define ",}, 
+	{ 0xF90E, "Const ",}, 
+	{ 0xF90F, "Alias ",}, 
 	{ 0xF930, "StrJoin(" }, 		// SDK emu not support
 	{ 0xF931, "StrLen(" }, 			// SDK emu not support
 	{ 0xF932, "StrCmp(" }, 			// SDK emu not support
@@ -2106,7 +2157,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF93C, "StrShift(" }, 		// SDK emu not support
 	{ 0xF93D, "StrRotate(" }, 		// SDK emu not support
 	{ 0xF93F, "Str " }, 			// SDK emu not support
-	{ 0xF940, "Str(" }, 
+	{ 0xF940, "ToStr(" }, 
 	{ 0xF941, "DATE" }, 
 	{ 0xF942, "TIME" }, 
 	{ 0xF943, "Sprintf(" }, 
@@ -2116,8 +2167,18 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF947, "Bin(" }, 
 	{ 0xF948, "StrBase(" }, 
 	{ 0xF949, "StrRepl(" }, 
+	{ 0xF94D, "StrSplit(" }, 
 	{ 0xF94F, "Wait " }, 
+	{ 0xF960, "GetFont(" }, 
+	{ 0xF961, "SetFont " }, 
+	{ 0xF962, "GetFontMini(" }, 
+	{ 0xF963, "SetFontMini " }, 
+	{ 0xF999, "Plot/Line-C " },
+	{ 0xF99B, "Black " },
 	{ 0xF99C, "White " },
+	{ 0xF99D, "Magenta " },
+	{ 0xF99E, "Cyan " },
+	{ 0xF99F, "Yellow " },
 	{ 0xF9BE, "Back-Color " },
 	{ 0xF9C0, "_ClrVram" },
 	{ 0xF9C1, "_ClrScreen" },
@@ -2155,6 +2216,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0x009A, " xor "}, 		// add space
 	{ 0x00AA, " or "}, 			// add space
 	{ 0x00BA, " and "}, 		// add space
+	{ 0x000F, "\x0F"}, 		// exp
 	{ 0, "" }
 };
 
@@ -2194,8 +2256,8 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		if ( code == opcode ) { strcpy( string, OpCodeStrList[i].str ); return 0; }
 		i++;
 	} while ( code ) ;
-	if ( opcode >= 0xFF00 ) {	// kana
-		string[0]=0xFF;
+	if ( ( opcode >= 0xFF00 ) || ( ( 0xE740 <= opcode ) && ( opcode <= 0xE77E ) ) ) {	// kana or E7xx
+		string[0]=opcode >> 8 ;
 		string[1]=opcode&0xFF;
 		string[2]='\0';
 	} else
@@ -2764,6 +2826,6 @@ double InputNumD_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV,
 	return InputNumD_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy
-int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

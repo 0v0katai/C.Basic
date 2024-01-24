@@ -29,6 +29,7 @@ extern int Previous_PY   ;	// Plot Previous PY
 extern double Plot_X     ;	// Plot Current X
 extern double Plot_Y     ;	// Plot Current Y
 
+extern char BreakCheckDefault;	// Break Stop on/off
 extern char BreakCheck;	// Break Stop on/off
 extern char ACBreak;	// AC Break on/off
 
@@ -45,7 +46,8 @@ extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-extern double  REG[26+6+26];
+#define VARMAXSIZE 26+6+26+26
+extern double  REG[VARMAXSIZE];
 extern double  REGv[11];
 extern double  VWIN[6][11];
 extern char VWinflag[6];		// VWin flag
@@ -102,8 +104,8 @@ extern	double Xfct;
 extern	double Yfct;
 
 #define ArgcMAX 10
-extern	double 	*LocalDbl[26+6+26];		// local var ptr
-extern	int		*LocalInt[26+6+26];		// local var ptr
+extern	double 	*LocalDbl[VARMAXSIZE];		// local var ptr
+extern	int		*LocalInt[VARMAXSIZE];		// local var ptr
 
 extern double	*traceAry;		// Graph trace array
 
@@ -125,7 +127,7 @@ extern short PictbasePtr;
 extern short PictbaseCount;
 
 //------------------------------------------------------------------------------
-extern int  REGINT[26+6+26];
+extern int  REGINT[VARMAXSIZE];
 
 #define regintA REGINT[ 0]
 #define regintB REGINT[ 1]
@@ -160,10 +162,15 @@ extern int  REGINT[26+6+26];
 #define regint30 REGINT[30]	// _
 #define regint31 REGINT[31]	//
 
+extern char    REGtype[VARMAXSIZE];		// 0:normal  1:const
+
 //------------------------------------------------------------------------------
 extern int	CB_TicksStart;
 extern int	CB_TicksEnd;
 extern int	CB_TicksAdjust;
+extern int	CB_HiTicksStart;
+extern int	CB_HiTicksEnd;
+extern int	CB_HiTicksAdjust;
 
 extern char ScreenMode;	//  0:Text  1:Graphic
 extern char UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
@@ -361,17 +368,28 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) ;		// Menu "title name","Branch n
 void CB_Wait( char *SRC ) ;
 
 //-----------------------------------------------------------------------------
-typedef struct {		// 4 bytes
-	short	org;
+typedef struct {		// 16 bytes
 	short	alias;
+	short	org;
+	char	len;
+	char	name[9];
 } ALIAS_VAR;
 
-#define AliasVarMAX 26
-extern	ALIAS_VAR	AliasVarCode[AliasVarMAX];
+#define ALIASVARMAX 32
+#define ALIASVARMAXMAT 16
+#define ALIASVARMAXLBL 16
+extern	ALIAS_VAR	*AliasVarCode;
+extern	ALIAS_VAR	*AliasVarCodeMat;
+extern	ALIAS_VAR	*AliasVarCodeLbl;
+extern	int AliasVarMAX;
+extern	int AliasVarMAXMat;
+extern	int AliasVarMAXLbl;
+extern	unsigned char IsExtVar;
 
 void CB_AliasVarClr();
 int CB_GetAliasRegVar( char *SRC ) ;	// AliasVar ?
 void CB_AliasVar( char *SRC ) ;	// AliasVar A=ƒ¿
+int GetVarName( char *SRC, int *ptr, char *name, int *len );
 
 //-----------------------------------------------------------------------------
 typedef struct {
@@ -401,4 +419,6 @@ void CB_OpenComport38k( char *SRC );	// CloseComport38k
 void CB_CloseComport38k( char *SRC );	// Send38k
 void CB_Send38k( char *SRC );			// Send38k
 void CB_Receive38k( char *SRC );		// Receive38k
+
+void CB_Beep( char *SRC );
 

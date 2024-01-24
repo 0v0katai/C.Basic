@@ -497,12 +497,15 @@ int Eval_atoi(char *SRC, int c ) {
 	return result ;
 }
 //-----------------------------------------------------------------------------
-void Get2EvalInt( char *SRC, int *tmp, int *tmp2){
+int Get2EvalInt( char *SRC, int *tmp, int *tmp2){
+	int c;
 	(*tmp) = EvalIntsubTop( SRC );
 	if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 	ExecPtr++;
 	(*tmp2) = EvalIntsubTop( SRC );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	c=SRC[ExecPtr];
+	if ( c == ')' ) ExecPtr++;
+	return c;
 }
 
 int EvalIntsub1(char *SRC) {	// 1st Priority
@@ -553,7 +556,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x40 :		// Mat A[a,b]
 				  Matjmp:
 					c=SRC[ExecPtr];
-					if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+					if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 					else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 					Matrix1:
 					if ( SRC[ExecPtr] == '[' ) {
@@ -614,12 +617,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CB_GetkeyEntry( SRC );
 					
 				case 0xFFFFFF87 :		// RanInt#(st,en)
-					Get2EvalInt( SRC, &x, &y);
-					if ( SRC[ExecPtr] == ',' ) {
+					if ( Get2EvalInt( SRC, &x, &y) == ',' ) {
 						ExecPtr++;
 						CB_RanInt( SRC, x, y );
 					}
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return frandIntint( x, y ) ;
 
 				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
@@ -635,7 +636,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CBint_GraphYStr( SRC, 0 );
 						
 				case 0xFFFFFFF5 :		// IsExist(
-					return  CB_IsExist( SRC );
+					return  CB_IsExist( SRC, 0 );
 				case 0xFFFFFFF6 :		// Peek(
 					return  CB_Peek( SRC, EvalsubTop( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
@@ -697,10 +698,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					break;
 				case 0x58 :				// ElemSize( Mat A )
 					return CB_ElemSize( SRC );
-				case 0x59 :				// ColSize( Mat A )
-					return CB_ColSize( SRC );
-				case 0x5A :				// RowSize( Mat A )
+				case 0x59 :				// RowSize( Mat A )
 					return CB_RowSize( SRC );
+				case 0x5A :				// ColSize( Mat A )
+					return CB_ColSize( SRC );
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
 
@@ -943,8 +944,8 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				case 0x4C :			// Sum List 1
 				case 0x4D :			// Prod List 1
 				case 0x58 :			// ElemSize( Mat A )
-				case 0x59 :			// ColSize( Mat A )
-				case 0x5A :			// RowSize( Mat A )
+				case 0x59 :			// RowSize( Mat A )
+				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
 					result *= EvalIntsub4( SRC ) ;
 					break;
@@ -1187,25 +1188,66 @@ int EvalInt(char *SRC) {		// Eval temp
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int	tickstmp=0;
+int	Hitickstmp=0;
+#define P7305_EXTRA_TMU5_COUNT 0xA44D00D8
 
-int CB_RTC_GetTicks() {
-	return RTC_GetTicks()-CB_TicksAdjust ;
+unsigned int GetTicks32768(){
+	if ( IsSH3 ) return 0;
+	return *(unsigned int*)P7305_EXTRA_TMU5_COUNT;
 }
 
+void CB_StoreTicks( char *SRC, int value ) {
+	int n;
+	int high=0;
+	int t;
+	if ( SRC[ExecPtr] == '%' ) {	// hi-res timer
+		ExecPtr++;
+		if ( IsSH3 == 0 ) high=1;
+	}
+	if ( high ) {
+		t=(int)GetTicks32768();
+		CB_HiTicksAdjust=t-value;
+	} else {
+		t=RTC_GetTicks();
+		CB_TicksAdjust=t-value;
+	}
+	skip_count=0;
+}
+
+int CB_RTC_GetTicks( int high ) {
+	if ( high ) return (int)GetTicks32768()-CB_HiTicksAdjust ;
+	return RTC_GetTicks()-CB_TicksAdjust ;
+}
 int CB_Ticks( char *SRC ) {
 	int n;
-	int t=CB_RTC_GetTicks();
+	int high=0;
+	int t;
+	if ( SRC[ExecPtr] == '%' ) {	// hi-res timer
+		ExecPtr++;
+		if ( IsSH3 == 0 ) high=1;
+	}
+	t=CB_RTC_GetTicks(high);
 	if ( SRC[ExecPtr]==0xFFFFFFF9 ) {
 		if ( SRC[ExecPtr+1]==0x4F ) {	// Wait
 			ExecPtr+=2;		// TicksWait n
 			n = CB_EvalInt( SRC );
-			if ( n<0 ) n=-n;  else tickstmp=CB_RTC_GetTicks();
-			do {
-				if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
-				t=CB_RTC_GetTicks();
-			} while ( abs( t-tickstmp ) <= n ) ;
-			tickstmp=CB_RTC_GetTicks();
-			return tickstmp;
+			if ( high ) {
+				if ( n<0 ) n=-n;  else Hitickstmp=CB_RTC_GetTicks(high);
+				do {
+					if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
+					t=CB_RTC_GetTicks(high);
+				} while ( abs( t-Hitickstmp ) <= n ) ;
+				Hitickstmp=CB_RTC_GetTicks(high);
+				return Hitickstmp;
+			} else {
+				if ( n<0 ) n=-n;  else tickstmp=CB_RTC_GetTicks(high);
+				do {
+					if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
+					t=CB_RTC_GetTicks(high);
+				} while ( abs( t-tickstmp ) <= n ) ;
+				tickstmp=CB_RTC_GetTicks(high);
+				return tickstmp;
+			}
 		}
 	} 
 	return t;
@@ -1216,8 +1258,8 @@ int CB_Getkey3( char *SRC ) {
 	int result=0;
 	int shift=0;
 	int time1,time2;
-	int t0=CB_RTC_GetTicks();
-	if ( SRC[ExecPtr] != '(' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
+	int t0=CB_RTC_GetTicks(0);
+	if ( SRC[ExecPtr] != '(' ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	ExecPtr++;
 	time1 = CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] == ',' )  {
@@ -1230,7 +1272,7 @@ int CB_Getkey3( char *SRC ) {
 		key=CB_Getkey();
 		if ( key == 34 ) return key;	// [AC]
 		if ( key ) tmpkey=key;
-	} while ( abs ( CB_RTC_GetTicks() - time2 ) < time1 ) ;
+	} while ( abs ( CB_RTC_GetTicks(0) - time2 ) < time1 ) ;
 	key=tmpkey;
 	return key;
 }
