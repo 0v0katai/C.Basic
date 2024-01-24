@@ -1633,6 +1633,33 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			select=key-'A';
 		}
 		switch (key) {
+			case KEY_CTRL_SHIFT:
+				FkeyClearAll();
+				Fkey_dispN( FKeyNo1, ">Mat");
+				Fkey_dispN( FKeyNo2, ">List");
+				Fkey_dispN( FKeyNo3, ">Vct");
+				GetKey( &key );
+				switch (key) {
+					case KEY_CTRL_F1:
+						listdsp=0; // ->Mat
+						break;
+					case KEY_CTRL_F2:
+						listdsp=1; // ->list
+						break;
+					case KEY_CTRL_F3:
+						listdsp=2; // ->Vct
+						break;
+					case KEY_CTRL_PAGEUP:
+						select-=7;
+						if ( select < 0 )  select = 0;
+						break;
+					case KEY_CTRL_PAGEDOWN:
+						select+=7;
+						if ( select > opNum ) select = opNum;
+						break;
+				}
+				break;
+				
 			case KEY_CTRL_EXIT:
 				cont=0;
 				break;
@@ -1723,14 +1750,6 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			case KEY_CTRL_DOWN:
 				select++;
 				if ( select > opNum ) select =0;
-				break;
-			case KEY_CTRL_PAGEUP:
-				select-=7;
-				if ( select < 0 )  select = 0;
-				break;
-			case KEY_CTRL_PAGEDOWN:
-				select+=7;
-				if ( select > opNum ) select = opNum;
 				break;
 
 			case KEY_CTRL_OPTN:		// Mat/Vct <-> List

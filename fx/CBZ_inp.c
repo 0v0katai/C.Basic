@@ -108,9 +108,12 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 			break;
 		case Fix:
 				num = Round( num, round_mode, digit);
-				if ( num==0 ) minus=0;
+				if ( fabsnum == 0 ) minus=0;
 				if ( fabsnum < 1e17 ) {
 					i=digit;
+					if ( fabsnum >=0 ) j=log10(fabsnum); else j=0;
+					if (j+i>15) i=15-j;
+					if (i<0) i=0;
 					c='f';
 					break;
 				}

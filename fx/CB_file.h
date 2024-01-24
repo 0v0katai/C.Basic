@@ -74,6 +74,7 @@ int SetRoot2( char* SRC ) ;
 char * loadFile( const char *name, int *editMax, int disperror, int *filesize );
 int  storeFile( const char *name, unsigned char* codes, int size);
 int LoadProgfile( char *name, int prgNo, int editsize, int disperror ) ;
+int SaveG1Mbin( char *filebase );
 int SaveG1M( char *filebase );
 int SaveProgfile(int progNo );
 

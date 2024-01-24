@@ -560,7 +560,7 @@ char* NewStrBuffer(){
 void GetNewAry8( int reg, int aryN, int aryMax ) {
 	char *buffer;
 	if ( MatAry[reg].SizeA == 0 ) {
-		DimMatrixSub( reg, 8, aryN, aryMax, 1 );	// byte matrix
+		DimMatrixSub( reg, 8, aryN, aryMax, 1 );	// byte matrix	base:1
 	} else { 
 		if ( MatAry[reg].SizeA < aryN ) MatElementPlus( reg, aryN, aryMax );				// matrix +
 	}
@@ -573,7 +573,7 @@ char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 	dimB = aryMax;
 	GetNewAry8( reg, dimA, dimB );
 	if ( ErrorNo ) return 0; // error
-	dimB=MatAry[reg].Base;
+	dimB = 1;
 	buffer=MatrixPtr( reg, dimA, dimB );
 	return buffer;
 }
@@ -607,7 +607,7 @@ int IsStrList( char *SRC, int flag ) {	// List n[0]?
 		case 0x3F:	// List Str 1[0?
 			reg=defaultStrAry;
 			ExecPtr+=2;
-			buffer = GetStrYFnPtr( SRC, reg, defaultStrAryN+1-MatBase, defaultStrArySize );
+			buffer = GetStrYFnPtr( SRC, reg, defaultStrAryN, defaultStrArySize );
 			reg = SearchListnameSub( buffer );	// string
 			goto strj;
 		case 1:		//	List "ABS"[0?
@@ -703,19 +703,19 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 		case 0x3F:	// Str 1-20
 			reg=defaultStrAry;
 			ExecPtr+=2;
-			buffer = GetStrYFnPtr( SRC, reg, defaultStrAryN+1-MatBase, defaultStrArySize );
+			buffer = GetStrYFnPtr( SRC, reg, defaultStrAryN, defaultStrArySize );
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0x1B:	// fn
 			reg=defaultFnAry;
 			ExecPtr+=2;
-			buffer = GetStrYFnPtr( SRC, reg, defaultFnAryN+1-MatBase, defaultFnArySize );
+			buffer = GetStrYFnPtr( SRC, reg, defaultFnAryN, defaultFnArySize );
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0xFFFFFFF0:	// GraphY
 			reg=defaultGraphAry;
 			ExecPtr+=2;
-			buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN+1-MatBase, defaultGraphArySize );
+			buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize );
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0x30:	// StrJoin(
@@ -862,7 +862,7 @@ void StorStrStr( char *SRC ) {	// "String" -> Sto 1-20
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultStrAry;
-	MatAryC = GetStrYFnPtr( SRC, reg, defaultStrAryN+1-MatBase, defaultStrArySize );
+	MatAryC = GetStrYFnPtr( SRC, reg, defaultStrAryN, defaultStrArySize );
 	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
@@ -871,7 +871,7 @@ void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultGraphAry;
-	MatAryC = GetStrYFnPtr( SRC, reg, defaultGraphAryN+1-MatBase, defaultGraphArySize );
+	MatAryC = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize );
 	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
@@ -880,7 +880,7 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultFnAry;
-	MatAryC = GetStrYFnPtr( SRC, reg, defaultFnAryN+1-MatBase, defaultFnArySize );
+	MatAryC = GetStrYFnPtr( SRC, reg, defaultFnAryN, defaultFnArySize );
 	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
