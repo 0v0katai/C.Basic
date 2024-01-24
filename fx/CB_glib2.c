@@ -14,7 +14,9 @@
 #include "CB_glib2.h"
 #include "CB_Eval.h"
 #include "CB_interpreter.h"
+#include "CBI_interpreter.h"
 #include "CB_file.h"
+#include "CB_Edit.h"
 #include "CB_error.h"
 
 
@@ -242,15 +244,15 @@ unsigned int Plot()
 						break;
 					case KEY_CTRL_SETUP:
 						GCursorSetFlashMode(0);	// graphic cursor flashing off
-						SetupG();
+						selectSetup=SetupG(selectSetup);
 						break;
 					case KEY_CTRL_F1:
 						GCursorSetFlashMode(0);	// graphic cursor flashing off
-						SetVar(0);		// A - 
+						selectVar=SetVar(selectVar);		// A - 
 						break;
 					case KEY_CTRL_F3:
 						GCursorSetFlashMode(0);	// graphic cursor flashing off
-						if ( SetViewWindow() ) cont=0;
+						selectMatrix=SetMatrix(selectMatrix);		// 
 						break;
 					case KEY_CTRL_F6:
 						cont=0;
@@ -269,6 +271,7 @@ unsigned int Plot()
 //	if ( retcode==0 ) Bdisp_SetPoint_VRAM( GCursorX, GCursorY, 1);
 	regX = Plot_X ;
 	regY = Plot_Y ;
+	regintX=regX; regintY=regY;
 	return key ;
 }
 
@@ -353,6 +356,7 @@ unsigned int ZoomXY() {
 	GCursorSetFlashMode(0);	// graphic cursor flashing off
 	Bkey_Set_RepeatTime(FirstCount,NextCount);	// restore repeat time
 	RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
+	regintX=regX; regintY=regY;
 	return key ;
 }
 //--------------------------------------------------------------
@@ -495,6 +499,7 @@ unsigned int Trace(int *index ) {
 	Bkey_Set_RepeatTime(FirstCount,NextCount);	// restore repeat time
 	RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 	*index=GCursorX;
+	regintX=regX; regintY=regY;
 	return key ;
 }
 
@@ -532,6 +537,7 @@ void Graph_Draw(){
 		}
 		regX += Xdot;
 	}
+	regintX=regX; regintY=regY;
 	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 void Graph_reDraw(){
@@ -602,6 +608,7 @@ unsigned int Graph_trace_sub(int *tracex){
 		}
 	}
 	*tracex=tx;
+	regintX=regX; regintY=regY;
 	return key;
 }
 
@@ -660,7 +667,7 @@ unsigned int Graph_main(){
 						cont=0;
 						break;
 					case KEY_CTRL_SETUP:
-						SetupG();
+						selectSetup=SetupG(selectSetup);
 						Graph_reDraw();
 						break;
 					case KEY_CTRL_F1:
@@ -998,21 +1005,26 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 				switch (select) {
 					case 0: // Xmin
 						Xmin      =InputNumD_full( 8, y, 14, Xmin);	// 
+						Xdot = (Xmax-Xmin)/126.0;
 						break;
 					case 1: // Xmax
 						Xmax      =InputNumD_full( 8, y, 14, Xmax);	// 
+						Xdot = (Xmax-Xmin)/126.0;
 						break;
 					case 2: // Xscl
 						Xscl      =InputNumD_full( 8, y, 14, Xscl);	// 
 						break;
 					case 3: // Xdot
 						Xdot      =InputNumD_full( 8, y, 14, Xdot);	// 
+						Xmax = Xmin + Xdot*126.;
 						break;
 					case 4: // Ymin
 						Ymin      =InputNumD_full( 8, y, 14, Ymin);	// 
+						Ydot = (Ymax-Ymin)/62.0;
 						break;
 					case 5: // Ymax
 						Ymax      =InputNumD_full( 8, y, 14, Ymax);	// 
+						Ydot = (Ymax-Ymin)/62.0;
 						break;
 					case 6: // Yscl
 						Yscl      =InputNumD_full( 8, y, 14, Yscl);	// 
@@ -1043,21 +1055,26 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 				switch (select) {
 					case 0: // Xmin
 						Xmin      =InputNumD_Char( 8, y, 14, Xmin, key);	// 
+						Xdot = (Xmax-Xmin)/126.0;
 						break;
 					case 1: // Xmax
 						Xmax      =InputNumD_Char( 8, y, 14, Xmax, key);	// 
+						Xdot = (Xmax-Xmin)/126.0;
 						break;
 					case 2: // Xscl
 						Xscl      =InputNumD_Char( 8, y, 14, Xscl, key);	// 
 						break;
 					case 3: // Xdot
 						Xdot      =InputNumD_Char( 8, y, 14, Xdot, key);	// 
+						Xmax = Xmin + Xdot*126.;
 						break;
 					case 4: // Ymin
 						Ymin      =InputNumD_Char( 8, y, 14, Ymin, key);	// 
+						Ydot = (Ymax-Ymin)/62.0;
 						break;
 					case 5: // Ymax
 						Ymax      =InputNumD_Char( 8, y, 14, Ymax, key);	// 
+						Ydot = (Ymax-Ymin)/62.0;
 						break;
 					case 6: // Yscl
 						Yscl      =InputNumD_Char( 8, y, 14, Yscl, key);	// 
@@ -1175,7 +1192,7 @@ void SetFactor(){
 
 //-----------------------------------------------------------------------------
 
-void SetVar(int select){		// ----------- Set Variable
+int SetVar(int select){		// ----------- Set Variable
 	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
@@ -1185,7 +1202,10 @@ void SetVar(int select){		// ----------- Set Variable
 	int selectreplay=-1;
 	int opNum=25;
 	int small=0;
-	
+	int VarMode=CB_INT;	// 0:double  1:int
+
+	if (select>25) { small=32; select-=32; }
+
 	while (cont) {
 		Bdisp_AllClr_VRAM();
 		
@@ -1197,9 +1217,17 @@ void SetVar(int select){		// ----------- Set Variable
 			buffer[1]='=';
 			buffer[2]='\0';
 			locate(1,1+i); Print(buffer);
-			sprintG(buffer, REG[seltop+i+small], 19,LEFT_ALIGN);
+			if ( VarMode )
+				sprintG(buffer, (double)REGINT[seltop+i+small], 19,LEFT_ALIGN);
+			else
+				sprintG(buffer, REG[seltop+i+small], 19,LEFT_ALIGN);
 			locate(3,1+i); Print(buffer);
 		}
+		Fkey_dispN( 0, "A<>a");
+		Fkey_dispN( 1, "DBL");
+		Fkey_dispN( 2, "INT");
+
+		locate(11,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
 
 		y = (select-seltop) ;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
@@ -1215,6 +1243,12 @@ void SetVar(int select){		// ----------- Set Variable
 			case KEY_CTRL_F1:
 				small=32-small;
 				break;
+			case KEY_CTRL_F2:
+				VarMode=0;
+				break;
+			case KEY_CTRL_F3:
+				VarMode=1;
+				break;
 			case KEY_CTRL_UP:
 				select--;
 				if ( select < 0 ) select = opNum;
@@ -1228,13 +1262,15 @@ void SetVar(int select){		// ----------- Set Variable
 				
 			case KEY_CTRL_RIGHT:
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				Fkey_Clear( 0 );
-				Fkey_Clear( 1 );
-				Fkey_Clear( 2 );
+				locate(1,8); PrintLine((unsigned char *)" ",21);
+				locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
-						REG[select+small]= InputNumD_full( 3, y, 19, REG[select+small]);
+					if ( VarMode ) 
+						REGINT[select+small]= InputNumD_full( 3, y, 19, (double)REGINT[select+small]);
+					else
+						REG[select+small]   = InputNumD_full( 3, y, 19, REG[select+small]);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -1243,12 +1279,14 @@ void SetVar(int select){		// ----------- Set Variable
 			case KEY_CTRL_LEFT:
 				if (selectreplay<0) break;
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				Fkey_Clear( 0 );
-				Fkey_Clear( 1 );
-				Fkey_Clear( 2 );
+				locate(1,8); PrintLine((unsigned char *)" ",21);
+				locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
+					if ( VarMode ) 
+						REGINT[select+small]= InputNumD_replay( 3, y, 19, (double)REGINT[select+small]);
+					else
 						REG[select+small]= InputNumD_replay( 3, y, 19, REG[select+small]);
 				} else {
 						selectreplay = -1; // replay cancel 
@@ -1260,19 +1298,22 @@ void SetVar(int select){		// ----------- Set Variable
 		key=MathKey( key );
 		if ( key ) {
 				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-				Fkey_Clear( 0 );
-				Fkey_Clear( 1 );
-				Fkey_Clear( 2 );
+				locate(1,8); PrintLine((unsigned char *)" ",21);
+				locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
 				y++;
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
-						REG[select+small]= InputNumD_Char( 3, y, 19, REG[select+small], key);
+					if ( VarMode ) 
+						REGINT[select+small]= InputNumD_Char( 3, y, 19, (double)REGINT[select+small], key);
+					else
+						REG[select+small]   = InputNumD_Char( 3, y, 19, REG[select+small], key);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
 		}
 	}
 	SaveConfig();
+	return select;
 }
 
 //-----------------------------------------------------------------------------
@@ -1291,18 +1332,23 @@ int SelectNum2( char*msg, int n ) {		//
 	return n ; // ok
 }
 
-void SetupG(){		// ----------- Setup 
-    char *onoff[]  ={"off","on"};
-    char *draw[]   ={"Connect","Plot"};
-    char *style[]  ={"Normal","Thick","Broken","Dot"};
+int SetupG(int select){		// ----------- Setup 
+    char *onoff[]   ={"off","on"};
+    char *draw[]    ={"Connect","Plot"};
+    char *style[]   ={"Normal","Thick","Broken","Dot"};
     char *degrad[]  ={"Deg","Rad","Grad"};
-    char *display[]  ={"Nrm","Fix","Sci"};
+    char *display[] ={"Nrm","Fix","Sci"};
+    char *mode[]    ={"Double","Int"};
 	unsigned char buffer[22];
 	unsigned int key;
 	int	cont=1;
-	int select=0;
-	int scrl=0;
+	int scrl=select-6;
 	int y;
+	int listmax=11;
+	
+	if ( select > listmax ) select=0;
+	if ( select < scrl ) scrl-=1;
+	if ( scrl < 0 ) scrl=0;
 
 	while (cont) {
 		Bdisp_AllClr_VRAM();
@@ -1355,6 +1401,10 @@ void SetupG(){		// ----------- Setup
 			locate( 1,11-scrl); Print((unsigned char*)"TimeDsp     :");
 			locate(14,11-scrl); Print((unsigned char*)onoff[TimeDsp]);
 		}
+		if ( ( scrl >=5 ) && (12-scrl > 0 ) ){
+			locate( 1,12-scrl); Print((unsigned char*)"Execute mode:");
+			locate(14,12-scrl); Print((unsigned char*)mode[CB_INT]);
+		}
 
 		y = select-scrl;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
@@ -1392,6 +1442,10 @@ void SetupG(){		// ----------- Setup
 				Fkey_dispR( 2, "Nrm ");
 				Fkey_dispN( 3, "Eng ");
 				break;
+			case 11: // Display
+				Fkey_dispN( 0, "DBL ");
+				Fkey_dispN( 1, "Int ");
+				break;
 			default:
 				break;
 		}
@@ -1407,15 +1461,15 @@ void SetupG(){		// ----------- Setup
 		
 			case KEY_CTRL_UP:
 				select-=1;
-				if ( select < 0 ) {select=(10); scrl=select-6;}
+				if ( select < 0 ) {select=(listmax); scrl=select-6;}
 				if ( select < scrl ) scrl-=1;
 				if ( scrl < 0 ) scrl=0;
 				break;
 			case KEY_CTRL_DOWN:
 				select+=1;
-				if ( select > (10) ) {select=0; scrl=0;}
+				if ( select > (listmax) ) {select=0; scrl=0;}
 				if ((select - scrl) > 6 ) scrl+=1;
-				if ( scrl > (10) ) scrl=(10)-6;
+				if ( scrl > (listmax) ) scrl=(listmax)-6;
 				break;
 				
 			case KEY_CTRL_F1:
@@ -1454,6 +1508,9 @@ void SetupG(){		// ----------- Setup
 						break;
 					case 10: // TimeDsp
 						TimeDsp = 1 ; // on
+						break;
+					case 11: // CB mode
+						CB_INT = 0 ; // normal
 						break;
 					default:
 						break;
@@ -1496,6 +1553,9 @@ void SetupG(){		// ----------- Setup
 					case 10: // TimeDsp
 						TimeDsp = 0 ; // off
 						break;
+					case 11: // CB mode
+						CB_INT = 1 ; // int
+						break;
 					default:
 						break;
 				}
@@ -1535,4 +1595,5 @@ void SetupG(){		// ----------- Setup
 		}
 	}
 	SaveConfig();
+	return select;
 }

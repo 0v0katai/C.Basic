@@ -95,8 +95,11 @@ extern char		MatAryElementSize[MatAryMax];		// Matrix array word size
 extern double *MatAry[MatAryMax];			// Matrix array ptr*
 
 //------------------------------------------------------------------------------
-extern double CursorX;
-extern double CursorY;
+extern int ScreenMode;	//  0:Text  1:Graphic
+extern int UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
+
+extern int CursorX;	// text cursor X
+extern int CursorY;	// text cursor X
 
 extern int ExecPtr;
 extern int BreakPtr;
@@ -120,15 +123,86 @@ extern int ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 #define StackWhileMax 8
 #define StackDoMax 8
 
+extern int	CB_TicksStart;
+extern int	CB_TicksEnd;
+
 extern int BreakCheck;	// Break Stop on/off
 
+extern int dspflag;
 //------------------------------------------------------------------------------
+void CB_SelectTextVRAM() ;
+void CB_SelectTextDD() ;
+void CB_SelectGraphVRAM() ;
+void CB_SelectGraphDD() ;
+void Scrl_Y();
+void CB_Cls( unsigned char *SRC );
+void CB_ClrText( unsigned char *SRC );
+void CB_ClrGraph( unsigned char *SRC );
+int RangeErrorCK( unsigned char *SRC ) ;
+
+void CB_Fix( unsigned char *SRC );
+void CB_Sci( unsigned char *SRC );
+void CB_Norm( unsigned char *SRC );
+void CB_Rnd();
+
+void CB_ClrMat( unsigned char *SRC ) ; //	ClrMat A
+int  CB_Input( unsigned char *SRC );
 int GetQuotOpcode(unsigned char *SRC, unsigned char *buffer ) ;
+void GetQuotStr(unsigned char *SRC, unsigned char *buffer ) ;
 void GetLocateStr(unsigned char *SRC, unsigned char *buffer ) ;
+void CB_Quot( unsigned char *SRC );		// "" ""
+void PrintDone() ;
+void CB_Done();
+void PlotXYtoPrevPXY() ;
+void PlotPreviousPXY() ;
+void PlotCurrentXY();
+unsigned int GWait( int exit_cancel ) ;
+int CB_Disps( unsigned char *SRC ,int dspflag);
+void CB_end( unsigned char *SRC, int dspflag );
+void CB_Locate( unsigned char *SRC );
+void CB_Text( unsigned char *SRC, int *dspflag ) ; //	Text
+
+void Skip_quot( unsigned char *SRC ); // skip "..."
 void Skip_block( unsigned char *SRC );
+void Skip_rem( unsigned char *SRC );	// skip '...
+void CB_Lbl( unsigned char *SRC, int *StackGotoAdrs );
+int Search_Lbl( unsigned char *SRC, unsigned int lc );
+void CB_Goto( unsigned char *SRC, int *StackGotoAdrs);
+int Search_IfEnd( unsigned char *SRC );
+int Search_ElseIfend( unsigned char *SRC );
+int Search_Next( unsigned char *SRC );
+int Search_WhileEnd( unsigned char *SRC );
+int Search_LpWhile( unsigned char *SRC );
+void CB_Break( unsigned char *SRC, int *StackForPtr, int *StackWhilePtr, int *StackDoPtr, int *CurrentStructCNT, int *CurrentStructloop ) ;
+
+void CB_GridOff() ;
+void CB_GridOn() ;
+void CB_AxesOff() ;
+void CB_AxesOn() ;
+void CB_CoordOff() ;
+void CB_CoordOn() ;
+void CB_LabelOff() ;
+void CB_LabelOn() ;
+
+void CB_S_L_Normal() ; //	S-L-Normal
+void CB_S_L_Thick() ; //	S-L-Thick
+void CB_S_L_Broken() ; //	S-L-Broken
+void CB_S_L_Dot() ; //	S-L-Dot
+void CB_SketchNormal() ; //	SketchNormal
+void CB_SketchThick() ; //	SketchThick
+void CB_SketchBroken() ; //	SketchBroken
+void CB_SketchDot() ; //	SketchDot
+
+void GetGraphStr(  unsigned char *SRC ) ;
+void CB_DrawGraph(  unsigned char *SRC );
+void CB_GraphY( unsigned char *SRC );
 
 int StoPict( int pictNo );
 void RclPict( int pictNo );
+void CB_StoPict( unsigned char *SRC ) ; //	StoPict
+void CB_RclPict( unsigned char *SRC ) ; //	RclPict
+
+int CB_SearchProg( unsigned char *name ) ; //	Prog search
 
 int CB_interpreter( unsigned char *SRC) ;
 

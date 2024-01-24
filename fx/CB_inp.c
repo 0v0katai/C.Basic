@@ -698,7 +698,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				else				PrevOpcode( buffer, &offsetX);
 		}
 		
-		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(4,"A<>a"); else Fkey_dispN_Aa(4,"a<>A");
+		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(4,"A<>a"); else Fkey_dispN_Aa(4,"A<>a");
 		if ( ( pallet_mode ) && ( alpha_mode ) ) Fkey_dispR(5,"CHAR");
 
 		CursorStyle=Cursor_GetFlashStyle();

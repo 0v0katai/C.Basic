@@ -5,18 +5,20 @@
 #include <fxlib.h>
 #include "fx_syscall.h"
 #include "CB_io.h"
+#include "CB_error.h"
+
 #include "CB_inp.h"
-
-#include "CB_file.h"
 #include "CB_edit.h"
-
+#include "CB_file.h"
 #include "CB_interpreter.h"
 #include "CB_Matrix.h"
-#include "CB_error.h"
 
 //----------------------------------------------------------------------------------------------
 unsigned char ClipBuffer[ClipMax+1];
-
+int CB_INT=0;	// 0:normal  1: integer mode
+int selectSetup=0;
+int selectVar=0;
+int selectMatrix=0;
 //----------------------------------------------------------------------------------------------
 
 int SrcSize( unsigned char *src ) {
@@ -1050,8 +1052,8 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 		Bdisp_AllClr_VRAM();
 		strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 		buffer2[8]='\0';
-		sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
-//		sprintf(buffer,"==%-8s==%08X",buffer2, tmpkey);
+		sprintf(buffer,"==%-8s==%s",buffer2, CB_INT?" INT mode":" Double");
+//		sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
 		locate (1,1); Print( (unsigned char*)buffer );
 		if ( ClipStartPtr>=0 ) {
 			Fkey_dispN( 0, "COPY ");
@@ -1061,7 +1063,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 			Fkey_dispN( 0, "TOP ");
 			Fkey_dispN( 1, "BTM");
 			Fkey_dispR( 2, "CMD");
-			if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"a<>A");
+			if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
 			Fkey_dispR( 4, "CHAR");
 			Fkey_dispN( 5, "EXE");
 		}
@@ -1430,19 +1432,19 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case KEY_CTRL_SETUP:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
-							SetupG();
+							selectSetup=SetupG(selectSetup);
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 					case KEY_CTRL_F1:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
-							SetVar(0);		// A - 
+							selectVar=SetVar(selectVar);		// A - 
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 					case KEY_CTRL_F2:
 							Cursor_SetFlashMode(0); 		// cursor flashing off
-							SetMatrix(0);		// 
+							selectMatrix=SetMatrix(selectMatrix);		//
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
