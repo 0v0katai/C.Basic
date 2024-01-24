@@ -54,7 +54,8 @@ char FileListUpdate=1;
 char StorageMode=0;						// 0:Storage memory   1:SD
 char redrawsubfolder=0;
 int recentsize=0;
-char ForceG1Msave;		//    1: force g1m save
+char ForceG1Msave=0;		//    1: force g1m save 
+char AutoSaveMode=0;		//    1: Auto save ( not pop up )
 
 const char root[][5]={"fls0","crd0"};
 
@@ -71,7 +72,7 @@ unsigned int SelectFile (char *filename)
 		}
 		key = Explorer( size, folder ) ;
 		if ( key == FileCMD_NEW  ) break ;	// new file
-		if ( key == FileCMD_Prog ) break ;	// sdk built in file
+		if ( key == FileCMD_MKDIR ) break ;	// Make Directory
 
 		if ( key == KEY_CTRL_EXIT ) {			//to top of list
 			index = 0;
@@ -200,6 +201,7 @@ void ErrorMSGfile( char *buffer, char *filename, int err){
 		ErrorMSGstr( buffer, sname);
 	}
 }
+
 
 //--------------------------------------------------------------
 static int ReadFile( char *folder )
@@ -484,6 +486,15 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
 				Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 				break;
+			case 2:
+				Fkey_Icon( FKeyNo1, 910 );	//	Fkey_dispR( FKeyNo3,"MkDir");
+				Fkey_Icon( FKeyNo2, 944 );	//	Fkey_dispN( FKeyNo1,"RnDir");
+				FkeyClear( FKeyNo3 );
+				FkeyClear( FKeyNo4 );
+				FkeyClear( FKeyNo5 );
+//				Fkey_Icon( FKeyNo5,  56 );	//	Fkey_dispR( FKeyNo5,"DELA");
+				Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+				break;
 		}
 //		locate(1, 1);Print((unsigned char*)"File List  [        ]");
 //		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
@@ -620,21 +631,32 @@ unsigned int Explorer( int size, char *folder )
 					case 1:
 						key=FileCMD_TEXT;
 						break;
+					case 2:
+					  	MakeDirectory();
+						key=FileCMD_MKDIR;
+						break;
 				}
 				cont =0 ;
 				break;
 			case KEY_CTRL_F2:	// edit
-				if ( Isfolder ) break;
 				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
+					if ( Isfolder ) break;
 						key=FileCMD_EDIT;
+						cont =0 ;
 						break;
 					case 1:
-						key=FileCMD_RENAME;
+						if ( Isfolder ) goto rendir;
+						else key=FileCMD_RENAME;
+						cont =0 ;
+						break;
+					case 2:
+					  rendir:
+//					  	RenameDirectory(files[index].filename);
+//						key=FileCMD_RENDIR;
 						break;
 				}
-				cont =0 ;
 				break;
 			case KEY_CTRL_F3:	// New file
 				if ( Isfolder ) break;
@@ -686,7 +708,8 @@ unsigned int Explorer( int size, char *folder )
 //				FavoritesFunc( index );
 				break;
 			case KEY_CTRL_F6:		// ------- change function
-				filemode = 1-filemode ;
+				filemode ++;
+				if ( filemode >2 ) filemode=0;
 				break;
 			
 			case KEY_CTRL_EXIT:
@@ -924,7 +947,6 @@ int InputFilename( char * buffer, char* msg) {		//
 	Getfolder( buffer );
 	return 0; // ok
 }
-
 
 void basname8ToG1MHeader( char *filebase, char *basname) {	// abcd -> header
 	char *nameptr;
@@ -1230,8 +1252,10 @@ int SaveProgfile( int progNo ){
 
 	if ( ( CurrentFileMode == 0 ) || ( ForceG1Msave == 1 ) ) {	// g1m save 
 	  loop:
-		if ( InputFilename( basname, "Save g1m Name?" ) ) if ( CurrentFileMode == 1 ) goto loop2; else return 1 ;
-		if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) goto loop;
+		if ( AutoSaveMode == 0 ) {
+			if ( InputFilename( basname, "Save g1m Name?" ) ) if ( CurrentFileMode == 1 ) goto loop2; else return 1 ;
+			if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) goto loop;
+		}
 		basname8ToG1MHeader( filebase, basname);
 		sprintf(sname, "%s.g1m", basname );
 		r=SaveBasG1M( filebase );
@@ -1239,9 +1263,13 @@ int SaveProgfile( int progNo ){
 	}
 	if ( CurrentFileMode == 1 ) {	// text save
 	  loop2:
-		if ( InputFilename( basname, "Save Text Name?" ) ) return 1 ;
+		if ( AutoSaveMode == 0 ) {
+			if ( InputFilename( basname, "Save Text Name?" ) ) return 1 ;
+		}
 		SetFullfilenameExt( fname, basname, "txt" );
-		if ( ExistFile( fname ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
+		if ( AutoSaveMode == 0 ) {
+			if ( ExistFile( fname ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
+		}
 		sprintf(sname, "%s.txt", basname );
 		size = ProgfileMax[progNo] ;
 		buffersize = size-SrcSize( filebase );	// buffersize (free space)
@@ -1439,6 +1467,43 @@ void DeleteFileFav(char *fname, int yesno ) {
 		DeleteFavorites( i ) ;
 	}
 
+}
+
+//----------------------------------------------------------------------------------------------
+int MakeDirectory(){
+	char name[16];
+	char newfolder[16];
+	FONTCHARACTER buffer[50];
+	int	r;
+	if( strlen(folder) != 0 ) return 1; // The directory can be created under only the route directory.
+	Bdisp_AllClr_VRAM();
+	name[0]='\0';
+	if ( InputPassname( 1, name, "Folder Name" ) ) return 1; //cancel
+	sprintf( newfolder, "\\\\%s\\%s", root[StorageMode], name );
+	CharToFont( newfolder, buffer );
+	r=Bfile_CreateDirectory( buffer );
+	if( r < 0 ) { ErrorMSGfile( "Can't make folder", name, r ); return 1 ; }
+	FileListUpdate = 1 ;
+	strcpy( folder, name );
+	return 0;	// ok
+}
+int RenameDirectory( char * foldername ){
+	char newname[16];
+	char oldfolder[16];
+	char newfolder[16];
+	FONTCHARACTER buffer[50];
+	FONTCHARACTER buffer2[50];
+	int	r;
+	strncpy( newname, foldername, strlen(foldername));
+	if ( InputFilename( newname, "Rename Folder ?" ) ) return 1 ; // cancel
+	sprintf( oldfolder, "\\\\%s\\%s", root[StorageMode], foldername );
+	sprintf( newfolder, "\\\\%s\\%s", root[StorageMode], newname );
+	CharToFont( oldfolder, buffer );
+	CharToFont( newfolder, buffer2 );
+	r=Bfile_RenameEntry( buffer, buffer2 );
+	if( r < 0 ) { ErrorMSGfile( "Can't create folder", name, r ); return 1 ; }
+	FileListUpdate = 1 ;
+	return 0;	// ok
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1836,6 +1901,12 @@ void SaveConfig(){
 		sbuf+=FOLDERMAX;
 	}
 
+	buffer[1075]= AutoSaveMode;
+	buffer[1076]= EditTopLine;
+	buffer[1077]= EditFontSize;
+	buffer[1078]= 0;
+	buffer[1079]= 0;
+
 	handle=Bfile_OpenMainMemory(fname);
 	if (handle<0) {ErrorMSG("Open Error",handle); return;}
 	state=Bfile_WriteFile(handle,buffer,ConfigMAX);
@@ -1919,6 +1990,11 @@ void LoadConfig(){
 			strncpy( Favoritesfiles[i].folder,   (char*)sbuf, FOLDERMAX );
 			sbuf+=FOLDERMAX;
 		}
+
+		AutoSaveMode =buffer[1075];
+		EditTopLine  =buffer[1076];
+		EditFontSize =buffer[1077];
+		
 	} else {
 		Bfile_DeleteMainMemory(fname);
 	}
@@ -2125,9 +2201,9 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 
 //---------------------------------------------------------------------------------------------- align dummy
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte

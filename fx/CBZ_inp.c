@@ -837,7 +837,11 @@ const short oplistPRGM[]={
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
 		0xF943,	// Sprintf(
+		0xF944,	// StrChar(
+		0xF945,	// StrCenter(
 		0xF940,	// Str(
+		0x5C,	// 
+		0x24,	// $
 		0};
 		
 const short oplistVARS[]={
@@ -956,6 +960,7 @@ const short oplistVARS[]={
 		0xF9C0, // _ClrVRAM
 		0xF9C1,	// _ClrScreen
 		0xF9C2,	// _DispVRAM
+		0xF9C3,	// _Contrast
 		0xF9C5,	// _Point 
 		0xF9C4,	// _Pixel 
 		0xF9C6,	// _PixelTest(
@@ -1253,22 +1258,22 @@ const short oplistCMD[]={		// 5800P like
 		0xF934,	// StrLeft(
 		0xF935,	// StrRight(
 		0xF936,	// StrMid(
-		0x5C,	// 
-		0x24,	// $
-		0x23,	// #
-		0x25,	// %	
-		
-//											19
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
 		0xF93A,	// StrLwr(
+		
+//											19
+		0xF93F,	// Str
 		0xF93B,	// StrInv(
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
-		0xF943,	// Sprintf(
+		0xF944,	// StrChar(
+		0xF945,	// StrCenter(
+		0xF946,	// Hex(
+		0xF947,	// Bin(
 		0xF940,	// Str(
-		0x24,	// $
+		0xF943,	// Sprintf(
 		0x23,	// #
 		0x25,	// %	
 
@@ -1349,7 +1354,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF9D5,	// _Bmp 
 		0xF9D6,	// _Bmp8
 		0xF9D7,	// _Bmp16
-		0x25,	// %
+		0xF9C3,	// _Contrast
 		
 		
 //		0xF797,	// StoV-Win
@@ -1835,10 +1840,15 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF941, "DATE" }, 
 	{ 0xF942, "TIME" }, 
 	{ 0xF943, "Sprintf(" }, 
+	{ 0xF944, "StrChar(" }, 
+	{ 0xF945, "StrCenter(" }, 
+	{ 0xF946, "Hex(" }, 
+	{ 0xF947, "Bin(" }, 
 	{ 0xF94F, "Wait " }, 
 	{ 0xF9C0, "_ClrVram" },
 	{ 0xF9C1, "_ClrScreen" },
 	{ 0xF9C2, "_DispVram" },
+	{ 0xF9C3, "_Contrast " },
 	{ 0xF9C4, "_Pixel " },
 	{ 0xF9C5, "_Point " },
 	{ 0xF9C6, "_PixelTest(" },
@@ -2045,7 +2055,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	memcpy( fnbuf, GetVRAMAddress()+16*8*7, 16*8);		// fn key image save
 	CommandType=0; CommandPage=0;
 
+	SaveDisp(SAVEDISP_PAGE2);
 	while (cont) {
+		RestoreDisp(SAVEDISP_PAGE2);
 		Cursor_SetFlashMode(1);			// cursor flashing on
 		length=strlenOp( buffer );
 		if ( ptrX > length-1 ) ptrX=length;
@@ -2071,6 +2083,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 //		sprintf(buf,"len=%2d ptr=%2d off=%2d   csr=%2d  ",length,ptrX,offsetX,csrX); PrintMini( 0,7*8+2,(unsigned char *)buf, MINI_OVER);
 
+		SaveDisp(SAVEDISP_PAGE2);
 		if ( ContinuousSelect ) key=KEY_CTRL_F5; else GetKey(&key);
 		
 		switch (key) {
@@ -2123,6 +2136,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				break;
 			case KEY_CTRL_F2:
 				if ( CommandType ) GetGenuineCmdF2( &key );
+				else if ( length ) cont=0;
 				break;
 			case KEY_CTRL_F3:
 				if ( CommandType ) GetGenuineCmdF3( &key );

@@ -7,6 +7,8 @@ extern const char VerMSG[];
 
 #define PageUpDownNumDefault 1
 extern short PageUpDownNum;		// Pageup/down count
+extern char  EditTopLine ;		// 1: use top of line (edit)
+extern char  EditFontSize ;		// 0:standard  1:mini
 //------------------------------------------------------------------------------
 void VerDispSub() ;
 void VerDisp() ;

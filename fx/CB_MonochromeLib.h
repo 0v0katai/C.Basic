@@ -58,9 +58,6 @@ void CB_ML_DispVRAM() ; // ML_DispVRAM
 int CB_ML_SetContrast( char *SRC ) ; // ML_Contrast
 int CB_ML_GetContrast() ; // ML_Contrast
 //----------------------------------------------------------------------------------------------
-int CB_GetOprand2( char *SRC, int *px, int *py) ;
-int CB_GetOprand4( char *SRC, int *px, int *py, int *px2, int *py2) ;
-//----------------------------------------------------------------------------------------------
 void CB_ML_Pixel( char *SRC ) ; // ML_Pixel x, y, color
 void CB_ML_Point( char *SRC ) ; // ML_Point x, y, width, color
 int CB_ML_PixelTest( char *SRC ) ; // ML_PixelTest( x, y)

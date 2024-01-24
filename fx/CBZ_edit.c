@@ -123,7 +123,7 @@ void EditPaste( char *filebase, int *ptr ){
 	for ( i=ProgfileMax[ProgNo]; i>=j; i-- ) filebase[i]=filebase[i-len];
 		 
 	srcbase=filebase+0x56+(*ptr);
-	for ( i=0; i<len; i++ ) srcbase[i]=ClipBuffer[i];
+	for ( i=0; i<len; i++ ) srcbase[i]=ClipBuffer[i];	// copy from ClipBuffer
 			
 	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
@@ -144,11 +144,11 @@ void EditCopy( char *filebase, int ptr, int startp, int endp ){
 	}
 	
 	srcbase=filebase+0x56+(startp);
-	for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];
+	for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];	// copy to ClipBuffer
 	ClipBuffer[i]='\0';
 }
 
-void EditCut( char *filebase, int *ptr, int startp, int endp ){
+void EditCutDel( char *filebase, int *ptr, int startp, int endp, int del ){	// del:1 delete
 	int len,i;
 	char *srcbase;
 
@@ -159,11 +159,12 @@ void EditCut( char *filebase, int *ptr, int startp, int endp ){
 		CB_ErrMsg(ErrorNo);
 		return ;
 	}
-	
-	srcbase=filebase+0x56+(startp);
-	for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];
-	ClipBuffer[i]='\0';
 
+	if ( del == 0 ) {
+		srcbase=filebase+0x56+(startp);
+		for ( i=0; i<len; i++ ) ClipBuffer[i]=srcbase[i];	// copy to ClipBuffer
+		ClipBuffer[i]='\0';
+	}
 	for ( i=(startp)+0x56; i<=ProgfileMax[ProgNo]; i++ ) filebase[i]=filebase[i+len];
 
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
@@ -350,8 +351,8 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, 
 	*cx=0; *cy=0;
 
 	while ( 1 ) {
-		for ( y=2; y<8; y++ ) { locate(1,y); PrintLine((unsigned char*)" ",21); }
-		y=2; ofst=(*offset);
+		for ( y=(2-EditTopLine); y<8; y++ ) { locate(1,y); PrintLine((unsigned char*)" ",21); }
+		y=(2-EditTopLine); ofst=(*offset);
 		ofst2=ofst;
 		x=0; ynum=0;
 		OpcodeLineN( SrcBase, &ofst2 ,&x ,&ynum);
@@ -381,7 +382,7 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, 
 				ofst = PrintOpcodeLine1( y, n, SrcBase, ofst, csrPtr, &(*cx), &(*cy), ClipStartPtr, ClipEndPtr);
 				y++;
 		}
-		if ( ( (*cx)!=0 ) && ( (*cy)>1 ) && ( (*cy)<8 ) ) break ;
+		if ( ( (*cx)!=0 ) && ( (*cy)>(1-EditTopLine) ) && ( (*cy)<8 ) ) break ;
 		ofstYptr=OpcodeLineYptr( *offset_y, SrcBase, *offset, &x);
 		if ( csrPtr < ofstYptr ) PrevLinePhy( SrcBase, &(*offset), &(*offset_y) );
 		else 					 NextLinePhy( SrcBase, &(*offset), &(*offset_y) );
@@ -390,7 +391,7 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, 
 		count--;
 		if ( count<50 ) if ( csrPtr > 0 ) csrPtr--;
 		if ( count==0 ) {  // error reset
-			(*offset)=0; (*offset_y)=0; (*cx)=1; (*cy)=2; return -1; 
+			(*offset)=0; (*offset_y)=0; (*cx)=(1-EditTopLine); (*cy)=2; return -1; 
 		}
 	}
 	
@@ -402,14 +403,14 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, 
 
 void DumpMix( char *SrcBase, int offset){
 	int 	i,j;
-	for (j=0; j<6 ; j++){
-		Hex4PrintXY( 1, j+2, "", ((int)offset+j*4)&0xFFFF);
+	for (j=0; j<(6) ; j++){
+		Hex4PrintXY( 1, j+(2), "", ((int)offset+j*4)&0xFFFF);
 		locate( 5,j+2); Print((unsigned char*)":           /    ");
 		for (i=0; i<4 ; i++){
-				Hex2PrintXY( i*3+6, j+2, "", SrcBase[offset+i+j*4]&0xFF);
+				Hex2PrintXY( i*3+6, j+(2), "", SrcBase[offset+i+j*4]&0xFF);
 		}
 		for (i=0; i<4 ; i++){
-				CB_PrintC(18+i,j+2,(unsigned char*)SrcBase+offset+i+j*4);
+				CB_PrintC(18+i,j+(2),(unsigned char*)SrcBase+offset+i+j*4);
 		}
 	}
 }
@@ -528,7 +529,7 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 		NextLinePhy( SrcBase, &ofst, &ofsty );
 		curline++;
 	}
-	curline+=(cy-1);
+	curline+=(cy-(1-EditTopLine));
 	sprintf(buffer,"current:%d",curline);
 	locate( 3,4); Print((unsigned char *)buffer);
 	Bdisp_PutDisp_DD_DrawBusy();
@@ -665,10 +666,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						}
 						if ( DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr) ) csrPtr=0; //return KEY_CTRL_EXIT;
 
-//						Bdisp_AreaReverseVRAM(127, 0, 127,55);		// reverse thumb line 
+//						Bdisp_AreaReverseVRAM(127, 8-8*EditTopLine, 127,55);		// reverse thumb line 
 						d = SrcEndPtr( filebase );					// Csr thumb point display
 						if ( d ) {									//
-							y = csrPtr*46/d+8;						//
+							y = csrPtr*(46+8*EditTopLine)/d+8-8*EditTopLine;						//
 							BdispSetPointVRAM2( 127, y  , 2);		//
 							BdispSetPointVRAM2( 127, y+1, 2);		//
 						}											//
@@ -677,11 +678,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				case 4: 		// hex dump
 						i = csrPtr-offset;
 						if ( ( i <  0 ) || ( i > 23 ) ) {
-							offset=csrPtr; cx=6; cy=2;
+							offset=csrPtr; cx=6; cy=(2);
 						} else {
 							if ( (cx!=7) && (cx!=10) && (cx!=13) && (cx!=16) ) { 
 								cx = (i&3)*3+6;
-								cy = (i/4)+2;
+								cy = (i/4)+(2);
 							}
 						}
 						DumpMix( SrcBase, offset );
@@ -708,6 +709,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			if ( ClipStartPtr>=0 ) {
 					Fkey_Icon( FKeyNo1,  52 );	//	Fkey_dispN( FKeyNo1, "COPY ");
 					Fkey_Icon( FKeyNo2, 105 );	//	Fkey_dispN( FKeyNo2, "CUT ");
+					Fkey_Icon( FKeyNo3,   9 );	//	Fkey_dispN( FKeyNo2, "DEL ");
 				} else {
 					ClipEndPtr   = -1 ;		// ClipMode cancel
 					if ( DebugMode >=1 ) {  // debug mode
@@ -877,7 +879,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( SearchMode ) break;;
 					if ( ClipEndPtr >= 0 ) {
 						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-						EditCut( filebase, &csrPtr, ClipStartPtr, ClipEndPtr );
+						EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 0 );	// cut
 					} else {
 						if ( CommandType ) { GetGenuineCmdF2( &key ); goto F2j; }
 						else {
@@ -923,29 +925,34 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F3:
 					if ( SearchMode ) break;;
-					if ( CommandType ) GetGenuineCmdF3( &key );
-					else {
-						if ( DebugMenuSw ) {		// ====== Debug Mode ======
-									cont=0;
-									ExecPtr=csrPtr;
-									BreakPtr=-1;
-									DebugMode=3;		// step over mode
-							key=0;
-						} else {
-							if ( JumpMenuSw ) {		// ====== Jump Mode
-								i=JumpGoto( SrcBase, &offset, &offset_y, cy );					// Goto
-								if ( i>0 ) { 
-									offset=0; offset_y=0;
-									NextLinePhyN( i-1, SrcBase, &offset, &offset_y );
-									csrPtr=offset;
-									if ( SrcBase[csrPtr]==0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
-								}
-							} else {	// command select
-								if ( CommandInputMethod ) {
-									CommandType=CMD_MENU; CommandPage=0;
-								} else {
-									key=SelectOpcode5800P( 0 );
-									if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+					if ( ClipEndPtr >= 0 ) {
+						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+						EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 1 );	// delete
+					} else {
+						if ( CommandType ) GetGenuineCmdF3( &key );
+						else {
+							if ( DebugMenuSw ) {		// ====== Debug Mode ======
+										cont=0;
+										ExecPtr=csrPtr;
+										BreakPtr=-1;
+										DebugMode=3;		// step over mode
+								key=0;
+							} else {
+								if ( JumpMenuSw ) {		// ====== Jump Mode
+									i=JumpGoto( SrcBase, &offset, &offset_y, cy );					// Goto
+									if ( i>0 ) { 
+										offset=0; offset_y=0;
+										NextLinePhyN( i-1, SrcBase, &offset, &offset_y );
+										csrPtr=offset;
+										if ( SrcBase[csrPtr]==0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
+									}
+								} else {	// command select
+									if ( CommandInputMethod ) {
+										CommandType=CMD_MENU; CommandPage=0;
+									} else {
+										key=SelectOpcode5800P( 0 );
+										if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+									}
 								}
 							}
 						}
@@ -1057,14 +1064,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				switch ( dumpflg ) {
 					case 2: 		// Opcode
 							PrevOpcode( SrcBase, &csrPtr );
-							if ( (cx==1)&&(cy==2) ) PrevLinePhy( SrcBase, &offset, &offset_y );
+							if ( (cx==1)&&(cy==(2-EditTopLine)) ) PrevLinePhy( SrcBase, &offset, &offset_y );
 							break;
 					case 4: 		// hex dump
 							if ( (cx!=7) && (cx!=10) && (cx!=13) && (cx!=16) ) { cx-=2; csrPtr--; }
 							cx--;
 							if ( cx<6 ) {
 									cy--;
-									if ( cy<2 ) { (offset)-=4; }
+									if ( cy<(2) ) { (offset)-=4; }
 							}
 							break;
 					default:
@@ -1123,19 +1130,21 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							while ( 1 ) {
 								PrevOpcode( SrcBase, &csrPtr );
 								x -= OpcodeStrLenBuf( SrcBase, csrPtr);
-								if ( x < 1 ) { x=i; break ; }
+								if ( x < 1 ) {
+									 x=i; break ; }
 							}
 							while ( x > cx ) {
 								PrevOpcode( SrcBase, &csrPtr );
 								x -= OpcodeStrLenBuf( SrcBase, csrPtr);
-								if ( x < 1 ) { NextOpcode( SrcBase, &csrPtr ); break ; }
+								if ( x < 1 ) {
+									 NextOpcode( SrcBase, &csrPtr ); break ; }
 							}
-							if ( cy==2 ) PrevLinePhy( SrcBase, &offset, &offset_y );
+							if ( cy==(2-EditTopLine) ) PrevLinePhy( SrcBase, &offset, &offset_y );
 							break;
 					case 4: 		// hex dump
 							cy--;
 							csrPtr-=4;
-							if ( cy<2 ) { (offset)-=4; cy=2; }
+							if ( cy<(2) ) { (offset)-=4; cy=(2); }
 //							if ( (cx==7) || (cx==10) || (cx==13) ) cx--;
 							break;
 					default:
@@ -1204,7 +1213,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
 				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
 				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
-				if ( dumpflg==2 ) Fkey_dispN( FKeyNo5, "Dump"); else Fkey_dispN( FKeyNo5, "List");
+//				if ( dumpflg==2 ) Fkey_dispN( FKeyNo5, "Dump"); else Fkey_dispN( FKeyNo5, "List");
+				sprintf(buffer, "%d",  ProgfileMax[ProgNo]-SrcSize(filebase) );
+				Fkey_dispN( FKeyNo5, buffer);
 				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 				GetKey(&key);
 				switch (key) {

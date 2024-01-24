@@ -134,6 +134,12 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case FileCMD_PASS:
 				NewPassWord(filename);
 				break;
+//			case FileCMD_MKDIR:
+//				MakeDirectory();
+//				break;
+//			case FileCMD_RENDIR:
+//				RenameDirectory(filename);
+//				break;
 			default:
 				break;
 		}

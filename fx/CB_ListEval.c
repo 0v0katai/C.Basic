@@ -119,7 +119,7 @@ double EvalFxDbl2( FXPTR2 fxptr2, int *resultflag, int *resultreg, double result
 	int i,j,k;
 	int colA,rowB;
 	int base;
-	int tmpreg58=58;	// Mattmpreg
+	int tmpreg58=58+26;	// Mattmpreg
 	int tmpreg=CB_MatListAnsreg;
 	if ( dspflag >= 3 ) {	// Listtmp
 		base=MatAry[tmpreg].Base;

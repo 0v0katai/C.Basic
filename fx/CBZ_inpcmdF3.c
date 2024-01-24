@@ -6,8 +6,9 @@ void GetGenuineCmdF3( unsigned int *code ){
 	switch ( CommandType ) {
 		case CMD_PRGM:		//	------------------------------------------------------------PRGM_F3
 			switch ( CommandPage ) {
-				case 0: CommandType=CMD_PRGM_JUMP;CommandPage=0;break;
-				case 1: CommandType=CMD_PRGM_REL; CommandPage=0;break;
+				case 0: CommandType=CMD_PRGM_JUMP; CommandPage=0;break;
+				case 1: CommandType=CMD_PRGM_REL;  CommandPage=0;break;
+				case 2: CommandType=CMD_PRGM_EXSTR;CommandPage=0;break;
 			} break;
 		case CMD_PRGM_COM:
 			switch ( CommandPage ) {
@@ -41,7 +42,11 @@ void GetGenuineCmdF3( unsigned int *code ){
 				case 0: (*code)=0xF932;return;	// StrCmp(
 				case 1: (*code)=0xF936;return;	// StrMid(
 				case 2: (*code)=0xF93B;return;	// StrInv(
-				case 3: (*code)=0xF943;return;	// Sprintf(
+			} break;
+		case CMD_PRGM_EXSTR:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF943;return;	// Sprintf(
+				case 1: (*code)=0xF940;return;	// Str(
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {

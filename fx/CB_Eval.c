@@ -211,7 +211,7 @@ int ListRegVar( char *SRC ) {	// return reg no
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
 	ExecPtr--;
 	reg=Eval_atod( SRC, c );
-	if ( ( reg<1 ) || ( 26<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
+	if ( ( reg<1 ) || ( LISTMAX<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
 	return reg+31;
 }
 

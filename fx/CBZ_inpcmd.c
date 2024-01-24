@@ -68,7 +68,8 @@ void DispGenuineCmdMenu(){
 				case 2:
 					Fkey_Icon( FKeyNo1, 467 );	//	Fkey_dispR( FKeyNo1, "STR ");
 					Fkey_Icon( FKeyNo2, 952 );	//	Fkey_DISPR( FKeyNo2, " $ ");		// $
-					FkeyClear( FKeyNo3 );
+//					FkeyClear( FKeyNo3 );
+					Fkey_dispN( FKeyNo3, "ExStr");
 					Fkey_dspRB( FKeyNo4, "Alias");
 					Fkey_dispR( FKeyNo5, "EXEC");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
@@ -220,12 +221,25 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo5, 414 );	//	Fkey_dspRB( FKeyNo5, "Rot");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
-				case 3:
+			}
+			break;
+		case CMD_PRGM_EXSTR:
+			switch ( CommandPage ) {
+				case 0:
 					Fkey_Icon( FKeyNo1, 268 );	//	Fkey_dspRB( FKeyNo1, "Str");		// Str
 					Fkey_dspRB( FKeyNo2, "Str(");		// Str(
 					Fkey_dspRB( FKeyNo3, "Sptf");		// Sprintf
 					Fkey_Icon( FKeyNo4, 176 );	//	Fkey_DISPR( FKeyNo4, " % ");
 					Fkey_Icon( FKeyNo5, 403 );	//	Fkey_DISPR( FKeyNo5, " # ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 1:
+					Fkey_dspRB( FKeyNo1, "Char");
+					Fkey_dspRB( FKeyNo2, "Centr");
+					Fkey_dspRB( FKeyNo3, "Str(");		// Str(
+					Fkey_dspRB( FKeyNo4, "Hex(");
+					Fkey_dspRB( FKeyNo5, "Bin(");
+//					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
@@ -787,7 +801,8 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo2, "FPoly");
 					Fkey_dspRB( FKeyNo3, "Circl");
 					Fkey_dspRB( FKeyNo4, "FCirc");
-					FkeyClear( FKeyNo5 );
+					Fkey_dspRB( FKeyNo5, "Contr");
+//					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:

@@ -45,7 +45,7 @@ int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int 
 	int i,j,k,sum;
 	int colA,rowB;
 	int base;
-	int tmpreg58=58;	// Mattmpreg
+	int tmpreg58=58+26;	// Mattmpreg
 	int tmpreg=CB_MatListAnsreg;
 	if ( dspflag >= 3 ) {	// Listtmp
 		base=MatAry[tmpreg].Base;

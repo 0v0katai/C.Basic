@@ -38,10 +38,14 @@ void GetGenuineCmdF5( unsigned int *code ){
 			} break;
 		case CMD_PRGM_STR:
 			switch ( CommandPage ) {
-				case 0: break;
+				case 0: (*code)=0xF945;return;	// StrCenter(
 				case 1: (*code)=0xF938;return;	// Exp(
 				case 2: (*code)=0xF93D;return;	// StrRotate(
-				case 3: (*code)=0x0023;return;	// #
+			} break;
+		case CMD_PRGM_EXSTR:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x0023;return;	// #
+				case 1: (*code)=0xF947;return;	// Bin(
 			} break;
 
 		case CMD_OPTN:		//	------------------------------------------------------------OPTN_F5
@@ -125,6 +129,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9C4;return;	// _Pixel 
 				case 1: (*code)=0xF9C9;return;	// _Vertical
+				case 2: (*code)=0xF9C3;return;	// _Contrast
 				case 4: (*code)=0xF9D7;return;	// _Bmp16
 			} break;
 

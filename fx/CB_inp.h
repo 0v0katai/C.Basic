@@ -109,6 +109,7 @@
 #define CMD_PRGM_I_O	0x413
 #define CMD_PRGM_CRN	0x414
 #define CMD_PRGM_STR	0x420
+#define CMD_PRGM_EXSTR	0x422
 #define CMD_PRGM_EXEC	0x424
 
 #define CMD_SETUP_ANGL		0x500

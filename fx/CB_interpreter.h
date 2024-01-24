@@ -313,6 +313,10 @@ void PlotXYtoPrevPXY() ;
 void PlotPreviousPXY() ;
 void PlotCurrentXY();
 
+void CB_GetOprand2( char *SRC, int *px, int *py) ;
+void CB_GetOprand4( char *SRC, int *px, int *py, int *px2, int *py2) ;
+void CB_GetOprand2dbl( char *SRC, double *x, double *y) ;
+
 void CB_RefreshCtrl( char *SRC );	// PutDispDD Refresh control
 void CB_RefreshTime( char *SRC );	// PutDispDD Refresh time
 void CB_Screen( char *SRC );
