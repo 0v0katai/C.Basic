@@ -124,8 +124,8 @@ char  ProgLocalVar[ProgMax+1][26];
 
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 	short StackGotoAdrs[StackGotoMax];
 	
@@ -717,6 +717,11 @@ int CB_interpreter( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_quot( char *SRC ){ // skip "..."
