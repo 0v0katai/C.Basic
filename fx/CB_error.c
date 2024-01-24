@@ -23,11 +23,17 @@ void ERROR(char *buffer) {
 
 	CB_SelectTextDD();	// Select Text Screen
 	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(5);
-	locate(3,2); Print((unsigned char *)buffer);
-	sprintf(buf," ptr:0x%X(%d)",ErrorPtr,ErrorPtr);
-	locate(3,4); Print((unsigned char *)buf);
-	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
+
+//	PopUpWin(5);
+//	locate(3,2); Print((unsigned char *)buffer);
+//	sprintf(buf," ptr:0x%X(%d)",ErrorPtr,ErrorPtr);
+//	locate(3,4); Print((unsigned char *)buf);
+//	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
+
+	PopUpWin(4);
+	locate(3,3); Print((unsigned char *)buffer);
+	locate(3,5); Print((unsigned char *) "   Press:[EXIT]");
+
 	Bdisp_PutDisp_DD();
 
 	while(KeyCheckAC());
@@ -47,34 +53,34 @@ void ERROR(char *buffer) {
 void CB_ErrMsg(int ErrNo) {
 	switch (ErrNo) {
 		case SyntaxERR:
-			ERROR("Syntax ERROR");
+			ERROR(" Syntax ERROR");
 			break;
 		case MathERR:
-			ERROR("Math ERROR");
+			ERROR(" Math ERROR");
 			break;
 		case GoERR:
-			ERROR("Go ERROR");
+			ERROR(" Go ERROR");
 			break;
 		case NestingERR:
-			ERROR("Nesting ERROR");
+			ERROR(" Nesting ERROR");
 			break;
 		case StackERR:
-			ERROR("Stack ERROR");
+			ERROR(" Stack ERROR");
 			break;
 		case MemoryERR:
-			ERROR("Memory ERROR");
+			ERROR(" Memory ERROR");
 			break;
 		case ArgumentERR:
-			ERROR("Argument ERROR");
+			ERROR(" Argument ERROR");
 			break;
 		case DimensionERR:
-			ERROR("Dimension ERROR");
+			ERROR(" Dimension ERROR");
 			break;
 		case RangeERR:
-			ERROR("Range ERROR");
+			ERROR(" Range ERROR");
 			break;
 		case TooMuchData:
-			ERROR("Too Much Data");
+			ERROR(" Too Much Data");
 			break;
 		case NextWithoutForERR:
 			ERROR("Next without For");

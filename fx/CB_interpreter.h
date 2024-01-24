@@ -152,7 +152,7 @@ extern int dspflag;
 extern int CursorX;	// text cursor X
 extern int CursorY;	// text cursor X
 
-#define ProgMax 15
+#define ProgMax 30
 extern char ProgEntryN;		// how many subroutin
 extern char ProgNo;			// current Prog No
 extern char *ProgfileAdrs[ProgMax+1];
@@ -161,7 +161,8 @@ extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 extern char  ProgLocalN[ProgMax+1];
 extern char  ProgLocalVar[ProgMax+1][26];
 
-//extern char   CB_CurrentStr[128];	//
+#define CurrentStrMax 128
+extern char   CB_CurrentStr[CurrentStrMax];	//
 extern double CB_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------

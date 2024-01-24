@@ -425,6 +425,21 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			} else if ( c == 0x0C ) {	// Yfct
 					ExecPtr+=2;
 					return Yfct;
+			} else if ( c == 0x58 ) {	// ElemSize( Mat A )
+					ExecPtr+=2;
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatAryElementSize[reg];
+			} else if ( c == 0x59 ) {	// ColSize( Mat A )
+					ExecPtr+=2;
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatArySizeA[reg];
+			} else if ( c == 0x5A ) {	// RowSize( Mat A )
+					ExecPtr+=2;
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatArySizeB[reg];
 			}
 			break;
 			
@@ -1145,11 +1160,11 @@ double InputNumD_CB(int x, int y, int width, double defaultNum) {		//  Basic Inp
 	double result;
 	ExpBuffer[0]='\0';
 	key=InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-	if ( key==KEY_CTRL_AC  ) return 0;
+	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 	result = Eval( ExpBuffer );
 	while ( ErrorNo || (strlen((char*)ExpBuffer)==0) ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-		if ( key==KEY_CTRL_AC  ) return 0;
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok
@@ -1159,12 +1174,12 @@ double InputNumD_CB1(int x, int y, int width, double defaultNum) {		//  Basic In
 	double result;
 	ExpBuffer[0]='\0';
 	key=InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-	if ( key==KEY_CTRL_AC  ) return 0;
+	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) return (defaultNum);
 	result = Eval( ExpBuffer );
 	while ( ErrorNo || (strlen((char*)ExpBuffer)==0) ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-		if ( key==KEY_CTRL_AC  ) return 0;
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 		if ( strlen((char*)ExpBuffer)==0 ) if ( key==KEY_CTRL_EXE  ) return (defaultNum);
 		result = Eval( ExpBuffer );
 	}
@@ -1175,11 +1190,11 @@ double InputNumD_CB2(int x, int y, int width, double defaultNum) {		//  Basic In
 	double result;
 	sprintGR(ExpBuffer, defaultNum, 30, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 	key=InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-	if ( key==KEY_CTRL_AC  ) return 0;
+	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 	result = Eval( ExpBuffer );
 	while ( ErrorNo ) {	// error loop
 		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
-		if ( key==KEY_CTRL_AC  ) return 0;
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok

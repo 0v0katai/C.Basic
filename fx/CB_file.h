@@ -35,7 +35,7 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 
 char *loadFile( const char *name , int editMax);
 int  storeFile( const char *name, unsigned char* codes, int size);
-int LoadProgfile( char *name, int searchProg ) ;
+int LoadProgfile( char *name , int editsize) ;
 int SaveG1M( char *filebase );
 int SaveProgfile(int progNo );
 

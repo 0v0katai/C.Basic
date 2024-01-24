@@ -392,13 +392,14 @@ int PrintOpcodeLine1(int csry, int n, char *buffer, int ofst, int csrPtr, int *c
 
 //---------------------------------------------------------------------------------------------
 
-void DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr){
+int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr){
 	int i,n,x,y,ynum;
 	int ofst,ofst2,ofstYptr;
+	int count=500;
 
 	*cx=0; *cy=0;
 
-	while ( 1 ) {
+	while ( count ) {
 		locate(1,2); PrintLine((unsigned char*)" ",21);
 		locate(1,3); PrintLine((unsigned char*)" ",21);
 		locate(1,4); PrintLine((unsigned char*)" ",21);
@@ -441,7 +442,11 @@ void DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *cx,
 		else 					 NextLinePhy( SrcBase, &(*offset), &(*offset_y) );
 
 //		if ( SrcBase[ofst]==0x00 ) break ;
+		count--;
 	}
+	if ( count==0 ) { (*offset)=0; (*offset_y)=0; (*cx)=1; (*cy)=1; return -1; } // error reset
+	
+	return 0; // ok
 }
 
 
@@ -634,7 +639,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
 							}
 						}
-						DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr);
+						if ( DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr) ) return KEY_CTRL_EXIT;
 						break;
 				case 4: 		// hex dump
 						DumpMix( SrcBase, offset );
@@ -807,7 +812,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							ExecPtr=csrPtr;
 							BreakPtr=0;
 						} else {
-							stat = CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
+							ProgEntryN=1;
+							CB_ProgEntry( SrcBase ) ;		// sub program search
+							ProgNo=0;
+							ExecPtr=0;
+							if ( ErrorNo == 0 ) stat=CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
 							SaveConfig();
 							FileBase = ProgfileAdrs[ProgNo];
 							SrcBase  = FileBase+0x56;
