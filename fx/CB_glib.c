@@ -61,6 +61,7 @@ int skip_count=0;
 void Bdisp_PutDisp_DD_DrawBusy() {
 	Bdisp_PutDisp_DD();
 	HourGlass();
+	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
 //	DrawBusy();
 }
 int Check_skip_count( void ) {

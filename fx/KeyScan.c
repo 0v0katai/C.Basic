@@ -119,12 +119,19 @@ int BackLight( int n ){		// 0:off  1:on   2:xor
 	volatile unsigned char *adrs;
 	unsigned char bit;
 	int result;
-	
-	if ( IsSH3 ) {
-		adrs=(volatile unsigned char *)0xA400012C; bit=0x80;		// SH3
-	} else {
-		adrs=(volatile unsigned char *)0xA4050138; bit=0x10;		// SH4A
+
+	switch ( IsSH3 ) {
+		case 0:
+			adrs=(volatile unsigned char *)0xA4050138; bit=0x10;		// SH4A
+			break;
+		case 1:
+			adrs=(volatile unsigned char *)0xA400012C; bit=0x80;		// SH3
+			break;
+		case 2:
+			adrs=(volatile unsigned char *)0xA4000126; bit=0x20;		// SH3 slim
+			break;
 	}
+
 	switch ( n ) {
 		case 0:
 			*adrs &= (~bit);	// off
@@ -145,8 +152,20 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	unsigned int key;
 	int i,row,c,SH3;
 	int code=0;
+	const short keyrow_slim_table[9][6]={
+		{KEYSC_MENU,	KEYSC_XTT,	KEYSC_SHIFT,	KEYSC_ALPHA,	0,			0			 },
+		{KEYSC_F1,		KEYSC_LOG,	KEYSC_SQUARE,	KEYSC_POW,		KEYSC_LEFT,	KEYSC_UP	 },
+		{KEYSC_F2,		KEYSC_LN,	KEYSC_COMMA,	KEYSC_OPTN,		KEYSC_DOWN,	KEYSC_RIGHT	 },
+		{KEYSC_F3,		KEYSC_SIN,	KEYSC_STORE,	KEYSC_VARS,		-1,			-1			 },
+		{KEYSC_F4,		KEYSC_COS,	KEYSC_7,		KEYSC_4,		KEYSC_1,	KEYSC_0		 },
+		{KEYSC_F5,		KEYSC_TAN,	KEYSC_8,		KEYSC_5,		KEYSC_2,	KEYSC_DP	 },
+		{KEYSC_F6,		KEYSC_FRAC,	KEYSC_9,		KEYSC_6,		KEYSC_3,	KEYSC_EXP	 },
+		{KEYSC_EXIT,	KEYSC_FD,	KEYSC_DEL,		KEYSC_MULT,		KEYSC_PLUS,	KEYSC_PMINUS },
+		{0,				KEYSC_LPAR,	KEYSC_RPAR,		KEYSC_DIV,		KEYSC_EXE,	KEYSC_MINUS  }
+	};
 	row=1;
 	SH3= IsSH3 ;
+
 	
 	if ( Recent_code ) {
 		if ( KeyScanDown(Recent_rowcode) ) return Recent_code ;
@@ -164,6 +183,18 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 		if ( c & 0x08 ) { code=40+row; break; }	//
 		if ( c & 0x04 ) { code=30+row; break; }	//
 		if ( c & 0x02 ) { code=20+row; break; }	//
+	}
+	
+	if ( (IsSH3==2)&&(code!=0) ) {	// slim
+		c   = keyrow_slim_table[9-row][7-(code/10)];
+		row = c&0x0F;
+		c   = c>>4;
+		if ( c & 0x02 ) { code=20+row;  }	//
+		if ( c & 0x04 ) { code=30+row;  }	//
+		if ( c & 0x08 ) { code=40+row;  }	//
+		if ( c & 0x10 ) { code=50+row;  }	//
+		if ( c & 0x20 ) { code=60+row;  }	//
+		if ( c & 0x40 ) { code=70+row;  }	//
 	}
 	
 	Recent_rowcode=(c<<4)+row;
@@ -194,78 +225,51 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	return code;
 }
 
-
-int KeyCheckAC() {		// [AC]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
+int Bkey_GetKeyWait_sub( int kcode1, int kcode2 ) {		//
+	int flag0 = 0;
 	short unused = 0;
-
 	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
 		if ( ( kcode1 == 1 ) && (kcode2 == 1 ) ) flag0=1; // [AC] is down
 	}
 	return flag0;
 }
-int KeyCheckEXE() {		// [EXE]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	short unused = 0;
 
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 3 ) && (kcode2 == 2 ) ) flag0=1; // [EXE] is down
-	}
-	return flag0;
+int KeyCheckAC() {		// [AC]
+//	if (IsSH3 ) return IsKeyDown(KEY_CTRL_AC);
+	return Bkey_GetKeyWait_sub( 1, 1 ); // [AC] is down
+}
+int KeyCheckEXE() {		// [EXE]
+//	if (IsSH3 ) return IsKeyDown(KEY_CTRL_EXE);
+	return Bkey_GetKeyWait_sub( 3, 2 ); // [EXE] is down
 }
 int KeyCheckEXIT() {		// [EXIT]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 4 ) && (kcode2 == 8 ) ) flag0=1; // [EXIT] is down
-	}
-	return flag0;
+//	if (IsSH3 ) return IsKeyDown(KEY_CTRL_EXIT);
+	return Bkey_GetKeyWait_sub( 4, 8 ); // [EXIT] is down
 }
 int KeyCheckSHIFT() {		// [SHIFT]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 7 ) && (kcode2 == 9 ) ) flag0=1; // [SHIFT] is down
-	}
-	return flag0;
+	if (IsSH3 ) return IsKeyDown(KEY_CTRL_SHIFT);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 5, 10 ); // [SHIFT] is down by slim
+	return Bkey_GetKeyWait_sub( 7, 9 ); // [SHIFT] is down
 }
 int KeyCheckCHAR4() {		// [4]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 7 ) && (kcode2 == 4 ) ) flag0=1; // [4] is down
-	}
-	return flag0;
+	if (IsSH3 ) return IsKeyDown(KEY_CHAR_4);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 4, 6 ); // [4] is down by slim
+	return Bkey_GetKeyWait_sub( 7, 4 ); // [4] is down
 }
 int KeyCheckCHAR3() {		// [3]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 5 ) && (kcode2 == 3 ) ) flag0=1; // [3] is down
-	}
-	return flag0;
+	if (IsSH3 ) return IsKeyDown(KEY_CHAR_3);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 3, 4 ); // [3] is down by slim
+	return Bkey_GetKeyWait_sub( 5, 3 ); // [3] is down
 }
 int KeyCheckCHAR6() {		// [6]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 5 ) && (kcode2 == 4 ) ) flag0=1; // [6] is down
-	}
-	return flag0;
+	if (IsSH3 ) return IsKeyDown(KEY_CHAR_6);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 4, 4 ); // [6] is down by slim
+	return Bkey_GetKeyWait_sub( 5, 4 ); // [6] is down
 }
 int KeyCheckF1() {		// [F1]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 7 ) && (kcode2 == 10 ) ) flag0=1; // [F1] is down
-	}
-	return flag0;
+	if (IsSH3 ) return IsKeyDown(KEY_CTRL_F1);
+//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
+	return Bkey_GetKeyWait_sub( 7, 10 ); // [F1] is down
 }
 
 void KeyRecover() {
@@ -563,4 +567,31 @@ int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) {			// CasioBasic Getke
 			return 0;
 	}
 }
+
+//----------------------------------------------------------------------------------------------
+int kObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int kObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int kObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
 
