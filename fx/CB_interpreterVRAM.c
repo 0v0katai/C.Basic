@@ -808,7 +808,7 @@ void RclPictSmem( int pictNo, int offset){
 	pict=(unsigned char *)LoadPicture( pictNo );
 	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
 	WriteVram( pict+ offset );
-	free(pict);
+	HiddenRAM_freeProg(pict);
 }
 
 void StoPict( int pictNo){
@@ -850,11 +850,11 @@ void RclPict( int pictNo, int errorcheck){
 			PictAry[pictNo] = pict;			//  heap mode pict
 			memcpy(pict, pict2+0x4C, 1024 );
 			WriteVram( pict );
-			free(pict2);
+			HiddenRAM_freeProg(pict2);
 			return;
 		} else {
 			WriteVram( pict2+0x4C );
-			free(pict2);
+			HiddenRAM_freeProg(pict2);
 			return ;
 		}
 	}
@@ -867,7 +867,7 @@ void StoCapt( int pictNo){
 	pict=(unsigned char *)LoadPicture( pictNo );
 	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
 	WriteVram( pict+0x50 );
-	free(pict);
+	HiddenRAM_freeProg(pict);
 }
 
 void RclCapt( int pictNo ){
@@ -1921,7 +1921,7 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
-void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
+void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
 	int c,i,j,n;
 	unsigned int key;
 	char buffer[CB_StrBufferMax];

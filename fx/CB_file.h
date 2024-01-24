@@ -38,6 +38,7 @@ typedef struct{
 
 #define FavoritesMAX 7
 
+extern Files *files;
 
 extern char FileListUpdate;
 extern char StorageMode;		// 0:Storage memory   1:SD
