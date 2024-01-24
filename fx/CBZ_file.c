@@ -22,7 +22,7 @@ char FileListUpdate=1;
 char StorageMode=0;						// 0:Storage memory   1:SD
 char redrawsubfolder=0;
 //int recentsize=0;
-char ForceG1Msave=0;		//    1: force g1m save 
+char ForceG1Msave=0;		//    1: force g1m save
 char AutoSaveMode=0;		//    1: Auto save ( not pop up )
 const char root[][5]={"fls0","crd0","fls0","crd0"};
 char root2[root2_MAX]="";	// "\\SAVE-F"
@@ -124,7 +124,7 @@ unsigned int SelectFile (char *filename)
 		if ( ( key == KEY_CTRL_QUIT ) || ( index == size ) ) {			//return to root
 			if ( !( StorageMode & 2 ) ) {
 				if( strlen(folder) ) FileListUpdate = 1 ; // folder to root
-				folder[0] = '\0';	
+				folder[0] = '\0';
 			}
 			index = 0;
 		} else
@@ -242,7 +242,7 @@ FONTCHARACTER * CharToFont( const char *cFileName, FONTCHARACTER *fFileName )
 	for( i = 0, len = strlen( fname ); i < len ; ++i )
 		fFileName[i] = fname[i];
 	fFileName[i] = '\0';
-	
+
 	return fFileName;
 }
 
@@ -257,7 +257,7 @@ char * FontToChar( const FONTCHARACTER *fFileName, char *cFileName )
 		SetShortName( sname, fname );
 		SetFullfilenameNoExt( fname, sname );
 	}
-	
+
 	strcpy( cFileName, fname );
 	return cFileName;
 }
@@ -297,7 +297,7 @@ static int ReadFile( char *folder )
 
 	size = FavoritesMAX + 1 ;
 	FilePath( folder, find_path );
-	
+
 /*				Get File Num			*/
 
 	r = Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
@@ -310,7 +310,7 @@ static int ReadFile( char *folder )
 		}
 		Bfile_FindClose(find_h);
 	}
-	
+
 /*				Get Name & Size			*/
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 //		files = (Files *)HiddenRAM();
@@ -329,7 +329,7 @@ static int ReadFile( char *folder )
 //		}
 //	}
 	memset( files, 0, size*sizeof(Files) );
-	
+
 	i = FavoritesMAX ;
 	r =	Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
 	if ( r == 0 ) {
@@ -408,7 +408,7 @@ static int ReadFile2( char *folder, char *ext, int maxsize )
 	}
   exit:
 	Bfile_FindClose( find_h );
-	
+
 	size=i;
 	qsort( files, size, sizeof(Files), FileCmp );
 
@@ -439,7 +439,7 @@ int FavoritesFunc( int index ) {
 	}
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
-		if ( strcmp( files[i].filename,  files[(index)].filename )== 0 ) 
+		if ( strcmp( files[i].filename,  files[(index)].filename )== 0 )
 		if ( strcmp( files[i].folder,    files[(index)].folder   )== 0 ) break; // not matching
 		i++;
 	}
@@ -490,7 +490,7 @@ void FavoritesUpDown( int *index, int updw ) {	// up:-1	down:1
 int GetMediaFree( unsigned int *high, unsigned int *low) {
 	int freespace[2];
 	(*high)=0;
-	switch ( StorageMode ) {	
+	switch ( StorageMode ) {
 		case 0:		// Storage memory
 			if ( Bfile_GetMediaFree(DEVICE_STORAGE,freespace) != 0 ) Abort() ;
 			if ( IsSH3 ) {
@@ -532,7 +532,7 @@ void GetMediaFreeStr10( char *buffer ) {
 
 int GetMemFree() {
 	int k;
-	if ( MaxMemMode ) { 
+	if ( MaxMemMode ) {
 		k = HiddenRAM_MatTopPtr - HiddenRAM_Top ;
 	} else {
 		k = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
@@ -544,7 +544,7 @@ void GetMemFreeStr10( char *buffer ) {
 }
 
 int CheckSD(){	// SD model  return : 1
-	int freespace[2];	
+	int freespace[2];
 	if ( Bfile_GetMediaFree(DEVICE_SD_CARD,freespace) != 0 ) return 0;
 	return 1 ;
 }
@@ -565,7 +565,7 @@ int Check_Favorite( char*folder, char *sname ) {
 	while ( i < FavoritesMAX ) {	// file matching search
 		strcpy( buf2, Favoritesfiles[i].filename );
 		ToLower( buf2 );
-		if ( strcmp( buf1, buf2 )== 0 ) 
+		if ( strcmp( buf1, buf2 )== 0 )
 		if ( strcmp( Favoritesfiles[i].folder  ,  folder)== 0 ) break; // already favorite exist
 		i++;
 	}
@@ -597,7 +597,7 @@ unsigned int Explorer( int size, char *folder )
 	char buffer3[32];
 	char fname[64];
 	char ext[5];
-	
+
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
 
@@ -617,7 +617,7 @@ unsigned int Explorer( int size, char *folder )
 			files[i].filesize = Favoritesfiles[i].filesize ;
 		}
 		files[FavoritesMAX].filesize = FOLDER_SEPALATOR;	// separator
-		
+
 		if ( renamename[0] != '\0' ) {
 			if ( index > FavoritesMAX ) s=FavoritesMAX; else s=0;
 			for ( k=s; k<size; k++ ) {
@@ -633,7 +633,7 @@ unsigned int Explorer( int size, char *folder )
 	renamefolder[0] = '\0';
 
 	GetMediaFreeStr10(buffer2);
-	
+
 	textmode = 0 ;
 
 	while( cont && (FileListUpdate==0) )
@@ -643,8 +643,8 @@ unsigned int Explorer( int size, char *folder )
 		for( i=0; i<FavoritesMAX; i++){			//	count Favorites list
 			if ( files[i].filesize ) FavCount++;
 		}
-		StartLine=FavoritesMAX - FavCount; 
-		if ( FavCount == 0 ) StartLine++; 
+		StartLine=FavoritesMAX - FavCount;
+		if ( FavCount == 0 ) StartLine++;
 		else {
 			if ( redrawsubfolder==0 ) if ( strlen(folder) ) { index=FavoritesMAX +1; top=index-1; redrawsubfolder=1; }
 		}
@@ -676,9 +676,9 @@ unsigned int Explorer( int size, char *folder )
 				FkeyClearAll();
 				Fkey_Icon( FKeyNo1, 910 );	//	Fkey_dispR( FKeyNo3,"MkDir");
 				Fkey_Icon( FKeyNo2, 944 );	//	Fkey_dispN( FKeyNo1,"RnDir");
-				if ( StorageMode & 1  ) Fkey_dispN( FKeyNo3,"\xE6\x91SD");
+				if ( StorageMode != 1 ) Fkey_dispN( FKeyNo3,"\xE6\x91SD");
 				if ( StorageMode != 0 ) Fkey_dispN( FKeyNo4,"\xE6\x91SMEM");
-				if ( StorageMode != 2 ) Fkey_dispN( FKeyNo5,"\xE6\x91Main");
+				if ( StorageMode <  2 ) Fkey_dispN( FKeyNo5,"\xE6\x91Main");
 //				Fkey_Icon( FKeyNo5,  56 );	//	Fkey_dispR( FKeyNo5,"DELA");
 				Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 				break;
@@ -689,12 +689,12 @@ unsigned int Explorer( int size, char *folder )
 		if ( StorageMode & 2 ) {
 			locate(2,1);Print((unsigned char*)"Main Mem");
 		} else {
-			if ( root2[0] ) PrintMini(13, 1, (unsigned char*)(root2+1), MINI_OVER); 
+			if ( root2[0] ) PrintMini(13, 1, (unsigned char*)(root2+1), MINI_OVER);
 			sprintf( buffer, "%-8s", folder );
 			locate(2,1);Print( strlen(folder) ? (unsigned char*)buffer : (unsigned char*)"/");	// root
 		}
 														PrintMini(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
-		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
+		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file
 		if( size < 2+FavoritesMAX-FavCount ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
@@ -746,7 +746,7 @@ unsigned int Explorer( int size, char *folder )
 					if ( i+top < FavoritesMAX ) {
 						j=strlenOp(files[i + top].folder) ;
 						if (j>5) j=5;
-						if ( j ) strncpy( buf2, files[i + top].folder, j); 
+						if ( j ) strncpy( buf2, files[i + top].folder, j);
 						buf2[j++]='/'; buf2[j]=0;
 						strncpy( buf, files[i + top].filename, FILENAMEMAX );
 						j=strlenOp(files[i + top].filename); if (j<4) j=4;
@@ -768,7 +768,7 @@ unsigned int Explorer( int size, char *folder )
 		}
 
 		Isfolder= ( files[index].filesize == FOLDER_FLAG ) ;
-		
+
 		GetKey(&key);
 		if ( KEY_CTRL_XTT  == key ) key='A';
 		if ( KEY_CHAR_LOG  == key ) key='B';
@@ -808,8 +808,8 @@ unsigned int Explorer( int size, char *folder )
 				}
 				i++;
 			}
-			
-		} else 
+
+		} else
 		if ( ( ( 'A' <= key ) && ( key <= 'Z' ) ) || ( key == '~' ) ) {
 			i=FavoritesMAX;
 			while ( i<size ) {
@@ -841,10 +841,10 @@ unsigned int Explorer( int size, char *folder )
 				strcpy(buffer,files[index].filename);
 				if ( buffer[0] == 0 ) break;
 				GetExtName( buffer, ext );
-				if ( (strcmp(ext, "bmp") == 0 ) ) { 
+				if ( (strcmp(ext, "bmp") == 0 ) ) {
 					SetFullfilenameExt( fname, buffer, ext );
 					if ( LoadProgfile( fname, 0, 0, 1 ) ) return 1 ; // error
-					break; 
+					break;
 				}
 				key=FileCMD_RUN;
 				cont =0 ;
@@ -907,7 +907,7 @@ unsigned int Explorer( int size, char *folder )
 //						FavoritesFunc( index );
 						break;
 					case 2:	// ->SD
-						if ( StorageMode & 1 ) break;
+						if ( StorageMode == 1 ) break;
 						ChangeStorageMode( CheckSD() ) ; // SD mode
 						FileListUpdate = 1;
 						cont=0;
@@ -927,7 +927,7 @@ unsigned int Explorer( int size, char *folder )
 						break;
 					case 2:	// ->Storage
 						if ( StorageMode == 0 ) break;
-						ChangeStorageMode( 0 );	// -> storage memory 
+						ChangeStorageMode( 0 );	// -> storage memory
 						FileListUpdate = 1;
 						cont=0;
 						break;
@@ -949,7 +949,7 @@ unsigned int Explorer( int size, char *folder )
 						goto fav_dw;
 						break;
 					case 2:	// ->MCS
-						if ( StorageMode == 2 ) break;
+						if ( StorageMode >= 2 ) break;
 						ChangeStorageMode( StorageMode | 2 );	// -> main memory
 						FileListUpdate = 1;
 						cont=0;
@@ -960,25 +960,25 @@ unsigned int Explorer( int size, char *folder )
 				filemode ++;
 				if ( filemode >2 ) filemode=0;
 				break;
-			
+
 			case KEY_CTRL_EXIT:
 				if ( ( nofile ) || ( index == StartLine ) ) key=KEY_CTRL_QUIT;
 //				index = size;
 				cont =0 ;
 				break;
-				
+
 			case KEY_CTRL_OPTN:		// ------- Favorites list
 				if ( nofile ) break;
 				filemode = 0 ;
 				index = FavoritesFunc( index );
 //				FavoritesFunc( index );
 				break;
-				
+
 			case KEY_CTRL_VARS:
 				filemode = 0 ;
-				SetVar(0);		// A - 
+				SetVar(0);		// A -
 				break;
-				
+
 //			case KEY_CHAR_SQUARE:
 			case KEY_CHAR_VALR:
 			  textmodejp:
@@ -1006,7 +1006,7 @@ unsigned int Explorer( int size, char *folder )
 				switch (key) {
 					case KEY_CTRL_QUIT:
 						update:
-							FileListUpdate = 1 ; // 
+							FileListUpdate = 1 ; //
 							cont = 0 ;
 							break;
 					case KEY_CTRL_SETUP:
@@ -1015,7 +1015,7 @@ unsigned int Explorer( int size, char *folder )
 							if ( ( FileListUpdate ) || ( i != StorageMode ) ) { key = KEY_CTRL_EXIT; goto update; }
 							break;
 					case KEY_CTRL_F1:
-							selectVar=SetVar(selectVar);		// A - 
+							selectVar=SetVar(selectVar);		// A -
 							break;
 					case KEY_CTRL_F2:
 							selectMatrix=SetMatrix(selectMatrix);		//
@@ -1035,7 +1035,7 @@ unsigned int Explorer( int size, char *folder )
 							if ( StorageMode == 1 ) {
 								ChangeStorageMode( 3 );	// -> main memory
 							} else {
-								ChangeStorageMode( StorageMode & 1 );	// -> storage/SD memory 
+								ChangeStorageMode( StorageMode & 1 );	// -> storage/SD memory
 							}
 							FileListUpdate = 1;
 							cont=0;
@@ -1060,7 +1060,7 @@ unsigned int Explorer( int size, char *folder )
 							if ( index >= FavoritesMAX-1 ) break;
 							FavoritesUpDown( &index, 1 );
 							break;
-							
+
 					case KEY_CHAR_ROOT:
 							goto textmodejp;
 					default:
@@ -1071,7 +1071,7 @@ unsigned int Explorer( int size, char *folder )
 				break;
 		}
 	}
-	
+
 	SaveFavorites();
 
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
@@ -1150,11 +1150,11 @@ char * loadFile( const char *name, int *editMax, int disperror, int *filesize )
 	strcpy( fname, name );
 	renameExistedfname( fname );
 	CharToFont( fname, filename );
-	
+
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
 		if ( disperror ) ErrorMSGfile( "Can't find file", name, handle);
-		CB_Error(CantFindFileERR); 
+		CB_Error(CantFindFileERR);
 		return NULL;
 	}
 
@@ -1164,7 +1164,7 @@ char * loadFile( const char *name, int *editMax, int disperror, int *filesize )
 	if( buffer == NULL ) {
 		(*editMax)/=2; if ( (*editMax)>=16 ) goto loop;
 		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)name, handle);
-		CB_Error(NotEnoughMemoryERR); 
+		CB_Error(NotEnoughMemoryERR);
 		return NULL;
 //		Abort();
 	}
@@ -1223,7 +1223,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	CharToFont( name, filename2 );
 	r = deleteFile( filename2, size ) ;
 	if ( r ) return r;
-	
+
 	FileListUpdate=1;
 	handle = Bfile_CreateFile( filename, size );
 	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name, handle ); return 1 ; }
@@ -1277,7 +1277,7 @@ int ExistFile( char *fname, int replace ) {
 	if ( ( replace==0 ) || ( r ) ) return r;	// not exist
 	FontToChar( buffer, sname );	// replace fname
 	SetFullfilenameNoExt( fname, sname );
-	return r; // r==0 existed 
+	return r; // r==0 existed
 }
 
 /* G1M file exist? */
@@ -1287,7 +1287,7 @@ int ExistG1M( const char *sname ) {
 	int r;
 	SetFullfilenameExt( fname, sname, "g1m" );
 	if ( StorageMode & 2 ) return MCS_ExistFile( fname );
-	r = ExistFile( fname, 1 ); // r==0 existed 
+	r = ExistFile( fname, 1 ); // r==0 existed
 	if ( r==0 ) {
 		SetShortName( sname, fname);	// replace sname
 		GetExtName( sname, ext );
@@ -1299,8 +1299,8 @@ int ExistG1Mext( const char *sname, char *ext ) {
 	int r;
 	SetFullfilenameExt( fname, sname, ext );
 	if ( ext[0] == 'M' ) return MCS_ExistFile( fname );
-	r = ExistFile( fname, 1 ); // r==0 existed 
-	if ( r==0 ) { 
+	r = ExistFile( fname, 1 ); // r==0 existed
+	if ( r==0 ) {
 		SetShortName( sname, fname);	// replace sname
 		GetExtName( sname, ext );
 	}
@@ -1336,7 +1336,7 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer 
 		key=InputStrSub_status( x, y, width, csrX, buffer, maxLen, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( (key!=KEY_CTRL_EXIT)&&(key!=KEY_CTRL_QUIT)&&(buffer[0]=='\0') ) ;
 	for( i=0; i<strlenOp((char*)buffer); i++ ) {	// kana cancel
-		if ( buffer[i]==0xFFFFFFFF ) { 
+		if ( buffer[i]==0xFFFFFFFF ) {
 			buffer[i]=0x7E;
 			if ( buffer[i+1] != '\0' ) buffer[i+1]=0x7E;
 		}
@@ -1346,33 +1346,52 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer 
 
 void Getfolder( char *sname ) ;
 
-int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		// 
+int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 	int key;
-	char msg[32];
-//	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(3);
+	char msg1[32];
+	char msg2[32];
+	SaveDisp(SAVEDISP_PAGE2);
+	PopUpWin(5);
 	PutKey( KEY_CTRL_SHIFT, 1 );
 	PutKey( KEY_CTRL_ALPHA, 1 );
   loop:
-  	if ( ext[0]=='M' )	sprintf( msg, "%s MainM Name?", pmsg );
-  	else sprintf( msg, "%s %s Name?  ", pmsg, ext );
-	locate(3,3); Print((unsigned char *)msg);
-	locate(3,4); Print((unsigned char *)" [             ]");
-	Fkey_dispN( FKeyNo1, "Main");
-	Fkey_dispN( FKeyNo2, "g1m");
+  	if ( ext[0]=='M' ) {
+		sprintf( msg1, "%s to       ", pmsg );
+		sprintf( msg2, "     Main Memory." );
+		if ( StorageMode & 1 ) 	Fkey_dispN( FKeyNo1, ">SD");
+		else 					Fkey_dispN( FKeyNo1, ">SMM");
+	} else {
+		sprintf( msg1, "%s as %s to ", pmsg, ext);
+		if ( StorageMode & 1 ) 	sprintf( msg2, "  SD      Memory." );
+		else 					sprintf( msg2, "  Storage Memory." );
+		Fkey_dispN( FKeyNo1, ">MCS");
+//		Fkey_dispN( FKeyNo2, "g1m");
+	}
+	locate(3,2); Print((unsigned char *)msg1);
+	locate(3,3); Print((unsigned char *)msg2);
+	locate(3,5); Print((unsigned char *)"File Name?");
+	locate(3,6); Print((unsigned char *)" [             ]");
+//	Fkey_dispN( FKeyNo1, "Main");
+//	Fkey_dispN( FKeyNo2, "g1m");
+	FkeyClear( FKeyNo2 );
 	FkeyClear( FKeyNo3 );
 	Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
-	key=InputStrFilename( 5, 4, 12, 18, buffer ) ;
-	if (key==KEY_CTRL_F1) { strcpy( ext, "MCS" ); goto loop; }	// MCS
-	if (key==KEY_CTRL_F2) { strcpy( ext, "g1m" ); goto loop; }	// g1m
-//	RestoreDisp(SAVEDISP_PAGE1);
+	key=InputStrFilename( 5, 6, 12, 18, buffer ) ;
+	if ( ext[0]=='M' ) {
+		if (key==KEY_CTRL_F1) { strcpy( ext, "g1m" ); goto loop; }	// ->S.MEM
+		if ( (key==KEY_CTRL_F2) || (key==KEY_CTRL_F3) ) goto loop;
+	} else {
+		if (key==KEY_CTRL_F1) { strcpy( ext, "MCS" ); goto loop; }	// MCS
+		if (key==KEY_CTRL_F2) { strcpy( ext, "g1m" ); goto loop; }	// g1m
+	}
+	RestoreDisp(SAVEDISP_PAGE2);
 	if (key==KEY_CTRL_AC) return 1;
 	if ( (key==KEY_CTRL_EXIT)||(key==KEY_CTRL_QUIT) ) { WaitKeyEXIT(); return 1; }
 	Getfolder( buffer );
 	return 0; // ok
 }
 
-int InputFilename( char * buffer, char* msg) {		// 
+int InputFilename( char * buffer, char* msg) {		//
 	unsigned int key;
 //	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(3);
@@ -1510,11 +1529,11 @@ int CheckPassWordmsg( char *filebase, char *msg ){	// 1:cancel  0:Ok  -1:no pass
 	char passname[9];
 	char inputpassname[9];
 	char basname[9];
-	
+
 	memset( passname, 0, 9);
 	strncpy( passname, filebase+0x4C, 8);	// Get password
 	G1MHeaderTobasname8( filebase, basname);
-	
+
 	if ( strlen(passname) ) {
 		memset( inputpassname, 0, 9);
 		mismatchloop:
@@ -1525,7 +1544,7 @@ int CheckPassWordmsg( char *filebase, char *msg ){	// 1:cancel  0:Ok  -1:no pass
 			ErrorMSGstr1(" Mismatch");
 			goto mismatchloop;
 		}
-	} 
+	}
 	passOk:
 	filebase[0x55]=0x01;	// pass ok (C.basic)
 	return 0;	// ok
@@ -1542,7 +1561,7 @@ int SetPassWord( int y, char *filebase, char *basname ,char* msg){	// 1:no passw
 	return 0; // ok
 }
 
-int InputFilenamePassname( char *filebase, char *basname, char* msg) {		// 
+int InputFilenamePassname( char *filebase, char *basname, char* msg) {		//
 	unsigned int key;
 	char buffer[32];
 	Bdisp_AllClr_VRAM();
@@ -1615,7 +1634,7 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 	}
 	fsize = 0xFFFFFFFF-(((filebase[0x10]&0xFF)<<24)+((filebase[0x11]&0xFF)<<16)+((filebase[0x12]&0xFF)<<8)+(filebase[0x13]&0xFF));
 	size  = SrcSize( filebase ) ;
-	if ( ( fsize != size ) || ( filebase[0x20] != 'P' ) || ( filebase[0x21] != 'R' ) ) { 
+	if ( ( fsize != size ) || ( filebase[0x20] != 'P' ) || ( filebase[0x21] != 'R' ) ) {
 		if ( ( filebase[0x20] == 'P' ) && ( filebase[0x21] == 'I' ) && ( filebase[0x22] == 'C' ) ) {
 			Bdisp_AllClr_VRAM();
 			if ( size>0 ) {
@@ -1624,7 +1643,7 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 			}
 			GetKey( &key );
 			return 1;
-		} else 
+		} else
 		if ( ( filebase[0x20] == 'C' ) && ( filebase[0x21] == 'A' ) && ( filebase[0x22] == 'P' ) ) {
 			memcpy( PictAry[0], filebase+0x50, 1024 );	// Capt display
 			GetKey( &key );
@@ -1633,7 +1652,7 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 			ErrorMSG( "Not support file", fsize );
 			return 1; // error
 		}
-	} 
+	}
 	return 0; // ok
 }
 int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
@@ -1651,7 +1670,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 //	renameExistedFile( basname, ext );	// replace? filename
 //	GetExtName( basname, ext );
 	SetFullfilenameExt( fname, basname, ext );
-	
+
 	edsize = editsize;
 	if ( StorageMode & 2 ) {	// MCS mode
 			filebase = MCS_LoadG1M( fname , &edsize, disperror, &fsize );	// hidden ram
@@ -1681,7 +1700,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 			strncpy( filebase+0x3C-8, folder, 8);		// set folder to G1M header
 			CurrentFileMode=0;		// g1m load save mode
 	}
-	
+
 	ProgEntryN=prgNo;						// set program no
 	ProgfileAdrs[prgNo]= filebase;
 	ProgfileMax[prgNo]=  fsize + edsize;
@@ -1694,7 +1713,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	return 0; // ok
 }
 
-int SaveG1M( char *filebase ){
+int SaveG1Msub( char *filebase, int bin ){
 	char fname[64],basname[32];
 	int size,i;
 
@@ -1702,17 +1721,24 @@ int SaveG1M( char *filebase ){
 
 	SetFullfilenameExt( fname, basname, "g1m" );
 
-	size = FixSrcSize(filebase)+0x56;
+	if ( bin )	size = SrcSize(filebase)+0x56;
+	else		size = FixSrcSize(filebase)+0x56;
 	G1M_header( filebase, &size );		// G1M header set
-	
+
 	return storeFile( fname, (unsigned char*)filebase, size );	// 0:ok
+}
+int SaveG1Mbin( char *filebase ){
+	return SaveG1Msub( filebase, 1 );	// 0:ok
+}
+int SaveG1M( char *filebase ){
+	return SaveG1Msub( filebase, 0 );	// 0:ok
 }
 
 int SaveBasG1M( char *filebase ){
 	G1M_Basic_header( filebase );	// G1M Basic header set
 	if ( StorageMode & 2 ) return MCS_SaveG1M( filebase );	// g1m file -> MCS
 	else return SaveG1M( filebase );
-}	
+}
 int SaveBasG1MorG3M( char *filebase, char *ext ){		// save g1m or g3m
 	G1M_Basic_header( filebase );	// G1M Basic header set
 	if ( ext[0]=='M' ) return MCS_SaveG1M( filebase );	// g3m file -> MCS
@@ -1734,11 +1760,11 @@ int SaveProgfile( int progNo ){
 	char CurrentFileMode=ProgfileMode[progNo];
 	char ext[8],ext2[8];
 	char buffer[32];
-	
+
 	filebase=ProgfileAdrs[progNo];
 	CB_PostProcessIndentRemove( filebase );
 	G1MHeaderTobasname8( filebase, basname);
-	
+
 	if ( textmode ) {
 		sprintf( buffer, "Save %s Name?", textmodeExt );
 		if ( InputFilename( basname, buffer ) ) return 1 ;
@@ -1748,7 +1774,7 @@ int SaveProgfile( int progNo ){
 		textsize = SrcSize(filebase) -0x56 ;
 		goto savetext;
 	} else
-	if ( ( CurrentFileMode == 0 ) || ( ForceG1Msave == 1 ) ) {	// g1m save 
+	if ( ( CurrentFileMode == 0 ) || ( ForceG1Msave == 1 ) ) {	// g1m save
 	  loop:
 	  	SetExt( ext );	// set ext ( g1m,MCS )
 	  	SetExt( ext2 );	// set ext ( g1m,MCS )
@@ -1770,7 +1796,7 @@ int SaveProgfile( int progNo ){
 		}
 		SetFullfilenameExt( fname, basname, "txt" );
 		strcpy( fname2, fname) ;
-		
+
 		if ( AutoSaveMode == 0 ) {
 			if ( ExistFile( fname2, 0 ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
 		}
@@ -1779,16 +1805,16 @@ int SaveProgfile( int progNo ){
 		memcpy( filebase+buffersize, filebase, SrcSize( filebase ) );
 		text = filebase;
 		textsize=OpcodeToText( filebase+buffersize+0x56, text, size );
-		if ( textsize<0 ) { CB_ErrMsg(MemoryERR); return 1 ; } // error	
+		if ( textsize<0 ) { CB_ErrMsg(MemoryERR); return 1 ; } // error
 	  savetext:
 		storeFile( fname, (unsigned char*)text, textsize );
 		SetShortName( sname, fname);
 		r=0;
 	}
-	
+
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
-	
+
 	Check_Favorite_size( folder, sname, sname, SrcSize(filebase) ) ;	// favorite filesize update?
 
 	return r;
@@ -1811,7 +1837,7 @@ int NewProg(){
 	size=0x56+1;
 	G1M_header( filebase, &size );	// G1M header set
 	G1M_Basic_header( filebase );	// G1M Basic header set
-	
+
 	basname[0]='\0';
 //	if ( InputFilename( basname, "New File Name?" ) ) return 1 ;
 	if ( InputFilenamePassname( filebase, basname, "New Program Name?") ) return 1 ; // cancel
@@ -1870,16 +1896,16 @@ int SavePicture( char *filebase, int pictNo ){
  	unsigned char c,d;
  	c=pictNo/10+'0'; if ( c=='0' ) c=' ';
  	d=pictNo%10+'0';
- 	
+
 	SetPICTname( pictNo, pictname );
 	if ( PictMode == 3 )  return  MCS_SavePICT( pictname, filebase );
- 	
+
 	for (i=0; i<0x4C; i++) filebase[i]=0x00;	// header clear
 
 //	size=0x800+0x4C;	// 2KB Pict
 	size=0x400+0x4C;	// 1KB Pict
 	G1M_header( filebase, &size );	// G1M header set
-	
+
 	filebase[0x20]='P';			// G1M Pict header set
 	filebase[0x21]='I';
 	filebase[0x22]='C';
@@ -1914,9 +1940,9 @@ int SavePicture( char *filebase, int pictNo ){
 	r = CreateDirectorySub( folder, 0 );
 	if ( r < 0 ) return r;
 
-	r = SaveG1M( filebase );
+	r = SaveG1Mbin( filebase );
 	for (i=0;i<FILENAMEMAX;i++) folder[i]=folder2[i];	// restore folder
-	
+
 	return r ;
 }
 
@@ -1944,7 +1970,7 @@ char * Load1st2nd( char *basname, char *dir2nd, char *ext ){
 	int fsize;
 
 	SetFullfilenameExt( fname, basname, ext );
-	
+
 	fileptr = loadFile( fname, &edsize, 0, &fsize );					// no hidden load
 	HiddenRAM_freeProg( fileptr );
 	if ( fileptr  != NULL ) return fileptr;
@@ -1998,11 +2024,11 @@ void DeleteFile(char *fname) {
 void DeleteFileFav(char *fname, int yesno ) {
 	char sname[32];
 	int i;
-	
+
 	SetShortName( sname, fname);		//
 	if ( yesno ) if ( YesNo2( sname,"Delete file?" ) == 0 ) return ;
 	DeleteFile( fname );
-	
+
 	i=Check_Favorite( folder, sname);	// file matching search
 	if ( i < FavoritesMAX ) { 		//	exist favorites list
 		DeleteFavorites( i ) ;
@@ -2027,7 +2053,7 @@ void DeleteDirectory(char *fname) {
 int DeleteFolder(char *foldername, int yesno ) {	// delete folder
 	char fname[32];
 	int i;
-	
+
 	if ( yesno ) if ( YesNo2( foldername,"Delete folder?" ) == 0 ) return 1 ; // cancel
 	SetFullfilenameNoExtNoFolder( fname, foldername ) ;
 	DeleteDirectory( fname );
@@ -2042,16 +2068,16 @@ int CreateDirectorySub( char *newfolder, int dsperror ){
 	FONTCHARACTER filename[FONTCHARACTER_MAX];
 	FONTCHARACTER buffer[FONTCHARACTER_MAX];
 	char fname[64];
-	
+
 	SetFullfilenameNoExtNoFolder( fname, newfolder ) ;
 	CharToFont( fname, filename );
 	r = Bfile_FindFirst( filename, &handle, buffer, &info );
 	s = Bfile_FindClose( handle );
 	if( r != 0 ) {
 		handle = Bfile_CreateDirectory( filename );
-		if( handle < 0 ) { 
+		if( handle < 0 ) {
 			if ( dsperror ) ErrorMSGfile( "Can't make folder", newfolder, r );
-			return handle ; 
+			return handle ;
 		}
 		r = Bfile_CloseFile( handle );
 		r = 0;
@@ -2102,7 +2128,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 			if ( InputFilenameG1MorG3M( basname, "Copy", ext ) ) return 1 ; // cancel
 		}
 		if ( ext[0]=='M' ) {	// MCS
-			ChangeStorageMode( StorageMode | 2 ); 
+			ChangeStorageMode( StorageMode | 2 );
 		} else ChangeStorageMode( StorageMode & 0xFD );
 		SetFullfilenameExt( name, basname, ext );
 		if ( ( strcmp( name, fname)==0 ) && ( strcmp(ext,ext2)==0 ) ) return 0; // no rename
@@ -2113,7 +2139,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		} else {
 			if ( select==0 ) DeleteFile( fname ) ;	// (rename) delete original file
 		}
-		if ( SaveBasG1MorG3M( filebase, ext ) == 0 ) { 
+		if ( SaveBasG1MorG3M( filebase, ext ) == 0 ) {
 		} else return 1;
 	  	FileListUpdate = 1;
 		if ( ext[0]=='M' ) SetFullfilenameExt( name, basname, "g1m" );	// MCS
@@ -2139,9 +2165,9 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 	SetShortName( sname, name);		// rename name
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
-	
+
 	if ( select == 0 ) Check_Favorite_size( folder, oldsname, sname, 0 ) ;	// favorite rename?
-	
+
 	return 0;
 }
 
@@ -2179,7 +2205,7 @@ void Setfoldername16( char *folder16, char *sname ) {
 	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) { do sname[i]=sname[++i]; while ( sname[i] ); def=0; }
 	for (i=0;i<17+4;i++) folder16[i]=0;
 	cptr=strstr(sname,"\\");
-	if ( cptr==NULL ) { i=0; }	// current folder 
+	if ( cptr==NULL ) { i=0; }	// current folder
 	else { def=0;		// sub folder
 		i=cptr-sname; if ( i>8 ) i=8;
 		strncpy( folder16, sname, i );
@@ -2187,7 +2213,7 @@ void Setfoldername16( char *folder16, char *sname ) {
 		goto exit;
 	}
 	cptr=strstr(sname,"/");
-	if ( cptr==NULL ) { i=0; }	// current folder 
+	if ( cptr==NULL ) { i=0; }	// current folder
 	else { def=0; 		// sub folder
 		i=cptr-sname; if ( i>8 ) i=8;
 		strncpy( folder16, sname, i );
@@ -2269,12 +2295,13 @@ int CB_IsExist( char *SRC , int calcflag ) {	//	IsExist("TEST")		//  no exist: r
 		ext[1]=sname[3];
 		ext[2]=sname[4];
 		ext[3]='\0';
-		if ( calcflag ) {
-			r=CB_FileList( ext );
-		} else {
-			r=1;
-			dspflag=4;	// List ans
-		}
+//		if ( calcflag ) {
+		r=CB_FileList( ext );
+		if ( r>0 ) dspflag=4;	// List ans
+//		} else {
+//			r=1;
+//			dspflag=4;	// List ans
+//		}
 	} else {
 		SetFullfilenameBin( fname, sname, "bin" );
 		r=GetFileSize( fname );
@@ -2303,7 +2330,7 @@ void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname 
 	Getfolder( sname );
 	SetFullfilenameBin( fname, sname, extname );
 	strcpy( fname2, fname );
-	if ( ExistFile( fname2, 1 ) == 0 ) { // ==0 existed 
+	if ( ExistFile( fname2, 1 ) == 0 ) { // ==0 existed
 		if ( check ) {
 			if ( YesNoOverwritefile(fname2) ) goto exit; // cancel
 			Bdisp_PutDisp_DD();
@@ -2322,7 +2349,7 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	int c,i,reg,matsize;
 	char* FilePtr;
 	int check=0;
-	
+
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
@@ -2340,7 +2367,7 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
 		ExecPtr++;
 	}
-	
+
 	CB_SaveSub( sname, FilePtr, matsize, check, "bin" );
 }
 
@@ -2350,7 +2377,7 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {	// load to
 	FONTCHARACTER filename[FONTCHARACTER_MAX];
 	char *buffer;
 	char ext[8];
-	
+
 	Getfolder( sname );
 	GetExtName( sname, ext );
 	if ( ext[0] == '\0' ) strcpy( ext, extname );
@@ -2362,9 +2389,9 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {	// load to
 	if( handle < 0 ) {
 		CB_Error(CantFindFileERR);  goto exit;
 	}
-	
+
 	(*size) = Bfile_GetFileSize( handle ) -(ptr) ;
-	
+
 	buffer = ( char *)HiddenRAM_mallocProg( (*size)*sizeof(char)+4 );
 	if( buffer == NULL ) { CB_Error(NotEnoughMemoryERR); goto exit; }	// Not enough memory error
 	memset( buffer, 0x00,     (*size)*sizeof(char)+4 );
@@ -2389,7 +2416,7 @@ void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extna
 	renameExistedFile( sname, ext );	// replace? filename
 	SetFullfilenameNoExt( fname, sname );
 	CharToFont( fname, filename );
-	
+
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
 		CB_Error(CantFindFileERR);  goto exit;
@@ -2403,7 +2430,7 @@ void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extna
 	exit:
 	Restorefolder();
 }
-void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3] 
+void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	char fname[64],sname[32];
 	int c,i,reg,matsize;
 	char* FilePtr;
@@ -2483,7 +2510,7 @@ void ConvertToText( char *fname ){
 		if ( SaveBasG1MorG3M( filebase, ext ) ) return ;
 	  	FileListUpdate = 1;
 		if ( ext[0]=='M' ) SetFullfilenameExt( fname, basname, "g1m" );
-		
+
 	} else {	// G1M file -> Text
 		MSG1("Wait a moment...");
 		buffersize=files[index].filesize /1;	// buffersize 100% up
@@ -2492,16 +2519,16 @@ void ConvertToText( char *fname ){
 		filebase = ProgfileAdrs[0];
 		G1MHeaderTobasname8( filebase, basname);
 		if ( CheckPassWord( filebase ) ) return ;	// password error
-		
+
 		size = SrcSize( filebase ) + buffersize ;
 		memcpy( filebase+buffersize, filebase, SrcSize( filebase ) );
 		text = filebase;
 		textsize=OpcodeToText( filebase+buffersize+0x56, text, size );
 		if ( textsize<0 ) { CB_ErrMsg(MemoryERR); return ; } // error
-		
+
 		if ( StorageMode == 2 ) ChangeStorageMode( StorageMode & 0xFD );	// MCS->text
 		SetFullfilenameExt( fname, basname, "txt" );
-		if ( ExistFile( fname, 0 ) == 0 ) { // ==0 existed 
+		if ( ExistFile( fname, 0 ) == 0 ) { // ==0 existed
 			if ( YesNoOverwritefile(fname) ) { return ; } // cancel
 			Bdisp_PutDisp_DD();
 		}
@@ -2589,7 +2616,7 @@ int LoadConfigReadFile( unsigned char *buffer, const unsigned char *fname, int s
 	return 0;
 }
 
-//------------------------------------------------------------------------ save to main memory 
+//------------------------------------------------------------------------ save to main memory
 void SaveConfig1(){
 	const unsigned char fname[]="CBasic1";
 	unsigned char buffer[ConfigMAX];
@@ -2601,7 +2628,7 @@ void SaveConfig1(){
 
 	memset( buffer, 0x00, ConfigMAX );
 	strcpy( (char *)buffer, (const char *)"CB.config99n" );
-	
+
 /*
 typedef struct {
 	char  reserve01;		char  UseHiddenRAM;
@@ -2632,19 +2659,19 @@ typedef struct {
 	char  reserve22;		char  PictMode;
 } setupdata;
 
-	buffer[ 12+1]=UseHiddenRAM;			buffer[ 14+1]=CB_INTDefault;	
-	bufshort[ 16/2]=RefreshCtrl;		buffer[ 18+1]=DrawType;		
-	bufshort[ 20/2]=Refreshtime;		buffer[ 22+1]=Coord;			
-	buffer[ 24+1]=ENG;					buffer[ 26+1]=Grid;			
-	buffer[ 28+1]=CB_Round.MODE;		buffer[ 30+1]=Axes;			
-	buffer[ 32+1]=CB_Round.DIGIT-1;		buffer[ 34+1]=Label;			
-	bufshort[ 36/2]=DefaultWaitcount;	buffer[ 38+1]=Derivative;		
-	buffer[ 40+1]=CommandInputMethod;	buffer[ 42+1]=S_L_Style;		
-	buffer[ 44+1]=ForceG1Msave;			buffer[ 46+1]=Angle;			
-	buffer[ 48+1]=StorageMode;			buffer[ 50+1]=BreakCheckDefault;		
-	bufshort[ 52/2]=PageUpDownNum;		buffer[ 54+1]=TimeDsp;		
-	buffer[ 56+1]=1-MatBaseDefault;		buffer[ 58+1]=MatXYmode;		
-	buffer[ 60+1]=CheckIfEnd;			buffer[ 62+1]=PictMode;		
+	buffer[ 12+1]=UseHiddenRAM;			buffer[ 14+1]=CB_INTDefault;
+	bufshort[ 16/2]=RefreshCtrl;		buffer[ 18+1]=DrawType;
+	bufshort[ 20/2]=Refreshtime;		buffer[ 22+1]=Coord;
+	buffer[ 24+1]=ENG;					buffer[ 26+1]=Grid;
+	buffer[ 28+1]=CB_Round.MODE;		buffer[ 30+1]=Axes;
+	buffer[ 32+1]=CB_Round.DIGIT-1;		buffer[ 34+1]=Label;
+	bufshort[ 36/2]=DefaultWaitcount;	buffer[ 38+1]=Derivative;
+	buffer[ 40+1]=CommandInputMethod;	buffer[ 42+1]=S_L_Style;
+	buffer[ 44+1]=ForceG1Msave;			buffer[ 46+1]=Angle;
+	buffer[ 48+1]=StorageMode;			buffer[ 50+1]=BreakCheckDefault;
+	bufshort[ 52/2]=PageUpDownNum;		buffer[ 54+1]=TimeDsp;
+	buffer[ 56+1]=1-MatBaseDefault;		buffer[ 58+1]=MatXYmode;
+	buffer[ 60+1]=CheckIfEnd;			buffer[ 62+1]=PictMode;
 
 	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=UseHiddenRAM;
 	bufshort[ 9]=DrawType;			bufshort[ 8]=RefreshCtrl;
@@ -2683,7 +2710,7 @@ typedef struct {
 
 	bufshort[218*2]=(short)KeyRepeatFirstCount;
 	bufshort[219*2]=(short)KeyRepeatNextCount;
-	
+
 	for ( i=0; i<FavoritesMAX; i++ ) {
 		bufint[i+220]=Favoritesfiles[i].filesize;
 	}
@@ -2703,7 +2730,7 @@ typedef struct {
 	buffer[1077]= EditFontSize;
 	buffer[1078]= DisableDebugMode;
 	buffer[1079]= 0;
-	
+
 	SaveConfigWriteFile( buffer, fname, ConfigMAX ) ;
 }
 
@@ -2719,7 +2746,7 @@ void SaveConfig2(){
 	memset( buffer, 0x00, ConfigMAX2 );
 	strcpy( (char *)buffer, (const char *)"CB.config180" );
 	strncpy( (char *)buffer+16, root2, root2_MAX);	// default
-	
+
 	for ( i= 6; i<  6+58 ; i++ ) bufdbl[i]=REG[i-6].imag;
 
 	SaveConfigWriteFile( buffer, fname, ConfigMAX2 ) ;
@@ -2752,10 +2779,10 @@ void ChangeFavorites( int oldStorageMode, int newStorageMode ){	// old <> new fa
 	unsigned char *sptr,*dptr;
 	int size,i,r;
 
-	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX3 ) < 0 ) { 
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX3 ) < 0 ) {
 		InitConfig3();
 		if  ( LoadConfigReadFile( buffer, fname, ConfigMAX3 ) < 0 ) return ;
-	} 
+	}
 
 	switch ( oldStorageMode ) {
 		case 0:	// storage
@@ -2806,9 +2833,9 @@ void ChangeFavorites( int oldStorageMode, int newStorageMode ){	// old <> new fa
 					break;
 			}
 			break;
-			
+
 	}
-	
+
 	SaveConfigWriteFile( buffer, fname, ConfigMAX3 ) ;
 	CopyFavoritesToFiles();
 }
@@ -2835,7 +2862,7 @@ void LoadConfig1(){
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
 	bufdbl=(double*)buffer;
-	
+
 	if ( ( buffer[ 0]=='C' ) &&	// file check
 		 ( buffer[ 1]=='B' ) &&
 		 ( buffer[ 2]=='.' ) &&
@@ -2890,7 +2917,7 @@ void LoadConfig1(){
 		EditTopLine  =buffer[1076];
 		EditFontSize =buffer[1077];
 		DisableDebugMode =buffer[1078];
-		
+
 	} else {
 		Bfile_DeleteMainMemory(fname);
 	}
@@ -2911,7 +2938,7 @@ void LoadConfig2(){
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
 	bufdbl=(double*)buffer;
-	
+
 	if ( ( buffer[ 0]=='C' ) &&	// file check
 		 ( buffer[ 1]=='B' ) &&
 		 ( buffer[ 2]=='.' ) &&
@@ -2927,7 +2954,7 @@ void LoadConfig2(){
 									// load config & memory
 		strncpy( root2, (char *)buffer+16, root2_MAX);	// load default folder
 		for ( i= 6; i<  6+58 ; i++ ) REG[i-6].imag =bufdbl[i];	//
-		
+
 	} else {
 		Bfile_DeleteMainMemory(fname);
 	}
@@ -2955,13 +2982,13 @@ void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
 			case 0x00:	// <EOF>
 			case 0x22:	// "
 				return ;
-			case 0x0000007F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFFF:	// 
-			case 0xFFFFFFF7:	// 
+			case 0x0000007F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
 				c=SRC[(*ptr)++];
 				break;
 		}
@@ -2975,13 +3002,13 @@ void PP_Search_CR_SPACE_Skip_comment(char *SRC, int *ptr){
 			case 0x00:	// <EOF>
 			case 0x0D:	// <CR>
 				return ;
-			case 0x0000007F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFFF:	// 
-			case 0xFFFFFFF7:	// 
+			case 0x0000007F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
 				c=SRC[(*ptr)++];
 				break;
 		}
@@ -3007,13 +3034,13 @@ int PP_Search_CR_SPACE(char *SRC ){
 			case 0x0D:	// <CR>
 				if ( SRC[ptr] == ' ' ) return 1;
 				break;
-			case 0x0000007F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFFF:	// 
-			case 0xFFFFFFF7:	// 
+			case 0x0000007F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
 				c=SRC[ptr++];
 				break;
 		}
@@ -3038,13 +3065,13 @@ int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 				if ( d ) break;
 			case 0x00:	// <EOF>
 				return 0;
-			case 0x0000007F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFFF:	// 
-			case 0xFFFFFFF7:	// 
+			case 0x0000007F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
 				c=SRC[(*sptr)++];
 				dest[(*dptr)++]=c;
 				break;
@@ -3065,21 +3092,21 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 
 	if ( editIndent == 0 ) return 0;
 	if ( PP_Search_CR_SPACE( filebase+0x56 ) ) return 0;	// already exist indent
-	
+
 	size = SrcSize( filebase ) ;
 	editMax = ProgfileMax[progno]-size;
 	maxsize = HiddenRAM_MatTopPtr - filebase -16;
 	HiddenRAM_freeProg( filebase );
 	filebase = (char*)HiddenRAM_mallocProg( maxsize );
-	if ( filebase == NULL ) { CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } // 
+	if ( filebase == NULL ) { CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
 	memcpy2( filebase+maxsize-size, filebase, size+1 );
-	
+
 	SRC  = filebase+maxsize-size +0x56;
 	dest = filebase +0x56;
-	
+
 	while ( sptr < size ){
 		if ( dptr >= maxsize ) {
-			CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } // 
+			CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
 		c=SRC[sptr++];
 		dest[dptr++]=c;
 		switch ( c ) {
@@ -3095,12 +3122,12 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 					i++;
 				}
 				break;
-			case 0x0000007F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x0000007F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
 				c=SRC[sptr++];
 				dest[dptr++]=c;
 				break;
@@ -3138,7 +3165,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 							} while ( dest[dptr]==' ' ) ;
 							dest[dptr++]=0xF7;
 							dest[dptr++]=c;
-						} 
+						}
 						break;
 				}
 				break;
@@ -3154,7 +3181,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 	filebase = (char*)HiddenRAM_mallocProg( newsize +editMax);
 	if ( filebase == NULL ) {
 		editMax/=2; if ( editMax>=16 ) goto loop;
-		{ CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } // 
+		{ CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
 	}
 	G1M_header( filebase, &newsize );	// G1M header set
 	ProgfileMax[progno] = newsize +editMax;
@@ -3173,10 +3200,10 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 	if ( ( CB_EditIndent&0x08 ) == 0 ) return ;
 
 	size = SrcSize( filebase ) ;
-	
+
 	SRC  = filebase +0x56;
 	dest = filebase +0x56;
-	
+
 	while ( sptr < size ){
 		c=SRC[sptr++];
 		dest[dptr++]=c;
@@ -3191,12 +3218,12 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 				dptr--;
 				while ( SRC[sptr] == ' ' ) sptr++;
 				break;
-			case 0x0000007F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x0000007F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
 			case 0xFFFFFFF7:	//
 				c=SRC[sptr++];
 				dest[dptr++]=c;
@@ -3221,10 +3248,10 @@ void CB_Local( char *SRC ) {
 		reg=RegVarAliasEx(SRC);
 		if ( reg>=0 ) {
 			ProgLocalVar[ProgEntryN][i] = reg;	// local var set
-		} 
+		}
 		i++;
 		c=SRC[ExecPtr];
-		if ( c != ',' ) break; 	// 
+		if ( c != ',' ) break; 	//
 		ExecPtr++;
 		if ( i >= ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
 	}
@@ -3247,23 +3274,23 @@ int PP_Search_IfEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF7:	//
 				c=SRC[ExecPtr++];
 				if ( c == 0x00 ) { 			// If
 					PP_ptr=ExecPtr-2;
 					i=PP_Search_IfEnd(SRC) ;
-					if ( ErrorNo ) return;					
-					if ( i != 1  ) { ExecPtr=PP_ptr; CB_Error(IfWithoutIfEndERR); CB_ErrMsg(ErrorNo); return 0; } // not IfEnd error 
+					if ( ErrorNo ) return;
+					if ( i != 1  ) { ExecPtr=PP_ptr; CB_Error(IfWithoutIfEndERR); CB_ErrMsg(ErrorNo); return 0; } // not IfEnd error
 					break;
 				} else
 				if ( c == 0x03 ) return 1 ;	// IfEnd
 				break ;
-			case 0x0000007F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x0000007F:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFFF:	//
 				ExecPtr++;
 				break;
 		}
@@ -3279,26 +3306,26 @@ void PP_ReplaceCode( char *SRC ){
 //			case 0x00:	// <EOF>
 //				ExecPtr--;
 //				return ;
-//			case 0x0000007F:	// 
-//			case 0xFFFFFFE5:	// 
-//			case 0xFFFFFFE6:	// 
-//			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+//			case 0x0000007F:	//
+//			case 0xFFFFFFE5:	//
+//			case 0xFFFFFFE6:	//
+//			case 0xFFFFFFE7:	//
+//			case 0xFFFFFFFF:	//
 //				ExecPtr++;
 //				break;
-//			case 0xFFFFFFF7:	// 
+//			case 0xFFFFFFF7:	//
 //				c=SRC[ExecPtr++];
 //				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
 //				else
 //				if ( c==0x4F ) SRC[ExecPtr-1]=0x3D;	// DotTrim(  F74F -> F73D
 //				break;
-//			case 0xFFFFFFF9:	// 
+//			case 0xFFFFFFF9:	//
 //				c=SRC[ExecPtr++];
-//				if ( c==0x4B ) { 
+//				if ( c==0x4B ) {
 //					SRC[ExecPtr-2]=0xFFFFFFF7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
 //				else
 //				if ( c==0x3E ) SRC[ExecPtr-1]=0x43;	// Sprintf(  F93E -> F943
-//				break;				
+//				break;
 //		}
 //	}
 	return ;
@@ -3387,7 +3414,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 						CB_ProgEntry( filebase + 0x56  );		//
 						if ( ErrorNo == IfWithoutIfEndERR ) return ;
 						ExecPtr = StackProgPtr ;
-//						if ( ErrorNo ) { 
+//						if ( ErrorNo ) {
 //							ErrorPtr=StackProgPtr;
 //							ProgNo=progno;
 //							ErrorProg=ProgNo;
@@ -3396,16 +3423,16 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 					}
 				}
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF7:	//
 				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
 				break;
-			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFF9:	//
 				if ( SRC[ExecPtr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
 				break;
-			case 0x7F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
+			case 0x7F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
 			case 0xFFFFFFFF:	//
 				ExecPtr++;
 				break;
@@ -3441,17 +3468,17 @@ void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
 			case 0x27:	// ' rem
 				Skip_rem(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF7:	//
 				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
 				break;
-			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFF9:	//
 				if ( SRC[ExecPtr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
 				ErrorNo=0;
 				break;
-			case 0x7F:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
+			case 0x7F:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
 			case 0xFFFFFFFF:	//
 				ExecPtr++;
 				break;
@@ -3460,7 +3487,7 @@ void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
 		}
 	}
 }
-	
+
 int CB_GetProgEntry( char *SRC, char *buffer ) { //	Prog "..." into memory
 	int i,c,r;
 	char folder16[21];
@@ -3480,7 +3507,7 @@ int CB_GetProgEntry( char *SRC, char *buffer ) { //	Prog "..." into memory
 	if ( ProgEntryN >= ProgMax ) { CB_Error(TooManyProgERR); return -1; } // Too Many Prog error
 
 	HelpText = NULL;	// help buffer cancel
-	
+
 	strcpy( basname, buffer);
 	Setfoldername16( folder16, basname );
 //	MSG2("Prog Loading.....",buffer);
@@ -3529,7 +3556,7 @@ int GetMainBatteryVoltagePointer(){
 // battery != 1 : possibly the backup battery (ADC channel B)
 // firstlevel: warning level
 // secondlevel: shutdown level
- 
+
 int GetBatteryStatus( int battery, int*firstlevel, int*secondlevel ){
 	int (*iGBS)( int ) = 0; // declare an int function pointer
 	int*battconfig = (int*)0x80000334;
@@ -3563,7 +3590,7 @@ int GetBatteryStatus( int battery, int*firstlevel, int*secondlevel ){
 	if (CPU_check()==2){	// IsSlim
 	    *firstlevel = 0x2AA;
 	    *secondlevel = 0x288;
-	} 
+	}
 
 	if (iGBS!=0) return (*iGBS)( battery );
 	else return 0;
@@ -3653,23 +3680,23 @@ int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4AA( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4BB( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4CC( unsigned int n ){ return n; }	// align +4byte
@@ -3706,7 +3733,6 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3787,6 +3813,7 @@ void FavoritesDowndummy7( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy8( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

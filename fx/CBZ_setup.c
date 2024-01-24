@@ -29,8 +29,8 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.43\xE6\x41";
-#define VERSION 243
+const char VerMSG[]="C.Basic  v2.44\xE6\x41";
+#define VERSION 244
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );
@@ -47,10 +47,13 @@ void VerDispSub( int flag ) {
 	char maxbk=MaxMemMode;
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)VerMSG );
-	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
-	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
+//	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
+//	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2020" );
+
+	PrintMini(13*6+2, 2*8+1, (unsigned char*)" build 06", MINI_OVER );
+	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 //		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
@@ -60,9 +63,9 @@ void VerDispSub( int flag ) {
 		PrintMini( 2*6+2, 6*8+2, (unsigned char*)buffer, MINI_OVER );
 		VBattDispSub( 15*6+2, 6*8+2 );
 //		locate( 3, 5 ); Print( (unsigned char*)buffer );
-		
+
 //	}
-		
+
 	Bdisp_PutDisp_DD();
 	MaxMemMode=maxbk;
 }
@@ -82,10 +85,10 @@ int CB_System( char *SRC ) {	// System( n )
 	int r;
 	int c = SRC[ExecPtr];
 	switch ( CB_EvalInt( SRC ) ) {
-		case -9: 
+		case -9:
 			r=TryFlag; if ( r>1 ) r--;
 			break;
-		case -5: 
+		case -5:
 			r=GetMemFree();
 			break;
 //		case -4:
@@ -118,35 +121,35 @@ int CB_System( char *SRC ) {	// System( n )
 		case 9:	// HeapRAM
 			r = (int)HeapRAM;
 			break;
-		case 10:	// 
+		case 10:	//
 			r = (int)ClipBuffer;
 			break;
-		case 12:	// 
+		case 12:	//
 			r = (int)files;
 			break;
-			
-		case 999:	// 
+
+		case 999:	//
 			r =StackPtr;
 			break;
-		case 1000:	// 
+		case 1000:	//
 			r = (int)HiddenRAM_Top;
 			break;
-		case 1001:	// 
+		case 1001:	//
 			r = (int)HiddenRAM_End;
 			break;
-		case 1002:	// 
+		case 1002:	//
 			r = (int)HiddenRAM_ProgNextPtr;
 			break;
-		case 1003:	// 
+		case 1003:	//
 			r = (int)HiddenRAM_MatTopPtr;
 			break;
-		case 1010:	// 
+		case 1010:	//
 			r = (int)ProgfileMax[0];
 			break;
-		case 1011:	// 
+		case 1011:	//
 			r = (int)ProgfileMax[1];
 			break;
-			
+
 		default:
 			r = 0;
 	}
@@ -176,9 +179,9 @@ void FkeyS_L_(){
 
 void SetLineStyle() {
 	unsigned int key;
-	
+
 	FkeyS_L_();
-	
+
 	GetKey(&key);
 	switch (key) {
 		case KEY_CTRL_EXIT:
@@ -286,7 +289,7 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CHAR_ATAN:   //    0x93
 			case KEY_CHAR_ROOT:   //    0x86
 			case KEY_CHAR_POWROOT: //   0xb8
-			case KEY_CHAR_LBRCKT: // 
+			case KEY_CHAR_LBRCKT: //
 			case KEY_CHAR_RBRCKT: //
 			case KEY_CHAR_LBRACE: //
 			case KEY_CHAR_RBRACE: //
@@ -305,7 +308,7 @@ unsigned int MathKey( unsigned int  key) {
 	return 0;
 }
 /*
-int SelectVWin( char*msg, int n ,int min, int max, unsigned int *key ) {		// 
+int SelectVWin( char*msg, int n ,int min, int max, unsigned int *key ) {		//
 	char buffer[32];
 	int n0=n;
 	PopUpWin(4);
@@ -390,8 +393,8 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 		}
 
 		y = select-scrl+1;
-		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
-		
+		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
+
 		Fkey_Icon( FKeyNo1,  95 );	//	Fkey_dispN( FKeyNo1, "Init");
 		Fkey_Icon( FKeyNo2,  96 );	//	Fkey_dispN( FKeyNo2, "Trig");
 		Fkey_Icon( FKeyNo3,  97 );	//	Fkey_dispN( FKeyNo3, "STD");
@@ -408,7 +411,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
-		
+
 			case KEY_CTRL_UP:
 				select-=1;
 				if ( select < 0 ) {select=9; scrl=4;}
@@ -421,7 +424,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 				if ((select - scrl) > 5 ) scrl+=1;
 				if ( scrl > 4 ) scrl=4;
 				break;
-				
+
 			case KEY_CTRL_F1:	// Initialize
 				SetVeiwWindowInit();
 				break;
@@ -446,44 +449,44 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 			case KEY_CTRL_LEFT:
 				PutKey( KEY_CTRL_DOWN, 1 );
 			case KEY_CTRL_RIGHT:
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 				FkeyClearAll();
 				y++;
 				switch (select) {
 					case 0: // Xmin
-						Xmin      =InputNumD_full( 8, y, 14, Xmin);	// 
+						Xmin      =InputNumD_full( 8, y, 14, Xmin);	//
 						SetXdotYdot();
 						break;
 					case 1: // Xmax
-						Xmax      =InputNumD_full( 8, y, 14, Xmax);	// 
+						Xmax      =InputNumD_full( 8, y, 14, Xmax);	//
 						SetXdotYdot();
 						break;
 					case 2: // Xscl
-						Xscl      =fabs(InputNumD_full( 8, y, 14, Xscl));	// 
+						Xscl      =fabs(InputNumD_full( 8, y, 14, Xscl));	//
 						break;
 					case 3: // Xdot
-						Xdot      =InputNumD_full( 8, y, 14, Xdot);	// 
+						Xdot      =InputNumD_full( 8, y, 14, Xdot);	//
 						Xmax = Xmin + Xdot*126.;
 						break;
 					case 4: // Ymin
-						Ymin      =InputNumD_full( 8, y, 14, Ymin);	// 
+						Ymin      =InputNumD_full( 8, y, 14, Ymin);	//
 						SetXdotYdot();
 						break;
 					case 5: // Ymax
-						Ymax      =InputNumD_full( 8, y, 14, Ymax);	// 
+						Ymax      =InputNumD_full( 8, y, 14, Ymax);	//
 						SetXdotYdot();
 						break;
 					case 6: // Yscl
-						Yscl      =fabs(InputNumD_full( 8, y, 14, Yscl));	// 
+						Yscl      =fabs(InputNumD_full( 8, y, 14, Yscl));	//
 						break;
 					case 7: // TThetamin
-						TThetamin =InputNumD_full( 8, y, 14, TThetamin);	// 
+						TThetamin =InputNumD_full( 8, y, 14, TThetamin);	//
 						break;
 					case 8: // TThetamax
-						TThetamax =InputNumD_full( 8, y, 14, TThetamax);	// 
+						TThetamax =InputNumD_full( 8, y, 14, TThetamax);	//
 						break;
 					case 9: // TThetaptch
-						tmp = InputNumD_full( 8, y, 14, TThetaptch);	// 
+						tmp = InputNumD_full( 8, y, 14, TThetaptch);	//
 						if ( tmp == 0 ) { CB_ErrMsg(RangeERR); break ; } // // Range error
 						TThetaptch = tmp;
 						break;
@@ -496,44 +499,44 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 		}
 		key=MathKey( key );
 		if ( key ) {
-				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 				FkeyClearAll();
 				y++;
 				switch (select) {
 					case 0: // Xmin
-						Xmin      =InputNumD_Char( 8, y, 14, Xmin, key);	// 
+						Xmin      =InputNumD_Char( 8, y, 14, Xmin, key);	//
 						SetXdotYdot();
 						break;
 					case 1: // Xmax
-						Xmax      =InputNumD_Char( 8, y, 14, Xmax, key);	// 
+						Xmax      =InputNumD_Char( 8, y, 14, Xmax, key);	//
 						SetXdotYdot();
 						break;
 					case 2: // Xscl
-						Xscl      =fabs(InputNumD_Char( 8, y, 14, Xscl, key));	// 
+						Xscl      =fabs(InputNumD_Char( 8, y, 14, Xscl, key));	//
 						break;
 					case 3: // Xdot
-						Xdot      =InputNumD_Char( 8, y, 14, Xdot, key);	// 
+						Xdot      =InputNumD_Char( 8, y, 14, Xdot, key);	//
 						Xmax = Xmin + Xdot*126.;
 						break;
 					case 4: // Ymin
-						Ymin      =InputNumD_Char( 8, y, 14, Ymin, key);	// 
+						Ymin      =InputNumD_Char( 8, y, 14, Ymin, key);	//
 						SetXdotYdot();
 						break;
 					case 5: // Ymax
-						Ymax      =InputNumD_Char( 8, y, 14, Ymax, key);	// 
+						Ymax      =InputNumD_Char( 8, y, 14, Ymax, key);	//
 						SetXdotYdot();
 						break;
 					case 6: // Yscl
-						Yscl      =fabs(InputNumD_Char( 8, y, 14, Yscl, key));	// 
+						Yscl      =fabs(InputNumD_Char( 8, y, 14, Yscl, key));	//
 						break;
 					case 7: // TThetamin
-						TThetamin =InputNumD_Char( 8, y, 14, TThetamin, key);	// 
+						TThetamin =InputNumD_Char( 8, y, 14, TThetamin, key);	//
 						break;
 					case 8: // TThetamax
-						TThetamax =InputNumD_Char( 8, y, 14, TThetamax, key);	// 
+						TThetamax =InputNumD_Char( 8, y, 14, TThetamax, key);	//
 						break;
 					case 9: // TThetaptch
-						tmp = InputNumD_Char( 8, y, 14, TThetaptch, key);	// 
+						tmp = InputNumD_Char( 8, y, 14, TThetaptch, key);	//
 						if ( tmp == 0 ) { CB_ErrMsg(RangeERR); break ; } // // Range error
 						TThetaptch = tmp;
 						break;
@@ -580,7 +583,7 @@ void SetFactor(){
 		sprintG(buffer,Yfct,  10,LEFT_ALIGN); locate( 9, 5); Print((unsigned char*)buffer);
 
 		y = select + 3 ;
-		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line
 		Bdisp_PutDisp_DD();
 
 		GetKey( &key );
@@ -589,7 +592,7 @@ void SetFactor(){
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
-		
+
 			case KEY_CTRL_UP:
 				select-=1;
 				if ( select < 0 ) select=1;
@@ -602,16 +605,16 @@ void SetFactor(){
 			case KEY_CTRL_LEFT:
 				PutKey( KEY_CTRL_DOWN, 1 );
 			case KEY_CTRL_RIGHT:
-				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line
 				Bdisp_PutDisp_DD();
 				y++;
 				switch (select) {
 					case 0: // Xfct
-						Xfct  =InputNumD_full( 9, y, 10, Xfct);	// 
+						Xfct  =InputNumD_full( 9, y, 10, Xfct);	//
 						select+=1;
 						break;
 					case 1: // Yfct
-						Xmax  =InputNumD_full( 9, y, 10, Yfct);	// 
+						Xmax  =InputNumD_full( 9, y, 10, Yfct);	//
 						break;
 					default:
 						break;
@@ -622,16 +625,16 @@ void SetFactor(){
 		}
 		key=MathKey( key );
 		if ( key ) {
-				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line
 				Bdisp_PutDisp_DD();
 				y++;
 				switch (select) {
 					case 0: // Xfct
-						Xfct  =InputNumD_Char( 9, y, 10, Xfct, key);	// 
+						Xfct  =InputNumD_Char( 9, y, 10, Xfct, key);	//
 						select+=1;
 						break;
 					case 1: // Yfct
-						Yfct  =InputNumD_Char( 9, y, 10, Yfct, key);	// 
+						Yfct  =InputNumD_Char( 9, y, 10, Yfct, key);	//
 						break;
 					default:
 						break;
@@ -645,7 +648,7 @@ void SetFactor(){
 //-----------------------------------------------------------------------------
 void SetVarDsp(int VarMode) {
 	if ( VarMode ) {
-		Print((unsigned char*)"[INT%]"); 
+		Print((unsigned char*)"[INT%]");
 	} else {
 		if ( CB_INT==0 ) Print((unsigned char*)"[DBL#]");
 		else	Print((unsigned char*)"[CPLX]");
@@ -679,14 +682,14 @@ void InitVar( complex value, int VarMode, int small) {
 			case KEY_CTRL_LEFT:
 				PutKey( KEY_CTRL_DOWN, 1 );
 			case KEY_CTRL_RIGHT:
-				value  =InputNumC_full( 9, 5, 10, value);	// 
+				value  =InputNumC_full( 9, 5, 10, value);	//
 				break;
 			default:
 				break;
 		}
 		key=MathKey( key );
 		if ( key ) {
-			value  =InputNumC_Char( 9, 5, 10, value, key);	// 
+			value  =InputNumC_Char( 9, 5, 10, value, key);	//
 		}
 	}
 
@@ -700,7 +703,7 @@ void InitVar( complex value, int VarMode, int small) {
 }
 
 void SetVarSel(int VarMode, int y) {
-	Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+	Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 	locate(1,8); PrintLine((unsigned char *)" ",21);
 	locate(1,8); SetVarDsp(VarMode);
 }
@@ -760,7 +763,7 @@ int SetVarCharMat( char *buffer, int c ) {
 	} else
 	if ( c >= 84 ) {
 		buffer[ptr++]='A'+c-84;
-	} else { 
+	} else {
 		buffer[ptr++]='A'+c;
 	}
 	return ptr;
@@ -832,7 +835,7 @@ int SetVarChar( char *buffer, int c ) {
 		buffer[ptr++]='A';		//
 		buffer[ptr++]='n';
 		buffer[ptr++]='s';
-	} else { 
+	} else {
 		buffer[ptr++]='A'+c;
 	}
 	return ptr;
@@ -854,7 +857,7 @@ int SetVarCharStr( char *buffer, int VarMode, int k) {
 		buffer[j++]=0xE5;		// reverse '='
 		buffer[j++]=0xB8;
 	}
-	
+
 	buffer[j++]='\0';
 	return CB_MB_ElementCount( buffer )+1;
 }
@@ -872,32 +875,32 @@ int SetVar(int select){		// ----------- Set Variable
 	int opNum=25+3,lnum;
 	int small=0;
 	complex value={0,0};
-	int VarMode=CB_INT;	// 0:double or complex  1:int  
+	int VarMode=CB_INT;	// 0:double or complex  1:int
 	int hex=0;	// 0:normal  1:hex
 
 	if ( VarMode==2 ) VarMode=0;	// complex ->double
 	Cursor_SetFlashMode(0); 		// cursor flashing off
-	
+
 	if ( select >= IsExtVar ) select=IsExtVar;
 	if ( select >= 58 ) { small=58; }
 	else
 	if ( select >= 32 ) { small=32; }
 	select-=small;
-	
+
 	while (cont) {
 		Bdisp_AllClr_VRAM();
-		
+
 		opNum=25+3;
 		if ( small==58 ) { opNum=IsExtVar-57;}
 		if ( opNum < 6 ) lnum=opNum; else lnum=6;
 		if (  select<seltop ) seltop = select;
 		if ( (select-seltop) > lnum ) seltop = select-lnum;
-		if ( (opNum -seltop) < lnum ) seltop = opNum -lnum; 
-		
+		if ( (opNum -seltop) < lnum ) seltop = opNum -lnum;
+
 		for ( i=0; i<7; i++ ) {
 			k=seltop+i+small;
 			if ( ( small==58 ) && ( k > IsExtVar+1 ) ) break;	// ext   Var
-			
+
 			if ( ( small==32 ) && ( k >= 58 ) ) k-=(32);						// small Var
 			else
 			if ( ( small==58 ) && ( k > IsExtVar ) ) k=28;	// ext   Var  Ans
@@ -915,7 +918,13 @@ int SetVar(int select){		// ----------- Set Variable
 			}
 			Print((unsigned char*)buffer);
 		}
-		Fkey_Icon( FKeyNo1, 775 );	//	Fkey_dispN( FKeyNo1, "A<>a");
+//		Fkey_Icon( FKeyNo1, 775 );	//	Fkey_dispN( FKeyNo1, "A<>a");
+		if ( small ==  0  ) Fkey_Icon( FKeyNo1, 775 );	//	Fkey_dispN( FKeyNo1, "A <> a");
+		else
+		if ( small == 32  ) Fkey_Icon( FKeyNo1, 775 );	//	Fkey_dispN( FKeyNo1, "A <> a");
+		else
+		if ( small == 58  ) Fkey_dispN( FKeyNo1, "_Var");
+
 		Fkey_Icon( FKeyNo2,  95 );	//	Fkey_dispN( FKeyNo2, "Init");
 		if ( VarMode ) Fkey_dispN_aA( 2, "D<>I"); else Fkey_dispN_Aa( 2, "D<>I");
 		if ( hex ) Fkey_dispN( FKeyNo6, "\xE6\x91\x44\x65\x63"); else Fkey_dispN( FKeyNo6, "\xE6\x91Hex");
@@ -923,7 +932,7 @@ int SetVar(int select){		// ----------- Set Variable
 		locate(12,8); SetVarDsp(VarMode);
 
 		y = (select-seltop) ;
-		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 		Bdisp_PutDisp_DD();
 
 		k=select;
@@ -935,11 +944,25 @@ int SetVar(int select){		// ----------- Set Variable
 		}
 		GetKey( &key );
 		switch (key) {
+			case KEY_CTRL_OPTN:
+			case KEY_CTRL_VARS:
+//				if ( small == 58  ) {	// extended variable
+					FkeyClearAll();
+					sprintf(buffer,"Alias_Var:%2d    Ext_Var:%2d",IsExtVar-57, AliasVarMAX+1 );
+//					CB_PrintMini( 16*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OVER);
+					PrintMini(0*6+2, 7*8+1, (unsigned char*)buffer, MINI_OVER );
+//					Fkey_dispN( FKeyNo1, buffer );
+//				}
+				Bdisp_PutDisp_DD();
+				if (IsSH3)	while ( CheckKeyRow(8)     & (32+16) );	// [OPTN] [VARS]
+				else 		while ( CheckKeyRow7305(8) & (32+16) );	// [OPTN] [VARS]
+				break;
+
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
-		
+
 			case KEY_CTRL_F1:
 				if ( small ==  0  ) small=32;
 				else
@@ -976,35 +999,35 @@ int SetVar(int select){		// ----------- Set Variable
 				if ( select > opNum ) select =opNum;
 				selectreplay = -1; // replay cancel
 				break;
-				
+
 			case KEY_CTRL_RIGHT:
 				SetVarSel(VarMode,y);
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
-				selectreplay = select; 
+				selectreplay = select;
 				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
-					if ( VarMode ) 
+					if ( VarMode )
 						LocalInt[k][0]= InputNumC_fullhex( x, y, 18, Int2Cplx(LocalInt[k][0]), hex).real;
 					else
 						LocalDbl[k][0]= InputNumC_fullhex( x, y, 19, LocalDbl[k][0], hex);
 				} else {
-						selectreplay = -1; // replay cancel 
+						selectreplay = -1; // replay cancel
 				}
 				break;
-				
+
 			case KEY_CTRL_LEFT:
 				if (selectreplay<0) { PutKey( KEY_CTRL_RIGHT, 1 ); PutKey( KEY_CTRL_DOWN, 1 ); break; }
 				SetVarSel(VarMode,y);
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
-				selectreplay = select; 
+				selectreplay = select;
 				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
-					if ( VarMode ) 
+					if ( VarMode )
 						LocalInt[k][0]= InputNumD_replay( x, y, 18, (double)LocalInt[k][0]);
 					else
 						LocalDbl[k][0]= InputNumC_replay( x, y, 19, LocalDbl[k][0]);
 				} else {
-						selectreplay = -1; // replay cancel 
+						selectreplay = -1; // replay cancel
 				}
 				break;
 			default:
@@ -1015,14 +1038,14 @@ int SetVar(int select){		// ----------- Set Variable
 				SetVarSel(VarMode,y);
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
-				selectreplay = select; 
+				selectreplay = select;
 				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
-					if ( VarMode ) 
+					if ( VarMode )
 						LocalInt[k][0]= InputNumD_Char( x, y, 18, (double)LocalInt[k][0], key);
 					else
 						LocalDbl[k][0]= InputNumC_Char( x, y, 19, LocalDbl[k][0], key);
 				} else {
-						selectreplay = -1; // replay cancel 
+						selectreplay = -1; // replay cancel
 				}
 		}
 	}
@@ -1047,7 +1070,7 @@ void DateTimePrintSub(){		// timer IRQ handler
 			DateToStr(DateStr);
 			sprintf(buffer,"DATE : %s ",DateStr);
 			locate( 1, cy); Print((unsigned char*)buffer);
-			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 	}
 	cy=TimeCursorY & 0xFF;
 	y =TimeCursorY / 0x100;
@@ -1055,7 +1078,7 @@ void DateTimePrintSub(){		// timer IRQ handler
 			TimeToStr(TimeStr);
 			sprintf(buffer,"TIME : %s       ",TimeStr);
 			locate( 1, cy); Print((unsigned char*)buffer);
-			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 	}
 }
 void DateTimePrint(){		// timer IRQ handler
@@ -1081,7 +1104,7 @@ void TimePrintSetMode(int set){	// 1:on  0:off
 }
 //--------------------------------------------------------------
 
-int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key ) {		// 
+int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key ) {		//
 	char buffer[32];
 	int n0=n;
 	PopUpWin(3);
@@ -1096,11 +1119,11 @@ int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key ) {		//
 	}
 	return n ; // ok
 }
-int SelectNum2( char*msg, int n ,int min, int max ) {		// 
+int SelectNum2( char*msg, int n ,int min, int max ) {		//
 	unsigned int key;
 	return SelectNum1( msg, n ,min, max, &key );
 }
-int SelectNum3( int n ) {		// 
+int SelectNum3( int n ) {		//
 	unsigned int key;
 	int n0=n;
 	PopUpWin(3);
@@ -1115,7 +1138,7 @@ int SelectNum3( int n ) {		//
 	}
 	return n ; // ok
 }
-int SelectNum4( int n ) {		// 
+int SelectNum4( int n ) {		//
 	unsigned int key;
 	int n0=n;
 	PopUpWin(3);
@@ -1184,8 +1207,8 @@ int SelectNum4( int n ) {		//
 #define SETUP_Executemode	47
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
-    
-int SetupG(int select, int limit){		// ----------- Setup 
+
+int SetupG(int select, int limit){		// ----------- Setup
     const char *degrad[]      ={"Deg","Rad","Grad"};
     const char *cplxmode[]    ={"Real","a+b\x7F\x50","r\x7F\x54\xE6\x47"};
     const char *onoff[]       ={"off","on"};
@@ -1206,6 +1229,7 @@ int SetupG(int select, int limit){		// ----------- Setup
     const char *ExecTimemode[]={"off","on","off%","on reset","  %","on%","  % reset","on%reset"};
     const char *EditIndent[]  ={"off","1","2","3","4","5","6","7","off sav-","1 save-","2 save-","3 save-","4 save-","D","E","F"};
 	char buffer[22];
+	char folderbuf[16];
 	unsigned int key;
 	int	cont=1;
 	int scrl=select-6;
@@ -1214,9 +1238,11 @@ int SetupG(int select, int limit){		// ----------- Setup
 	char TimeStr[16];
 	int year,month,day,hour,min,sec;
 	int listmax=SETUP_Executemode;
-	
+
+	strcpy( folderbuf, folder );	// current folder
+
 	Cursor_SetFlashMode(0); 		// cursor flashing off
-	
+
 	if ( select > listmax ) select=0;
 	if ( select < scrl ) scrl-=1;
 	if ( scrl < 0 ) scrl=0;
@@ -1226,12 +1252,12 @@ int SetupG(int select, int limit){		// ----------- Setup
 
 	while (cont) {
 		Bdisp_AllClr_VRAM();
-		
+
 		DateToStr(DateStr);
 		TimeToStr(TimeStr);
 		DateCursorY = 0x909;
 		TimeCursorY = 0x909;
-		
+
 		cnt=1;
 		if ( scrl <=(cnt-1) ) {
 			locate( 1, cnt-scrl); Print((unsigned char*)"Angle       :");		// 0
@@ -1281,7 +1307,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
 			locate(17, cnt-scrl); Print((unsigned char*)buffer);
-			locate(19, cnt-scrl); 
+			locate(19, cnt-scrl);
 			Print((unsigned char*)ENGmode[ENG]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
@@ -1409,8 +1435,8 @@ int SetupG(int select, int limit){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Root Folder:");		// 40
-			locate(13,cnt-scrl); 
-			if ( root2[0] == '\0' ) { 
+			locate(13,cnt-scrl);
+			if ( root2[0] == '\0' ) {
 				Print((unsigned char*)"/");
 			} else {
 				Print((unsigned char*)root2);
@@ -1450,7 +1476,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)CBmode[CB_INTDefault]);
 		}
 		y = select-scrl;
-		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 //		VBattDispSub( 14*6+2, 7*8+2 );
 		switch (select) {
 			case SETUP_DrawType: // Draw Type
@@ -1463,7 +1489,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 				Fkey_Icon( FKeyNo3, 126 );	//	Fkey_dispN( FKeyNo3, "r_theta");
 				break;
 			case SETUP_Coord: // Coord
-			case SETUP_Grid: // Grid	
+			case SETUP_Grid: // Grid
 			case SETUP_Axes: // Axes
 			case SETUP_Label: // Label
 			case SETUP_Derivative: // Derivative
@@ -1482,7 +1508,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			case SETUP_ACBreak: // ACBreak Check
 			case SETUP_AutoSaveMode: // Auto save
 			case SETUP_Forceg1msave: // Force g1m save
-			case SETUP_RecoverSetup: // Setup Mode 
+			case SETUP_RecoverSetup: // Setup Mode
 				Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
 				Fkey_Icon( FKeyNo2, 18 );	//	Fkey_dispN( FKeyNo2, " Off");
 				break;
@@ -1499,7 +1525,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			case SETUP_CMDINPUT: // Command input method
 				Fkey_dispN( FKeyNo1, "CBas");
 				Fkey_dispN( FKeyNo2, "Std");
-				if ( CB_fx5800P ) Fkey_dispN( FKeyNo4, ">98G"); else Fkey_dispN( FKeyNo4, ">58P"); 
+				if ( CB_fx5800P ) Fkey_dispN( FKeyNo4, ">98G"); else Fkey_dispN( FKeyNo4, ">58P");
 				break;
 			case SETUP_EditFontSize: // Edit Char Size
 				Fkey_dispN( FKeyNo1, "Std");
@@ -1605,10 +1631,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 			default:
 				break;
 		}
-		
+
 		Fkey_Icon( FKeyNo6, 991 );	//	Fkey_dispN( FKeyNo6, "Ver.");
 //		Bdisp_PutDisp_DD();
-		
+
 		DateCursorY = y*0x100+(DateCursorY&0xFF);
 		TimeCursorY = y*0x100+(TimeCursorY&0xFF);
 		TimePrintSetMode( 1 ) ;			// Date/Time print IRQ on
@@ -1621,7 +1647,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
-		
+
 			case KEY_CTRL_UP:
 				select-=1;
 				if ( select < 0 ) {select=(listmax); scrl=select-6;}
@@ -1644,7 +1670,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 				select=(listmax);
 				scrl=select-6;
 				break;
-				
+
 			case KEY_CTRL_PAGEUP:
 				for ( i=0; i<7; i++) {
 					select--;
@@ -1663,7 +1689,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 				break;
 
 			case KEY_CTRL_F1:
-//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 				switch (select) {
 					case SETUP_Angle: // Angle
 						Angle = 0 ; // Deg
@@ -1704,7 +1730,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_Help:	// Help
 						CB_HelpOn = 1;	// help on
 						break;
-					case SETUP_RecoverSetup: // Setup Mode 
+					case SETUP_RecoverSetup: // Setup Mode
 						CB_RecoverSetup = 1 ; // recover on
 						break;
 					case SETUP_EnableExtFONT: // Enable External Font
@@ -1803,7 +1829,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						MatXYmode = 0 ; // m,n
 						break;
 					case SETUP_Matrixbase: // Matrix base
-						MatBaseDefault = 0 ; // 
+						MatBaseDefault = 0 ; //
 						MatBase = MatBaseDefault;
 						break;
 					case SETUP_DATE: // DATE year
@@ -1823,6 +1849,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						StorTIME( TimeStr );
 						break;
 					case SETUP_RootFolder:
+						if ( StorageMode & 2 ) break;
 						root2[0]='\0';	// default root folder
 						folder[0]='\0';
 						FileListUpdate= 1;
@@ -1834,7 +1861,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						ForceG1Msave = 1 ; // g1m and text
 						break;
 					case SETUP_Pictmode: // Pict mode
-						PictMode = 0 ; // Storage Memory mode 
+						PictMode = 0 ; // Storage Memory mode
 						break;
 					case SETUP_Storagemode: // Storage mode
 						ChangeStorageMode( 0 ); // Memory mode
@@ -1856,7 +1883,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 				}
 				break;
 			case KEY_CTRL_F2:
-//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 				switch (select) {
 					case SETUP_Angle: // Angle
 						Angle = 1 ; // Rad
@@ -1886,7 +1913,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						BG_Pict_No = SelectNum2("Pict",BG_Pict_No,1,20);
 						break;
 					case SETUP_Sketch: // Sketch Line	Thick
-						S_L_Style = 1 ; 
+						S_L_Style = 1 ;
 						break;
 					case SETUP_Display: // Display
 						i = SelectNum1("Sci",CB_Round.DIGIT,0,15,&key);
@@ -1897,7 +1924,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_Help:	// Help
 						CB_HelpOn = 0;	// help off
 						break;
-					case SETUP_RecoverSetup: // Setup Mode 
+					case SETUP_RecoverSetup: // Setup Mode
 						CB_RecoverSetup = 0 ; // recover off
 						break;
 					case SETUP_EnableExtFONT: // Enable External Font
@@ -1928,7 +1955,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						UpdateLineNum=1;
 						break;
 					case SETUP_EditListChar:
-						EditListChar=1;		// 
+						EditListChar=1;		//
 						break;
 					case SETUP_ExtendPict:		// Max Pict
 						if ( limit ) break;
@@ -1962,7 +1989,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
-						DisableDebugMode = 1 ; // disable 
+						DisableDebugMode = 1 ; // disable
 						break;
 					case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
 						ExitDebugModeCheck = 0 ; // off
@@ -2020,9 +2047,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_RootFolder:
 						if ( Is35E2 == 0 ) break;
-						if ( strlen( folder ) ) {
-							root2[0]='\\';	
-							strcpy( root2+1, folder );	// current folder
+						if ( StorageMode & 2 ) break;
+						if ( strlen( folderbuf ) ) {
+							root2[0]='\\';
+							strcpy( root2+1, folderbuf );	// current folder
 						} else root2[0]='\0';	// root folder
 						folder[0]='\0';
 						FileListUpdate= 1;
@@ -2053,7 +2081,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 				}
 				break;
 			case KEY_CTRL_F3:
-//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 				switch (select) {
 					case SETUP_Angle: // Angle
 						Angle = 2 ; // Grad
@@ -2062,7 +2090,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						ComplexMode = 2;	// r_theta
 						break;
 					case SETUP_Sketch: // Sketch Line	Broken
-						S_L_Style = 2 ; 
+						S_L_Style = 2 ;
 						break;
 					case SETUP_Display: // Display
 						i = SelectNum1("Nrm",CB_Round.DIGIT,0,15,&key);
@@ -2128,10 +2156,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 				}
 				break;
 			case KEY_CTRL_F4:
-//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 				switch (select) {
 					case SETUP_Sketch: // Sketch  Line	Dot
-						S_L_Style = 3 ; 
+						S_L_Style = 3 ;
 						break;
 					case SETUP_Display: // Display
 						ENG++;
@@ -2156,8 +2184,8 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_ExecTimeDsp: // TimeDsp
 						if ( TimeDsp == 0 ) break;
-						if ( TimeDsp & 0x2 )    TimeDsp &= ~0x2 ; // off reset GetKey1/2 
-						else					TimeDsp |=  0x2 ; // on  reset GetKey1/2 
+						if ( TimeDsp & 0x2 )    TimeDsp &= ~0x2 ; // off reset GetKey1/2
+						else					TimeDsp |=  0x2 ; // on  reset GetKey1/2
 						break;
 					case SETUP_ExtendList:		// Max List
 						if ( limit ) break;
@@ -2192,7 +2220,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 				}
 				break;
 			case KEY_CTRL_F5:
-//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
+//				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
 				switch (select) {
 					case SETUP_EditIndent: //
 						CB_EditIndent^=0x08;

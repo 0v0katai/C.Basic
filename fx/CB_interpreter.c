@@ -1124,10 +1124,10 @@ remloop:
 					defaultStrAry= reg;
 					if ( SRC[ExecPtr] == ',') {
 						c=SRC[++ExecPtr];
-						defaultStrAryN=Eval_atoi( SRC, c );
+						defaultStrAryN=CB_EvalInt( SRC );
 						if ( SRC[ExecPtr] == ',') {
 							c=SRC[++ExecPtr];
-							defaultStrArySize=Eval_atoi( SRC, c );
+							defaultStrArySize=CB_EvalInt( SRC );
 						}
 					}
 				  DelStrBuffer:
@@ -1140,10 +1140,10 @@ remloop:
 					defaultFnAry= reg;
 					if ( SRC[ExecPtr] == ',') {
 						c=SRC[++ExecPtr];
-						defaultFnAryN=Eval_atoi( SRC, c );
+						defaultFnAryN=CB_EvalInt( SRC );
 						if ( SRC[ExecPtr] == ',') {
 							c=SRC[++ExecPtr];
-							defaultFnArySize=Eval_atoi( SRC, c );
+							defaultFnArySize=CB_EvalInt( SRC );
 						}
 					}
 					goto DelStrBuffer;
@@ -1178,10 +1178,10 @@ remloop:
 					defaultGraphAry= reg;
 					if ( SRC[ExecPtr] == ',') {
 						c=SRC[++ExecPtr];
-						defaultGraphAryN=Eval_atoi( SRC, c );
+						defaultGraphAryN=CB_EvalInt( SRC );
 						if ( SRC[ExecPtr] == ',') {
 							c=SRC[++ExecPtr];
-							defaultGraphArySize=Eval_atoi( SRC, c );
+							defaultGraphArySize=CB_EvalInt( SRC );
 						}
 					}
 					goto DelStrBuffer;
