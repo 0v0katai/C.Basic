@@ -33,8 +33,8 @@ extern char  CB_EditIndent;		// indent function  0:Non  1~4:indent space
 extern int StackPtr;
 
 //------------------------------------------------------------------------------
-void VerDispSub() ;
-void VerDisp() ;
+void VerDispSub( int flag ) ;
+void VerDisp( int flag ) ;
 unsigned int MathKey( unsigned int  key) ;
 
 int CB_Version() ;	// Version

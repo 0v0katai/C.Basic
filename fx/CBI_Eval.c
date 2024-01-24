@@ -1326,6 +1326,7 @@ int CB_Ticks( char *SRC ) {
 		if ( SRC[ExecPtr+1]==0x4F ) {	// Wait
 			ExecPtr+=2;		// TicksWait n
 			n = CB_EvalInt( SRC );
+			dspflag=0;
 			if ( high ) {
 				if ( n<0 ) n=-n;  else Hitickstmp=CB_RTC_GetTicks(high);
 				do {

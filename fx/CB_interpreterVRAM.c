@@ -2039,7 +2039,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct) {		// Me
 		if ( listmax > scrl+5 ) PrintXY( 116, 54, (unsigned char*)"\xE6\x93", 0 );
 		y = select-scrl+1;
 		Bdisp_AreaReverseVRAM( 8, y*8+6, 122, y*8+13);	// reverse select line 
-		GetKey_DisableMenu(&key);
+		GetKey(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_QUIT:
