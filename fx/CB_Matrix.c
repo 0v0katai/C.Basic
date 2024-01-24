@@ -795,7 +795,7 @@ void Mat2Clip( int reg, char *buffer , int max, int bit ) {	//
 		dimB=MatAry[reg].SizeB-1+base;
 	}
 
-	buffer[ptr++]='{';
+	buffer[ptr++]='[';
 //	buffer[ptr++]=0x0D;
 	for (x=base; x<=dimA; x++) {
 		buffer[ptr++]='[';
@@ -3585,7 +3585,7 @@ complex CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 	double start,end,step;
 	complex result;
 	int errflag=0;
-	int breakcount=10;
+	int breakcount=BREAKCOUNT;
 	
 	exptr=ExecPtr;
   restart:
@@ -3600,7 +3600,7 @@ complex CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 			ExecPtr=exptr;
 			result.real += CB_EvalDbl( SRC );	//
 			LocalDbl[fxreg][0].real += step;
-			if ( breakcount < 0 ) {
+			if ( breakcount == 0 ) {
 				if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return Int2Cplx(0); }	// [AC] break?
 				breakcount = 10;
 			} else breakcount--;
@@ -3610,9 +3610,9 @@ complex CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 			ExecPtr=exptr;
 			result = Cplx_fADD( result, CB_Cplx_EvalDbl( SRC ) );	//
 			LocalDbl[fxreg][0].real += step;
-			if ( breakcount < 0 ) {
+			if ( breakcount == 0 ) {
 				if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return Int2Cplx(0); }	// [AC] break?
-				breakcount = 10;
+				breakcount = BREAKCOUNT;
 			} else breakcount--;
 		}
 	}
@@ -3630,7 +3630,7 @@ int CB_SigmaInt( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 	int start,end,step;
 	int result;
 	int errflag=0;
-	int breakcount=100;
+	int breakcount=BREAKCOUNT;
 	
 	exptr=ExecPtr;
   restart:
@@ -3652,9 +3652,9 @@ int CB_SigmaInt( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 		ExecPtr=exptr;
 		result += CB_EvalInt( SRC );	//
 		LocalInt[fxreg][0]+=step;
-		if ( breakcount < 0 ) {
+		if ( breakcount == 0 ) {
 			if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
-			breakcount = 10;
+			breakcount = BREAKCOUNT;
 		} else breakcount--;
 	}
 	LocalInt[fxreg][0]=end;

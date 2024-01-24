@@ -13,11 +13,11 @@ char   defaultStrAryN=20;
 short  defaultStrArySize=255+1;
 
 char   defaultFnAry=27;		// Theta
-char   defaultFnAryN=8;
+char   defaultFnAryN=20;
 short  defaultFnArySize=255+1;
 
 char   defaultGraphAry=27;		// Theta
-char   defaultGraphAryN=8;
+char   defaultGraphAryN=20;
 short  defaultGraphArySize=255+1;
 
 char	dummychar1;
@@ -1153,37 +1153,91 @@ char* CB_GraphYStrSub( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnA
 	return MatrixPtr( reg, dimA, base );
 }
 double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
+	double result;
+	double tmpX = regX.real;
 	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
 	if ( ErrorNo ) return 0;
-	return CB_EvalStrDBL( ptr, calcflag );
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		regX.real = CB_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_EvalStrDBL( ptr, calcflag );
+	regX.real = tmpX;
+	return result;
 }
 double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
+	double result;
+	double tmpX = regX.real;
 	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
 	if ( ErrorNo ) return 0;
-	return CB_EvalStrDBL2( ptr, calcflag );
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		regX.real = CB_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_EvalStrDBL2( ptr, calcflag );
+	regX.real = tmpX;
+	return result;
 }
 
 complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
+	complex result;
+	complex tmpX = regX;
 	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
 	if ( ErrorNo ) return Int2Cplx(0);
-	return CB_Cplx_EvalStrDBL( ptr, calcflag );
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		regX = CB_Cplx_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_Cplx_EvalStrDBL( ptr, calcflag );
+	regX = tmpX;
+	return result;
 }
 complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
+	complex result;
+	complex tmpX = regX;
 	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
 	if ( ErrorNo ) return Int2Cplx(0);
-	return CB_Cplx_EvalStrDBL2( ptr, calcflag );
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		regX = CB_Cplx_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_Cplx_EvalStrDBL2( ptr, calcflag );
+	regX = tmpX;
+	return result;
 }
 
 int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
+	int result;
+	int tmpintX = regintX;
 	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
 	if ( ErrorNo ) return 0;
-	return CB_EvalStrInt( ptr, calcflag );
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		regX.real = CB_EvalInt(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_EvalStrInt( ptr, calcflag );
+	regintX = tmpintX;
+	return result;
 }
 int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
+	int result;
+	int tmpintX = regintX;
 	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
 	if ( ErrorNo ) return 0;
 	if ( calcflag == 0 ) return 0;
-	return CB_EvalStrInt2( ptr, calcflag );
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		regX.real = CB_EvalInt(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_EvalStrInt2( ptr, calcflag );
+	regintX = tmpintX;
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------

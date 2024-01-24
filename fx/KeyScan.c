@@ -100,6 +100,7 @@ int KeyScanDownAC(){
 	int n,s,t;
 	n=Waitcount;
 	if ( n<=0 ) return KeyScanDown(KEYSC_AC) ;
+	if ( n>1  ) n*=BREAKCOUNT;
 	if ( IsSH3==0 ) n*=5;	// SH4 adjust
 	while ( n ) {
 		result = KeyScanDown(KEYSC_AC);

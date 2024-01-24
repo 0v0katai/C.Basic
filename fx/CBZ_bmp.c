@@ -247,7 +247,7 @@ int CB_GetOprand_XY1XY2( char *SRC, int *x1, int *y1, int *x2, int *y2 ) {
 
 void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	char fname[32],sname[16];
-	int c,i,reg,matsize;
+	int c,d,i,reg,matsize;
 	char* FilePtr;
 	int check=0;
 	int width,height;
@@ -311,7 +311,7 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	c =SRC[ExecPtr];
-	if ( ( c == 0x7F ) || ( SRC[ExecPtr] == 0x40 ) ) {	//	BmpSave "TEST.bmp",Mat A[,Q]
+	if ( ( c == 0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) ) ) {	//	BmpSave "TEST.bmp",Mat A[,Q]
 		FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
 		dimA =MatAry[reg].SizeA;
 		dimB =MatAry[reg].SizeB;

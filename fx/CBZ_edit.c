@@ -2073,9 +2073,9 @@ int CB_BreakStop() {
 }
 
 //----------------------------------------------------------------------------------------------
-int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte

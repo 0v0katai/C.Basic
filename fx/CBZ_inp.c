@@ -12,7 +12,15 @@
 //int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
-
+void RoundZero( double num, int digit ){	// dummy
+	if ( num < pow(10,-digit) ) num=0;
+}
+double RoundSub( double fabsnum, int digit ){
+	double	tmp,num;
+	tmp=pow(10,digit);
+	num=floor(fabsnum*tmp+.5)/tmp;
+	return num;
+}	
 double Round( double num, int round_mode, int digit){
 	int minus=0,exp,ex2;
 	double fabsnum=fabs(num),tmp,tmp2,tmp3,exf;
@@ -22,9 +30,7 @@ double Round( double num, int round_mode, int digit){
 	switch ( round_mode ) {
 		case Fix: // fix
 			if (fabsnum<1e15) {
-				tmp=pow(10,digit);
-				num=floor(fabsnum*tmp+.5)/tmp;
-				fabsnum=num;
+				num=RoundSub( fabsnum, digit );
 				if ( minus ) num=-num;
 			}
 			break;
@@ -39,8 +45,7 @@ double Round( double num, int round_mode, int digit){
 			if ( exf > 0 ) exp++;
 			exf=pow(10,exp);
 			tmp=fabsnum/exf;
-			tmp2=pow(10,digit);
-			tmp3=floor(tmp*tmp2+.5)/tmp2;
+			tmp3=RoundSub( fabsnum, digit );
 			num=tmp3*exf;
 			if ( minus ) num=-num;
 			break;
@@ -3332,5 +3337,9 @@ complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV
 }
 //---------------------------------------------------------------------------------------------- align dummy
 int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte

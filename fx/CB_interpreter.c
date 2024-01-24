@@ -144,6 +144,7 @@ int CB_interpreter_sub( char *SRC ) {
 	int dspflagtmp2;
 	int c,j;
 	int excptr;
+	int breakcount=BREAKCOUNT;
 
 	int StackGosubAdrs[StackGosubMax];
 	
@@ -192,10 +193,13 @@ int CB_interpreter_sub( char *SRC ) {
 		if ( ( c==':'  ) || ( c==0x0D )|| ( c==0x20 ) ) {
 				c=SRC[ExecPtr++];
 				while ( ( c==0x0D ) || ( c==0x20 ) ) c=SRC[ExecPtr++];
-				if ( BreakCheck )if ( KeyScanDownAC() ) {	// [AC] break?
-					KeyRecover();
-					if ( BreakPtr == 0 ) BreakPtr=ExecPtr-1;
-				}
+				if  ( breakcount==0 ) {
+					if ( ( BreakCheck ) && ( KeyScanDownAC() ) ) {	// [AC] break?
+						KeyRecover();
+						if ( BreakPtr == 0 ) BreakPtr=ExecPtr-1;
+					} 
+					breakcount=BREAKCOUNT;
+				} else breakcount--;
 		}
 		if ( c==0x00 ) { ExecPtr--;
 			if ( ProgEntryN ) return -1;
@@ -2929,11 +2933,11 @@ void  CB_Input( char *SRC ){
 }
 //----------------------------------------------------------------------------------------------
 int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

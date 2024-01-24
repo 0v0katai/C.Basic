@@ -1429,6 +1429,6 @@ void CB_Wait( char *SRC ) {
 //-----------------------------------------------------------------------------
 //int EvalIntObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 int EvalIntObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int EvalIntObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
