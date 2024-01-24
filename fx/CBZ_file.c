@@ -3526,8 +3526,8 @@ int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte

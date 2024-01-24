@@ -128,9 +128,9 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 			case FileCMD_EDIT:
 				run=2;
+				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 			  bejmp1:
 				ExecPtr=0;
-				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 				if ( i==0 )	{
 				  bejmp2:
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
