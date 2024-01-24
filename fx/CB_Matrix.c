@@ -2349,11 +2349,10 @@ int CB_ListCalc( char *SRC ) { //	List 1 -> List 2  etc
 	double	*dptr, *dptr2;
 	
 	reg=ListRegVar( SRC );
+	if ( reg<0 ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	c =SRC[ExecPtr];
 	if ( c == 0x0E ) {	// ->
-		if ( reg>=0 ) {
-			if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
-		} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 		ExecPtr++;
 		c =SRC[ExecPtr];
 		if ( c != 0x7F ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
@@ -3990,7 +3989,7 @@ void Mat_inverse( int ansreg ) {
 
 	ErrorNo=0;
 	if ( ( sizeA > 255 ) || ( sizeA == 0 ) || ( sizeA != MatAry[ansreg].SizeB ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-
+/*
 	if ( sizeA==1 ) {
 		tmp = frecip( ReadMatrix( ansreg, base+0, base+0 ) );
 		if ( ErrorNo ) return ;
@@ -4010,7 +4009,7 @@ void Mat_inverse( int ansreg ) {
 		WriteMatrix( ansreg, base+1, base+1, a*tmp );
 		return ;
 	}
-
+*/
 	for ( y=base; y<N; y++ ){
 		b=0.0; pvrow = y;
 		for(i = y ; i < N; i++){
@@ -4074,14 +4073,13 @@ void Cplx_Mat_inverse( int ansreg ) {
 
 	ErrorNo=0;
 	if ( ( sizeA > 255 ) || ( sizeA == 0 ) || ( sizeA != MatAry[ansreg].SizeB ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-
+/*
 	if ( sizeA==1 ) {
 		tmp = Cplx_frecip( Cplx_ReadMatrix( ansreg, base+0, base+0 ) );
 		if ( ErrorNo ) return ;
 		Cplx_WriteMatrix( ansreg, base+0, base+0, tmp );
 		return ;
 	}
-/*
 	if ( sizeA==2 ) {
 		a =  Cplx_ReadMatrix( ansreg, base+0, base+0 );
 		b =  Cplx_ReadMatrix( ansreg, base+0, base+1 );
@@ -4783,28 +4781,28 @@ int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M0( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MA( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MB( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MC( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MD( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4ME( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MF( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MG( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MH( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MI( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MJ( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MK( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4ML( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MM( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MN( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MO( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MU( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MV( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MA( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MB( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MC( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MD( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4ME( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MF( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MG( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MH( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MI( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MJ( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MK( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4ML( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MM( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MN( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MO( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MU( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MV( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4MW( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 

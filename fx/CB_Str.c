@@ -522,33 +522,6 @@ void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) {
 //----------------------------------------------------------------------------------------------
 // Casio Basic
 //----------------------------------------------------------------------------------------------
-int CB_IsStr( char *SRC, int execptr ) {
-	int c=SRC[execptr];
-	if ( c == 0x22 ) {	// String
-		return 1;
-	} else
-	if ( c=='$' ) {	// Mat String
-		return 2;
-	} else
-	if ( c == 0xFFFFFFF9 ) {	// Str
-		c=SRC[execptr+1];
-		if ( c == 0x30 ) return c;	// StrJoin(
-		else
-		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
-		else
-		if ( ( 0x34 <= c ) && ( c <= 0x49 ) ) return c;
-		else
-		if ( c == 0x4D ) return c;	// StrSplit
-		else
-		if ( c == 0x1B ) return c;	// fn
-	} else
-	if ( c == 0x7F ) {
-		c=SRC[execptr+1];
-		if ( c == 0xFFFFFFF0 )  return c;	// GraphY
-	}
-	return 0;
-}
-
 void DeleteStrBuffer(){
 	int i;
 	DeleteMatrix( Mattmp_strBuffer );
@@ -586,6 +559,100 @@ char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 	buffer=MatrixPtr( reg, dimA, dimB );
 	return buffer;
 }
+
+int SearchListnameSub( char *name ) {
+	int reg,j,len;
+	len = strlen( name ) +1;
+	for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
+		for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break; 
+		if ( j==len ) return reg;	// matching!
+	}
+	for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
+		for( j=0; j<len; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
+		if ( j==len ) return reg;	// matching!
+	}
+	return -1;	// not matching!
+}
+
+int IsStrList( char *SRC, int flag ) {	// List n[0]?
+	char *buffer;
+	int reg,dimA,base;
+	int c=CB_IsStr( SRC, ExecPtr );
+	switch ( c ) {
+		case 0x3F:	// List Str 1[0?
+			reg=defaultStrAry;
+			ExecPtr+=2;
+			buffer = GetStrYFnPtr( SRC, reg, defaultStrAryN+1-MatBase, defaultStrArySize );
+			reg = SearchListnameSub( buffer );	// string
+			goto strj;
+		case 1:		//	List "ABS"[0?
+			reg = SearchListname( SRC );	// string
+		  strj:
+			if ( reg<0 ) {
+				for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
+					if ( MatAry[reg].SizeA == 0 ) goto brkexit;
+				}
+				for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
+					if ( MatAry[reg].SizeA == 0 ) goto brkexit;
+				}
+				{ CB_Error(MemoryERR); return 0; }  // memory error
+			}
+		  brkexit:
+			break;
+		case 0:		// List n[0?
+			reg=ListRegVar( SRC );
+			break;
+	}
+	if ( reg<0 ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( SRC[ExecPtr] == '[' ) { ExecPtr++;
+		if ( MatAry[reg].SizeA == 0 ) base=MatBase; else base=MatAry[reg].Base;
+		dimA = CB_EvalInt( SRC );
+		if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
+		if ( dimA >= base ) return -1;  // no string
+		return reg+1;
+	}
+	if ( c==0 ) {
+		if ( flag==0 ) return 0;	// List 1 (no string)
+		reg |= 0x10000;
+	}
+	return reg+1;
+}
+
+int CB_IsStr( char *SRC, int execptr ) {
+	int c=SRC[execptr],extmp,f;
+	if ( c == 0x22 ) {	// String
+		return 1;
+	} else
+	if ( c=='$' ) {	// Mat String
+		return 2;
+	} else
+	if ( c == 0xFFFFFFF9 ) {	// Str
+		c=SRC[execptr+1];
+		if ( c == 0x30 ) return c;	// StrJoin(
+		else
+		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
+		else
+		if ( ( 0x34 <= c ) && ( c <= 0x49 ) ) return c;
+		else
+		if ( c == 0x4D ) return c;	// StrSplit
+		else
+		if ( c == 0x1B ) return c;	// fn
+	} else
+	if ( c == 0x7F ) {
+		c=SRC[execptr+1];
+		if ( c == 0xFFFFFFF0 )  return c;	// GraphY
+		else
+		if ( c == 0x51 ) {	// List [0]?
+			extmp = ExecPtr;
+			ExecPtr+=2;
+			f = IsStrList( SRC, 0 );
+			ExecPtr = extmp;
+			if ( f>0 ) return 0x7F51;
+		}
+	}
+	return 0;
+}
+
 
 char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 	int c,d,n;
@@ -710,6 +777,17 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			ExecPtr+=2;
 			(*maxlen)=CB_StrSplit( SRC );
 			return CB_CurrentStr;
+		case 0x7F51:// List [0]
+			ExecPtr+=2;
+			reg = ( IsStrList( SRC, 0 )-1 ) & 0xFFFF;
+			if ( reg<0 ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+			if ( MatAry[reg].SizeA == 0 ) { 
+				DimMatrixSub( reg, DefaultElemetSize(), 1, 1, MatBase );	// new matrix
+				if ( ErrorNo ) return 0; // error
+			}
+			CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;
+			memcpy( CB_CurrentStr, MatAry[reg].name, 8);
+			return CB_CurrentStr;
 		default:
 			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
 	}
@@ -783,30 +861,16 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 }
 
 void StorStrList0( char *SRC ) {	// "String" -> List n[0]	->List "ABS"   ->List Str1
-	char name[10];
-	int reg,dimA,base;
-	int c=CB_IsStr( SRC, ExecPtr );
-	if ( c ) {	//	->List "ABS"   ->List Str1
-		reg = SearchListname( SRC );	// string
-		if ( reg>=0 ) return ;
-		for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
-			if ( MatAry[reg].SizeA == 0 ) goto newlist;
-		}
-		for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
-			if ( MatAry[reg].SizeA == 0 ) goto newlist;
-		}
-		{ CB_Error(MemoryERR); return; }  // memory error
+	int reg,reg2=0;
+	int exbuf;
+	reg = IsStrList( SRC, 1 )-1;
+	if ( reg<0 ) { CB_Error(ArgumentERR); return; }  // Argument error
+	if ( reg>=0x10000 ) reg2=1;
+	reg &= 0xFFFF;
+	if ( reg2 ) {
+		reg2 = SearchListnameSub( CB_CurrentStr );	// string
+		if ( ( reg2>0 ) && ( reg2 != reg ) ) { CB_Error(DuplicateDefERR); return; }  // Duplicate Def error
 	}
-	reg=ListRegVar( SRC );
-	if ( reg<0 ) { CB_Error(SyntaxERR); return ; }  // Syntax error
-	if ( SRC[ExecPtr]=='[' ) {
-		ExecPtr++;
-		dimA = CB_EvalInt( SRC );
-		if ( MatAry[reg].SizeA == 0 ) base=MatBase; else base=MatAry[reg].Base;
-		if ( dimA >= base ) { CB_Error(ArgumentERR); return; }  // Argument error
-		if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
-	}
-  newlist:
 	if ( MatAry[reg].SizeA == 0 ) { 
 		DimMatrixSub( reg, DefaultElemetSize(), 1, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
@@ -885,16 +949,14 @@ void CB_StorStr( char *SRC ) {
 			ExecPtr+=2;
 			StorStrGraphY( SRC ) ;
 			break;
+		case 0x7F51:		// List [0]
+		ListStrj:
+			ExecPtr+=2;
+			StorStrList0( SRC ) ;
+			break;
 		default:
-			c=SRC[ExecPtr];
-			if ( c == 0x7F ) {
-				c=SRC[ExecPtr+1];
-				if ( c == 0x51 ) {	// List [0]?
-					ExecPtr+=2;
-					StorStrList0( SRC ) ;
-					return;
-				}
-			} else { CB_Error(SyntaxERR); return ; }  // Syntax error
+			if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) goto ListStrj;	// "ABCD"->List 1
+			CB_Error(SyntaxERR);  // Syntax error
 	}
 }
 
