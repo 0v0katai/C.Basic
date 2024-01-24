@@ -123,8 +123,6 @@ int MCS_Save( char *filebase, char *dirname, char *itemname, int size, int flag0
 	r = MCS_SearchDirectoryItem( (unsigned char *)dirname, (unsigned char *)itemname, &flags_0, (TDirectoryItem *)&tmp, &data_ptr, &data_length );
 	item = (TDirectoryItem*)tmp[0];
 
-	size = ( ( size +10 +3 ) & 0xFFFFFFFC ) ; // file size 4byte align adjust
-
 	if ( data_length == size ) {
 		r = MCS_OverwriteData( (unsigned char *)dirname, (unsigned char *)itemname, 0, data_length, filebase+0x56-10 );
 	} else {
@@ -152,6 +150,7 @@ int MCS_SaveG1M( char *filebase ) {	// g1m file -> MCS
 
 	G1MHeaderTobasname8( filebase, basname);
 	size = FixSrcSize(filebase);
+	size = ( ( size +10 +3 ) & 0xFFFFFFFC ) ; // file size 4byte align adjust
 	r = MCS_Save( filebase, (char*)MCSdir_system, basname, size, 0xC7 ) ;	// g1m file -> MCS
 	return r;
 }

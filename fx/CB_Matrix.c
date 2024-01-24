@@ -2380,7 +2380,7 @@ int CB_ListCalc( char *SRC ) { //	List 1 -> List 2  etc
 			if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 			if ( dimA < MatAry[reg].Base ) {		// List 1[0]->"ABCDEF"
 				CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;
-				memcpy( CB_CurrentStr, MatAry[reg].name, 8);
+				memcpy( CB_CurrentStr, MatAry[reg].name, 9);
 				CB_StrPrint( SRC , 0 ) ;
 				return 0;
 			}
