@@ -35,6 +35,7 @@ int CPU_check(void);
 void * HiddenRAM(void);
 void * HiddenRAM_mallocMat( size_t size );
 void * HiddenRAM_mallocProg( size_t size );
+unsigned char *  HiddenRAM_mallocPict( int pictNo );
 void HiddenRAM_freeProg( void *ptr );
 void HiddenRAM_freeMat( int reg );
 void HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
@@ -73,3 +74,5 @@ void MSG1(char*);
 void MSG2(char*, char*);
 void MSGpop(void);
 
+void ProgressBarPopUp( char *buffer, char *buffer2 ) ;
+void ProgressBar(int current, int max) ;

@@ -526,8 +526,10 @@ void CB_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 //int ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 void PlotXYtoPrevPXY() {
-//		Previous_X=Plot_X;
-//		Previous_Y=Plot_Y;
+		Previous_X = Previous_X2;
+		Previous_Y = Previous_Y2;
+		Previous_X2= Plot_X;
+		Previous_Y2= Plot_Y;
 		VWtoPXY( Plot_X, Plot_Y, &Previous_PX, &Previous_PY );
 }
 void PlotPreviousPXY() {
@@ -625,13 +627,27 @@ void WriteVram( unsigned char *pDATA ){
 	Bdisp_WriteGraph_VRAM(&Gpict);
 }
 
-void StoPictSmem( int pictNo){
-	unsigned char pict[2048+0x4C+4];
+void StoPictSmemSub( unsigned char *pict, int pictNo ){	//
 	int i,stat;
-	ReadVram(pict+0x4C);
 	for(i=1024+0x4c; i<2048+0x4c+2; i++) pict[i]=0;
 	stat=SavePicture( (char *)pict, pictNo );
 	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
+}
+void StoPictSmem( int pictNo){	//
+	unsigned char pict[2048+0x4C+4];
+	int i,stat;
+	ReadVram(pict+0x4C);
+	StoPictSmemSub( pict, pictNo );
+}
+
+void StoPictHeap2Smem( int pictNo ){	// heap Pict -> SMEM Pict
+	unsigned char pict[2048+0x4C+4];
+	unsigned char *pict2;
+	pict2 = PictAry[pictNo];	//  heap mode
+	if ( pict2 != NULL ) { //
+		memcpy(pict+0x4C, pict2, 1024);
+		StoPictSmemSub( pict, pictNo );
+	}
 }
 
 void RclPictSmem( int pictNo){
@@ -643,19 +659,6 @@ void RclPictSmem( int pictNo){
 	free(pict);
 }
 
-unsigned char * GetheapPict(){
-	unsigned char *pict;
-	if ( PictbaseCount >= PictbaseCountMAX ) {
-		if ( PictbasePtr < PictbaseMAX ) Pictbase[++PictbasePtr] = (unsigned char *) malloc( 1024 * PictbaseMAX +4 );
-		else { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
-		if( Pictbase[PictbasePtr] == NULL ) { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
-		PictbaseCount=0;
-	}
-	pict = Pictbase[PictbasePtr] + 1024 * PictbaseCount;
-	PictbaseCount++;
-	return pict;
-}
-
 void StoPict( int pictNo){
 	int i,stat;
 	unsigned char *pict;
@@ -663,11 +666,12 @@ void StoPict( int pictNo){
 	if ( PictMode == 0 ) { StoPictSmem(pictNo); return; }	// strage memory mode
 	
 	if ( PictAry[pictNo] == NULL ) { //
-		PictAry[pictNo] = GetheapPict() ;						// New Pict array ptr*
+		PictAry[pictNo] = HiddenRAM_mallocPict(pictNo) ;						// New Pict array ptr*
 		if ( ErrorNo ) return;
 	}
 	pict = PictAry[pictNo];	//  heap mode
 	ReadVram(pict);
+	if ( PictMode == 2 ) StoPictHeap2Smem( pictNo );	// heap Pict -> SMEM Pict
 }
 
 void RclPict( int pictNo, int errorcheck){
@@ -689,7 +693,7 @@ void RclPict( int pictNo, int errorcheck){
 			ErrorNo=0;
 			return;
 		}
-		pict = GetheapPict() ;						// Pict array ptr*
+		pict = HiddenRAM_mallocPict(pictNo) ;						// Pict array ptr*
 		if ( pict != NULL ) {
 			PictAry[pictNo] = pict;			//  heap mode pict
 			memcpy(pict, pict2+0x4C, 1024 );
@@ -706,11 +710,21 @@ void RclPict( int pictNo, int errorcheck){
 }
 
 void CB_StoPict( char *SRC ) { //	StoPict
-	int n;
+	int n,f=0;
+	int pictmode=PictMode;
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+	if ( SRC[ExecPtr]=='#' ) {
+		ExecPtr++;
+		f=1;
+	}
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	StoPict(n);
+	if ( ( f ) && ( PictMode == 1 ) ) {
+		PictMode = 0 ;
+		StoPict(n);
+		PictMode=pictmode;
+	}
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 void CB_RclPict( char *SRC ) { //	RclPict

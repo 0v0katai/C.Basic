@@ -37,6 +37,7 @@ char * MB_CopyToHeap(char *src) ;
 
 void GetFKeyIconPointer( int FKeyNo, unsigned char *pBitmap );
 void DisplayFKeyIcon( int FKeyPos, unsigned char *pBitmap );
+void GUI_ProgressBar( int current, int max);
 
 //------------------------------------------------------- MCS
 typedef struct {

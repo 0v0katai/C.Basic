@@ -32,7 +32,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.53\xE6\x41";
+const char VerMSG[]="C.Basic  v1.54\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -911,8 +911,8 @@ int SetupG(int select){		// ----------- Setup
     const char *mode[]    ={"DBL#","INT%"};
     const char *Matmode[]    ={"[m,n]","[X,Y]"};
     const char *Matbase[]    ={"0","1"};
-    const char *Pictmode[]    ={"S.Mem","Heap"};
-    const char *PictmodeSD[]  ={"SDcard ","Heap"};
+    const char *Pictmode[]    ={"S.Mem","Heap","Both"};
+    const char *PictmodeSD[]  ={"SDcard ","Heap","Both"};
     const char *Stragemode[]  ={"S.Mem","SDcard "};
     const char *DDmode[]    ={"off","Grph","All"};
 	char buffer[22];
@@ -1163,6 +1163,7 @@ int SetupG(int select){		// ----------- Setup
 			case SETUP_Pictmode: // Pict mode
 				if ( StorageMode ) Fkey_dispN( FKeyNo1, " SD "); else Fkey_dispN( FKeyNo1, "MEM ");
 				Fkey_dispN( FKeyNo2, "Heap");
+				Fkey_dispN( FKeyNo3, "Both");
 				break;
 			case SETUP_Storagemode: // Strage mode
 				Fkey_dispN( FKeyNo1, "MEM ");
@@ -1454,6 +1455,9 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 2 ; // graphics+text
+						break;
+					case SETUP_Pictmode: // Pict mode
+						PictMode = 2 ; // Memory(read) & Smem(save) mode
 						break;
 					case SETUP_DATE: // DATE day
 						day = (DateStr[8]-'0')*10+(DateStr[9]-'0');

@@ -115,7 +115,8 @@ double EvalFxDbl( FXPTR fxptr, double result ) {
 
 typedef double (*FXPTR2)( double x, double y );
 double EvalFxDbl2( FXPTR2 fxptr2, int *resultflag, int *resultreg, double result, double tmp ) { 
-	int i,j,k,sum;
+	double sum;
+	int i,j,k;
 	int colA,rowB;
 	int base;
 	int tmpreg58=58;	// Mattmpreg
