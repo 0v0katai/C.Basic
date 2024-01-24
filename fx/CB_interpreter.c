@@ -2900,7 +2900,8 @@ void  CB_Input( char *SRC ){
 
 	KeyRecover();
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
-	CB_SelectTextDD();	// Select Text Screen
+	CB_ChangeTextMode( SRC ) ;
+//	CB_SelectTextDD();	// Select Text Screen
 	if ( CursorX==22 ) CursorX=1;
 	if ( CursorX==23 ) Scrl_Y();
 	
