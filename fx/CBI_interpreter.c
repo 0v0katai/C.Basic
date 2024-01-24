@@ -282,7 +282,7 @@ void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	ExecPtr+=2;
 	StackFor->IntEnd[StackFor->Ptr] = CBint_Eval( SRC );
 	c=SRC[ExecPtr];
-	if ( ( c == 0xF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
+	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 		ExecPtr+=2;
 		StackFor->IntStep[StackFor->Ptr] = CBint_Eval( SRC );
 	} else {
@@ -293,6 +293,7 @@ void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	CurrentStruct->loop[CurrentStruct->CNT]=1;
 	CurrentStruct->CNT++;
 }
+
 void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	int step,end;
 	if ( StackFor->Ptr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
