@@ -1,5 +1,5 @@
 #define LISTMAX 52
-#define MATARY_MAX 26+6+LISTMAX+26+1	// add vctx26
+#define MATARY_MAX 26+6+LISTMAX+26+1+3	// add vctx26	+ StrBuffer + traceAry + ClipBuffer
 //extern int	MatAryMaxbyte[MatAryMax];		// Matrix array max memory size
 //extern char	MatAryBase[MatAryMax]			// Matrix array base 0 or 1
 //extern char	MatAryElementSize[MatAryMax];	// Matrix array word size
@@ -21,6 +21,11 @@ extern int MatAryMax;
 extern matary *MatAry;
 extern short ExtListMax;		// List Max number
 extern short Mattmpreg;		//
+
+#define Mattmp_StrBuffer   Mattmpreg-1
+#define Mattmp_traceAry    Mattmpreg-2
+#define Mattmp_ClipBuffer  Mattmpreg-3
+
 
 extern char	MatBaseDefault;
 extern char	MatBase;

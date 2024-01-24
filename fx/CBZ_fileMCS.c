@@ -14,8 +14,8 @@ int MCS_ReadFileList() {	// MSC file list -> files
 	int size;
 
 	r = MCS_SearchDirectory( MCSdir_system, (TMainMemoryDirectoryEntry *)&tmp, dirno );
-	if ( r == 0x40 ) { ErrorMSG( "Can't find MCSdir_system", r); return 0; }
-	if ( r != 0    ) { ErrorMSG( "MCS MCSdir_system error",  r); return 0; }
+	if ( r == 0x40 ) { ErrorMSG( "Can't find MCS", r); return 0; }
+	if ( r != 0    ) { ErrorMSG( "MCS error",  r); return 0; }
 
 	pMCSdir_system = (TMainMemoryDirectoryEntry *)tmp[0];
 	item = (TDirectoryItem*)pMCSdir_system->addr;

@@ -1,14 +1,16 @@
 extern char  *CB_CurrentStr;	//
 extern char  *CB_CurrentStr2;	//
 
-#define CB_StrBufferCNTMax 8
-#define CB_StrBufferMax 256
+#define CB_StrBufferCNTMax 10
+#define CB_StrBufferMax defaultStrArySize
+//#define CB_StrBufferMax 256
 extern char   CB_StrBufferCNT;
+extern int   CB_StrBufferMax;
 extern char  *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 extern char   defaultStrAry;
 extern short  defaultStrAryN;
-extern short  defaultStrArySize;
+extern int    defaultStrArySize;	// =CB_StrBufferMax
 
 extern char   defaultFnAry;
 extern char   defaultFnAryN;

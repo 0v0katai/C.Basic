@@ -52,11 +52,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	AliasVarCodeMat  =(ALIAS_VAR *)((char*)AliasVarCode   + sizeof(ALIAS_VAR)*ALIASVARMAX );
 	AliasVarCodeLbl  =(ALIAS_VAR *)((char*)AliasVarCodeMat+ sizeof(ALIAS_VAR)*ALIASVARMAXMAT );
 
-	traceAry         = (double *)((char*)AliasVarCodeLbl+ sizeof(ALIAS_VAR)*ALIASVARMAXLBL );		// 130*8+4 ;
-	ClipBuffer       = (char *)((char*)traceAry+130*8+4 );
-	CB_StrBuffer	 = (char *)ClipBuffer+ ClipMax;		//[CB_StrBufferCNTMax][CB_StrBufferMax]
-	HiddenRAM_Top    = (char *)CB_StrBuffer+ ( CB_StrBufferCNTMax * CB_StrBufferMax ) ;		// Heap RAM TOP
-	
 	HiddenRAM_MatAryInit();	// RAM Initialize
 	
 	if ( StorageMode & 1 ) StorageMode = CheckSD() | ( StorageMode & 1) ; // SD mode
@@ -102,7 +97,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 //			case KEY_CTRL_EXE:
 				if ( ForceReturnMode & 2 ) ForceReturn=1;
 		runjp:
-				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
+				i=LoadProgfile( filename, 0, EditMaxProg, 1 ) ;
 				if ( i==0 )	{
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
 					ExecPtr=0;
