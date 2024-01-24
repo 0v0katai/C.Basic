@@ -433,6 +433,7 @@ const short oplistPRGM[]={
 		0xF700,	// If
 		0xF701,	// Then
 		0xF702,	// Else
+		0xF70F,	// ElseIf
 		0xF703,	// IfEnd
 		0xF704,	// For
 		0xF705,	// To
@@ -442,6 +443,11 @@ const short oplistPRGM[]={
 		0xF709,	// WhileEnd
 		0xF70A,	// Do
 		0xF70B,	// LpWhile
+		
+		0xF7EA,	// Switch
+		0xF7EB,	// Case
+		0xF7EC,	// Default
+		0xF7ED,	// SwitchEnd
 		
 		0xED,	// Prog
 		0xF70C,	// Return
@@ -742,7 +748,7 @@ const short oplistCMD[]={
 		0xF703,	// IfEnd		6
 		0xE2,	// Lbl			7
 		0xEC,	// Goto			8
-		0x27,	// '
+		0xF70F,	// ElseIf
 		0x7E,	// ~
 		0x23,	// #
 		0x25,	// %
@@ -795,13 +801,13 @@ const short oplistCMD[]={
 		0xF70E,	// Stop			3
 		0x7F8F,	// Getkey		4
 		0xED,	// Prog			5
-		0xFFFF,	// 				-
+		0xF7EA,	// Switch
+		0xF7EB,	// Case
+		0xF7EC,	// Default
+		0xF7ED,	// SwitchEnd
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
-		0xFFFF,	// 				-
-		0x23,	// #
-		0x25,	// %
 
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
@@ -1099,7 +1105,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[1]=opcode&0xFF;
 		string[2]='\0';
 	} else
-	if ( opcode == 0x7F87 ) {
+	if ( opcode == 0x7F87 ) {	// RanInt#(
 		string[0]='R';
 		string[1]='a';
 		string[2]='n';
@@ -1110,14 +1116,14 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[7]='(';
 		string[8]='\0';
 	} else
-	if ( opcode == 0x7F3A ) {
+	if ( opcode == 0x7F3A ) {	// MOD(
 		string[0]='M';
 		string[1]='O';
 		string[2]='D';
 		string[3]='(';
 		string[4]='\0';
 	} else
-	if ( opcode == 0x7FB4 ) {
+	if ( opcode == 0x7FB4 ) {	// Xor
 		string[0]=' ';
 		string[1]='X';
 		string[2]='o';
@@ -1125,7 +1131,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[4]=' ';
 		string[5]='\0';
 	} else
-	if ( opcode == 0xF94B ) {
+	if ( opcode == 0xF94B ) {	// DotPut(
 		string[0]='D';
 		string[1]='o';
 		string[2]='t';
@@ -1135,7 +1141,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[6]='(';
 		string[7]='\0';
 	} else
-	if ( opcode == 0xF73F ) {
+	if ( opcode == 0xF73F ) {	// DotGet(
 		string[0]='D';
 		string[1]='o';
 		string[2]='t';
@@ -1145,7 +1151,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[6]='(';
 		string[7]='\0';
 	} else
-	if ( opcode == 0xF74F ) {
+	if ( opcode == 0xF74F ) {	// DotTrim(
 		string[0]='D';
 		string[1]='o';
 		string[2]='t';
@@ -1156,7 +1162,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[7]='(';
 		string[8]='\0';
 	} else
-	if ( opcode == 0xF7E0 ) {
+	if ( opcode == 0xF7E0 ) {	// DotLife(
 		string[0]='D';
 		string[1]='o';
 		string[2]='t';
@@ -1167,7 +1173,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[7]='(';
 		string[8]='\0';
 	} else
-	if ( opcode == 0xF7E1 ) {
+	if ( opcode == 0xF7E1 ) {	// Rect
 		string[0]='R';
 		string[1]='e';
 		string[2]='c';
@@ -1175,7 +1181,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[4]=' ';
 		string[5]='\0';
 	} else
-	if ( opcode == 0xF7E2 ) {
+	if ( opcode == 0xF7E2 ) {	// FillRect(
 		string[0]='F';
 		string[1]='i';
 		string[2]='l';
@@ -1187,7 +1193,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[8]=' ';
 		string[9]='\0';
 	} else
-	if ( opcode == 0xF7E3 ) {
+	if ( opcode == 0xF7E3 ) {	// LocateYX
 		string[0]='L';
 		string[1]='o';
 		string[2]='c';
@@ -1199,7 +1205,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[8]=' ';
 		string[9]='\0';
 	} else
-	if ( opcode == 0xF7E8 ) {
+	if ( opcode == 0xF7E8 ) {	// ReadGraph(
 		string[0]='R';
 		string[1]='e';
 		string[2]='a';
@@ -1212,7 +1218,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[9]='(';
 		string[10]='\0';
 	} else
-	if ( opcode == 0xF7E9 ) {
+	if ( opcode == 0xF7E9 ) {	// WriteGraph
 		string[0]='W';
 		string[1]='r';
 		string[2]='i';
@@ -1225,6 +1231,58 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[9]='h';
 		string[10]=' ';
 		string[11]='\0';
+	} else
+	if ( opcode == 0xF70F ) {	// ElseIf
+		string[0]='E';
+		string[1]='l';
+		string[2]='s';
+		string[3]='e';
+		string[4]='I';
+		string[5]='f';
+		string[6]=' ';
+		string[7]='\0';
+	} else
+	if ( opcode == 0xF7EA ) {	// Switch
+		string[0]='S';
+		string[1]='w';
+		string[2]='i';
+		string[3]='t';
+		string[4]='c';
+		string[5]='h';
+		string[6]=' ';
+		string[7]='\0';
+	} else
+	if ( opcode == 0xF7EB ) {	// Case
+		string[0]='C';
+		string[1]='a';
+		string[2]='s';
+		string[3]='e';
+		string[4]=' ';
+		string[5]='\0';
+	} else
+	if ( opcode == 0xF7EC ) {	// Default
+		string[0]='D';
+		string[1]='e';
+		string[2]='f';
+		string[3]='a';
+		string[4]='u';
+		string[5]='l';
+		string[6]='t';
+		string[7]=' ';
+		string[8]='\0';
+	} else
+	if ( opcode == 0xF7ED ) {	// SwitchEnd
+		string[0]='S';
+		string[1]='w';
+		string[2]='i';
+		string[3]='t';
+		string[4]='c';
+		string[5]='h';
+		string[6]='E';
+		string[7]='n';
+		string[8]='d';
+		string[9]=' ';
+		string[10]='\0';
 	} else
 	if ( opcode == 0xF7F0 ) {
 		string[0]='D';

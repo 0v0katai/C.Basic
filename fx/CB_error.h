@@ -53,7 +53,12 @@ extern int ErrorNo;
 #define ArraySizeERR 45
 #define NotfoundProgERR 46
 #define TooManyProgERR 47
-#define ThenWithoutIfERR 48
+#define IfWithoutIfEndERR 48
+#define ThenWithoutIfERR 49
+#define CaseWithoutSwitchERR 50
+#define DefaultWithoutSwitchERR 51
+#define SwitchWithoutSwitchEndERR 52
+#define SwitchEndWithoutSwitchERR 53
 
 //------------------------------------------------------------------------------
 void ERROR(char *buffer) ;

@@ -18,6 +18,59 @@
 char ClipBuffer[ClipMax+1];
 int Contflag=0;	// Continue mode    0:disable  1:enable
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int PP_errptr;
+
+int PP_Search_IfEnd( char *SRC ){
+	int c,i;
+	int PP_ptr;
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+				return 0 ;
+			case 0x27:	// ' rem
+				Skip_rem(SRC);
+				break;
+			case 0xFFFFFFF7:	// 
+				c=SRC[ExecPtr++];
+				if ( c == 0x00 ) { 			// If
+					PP_ptr=ExecPtr-2;
+					i=PP_Search_IfEnd(SRC) ;
+					if ( ErrorNo ) return;					
+					if ( i != 1  ) { ExecPtr=PP_ptr; CB_Error(IfWithoutIfEndERR); CB_ErrMsg(ErrorNo); return 0; } // not IfEnd error 
+					break;
+				} else
+				if ( c == 0x03 ) return 1 ;	// IfEnd
+				break ;
+			case 0x7F:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+//			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+	return 0;
+}
+
+void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
+	int c=1,i;
+	int execptr=ExecPtr;
+
+	ErrorNo=0;
+	ExecPtr=0;
+	if ( CheckIfEnd ) PP_Search_IfEnd(SRC);
+	if ( ErrorNo ) return;
+	ExecPtr=execptr;
+}
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 
 int SrcSize( char *src ) {
 	int size ;
@@ -531,7 +584,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //	}
 //	GetKey(&key);
 
-	FileBase = ProgfileAdrs[ProgNo];
+
+ 	FileBase = ProgfileAdrs[ProgNo];
 	SrcBase  = FileBase+0x56;
 	offset = ExecPtr;
 	csrPtr = offset;
@@ -738,26 +792,37 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_F6:
 					if ( SearchMode ) break;;
 					Cursor_SetFlashMode(0); 		// cursor flashing off
-					if ( Contflag ) {						// ====== continue mode ======
-						cont=0;
-						ExecPtr=csrPtr;
-						BreakPtr=0;
+					CB_PreProcess( SrcBase ); 
+					if ( ErrorNo ) {
+							offset = ErrorPtr;
+							csrPtr = offset;
+							offset_y=0;
+							run=2; // edit mode
+							if ( dumpflg == 2 ) {
+								for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
+							}
 					} else {
-						stat = CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
-						SaveConfig();
-						FileBase = ProgfileAdrs[ProgNo];
-						SrcBase  = FileBase+0x56;
-						if ( stat ) {
-							if ( ErrorNo ) offset = ErrorPtr ;			// error
-							else if ( BreakPtr ) offset = ExecPtr ;	// break
-						} else offset = 0;
-						if ( stat == -1 ) offset = ExecPtr-1;
-						csrPtr = offset;
-						offset_y=0;
-						run=2; // edit mode
-						if ( dumpflg == 2 ) {
-							for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
-							if ( stat == -1 ) cont=0;	// 
+						if ( Contflag ) {						// ====== continue mode ======
+							cont=0;
+							ExecPtr=csrPtr;
+							BreakPtr=0;
+						} else {
+							stat = CB_interpreter( SrcBase ) ;	// ====== run interpreter ======
+							SaveConfig();
+							FileBase = ProgfileAdrs[ProgNo];
+							SrcBase  = FileBase+0x56;
+							if ( stat ) {
+								if ( ErrorNo ) offset = ErrorPtr ;			// error
+								else if ( BreakPtr ) offset = ExecPtr ;	// break
+							} else offset = 0;
+							if ( stat == -1 ) offset = ExecPtr-1;
+							csrPtr = offset;
+							offset_y=0;
+							run=2; // edit mode
+							if ( dumpflg == 2 ) {
+								for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
+								if ( stat == -1 ) cont=0;	// 
+							}
 						}
 					}
 					key=0;
