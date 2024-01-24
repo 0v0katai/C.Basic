@@ -911,7 +911,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( SrcBase[csrPtr]==0 ) PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 							}
 						} else {	// command select
-							key=SelectOpcode5800P(oplistCMD,&selectCMD);
+							key=SelectOpcode5800P();
 							if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 						}
 					}
@@ -1277,7 +1277,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case KEY_CTRL_PRGM:
 							if ( dumpflg==2 ) {
-								key=SelectOpcode(oplistPRGM,&selectPRGM);
+								key=SelectOpcode( CMDLIST_PRGM );
 								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 							}
 							ClipStartPtr = -1 ;		// ClipMode cancel
@@ -1299,7 +1299,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_OPTN:
 				if ( SearchMode ) break;;
 				if ( dumpflg==2 ) {
-					key=SelectOpcode(oplistOPTN,&selectOPTN);
+					key=SelectOpcode( CMDLIST_OPTN );
 					if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
 				ClipStartPtr = -1 ;		// ClipMode cancel
@@ -1307,7 +1307,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_VARS:
 				if ( SearchMode ) break;;
 				if ( dumpflg==2 ) {
-					key=SelectOpcode(oplistVARS,&selectVARS);
+					key=SelectOpcode( CMDLIST_VARS );
 					if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
 				ClipStartPtr = -1 ;		// ClipMode cancel

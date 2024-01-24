@@ -24,6 +24,11 @@
 #define  LEFT_ALIGN   0
 #define  RIGHT_ALIGN  1
 
+#define  CMDLIST_CMD  0
+#define  CMDLIST_OPTN 1
+#define  CMDLIST_VARS 2
+#define  CMDLIST_PRGM 3
+
 void Fkey_dispN_Aa(int n, char *buffer) ;
 void Fkey_dispN_aA(int n, char *buffer) ;
 
@@ -34,8 +39,8 @@ extern const short oplistVARS[];
 extern const short oplistCMD[];
 
 unsigned int SelectChar( int *ContinuousSelect ) ;
-int SelectOpcode( short *oplist, int *select) ;
-int SelectOpcode5800P( short *oplist, int *select) ;
+int SelectOpcode( int listselect ) ;
+int SelectOpcode5800P() ;
 
 int OpcodeLen( int opcode );
 int OpcodeStrlen(int c);

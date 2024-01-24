@@ -1168,6 +1168,7 @@ int CB_StrDMS( char *SRC ) {
 int DateToStr( char *buffer) {	// "2017/01/17 TUE"
 	int a, y1,y2,y3,y4, m1,m2, d1,d2;
 	char weekStr[7][4]={"SAT","SUN","MON","TUE","WED","THU","FRI"};
+//	char weekStr[7][4]={"SUN","MON","TUE","WED","THU","FRI","SAT"};
 	int	y,m,d,w,C,Y,r;
 
 	a = GetDate();
@@ -1189,6 +1190,7 @@ int DateToStr( char *buffer) {	// "2017/01/17 TUE"
 	Y = y % 100 ;
 	if ( y >= 1582 ) r=5*C+(C/4); else r=6*C+5;
 	w = ( d + (26*(m+1))/10 + Y + (Y/4) + r ) % 7;
+//	w = ( y + y/4 - y/100 + y/400 + (13*m+8)/5 + d ) % 7;
 	
 	buffer[0]=y1+'0';
 	buffer[1]=y2+'0';
