@@ -29,8 +29,8 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.29\xE6\x41";
-#define VERSION 229
+const char VerMSG[]="C.Basic  v2.30\xE6\x41";
+#define VERSION 230
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );
@@ -1313,7 +1313,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 			locate(14, cnt-scrl); Print((unsigned char*)CharSize[EditFontSize & 0x0F ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"HideStatLine:");		// 18
+			locate( 1, cnt-scrl); Print((unsigned char*)"Hide StatBar:");		// 18
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[EditTopLine]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
