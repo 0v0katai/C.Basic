@@ -136,3 +136,4 @@ int CB_Getkey1();
 int CB_Getkey2();
 int CB_GetkeyN( int n) ;			// CasioBasic Getkey 
 
+int BackLight( int n );			// 0:off  1:on   2:xor

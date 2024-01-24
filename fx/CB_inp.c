@@ -622,6 +622,7 @@ const short oplistVARS[]={
 		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
+		0xF7FE,	// BackLight
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -1244,6 +1245,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7EF, "Load(" }, 
 	{ 0xF7F0, "DotShape(" }, 
 	{ 0xF7F1, "Local " }, 
+	{ 0xF7FE, "BackLight " }, 
 	{ 0xF930, "StrJoin(" }, 
 	{ 0xF931, "StrLen(" }, 
 	{ 0xF932, "StrCmp(" }, 

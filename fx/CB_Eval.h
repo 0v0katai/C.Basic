@@ -12,7 +12,6 @@
 extern char ExpBuffer[];
 //-----------------------------------------------------------------------------
 void CheckMathERR( double *result ) ;
-double Eval_atof(char *SRC) ;
 double InputNumD_full(int x, int y, int width, double defaultNum) ;
 double InputNumD_Char(int x, int y, int width, double defaultNum, char code) ;
 double InputNumD_replay(int x, int y, int width, double defaultNum) ;

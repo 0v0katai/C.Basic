@@ -1495,6 +1495,10 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 }
 
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+// C.Basic Pre process
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 void CB_Local( char *SRC ) {
 	int c=1,i,j,st,en;
 	i=0;
@@ -1525,6 +1529,54 @@ void CB_Local( char *SRC ) {
 	ProgLocalN[ProgEntryN-1] = i;
 }
 
+//----------------------------------------------------------------------------------------------
+int PP_Search_IfEnd( char *SRC ){
+	int c,i;
+	int PP_ptr;
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+				return 0 ;
+			case 0x27:	// ' rem
+				Skip_rem(SRC);
+				break;
+			case 0xFFFFFFF7:	// 
+				c=SRC[ExecPtr++];
+				if ( c == 0x00 ) { 			// If
+					PP_ptr=ExecPtr-2;
+					i=PP_Search_IfEnd(SRC) ;
+					if ( ErrorNo ) return;					
+					if ( i != 1  ) { ExecPtr=PP_ptr; CB_Error(IfWithoutIfEndERR); CB_ErrMsg(ErrorNo); return 0; } // not IfEnd error 
+					break;
+				} else
+				if ( c == 0x03 ) return 1 ;	// IfEnd
+				break ;
+			case 0x7F:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+	return 0;
+}
+
+void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
+	int c=1,i;
+	int execptr=ExecPtr;
+
+	ErrorNo=0;
+	ExecPtr=0;
+	if ( CheckIfEnd ) PP_Search_IfEnd(SRC);
+	if ( ErrorNo ) return;
+	ExecPtr=execptr;
+}
+//----------------------------------------------------------------------------------------------
 void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	int c=1;
 	char buffer[32]="";
@@ -1542,6 +1594,8 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 
 	if ( ErrorNo ) { return ; }
 	ProgNo=ProgEntryN-1;
+	CB_PreProcess( SRC ) ;
+	if ( ErrorNo ) { return ; }
 	ExecPtr=0;
 	while ( c!=0 ) {
 		c=SRC[ExecPtr++];
@@ -1579,6 +1633,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Memory error
 						StackProgPtr = ExecPtr;
 						CB_ProgEntry( src + 0x56  );		//
+						if ( ErrorNo==IfWithoutIfEndERR ) return ;
 						ExecPtr = StackProgPtr ;
 						if ( ErrorNo ) { ErrorPtr=StackProgPtr; ProgNo=progno; ErrorProg=ProgNo; return ;}
 					}
