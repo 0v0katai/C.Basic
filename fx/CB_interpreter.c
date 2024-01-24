@@ -160,6 +160,7 @@ char VWinflag[6];				// VWin flag
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
+int CB_F7sub( char *SRC, int c ) ;
 
 int CB_interpreter_sub( char *SRC ) {
 	char cont=1;
@@ -363,38 +364,6 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0x1C:			// S-L-Normal
-						S_L_Style = S_L_Normal;
-						dspflag=0;
-						break;
-					case 0x1D:			// S-L-Thick
-						S_L_Style = S_L_Thick;
-						dspflag=0;
-						break;
-					case 0x1E:			// S-L-Broken
-						S_L_Style = S_L_Broken;
-						dspflag=0;
-						break;
-					case 0x1F:			// S-L-Dot
-						S_L_Style = S_L_Dot;
-						dspflag=0;
-						break;
-					case 0xFFFFFF8C:	// SketchNormal
-						tmp_Style = S_L_Normal;
-						dspflag=0;
-						break;
-					case 0xFFFFFF8D:	// SketchThick
-						tmp_Style = S_L_Thick;
-						dspflag=0;
-						break;
-					case 0xFFFFFF8E:	// SketchBroken
-						tmp_Style = S_L_Broken;
-						dspflag=0;
-						break;
-					case 0xFFFFFF8F:	// SketchDot
-						tmp_Style = S_L_Dot;
-						dspflag=0;
-						break;
 					case 0x18:			// ClrText
 						CB_ClrText(SRC);
 						dspflag=0;
@@ -432,24 +401,6 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_DotShape(SRC);
 						dspflag=0;
 						UseGraphic=9;
-						break;
-					case 0xFFFFFF94:	// RclPict
-						CB_RclPict(SRC);
-						dspflag=0;
-						UseGraphic=9;
-						break;
-					case 0xFFFFFF93:	// StoPict
-						CB_StoPict(SRC);
-						dspflag=0;
-						UseGraphic=9;
-						break;
-					case 0xFFFFFF97:	// Sto-VWin
-						CB_StoVWin(SRC);
-						dspflag=0;
-						break;
-					case 0xFFFFFF98:	// Rcl-VWin
-						CB_RclVWin(SRC);
-						dspflag=0;
 						break;
 					case 0xFFFFFFFC:	// PutDispDD
 						Bdisp_PutDisp_DD_DrawBusy();
@@ -492,100 +443,18 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFB0:	// SortA(
-						CB_SortAD(SRC, 1);
-						dspflag=0;
-						break;
-					case 0xFFFFFFB1:	// SortD(
-						CB_SortAD(SRC, 0);
-						dspflag=0;
-						break;
-					case 0x70:			// G-Connect
-						DrawType=0;
-						dspflag=0;
-						break;
-					case 0x71:			// G-Plot
-						DrawType=1;
-						dspflag=0;
-						break;
-					case 0x7A:			// GridOff
-						Grid=0;
-						dspflag=0;
-						break;
-					case 0x7D:			// GridOn
-						Grid=1;
-						dspflag=0;
-						break;
-					case 0xFFFFFFC2:	// AxesOn
-						Axes=1;
-						dspflag=0;
-						break;
-					case 0xFFFFFFC3:	// CoordOn
-						Coord=1;
-						dspflag=0;
-						break;
-					case 0xFFFFFFC4:	// LabelOn
-						Label=1;
-						dspflag=0;
-						break;
-					case 0xFFFFFFC5:	// DerivOn
-						Derivative=1;
-						dspflag=0;
-						break;
-					case 0xFFFFFFD2:	// AxesOff
-						Axes=0;
-						dspflag=0;
-						break;
-					case 0xFFFFFFD3:	// CoordOff
-						Coord=0;
-						dspflag=0;
-						break;
-					case 0xFFFFFFD5:	// DerivOff
-						Derivative=0;
-						dspflag=0;
-						break;
-					case 0xFFFFFFD4:	// LabelOff
-						Label=0;
-					case 0xFFFFFFC0:	// FunOn
-					case 0xFFFFFFD0:	// FunOFF
-					case 0xFFFFFFD1:	// SimulOff
-						dspflag=0;
-						break;
-					case 0x4A:			// S-Gph1
-						CB_S_Gph(SRC, 0);
-						dspflag=0;
-						break;
-					case 0x4B:			// S-Gph2
-						CB_S_Gph(SRC, 1);
-						dspflag=0;
-						break;
-					case 0x4C:			// S-Gph3
-						CB_S_Gph(SRC, 2);
-						dspflag=0;
-						break;
-					case 0x60:			// S-WindAuto
-						CB_S_WindAuto(SRC);
-						dspflag=0;
-						break;
-					case 0x61:			// S-WindMan
-						CB_S_WindMan(SRC);
-						dspflag=0;
-						break;
 					case 0x23:			// DrawStat
 						CB_DrawStat(SRC);
 						dspflag=0;
 						UseGraphic=9;
-						break;
-					case 0x63:			// Y=Type
-						dspflag=0;
 						break;
 					case 0x20:			// DrawGraph
 						CB_DrawGraph(SRC);
 						UseGraphic=2;
 						dspflag=0;
 						break;
-					case 0xFFFFFFDF:	// Delete
-						CB_Delete( SRC );
+					case 0xFFFFFF9E:	// Menu
+						CB_Menu( SRC, StackGotoAdrs );
 						dspflag=0;
 						break;
 					case 0xFFFFFFEE:	// Save
@@ -606,18 +475,6 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0xFFFFFFFE:	// BackLight
 						BackLight( CB_EvalInt( SRC ) );
-						dspflag=0;
-						break;
-					case 0xFFFFFF9E:	// Menu
-						CB_Menu( SRC, StackGotoAdrs );
-						dspflag=0;
-						break;
-					case 0x78:	// BG-None
-						CB_BG_None( SRC );
-						dspflag=0;
-						break;
-					case 0x79:	// BG-Pict
-						CB_BG_Pict( SRC );
 						dspflag=0;
 						break;
 					case 0x1A:	// ClrList
@@ -644,6 +501,9 @@ int CB_interpreter_sub( char *SRC ) {
 						BreakPtr=-8;	// program end
 						break;
 					default:
+						if ( ( ( 0x1C <= c ) && ( c <=0x7D ) ) || ( ( 0xFFFFFF8C <= c ) && ( c <=0xFFFFFFDF ) ) ) { 
+							if ( CB_F7sub( SRC, c ) ) { dspflag=0; break; }
+						}
 						goto Evalexit2;
 				}
 				break;
@@ -682,7 +542,7 @@ int CB_interpreter_sub( char *SRC ) {
 				else
 				if ( ( 0x34 <= c ) && ( c <= 0x37 ) )  goto strjp;
 				else
-				if ( ( 0x39 <= c ) && ( c <= 0x48 ) )  goto strjp;
+				if ( ( 0x39 <= c ) && ( c <= 0x49 ) )  goto strjp;
 				switch ( c ) {
 					case 0x30:	// StrJoin(
 //					case 0x34:	// StrLeft(
@@ -891,6 +751,131 @@ int CB_interpreter_sub( char *SRC ) {
 	CB_TicksEnd=RTC_GetTicks();	// 
 	if ( ProgEntryN == 0 ) CB_end(SRC);
 	return -1;
+}
+//----------------------------------------------------------------------------------------------
+int CB_F7sub( char *SRC, int c ) {
+	switch ( c ) {
+					case 0x1C:			// S-L-Normal
+						S_L_Style = S_L_Normal;
+						break;
+					case 0x1D:			// S-L-Thick
+						S_L_Style = S_L_Thick;
+						break;
+					case 0x1E:			// S-L-Broken
+						S_L_Style = S_L_Broken;
+						break;
+					case 0x1F:			// S-L-Dot
+						S_L_Style = S_L_Dot;
+						break;
+					case 0x4A:			// S-Gph1
+						CB_S_Gph(SRC, 0);
+						break;
+					case 0x4B:			// S-Gph2
+						CB_S_Gph(SRC, 1);
+						break;
+					case 0x4C:			// S-Gph3
+						CB_S_Gph(SRC, 2);
+						break;
+					case 0x60:			// S-WindAuto
+						CB_S_WindAuto(SRC);
+						break;
+					case 0x61:			// S-WindMan
+						CB_S_WindMan(SRC);
+						break;
+					case 0x63:			// Y=Type
+						break;
+					case 0x70:			// G-Connect
+						DrawType=0;
+						break;
+					case 0x71:			// G-Plot
+						DrawType=1;
+						break;
+					case 0x78:	// BG-None
+						CB_BG_None( SRC );
+						break;
+					case 0x79:	// BG-Pict
+						CB_BG_Pict( SRC );
+						break;
+					case 0x7A:			// GridOff
+						Grid=0;
+						break;
+					case 0x7D:			// GridOn
+						Grid=1;
+						break;
+					case 0xFFFFFF93:	// StoPict
+						CB_StoPict(SRC);
+						UseGraphic=9;
+						break;
+					case 0xFFFFFF94:	// RclPict
+						CB_RclPict(SRC);
+						UseGraphic=9;
+						break;
+					case 0xFFFFFF9D:	// StoCapt
+						CB_StoCapt( SRC );
+						UseGraphic=9;
+						break;
+					case 0xFFFFFF9F:	// RclCapt
+						CB_RclCapt( SRC );
+						UseGraphic=9;
+						break;
+					case 0xFFFFFF8C:	// SketchNormal
+						tmp_Style = S_L_Normal;
+						break;
+					case 0xFFFFFF8D:	// SketchThick
+						tmp_Style = S_L_Thick;
+						break;
+					case 0xFFFFFF8E:	// SketchBroken
+						tmp_Style = S_L_Broken;
+						break;
+					case 0xFFFFFF8F:	// SketchDot
+						tmp_Style = S_L_Dot;
+						break;
+					case 0xFFFFFF97:	// Sto-VWin
+						CB_StoVWin(SRC);
+						break;
+					case 0xFFFFFF98:	// Rcl-VWin
+						CB_RclVWin(SRC);
+						break;
+					case 0xFFFFFFB0:	// SortA(
+						CB_SortAD(SRC, 1);
+						break;
+					case 0xFFFFFFB1:	// SortD(
+						CB_SortAD(SRC, 0);
+						break;
+					case 0xFFFFFFC2:	// AxesOn
+						Axes=1;
+						break;
+					case 0xFFFFFFC3:	// CoordOn
+						Coord=1;
+						break;
+					case 0xFFFFFFC4:	// LabelOn
+						Label=1;
+						break;
+					case 0xFFFFFFC5:	// DerivOn
+						Derivative=1;
+						break;
+					case 0xFFFFFFD2:	// AxesOff
+						Axes=0;
+						break;
+					case 0xFFFFFFD3:	// CoordOff
+						Coord=0;
+						break;
+					case 0xFFFFFFD5:	// DerivOff
+						Derivative=0;
+						break;
+					case 0xFFFFFFD4:	// LabelOff
+						Label=0;
+					case 0xFFFFFFC0:	// FunOn
+					case 0xFFFFFFD0:	// FunOFF
+					case 0xFFFFFFD1:	// SimulOff
+						break;
+					case 0xFFFFFFDF:	// Delete
+						CB_Delete( SRC );
+						break;
+					default:
+						return 0;
+	}
+	return 1;
 }
 //----------------------------------------------------------------------------------------------
 void ClrCahche(){

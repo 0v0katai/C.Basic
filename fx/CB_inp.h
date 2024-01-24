@@ -28,6 +28,8 @@
 #define  CMDLIST_OPTN 1
 #define  CMDLIST_VARS 2
 #define  CMDLIST_PRGM 3
+#define  CMDLIST_RECENT     4
+#define  CMDLIST_RECENTFREQ 5
 
 
 #define CMD_MENU	1
@@ -146,6 +148,7 @@
 #define CMD_SHIFT_SKTCH		0x9
 #define CMD_SHIFT_SKTCH_EXT		0x901
 #define CMD_SHIFT_SKTCH_ML		0x902
+#define CMD_SHIFT_SKTCH_BMP		0x903
 #define CMD_SHIFT_SKTCH_GRPH	0x904
 #define CMD_SHIFT_SKTCH_PLOT	0x910
 #define CMD_SHIFT_SKTCH_LINE	0x911
@@ -222,3 +225,6 @@ void GetGenuineCmdF4( unsigned int *code );
 void GetGenuineCmdF5( unsigned int *code );
 void GetGenuineCmdF6( unsigned int *code );
 
+int InitOpcodeRecent() ;
+int AddOpcodeRecent( short opcode ) ;
+int SelectOpcodeRecent( int listselect ) ;

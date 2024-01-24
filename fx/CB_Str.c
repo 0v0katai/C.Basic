@@ -198,6 +198,30 @@ int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){
 	{ (*strptr)=opbkup; return 0; }	// No search
 }
 
+int	StrRepl( char *str1, char *buffer, char *srcstr, char *repstr, int ptr, int maxlen ){
+	int srclen,replen,bufptr=1;
+	int oplen,r;
+	char tmp[CB_StrBufferMax];
+	
+	srclen=StrLen( srcstr, &oplen );
+	replen=StrLen( repstr, &oplen );
+	str1[0]='\0';
+	while ( 1 ) {
+		r=StrSrc( buffer, srcstr, &ptr, maxlen );
+		if ( r==0 ) break;
+		if ( ptr-bufptr > 0 ) {
+			StrMid( tmp, buffer, bufptr, ptr-bufptr);
+			StrJoin( str1, tmp, maxlen );
+		}
+		ptr   = ptr+srclen;
+		bufptr= ptr;
+		StrJoin( str1, repstr, maxlen );
+	}
+	StrMid( tmp, buffer, bufptr, maxlen);
+	StrJoin( str1, tmp, maxlen );
+	return 1;
+}
+
 int StrMidCopySub( char *str1, char *str2, int oplen, int n, int m ) {	// mid$(str2,n,m) -> str1
 	int i,opptr1,opptr2;
 	opptr1=StrOpcodePtr( str2, n ); 		// strptr -> opptr1
@@ -327,19 +351,21 @@ int StrChar( char *str1, char *str2, int n ){	// StrChar(str2,n)->str1
 
 int StrCenter( char *str1, char *str2, int max, char *str3 ){	// StrCenter(str2,max,str3)->str1
 	char buffer[CB_StrBufferMax];
+	char buffer2[CB_StrBufferMax];
 	int n,slen,oplen;
 	slen=StrLen( str2 ,&oplen );
+	StrRight( buffer2, str2, slen );
 	if ( CB_StrBufferMax-1 < max ) max=CB_StrBufferMax-1;
 	if ( max < 1 ) max=1;
 	n=(max-1)/2-slen/2;
 	StrChar( buffer, str3, max ) ;
-	StrJoin( str2, buffer, CB_StrBufferMax-1 ) ;
+	StrJoin( buffer2, buffer, CB_StrBufferMax-1 ) ;
 	str1[0]='\0';
 	if ( n>=0 ) { 
-		StrRotate( buffer, str2, n );
+		StrRotate( buffer, buffer2, n );
 		StrMid( str1, buffer, 1, max );
 	} else {
-		StrMid( str1, str2, 1, max );
+		StrMid( str1, buffer2, 1, max );
 	}
 }
 
@@ -542,7 +568,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 		else
 		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
 		else
-		if ( ( 0x34 <= c ) && ( c <= 0x48 ) ) return c;
+		if ( ( 0x34 <= c ) && ( c <= 0x49 ) ) return c;
 		else
 		if ( c == 0x1B ) return c;	// fn
 	} else
@@ -683,6 +709,10 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 		case 0x48:	// StrBase(
 			ExecPtr+=2;
 			(*maxlen)=CB_StrBase( SRC );
+			return CB_CurrentStr;
+		case 0x49:	// StrRepl(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrRepl( SRC );
 			return CB_CurrentStr;
 		default:
 			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
@@ -1327,6 +1357,33 @@ int CB_StrBase( char *SRC ){		// StrBase( Str1,base1,base2 )->str2
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	StrBase( CB_CurrentStr, buffer, base1, base2);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return CB_StrBufferMax-1;
+}
+
+int CB_StrRepl( char *SRC ){	// StrRepl( Str1,Str2,Str3[,n])->str4
+	int sptr=1,slen,maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
+	char *buffer, *srcstr, *repstr;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	slen=StrLen( CB_CurrentStr ,&maxoplen);
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	srcstr  = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0 ;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	repstr  = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0 ;  // error
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		sptr = CB_EvalInt( SRC );	//
+		if ( sptr < 1 ) sptr=1;
+		if ( sptr > slen ) sptr=slen;
+	}
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	StrRepl( CB_CurrentStr, buffer, srcstr, repstr, sptr, CB_StrBufferMax-1 );
 	return CB_StrBufferMax-1;
 }
 

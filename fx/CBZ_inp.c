@@ -474,6 +474,181 @@ void DMS_Opcode( char * buffer, short code ) {
 	if ( code == 0xAC ) { strcat( buffer,"(rad)"); }
 	if ( code == 0xBC ) { strcat( buffer,"(gra)"); }
 }
+//----------------------------------------------------------------------------------------------
+#define OpRecentFreqMax 32
+#define OpRecentMax 32
+
+typedef struct {
+	short code;
+	short count;
+} toplistrecentfreq;
+
+toplistrecentfreq OplistRecentFreq[OpRecentFreqMax];
+short OplistRecent[OpRecentMax];
+
+int qsort_OpRecentFreq( const void *p1, const void *p2 ){
+	toplistrecentfreq *OpRecent1 = (toplistrecentfreq *)p1;
+	toplistrecentfreq *OpRecent2 = (toplistrecentfreq *)p2;
+	if ( OpRecent2->count == OpRecent1->count )	return OpRecent1->code - OpRecent2->code;
+	return OpRecent2->count - OpRecent1->count;
+}
+
+int InitOpcodeRecent() {
+	int i;
+	for (i=0; i<OpRecentFreqMax; i++) {
+		OplistRecentFreq[i].code =0;
+		OplistRecentFreq[i].count=0;
+	}
+	for (i=0; i<OpRecentMax; i++) {
+		OplistRecent[i]=0;
+	}
+}
+
+int AddOpcodeRecent( short opcode ) {
+	int i,j;
+
+	if ( ( 0x0D == opcode ) || ( 0x0E == opcode ) || ( ',' == opcode ) ) return;
+	if ( MathKey( (unsigned int) opcode ) ) return ;
+	
+	for (i=0; i<OpRecentMax; i++) {
+		if ( OplistRecent[i] == opcode ) {	// matching
+			i++;
+			break;
+		}
+	}
+	i--;
+	for (j=i; j>0; j--) OplistRecent[j] = OplistRecent[j-1];
+	OplistRecent[0] = opcode;	// top of recent code
+	
+	for (i=0; i<OpRecentFreqMax; i++) {
+		if ( OplistRecentFreq[i].code == opcode ) {	// matching
+			OplistRecentFreq[i].count++;
+			break;
+		}
+	}
+	if ( i >= OpRecentFreqMax ) {
+//		i=OpRecentFreqMax-1;
+//		j=OplistRecentFreq[i].count;
+//		while ( OplistRecentFreq[i].count == j ) i--;
+//		for ( j=i+1; j<OpRecentFreqMax-1; j++ ) {
+//			OplistRecentFreq[j].code  = OplistRecentFreq[j+1].code;
+//			OplistRecentFreq[j].count = OplistRecentFreq[j+1].count;
+//		}
+		i=OpRecentFreqMax-1;
+		OplistRecentFreq[i].code =opcode;
+		OplistRecentFreq[i].count=1;
+	}
+	qsort( OplistRecentFreq,  OpRecentFreqMax, sizeof(toplistrecentfreq),  qsort_OpRecentFreq );
+}
+
+int SelectOpcodeRecent( int listselect ) {
+	int select;
+	int opNum;
+	char buffer[22];
+	char tmpbuf[18];
+	unsigned int key;
+	int	cont,cont2=1;
+	int i,j,k,y;
+	int seltop;
+
+	select=0;
+	seltop=0;
+	
+	while ( cont2 ) {
+		opNum=0 ;
+		if ( listselect == CMDLIST_RECENT ) {
+			while ( OplistRecent[opNum++] );
+		} else {
+			while ( OplistRecentFreq[opNum++].code );
+		}
+		opNum-=1;
+		seltop=select;
+		cont=1;
+		Cursor_SetFlashMode(0); 		// cursor flashing off
+
+		SaveDisp(SAVEDISP_PAGE1);
+		PopUpWin(6);
+
+		while (cont) {
+			if (  select<seltop ) seltop=select;
+			if ( (select-seltop) > 5 ) seltop=select-5;
+			if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
+			if ( seltop < 0 ) seltop=0;
+			for ( i=0; i<6; i++ ) {
+				CB_Print(3,2+i,(unsigned char *)"                 ");
+				if ( listselect == CMDLIST_RECENT ) {
+					j=OplistRecent[seltop+i];
+				} else {
+					j=OplistRecentFreq[seltop+i].code;
+				}
+				CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
+				tmpbuf[12]='\0'; 
+				DMS_Opcode( tmpbuf, j);
+				j=0; if ( tmpbuf[0]==' ' ) j++;
+				if ( listselect == CMDLIST_RECENT ) {
+					sprintf(buffer, "%-17s", tmpbuf+j ) ;
+				} else {
+					k=OplistRecentFreq[seltop+i].count;
+					sprintf(buffer, "%s (%d)", tmpbuf+j, (unsigned short)k ) ;
+					if ( k==0 ) buffer[0]='\0';
+				}
+				CB_Print(3,2+i,(unsigned char *)buffer);
+			}
+			Bdisp_PutDisp_DD();	
+			
+			y = (select-seltop) + 1 ;
+			Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
+			Bdisp_PutDisp_DD();
+
+			GetKey_DisableMenu(&key);
+			switch (key) {
+				case KEY_CTRL_EXIT:
+				case KEY_CTRL_QUIT:
+				case KEY_CTRL_MENU:
+					RestoreDisp(SAVEDISP_PAGE1);
+					return 0;
+					
+				case KEY_CTRL_EXE:
+					cont=0;
+					cont2=0;
+					break;
+			
+				case KEY_CTRL_LEFT:
+				case KEY_CTRL_RIGHT:
+					if ( listselect == CMDLIST_RECENT ) {
+						listselect = CMDLIST_RECENTFREQ;
+					} else {
+						listselect = CMDLIST_RECENT;
+					}
+					select=0;
+					cont=0;
+					break;
+				case KEY_CTRL_UP:
+					select--;
+					if ( select < 0 ) select = opNum-1;
+					break;
+				case KEY_CTRL_DOWN:
+					select++;
+					if ( select >= opNum ) select =0;
+					break;
+				default:
+					break;
+			}
+		}
+		RestoreDisp(SAVEDISP_PAGE1);
+	}
+	Bdisp_PutDisp_DD();
+	
+	if ( listselect == CMDLIST_RECENT ) {
+		j=OplistRecent[select];
+	} else {
+		j=OplistRecentFreq[select].code;
+	}
+	return j;
+}
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 
 int SelectOpcode( int listselect, int flag ) {
 	short *select;
@@ -615,7 +790,6 @@ int SelectOpcode( int listselect, int flag ) {
 		RestoreDisp(SAVEDISP_PAGE1);
 	}
 	Bdisp_PutDisp_DD();
-	
 	return oplist[(*select)];
 }
 
@@ -801,7 +975,7 @@ const short oplistPRGM[]={
 		0xFFFF,	// 				-
 		0xF718,	// ClrText
 		0xF719,	// ClrGraph
-//		0xF71A,	// ClrList
+		0xF71A,	// ClrList
 		0xF91E,	// ClrMat
 		0xF710,	// Locate
 		0x7F8F,	// Getkey
@@ -918,7 +1092,8 @@ const short oplistVARS[]={
 		0xF798,	// RclV-Win
 		0xF793,	// StoPict
 		0xF794,	// RclPict
-//		0xF79F,	// RclCapt
+		0xF79D,	// StoCapt
+		0xF79F,	// RclCapt
 		0xF778,	// BG-None
 		0xF779,	// BG-Pict
 		0xF91B,	// fn
@@ -988,7 +1163,10 @@ const short oplistVARS[]={
 		0xF9D7,	// _Bmp16
 		0xF9D9,	// _BmpZoom
 		0xF9DA,	// _BmpRotate
+		0xF9DD,	// _DrawMat
 		0xF9D8,	// _Test
+		0xF9DB,	// BmpSave 
+		0xF9DC,	// BmpLoad(
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -1125,8 +1303,10 @@ const short oplistCMD[]={		// 5800P like
 		0xEE,	// Graph Y=
 		0xF720,	// DrawGraph
 		0x7FF0,	// GraphY
-		0x23,	// #
-		0x25,	// %
+		0xF79D,	// StoCapt
+		0xF79F,	// RclCapt
+//		0x23,	// #
+//		0x25,	// %
 
 //											9
 		0xF5,	// Graph(X,Y)=(
@@ -1369,17 +1549,16 @@ const short oplistCMD[]={		// 5800P like
 		0xF9C3,	// _Contrast
 		0xF9D9,	// _BmpZoom
 		0xF9DA,	// _BmpRotate
-		0xFFFF,	//
-		0xFFFF,	//
+		0xF9DB,	// BmpSave 
+		0xF9DC,	// BmpLoad(
+		0xF9DD,	// DrawMat
 		0xF9D8,	// _Test
-		0xFFFF,	//
 		0x23,	// #
 		0x25,	// %
 		
 		
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
-//		0xF79F,	// RclCapt
 
 		0};
 
@@ -1814,6 +1993,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF73B, "DotPut(" }, 
 	{ 0xF73D, "DotTrim(" }, 
 	{ 0xF73E, "DotGet(" }, 
+	{ 0xF79D, "StoCapt " },
 	{ 0xF79E, "Menu " },		// SDK emu not support
 	{ 0xF7DF, "Delete " }, 
 	{ 0xF7E0, "DotLife(" }, 
@@ -1866,6 +2046,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF946, "Hex(" }, 
 	{ 0xF947, "Bin(" }, 
 	{ 0xF948, "StrBase(" }, 
+	{ 0xF949, "StrRepl(" }, 
 	{ 0xF94F, "Wait " }, 
 	{ 0xF9C0, "_ClrVram" },
 	{ 0xF9C1, "_ClrScreen" },
@@ -1894,7 +2075,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF9D8, "_Test" },
 	{ 0xF9D9, "_BmpZoom " },
 	{ 0xF9DA, "_BmpRotate " },
-//	{ 0xF9DB, "_DrawMat " },
+	{ 0xF9DB, "BmpSave " },
+	{ 0xF9DC, "BmpLoad(" },
+	{ 0xF9DD, "DrawMat " },
 	{ 0x00FA, "Gosub "},
 	{ 0x00A7, "not "}, 			// small
 	{ 0x009A, " xor "}, 		// add space
@@ -2123,7 +2306,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 		
 		memcpy( GetVRAMAddress()+16*8*7, fnbuf, 16*8);		// fn key image restore
 		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
-		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_dispR( FKeyNo5, "CHAR"); }
+		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_Icon( FKeyNo5, 673 ); }	//	Fkey_dispR( FKeyNo5, "CHAR");
 		if ( CommandInputMethod ) DispGenuineCmdMenu();
 
 		CursorStyle=Cursor_GetFlashStyle();
@@ -2136,7 +2319,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 //		sprintf(buf,"len=%2d ptr=%2d off=%2d   csr=%2d  ",length,ptrX,offsetX,csrX); PrintMini( 0,7*8+2,(unsigned char *)buf, MINI_OVER);
 
 		SaveDisp(SAVEDISP_PAGE2);
-		if ( ContinuousSelect ) key=KEY_CTRL_F5; else GetKey(&key);
+		if ( ContinuousSelect ) key=KEY_CTRL_F5; else GetKey_DisableMenu(&key);
 		
 		switch (key) {
 			case KEY_CTRL_AC:
@@ -2228,7 +2411,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 			case KEY_CTRL_SHIFT:
 				alphalock = 0 ;
 				if ( CommandInputMethod ) Menu_SHIFT_MENU();
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_QUIT:
 						goto inpexit;
@@ -2284,6 +2467,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					key=SelectOpcode( CMDLIST_VARS, 0 );
 					if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
+				break;
+			case KEY_CTRL_MENU:
+				key=SelectOpcodeRecent( CMDLIST_RECENT );
 				break;
 
 			default:
@@ -2500,6 +2686,6 @@ double InputNumD_CB2(int x, int y, int width, int SPC, int REV, double defaultNu
 	return InputNumD_CB_sub( x, y, width, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy
-//int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

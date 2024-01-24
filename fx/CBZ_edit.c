@@ -29,6 +29,12 @@ char InpCommandList=0;	// 0:none  1:OPTN
 short EditLineNum=0;
 char  EDITpxNum=0;		//  EditLineNumber pixel
 char  EDITpxMAX=123;	//  max x pixel
+
+short EditMaxfree;
+short EditMaxProg;
+short NewMax;
+short ClipMax;
+
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
@@ -80,6 +86,7 @@ void InsertOpcode( char *filebase, int ptr, int opcode ){
 	}
 	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
+	AddOpcodeRecent( opcode ) ;
 }
 
 void DeleteOpcode( char *filebase, int *ptr){
@@ -241,6 +248,7 @@ void MiniCursorSetFlashMode(int set) {	// 1:on  0:off
 			break;
 	}
 }
+
 //---------------------------------------------------------------------------------------------
 int OpcodeStrLenBufpx(char *buffer, int ofst) {
 	char tmpbuf[18];
@@ -916,9 +924,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				}
 				if (key < 0x7F00) {
 					if ( ContinuousSelect ) key=KEY_CTRL_F5; 
-					else GetKey(&key);
+					else { GetKey_DisableMenu(&key); }
 				}
-			} else GetKey(&key);
+			} else { GetKey_DisableMenu(&key); }
 		}						
 		
 		MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
@@ -1220,6 +1228,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									SaveConfig();
 									filebase = ProgfileAdrs[ProgNo];
 									SrcBase  = filebase+0x56;
+									if ( ForceReturn ) { cont=0; break; }	// force program end
 									if ( stat ) {
 										if ( ErrorNo ) offset = ErrorPtr ;			// error
 										else if ( BreakPtr ) offset = ExecPtr ;	// break
@@ -1400,7 +1409,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				sprintf(buffer, "%d",  ProgfileMax[ProgNo]-SrcSize(filebase) );
 				Fkey_dispN( FKeyNo5, buffer);
 				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				switch (key) {
 //					case KEY_CTRL_EXIT:
@@ -1504,7 +1513,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 							ScreenModeEdit=1-ScreenModeEdit;
 							RestoreScreenModeEdit();
-							GetKey(&key);
+							if ( (EditFontSize & 0x0F) ) GetKey_DisableMenu(&key); else GetKey(&key);
 							if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
 							break;
 					case KEY_CTRL_CLIP:
@@ -1575,10 +1584,17 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				}
 				ClipStartPtr = -1 ;		// ClipMode cancel
 				break;
+			case KEY_CTRL_MENU:
+				if ( SearchMode ) break;;
+				if ( dumpflg==2 ) {
+					key=SelectOpcodeRecent( CMDLIST_RECENT );
+				}
+				ClipStartPtr = -1 ;		// ClipMode cancel
+				break;
 			default:
 				break;
 		}
-
+		
 		if ( dumpflg==2 ) {
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
@@ -1695,6 +1711,7 @@ int CB_BreakStop() {
 	}
 	
 	ScreenModeEdit=scrmode;
+	if ( ForceReturn ) return 1;	// force program end
 	if ( dbgmode  ) key=EditRun(2);	// Program listing & edit
 
 //	if ( ( key == KEY_CTRL_QUIT ) || ( key == KEY_CTRL_EXIT ) ) { 

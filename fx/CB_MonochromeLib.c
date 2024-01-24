@@ -467,16 +467,29 @@ void CB_ML_GetBmpMode( char *SRC, int *mode1, int *mode2 ) {
 	ExecPtr++;
 }
 
+/*
+unsigned char* CB_ML_GetMatAdrs( char *SRC ) {
+	int reg,x,y;
+	int c=SRC[ExecPtr];
+	if ( ( c=='&' ) || ( ( c==0x7F)&&(SRC[ExecPtr+1]==0xFFFFFFF8) ) {	// & or VarPtr(
+		return (unsigned char *)CB_EvalInt( SRC );
+	} else {
+		MatrixOprand( SRC, &reg, &x, &y );
+		if ( ErrorNo ) return NULL; // error
+		return 	(unsigned char*)MatAry[reg].Adrs;
+	}
+}
+*/
 
 void CB_ML_Bmp( char *SRC ) { // ML_Bmp( &Mat A,  x, y, width, height[,O/A/X] [,C])
-	int arry;
+	unsigned char* array;
 	int x,y;
 	int width;
 	int height;
 	int mode1;	// Or/And/Xor
 	int mode2;	// Cl
 	
-	arry=CB_EvalInt( SRC );
+	array=(unsigned char *)CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	CB_GetOprand4( SRC, &x, &y, &width, &height );
@@ -487,30 +500,30 @@ void CB_ML_Bmp( char *SRC ) { // ML_Bmp( &Mat A,  x, y, width, height[,O/A/X] [,
 		case 0:		// Or
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_or( (unsigned char *)arry, x, y, width, height);
+					ML_bmp_or( array, x, y, width, height);
 					break;
 				case 1:		// Cl
-					ML_bmp_or_cl( (unsigned char *)arry, x, y, width, height);
+					ML_bmp_or_cl( array, x, y, width, height);
 					break;
 			}
 			break;
 		case 1:		// And
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_and( (unsigned char *)arry, x, y, width, height);
+					ML_bmp_and( array, x, y, width, height);
 					break;
 				case 1:		// Cl
-					ML_bmp_and_cl( (unsigned char *)arry, x, y, width, height);
+					ML_bmp_and_cl( array, x, y, width, height);
 					break;
 			}
 			break;
 		case 2:		// Xor
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_xor( (unsigned char *)arry, x, y, width, height);
+					ML_bmp_xor( array, x, y, width, height);
 					break;
 				case 1:		// Cl
-					ML_bmp_xor_cl( (unsigned char *)arry, x, y, width, height);
+					ML_bmp_xor_cl( array, x, y, width, height);
 					break;
 			}
 			break;
@@ -518,12 +531,12 @@ void CB_ML_Bmp( char *SRC ) { // ML_Bmp( &Mat A,  x, y, width, height[,O/A/X] [,
 }
 
 void CB_ML_Bmp8( char *SRC ) { // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
-	int arry;
+	unsigned char* array;
 	int x,y;
 	int mode1;	// Or/And/Xor
 	int mode2;	// Cl
 	
-	arry=CB_EvalInt( SRC );
+	array=(unsigned char *)CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	CB_GetOprand2( SRC, &x, &y);
@@ -534,30 +547,30 @@ void CB_ML_Bmp8( char *SRC ) { // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
 		case 0:		// Or
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_8_or( (unsigned char *)arry, x, y);
+					ML_bmp_8_or( array, x, y);
 					break;
 				case 1:		// Cl
-					ML_bmp_8_or_cl( (unsigned char *)arry, x, y);
+					ML_bmp_8_or_cl( array, x, y);
 					break;
 			}
 			break;
 		case 1:		// And
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_8_and( (unsigned char *)arry, x, y);
+					ML_bmp_8_and( array, x, y);
 					break;
 				case 1:		// Cl
-					ML_bmp_8_and_cl( (unsigned char *)arry, x, y);
+					ML_bmp_8_and_cl( array, x, y);
 					break;
 			}
 			break;
 		case 2:		// Xor
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_8_xor( (unsigned char *)arry, x, y);
+					ML_bmp_8_xor( array, x, y);
 					break;
 				case 1:		// Cl
-					ML_bmp_8_xor_cl( (unsigned char *)arry, x, y);
+					ML_bmp_8_xor_cl( array, x, y);
 					break;
 			}
 			break;
@@ -565,12 +578,12 @@ void CB_ML_Bmp8( char *SRC ) { // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
 }
 
 void CB_ML_Bmp16( char *SRC ) { // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
-	int arry;
+	unsigned char* array;
 	int x,y;
 	int mode1;	// Or/And/Xor
 	int mode2;	// Cl
 	
-	arry=CB_EvalInt( SRC );
+	array=(unsigned char *)CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	CB_GetOprand2( SRC, &x, &y );
@@ -581,30 +594,30 @@ void CB_ML_Bmp16( char *SRC ) { // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
 		case 0:		// Or
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_8_or( (unsigned char *)arry, x, y);
+					ML_bmp_8_or( array, x, y);
 					break;
 				case 1:		// Cl
-					ML_bmp_8_or_cl( (unsigned char *)arry, x, y);
+					ML_bmp_8_or_cl( array, x, y);
 					break;
 			}
 			break;
 		case 1:		// And
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_8_and( (unsigned char *)arry, x, y);
+					ML_bmp_8_and( array, x, y);
 					break;
 				case 1:		// Cl
-					ML_bmp_8_and_cl( (unsigned char *)arry, x, y);
+					ML_bmp_8_and_cl( array, x, y);
 					break;
 			}
 			break;
 		case 2:		// Xor
 			switch ( mode2 ) {
 				case 0:		// 
-					ML_bmp_8_xor( (unsigned char *)arry, x, y);
+					ML_bmp_8_xor( array, x, y);
 					break;
 				case 1:		// Cl
-					ML_bmp_8_xor_cl( (unsigned char *)arry, x, y);
+					ML_bmp_8_xor_cl( array, x, y);
 					break;
 			}
 			break;
@@ -613,14 +626,14 @@ void CB_ML_Bmp16( char *SRC ) { // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
 
 //----------------------------------------------------------------------------------------------
 void CB_ML_BmpZoom( char *SRC ) { // ML_BmpZoom( &Mat A,  x, y, width, height, zoomwidth, zoomheight [,color][,rand])
-	int arry;
+	unsigned char* array;
 	int x,y;
 	int width;
 	int height;
 	int color;
 	float zoomwidth, zoomheight;
 	
-	arry=CB_EvalInt( SRC );
+	array=(unsigned char *)CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	CB_GetOprand4( SRC, &x, &y, &width, &height );
@@ -629,17 +642,17 @@ void CB_ML_BmpZoom( char *SRC ) { // ML_BmpZoom( &Mat A,  x, y, width, height, z
 	CB_GetOprand_MLcolor( SRC, &color);
 	if ( ErrorNo ) return ;
 
-	ML_bmp_zoom( (unsigned char *)arry, x, y, width, height, zoomwidth,zoomheight, color);
+	ML_bmp_zoom( array, x, y, width, height, zoomwidth,zoomheight, color);
 }
 void CB_ML_BmpRotate( char *SRC ) { // ML_BmpRotate( &Mat A,  x, y, width, height, angle [,color][,rand])
-	int arry;
+	unsigned char* array;
 	int x,y;
 	int width;
 	int height;
 	int angle=0;
 	int color;
 	
-	arry=CB_EvalInt( SRC );
+	array=(unsigned char *)CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	CB_GetOprand4( SRC, &x, &y, &width, &height );
@@ -650,30 +663,72 @@ void CB_ML_BmpRotate( char *SRC ) { // ML_BmpRotate( &Mat A,  x, y, width, heigh
 	CB_GetOprand_MLcolor( SRC, &color);
 	if ( ErrorNo ) return ;
 
-	ML_bmp_rotate( (unsigned char *)arry, x, y, width, height, angle, color);
+	ML_bmp_rotate( array, x, y, width, height, angle, color);
 }
 //----------------------------------------------------------------------------------------------
-/*
-void CB_ML_DrawMat( char *SRC ) { // ML_DrawMat( &Mat A, wx, wy,  x, y, width, height, ML_Color color)
-	int arry,wx,wy;
-	int x,y;
+
+void CB_DrawMat( char *SRC ) { // DrawMat Mat A[x,y],px,py,width, height[,zoomwidth][,zoomheight][,ML_Color color][,chance])
+	unsigned char* array;
+	int wx,wy;
+	int x,y,px,py;
 	int width;
 	int height;
-	int angle=0;
+	int px1,py1,px2,py2;
 	int color;
-	
-	arry=CB_EvalInt( SRC );
+	float zoomwidth, zoomheight;
+	int reg,reg2=Mattmpreg;
+	int i;
+	int dimA,dimB,ElementSize,base;
+	int xx,yy;
+		
+	MatrixOprand( SRC, &reg, &x, &y );
+	if ( ErrorNo ) return ; // error
+//	array=(unsigned char *)CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	CB_GetOprand2( SRC, &width, &height );
-	CB_GetOprand4VWR( SRC, &x, &y, &width, &height);
+	CB_GetOprand4( SRC, &px1, &py1, &width, &height );
+	if ( (px1<0)||(py1<0)||(width<1)||(height<1) ) { CB_Error(ArgumentERR); return; } // Argument error
+  	zoomwidth  = (float)CB_GetOprand_percent( SRC ) / (float)100 ;
+  	zoomheight = (float)CB_GetOprand_percent( SRC ) / (float)100 ;
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_ML_GetBmpMode( SRC, &mode1, &mode2 );
 	if ( ErrorNo ) return ;
 
-	ML_DrawMat( (unsigned char *)array, wx, wy,  x, y, width, height, color) ;
+	xx=px1;
+	yy=py1;
+	
+	dimA=MatAry[reg].SizeA;
+	dimB=MatAry[reg].SizeB;
+	if ( width  > dimA ) width  =dimA;
+	if ( height > dimB ) height =dimB;
+	px2=px1+width-1;
+	py2=py1+height-1;
+	if ( dimA <= x ) x=dimA-1;
+	if ( dimB <= y ) y=dimB-1;
+	if ( px1+dimA-x < px2 ) px2=px1+dimA-x;
+	if ( py1+dimB-y < py2 ) py2=py1+dimB-y;
+	width =px2-px1+1;
+	height=py2-py1+1;
+
+	ElementSize=1;
+	base=0;
+
+	DimMatrixSub( reg2, ElementSize, width, height, base ) ;
+	if ( ErrorNo ) return ; // error
+
+	px1=0;
+	py1=0;
+	px2=width-1;
+	py2=height-1;
+	i=x;
+	for ( py=py1; py<=py2 ; py++) {	
+		x=i;
+		for ( px=px1; px<=px2 ; px++) WriteMatrixInt( reg2, px, py, ReadMatrixInt( reg, x++, y ));
+		y++;
+	}
+	ML_bmp_zoom( (unsigned char*)MatAry[reg2].Adrs, xx, yy, width, height, zoomwidth,zoomheight, color) ;
+//	DeleteMatrix( reg2 );
 }
-*/
+
 //-----------------------------------------------------------------------------------------MLtest
 
 int CB_MLTest_Point( char *SRC ) { // MLTest_Point x, y, width
@@ -841,9 +896,6 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 		case 0xFFFFFFDA:	// _BmpRotate
 			CB_ML_BmpRotate( SRC );
 			break;
-//		case 0xFFFFFFDB:	// _DrawMat
-//			CB_ML_DrawMat( SRC );
-//			break;
 			
 		case 0xFFFFFFC0:	// _ClrVRAM
 //			CB_ML_ClrVRAM();
@@ -865,6 +917,15 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 			break;
 		case 0xFFFFFFD4:	// _Vscroll
 			CB_ML_V_Scroll( SRC );
+			break;
+		case 0xFFFFFFDB:	// BmpSave
+			CB_BmpSave( SRC );
+			break;
+		case 0xFFFFFFDC:	// BmpLoad
+			CB_BmpLoad( SRC );
+			break;
+		case 0xFFFFFFDD:	// DrawMat
+			CB_DrawMat( SRC );
 			break;
 	}
 }

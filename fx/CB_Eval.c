@@ -132,10 +132,15 @@ int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 		*reg=c-'A';
 		if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 	} else {
-//		*reg=RegVarAliasEx(SRC); if ( *reg>=0 ) {
-		*reg=ListRegVar(SRC);	 if ( *reg>=0 ) {
+		*reg=RegVarAliasEx(SRC); 
+		if ( *reg>=0 ) {
 			if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
-		} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
+		} else {
+			*reg=ListRegVar(SRC);
+			if ( *reg>=0 ) {
+				if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
+			} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
+		}
 	}
 	return 1;
 }
@@ -1697,20 +1702,25 @@ double Evalsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-double Eval(char *SRC) {		// Eval temp
+
+double Eval2(char *SRC, int *ptr) {		// Eval temp mat
 	double result;
 	int execptr=ExecPtr;
 	int oplen=strlenOp((char*)SRC);
 	ErrorPtr= 0;
 	ErrorNo = 0;
 	if ( oplen == 0 ) return 0;
-	ExecPtr= 0;
+	ExecPtr= *ptr;
 	CB_StrBufferCNT=0;			// Quot String buffer clear
 	result = EvalsubTop( SRC );
-	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
+//	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
 	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
+	*ptr=ExecPtr;
 	ExecPtr=execptr;
 	return result;
 }
-
+double Eval(char *SRC) {		// Eval temp
+	int ptr=0;
+	return Eval2( SRC, &ptr);
+}
 

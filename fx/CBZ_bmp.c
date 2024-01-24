@@ -1,0 +1,307 @@
+#include "fxlib.h"
+#include "timer.h"
+#include "stdio.h"
+#include "string.h"
+
+#include "CB_io.h"
+#include "CB_error.h"
+
+#include "CB_inp.h"
+#include "CB_file.h"
+#include "CB_edit.h"
+#include "CB_interpreter.h"
+#include "CBI_interpreter.h"
+#include "CB_Eval.h"
+#include "CBI_Eval.h"
+#include "CB_Matrix.h"
+#include "CB_setup.h"
+#include "CB_TextConv.h"
+#include "CB_Str.h"
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int ReadBmpHeader( unsigned char *filebase, int *bfOffBits, int *biWidth, int *biHeight ){	// 1 bit mono bmp file 
+	if ( (filebase[0x00]!='B') || (filebase[0x01]!='M') ) return 0;	// not Bmp file
+	if ( ( filebase[0x0E] == 0x28 ) && ( filebase[0x1A]==1 ) ) {	// info header & 1bit mono 
+		*bfOffBits = filebase[0x0A] +filebase[0x0B]*0x100 +filebase[0x0C]*0x10000 +filebase[0x0D]*0x1000000;
+		*biWidth  = filebase[0x12] +filebase[0x13]*0x100 +filebase[0x14]*0x10000 +filebase[0x15]*0x1000000;
+		*biHeight = filebase[0x16] +filebase[0x17]*0x100 +filebase[0x18]*0x10000 +filebase[0x19]*0x1000000;
+		return 1;	// ok
+	}
+	return 0;
+}
+
+int WriteBmpHeader( char *filebase, int biWidth, int biHeight ){	// 1 bit mono bmp file
+	int   bfSize,biSizeImage;
+	int   bfOffBits = 0x3E;
+	int   biSize          = 0x28;
+//	short biPlanes        = 1;
+//	short biBitCount      = 1;
+//	int   biCompression   = 0;
+//	int   biSizeImage     = 0;
+//	int   biXPelsPerMeter = 0x0B12;
+//	int   biYPelsPerMeter = 0x0B12;
+//	int   biClrUsed       = 2;
+//	int   biClrImportant  = 2;
+//	char  rgbBlue         = 0xFF;
+//	char  rgbGreen        = 0xFF;
+//	char  rgbRed          = 0xFF;
+//	char  rgbReserved     = 0xFF;
+	biSizeImage = ((((biWidth+7)/8)+3)/4)*4 *biHeight ;
+	bfSize = biSizeImage +bfOffBits;
+	filebase[0x00]='B';
+	filebase[0x01]='M';
+	filebase[0x02]=(bfSize & 0x000000FF);
+	filebase[0x03]=(bfSize & 0x0000FF00) >>  8;
+	filebase[0x04]=(bfSize & 0x00FF0000) >> 16;
+	filebase[0x05]=(bfSize & 0xFF000000) >> 24;
+	filebase[0x06]=0;
+	filebase[0x07]=0;
+	filebase[0x08]=0;
+	filebase[0x09]=0;
+	filebase[0x0A]=(bfOffBits & 0x000000FF);
+	filebase[0x0B]=(bfOffBits & 0x0000FF00) >>  8;
+	filebase[0x0C]=(bfOffBits & 0x00FF0000) >> 16;
+	filebase[0x0D]=(bfOffBits & 0xFF000000) >> 24;
+	
+	filebase[0x0E]=biSize;	// BITMAPINFOHEADER size
+	filebase[0x0F]=0;
+	filebase[0x10]=0;
+	filebase[0x11]=0;
+	filebase[0x12]=(biWidth  & 0x000000FF);
+	filebase[0x13]=(biWidth  & 0x0000FF00) >>  8;
+	filebase[0x14]=(biWidth  & 0x00FF0000) >> 16;
+	filebase[0x15]=(biWidth  & 0xFF000000) >> 24;
+	filebase[0x16]=(biHeight & 0x000000FF);
+	filebase[0x17]=(biHeight & 0x0000FF00) >>  8;
+	filebase[0x18]=(biHeight & 0x00FF0000) >> 16;
+	filebase[0x19]=(biHeight & 0xFF000000) >> 24;
+	filebase[0x1A]=1;		// biPlanes
+	filebase[0x1B]=0;
+	filebase[0x1C]=1;		// biBitCount
+	filebase[0x1D]=0;
+	filebase[0x1E]=0;		// biCompression
+	filebase[0x1F]=0;
+	
+	filebase[0x20]=0;
+	filebase[0x21]=0;
+	filebase[0x22]=(biSizeImage & 0x000000FF);
+	filebase[0x23]=(biSizeImage & 0x0000FF00) >>  8;
+	filebase[0x24]=(biSizeImage & 0x00FF0000) >> 16;
+	filebase[0x25]=(biSizeImage & 0xFF000000) >> 24;
+	filebase[0x26]=0x12;	// biXPelsPerMeter
+	filebase[0x27]=0x0B;
+	filebase[0x28]=0;
+	filebase[0x29]=0;
+	filebase[0x2A]=0x12;	// biYPelsPerMeter
+	filebase[0x2B]=0x0B;
+	filebase[0x2C]=0;
+	filebase[0x2D]=0;
+	filebase[0x2E]=2;		// biClrUsed
+	filebase[0x2F]=0;
+	
+	filebase[0x30]=0;
+	filebase[0x31]=0;
+	filebase[0x32]=2;		// biClrImportant
+	filebase[0x33]=0;
+	filebase[0x34]=0;
+	filebase[0x35]=0;
+	
+	filebase[0x36]=0xFF;	// rgbBlue
+	filebase[0x37]=0xFF;	// rgbGreen
+	filebase[0x38]=0xFF;	// rgbRed
+	filebase[0x39]=0x00;	// rgbReserved
+	filebase[0x3A]=0x00;	// rgbBlue
+	filebase[0x3B]=0x00;	// rgbGreen
+	filebase[0x3C]=0x00;	// rgbRed
+	filebase[0x3D]=0x00;	// rgbReserved
+	return bfSize;
+}
+
+void DecodeBmp2mem( char *buffer2, char *buffer, int width, int height ){	//	bmpformat(buffer) -> bmp(buffer2)
+	int i,x,y;
+	int xbyte,xbyte2;
+	xbyte =((((width+7)/8)+3)/4)*4;
+	xbyte2=   (width+7)/8;
+	for (y=0; y<height; y++) {
+		for (x=0; x<xbyte2; x++) {
+			buffer2[y*xbyte2+x]=buffer[(height-y-1)*xbyte+x];
+		}
+	}
+}
+void DecodeBmp2vram( char *vram, char *buffer, int width, int height ){	//	bmpformat(buffer) -> bmp(vram)
+	int i,x,y;
+	int xbyte,xbyte2;
+	xbyte =((((width+7)/8)+3)/4)*4;
+	xbyte2=   (width+7)/8;
+	for (y=0; y<height; y++) {
+		for (x=0; x<xbyte2; x++) {
+			if ( (0<=x)&&(x<128)&&(0<=y)&&(y<128) ) vram[(y<<4)+x]=buffer[(height-y-1)*xbyte+x];
+		}
+	}
+}
+int EnodeBmp2mem( char *buffer , char *buffer2 , int width, int height ){	//	bmp(buffer2) -> bmpformat(buffer)
+	int i,x,y;
+	int xbyte,xbyte2;
+	int offset;
+	xbyte =((((width+7)/8)+3)/4)*4;
+	xbyte2=   (width+7)/8;
+	for (y=0; y<height; y++) {
+		for (x=0; x<xbyte2; x++) {
+			buffer[(height-y-1)*xbyte+x]=buffer2[y*xbyte2+x];
+		}
+	}
+	return 1;
+}
+
+
+int DecodeBmp2Vram( char *filebase ){	//	bmp -> vram
+	int i,x,y;
+	int width,height;
+	int offset;
+	char *vram=(char*)GetVRAMAddress();
+	if ( ReadBmpHeader( (unsigned char*)filebase, &offset, &width, &height ) == 0 ) return 0;	// not bmp
+	Bdisp_AllClr_VRAM();
+	DecodeBmp2vram( vram, filebase+offset, width, height );
+	return 1;
+}
+
+/*
+int CB_GetOprand_XY1XY2( char *SRC, int *x1, int *y1, int *x2, int *y2 ) {
+	if ( SRC[ExecPtr] != ',' ) return 0;
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) goto jp;
+	*x1=CB_EvalInt( SRC );
+	
+	if ( SRC[ExecPtr] != ',' ) return 1;
+  jp:
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) goto jp2;
+	*y1=CB_EvalInt( SRC );
+	
+	if ( SRC[ExecPtr] != ',' ) return 1;
+  jp2:
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) goto jp3;
+	*x2=CB_EvalInt( SRC );
+	
+	if ( SRC[ExecPtr] != ',' ) return 1;
+  jp3:
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) return 0;
+	*y2=CB_EvalInt( SRC );
+	return 1;
+}
+*/
+
+void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
+	char fname[32],sname[16];
+	int c,i,reg,matsize;
+	char* FilePtr;
+	int check=0;
+	int width,height;
+	int bfOffBits = 0x3E;
+	int bfSize;
+	char *bmpbuffer;
+	int dx,dy;
+	int dimA,dimB;
+
+//	c =SRC[ExecPtr];
+//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+
+	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+	c =SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
+	dimA =MatAry[reg].SizeA;
+	dimB =MatAry[reg].SizeB;
+	switch ( MatAry[reg].ElementSize ) {
+		case  1:
+		case  2:
+			width = dimA;
+			height= dimB;
+			break;
+		case  8:
+			width = dimB*8;
+			height= dimA;
+			break;
+		case 16:
+			width = dimB*16;
+			height= dimA;
+			break;
+		case 32:
+			width = dimB*32;
+			height= dimA;
+			break;
+		case 64:
+			width = dimB*64;
+			height= dimA;
+			break;
+		default:
+			CB_Error(ElementSizeERR);
+			break;
+	}
+	if ( ErrorNo ) return; // error
+
+	c =SRC[ExecPtr];
+	if ( c == ',' ) {
+		c =SRC[++ExecPtr];
+		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
+		ExecPtr++;
+	}
+	
+	bfSize = ((((width+7)/8)+3)/4)*4 *height +bfOffBits;
+	bmpbuffer = ( char *)malloc( bfSize+4 );
+	if( bmpbuffer == NULL ) Abort();
+	memset( bmpbuffer, 0x00, bfSize+4 );
+	WriteBmpHeader( bmpbuffer, width, height );
+	EnodeBmp2mem( bmpbuffer+bfOffBits , FilePtr, width, height );
+	CB_SaveSub( sname, bmpbuffer, bfSize, check, "bmp" );
+	free( bmpbuffer );	// free
+
+}
+
+void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
+	char fname[32],sname[16];
+	int c,i,reg,matsize,dimA,dimB,ElementSize,base;
+	char* FilePtr;
+	int width,height;
+	int offset,ptr=0,size;
+	char* matptr;
+
+//	c =SRC[ExecPtr];
+//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+	
+	c =SRC[ExecPtr];
+	if ( c == ',' ) {
+		ExecPtr++;
+		ptr=CB_EvalInt( SRC );
+		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
+	}
+	c =SRC[ExecPtr];
+	if ( c == ')' ) ExecPtr++;
+	c =SRC[ExecPtr];
+	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	CB_SaveLoadOprand( SRC, &reg, &matsize );
+	if ( ErrorNo == NoMatrixArrayERR ) { ErrorNo=0; }	// No Mat error cancel
+	FilePtr=CB_LoadSub( sname, ptr, &size, "bmp" ) ;
+	if ( ErrorNo ) return ; // error
+
+	ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );
+	dimA = width;
+	dimB = height;
+	base = 0;
+	ElementSize = 1;
+	DimMatrixSub( reg, ElementSize, dimA, dimB, base ) ;
+	if ( ErrorNo ) goto exit; // error
+	matptr=(char*)MatAry[reg].Adrs;
+	DecodeBmp2mem( matptr , FilePtr+offset, width, height );	//	bmpformat -> bmp
+  exit:
+	free( FilePtr );	// free
+
+}
+

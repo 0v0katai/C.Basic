@@ -6,6 +6,7 @@
 #include "fx_syscall.h"
 
 #include "CB_interpreter.h"
+#include "CB_edit.h"
 #include "CB_io.h"
 #include "CB_error.h"
 #include "CB_Kana.h"
@@ -175,9 +176,18 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	int *iptr1=(int*)(HiddenRAM_Top- 4);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	MatAryMax=MATARY_MAX +ExtendList*52;
+	Mattmpreg=MatAryMax-1;
 	ExtListMax=MatAryMax-33;
-	if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
+	EditMaxfree = EDITMAXFREE;
+	EditMaxProg = EDITMAXPROG;
+	NewMax      = NEWMAX;
+	ClipMax     = CLIPMAX;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {		// hidden RAM init
+		EditMaxfree = EDITMAXFREE2;
+		EditMaxProg = EDITMAXPROG2;
+		NewMax      = NEWMAX2;
+		ClipMax     = CLIPMAX2;
+		if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
 		HiddenRAM_MatTopPtr = HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
 		MatAry = (matary *)HiddenRAM_MatTopPtr;
 		HiddenRAM_MatAryStore();
@@ -185,7 +195,6 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 		MatAry = ( matary *)malloc( sizeof(matary)*MatAryMax );
 	}
 	memset( MatAry, 0, sizeof(matary)*MatAryMax );
-	Mattmpreg=MatAryMax;
 }
 
 //---------------------------------------------------------------------------------------------

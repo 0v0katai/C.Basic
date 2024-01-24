@@ -659,7 +659,7 @@ const char ConvListF700[][17]={
 "DisplayData",		// F79A
 "@F79B",			// F79B
 "@F79C",			// F79C
-"@F79D",			// F79D
+"StoCapt ",				// F79D
 "Menu ",			// F79E
 "RclCapt",			// F79F
 
@@ -845,7 +845,7 @@ const char ConvListF900[][17]={
 "Hex(",					// F946
 "Bin(",					// F947
 "StrBase(",				// F948
-"@F949",			// F949
+"StrRepl(",				// F949
 "CrossP(",			// F94A		// ver.2.04~
 "DotP(",			// F94B
 "@F94C",			// F94C
@@ -1000,9 +1000,9 @@ const char ConvListF900[][17]={
 "_Test",				// F9D8
 "_BmpZoom ",			// F9D9
 "_BmpRotate ",			// F9DA
-"@F9DB",			// F9DB
-"@F9DC",			// F9DC
-"@F9DD",			// F9DD
+"BmpSave ",				// F9DB
+"BmpLoad(",				// F9DC
+"DrawMat ",			// F9DD
 "@F9DE",			// F9DE
 "@F9DF",			// F9DF
 

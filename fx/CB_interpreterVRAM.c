@@ -690,10 +690,10 @@ void StoPictSmemSub( unsigned char *pict, int pictNo ){	//
 	stat=SavePicture( (char *)pict, pictNo );
 	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
 }
-void StoPictSmem( int pictNo){	//
+void StoPictSmem( int pictNo, int offset ){	//
 	unsigned char pict[2048+0x4C+4];
 	int i,stat;
-	ReadVram(pict+0x4C);
+	ReadVram(pict+offset);
 	StoPictSmemSub( pict, pictNo );
 }
 
@@ -707,12 +707,12 @@ void StoPictHeap2Smem( int pictNo ){	// heap Pict -> SMEM Pict
 	}
 }
 
-void RclPictSmem( int pictNo){
+void RclPictSmem( int pictNo, int offset){
 	unsigned char *pict;
 	int i;
 	pict=(unsigned char *)LoadPicture( pictNo );
 	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
-	WriteVram( pict+0x4C );
+	WriteVram( pict+ offset );
 	free(pict);
 }
 
@@ -720,7 +720,7 @@ void StoPict( int pictNo){
 	int i,stat;
 	unsigned char *pict;
 	
-	if ( PictMode == 0 ) { StoPictSmem(pictNo); return; }	// strage memory mode
+	if ( PictMode == 0 ) { StoPictSmem(pictNo, 0x4C ); return; }	// strage memory mode
 	
 	if ( PictAry[pictNo] == NULL ) { //
 		PictAry[pictNo] = HiddenRAM_mallocPict(pictNo) ;						// New Pict array ptr*
@@ -736,7 +736,7 @@ void RclPict( int pictNo, int errorcheck){
 	unsigned char *pict2;
 	int i;
 	if ( PictMode == 0 ) {	// strage memory mode
-		RclPictSmem(pictNo);
+		RclPictSmem(pictNo, 0x4C );	// Pict
 		if ( errorcheck ) return;
 		ErrorNo=0;
 		return;
@@ -766,6 +766,22 @@ void RclPict( int pictNo, int errorcheck){
 	WriteVram( pict );
 }
 
+void StoCapt( int pictNo){
+	unsigned char *pict;
+	int i;
+	pict=(unsigned char *)LoadPicture( pictNo );
+	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
+	WriteVram( pict+0x50 );
+	free(pict);
+}
+
+void RclCapt( int pictNo ){
+	unsigned char *pict;
+	unsigned char *pict2;
+	int i;
+	RclPictSmem(pictNo, 0x50 );	// Capt
+}
+
 void CB_StoPict( char *SRC ) { //	StoPict
 	int n,f=0;
 	int pictmode=PictMode;
@@ -781,7 +797,7 @@ void CB_StoPict( char *SRC ) { //	StoPict
 		PictMode = 0 ;
 		StoPict(n);
 		PictMode=pictmode;
-	}
+	} else 
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 void CB_RclPict( char *SRC ) { //	RclPict
@@ -790,6 +806,23 @@ void CB_RclPict( char *SRC ) { //	RclPict
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20+ExtendPict<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	RclPict(n, 1);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
+}
+
+void CB_StoCapt( char *SRC ) { //	StoCapt
+	int n,f=0;
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+	n=CB_EvalInt( SRC );
+	if ( (n<1) || (99<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	StoPictSmem(n, 0x50 );	// Capt
+	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
+}
+void CB_RclCapt( char *SRC ) { //	RclCapt
+	int n;
+	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
+	n=CB_EvalInt( SRC );
+	if ( (n<1) || (99<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	RclPictSmem(n, 0x50 );	// Capt
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 
@@ -915,6 +948,16 @@ void CB_DotShape( char *SRC ) { // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern
 
 
 //----------------------------------------------------------------------------------------------
+void CB_DotOprandMat( char *SRC, int *px, int *py, int reg) {
+	int x,y;
+	int base=MatAry[reg].Base;
+	*px=CB_EvalInt( SRC );
+	if ( ( *px < base ) || ( MatAry[reg].SizeA-1+base < *px ) ) CB_Error(RangeERR) ; // Range error 
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	*py=CB_EvalInt( SRC );
+	if ( ( *py < base ) || ( MatAry[reg].SizeB-1+base < *py ) ) CB_Error(RangeERR) ; // Range error 
+}
 void CB_DotOprand( char *SRC, int *px, int *py) {
 	int x,y;
 	*px=CB_EvalInt( SRC );
@@ -925,6 +968,41 @@ void CB_DotOprand( char *SRC, int *px, int *py) {
 	if ( ( (*py)<0 ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); }  // Argument error
 }
 //--------------------------------------------------------------------
+void CB_AddMatPxPy( char *SRC, int reg, int px1, int py1, int px2, int py2, int ElementSize ) {
+		int dimA,dimB,base=1;
+		int dx,dy;
+		ElementSizeSelect( SRC, &base, ElementSize );
+		if ( ( px1 == 0 ) || ( py1 == 0 ) ) base=0;
+		if ( ( ElementSize <= 4 ) || ( ElementSize > 0x100 ) ) ElementSize=1;	// 1 bit matrix
+		ElementSize &= 0xFF;
+		dx= px2-px1;
+		dy= py2-py1;
+		switch ( ElementSize ) {
+			case  1:
+				dimA=dx+1;
+				dimB=dy+1;
+				break;
+			case  8:
+				dimA=dy+1;
+				dimB=(dx/8)+1;
+				break;
+			case 16:
+				dimA=dy+1;
+				dimB=(dx/16)+1;
+				break;
+			case 32:
+				dimA=dy+1;
+				dimB=(dx/32)+1;
+				break;
+			case 64:
+				dimA=dy+1;
+				dimB=(dx/64)+1;
+				break;
+		}
+		DimMatrixSub( reg, ElementSize, dimA, dimB, base ) ;
+}
+
+//--------------------------------------------------------------------
 
 void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 	int c;
@@ -933,7 +1011,7 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 	int reg,i;
 	int dimA,dimB;
 	unsigned char *ptr;
-	int ElementSize;
+	int ElementSize=1;
 	int scrmode=ScreenMode;
 	int base;
 	DISPBOX box;
@@ -961,35 +1039,7 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 			box.top   =py1;
 			box.bottom=py2;
 			
-			ElementSize=ElementSizeSelect( SRC, &base, 0 );
-			if ( ( px1 == 0 ) || ( py1 == 0 ) ) base=0;
-			if ( ( ElementSize <= 4 ) || ( ElementSize > 0x100 ) ) ElementSize=1;	// 1 bit matrix
-			ElementSize &= 0xFF;
-			dx= px2-px1;
-			dy= py2-py1;
-			switch ( ElementSize ) {
-				case  1:
-					dimA=dx+1;
-					dimB=dy+1;
-					break;
-				case  8:
-					dimA=dy+1;
-					dimB=(dx/8)+1;
-					break;
-				case 16:
-					dimA=dy+1;
-					dimB=(dx/16)+1;
-					break;
-				case 32:
-					dimA=dy+1;
-					dimB=(dx/32)+1;
-					break;
-				case 64:
-					dimA=dy+1;
-					dimB=(dx/64)+1;
-					break;
-			}
-			DimMatrixSub( reg, ElementSize, dimA, dimB, base ) ;
+			CB_AddMatPxPy( SRC, reg, px1, py1, px2, py2, ElementSize ) ;
 			if ( ErrorNo )  return ; 	// error
 			
 			ptr=(unsigned char*)MatAry[reg].Adrs;
@@ -1070,7 +1120,7 @@ void CB_DotGet( char *SRC ){	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
 	int dimA,dimB;
 	int mptr;
 	int value;
-	int ElementSize;
+	int ElementSize=1;
 	int scrmode=ScreenMode;
 	
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
@@ -1083,6 +1133,10 @@ void CB_DotGet( char *SRC ){	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
 	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
 			MatrixOprand( SRC, &reg, &x, &y );
+			if ( ErrorNo == NoMatrixArrayERR ) { 	// No Matrix Array
+				ErrorNo=0;	// error cancel
+				CB_AddMatPxPy( SRC, reg, px1, py1, px2, py2, ElementSize ) ;	// Adding Matrix
+			}
 			if ( ErrorNo ) return ; // error
 
 			dimA=MatAry[reg].SizeA;
@@ -1104,7 +1158,7 @@ void CB_DotGet( char *SRC ){	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
 	if ( scrmode==0 ) CB_SelectTextVRAM();	// Select Text Screen
 }
 
-void CB_DotPut( char *SRC ){	// DotPut(Mat B[x,y], px1,py1, px2,py2)
+void CB_DotPut( char *SRC ){	// DotPut(Mat B[x,y], px1,py1, px2,py2) [-> Mat C]
 	int c;
 	int x,y,px,py;
 	int px1,py1,px2,py2;
@@ -1113,22 +1167,23 @@ void CB_DotPut( char *SRC ){	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 	short	*MatAryW,*MatAryW2;
 	int		*MatAryI,*MatAryI2;
 	int reg,reg2,i;
-	int dimA,dimB;
+	int dimA,dimB,ElementSize,base;
 	int mptr,mptr2;
 	int value;
 	int mode;
+	int width,height;
 	
-	if ( RangeErrorCK( SRC ) ) return;
+//	if ( RangeErrorCK( SRC ) ) return;
 	MatrixOprand( SRC, &reg, &x, &y );
 	if ( ErrorNo ) return ; // error
 	
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	CB_DotOprand( SRC, &px1, &py1);
+	CB_DotOprand( SRC, &px1, &py1 );
 
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	CB_DotOprand( SRC, &px2, &py2);
+	CB_DotOprand( SRC, &px2, &py2 );
 	if ( ErrorNo ) return ; // error		
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
@@ -1136,16 +1191,28 @@ void CB_DotPut( char *SRC ){	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 	dimB=MatAry[reg].SizeB;
 	if (px1>px2) { i=px1; px1=px2; px2=i; }
 	if (py1>py2) { i=py1; py1=py2; py2=i; }
-	if ( dimA < px2-px1 ) px2=px1+dimA;
-	if ( dimB < py2-py1 ) py2=py1+dimB;
+	if ( dimA <= x ) x=dimA-1;
+	if ( dimB <= y ) y=dimB-1;
+	if ( px1+dimA-x < px2 ) px2=px1+dimA-x;
+	if ( py1+dimB-y < py2 ) py2=py1+dimB-y;
+	width =px2-px1+1;
+	height=py2-py1+1;
 		
 	mptr=0;
 	
 	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
 			MatrixOprand( SRC, &reg2, &dimA, &dimB );
-			if ( ErrorNo ) return ; // error
-			if ( MatAry[reg2].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+			ErrorNo=0;	// error cancel
+//			if ( ErrorNo == NoMatrixArrayERR ) { 	// No Matrix Array
+//				ErrorNo=0;	// error cancel
+//				CB_AddMatPxPy( SRC, reg2, px1, py1, px2, py2, MatAry[reg].ElementSize ) ;	// Adding Matrix
+//			}
+//			if ( ErrorNo ) return ; // error
+
+			ElementSize=MatAry[reg].ElementSize; if ( ElementSize==2 ) ElementSize=1;
+			base=MatAry[reg].Base;
+			DimMatrixSub( reg2, ElementSize, width, height, base ) ;
 			
 			dimA=MatAry[reg2].SizeA;
 			dimB=MatAry[reg2].SizeB;
@@ -1159,7 +1226,7 @@ void CB_DotPut( char *SRC ){	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 			i=x;
 			for ( py=py1; py<=py2 ; py++) {	
 				x=i;
-				for ( px=px1; px<=px2 ; px++) WriteMatrixInt( reg2, px, py, ReadMatrixInt( reg, x++, y));
+				for ( px=px1; px<=px2 ; px++) WriteMatrixInt( reg2, px, py, ReadMatrixInt( reg, x++, y ));
 				y++;
 			}
 //			dspflag=0;
@@ -1171,8 +1238,8 @@ void CB_DotPut( char *SRC ){	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 		for ( py=py1; py<=py2 ; py++) {	
 			x=i;
 			for ( px=px1; px<=px2 ; px++) 
-				if ( ReadMatrixInt( reg, x++, y ) ) BdispSetPointVRAM2(px, py, mode);
-					else							BdispSetPointVRAM2(px, py, 0);
+				if ( ReadMatrixInt( reg, x++, y ) ) BdispSetPointVRAM2( px, py, mode);
+					else							BdispSetPointVRAM2( px, py, 0);
 			y++;
 		}
 		
@@ -1207,16 +1274,10 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 		c=SRC[ExecPtr];
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
-		px1=CB_EvalInt( SRC );
-		if ( ( px1 < 1 ) || ( MatAry[reg].SizeA < px1 ) ) CB_Error(RangeERR) ; // Range error 
+		CB_DotOprandMat( SRC, &px1, &py1, reg);
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
-		py1=CB_EvalInt( SRC );
-		if ( ( py1 < 1 ) || ( MatAry[reg].SizeB < py1 ) ) CB_Error(RangeERR) ; // Range error 
-		
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-		ExecPtr++;
-		CB_DotOprand( SRC, &px2, &py2);
+		CB_DotOprandMat( SRC, &px2, &py2, reg);
 		if ( ErrorNo ) return ; // error
 
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;

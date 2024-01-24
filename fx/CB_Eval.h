@@ -88,6 +88,7 @@ double fRanBin( double n, double p) ;	// RanBin#
 double Eval_atof(char *SRC, int c) ;
 
 double Eval(char *SRC);
+double Eval2(char *SRC, int *ptr);
 double Evalsub1(char *SRC);
 double Evalsub2(char *SRC);
 double Evalsub3(char *SRC);
