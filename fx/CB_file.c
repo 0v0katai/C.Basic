@@ -413,6 +413,7 @@ unsigned int Explorer( int size, char *folder )
 	int nofile=0;
 	int Isfolder=0;
 	char buffer[32];
+	char buffer2[32];
 	
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -443,7 +444,9 @@ unsigned int Explorer( int size, char *folder )
 	FileListUpdate = 0 ;	// 1:update
 	renamename[0] = '\0';
 	renamefolder[0] = '\0';
-
+	
+	GetMediaFreeStr10(buffer2);
+	
 	while( cont )
 	{
 		FavCount=0;
@@ -483,7 +486,7 @@ unsigned int Explorer( int size, char *folder )
 //		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
 		locate(1,1);Print((unsigned char*)"[        ]");
 		locate(2,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
-		GetMediaFreeStr10(buffer);						PrintMini(10*6+1, 1, (unsigned char*)buffer , MINI_OVER);  // free area
+														PrintMini(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
 		sprintf(buffer, "(%d)", size-FavoritesMAX-1);	PrintMini(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
 		if( size < 1+FavoritesMAX+1 ){
 			locate( 8, 4 );
