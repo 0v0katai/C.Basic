@@ -306,7 +306,7 @@ int CB_Sci( char *SRC );
 int CB_Norm( char *SRC );
 void CB_Rnd();
 int CB_Disps( char *SRC ,short dspflag);
-void CB_end( char *SRC );
+int CB_end( char *SRC );
 
 void CB_Cls( char *SRC );
 void CB_ClrText( char *SRC );
