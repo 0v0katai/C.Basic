@@ -10,7 +10,7 @@
 
 struct st_round CB_Round = { Norm , 1} ; // Round
 int ENG=0;	// ENG flag
-char UseHiddenRAM=1;
+char UseHiddenRAM=0;
 char IsHiddenRAM=0;
 
 //---------------------------------------------------------------------------------------------

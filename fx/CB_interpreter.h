@@ -274,6 +274,7 @@ void PlotXYtoPrevPXY() ;
 void PlotPreviousPXY() ;
 void PlotCurrentXY();
 
+void CB_Screen( char *SRC );
 void CB_ViewWindow( char *SRC ) ; //	ViewWindow
 void CB_FLine( char *SRC) ; //	F-Line
 void CB_Line( char *SRC ) ; //	Line
