@@ -1,6 +1,6 @@
 [DLSimProject]
 Name=CBASIC
-Version=00.99.2000
+Version=00.99.3000
 Model=:fx-9860G.dlm
 SourcePath=.
 MemoryPath=INIT

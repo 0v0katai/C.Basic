@@ -3,7 +3,7 @@
 void BdispSetPointVRAM2( int px, int py, int mode);
 
 #define Bdisp_GetPoint_VRAM  BdispGetPointVRAM2
-int BdispGetPointVRAM2( int px, int py);
+int BdispGetPointVRAM2( char px, char py);
 //-----------------------------------------------------------------------------
 double MOD(double numer, double denom);
 

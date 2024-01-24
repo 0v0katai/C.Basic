@@ -19,6 +19,7 @@
 #include "CB_Edit.h"
 #include "CB_error.h"
 #include "CB_setup.h"
+#include "CB_Matrix.h"
 
 //---------------------------------------------------------------------------------------------
 int KeyRepeatFirstCount=20;		// pointer to repeat time of first repeat (20:default)
@@ -35,7 +36,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.99b" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.99c" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
 	GetKey(&key);
@@ -509,7 +510,7 @@ void SetFactor(){
 
 //-----------------------------------------------------------------------------
 void SetVarDsp(int VarMode) {
-	if ( VarMode ) Print((unsigned char*)"[int%]"); else Print((unsigned char*)"[double]");
+	if ( VarMode ) Print((unsigned char*)"[int%]"); else Print((unsigned char*)"[dbl#]");
 }
 void InitVar( double value, int VarMode, int small) {
 	char buffer[32];
@@ -726,15 +727,16 @@ int SetupG(int select){		// ----------- Setup
     char *style[]   ={"Normal","Thick","Broken","Dot"};
     char *degrad[]  ={"Deg","Rad","Grad"};
     char *display[] ={"Nrm","Fix","Sci"};
-    char *mode[]    ={"Double","Int"};
+    char *mode[]    ={"Dbl#","Int%"};
     char *Matmode[]    ={"[m,n]","[X,Y]"};
+    char *Matbase[]    ={"0","1"};
     char *Pictmode[]    ={"S.Mem","Heap"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int scrl=select-6;
 	int y,cnt;
-	int listmax=17;
+	int listmax=18;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -809,19 +811,23 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix  mode:");		// 14
+			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 14
 			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict    mode:");		// 15
+			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix  base:");		// 15
+			locate(15,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict    mode:");		// 16
 			locate(14,cnt-scrl); Print((unsigned char*)Pictmode[PictMode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 16
+			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 17
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 17
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 18
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -841,7 +847,7 @@ int SetupG(int select){		// ----------- Setup
 			case 9: // BreakCheck
 			case 10: // TimeDsp
 			case 11: // IfEnd Check
-			case 16: // ACBreak Check
+			case 17: // ACBreak Check
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
@@ -868,15 +874,19 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_DISPN( 1," -");
 				Fkey_dispN( 3, "Init");
 				break;
-			case 14: // Mat mode
+			case 14: // Mat display mode
 				Fkey_dispN( 0, "m.n ");
 				Fkey_dispN( 1, "X,Y ");
 				break;
-			case 15: // Mat mode
+			case 15: // Mat base
+				Fkey_dispN( 0, " 0 ");
+				Fkey_dispN( 1, " 1 ");
+				break;
+			case 16: // Pict mode
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
-			case 17: // Execute Mode
+			case 18: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -955,16 +965,20 @@ int SetupG(int select){		// ----------- Setup
 						KeyRepeatNextCount += 1 ;
 						if ( KeyRepeatNextCount > 20 ) KeyRepeatNextCount=20;
 						break;
-					case 14: // Matrix mode
+					case 14: // Matrix Display mode
 						MatXYmode = 0 ; // m,n
 						break;
-					case 15: // Pict mode
+					case 15: // Matrix base
+						MatBaseDefault = 0 ; // 
+						MatBase = MatBaseDefault;
+						break;
+					case 16: // Pict mode
 						PictMode = 0 ; // Memory mode
 						break;
-					case 16: // ACBreak
+					case 17: // ACBreak
 						ACBreak = 1 ; // on
 						break;
-					case 17: // CB mode
+					case 18: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
 						break;
@@ -1020,16 +1034,20 @@ int SetupG(int select){		// ----------- Setup
 						KeyRepeatNextCount -= 1 ;
 						if ( KeyRepeatNextCount < 1 ) KeyRepeatNextCount=1;
 						break;
-					case 14: // Matrix mode
+					case 14: // Matrix display mode
 						MatXYmode = 1 ; // x,y
 						break;
-					case 15: // Pict mode
+					case 15: // Matrix base
+						MatBaseDefault = 1 ; // base
+						MatBase = MatBaseDefault;
+						break;
+					case 16: // Pict mode
 						PictMode = 1 ; // heap mode
 						break;
-					case 16: // ACBreak
+					case 17: // ACBreak
 						ACBreak = 0 ; // off
 						break;
-					case 17: // CB mode
+					case 18: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
 						break;

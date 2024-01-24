@@ -19,6 +19,7 @@
 #include "CB_Edit.h"
 #include "CB_error.h"
 #include "CB_setup.h"
+#include "CB_Matrix.h"
 
 //------------------------------------------------------------------------------
 int GCursorflag = 1;	// GCursor Pixel ON:1 OFF:0
@@ -65,7 +66,7 @@ void DrawGCSR( int x, int y )
 
     DISPGRAPH GCSR; 
     
-	if ( (0<x) && (x<128) && (0<y) && (y<64) ) {
+	if ( (MatBase<=x) && (x<128) && (MatBase<=y) && (y<64) ) {
 		GCSR.x = x-4; 
 		GCSR.y = y-3; 
 		GCSR.GraphData.width =	8; if ( x>124) GCSR.GraphData.width = 8-(x-124);
@@ -190,10 +191,10 @@ unsigned int Plot()
 	if ( VWtoPXY( Plot_X, Plot_Y, &GCursorX, &GCursorY) ) return;	// VW(X,Y) to  graphic cursor XY
 	
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
-	Bkey_Set_RepeatTime(FirstCount,2);				// set graphic cursor repeat time  (count * 25ms)
 
 	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 	while ( cont ) {	
+		Bkey_Set_RepeatTime(16,2);				// set graphic cursor repeat time  (count * 25ms)
 		GCursorSetFlashMode(1);	// graphic cursor flashing on
 		RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
@@ -222,13 +223,13 @@ unsigned int Plot()
 				if ( SetViewWindow() ) cont=0;
 				break;
 			case KEY_CTRL_LEFT:
-				if ( GCursorX >   1 ) GCursorX--;
+				if ( GCursorX > MatBase ) GCursorX--;
 				break;
 			case KEY_CTRL_RIGHT:
 				if ( GCursorX < 127 ) GCursorX++;
 				break;
 			case KEY_CTRL_UP:
-				if ( GCursorY >   1 ) GCursorY--;
+				if ( GCursorY > MatBase ) GCursorY--;
 				break;
 			case KEY_CTRL_DOWN:
 				if ( GCursorY <  63 ) GCursorY++;

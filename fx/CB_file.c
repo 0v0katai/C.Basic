@@ -1186,7 +1186,7 @@ void SaveConfig(){
 	bufshort[23]=Angle;				bufshort[22]=0;
 	bufshort[25]=BreakCheck;		bufshort[24]=0;
 	bufshort[27]=TimeDsp;			bufshort[26]=0;
-	bufshort[29]=MatXYmode;			bufshort[28]=0;
+	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
 	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
 
 	bufdbl[ 8]=Xfct;
@@ -1265,7 +1265,7 @@ void LoadConfig(){
 		Angle         =bufshort[23];        
 		BreakCheck    =bufshort[25];        
 		TimeDsp       =bufshort[27];        
-		MatXYmode     =bufshort[29];        
+		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
 		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
 
 		Xfct=bufdbl[ 8];
@@ -1409,13 +1409,22 @@ int CB_IsExist( char *SRC ) {	//	IsExist("TEST")		//  no exist: return 0     exi
 	return GetFileSize( fname );
 }
 
+char * CB_SaveLoadOprand( char *SRC , int *matsize ) {
+	int reg,dimA,dimB,base;
+	char *ptr;
+	MatrixOprand( SRC, &reg, &dimA, &dimB );
+	ptr = (char *)MatrixPtr( reg, dimA, dimB );
+	base = 1-MatAry[reg].Base;
+	*matsize = MatrixSize( reg, MatAry[reg].SizeA, MatAry[reg].SizeB ) - MatrixSize( reg, dimA+base, dimB+base ) + MatrixSize( reg, 1, 1 );
+	return ptr;
+}
+
 void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	char fname[32],sname[16];
 	int c,i,matsize;
 	char* FilePtr;
-	int reg,dimA,dimB;
 	int check=0;
-
+	
 	c =SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -1424,10 +1433,8 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	MatrixOprand( SRC, &reg, &dimA, &dimB );
+	FilePtr = CB_SaveLoadOprand( SRC, &matsize);
 	if ( ErrorNo ) return ; // error
-	FilePtr=MatrixPtr( reg, dimA, dimB );
-	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA+1, dimB+1 ) + MatrixSize( reg, 1, 1 );
 
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
@@ -1443,13 +1450,11 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	CB_Error(FileERR);
 }
 
-
 void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3] 
 	char fname[32],sname[16];
 	int c,i,matsize;
 	char* FilePtr;
 	int ptr=0;
-	int reg,dimA,dimB;
 
 	int handle;
 	FONTCHARACTER filename[50];
@@ -1472,10 +1477,8 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	c =SRC[ExecPtr];
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	MatrixOprand( SRC, &reg, &dimA, &dimB );
+	FilePtr = CB_SaveLoadOprand( SRC, &matsize);
 	if ( ErrorNo ) return ; // error
-	FilePtr=MatrixPtr( reg, dimA, dimB );	
-	matsize=MatrixSize( reg, MatArySizeA[reg], MatArySizeB[reg] ) - MatrixSize( reg, dimA+1, dimB+1 ) + MatrixSize( reg, 1, 1 );
 
 	CharToFont( fname, filename );
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );

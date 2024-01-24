@@ -572,8 +572,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 			buffer2[8]='\0';
 			if (dumpflg==2) {
-				if ( DebugMode >=1 )	sprintf(buffer,"==%-8s==%s",buffer2, CB_INT?" [INT%] ":" [Double]");
-				else				sprintf(buffer,"==%-8s==%s",buffer2, CB_INTDefault?" [INT%] ":" [Double]");
+				if ( DebugMode >=1 )	sprintf(buffer,"==%-8s==%s%d%s",buffer2, CB_INT       ?" [INT%":" [Dbl#", MatBase,       "]");
+				else					sprintf(buffer,"==%-8s==%s%d%s",buffer2, CB_INTDefault?" [INT%":" [Dbl#", MatBaseDefault,"]");
 			} else 			sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
 			
 			locate (1,1); Print(    (unsigned char*)buffer );
@@ -1264,6 +1264,9 @@ int CB_BreakStop() {
 	char buf[22];
 	int stat;
 	int scrmode=ScreenMode;
+
+	if ( BreakPtr == -9999) return BreakPtr;
+
 	Bdisp_PutDisp_DD();
 	CB_SelectTextVRAM();	// Select Text Screen
 	CB_SelectGraphVRAM();	// Select Graphic screen
@@ -1273,12 +1276,13 @@ int CB_BreakStop() {
 		CB_ErrMsg( ErrorNo );
 		BreakPtr=-999;
 		ExecPtr=ErrorPtr;
+		if ( ErrorNo == StackERR ) { BreakPtr=-9999; return BreakPtr; }	// stack error
 		DebugScreen = 0;
 		ErrorNo=0;
 		DebugMode=2;	// enable debug mode
 	}
 	
-	if ( ( DebugMode < 2 ) && ( BreakPtr != -999) ) {
+	if ( ( DebugMode < 2 ) && ( BreakPtr > -999) ) {
 		PopUpWin(4);
 		locate(9,3); Print((unsigned char *)"Break");
 		locate(6,5); Print((unsigned char *) "Press:[EXIT]");
@@ -1296,7 +1300,7 @@ int CB_BreakStop() {
 		DebugMode=2;	// enable debug mode
 		DebugScreen = 0;
 	} else {	// Step mode
-		if( BreakPtr != -999) BreakPtr=ExecPtr;	// set breakptr
+		if( BreakPtr > -999) BreakPtr=ExecPtr;	// set breakptr
 	}
 	
 	ScreenModeEdit=scrmode;

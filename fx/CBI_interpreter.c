@@ -107,7 +107,7 @@ void CBint_Store( char *SRC ){	// ->
 			ExecPtr+=2;
 			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='Z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
-				if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatIntSub( reg, CBint_CurrentValue);
 			} else {
 				ExecPtr++;
@@ -351,12 +351,12 @@ void CBint_PxlOprand( char *SRC, int *py, int *px) {
 	int x,y;
 	y = (EvalIntsubTop( SRC ));
 	*py=y;
-	if ( ( (*py)<1 ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+	if ( ( (*py)<MatBase ) || ( (*py)>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	x = (EvalIntsubTop( SRC ));
 	*px=x;
-	if ( ( (*px)<1 ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
+	if ( ( (*px)<MatBase ) || ( (*px)>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
 	CB_SelectGraphVRAM();	// Select Graphic Screen
 }
 void CBint_PxlOn( char *SRC ) { //	PxlOn
