@@ -123,6 +123,7 @@ char ProgNo=0;			// current Prog No
 char *ProgfileAdrs[ProgMax+1];
 int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
+char  ProgfileMode[ProgMax+1];	// g1m : 0    text : 1
 char  ProgLocalN[ProgMax+1];
 char  ProgLocalVar[ProgMax+1][26];
 

@@ -39,7 +39,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v1.00\xE6\x41\x34" );
+	locate( 3, 4 ); Print( (unsigned char*)"          v1.00\xE6\x41\x35" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
 	GetKey(&key);
@@ -843,8 +843,8 @@ int SetupG(int select){		// ----------- Setup
     const char *Matmode[]    ={"[m,n]","[X,Y]"};
     const char *Matbase[]    ={"0","1"};
     const char *Pictmode[]    ={"S.Mem","Heap"};
-    const char *PictmodeSD[]  ={" SD ","Heap"};
-    const char *Stragemode[]  ={"S.Mem"," SD "};
+    const char *PictmodeSD[]  ={"SDcard ","Heap"};
+    const char *Stragemode[]  ={"S.Mem","SDcard "};
     const char *DDmode[]    ={"off","Grph","All"};
 	char buffer[22];
 	unsigned int key;
@@ -854,7 +854,7 @@ int SetupG(int select){		// ----------- Setup
 	char DateStr[16];
 	char TimeStr[16];
 	int year,month,day,hour,min,sec;
-	int listmax=24;
+	int listmax=25;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -940,7 +940,7 @@ int SetupG(int select){		// ----------- Setup
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 15
-			sprintf((char*)buffer," %d",PageUpDownNum);
+			sprintf((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
@@ -949,7 +949,7 @@ int SetupG(int select){		// ----------- Setup
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 17
-			locate(15,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
+			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 18
@@ -979,7 +979,11 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)Stragemode[StorageMode]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 24
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 24
+			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 25
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -1001,6 +1005,7 @@ int SetupG(int select){		// ----------- Setup
 			case 11: // TimeDsp
 			case 12: // IfEnd Check
 			case 19: // ACBreak Check
+			case 24: // Force g1m save
 				Fkey_dispN( 0, " On ");
 				Fkey_dispN( 1, " Off");
 				Fkey_Clear( 2 );
@@ -1066,7 +1071,7 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, " SD ");
 				break;
-			case 24: // Execute Mode
+			case 25: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -1192,7 +1197,10 @@ int SetupG(int select){		// ----------- Setup
 					case 23: // Strage mode
 						StorageMode = 0 ; // Memory mode
 						break;
-					case 24: // CB mode
+					case 24: // Force g1m save
+						ForceG1Msave = 1 ; // g1m or text
+						break;
+					case 25: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
 						break;
@@ -1287,7 +1295,10 @@ int SetupG(int select){		// ----------- Setup
 					case 23: // Strage mode
 						StorageMode = CheckSD() ; // SD mode
 						break;
-					case 24: // CB mode
+					case 24: // Force g1m save
+						ForceG1Msave = 0 ; // g1m and text
+						break;
+					case 25: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
 						break;

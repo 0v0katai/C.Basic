@@ -26,6 +26,8 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 extern char FileListUpdate;
 extern char StorageMode;		// 0:Storage memory   1:SD
 
+extern char ForceG1Msave;		//    1: force g1m save
+
 #define FileCMD_Prog   10000
 #define FileCMD_RUN    10001
 #define FileCMD_DebugRUN    10002
@@ -37,9 +39,9 @@ extern char StorageMode;		// 0:Storage memory   1:SD
 #define FileCMD_TEXT   10008
 #define FileCMD_PASS   10009
 
-char *loadFile( const char *name , int editMax);
+char *loadFile( const char *name , int editMax, int disperror );
 int  storeFile( const char *name, unsigned char* codes, int size);
-int LoadProgfile( char *name , int editsize) ;
+int LoadProgfile( char *name, int prgNo, int editsize, int disperror ) ;
 int SaveG1M( char *filebase );
 int SaveProgfile(int progNo );
 

@@ -145,6 +145,9 @@ void CB_ErrMsg(int ErrNo) {
 		case SwitchEndWithoutSwitchERR:
 			ERROR("Without Switch");
 			break;
+		case CantFindFileERR:
+			ERROR("Can't find file");
+			break;
 			
 		default:
 			break;

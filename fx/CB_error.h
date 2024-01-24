@@ -59,6 +59,7 @@ extern int ErrorNo;
 #define DefaultWithoutSwitchERR 51
 #define SwitchWithoutSwitchEndERR 52
 #define SwitchEndWithoutSwitchERR 53
+#define CantFindFileERR 54
 
 #define FileERR 100
 
