@@ -735,7 +735,7 @@ const char ConvListF700[][17]={
 "Rect ",				// F7E1
 "FillRect ",			// F7E2
 "LocateYX ",			// F7E3
-"@F7E4",			// F7E4
+"Disp ",			// F7E4
 "",					// F7E5
 "",					// F7E6
 "",					// F7E7
@@ -756,8 +756,8 @@ const char ConvListF700[][17]={
 "Call(",				// F7F5
 "Poke ",				// F7F6
 "",					// F7F7
-"@F7F8",			// F7F8
-"RefrshCtrl ",			// F7F9
+"RefrshCtrl ",			// F7F8
+"",					// F7F9
 "RefrshTime ",			// F7FA
 "Screen",				// F7FB
 "PutDispDD",			// F7FC

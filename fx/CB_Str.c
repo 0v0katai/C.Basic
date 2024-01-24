@@ -939,19 +939,9 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 			type[i]=2;
 		} else {	// expression
 			c=SRC[ExecPtr];
-			if ( CB_INT ) { 
-				if ( c=='#' ) { type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
-				else {
-				if ( c=='%' ) ExecPtr++;
-				type[i]=1; intval[i]=CB_EvalInt( SRC );
-				}
-			} else	{
-				if ( c=='%' ) { ExecPtr++; type[i]=1; intval[i]=CB_EvalInt( SRC ); }
-				else {
-				if ( c=='#' ) ExecPtr++;
-				type[i]=0; dblval[i]=CB_EvalDbl( SRC );
-				}
-			}
+			if ( c=='#' ) { ExecPtr++; type[i]=0; dblval[i]=EvalsubTop( SRC ); }
+			else 
+			if ( c=='%' ) { ExecPtr++; type[i]=1; intval[i]=CB_EvalInt( SRC ); }
 		}
 		c=SRC[ExecPtr];
 		if ( c != ',' ) break;

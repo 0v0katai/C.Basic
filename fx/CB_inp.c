@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.12                                       */
+/*   inp Library  ver 1.13                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -544,6 +544,7 @@ const short oplistPRGM[]={
 		0xF91E,	// ClrMat
 		
 		0xF710,	// Locate
+		0xF7E4,	// Disp
 		0x7F8F,	// Getkey
 
 		0xF720,	// DrawGraph
@@ -649,7 +650,7 @@ const short oplistVARS[]={
 		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
-		0xF7F9,	// RefreshCtrl
+		0xF7F8,	// RefreshCtrl
 		0xF7FA,	// RefreshTime
 		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
@@ -897,7 +898,7 @@ const short oplistCMD[]={
 		0x7FB1,	// Or			7
 		0x7FB3,	// Not			8
 		0x7FB4,	// Xor			9
-		0x7F5F,	// Ticks
+		0xF7E4,	// Disp
 		0x23,	// #
 		0x25,	// %
 		
@@ -978,7 +979,7 @@ const short oplistCMD[]={
 		0xF7D2,	// AxesOff
 		0xF7C4,	// LabelOn
 		0xF7D4,	// LabelOff
-		0xF7F9,	// RefreshCtrl
+		0xF7F8,	// RefreshCtrl
 		0xF7FA,	// RefreshTime
 		
 		0x7F00,	// Xmin
@@ -1093,7 +1094,7 @@ const short oplistCMD[]={
 		0xF7E2,	// FillRect(
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
-		0xF7E3,	// LocateYX
+		0xFFFF,	// 				-
 		0xF7FE,	// BackLight
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
@@ -1295,6 +1296,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7E1, "Rect " }, 
 	{ 0xF7E2, "FillRect " }, 
 	{ 0xF7E3, "LocateYX " }, 
+	{ 0xF7E4, "Disp " }, 
 	{ 0xF7E8, "ReadGraph(" }, 
 	{ 0xF7E9, "WriteGraph " }, 
 	{ 0xF70F, "ElseIf " }, 
@@ -1309,7 +1311,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7F4, "SysCall(" }, 
 	{ 0xF7F5, "Call(" }, 
 	{ 0xF7F6, "Poke(" }, 
-	{ 0xF7F9, "RefrshCtrl " }, 
+	{ 0xF7F8, "RefrshCtrl " }, 
 	{ 0xF7FA, "RefrshTime " }, 
 	{ 0xF7FB, "Screen" }, 
 	{ 0xF7FC, "PutDispDD" }, 

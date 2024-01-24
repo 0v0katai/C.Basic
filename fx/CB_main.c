@@ -94,9 +94,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			PictAry[i]=NULL;		// Pict ptr clear
 		}
 		PictAry[0]=GetVRAMAddress();
-		
-		for ( i=0; i<26; i++ ) LocalDbl[i]=&REGsmall[i];	// local var init
-		for ( i=0; i<26; i++ ) LocalInt[i]=&REGINTsmall[i];	// local var init
+
+		InitsmallVar();		// init small lvariable
 	
 		key =( SelectFile( filename ) ) ;
 		switch ( key ) {

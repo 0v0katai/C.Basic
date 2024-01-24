@@ -398,7 +398,7 @@ void CheckMathERR( double *result ) {
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4f( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
@@ -484,18 +484,18 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			else
 			if ( c=='[' ) goto Matrix;
 			else
-			if ( c=='#' ) ExecPtr++;
-			return REG[reg] ;
+			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
+			if ( CB_INT) return REGINT[reg] ; else return REG[reg] ;
 	}
 	if ( ( 'a' <= c )&&( c <= 'z' ) )  {
 			reg=c-'a';
 			c=SRC[ExecPtr];
-			if ( c=='%' ) { ExecPtr++; return LocalInt[reg][0]; }
+			if ( c=='%' ) { ExecPtr++; return LocalInt[reg][0] ; }
 			else
 			if ( c=='[' ) goto Matrix;
 			else
-			if ( c=='#' ) ExecPtr++;
-			return LocalDbl[reg][0];
+			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
+			if ( CB_INT) return LocalInt[reg][0] ; else return LocalDbl[reg][0] ;
 	}
 	if ( ( c=='.' ) ||( c==0x0F ) || ( ( '0'<=c )&&( c<='9' ) ) ) {
 		ExecPtr--; return Eval_atof( SRC , c );
@@ -668,11 +668,11 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			if ( c == 0xFFFFFFF5 ) {	// Call(
 					return  CB_Call( SRC );
 			} else
-			if ( c == 0xFFFFFFF9 ) {	// RefreshTime
-					return  Refreshtime+1;
-			} else
-			if ( c == 0xFFFFFFFA ) {	// RefreshCtrl
+			if ( c == 0xFFFFFFF8 ) {	// RefreshCtrl
 					return  RefreshCtrl;
+			} else
+			if ( c == 0xFFFFFFFA ) {	// RefreshTime
+					return  Refreshtime+1;
 			} else
 			if ( c == 0xFFFFFFFB ) {	// Screen
 					return  ScreenMode;
@@ -840,6 +840,11 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		default:
 			break;
 	}
+	if ( c == '#') {
+		result = EvalsubTop( SRC );
+//		result = Evalsub1( SRC );
+		return result;
+	}
 	ExecPtr--;
 	CB_Error(SyntaxERR) ; // Syntax error 
 	return 0 ;
@@ -868,7 +873,7 @@ double DmsToDec( char *SRC, double h ) {
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 

@@ -384,7 +384,30 @@ unsigned int GWait( int exit_cancel ) {
 	return key;
 }
 
-int CB_Disps( char *SRC ,short dspflag){
+
+int CB_Disp( char *SRC ){		// Disp command
+	char buffer[64];
+	int c;
+	double value;
+	
+	CB_SelectTextVRAM();	// Select Text Screen
+	if ( CursorX >1 ) Scrl_Y();
+	
+	c=CB_IsStr( SRC, ExecPtr );
+	if ( c ) {	// string
+		CB_GetLocateStr( SRC, buffer, 63 );		// String -> buffer	return 
+	} else {	// expression
+		value = CB_EvalDbl( SRC );
+		sprintGR(buffer, value, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+	}
+	locate( CursorX, CursorY); Print((unsigned char*)buffer);
+	CursorX=21;
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
+
+	return 0;
+}
+
+int CB_Disps( char *SRC ,short dspflag){	// Disps command
 	char buffer[32];
 	int c;
 	unsigned int key=0;
@@ -392,7 +415,8 @@ int CB_Disps( char *SRC ,short dspflag){
 	
 	KeyRecover();
 	scrmode=ScreenMode;
-	if ( dspflag == 2 ) { CB_SelectTextVRAM();	// Select Text Screen
+	if ( dspflag == 2 ) {
+		CB_SelectTextVRAM();	// Select Text Screen
 		if ( CursorX >1 ) Scrl_Y();
 		if ( CB_INT )
 			sprintGR(buffer, CBint_CurrentValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);

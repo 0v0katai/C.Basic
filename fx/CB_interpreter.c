@@ -175,20 +175,16 @@ int CB_interpreter_sub( char *SRC ) {
 	tmp_Style = -1;
 	dspflag=0;
 
-	if ( ProgNo ) {			// set local variable
-		for ( c=0; c<26; c++ ) {
-			LocalDbl[c]=&REGsmall[c];
-			LocalInt[c]=&REGINTsmall[c];
-		}
-		for ( c=0; c<ProgLocalN[ProgNo]; c++ ) {
-			j=ProgLocalVar[ProgNo][c];
-			if ( j>=0 ) { 
-				LocalDbl[j]=&localvarDbl[c]; LocalDbl[j][0]=LocalDbltmp[c];
-				LocalInt[j]=&localvarInt[c]; LocalInt[j][0]=LocalInttmp[c];
-			}
+	InitsmallVar();		// init small local variable
+	
+	for ( c=0; c<ProgLocalN[ProgNo]; c++ ) {		// set local variable
+		j=ProgLocalVar[ProgNo][c];
+		if ( j>=0 ) { 
+			LocalDbl[j]=&localvarDbl[c]; LocalDbl[j][0]=LocalDbltmp[c];
+			LocalInt[j]=&localvarInt[c]; LocalInt[j][0]=LocalInttmp[c];
 		}
 	}
-
+	
 	
 	while (cont) {
 		dspflagtmp=0;
@@ -209,7 +205,7 @@ int CB_interpreter_sub( char *SRC ) {
 			else  break;
 		}
 		
-		while ( c==0x20 ) c=SRC[ExecPtr++];
+		while ( c==0x20 ) c=SRC[ExecPtr++]; // Skip Space
 		
 		switch (c) {
 			case 0xFFFFFFEC:	// Goto
@@ -279,18 +275,22 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						break;
 					case 0x0C:	// Return
-						if ( GosubNestN > 0 ) { 
-							ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
 						c=SRC[ExecPtr];
 						if ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
 							if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
 							else		CB_CurrentValue    = EvalsubTop( SRC );
 						}
+						if ( GosubNestN > 0 ) { 
+							ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
 						if ( ProgEntryN ) { return -2 ; }	//	return from  sub Prog
 						cont=0;
 						break;
 					case 0x10:	// Locate
 						CB_Locate(SRC);
+						dspflag=1;
+						break;
+					case 0xFFFFFFE4:	// Disp
+						CB_Disp(SRC);
 						dspflag=1;
 						break;
 					case 0xFFFFFFA5:	// Text
@@ -426,12 +426,12 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=2;
 						break;
-					case 0x3E:			// DotGet(
-						CB_DotGet(SRC);
-						dspflag=0;
-						break;
 					case 0x3D:			// DotTirm(
 						CB_DotTrim(SRC);
+						dspflag=0;
+						break;
+					case 0x3E:			// DotGet(
+						CB_DotGet(SRC);
 						dspflag=0;
 						break;
 					case 0xFFFFFFE0:	// DotLife(
@@ -494,7 +494,7 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_Poke(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFF9:	// RefreshCtrl
+					case 0xFFFFFFF8:	// RefreshCtrl
 						CB_RefreshCtrl(SRC);
 						dspflag=0;
 						break;
@@ -704,7 +704,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Input(SRC);
 				CB_TicksStart=RTC_GetTicks();	// 
 				dspflagtmp=2;
-				if ( BreakPtr > 0 ) break;
+//				if ( BreakPtr > 0 ) break;
 				c=SRC[ExecPtr++];
 				if ( c == 0x0E ) {		// ->
 					if (CB_INT)	CBint_Store(SRC); else CB_Store(SRC);
@@ -761,6 +761,15 @@ void ClrCahche(){
 	CacheSwitch.CNT=0;
 }
 
+void InitsmallVar() {
+	int c;
+	for ( c=0; c<26; c++ ) {			// init small variable
+		LocalDbl[c]=&REGsmall[c];
+		LocalInt[c]=&REGINTsmall[c];
+	}
+}
+
+
 int CB_interpreter( char *SRC ) {
 	int flag;
 	int c;
@@ -797,7 +806,12 @@ int CB_interpreter( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
@@ -1961,7 +1975,7 @@ int  CB_Input( char *SRC ){
 		case 0:	// value
 			CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
 			ErrorNo=0; // error cancel
-			if ( BreakPtr > 0 ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
+			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return 0; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			break;
 		case 1:	// value
@@ -1970,7 +1984,7 @@ int  CB_Input( char *SRC ){
 			Scrl_Y();
 			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
 			ErrorNo=0; // error cancel
-			if ( BreakPtr > 0 ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
+			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return 0; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			if ( flagint ) {
 				CBint_Store( SRC );
@@ -1983,7 +1997,7 @@ int  CB_Input( char *SRC ){
 			CB_CurrentStr[0]='\0';
 			key=InputStr( 1, CursorY, CB_StrBufferMax-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { ExecPtr--; BreakPtr=ExecPtr;  return 0; }
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return 0; }
 			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
 			CB_StorStr( SRC );
 			break;
@@ -1995,7 +2009,7 @@ int  CB_Input( char *SRC ){
 			CB_CurrentStr=MatAryC;
 			key=InputStr( 1, CursorY, MatAry[reg].SizeB-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { ExecPtr--; BreakPtr=ExecPtr;  return 0; }
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return 0; }
 			CB_StorStr( SRC );
 			break;
 	}
@@ -2078,11 +2092,11 @@ void CB_arg( char *SRC ) {		// dummy
 	}
 }
 */
-void CB_argNum( char *SRC ) {
+void CB_argNum( char *SRC ) { // 
 	int c=1,i,j;
 	Argc=0;
 	while ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
-		if ( CB_INT ) LocalInttmp[Argc]=EvalIntsubTop( SRC ); else LocalDbltmp[Argc]=CB_EvalDbl( SRC );
+		if ( CB_INT ) LocalInttmp[Argc]=EvalIntsubTop( SRC ); else LocalDbltmp[Argc]=EvalsubTop(  SRC );
 		Argc++;
 		c=SRC[ExecPtr];
 		if ( c != ',' ) break; 	// 
@@ -2121,7 +2135,7 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	c=SRC[ExecPtr];
 	if ( c == ',' ) {	// arg
 		ExecPtr++;
-		CB_argNum( SRC );
+		CB_argNum( SRC );	// get local value
 	}
 	
 	StackProgSRC     = SRC;
@@ -2160,24 +2174,16 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	ExecPtr = StackProgExecPtr ;
 	ProgNo  = ProgNo_bk;
 	
-	if ( ProgNo ) {			// restore local variable
-		for ( i=0; i<26; i++ ) {
-				LocalDbl[i]=&REGsmall[i];
-				LocalInt[i]=&REGINTsmall[i];
-		}
-		for ( i=0; i<ProgLocalN[ProgNo]; i++ ) {
-			j=ProgLocalVar[ProgNo][i];
-			if ( j>=0 ) { 
-				LocalDbl[j]=&localvarDbl[i];
-				LocalInt[j]=&localvarInt[i];
-			}
-		}
-	} else {
-		for ( i=0; i<26; i++ ) {
-				LocalDbl[i]=&REGsmall[i];		// local var init
-				LocalInt[i]=&REGINTsmall[i];	// local var init
+	InitsmallVar();		// init small local variable
+
+	for ( i=0; i<ProgLocalN[ProgNo]; i++ ) {		// restore local variable
+		j=ProgLocalVar[ProgNo][i];
+		if ( j>=0 ) { 
+			LocalDbl[j]=&localvarDbl[i];
+			LocalInt[j]=&localvarInt[i];
 		}
 	}
+
 	if ( ErrorNo == StackERR ) { ErrorPtr=ExecPtr; }
 }
 
@@ -2188,7 +2194,16 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 	c=SRC[ExecPtr+1];
 	if ( c == ',' ) {	// arg
 		ExecPtr+=2;
-		CB_argNum( SRC );
+		CB_argNum( SRC );	// get local value
+		
+		for ( i=0; i<ProgLocalN[ProgNo]; i++ ) {	// set local variable
+			j=ProgLocalVar[ProgNo][i];
+			if ( j>=0 ) { 
+				LocalDbl[j][0]=LocalDbltmp[i];
+				LocalInt[j][0]=LocalInttmp[i];
+			}
+		}
+		
 		StackGosubAdrs[GosubNestN] = ExecPtr;	// return adrs
 		ExecPtr=execptr;
 	} else {
@@ -2202,7 +2217,8 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAligncf( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
