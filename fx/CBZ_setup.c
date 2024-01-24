@@ -30,7 +30,7 @@ int selectMatrix=0;
 int StackPtr;
 
 const char VerMSG[]="C.Basic  v2.41\xE6\x41";
-#define VERSION 240
+#define VERSION 241
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );
