@@ -39,8 +39,8 @@ extern const short oplistVARS[];
 extern const short oplistCMD[];
 
 unsigned int SelectChar( int *ContinuousSelect ) ;
-int SelectOpcode( int listselect ) ;
-int SelectOpcode5800P() ;
+int SelectOpcode( int listselect, int flag ) ;
+int SelectOpcode5800P( int flag ) ;
 
 int GetOpcodeLen( char *SRC, int ptr, int *opcode );
 int OpcodeLen( int opcode );

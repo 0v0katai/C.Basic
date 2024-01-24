@@ -194,7 +194,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return result ;
 
 				case 0xFFFFFFB3 :		// Not
-					return EvalFxInt( &fNotint, ListEvalIntsub5( SRC ) ) ; 
+					return EvalFxInt( &fNotint_logic, ListEvalIntsub5( SRC ) ) ; 
 						
 				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
@@ -352,8 +352,8 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 			return EvalFxInt( &fintint, ListEvalIntsub5( SRC ) ) ; 
 		case 0xFFFFFFB6 :	// frac
 			return EvalFxInt( &ffracint, ListEvalIntsub5( SRC ) ) ; 
-//		case 0xFFFFFFA7 :	// Not
-//			return EvalFxInt( &fNot, ListEvalIntsub5( SRC ) ) ; 
+		case 0xFFFFFFA7 :	// not
+			return EvalFxInt( &fNotint, ListEvalIntsub5( SRC ) ) ; 
 
 		case '%' :	// 1/128 Ticks
 			return RTC_GetTicks()-CB_TicksAdjust;	// 
@@ -727,6 +727,17 @@ int ListEvalIntsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 			case 0x10 :	// <=
 				result = EvalFxInt2( &fcmpLEint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
 				break;
+			case 0xFFFFFF9A :	// xor
+				result = EvalFxInt2( &fXORint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
+				break;
+			case '|' :	// or
+			case 0xFFFFFFAA :	// or
+				result = EvalFxInt2( &fORint,  &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
+				break;
+			case '&' :	// and
+			case 0xFFFFFFBA :	// and
+				result = EvalFxInt2( &fANDint, &resultflag, &resultreg, result, ListEvalIntsub11( SRC ) ) ;
+				break;
 			default:
 				ExecPtr--;
 				return result;
@@ -751,7 +762,7 @@ int ListEvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 			switch ( c ) {
 				case 0xFFFFFFB0 :	// And
 					ExecPtr+=2;
-					result = EvalFxInt2( &fANDint, &resultflag, &resultreg, result, ListEvalIntsub12( SRC ) ) ;
+					result = EvalFxInt2( &fANDint_logic, &resultflag, &resultreg, result, ListEvalIntsub12( SRC ) ) ;
 					break;
 				default:
 					return result;
@@ -777,11 +788,11 @@ int ListEvalIntsubTop(char *SRC) {	//
 			switch ( c ) {
 				case 0xFFFFFFB1 :	// Or
 					ExecPtr+=2;
-					result = EvalFxInt2( &fORint, &resultflag, &resultreg, result, ListEvalIntsub13( SRC ) ) ;
+					result = EvalFxInt2( &fORint_logic, &resultflag, &resultreg, result, ListEvalIntsub13( SRC ) ) ;
 					break;
 				case 0xFFFFFFB4 :	// Xor
 					ExecPtr+=2;
-					result = EvalFxInt2( &fXORint, &resultflag, &resultreg, result, ListEvalIntsub13( SRC ) ) ;
+					result = EvalFxInt2( &fXORint_logic, &resultflag, &resultreg, result, ListEvalIntsub13( SRC ) ) ;
 					break;
 				default:
 					return result;

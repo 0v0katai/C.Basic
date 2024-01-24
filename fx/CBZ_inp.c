@@ -479,7 +479,7 @@ void DMS_Opcode( char * buffer, short code ) {
 	if ( code == 0xBC ) { strcat( buffer,"(gra)"); }
 }
 
-int SelectOpcode( int listselect ) {
+int SelectOpcode( int listselect, int flag ) {
 	int *select;
 	short *oplist;
 	int opNum;
@@ -548,6 +548,7 @@ int SelectOpcode( int listselect ) {
 				case KEY_CTRL_EXIT:
 				case KEY_CTRL_QUIT:
 					RestoreDisp(SAVEDISP_PAGE1);
+					if ( flag ) return 0x10000;
 					return 0;
 					
 				case KEY_CTRL_EXE:
@@ -601,6 +602,16 @@ int SelectOpcode( int listselect ) {
 							break;
 					}
 					break;
+				case KEY_CTRL_F3:	// :
+					if ( flag ) return 0;
+					key=SelectOpcode5800P( 1 );
+					if ( key > 0x10000 ) { 
+						listselect=key-0x10000; key=0;
+						cont=0;
+					}
+					RestoreDisp(SAVEDISP_PAGE1);
+					if ( key ) return key & 0xFFFF;
+				break;
 				default:
 					break;
 			}
@@ -621,8 +632,6 @@ const short oplistOPTN[]={
 		0xB6,	// frac
 		0xAB,	// !
 		0x7F3A,	// MOD(
-		0x7FBC,	// Int/
-		0x7FBD,	// Rmdr
 		
 		0xFFFF,	// 				-
 		0x7FB0,	// And
@@ -632,6 +641,14 @@ const short oplistOPTN[]={
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(		
 		0x7F88,	// RanList#(		
+		
+		0xFFFF,	// 				-
+		0xBA,	// and
+		0xAA,	// or
+		0xA7,	// not
+		0x9A,	// xor
+		0x7FBC,	// Int/
+		0x7FBD,	// Rmdr
 		
 		0xFFFF,	// 				-
 		0xD3,	// Rnd
@@ -971,16 +988,22 @@ const short oplistCMD[]={		// 5800P like
 		0x25,	// %
 
 //											1
-		0x3D,	// =			1
-		0x11,	// !=			2
-		0x3E,	// >			3
-		0x3C,	// <			4
-		0x12,	// >=			5
-		0x10,	// <=			6
+//		0x3D,	// =			1
+//		0x11,	// !=			2
+//		0x3E,	// >			3
+//		0x3C,	// <			4
+//		0x12,	// >=			5
+//		0x10,	// <=			6
 		0x7FB0,	// And			6
+		0xBA,	// and
 		0x7FB1,	// Or			7
+		0xAA,	// or
 		0x7FB3,	// Not			8
+		0xA7,	// not
 		0x7FB4,	// Xor			9
+		0x9A,	// xor
+		0x26,	// &
+		0x7C,	// |
 		0x23,	// #
 		0x25,	// %
 		
@@ -1323,7 +1346,7 @@ void FkeyRel(){
 #define CMD_STR 17
 #define CMD_EX  19
 
-int SelectOpcode5800P() {
+int SelectOpcode5800P( int flag ) {
 	int *select=&selectCMD;
 	short *oplist=oplistCMD;
 	int opNum=0 ;
@@ -1399,6 +1422,7 @@ int SelectOpcode5800P() {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_QUIT:
 				RestoreDisp(SAVEDISP_PAGE1);
+				if ( flag ) return 0x10000;
 				return 0;
 			case KEY_CTRL_EXE:
 				cont=0;
@@ -1513,9 +1537,22 @@ int SelectOpcode5800P() {
 				n=11;
 				cont=0;
 				break;
+			case KEY_CTRL_OPTN:
+				if ( flag ) return 0x10000+CMDLIST_OPTN;
+				key=SelectOpcode( CMDLIST_OPTN, 1);
+				if ( key ) return key & 0xFFFF;
+				break;
+			case KEY_CTRL_VARS:
+			case KEY_CTRL_PRGM:
+				if ( flag ) {
+					if ( shift )	return 0x10000+CMDLIST_PRGM;
+					else			return 0x10000+CMDLIST_VARS;
+				}
+				if ( shift )	key=SelectOpcode( CMDLIST_PRGM, 1 );
+				else			key=SelectOpcode( CMDLIST_VARS, 1 );
+				if ( key ) return key & 0xFFFF;
+				break;
 			case KEY_CTRL_SHIFT:
-//			case KEY_CTRL_OPTN:
-//			case KEY_CTRL_VARS:
 				shift=1-shift;
 				break;
 			default:
@@ -1809,6 +1846,10 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF9D6, "_Bmp8 " },
 	{ 0xF9D7, "_Bmp16 " },
 	{ 0x00FA, "Gosub "},
+	{ 0x00A7, "not "}, 			// small
+	{ 0x009A, " xor "}, 		// add space
+	{ 0x00AA, " or "}, 			// add space
+	{ 0x00BA, " and "}, 		// add space
 	{ 0, "" }
 };
 
@@ -2087,19 +2128,19 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 		}
 
 		if ( key == KEY_CTRL_F3 )  {
-				key=SelectOpcode5800P();
+				key=SelectOpcode5800P( 0 );
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( key == KEY_CTRL_OPTN ) {
-				key=SelectOpcode( CMDLIST_OPTN );
+				key=SelectOpcode( CMDLIST_OPTN, 0 );
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( key == KEY_CTRL_VARS ) {
-				key=SelectOpcode( CMDLIST_VARS );
+				key=SelectOpcode( CMDLIST_VARS, 0 );
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( key == KEY_CTRL_PRGM ) {
-				key=SelectOpcode( CMDLIST_PRGM );
+				key=SelectOpcode( CMDLIST_PRGM, 0 );
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( alpha_mode || exp_mode ) {

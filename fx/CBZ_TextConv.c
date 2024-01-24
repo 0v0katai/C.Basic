@@ -106,7 +106,7 @@ const char ConvList0080[][16]={
 "Abs ", 	// 97
 "nCr",		// 98
 "-",		// 99
-"xor",		// 9A
+" xor ",		// 9A
 "^<-1>",	// 9B
 "deg",		// 9C
 "@009D",	// 9D
@@ -120,10 +120,10 @@ const char ConvList0080[][16]={
 "&o",		// A4
 "e^",		// A5
 "Int ", 	// A6
-"Not ", 	// A7
+"not ", 		// A7
 "^",		// A8
 "*",		// A9
-"or",		// AA
+" or ",			// AA
 "!",		// AB
 "rad",		// AC
 "minY", 	// AD
@@ -140,7 +140,7 @@ const char ConvList0080[][16]={
 "Neg ", 	// B7
 "Xrt",		// B8
 "/",		// B9
-"and",		// BA
+" and ",		// BA
 "frac", 	// BB
 "gra",		// BC
 "maxY", 	// BD
@@ -1577,6 +1577,7 @@ int codecnv0000( char *srcbase, char *text, int *ofst, int *textofst ) {
 	int len;
 	int c=text[(*textofst)];
 	for ( code=0x0001; code<=0x002F; code++) {		// 0x0001 - 0x002F
+		if ( code == 0x20 ) code++; 
 		opstr=ConvList0000[code];
 		if ( c == opstr[0] ) {
 			len = strlen( opstr );

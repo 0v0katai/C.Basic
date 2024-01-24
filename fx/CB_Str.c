@@ -213,7 +213,7 @@ void StrMid( char *str1, char *str2, int n, int m ) {	// mid$(str2,n,m) -> str1
 	slen=StrLen( str2 ,&oplen );
 	if ( n < 1 ) n=1;
 	if ( n > slen ) n=slen;
-	if ( ( m == 0 ) || ( m > slen-n ) ) m=slen-n+1;
+	if ( ( m <= 0 ) || ( m > slen-n ) ) m=slen-n+1;
 	
 	i=StrMidCopySub( str1, str2, oplen, n, m );
 	str1[i]='\0';
@@ -661,19 +661,19 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 }
 
 void StorStrList0( char *SRC ) {	// "String" -> List n[0]
-	int reg,dimA,dimB;
+	int reg,dimA;
 	reg=ListRegVar( SRC );
-	if ( reg>=0 ) {
-		if ( SRC[ExecPtr]!='[' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	if ( reg<0 ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	if ( SRC[ExecPtr]=='[' ) {
 		ExecPtr++;
 		dimA = CB_EvalInt( SRC );
 		if ( dimA != 0 ) { CB_Error(ArgumentERR); return; }  // Argument error
-		if ( MatAry[reg].SizeA == 0 ) { 
-			DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
-			if ( ErrorNo ) return ; // error
-		}
-	} else { CB_Error(SyntaxERR); return ; }  // Syntax error
-	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
+		if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
+	}
+	if ( MatAry[reg].SizeA == 0 ) { 
+		DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+		if ( ErrorNo ) return ; // error
+	}
 }
 
 void StorDATE( char *buffer ) {	// "2017/01/17" -> DATE
@@ -779,13 +779,14 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		CursorX+=csrX;
 		while ( buffer[i] ) {
 			CB_PrintC( CursorX, CursorY, (unsigned char*)buffer+i );
-			CursorX++; if (CursorX > 21) Scrl_Y();
+			CursorX++; if ( ( CursorY < 7 ) && ( CursorX > 21 ) ) Scrl_Y();
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
 			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
 			i++;
 		}
-		if ( buffer[0]=='\0' ) CursorX=22;
+//		if ( buffer[0]==NULL ) CursorX=22;
+		if ( ( CursorY < 7 ) && ( CursorX == 1 ) ) Scrl_Y();
 		dspflag=1;
 		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 	}
@@ -1400,8 +1401,8 @@ int CB_TimeToStr() {	// "23:59:59"
 
 
 //----------------------------------------------------------------------------------------------
-int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

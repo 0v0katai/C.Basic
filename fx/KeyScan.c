@@ -491,15 +491,21 @@ int CB_KeyCodeCnvt( unsigned int key ) {			// CasioBasic Getkey SDK compatible
 	return code;
 }
 
+int GetKey_DisableMenu( unsigned int *key ) {
+	int r;
+	DisableGetkeyToMainFunctionReturn(); 
+	r=GetKey(key);
+	EnableGetkeyToMainFunctionReturn(); 
+	return r;
+}
+
 int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	unsigned int key;
 	int code;
 	
 	Getkey_shift=0;
 	Recent_code=0;
-	DisableGetkeyToMainFunctionReturn(); 
-	GetKey(&key);
-	EnableGetkeyToMainFunctionReturn(); 
+	GetKey_DisableMenu(&key);
 	return CB_KeyCodeCnvt( key ) ;
 }
 

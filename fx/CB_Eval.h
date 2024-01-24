@@ -60,10 +60,14 @@ double fADD( double x, double y ) ;	// x + y
 double fSUB( double x, double y ) ;	// x - y
 double fMUL( double x, double y ) ;	// x * y
 double fDIV( double x, double y ) ;	// x / y
-double fAND( double x, double y ) ;	// x and y
-double fOR( double x, double y ) ;	// x or y
-double fXOR( double x, double y ) ;	// x xor y
-double fNot( double x ) ;	// Not x
+double fAND( double x, double y ) ;	// x & y
+double fOR( double x, double y ) ;	// x | y
+double fXOR( double x, double y ) ;	// x ^ y
+double fNot( double x ) ;			// ! x
+double fAND_logic( double x, double y ) ;	// x && y
+double fOR_logic( double x, double y ) ;	// x || y
+double fXOR_logic( double x, double y ) ;	// (x!=0) ^ (y!=0)
+double fNot_logic( double x ) ;				// x == 0
 double fcmpEQ( double x, double y ) ;	// x = y
 double fcmpGT( double x, double y ) ;	// x > y
 double fcmpLT( double x, double y ) ;	// x < y
