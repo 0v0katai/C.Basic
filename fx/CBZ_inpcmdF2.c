@@ -48,7 +48,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF931;return;	// StrLen(
 				case 1: (*code)=0xF935;return;	// StrRight(
-				case 2: (*code)=0xF93A;return;	// StrLwr(
+				case 2: (*code)=0xF931;return;	// StrLwr(
 			} break;
 		case CMD_PRGM_EXSTR:
 			switch ( CommandPage ) {

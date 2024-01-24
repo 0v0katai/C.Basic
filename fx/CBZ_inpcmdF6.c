@@ -48,7 +48,8 @@ void GetGenuineCmdF6( unsigned int *code ){
 		case CMD_PRGM_EXSTR:
 			switch ( CommandPage ) {
 				case 0: CommandPage=1;break;
-				case 1: CommandPage=0;break;
+				case 1: CommandPage=2;break;
+				case 2: CommandPage=0;break;
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {
@@ -145,7 +146,8 @@ void GetGenuineCmdF6( unsigned int *code ){
 		case CMD_SHIFT_SKTCH_BMP:
 			switch ( CommandPage ) {
 				case 0: CommandPage=1;break;
-				case 1: CommandPage=0;break;
+				case 1: CommandPage=2;break;
+				case 2: CommandPage=0;break;
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F6

@@ -122,11 +122,12 @@ int WriteBmpHeader( char *filebase, int biWidth, int biHeight ){	// 1 bit mono b
 void DecodeBmp2mem( char *buffer2, char *buffer, int width, int height ){	//	bmpformat(buffer) -> bmp(buffer2)
 	int i,x,y;
 	int xbyte,xbyte2;
+	char bw=buffer[-2];
 	xbyte =((((width+7)/8)+3)/4)*4;
 	xbyte2=   (width+7)/8;
 	for (y=0; y<height; y++) {
 		for (x=0; x<xbyte2; x++) {
-			buffer2[y*xbyte2+x]=buffer[(height-y-1)*xbyte+x];
+			buffer2[y*xbyte2+x]=buffer[(height-y-1)*xbyte+x] ^bw ;
 		}
 	}
 }
@@ -143,6 +144,23 @@ int EncodeBmp2mem( char *buffer , char *buffer2 , int width, int height ){	//	bm
 	}
 	return 1;
 }
+int EncodeMat2Bmp( int reg , char *buffer , int width, int height ){	//	Mat -> bmpformat(buffer)
+	int i,x,y;
+	int xbyte,xbyte2;
+	int offset;
+	int b,g,r,d;
+	char *buffer2;
+	buffer2=(char*)MatAry[reg].Adrs;
+	xbyte =((((width+7)/8)+3)/4)*4;
+	xbyte2=   (width+7)/8;
+	for (y=0; y<height; y++) {
+		for (x=0; x<xbyte2; x++) {
+			buffer[(height-y-1)*xbyte+x]=buffer2[y*xbyte2+x];
+		}
+	}
+	return 1;
+}
+
 int EncodeVram2Bmp( char *buffer , int width, int height, int px, int py  ){	//	vram -> bmpformat(buffer)
 	int i,x,y;
 	int xbyte,xbyte2;
@@ -184,6 +202,7 @@ void DecodeBmp2vram( char *vram, char *buffer, int width, int height, int bit, i
 	int xbyte,xbyte2;
 	int data;
 	int b,g,r;
+	char bw=buffer[-2];
 	switch ( bit ) {
 		case 1:		// 1bit bmp
 			xbyte =((((width+7)/8)+3)/4)*4;
@@ -192,7 +211,7 @@ void DecodeBmp2vram( char *vram, char *buffer, int width, int height, int bit, i
 				for (x=0; x<xbyte2; x++) {
 					if ( (0<=x)&&(x<128)&&(0<=y)&&(y<128) ) {
 //						vram[(y<<4)+x]=buffer[(height-y-1)*xbyte+x];
-						data=buffer[(height-y-1)*xbyte+x]; bit=128;
+						data=buffer[(height-y-1)*xbyte+x]^bw; bit=128;
 						for ( i=0; i<8; i++ ) {
 							if ( ( x*8+i+px < 192 )&&( y+py < 64 ) ) BdispSetPointVRAM2( x*8+i+px, y+py, (bit&data)!=0 );
 							bit>>=1;
@@ -259,7 +278,51 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	int dimA,dimB;
 	int direct=0;
 	int x1,y1,x2,y2;
+	int folder=0;
+	int gaiji=0,no=-1,flag;
 
+	c =SRC[ExecPtr];
+	if ( c == '@' ) { 
+		c =SRC[++ExecPtr];
+		if ( c == '@' ) { 	c =SRC[++ExecPtr]; folder=1; }
+		if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
+		else
+		if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
+		else
+		if ( ( c=='A' )||( c=='a' ) ) { ExecPtr++; gaiji=2; }
+		else
+		{ CB_Error(SyntaxERR); return; }  // Syntax error
+
+		c =SRC[ExecPtr];
+		if ( ( c=='L' )||( c=='l' ) ) { ExecPtr++; flag=1; }
+		else
+		if ( ( c=='M' )||( c=='m' ) ) { ExecPtr++; flag=2; }
+		else { flag=3; }  // both
+		
+		c=CB_IsStr( SRC, ExecPtr );
+		if ( c ) {	// string
+			if ( flag==3 ) { CB_Error(ArgumentERR); return; }  // Argument error
+			CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+		} else {	// expression
+			c =SRC[ExecPtr];
+			if ( ( '0'<=c )&&( c<='9' ) ) { ExecPtr++; no=c-'0'; }
+			sname[0]='\0';
+		}
+		c =SRC[ExecPtr];
+		if ( c == ',' ) {
+			c =SRC[++ExecPtr];
+			if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
+			ExecPtr++;
+		}
+		switch ( gaiji ) {	
+			case 0:
+				SaveExtFontKana(  flag, sname, folder, no, check ); return ;
+			case 1:
+				SaveExtFontGaiji( flag, sname, folder, no, check ); return ;
+			case 2:
+				SaveExtFontAnk(   flag, sname, folder, no, check ); return ;
+		}
+	}
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 
@@ -343,9 +406,45 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 	char* matptr;
 	int direct=0;
 	int px=0,py=0;
+	int folder=0;
+	int gaiji=0,no=-1,flag;
 
-//	c =SRC[ExecPtr];
-//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	c =SRC[ExecPtr];
+	if ( c == '@' ) { 		// BmpLoad(@K1)
+		c =SRC[++ExecPtr];
+		if ( c == '@' ) { 	c =SRC[++ExecPtr]; folder=1; }
+		if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
+		else
+		if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
+		else
+		if ( ( c=='A' )||( c=='a' ) ) { ExecPtr++; gaiji=2; }
+		else
+		{ CB_Error(SyntaxERR); return; }  // Syntax error
+		c =SRC[ExecPtr];
+		if ( ( c=='L' )||( c=='l' ) ) { ExecPtr++; flag=1; }
+		else
+		if ( ( c=='M' )||( c=='m' ) ) { ExecPtr++; flag=2; }
+		else { flag=3; }  // both
+		
+		c=CB_IsStr( SRC, ExecPtr );
+		if ( c ) {	// string
+			if ( flag==3 ) { CB_Error(ArgumentERR); return; }  // Argument error
+			CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+		} else {	// expression
+			c =SRC[ExecPtr];
+			if ( ( '0'<=c )&&( c<='9' ) ) { ExecPtr++; no=c-'0'; }
+			sname[0]='\0';
+		}
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		switch ( gaiji ) {	
+			case 0:
+				LoadExtFontKana(  flag, sname, no ); return ;
+			case 1:
+				LoadExtFontGaiji( flag, sname, no ); return ;
+			case 2:
+				LoadExtFontAnk(   flag, sname, no ); return ;
+		}
+	}
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
 	
 //	c =SRC[ExecPtr];
@@ -354,8 +453,7 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 //		ptr=CB_EvalInt( SRC );
 //		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
 //	}
-	c =SRC[ExecPtr];
-	if ( c == ')' ) ExecPtr++;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	c =SRC[ExecPtr];
 	if ( c == 0x0E ) {
 		ExecPtr++;

@@ -271,7 +271,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return CBint_GraphYStr( SRC, 1 );
 					
 				case 0xFFFFFFF5 :		// IsExist(
-					return  CB_IsExist( SRC );
+					return  CB_IsExist( SRC, 1 );
 				case 0xFFFFFFF6 :		// Peek(
 					return  CB_Peek( SRC, NoListEvalIntsubTop( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
@@ -333,10 +333,10 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					break;
 				case 0x58 :				// ElemSize( Mat A )
 					return CB_ElemSize( SRC );
-				case 0x59 :				// ColSize( Mat A )
-					return CB_ColSize( SRC );
-				case 0x5A :				// RowSize( Mat A )
+				case 0x59 :				// RowSize( Mat A )
 					return CB_RowSize( SRC );
+				case 0x5A :				// ColSize( Mat A )
+					return CB_ColSize( SRC );
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
 					
@@ -590,8 +590,8 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x4C :			// Sum List 1
 				case 0x4D :			// Prod List 1
 				case 0x58 :			// ElemSize( Mat A )
-				case 0x59 :			// ColSize( Mat A )
-				case 0x5A :			// RowSize( Mat A )
+				case 0x59 :			// RowSize( Mat A )
+				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 					break;

@@ -53,6 +53,7 @@ void GetGenuineCmdF1( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF93F;return;	// Str
 				case 1: (*code)=0xF944;return;	// StrChar(
+				case 2: (*code)=0xF94D;return;	// _StrSplit(
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {
@@ -217,6 +218,7 @@ void GetGenuineCmdF1( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9D5;return;	// _Bmp 
 				case 1: (*code)=0xF9DB;return;	// BmpSave
+				case 2: (*code)=0xF960;return;	// SetFont(
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F1

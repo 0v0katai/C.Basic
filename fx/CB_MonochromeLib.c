@@ -94,9 +94,15 @@ ML_BmpRotate
 //void CB_ML_ClrScreen() { // ML_ClrScreen
 //	ML_clear_screen();
 //}
-//void CB_ML_DispVRAM() { // ML_DispVRAM
-//	ML_display_vram();
-//}
+void CB_ML_DispVRAM( char*SRC ){	// ML_DispVRAM
+	int y1,y2,i;
+	int c=SRC[ExecPtr];
+	if ( c == ';' ) {
+		ExecPtr++;
+		if ( Check_skip_count() == 0 ) return ;
+	}
+	ML_display_vram();
+}
 int CB_ML_SetContrast( char *SRC ) { // ML_Contrast
 //	ML_set_contrast( CB_EvalInt( SRC ) );
 	DD_SetContrast( CB_EvalInt( SRC ) );
@@ -257,7 +263,7 @@ int CB_GetOprand_percent( char *SRC ) {	// 0~100
 	c=SRC[ExecPtr];
 	if ( c == ',' ) return value;
 	if ( c == '%') { ExecPtr++;
-		c=CB_EvalDbl( SRC );
+		c=CB_EvalInt( SRC );
 		if ( c <   0 ) c=0;
 		if ( c > 25600 ) c=25600;
 		value=c;
@@ -285,7 +291,7 @@ void CB_GetOprand_MLcolor( char *SRC, int *color) {
 	c=SRC[ExecPtr];
 	if ( c == ',' ) return;
 	if ( c == '%') { ExecPtr++;
-		c=CB_EvalDbl( SRC );
+		c=CB_EvalInt( SRC );
 		if ( c <   0 ) c=0;
 		if ( c > 100 ) c=100;
 		MLV_rand = c*(RAND_MAX+1)/100;
@@ -996,8 +1002,8 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 			ML_clear_screen();
 			break;
 		case 0xFFFFFFC2:	// _DispVRAM
-//			CB_ML_DispVRAM();
-			ML_display_vram();
+			CB_ML_DispVRAM( SRC );
+//			ML_display_vram();
 			break;
 		case 0xFFFFFFC3:	// _Contrast
 			CB_ML_SetContrast( SRC );

@@ -127,7 +127,7 @@ int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 		}
 	}
 	c =SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		*reg=c-'A';
 		if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
@@ -166,7 +166,7 @@ int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// base:0  0-  
 }
 //-----------------------------------------------------------------------------
 void MatOprand1num( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 etc. error check
-	int base,ElementSize;
+	int base,ElementSize=0;
 	if ( MatAry[reg].SizeA == 0 ) {
 		ElementSize=ElementSizeSelect( SRC, &base, ElementSize) & 0xFF;
 		DimMatrixSub( reg, ElementSize, 10-MatBase, 1, MatBase );	// new matrix
@@ -190,25 +190,87 @@ int RegVar( int c ) {
 	return -1;
 }
 
+int GetVarName( char *SRC, int *ptr, char *name, int *len ){
+	int i=0;
+	int c=SRC[(*ptr)];
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {		// 1st character
+		name[i]=c;
+		(*ptr)++;
+		for ( i=1; i<(*len); i++) {
+			c=SRC[(*ptr)];
+			if ( ( ( '0'<=c )&&( c<='9' ) ) || ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) || ( c=='_' ) ) {
+				name[i]=c;
+				(*ptr)++;
+			} else {
+				name[i]='\0';
+				break;
+			}
+		}
+	} else return 0;	// not var name
+	name[(*len)]='\0';
+	(*len)=i;
+	return 1;	// ok
+}
+
 int RegVarAliasEx( char *SRC ) {	// 
-	int i,reg;
-	int alias_code, org_reg;
+	int i,j,reg,len=32;
+	int alias_code;
 	int exptr=ExecPtr;
 	int c=SRC[ExecPtr];
+	char name[32+1];
 	reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; return reg; }
+	if ( c=='_' ) { //	_ABCDE   var name
+		ExecPtr++;
+		if ( GetVarName( SRC, &ExecPtr, name, &len) ) {
+			for ( i=0; i<=AliasVarMAX; i++ ) {
+				if ( ( len == AliasVarCode[i].len ) && ( AliasVarCode[i].alias == 0x4040 ) ) {	// @@
+					for (j=0; j<len; j++) {
+						if ( AliasVarCode[i].name[j] != name[j] ) break;
+					}
+					if ( j==len ) return AliasVarCode[i].org;	// Macth!!
+				}
+			}
+		}
+			for ( i=0; i<=AliasVarMAXMat; i++ ) {	// check already Mat ?
+				if ( ( len == AliasVarCodeMat[i].len ) && ( AliasVarCodeMat[i].alias == 0x4040 ) ) {	// @@
+					for (j=0; j<len; j++) {
+						if ( AliasVarCodeMat[i].name[j] != name[j] ) break;
+					}
+					if ( j==len ) return AliasVarCodeMat[i].org;	// Macth!!
+				}
+			}
+		AliasVarMAX++; 	// New Var 
+		IsExtVar++;
+		if ( ( IsExtVar > VARMAXSIZE ) || ( AliasVarMAX > ALIASVARMAX ) ) { CB_Error(TooManyVarERR); return -1 ; } // Too Many Var ERR
+		AliasVarCode[AliasVarMAX].org  =IsExtVar;
+		AliasVarCode[AliasVarMAX].alias=0x4040;	// @@
+		if ( len > 8 ) len=8;
+		AliasVarCode[AliasVarMAX].len=len;
+		memcpy( &AliasVarCode[AliasVarMAX].name[0], name, len );
+		return IsExtVar;	// New Var !
+//		{ CB_Error(UndefinedVarERR); return -1 ; } // Undefined Var ERR
+	}
 	ExecPtr += GetOpcodeLen( SRC, ExecPtr ,&alias_code );
-	for ( i=0; i<AliasVarMAX; i++ ) {
+	for ( i=0; i<=AliasVarMAX; i++ ) {
 		if ( AliasVarCode[i].alias==(short)alias_code ) return AliasVarCode[i].org;
-		if ( AliasVarCode[i].org<0 ) break;
 	}
 	ExecPtr = exptr;
 	return -1;
+//	AliasVarMAX++;  	// New Var 
+//	IsExtVar++;
+//	if ( ( alias_code < 0xFF ) || ( AliasVarMAX > ALIASVARMAX ) ) { ExecPtr = exptr; return -1 ; } //  no var
+//	if ( IsExtVar > VARMAXSIZE ) { CB_Error(TooManyVarERR); return -1 ; } // Too Many Var ERR
+//	AliasVarCode[AliasVarMAX].org  =IsExtVar;
+//	AliasVarCode[AliasVarMAX].alias=alias_code;
+//	return IsExtVar;	// New Var !
 }
+
 int MatRegVar( char *SRC ) {	// 
-	int i,reg;
+	int i,j,reg,len=32;
 	int alias_code, org_reg;
 	int exptr=ExecPtr;
 	int c=SRC[ExecPtr];
+	char name[32+1];
 	reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; return reg; }
 	if ( c=='@' ) {
 		c=SRC[++ExecPtr];
@@ -236,10 +298,24 @@ int MatRegVar( char *SRC ) {	//
 			if ( 58<reg ) reg+=26;
 			return reg-1 ;
 	}
+	if ( c=='_' ) { //	_ABCDE   var name
+		ExecPtr++;
+		if ( GetVarName( SRC, &ExecPtr, name, &len) ) {
+			for ( i=0; i<=AliasVarMAXMat; i++ ) {
+				if ( ( len == AliasVarCode[i].len ) && ( AliasVarCode[i].alias == 0x4040 ) ) {	// @@
+					for (j=0; j<len; j++) {
+						if ( AliasVarCodeMat[i].name[j] != name[j] ) break;
+					}
+					if ( j==len ) return AliasVarCodeMat[i].org;	// Macth!!
+				}
+			}
+		}
+		{ CB_Error(UndefinedVarERR); return -1 ; } // Undefined Var ERR
+	}
 	ExecPtr += GetOpcodeLen( SRC, ExecPtr ,&alias_code );
-	for ( i=0; i<AliasVarMAX; i++ ) {
-		if ( AliasVarCode[i].alias==(short)alias_code ) return AliasVarCode[i].org;
-		if ( AliasVarCode[i].org<0 ) break;
+	for ( i=0; i<=AliasVarMAXMat; i++ ) {
+		if ( AliasVarCodeMat[i].alias==(short)alias_code ) return AliasVarCodeMat[i].org;
+		if ( AliasVarCodeMat[i].org<0 ) break;
 	}
 	ExecPtr = exptr;
 	return -1;
@@ -273,7 +349,7 @@ int ListRegVar( char *SRC ) {	// return reg no
 //-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
-	if ( ( 'A'<=c )&&( c<='z' ) )  return LocalDbl[c-'A'][0] ;
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  return LocalDbl[c-'A'][0] ;
 	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return LocalDbl[c-0xFFFFFFCD+26][0] ;	// <r> or Theta
 	CB_Error(SyntaxERR);
@@ -907,12 +983,15 @@ double Eval_atof(char *SRC, int c) {
 
 //-----------------------------------------------------------------------------
 
-void Get2Eval( char *SRC, double *tmp, double *tmp2){
+int Get2Eval( char *SRC, double *tmp, double *tmp2){
+	int c;
 	(*tmp) = EvalsubTop( SRC );
 	if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 	ExecPtr++;
 	(*tmp2) = EvalsubTop( SRC );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	c=SRC[ExecPtr];
+	if ( c == ')' ) ExecPtr++;
+	return c;
 }
 
 double Evalsub1(char *SRC) {	// 1st Priority
@@ -966,7 +1045,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x40 :		// Mat A[a,b]
 				  Matjmp:
 					c=SRC[ExecPtr];
-					if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+					if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 					else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 					Matrix1:	
 					if ( SRC[ExecPtr] == '[' ) {
@@ -1027,14 +1106,11 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return CB_GetkeyEntry( SRC );
 					
 				case 0xFFFFFF87 :		// RanInt#(st,en[,n])
-					Get2Eval( SRC, &tmp, &tmp2);
-					x=tmp; y=tmp2;
-					if ( SRC[ExecPtr] == ',' ) {
+					if ( Get2Eval( SRC, &tmp, &tmp2) == ',' ) {
 						ExecPtr++;
-						CB_RanInt( SRC, x, y );
+						CB_RanInt( SRC, tmp, tmp2 );
 					}
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return frandIntint( x, y ) ;
+					return frandIntint( tmp, tmp2 ) ;
 					
 				case 0xFFFFFF88 :		// RanList#(n) ->ListAns
 					CB_RanList( SRC ) ;
@@ -1066,7 +1142,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return CB_GraphYStr( SRC, 0 );
 						
 				case 0xFFFFFFF5 :		// IsExist(
-					return  CB_IsExist( SRC );
+					return  CB_IsExist( SRC ,0 );
 				case 0xFFFFFFF6 :		// Peek(
 					return  CB_Peek( SRC, EvalsubTop( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
@@ -1128,10 +1204,10 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					break;
 				case 0x58 :				// ElemSize( Mat A )
 					return CB_ElemSize( SRC );
-				case 0x59 :				// ColSize( Mat A )
-					return CB_ColSize( SRC );
-				case 0x5A :				// RowSize( Mat A )
+				case 0x59 :				// RowSize( Mat A )
 					return CB_RowSize( SRC );
+				case 0x5A :				// ColSize( Mat A )
+					return CB_ColSize( SRC );
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
 					
@@ -1182,9 +1258,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
 			return CB_Peek( SRC, Evalsub1( SRC ) );	// 
-		case '@' :	// Mat @A
-			ExecPtr--;
-			goto Matjmp;
+//		case '@' :	// Mat @A
+//			ExecPtr--;
+//			goto Matjmp;
 			
 		case '{':	// { 1,2,3,4,5... }->List Ans
 			CB_List(SRC);
@@ -1526,8 +1602,8 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x4C :			// Sum List 1
 				case 0x4D :			// Prod List 1
 				case 0x58 :			// ElemSize( Mat A )
-				case 0x59 :			// ColSize( Mat A )
-				case 0x5A :			// RowSize( Mat A )
+				case 0x59 :			// RowSize( Mat A )
+				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
 					result *= Evalsub4( SRC ) ;
 					break;

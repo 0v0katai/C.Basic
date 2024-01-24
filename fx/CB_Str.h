@@ -1,7 +1,7 @@
 extern char  *CB_CurrentStr;	//
 extern char  *CB_CurrentStr2;	//
 
-#define CB_StrBufferCNTMax 10
+#define CB_StrBufferCNTMax 8
 #define CB_StrBufferMax 256
 extern char   CB_StrBufferCNT;
 extern char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
@@ -87,4 +87,6 @@ int CB_Hex( char *SRC );		// Hex(
 int CB_Bin( char *SRC );		// Bin(
 int CB_StrBase( char *SRC );	// StrBase( Str1,base1,base2 )->str2
 int CB_StrRepl( char *SRC );	// StrRepl( Str1,Str2,Str3,n )->str4
+
+int CB_StrSplit( char *SRC ) ;	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232]["4567"]["89"]]
 

@@ -64,6 +64,12 @@ extern int ErrorNo;
 #define AlreadyOpenERR 56
 #define ComNotOpenERR 57
 #define TypeMismatchERR 58
+#define OutOfDomainERR 59
+#define UndefinedVarERR 60
+#define UndefinedFuncERR 61
+#define NotSupportERR 62
+#define TooManyVarERR 63
+#define DuplicateDefERR 64
 
 #define FileERR 100
 

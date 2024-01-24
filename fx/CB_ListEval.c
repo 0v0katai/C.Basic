@@ -362,7 +362,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return CB_GraphYStr( SRC, 1 );
 					
 				case 0xFFFFFFF5 :		// IsExist(
-					return  CB_IsExist( SRC );
+					return  CB_IsExist( SRC, 1 );
 				case 0xFFFFFFF6 :		// Peek(
 					return  CB_Peek( SRC, NoListEvalsubTop( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
@@ -424,10 +424,10 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					break;
 				case 0x58 :				// ElemSize( Mat A )
 					return CB_ElemSize( SRC );
-				case 0x59 :				// ColSize( Mat A )
-					return CB_ColSize( SRC );
-				case 0x5A :				// RowSize( Mat A )
+				case 0x59 :				// RowSize( Mat A )
 					return CB_RowSize( SRC );
+				case 0x5A :				// ColSize( Mat A )
+					return CB_ColSize( SRC );
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
 					
@@ -801,8 +801,8 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x4C :			// Sum List 1
 				case 0x4D :			// Prod List 1
 				case 0x58 :			// ElemSize( Mat A )
-				case 0x59 :			// ColSize( Mat A )
-				case 0x5A :			// RowSize( Mat A )
+				case 0x59 :			// RowSize( Mat A )
+				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
 					break;

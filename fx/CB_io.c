@@ -208,47 +208,40 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
-void CB_PrintC( int x, int y,const unsigned char *c ){
-	if ( *c == 0xFF ) {
-		*c++;
-		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xE2 ) ) KPrintChar( (--x)*6, (--y)*8, *c );
+void CB_PrintC_ext( int x, int y,const unsigned char *c, int extflag ){
+	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintChar( (--x)*6, (--y)*8, *((unsigned short*)c) );
+	else {
+		if ( ( extflag ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) KPrintChar( (--x)*6, (--y)*8, *c );
 		else {
 			locate (x,y);
-			Print( (unsigned char*)"@" );
+			PrintC( c );
 		}
-	} else {
-		locate (x,y);
-		PrintC( c );
 	}
 }
-void CB_PrintRevC( int x, int y,const unsigned char *c ){
-	if ( *c == 0xFF ) {
-		*c++;
-		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xE2 ) ) KPrintRevChar( (--x)*6, (--y)*8, *c );
-		else	{
-			locate (x,y);
-			PrintRev( (unsigned char*)"@" );
-		}
-	} else {
-		jmp:
-		locate (x,y);
-		PrintRevC( c );
-	}
-}
-void CB_Print( int x, int y, const unsigned char *str){
+void CB_Print_ext( int x, int y, const unsigned char *str, int extflag ){
 	int c=(char)*str;
 	while ( c ) {
-		CB_PrintC( x, y, str++ );
+		CB_PrintC_ext( x, y, str++, extflag );
 		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
 		x++;
 		if ( x>21 ) break;
 		c=(char)*str;
 	}
 }
-void CB_PrintRev( int x, int y, const unsigned char *str){
+void CB_PrintRevC_ext( int x, int y,const unsigned char *c, int extflag ){
+	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintRevChar( (--x)*6, (--y)*8, *((unsigned short*)c) );
+	else {
+		if ( ( extflag ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) KPrintRevChar( (--x)*6, (--y)*8, *c );
+		else {
+			locate (x,y);
+			PrintRevC( c );
+		}
+	}
+}
+void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 	unsigned int c=(char)*str;
 	while ( c ) {
-		CB_PrintRevC( x, y, str++ );
+		CB_PrintRevC_ext( x, y, str++, extflag );
 		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
 		x++;
 		if ( x>21 ) break;
@@ -256,16 +249,33 @@ void CB_PrintRev( int x, int y, const unsigned char *str){
 	}
 }
 
-void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){
-	if ( *c == 0xFF ) {
-		*c++;
-		if ( mode ) KPrintRevChar( px, py, *c );
-		else		KPrintChar( px, py, *c );
+void CB_PrintC( int x, int y,const unsigned char *c ){
+	CB_PrintC_ext( x, y, c, 0 );
+}
+void CB_PrintRevC( int x, int y,const unsigned char *c ){
+	CB_PrintRevC_ext( x, y, c, 0 );
+}
+void CB_Print( int x, int y, const unsigned char *str){
+	CB_Print_ext( x, y, str, 0 );
+}
+void CB_PrintRev( int x, int y, const unsigned char *str){
+	CB_PrintRev_ext( x, y, str, 0 );
+}
+
+
+void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){	// mode >0x100 extflag
+	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ) {
+		if ( mode & 0xFF )	KPrintRevChar( px, py, *((unsigned short*)c) );
+		else				KPrintChar( px, py, *((unsigned short*)c) );
 	} else {
-		PrintXY( px, py, c ,mode);
+		if ( ( mode & 0xFF00 ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) {
+			if ( mode & 0xFF )	KPrintRevChar( px, py, *c );
+			else				KPrintChar( px, py, *c );
+		} else
+		PrintXY( px, py, c ,mode & 0xFF );
 	}
 }
-void CB_PrintXY( int px, int py, const unsigned char *str, int mode){
+void CB_PrintXY( int px, int py, const unsigned char *str, int mode){	// mode >0x100 extflag
 	int c=(char)*str;
 	while ( c ) {
 		CB_PrintXYC( px, py, str++ , mode);

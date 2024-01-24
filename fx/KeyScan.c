@@ -29,6 +29,7 @@
 #include <fxlib.h>
 #include "KeyScan.h"
 #include "CB_io.h"
+#include "CB_setup.h"
 #include "fx_syscall.h"
 #include "CB_interpreter.h"
 
@@ -241,6 +242,24 @@ int KeyCheckCHAR4() {		// [4]
 
 	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
 		if ( ( kcode1 == 7 ) && (kcode2 == 4 ) ) flag0=1; // [4] is down
+	}
+	return flag0;
+}
+int KeyCheckCHAR3() {		// [3]
+	int kcode1 = 0, kcode2 = 0, flag0 = 0;
+	unsigned short unused = 0;
+
+	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
+		if ( ( kcode1 == 5 ) && (kcode2 == 3 ) ) flag0=1; // [3] is down
+	}
+	return flag0;
+}
+int KeyCheckCHAR6() {		// [6]
+	int kcode1 = 0, kcode2 = 0, flag0 = 0;
+	unsigned short unused = 0;
+
+	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
+		if ( ( kcode1 == 5 ) && (kcode2 == 4 ) ) flag0=1; // [6] is down
 	}
 	return flag0;
 }
@@ -511,10 +530,19 @@ int GetKey_DisableMenu( unsigned int *key ) {
 int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	unsigned int key;
 	int code;
-	
+	int t,th;
 	Getkey_shift=0;
 	Recent_code=0;
+	t=RTC_GetTicks()-CB_TicksStart;					// halt ticks count
+	th=(int)GetTicks32768()-CB_HiTicksStart;		// halt ticks count
 	GetKey_DisableMenu(&key);
+	if ( TimeDsp && 0x02 ) {
+		CB_TicksStart=RTC_GetTicks();				// reset ticks count
+		CB_HiTicksStart=(int)GetTicks32768();		// reset ticks count
+	} else  {
+		CB_TicksStart=RTC_GetTicks()-t;				// restart ticks count
+		CB_HiTicksStart=(int)GetTicks32768()-th;	// restart ticks count
+	}
 	return CB_KeyCodeCnvt( key ) ;
 }
 

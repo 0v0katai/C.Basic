@@ -169,6 +169,24 @@ void CB_ErrMsg(int ErrNo) {
 		case TypeMismatchERR:
 			ERROR("Type Mismatch ERR");
 			break;
+		case OutOfDomainERR:
+			ERROR("Out of Domain ERR");
+			break;
+		case UndefinedVarERR:
+			ERROR("Undefined Var");
+			break;
+		case UndefinedFuncERR:
+			ERROR("Undefined Func");
+			break;
+		case NotSupportERR:
+			ERROR("Not Support ERR");
+			break;
+		case TooManyVarERR:
+			ERROR("Too many Var ERR");
+			break;
+		case DuplicateDefERR:
+			ERROR("Duplicate Def ERR");
+			break;
 			
 		default:
 			break;

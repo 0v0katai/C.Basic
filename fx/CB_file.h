@@ -66,6 +66,8 @@ int LoadProgfile( char *name, int prgNo, int editsize, int disperror ) ;
 int SaveG1M( char *filebase );
 int SaveProgfile(int progNo );
 
+char * Load1st2nd( char *name, char *dir2nd, char *ext );
+
 int SavePicture( char *filebase, int pictNo );
 char * LoadPicture( int pictNo );
 
@@ -88,7 +90,7 @@ void SaveFavorites();
 void SaveConfig();
 void LoadConfig();
 
-int CB_IsExist( char *SRC ) ;	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
+int CB_IsExist( char *SRC, int calcflag ) ;	//	IsExist("TEST")		//  no exist: return 0     exist: return filesize
 char * CB_SaveLoadOprand( char *SRC , int *reg, int *matsize ) ;
 void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname ) ;
 char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) ;
@@ -105,6 +107,8 @@ int CheckSD();	// SD model  return : 1
 
 int MakeDirectory();
 int RenameDirectory();
+int RenameCopyFile( char *fname ,int select ) ;	// select:0 rename  select:1 copy
+int RenameCopyFilesBmp( char *fname, char *ext,int select  );	// bmp copy/rename
 
 //-----------------------------------------------------------------------------
 int DecodeBmp2Vram( char *filebase, int px, int py );	//	bmp -> vram

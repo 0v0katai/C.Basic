@@ -42,16 +42,20 @@ void HiddenRAM_MatAryInit();	// HiddenRAM Initialize
 void HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 int  HiddenRAM_MatAryRestore();	//  HiddenRAM -> MatAry ptr	 1:ok
 
-void CB_Print( int x, int y, const unsigned char *str);
-void CB_PrintRev( int x, int y, const unsigned char *str);
+void CB_PrintC_ext( int x, int y,const unsigned char *c, int extflag );
+void CB_PrintRevC_ext( int x, int y,const unsigned char *c, int extflag );
+void CB_Print_ext( int x, int y,const unsigned char *c, int extflag );
+void CB_PrintRev_ext( int x, int y,const unsigned char *c, int extflag );
 void CB_PrintC( int x, int y, const unsigned char *c);
 void CB_PrintRevC( int x, int y, const unsigned char *c);
+void CB_Print( int x, int y, const unsigned char *str);
+void CB_PrintRev( int x, int y, const unsigned char *str);
 void CB_PrintXYC( int px, int py,const unsigned char *c , int mode );
 void CB_PrintXY( int px, int py, const unsigned char *str, int mode );
 void CB_PrintMini( int px, int py, const unsigned char *str, int mode);
 int  CB_PrintMiniC( int px, int py, const unsigned char *str, int mode);
-int  CB_PrintMiniLength( const unsigned char *str );
-int  CB_PrintMiniLengthStr( const unsigned char *str );
+int  CB_PrintMiniLength( unsigned char *str, int extflag  );
+int  CB_PrintMiniLengthStr( unsigned char *str, int extflag  );
 
 void PrintXYR(int ,int ,char *,int );
 void Fkey_dispN(int ,char *);

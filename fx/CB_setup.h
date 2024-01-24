@@ -12,10 +12,14 @@ extern char ForceDebugMode;
 extern char  EditTopLine ;		// 1: use top of line (edit)
 extern char  EditFontSize ;		// 0:standard  1:mini
 extern char  EditListChar ;		// 1: List character change
+extern char  EditExtFont;	// Edit ext Font enable:1
+
 extern char  ExtendPict;	// 0:20  1~79:21~99
 extern char  ExtendList;	// 0:52(default) 1:+16 ~ 63:+1008
 extern char  ForceReturnMode;	// 0:none  1:F1 2:EXE  3:Both
 extern char  ForceReturn;		// 0:none  1:return
+
+extern char  CB_RecoverSetup;	// setup recover flag 0:none 1:recover
 
 //------------------------------------------------------------------------------
 void VerDispSub() ;
