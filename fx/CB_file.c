@@ -33,7 +33,7 @@
 typedef struct{
 	char filename[FILENAMEMAX];
 	char folder[FOLDERMAX];
-	int filesize;
+	short filesize;
 }Files;
 
 #define FavoritesMAX 7
@@ -198,17 +198,17 @@ void DeleteFavorites( int i ) {	// i:index
 	SaveFavorites();
 }
 
-void FavoritesFunc( int *index ) {
+int FavoritesFunc( int index ) {
 	char tmpname[FILENAMEMAX];
-	int i=(*index);
+	int i=(index);
 	if ( files[i].filesize == 0 ) {
 		if ( i < FavoritesMAX ) DeleteFavorites( i ) ;
 		return;
 	}
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
-		if ( strcmp( files[i].filename,  files[(*index)].filename )== 0 ) 
-		if ( strcmp( files[i].folder,    files[(*index)].folder   )== 0 ) break; // not matching
+		if ( strcmp( files[i].filename,  files[(index)].filename )== 0 ) 
+		if ( strcmp( files[i].folder,    files[(index)].folder   )== 0 ) break; // not matching
 		i++;
 	}
 	if ( i < FavoritesMAX ) { 		//	off Favorites list
@@ -227,13 +227,14 @@ void FavoritesFunc( int *index ) {
 				i++;
 			}
 			i=FavoritesMAX-1;
-			files[i].filesize = files[(*index)].filesize ;
-			strncpy( files[i].filename, files[(*index)].filename, FILENAMEMAX );
-			strncpy( files[i].folder,   files[(*index)].folder,   FOLDERMAX );
-			(*index)=i;
+			files[i].filesize = files[(index)].filesize ;
+			strncpy( files[i].filename, files[(index)].filename, FILENAMEMAX );
+			strncpy( files[i].folder,   files[(index)].folder,   FOLDERMAX );
+			(index)=i;
 			SaveFavorites();
 		}
 	}
+	return index;
 }
 void FavoritesUp( int *index ) {
 	int tmp;
@@ -500,7 +501,8 @@ unsigned int Explorer( int size, char *folder )
 						cont =0 ;
 						break;
 					case 1:
-						FavoritesFunc( &index );
+						index = FavoritesFunc( index );
+//						FavoritesFunc( index );
 						break;
 				}
 				break;
@@ -537,7 +539,8 @@ unsigned int Explorer( int size, char *folder )
 			case KEY_CTRL_OPTN:		// ------- Favorites list
 				if ( nofile ) break;
 				filemode = 0 ;
-				FavoritesFunc( &index );
+				index = FavoritesFunc( index );
+//				FavoritesFunc( index );
 				break;
 			case KEY_CTRL_F6:		// ------- change function
 				filemode = 1-filemode ;
@@ -557,9 +560,9 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispR( 0, "Var");
 				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
-				Fkey_Clear( 3 );
+				Fkey_dispN( 3, "Pass");
 				Fkey_Clear( 4 );
-				sprintf( buffer, "[%d]", size-FavoritesMAX-1); PrintMini(12*6, 7*8+2, (unsigned char*)buffer , MINI_OVER);  // number of file 
+//				sprintf( buffer, "[%d]", size-FavoritesMAX-1); PrintMini(14*6+3, 7*8+2, (unsigned char*)buffer , MINI_OVER);  // number of file 
 //				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
 //				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
 				Fkey_dispN( 5, "Debg");
@@ -570,7 +573,7 @@ unsigned int Explorer( int size, char *folder )
 //					case KEY_CTRL_EXIT:
 					case KEY_CTRL_QUIT:
 							FileListUpdate = 1 ; // 
-							cont =0 ;
+							cont = 0 ;
 							break;
 					case KEY_CTRL_SETUP:
 							selectSetup=SetupG(selectSetup);
@@ -587,7 +590,10 @@ unsigned int Explorer( int size, char *folder )
 							SetViewWindow();
 							SaveFavorites();
 							break;
-//					case KEY_CTRL_F4:	//
+					case KEY_CTRL_F4:	//
+							key=FileCMD_PASS;
+							cont = 0 ;
+							break;
 //					case KEY_CTRL_F5:	//
 					case KEY_CTRL_F6:
 							if ( Isfolder ) break;
@@ -855,8 +861,8 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer,
 	unsigned int key;
 
 	buffer[width]='\0';
-//	csrX=strlen((char*)buffer);
-	key=InputStrSub( x, y, width, 0, buffer, maxLen, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	csrX=strlen((char*)buffer);
+	key=InputStrSub( x, y, width, csrX, buffer, maxLen, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	return ( key );
 }
 
@@ -864,7 +870,7 @@ void Getfolder( char *sname ) ;
 
 int InputFilename( char * buffer, char* msg) {		// 
 	unsigned int key;
-	SaveDisp(SAVEDISP_PAGE1);
+//	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(3);
 	locate(3,3); Print((unsigned char *)msg);
 	locate(3,4); Print((unsigned char *)" [             ]");
@@ -873,7 +879,7 @@ int InputFilename( char * buffer, char* msg) {		//
 	Fkey_Clear( 2 );
 	Fkey_DISPN( 5, " / ");
 	key=InputStrFilename( 5, 4, 12, 18, buffer, ' ', REV_OFF ) ;
-	RestoreDisp(SAVEDISP_PAGE1);
+//	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;
 	Getfolder( buffer );
@@ -881,23 +887,23 @@ int InputFilename( char * buffer, char* msg) {		//
 }
 
 
-void basname8ToG1MHeader( char *filebase, char *sname) {	// abcd -> header
+void basname8ToG1MHeader( char *filebase, char *basname) {	// abcd -> header
 	char *nameptr;
 	int c;
 	int i;
 	nameptr=filebase+0x3C;
 	for (i=0;i<8;i++) nameptr[i]='\0';
 	i=0;
-	c=sname[i];
+	c=basname[i];
 	do {
 		if (i<8) nameptr[i]=c;
 		i++;
-		c=sname[i];
+		c=basname[i];
 	} while ( ( c!='\0' ) ) ;
 //	} while ( ( c!='\0' ) ||  ( c!='.' ) ) ;
 }
 
-void G1MHeaderTobasname8( char *filebase, char *sname) {	// header -> abcd
+void G1MHeaderTobasname8( char *filebase, char *basname) {	// header -> abcd
 	char *nameptr;
 	int c;
 	int i;
@@ -906,11 +912,11 @@ void G1MHeaderTobasname8( char *filebase, char *sname) {	// header -> abcd
 	while (i<8) {
 		c = nameptr[i];
 		if ((c==' ')) c='~';
-		sname[i]=c;
+		basname[i]=c;
 		if ( c=='\0' ) break;
 		i++;
 	}
-	sname[i]='\0';
+	basname[i]='\0';
 }
 
 void G1M_header( char *filebase ,int *size ) {
@@ -968,82 +974,110 @@ void G1M_Basic_header( char *filebase ) {
 	filebase[0x3A]=0x00;
 	filebase[0x3B]=0x00;
 	filebase[0x44]=0x01;	// basic
+	filebase[0x55]=0x00;	// pass flag clear(C.basic)
 }
 
 
 //----------------------------------------------------------------------------------------------
-/*
-int InputPassname( char* inputpassname) {		// password
-	unsigned int key;
+
+void InputPassPrintbasnamefile( char *basname, char *msg) {		// print basname
 	char buffer[16];
-	locate(1,3); Print((unsigned char *)"Password?");
-	locate(1,4); Print((unsigned char *)"[        ]");
+	Bdisp_AllClr_VRAM();
+	locate(1,1); Print((unsigned char *)msg);
+	sprintf(buffer,"[%-8s]",basname);
+	locate(1,2); Print((unsigned char *)buffer);
+}
+
+int InputPassname( int y, char* inputpassname, char *msg) {		// password input
+	unsigned int key;
+	locate(1,y  ); Print((unsigned char *)msg);
+	locate(1,y+1); Print((unsigned char *)"[        ]");
 	Fkey_Clear( 0 );
 	Fkey_Clear( 1 );
 	Fkey_Clear( 2 );
-	key=InputStrFilename( 2, 4, 8, 8, inputpassword, ' ', REV_OFF ) ;
+	key=InputStrFilename( 2, y+1, 8, 8, inputpassname, ' ', REV_OFF ) ;
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;
 	return 0; // ok
 }
 
-int LoadInputPassname( char *basname, char* inputpassname) {		// password
-	unsigned int key;
-	char buffer[16];
-	Bdisp_AllClr_VRAM();
-	locate(1,1); Print((unsigned char *)"Program Name");
-	sprintf(buffer,"[%-8s]",basname);
-	locate(1,2); Print((unsigned char *)buffer");
-	return InputPassname( inputpassname );
-}
-
-//void GetPassWord( char *filebase, char *passname ){
-//}
-
-int CheckPassWord( char *filebase, char *basname ){	// 0:not match password 1:Ok
-	char *password[9];
-	char *inputpassword[9];
+int CheckPassWordmsg( char *filebase, char *msg ){	// 1:cancel  0:Ok  -1:no pass
+	char passname[9];
+	char inputpassname[9];
+	char basname[9];
 	
 	memset( passname, 0, 9);
-	strncopy( passname, filebase+0x4C, 8);	// Get password
+	strncpy( passname, filebase+0x4C, 8);	// Get password
+	G1MHeaderTobasname8( filebase, basname);
 	
-	if ( strlen(password) ) {
+	if ( strlen(passname) ) {
 		memset( inputpassname, 0, 9);
-		InputPassname( basname, inputpassname);
-		if ( strncmp(passname, inputpassname, 8 )==0 ) return 1;
-		else return 0;
-	} else return 1;
+		mismatchloop:
+		InputPassPrintbasnamefile( basname, "Program Name");
+		if ( InputPassname( 3, inputpassname, msg ) ) return 1; //cancel
+		if ( strncmp(passname, inputpassname, 8 )==0 ) goto passOk;	// ok
+		else {	// mismatch
+			ErrorMSGstr1(" Mismatch");
+			goto mismatchloop;
+		}
+	} 
+	passOk:
+	filebase[0x55]=0x01;	// pass ok (C.basic)
+	return 0;	// ok
+}
+int CheckPassWord( char *filebase ){	// 1:cancel  0:Ok  -1:no pass
+	CheckPassWordmsg( filebase, "Password?" );
 }
 
-int SetPassWord( char *filebase, char *basname ){	// 0:no password 1:Ok
-	char *inputpassword[9];
+int SetPassWord( int y, char *filebase, char *basname ,char* msg){	// 1:no password   0:Ok
+	char inputpassname[9];
 	memset( inputpassname, 0, 9);
-	InputPassname( basname, inputpassname);
-	if ( strlen(inputpassword) ) {
-		strncopy( filebase+0x4C, inputpassname, 8);	// Set password
-		return 1;
-	} else return 0;
+	if ( InputPassname( y, inputpassname, msg ) ) return 1; //cancel
+	strncpy( filebase+0x4C, inputpassname, 8);	// Set password
+	return 0; // ok
 }
 
-int NewInputFilename( char *filebase, char * basname ) {		// 
+int InputFilenamePassname( char *filebase, char *basname, char* msg) {		// 
 	unsigned int key;
 	char buffer[16];
 	Bdisp_AllClr_VRAM();
-	locate(1,1); Print((unsigned char *)"New Program Name");
+	locate(1,1); Print((unsigned char *)msg);
 	locate(1,2); Print((unsigned char *)"[        ]");
-	Fkey_DISPN( 0, "pass");
+	Fkey_dispN( 0, "Pass");
 	Fkey_Clear( 1 );
 	Fkey_Clear( 2 );
 	key=InputStrFilename( 2, 2, 8, 8, basname, ' ', REV_OFF ) ;
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;
-	if (key==KEY_CTRL_F1) {
-		SetPassWord( filebase, basname );
+	if (key==KEY_CTRL_F1) {	// password input
+		if ( SetPassWord( 3, filebase, basname, "Password?" ) ) return 1 ; // cancel
 	}
-//	Getfolder( buffer );
+	filebase[0x55]=0x01;	// pass ok (C.basic)
 	return 0; // ok
 }
-*/
+
+void NewPassWord( char *fname ){	// New Password command
+	char *filebase;
+	int fsize,size;
+	char sname[16],basname[16];
+
+	SetShortName( sname, fname);
+	if ( strcmp( sname + strlen(sname) - 4, ".g1m") != 0 ) return ;	// not g1mfile
+	filebase = loadFile( fname , 0 );
+	if ( filebase == NULL ) return ;
+	if ( CheckG1M( filebase ) ) return ; // not support g1m
+	G1MHeaderTobasname8( filebase, basname);
+	InputPassPrintbasnamefile( basname, "Program Name");
+	if ( filebase[0x4C] == 0 ) { // new password
+		if ( SetPassWord( 3, filebase, basname, "Set Password" ) ) return ; // cancel
+	} else { // unlock password
+		if ( CheckPassWordmsg( filebase , "Unlock password" ) ) return ; // cancel
+		memset( filebase+0x4C, 0, 8);	// clear password
+	}
+	SaveBasG1M( filebase );
+	ErrorMSGstr1("    Complete!");
+}
+
 //----------------------------------------------------------------------------------------------
 void ConvertToOpcode( char *filebase, char *sname, int editsize){
 	int size,i,j;
@@ -1063,6 +1097,15 @@ void ConvertToOpcode( char *filebase, char *sname, int editsize){
 	basname8ToG1MHeader( filebase, sname);
 }
 
+int CheckG1M( char *filebase ){	// Check G1M Basic file
+	int	fsize = 0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
+	int size  = SrcSize( filebase ) ;
+	if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize );
+		 return 1; // error
+	} 
+	return 0; // ok
+}
+
 int LoadProgfile( char *fname, int editsize ) {
 	char *filebase;
 	int fsize,size;
@@ -1073,18 +1116,14 @@ int LoadProgfile( char *fname, int editsize ) {
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
 			filebase = loadFile( fname , editsize + EditMaxfree);
-			if ( filebase == NULL ) {  return 1; }
+			if ( filebase == NULL ) return 1;
 			textsize=strlen(filebase);
 			if ( editsize ) ConvertToOpcode( filebase, sname, editsize + EditMaxfree);		// text file -> G1M file
 			progsize = textsize +  editsize ;
 	} else {	// G1M file
 			filebase = loadFile( fname , editsize );
-			if ( filebase == NULL ) {  return 1; }
-			fsize = 0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
-			size  = SrcSize( filebase ) ;
-			if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize );
-				 return 1;
-			}
+			if ( filebase == NULL ) return 1;
+			if ( CheckG1M( filebase ) ) return 1; // not support g1m
 			progsize = SrcSize( filebase ) + editsize ;
 	}
 
@@ -1131,6 +1170,7 @@ int SaveProgfile( int progNo ){
 
   loop:
 	if ( InputFilename( basname, "Save File Name?" ) ) return 1 ;
+//	if ( InputFilenamePass( filebase, basname, "Save File name?") ) return 1 ; // cancel
 	if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) goto loop;
 	basname8ToG1MHeader( filebase, basname);
 
@@ -1175,7 +1215,8 @@ int NewProg(){
 	G1M_Basic_header( filebase );	// G1M Basic header set
 	
 	basname[0]='\0';
-	if ( InputFilename( basname, "New File Name?" ) ) return 1 ;
+//	if ( InputFilename( basname, "New File Name?" ) ) return 1 ;
+	if ( InputFilenamePassname( filebase, basname, "New Program Name?") ) return 1 ; // cancel
 	if ( ExistG1M( basname ) == 0 ) { // existed file
 		SetFullfilenameExt( fname, basname, "g1m" );
 		LoadProgfile( fname, EditMaxfree );
@@ -1190,7 +1231,7 @@ int NewProg(){
 	ProgNo=0;
 	ExecPtr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
-	return 0;
+	return 0;	// ok
 }
 
 int SavePicture( char *filebase, int pictNo ){
@@ -1338,6 +1379,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		
 	} else {	// G1M file
 		G1MHeaderTobasname8( filebase, basname);
+		if ( CheckG1M( filebase ) ) return 1; // not support g1m
 		if ( InputFilename( basname, msg[select] ) ) return 1 ; // cancel
 		SetFullfilenameExt( name, basname, "g1m" );
 		if ( strcmp(name,fname)==0 ) return 0; // no rename
@@ -1754,6 +1796,7 @@ void ConvertToText( char *fname ){
 		if ( LoadProgfile( fname, buffersize ) ) return ; // error
 		filebase = ProgfileAdrs[0];
 		G1MHeaderTobasname8( filebase, basname);
+		if ( CheckPassWord( filebase ) ) return ;	// password error
 		
 		size = SrcSize( filebase ) + buffersize ;
 		memcpy( filebase+buffersize, filebase, SrcSize( filebase ) );
@@ -1948,33 +1991,39 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 
-void FavoritesDowndummy( int *index ) {
-	int tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	files[(*index)].filesize=tmp;
-	(*index)++;
-	SaveFavorites();
-}
-
+//void FavoritesDowndummy( int *index ) {
+//	int tmp;
+//	char tmpname[FILENAMEMAX];
+//	char tmpfolder[FOLDERMAX];
+//	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+//	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+//	tmp=files[(*index)+1].filesize;
+//	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+//	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+//	files[(*index)+1].filesize=files[(*index)].filesize;
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	files[(*index)].filesize=tmp;
+//	(*index)++;
+//	SaveFavorites();
+//}
+/*
 void FavoritesDowndummy2( int *index ) {
 	int tmp;
 	char tmpname[FILENAMEMAX];
@@ -1991,4 +2040,4 @@ void FavoritesDowndummy2( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
-
+*/

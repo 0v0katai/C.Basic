@@ -27,7 +27,7 @@ int SrcSize( char *src ) {
 	int size ;
 	if ( src[0]=='\0' ) return 0 ;
 	size = (src[0x47]&0xFF)*256+(src[0x48]&0xFF)+0x4C;
-	return size;
+	return size & 0xFFFF;
 }
 void SetSrcSize( char *src, int size ) {
 	int sizeH,sizeL ;
@@ -542,7 +542,7 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 
 
 unsigned int EditRun(int run){		// run:1 exec      run:2 edit
-	char *FileBase,*SrcBase;
+	char *filebase,*SrcBase;
 	unsigned int key=0;
 	char keyH,keyL;
 	char cont=1,stat;
@@ -570,6 +570,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
 
+ 	filebase = ProgfileAdrs[ProgNo];
+	SrcBase  = filebase+0x56;
+	offset = ExecPtr;
+	csrPtr = offset;
+
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
@@ -585,12 +590,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //	}
 //	GetKey(&key);
 
-
- 	FileBase = ProgfileAdrs[ProgNo];
-	SrcBase  = FileBase+0x56;
-	offset = ExecPtr;
-	csrPtr = offset;
-
 	PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 	
 	if ( run == 1 ) { ProgNo=0; ExecPtr=0; key=KEY_CTRL_F6; }	// direct run
@@ -604,8 +603,20 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	KeyRecover();
 	while ( cont ) {
 		ErrorNo=0;
-		FileBase = ProgfileAdrs[ProgNo];
-		SrcBase  = FileBase+0x56;
+		filebase = ProgfileAdrs[ProgNo];
+		SrcBase  = filebase+0x56;
+		
+		if ( ( run != 1 ) ) { // exec mode is Invalid
+			if ( filebase[0x55]==2 ) goto editpass;	// 
+			if ( filebase[0x55]==0 ) {	// pass no match (C.basic)
+				if ( CheckPassWord( filebase ) ) {
+					filebase[0x55]=2;	// 
+					editpass:
+					key=KEY_CTRL_EXIT;	// password error
+					goto edit_exit;
+				}
+			}
+		}
 		
 		if ( ( DebugScreen == 0 ) && ( run != 1 ) ) {
 			Bdisp_AllClr_VRAM();
@@ -634,7 +645,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr) ) csrPtr=0; //return KEY_CTRL_EXIT;
 
 //						Bdisp_AreaReverseVRAM(127, 0, 127,55);		// reverse thumb line 
-						d = SrcEndPtr( FileBase );					// Csr thumb point display
+						d = SrcEndPtr( filebase );					// Csr thumb point display
 						if ( d ) {									//
 							y = csrPtr*46/d+8;						//
 							BdispSetPointVRAM2( 127, y  , 2);		//
@@ -791,7 +802,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					} else {
 						if ( ClipEndPtr >= 0 ) {
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+							EditCopy( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
 						} else {
 							if ( DebugMenuSw ) {		// ====== Debug Mode ======
 								cont=0;
@@ -827,7 +838,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( SearchMode ) break;;
 					if ( ClipEndPtr >= 0 ) {
 						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-						EditCut( FileBase, &csrPtr, ClipStartPtr, ClipEndPtr );
+						EditCut( filebase, &csrPtr, ClipStartPtr, ClipEndPtr );
 					} else {
 						if ( DebugMenuSw ) {		// ====== Debug Mode ======
 								cont=0;
@@ -852,7 +863,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							} else {	// Search for text
 								if ( ClipEndPtr >= 0 ) {
 									if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-									EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+									EditCopy( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
 									ClipBuffer[63]='\0';
 									i=SearchForText(  SrcBase, ClipBuffer, &csrPtr ) ;
 								} else {
@@ -960,8 +971,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
 								}
 								SaveConfig();
-								FileBase = ProgfileAdrs[ProgNo];
-								SrcBase  = FileBase+0x56;
+								filebase = ProgfileAdrs[ProgNo];
+								SrcBase  = filebase+0x56;
 								if ( stat ) {
 									if ( ErrorNo ) offset = ErrorPtr ;			// error
 									else if ( BreakPtr ) offset = ExecPtr ;	// break
@@ -1217,7 +1228,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_F5:	// Search for text
 							if ( ClipEndPtr >= 0 ) {
 								if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-								EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+								EditCopy( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
 								ClipBuffer[63]='\0';
 								i=SearchForText(  SrcBase, ClipBuffer, &csrPtr ) ;
 							} else {
@@ -1242,7 +1253,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							key=0;
 							break;
 					case KEY_CTRL_PASTE:
-							EditPaste( FileBase, &csrPtr);
+							EditPaste( filebase, &csrPtr);
 							key=0;
 							break;
 							
@@ -1265,7 +1276,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				if ( CursorStyle < 0x6 ) {		// insert mode
 					PrevOpcode( SrcBase, &csrPtr );
 				}
-				DeleteOpcode( FileBase, &csrPtr);
+				DeleteOpcode( filebase, &csrPtr);
 				key=0;
 				ClipStartPtr = -1 ;		// ClipMode cancel
 				SearchMode=0;
@@ -1306,10 +1317,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						break;
 					}
 					if ( CursorStyle < 0x6 ) {		// insert mode
-						InsertOpcode( FileBase, csrPtr, key );
+						InsertOpcode( filebase, csrPtr, key );
 					} else {					// overwrite mode
-						if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( FileBase, &csrPtr);
-						InsertOpcode( FileBase, csrPtr, key );
+						if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( filebase, &csrPtr);
+						InsertOpcode( filebase, csrPtr, key );
 					}
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
 					key=0;
@@ -1328,10 +1339,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					if ( key == KEY_CHAR_POW )   key='^';
 					if ( key == KEY_CTRL_XTT  )   key='X'; // 
 					if ( CursorStyle < 0x6 ) {		// insert mode
-							InsertOpcode( FileBase, csrPtr, key );
+							InsertOpcode( filebase, csrPtr, key );
 					} else {					// overwrite mode
-							if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( FileBase, &csrPtr);
-							InsertOpcode( FileBase, csrPtr, key );
+							if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( filebase, &csrPtr);
+							InsertOpcode( filebase, csrPtr, key );
 					}
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
 					key=0;
@@ -1340,6 +1351,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			}
 		}
 	}
+	edit_exit:
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
 	return key;
@@ -1413,11 +1425,11 @@ int CB_BreakStop() {
 
 //----------------------------------------------------------------------------------------------
 int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //int edeitdummy(int x, int y){

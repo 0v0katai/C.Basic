@@ -139,7 +139,7 @@ CchRem	CacheRem;
 void ClrCahche();
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
@@ -806,8 +806,8 @@ int CB_interpreter( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

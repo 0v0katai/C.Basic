@@ -33,8 +33,8 @@
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalIntObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -66,8 +66,8 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	}
 }
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalIntObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign6d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    base:1 1-
 	char*	MatAryC;
@@ -285,7 +285,7 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int EvalintObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
+//int EvalintObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
 //int EvalintObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 int Eval_atod(char *SRC, int c ) {
@@ -966,3 +966,6 @@ int CBint_UnaryEval( char *SRC ) {	// eval 1
 */
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//int EvalIntObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign6f( unsigned int n ){ return n+n; }	// align +6byte

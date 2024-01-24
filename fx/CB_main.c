@@ -162,6 +162,11 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				run=0;
 				SaveConfig();
 				break;
+			case FileCMD_PASS:
+				NewPassWord(filename);
+				run=0;
+				SaveConfig();
+				break;
 			default:
 				run=0;
 				break;
