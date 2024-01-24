@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.13                                       */
+/*   inp Library  ver 1.2                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -15,6 +15,245 @@
 #include "CB_io.h"
 #include "CB_Kana.h"
 
+//----------------------------------------------------------------------------------------------
+//int inpObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
+/*
+double round( double x, int n ) {
+	unsigned char row[9];
+	int tmp,exp;
+	int i,j,bt;
+	double result;
+	unsigned char *ptr;
+
+	ptr=(unsigned char *)(&x);
+	for (i=0;i<8;i++) row[i]=ptr[i];
+
+	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
+	exp=tmp-1023; // 
+	if ( ( 0 > exp ) || ( exp > 51 ) ) result = x;
+	else {
+		tmp=52-exp;
+		i=7; j=0; bt=0xFE;
+		while ( tmp ) {
+			if (tmp>7) {
+				 tmp-=8; row[i]=0; i--;
+			} else {
+				row[i]&=bt;
+				bt=bt<<1;
+				j++;
+				tmp--;
+			}
+		}
+		ptr=(unsigned char *)(&result);
+		for (i=0;i<8;i++) ptr[i]=row[i];
+	}
+	return ( result ); 
+}
+*/
+
+
+double Round( double num, int round_mode, int digit){
+	int minus=0,exp,ex2;
+	double fabsnum=fabs(num),tmp,tmp2,tmp3,exf;
+
+	if ( num < 0 ) minus=-1;
+
+	switch ( round_mode ) {
+		case Fix: // fix
+			if (fabsnum<1e15) {
+				tmp=pow(10,digit);
+				num=floor(fabsnum*tmp+.5)/tmp;
+				fabsnum=num;
+				if ( minus ) num=-num;
+			}
+			break;
+		case Norm:	// normal
+			if ( digit==1 ) digit=10;
+			if ( digit==2 ) digit=10;
+		case Sci: // sci
+			if ( digit==0 ) break;
+			if ( digit>=16 ) break;
+			exf=log10(fabsnum);
+			exp=exf;
+			if ( exf > 0 ) exp++;
+			exf=pow(10,exp);
+			tmp=fabsnum/exf;
+			tmp2=pow(10,digit);
+			tmp3=floor(tmp*tmp2+.5)/tmp2;
+			num=tmp3*exf;
+			if ( minus ) num=-num;
+			break;
+	}
+	return num;
+}
+
+void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
+	int i,j,w,adj,minus=0,p,digit=round_digit;
+	char buffer2[32],fstr[16],tmp[16];
+	double fabsnum,pw;
+	unsigned char c;
+	char *nptr;
+	char *dptr,*eptr;
+	double dpoint=0.01;
+
+	if ( num < 0 ) minus=-1;
+	switch ( round_mode ) {
+		case Norm:
+			if ( round_digit==1 ) { dpoint=0.01;        digit=10; }
+			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; }
+			if ( round_digit==0 ) digit=16;
+//			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; i=11; c='f'; break; }
+//			num = Round( num, round_mode, digit);
+			fabsnum=fabs(num);
+		 	w=15; if ( w > width )  w=width;
+		 	pw=pow(10,w+minus);
+			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
+				w = floor((log10(fabsnum))) + (15-digit);
+				if ( digit >= width ) w= w+(digit-width);
+				i=14-w;
+				if ( i >= 18 ) i=18;
+				c='f';
+				if ( i <  0  ) { i=digit-1; c='e'; }
+				if ( i <  0  ) i=15;
+				if ( round_digit==2 ) if ( i>11 ) i=11;
+			} else {
+				adj = 1 - minus+ floor(log10(fabs(log10(fabsnum))))-1;
+				if ( ( 1e-10 <= fabsnum ) && ( fabsnum < dpoint )) adj++;
+				i=width-adj-5;
+				if ( i > digit-1 ) i=digit-1;
+				if ( i >= 18 ) i=18;
+				if ( i <  1  ) i=0;
+				if ( round_digit==2 ) if ( i>11 ) i=11;
+				c='e';
+			}
+			break;
+		case Fix:
+				i=digit;
+				c='f';
+			break;
+		case Sci:
+				num = Round( num, round_mode, digit);
+				i=digit-1; if ( i < 0 ) i=15;
+				c='e';
+			break;
+	}
+	
+	p=0;
+	fstr[p++]='%';
+	fstr[p++]='.';
+	if ( i >= 10 ) fstr[p++]='0'+i/10;
+	fstr[p++]='0'+i%10;
+	fstr[p++]=c;
+	fstr[p++]='\0';
+	sprintf((char*)buffer, fstr, num);
+
+	if ( round_mode == Norm ) {
+		dptr=strchr((char*)buffer,'.');
+		if ( dptr ) {
+			eptr=strchr((char*)buffer,'e');
+			i=strlen((char*)buffer); 
+			nptr=buffer+i;
+			if (  eptr != '\0' ) {	// 1.234500000e123  zero cut
+				eptr--; i=0;
+				while ( eptr[i] == '0' ) i-- ;
+				if ( i ) {
+					j=0;
+					while ( eptr[j] != '\0' ) eptr[++i]=eptr[++j];
+				}
+			} else {				// 1.234500000  zero cut
+				i=-1;
+				while ( nptr[i] == '0' ) nptr[i--]='\0';
+				if ( nptr[i]=='.' ) nptr[i]='\0';
+			}
+		}
+	}
+
+	if ( ENG==3 )  {	// 3 digit separate
+		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
+		nptr=strchr(buffer,'.');
+		if ( nptr==NULL ) w=strlen(buffer)+minus; else w=nptr-buffer+minus;
+		if ( w < 4  ) goto align;
+		i=0; j=0;
+		if ( minus ) buffer[i++]=buffer2[j++];
+		do {
+			buffer[i++]=buffer2[j++];
+			w--;
+			if ( ( w==3 ) || ( w==6 )|| ( w==9 )|| ( w==12 )|| ( w==15 ) ) buffer[i++] = ',';
+		} while ( buffer2[j] ) ;
+		buffer[i]='\0';
+	}
+	align:
+	if ( align_mode == RIGHT_ALIGN ) {
+		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
+		w=strlen((char*)buffer2);
+		if ( w < width ) {
+			for ( i=1; i<=w; i++)
+			 buffer2[width-i]=buffer2[w-i];
+			for ( i=0; i<width-w; i++) buffer2[i]=' ';
+		}
+		for(i=0; i<22; i++) buffer[i]=buffer2[i]; // 
+	}
+	
+	buffer[width]='\0';
+
+	i=-1;
+	while (i<width) {
+		c=buffer[++i];
+		switch ( c ) {
+			case '-':
+				buffer[i]=0x87;	// (-)
+				break;
+//			case '+':
+//				buffer[i]=0x89;	// (+)
+//				break;
+			case 'e':	// exp
+				buffer[i]=0x0F;	// (exp)
+				break;
+		}
+	}
+
+	return ;
+}
+
+void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
+	double fabsnum;
+	unsigned char c,d=0;
+	if ( ENG==1 ) { // ENG mode
+		fabsnum=fabs(num);
+		if ( ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
+			width-- ; 
+			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
+			else if ( fabsnum >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
+			else if ( fabsnum >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
+			else if ( fabsnum >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
+			else if ( fabsnum >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
+			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
+			else if ( fabsnum >= 1    ) {             c=' ';  }
+			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
+			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
+			else if ( fabsnum >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
+			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
+			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
+			sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
+			width=strlen((char*)buffer);
+			buffer[width++]=c;
+			buffer[width++]=d;
+			buffer[width]='\0';
+			return ;
+		}
+	}
+	sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
+}
+
+void sprintG( char* buffer, double num, int width, int align_mode) {
+	sprintGRS(buffer, num, width, align_mode, Norm, 15); // + round
+}
+
+
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void Fkey_KDISPN(int n,char *buffer) {
 	Fkey_Clear(n);
@@ -34,6 +273,7 @@ void Fkey_dispN_aA(int n, char *buffer) {
 	Bdisp_AreaReverseVRAM( n*21+15, 7*8+1, n*21+20, 7*8+7);	// reverse
 }
 
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 const short CharMATH[]= {
 	0x002B,0x002D,0x00A9,0x00B9,0x005E,0x002A,0x002F,0x003D,0x0011,0x003C,0x003E,0x0010,0x0012,0x0087,0xE5BE,0xE5BF,0xE6B0,0xE6B1,0xE5A3,
@@ -273,179 +513,158 @@ void DMS_Opcode( char * buffer, short code ) {
 	if ( code == 0xBC ) { strcat( buffer,"(gra)"); }
 }
 
-
-int SelectOpcode( short *oplist, int *select) {
-	int opNum=0 ;
+int SelectOpcode( int listselect ) {
+	int *select;
+	short *oplist;
+	int opNum;
 	char buffer[22];
 	char tmpbuf[18];
 	unsigned int key;
-	int	cont=1;
+	int	cont,cont2=1;
 	int i,j,y;
-	int seltop=*select;
+	int seltop;
 
-	while ( oplist[opNum++] ) ;
-	opNum-=2;
+	while ( cont2 ) {
 
-	Cursor_SetFlashMode(0); 		// cursor flashing off
-
-	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(6);
-
-	while (cont) {
-		if (  (*select)<seltop ) seltop=(*select);
-		if ( ((*select)-seltop) > 5 ) seltop=(*select)-5;
-		if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
-		for ( i=0; i<6; i++ ) {
-			CB_Print(8,2+i,(unsigned char *)"            ");
-			j=oplist[seltop+i];
-			CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
-			tmpbuf[12]='\0'; 
-			DMS_Opcode( tmpbuf, j);
-			j=0; if ( tmpbuf[0]==' ' ) j++;
-			sprintf(buffer,"%04X:%-12s",(unsigned short)oplist[seltop+i],tmpbuf+j ) ;
-			CB_Print(3,2+i,(unsigned char *)buffer);
-		}
-		Bdisp_PutDisp_DD();	
-		
-		y = ((*select)-seltop) + 1 ;
-		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
-		Bdisp_PutDisp_DD();
-
-		GetKey( &key );
-		switch (key) {
-			case KEY_CTRL_EXIT:
-			case KEY_CTRL_QUIT:
-				RestoreDisp(SAVEDISP_PAGE1);
-				return 0;
-			case KEY_CTRL_EXE:
-				cont=0;
+		switch ( listselect ){
+			case CMDLIST_OPTN:
+				oplist = oplistOPTN;
+				select =&selectOPTN;
 				break;
-		
-			case KEY_CTRL_LEFT:
-				*select = 0;
+			case CMDLIST_VARS:
+				oplist = oplistVARS;
+				select =&selectVARS;
 				break;
-			case KEY_CTRL_RIGHT:
-				*select = opNum;
-				break;
-			case KEY_CTRL_UP:
-				(*select)--;
-				if ( *select < 0 ) *select = opNum;
-				break;
-			case KEY_CTRL_DOWN:
-				(*select)++;
-				if ( *select > opNum ) *select =0;
-				break;
-			default:
+			case CMDLIST_PRGM:
+				oplist = oplistPRGM;
+				select =&selectPRGM;
 				break;
 		}
+		
+		opNum=0 ;
+		while ( oplist[opNum++] ) ;
+		opNum-=2;
+		seltop=*select;
+		cont=1;
+
+		Cursor_SetFlashMode(0); 		// cursor flashing off
+
+		SaveDisp(SAVEDISP_PAGE1);
+		PopUpWin(6);
+
+		while (cont) {
+			if (  (*select)<seltop ) seltop=(*select);
+			if ( ((*select)-seltop) > 5 ) seltop=(*select)-5;
+			if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
+			for ( i=0; i<6; i++ ) {
+				CB_Print(3,2+i,(unsigned char *)"                 ");
+				j=oplist[seltop+i];
+				if ( j == 0xFFFFFFFF ) {
+					CB_Print(3,2+i,(unsigned char *)"-----------------");
+				} else {
+					CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
+					tmpbuf[12]='\0'; 
+					DMS_Opcode( tmpbuf, j);
+					j=0; if ( tmpbuf[0]==' ' ) j++;
+//	//				sprintf(buffer,"%04X:%-12s",(unsigned short)oplist[seltop+i],tmpbuf+j ) ;
+					sprintf(buffer,"%-17s",tmpbuf+j ) ;
+					CB_Print(3,2+i,(unsigned char *)buffer);
+				}
+			}
+			Bdisp_PutDisp_DD();	
+			
+			y = ((*select)-seltop) + 1 ;
+			Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
+			Bdisp_PutDisp_DD();
+
+			GetKey( &key );
+			switch (key) {
+				case KEY_CTRL_EXIT:
+				case KEY_CTRL_QUIT:
+					RestoreDisp(SAVEDISP_PAGE1);
+					return 0;
+					
+				case KEY_CTRL_EXE:
+					cont=0;
+					cont2=0;
+					break;
+			
+				case KEY_CTRL_LEFT:
+					for ( i=(*select)-2; i>0; i-- ) {
+						if ( oplist[i] == 0xFFFFFFFF ) break;
+					}
+					if ( i<0 ) i = 0 ;
+					if ( i>0 ) i++ ;
+					*select = i ;
+					seltop = *select;
+					break;
+				case KEY_CTRL_RIGHT:
+					for ( i=(*select)+1; i<(*select)+opNum; i++ ) {
+						if ( oplist[i] == 0xFFFFFFFF ) break;
+					}
+					*select = i+1 ;
+					if ( *select > opNum ) *select = opNum;
+					seltop = *select;
+					break;
+				case KEY_CTRL_UP:
+					(*select)--;
+					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)--;
+					if ( *select < 0 ) *select = opNum;
+					break;
+				case KEY_CTRL_DOWN:
+					(*select)++;
+					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)++;
+					if ( *select > opNum ) *select =0;
+					break;
+				case KEY_CTRL_OPTN:
+					listselect=CMDLIST_OPTN;
+					cont=0;
+					break;
+				case KEY_CTRL_VARS:
+					listselect=CMDLIST_VARS;
+					cont=0;
+					break;
+				case KEY_CTRL_SHIFT:
+					GetKey(&key);
+					switch (key) {
+						case KEY_CTRL_PRGM:
+							listselect=CMDLIST_PRGM;
+							cont=0;
+							break;
+						default:
+							break;
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		RestoreDisp(SAVEDISP_PAGE1);
 	}
-
-	RestoreDisp(SAVEDISP_PAGE1);
 	Bdisp_PutDisp_DD();
 	
 	return oplist[(*select)];
 }
-/*
-const short oplistInp[]={
-		0x97,	// Abs
-		0xA6,	// Int
-		0xB6,	// frac
-		0xAB,	// !
-		0x7FB0,	// And
-		0x7FB1,	// Or
-		0x7FB3,	// Not
-		0x7FB4,	// Xor
-		
-		0xC1,	// Ran#
-		0x7F87,	// RanInt#(
-		
-		0x7F3A,	// MOD(
-		0x7F58,	// ElemSize(
-		0x7F59,	// ColSize(
-		0x7F5A,	// RowSize(
-		
-		0xA1,	// sinh
-		0xA2,	// cosh
-		0xA3,	// tanh
-		0xB1,	// arcsinh
-		0xB2,	// arccosh
-		0xB3,	// arctanh
 
-		0x01,	// femto
-		0x02,	// pico
-		0x03,	// nano
-		0x04,	// micro
-		0x05,	// milli
-		0x06,	// Kiro
-		0x07,	// Mega
-		0x08,	// Giga
-		0x09,	// Tera
-		0x0A,	// Peta
-		0x0B,	// Exa
-		
-		0x7F00,	// Xmin
-		0x7F01,	// Xmax
-		0x7F02,	// Xscl
-		0xF921,	// Xdot
-		0x7F04,	// Ymin
-		0x7F05,	// Ymax
-		0x7F06,	// Yscl
-		0x7F0B,	// Xfct
-		0x7F0C,	// Yfct
-		
-		0x0FD,	// Eval(
-		0};
-*/
-
-//----------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
 const short oplistOPTN[]={
-		0x8C,	// dms
-		0x23,	// #
-		0x24,	// $
-		0x25,	// %
-		0x26,	// &
-		0x2A,	// *
-//		0x27,	// '
 		0x97,	// Abs
 		0xA6,	// Int
-		0xB6,	// frac
 		0xDE,	// Intg
+		0xB6,	// frac
 		0xAB,	// !
+		0x7F3A,	// MOD(
+		
+		0xFFFF,	// 				-
 		0x7FB0,	// And
 		0x7FB1,	// Or
 		0x7FB3,	// Not
 		0x7FB4,	// Xor
-		
 		0xC1,	// Ran#
-		0x7F87,	// RanInt#(
+		0x7F87,	// RanInt#(		
 		
-		0x7F3A,	// MOD(
-		0x7F46,	// Dim
-		0x7F40,	// Mat	
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
-		0x7F58,	// ElemSize(
-		0x7F59,	// ColSize(
-		0x7F5A,	// RowSize(
-
-//		0x81,	// sin
-//		0x82,	// cos
-//		0x83,	// tan
-//		0x91,	// arcsin
-//		0x92,	// arccos
-//		0x93,	// arctan
-//		0x85,	// ln
-//		0x86,	// sqrt
-//		0x95,	// log
-
-		0xA1,	// sinh
-		0xA2,	// cosh
-		0xA3,	// tanh
-		0xB1,	// arcsinh
-		0xB2,	// arccosh
-		0xB3,	// arctanh
-
+		0xFFFF,	// 				-
 		0xD3,	// Rnd
 		0x7F86,	// RndFix(
 		0xD9,	// Norm
@@ -455,6 +674,7 @@ const short oplistOPTN[]={
 		0xF90B,	// EngOn
 		0xF90C,	// EngOff
 
+		0xFFFF,	// 				-
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -467,93 +687,117 @@ const short oplistOPTN[]={
 		0x0A,	// Peta
 		0x0B,	// Exa
 		
-		
-		0xF793,	// StoPict
-		0xF794,	// RclPict
-//		0xF797,	// StoV-Win
-//		0xF798,	// RclV-Win
-//		0xF79F,	// RclCapt
-//		0xF74C,	// Sum
-//		0x0FB,	// ProbP(
-//		0x0FC,	// ProbQ(
-//		0xF938,	// Exp(
-//		0x0FD,	// Eval(
-//		0x0FA,	// Gosub
+		0xFFFF,	// 				-
+		0x7F46,	// Dim
+		0x7F40,	// Mat	
+		0x7F41,	// Trn 
+		0x7F47,	// Fill(
+		0x7F58,	// ElemSize(
+		0x7F59,	// ColSize(
+		0x7F5A,	// RowSize(
 		0x7FE9,	// CellSum(
-		
+
+		0xFFFF,	// 				-
+		0xA1,	// sinh
+		0xA2,	// cosh
+		0xA3,	// tanh
+		0xB1,	// arcsinh
+		0xB2,	// arccosh
+		0xB3,	// arctanh
+
+		0xFFFF,	// 				-
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
-		0x9C,	// deg
-		0xAC,	// rad
-		0xBC,	// grad
+		0x9C,	// (deg)
+		0xAC,	// (rad)
+		0xBC,	// (grad)
+		
+		0xFFFF,	// 				-
 		0x8C,	// dms
 		0xF905,	// >DMS
 		0xF941,	// DATE
 		0xF942,	// TIME
 		0x7F5F,	// Ticks
+
+		0xFFFF,	// 				-
+		0x23,	// #
+		0x24,	// $
+		0x25,	// %
+		0x26,	// &
+		0x2A,	// *
 		0};
 							
 const short oplistPRGM[]={	
+		0x3F,	// ?
 		0x0C,	// dsps
 		0x3A,	// :
-		0x3F,	// ?
 		0x27,	// '
 		0x7E,	// ~
 		
+		0xFFFF,	// 				-
+		0x3D,	// =
 		0x3C,	// <
 		0x3E,	// >
 		0x10,	// <=
 		0x11,	// !=
 		0x12,	// >=
 		
+		0xFFFF,	// 				-
 		0xE2,	// Lbl
 		0xEC,	// Goto
 		0x13,	// =>
 		0xE9,	// Isz
 		0xE8,	// Dsz
 		
+		0xFFFF,	// 				-
 		0xF700,	// If
 		0xF701,	// Then
 		0xF702,	// Else
 		0xF70F,	// ElseIf
 		0xF703,	// IfEnd
+
+		0xFFFF,	// 				-
 		0xF704,	// For
 		0xF705,	// To
 		0xF706,	// Step
 		0XF707,	// Next
+
+		0xFFFF,	// 				-
 		0xF708,	// While
 		0xF709,	// WhileEnd
 		0xF70A,	// Do
 		0xF70B,	// LpWhile
-		
+
+		0xFFFF,	// 				-
 		0xF7EA,	// Switch
 		0xF7EB,	// Case
 		0xF7EC,	// Default
 		0xF7ED,	// SwitchEnd
 		
-		0xF7F1,	// Local
+		0xFFFF,	// 				-
 		0xED,	// Prog
-		0xFA,	// Gosub
 		0xF70C,	// Return
 		0xF70D,	// Break
 		0xF70E,	// Stop
+		
+		0xF7F1,	// Local
+		0xFA,	// Gosub
 		0xF717,	// ACBreak
 
+		0xFFFF,	// 				-
 		0xF718,	// ClrText
 		0xF719,	// ClrGraph
 //		0xF71A,	// ClrList
 		0xF91E,	// ClrMat
-		
 		0xF710,	// Locate
-		0xF7E4,	// Disp
 		0x7F8F,	// Getkey
-
-		0xF720,	// DrawGraph
+		0xF7E4,	// Disp
+		
+		0xFFFF,	// 				-
 		0x7FF5,	// IsExist(
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
-		
 		0xF7F4,	// SysCall
 		0xF7F5,	// Call
 		0xF7F6,	// Poke 
@@ -561,6 +805,7 @@ const short oplistPRGM[]={
 		0x7FF8,	// VarPtr(
 		0x7FFA,	// ProgPtr(
 		
+		0xFFFF,	// 				-
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
 		0xF932,	// StrCmp(
@@ -578,22 +823,24 @@ const short oplistPRGM[]={
 		0xF93E,	// Sprintf(
 		0xF940,	// Str(
 		0xF93F,	// Str
-		
 		0};
 		
 const short oplistVARS[]={
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
+		0xEB,	// ViewWindow
 		0xE0,	// Plot
 		0xE1,	// Line
-		0xEB,	// ViewWindow
+		0xF7A7,	// F-Line
 
+		0xFFFF,	// 				-
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
+		0xF7A6,	// Circle
 		0xF7A5,	// Text
 		0xF7E3,	// LocateYX
-		0xF7A6,	// Circle
-		0xF7A7,	// F-Line
+
+		0xFFFF,	// 				-
 		0xF7A8,	// PlotOn
 		0xF7A9,	// PlotOff
 		0xF7AA,	// PlotChg
@@ -602,13 +849,8 @@ const short oplistVARS[]={
 		0xF7AD,	// PxlChg
 		0xF7AF,	// PxlTest(
 
-//		0xF797,	// StoV-Win
-//		0xF798,	// RclV-Win
-		0xF793,	// StoPict
-		0xF794,	// RclPict
-//		0xF79F,	// RclCapt
-		
 
+		0xFFFF,	// 				-
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
@@ -622,6 +864,8 @@ const short oplistVARS[]={
 		0xF7D4,	// LabelOff
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
+
+		0xFFFF,	// 				-
 		0xF71C,	// S-L-Normal
 		0xF71D,	// S-L-Thick
 		0xF71E,	// S-L-Broken
@@ -631,6 +875,7 @@ const short oplistVARS[]={
 		0xF78E,	// SketchBroken
 		0xF78F,	// SketchDot
 		
+		0xFFFF,	// 				-
 		0x7F00,	// Xmin
 		0x7F01,	// Xmax
 		0x7F02,	// Xscl
@@ -643,21 +888,31 @@ const short oplistVARS[]={
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
-		0xF7F0,	// DotShape(
+		
+//		0xF797,	// StoV-Win
+//		0xF798,	// RclV-Win
+		0xF793,	// StoPict
+		0xF794,	// RclPict
+//		0xF79F,	// RclCapt
+
+		0xFFFF,	// 				-
+		0xF7E1,	// Rect(
+		0xF7E2,	// FillRect(
+		0xF7E8,	// ReadGraph(
+		0xF7E9,	// WriteGraph(
 		0xF73E,	// DotGet(
 		0xF94B,	// DotPut(
 		0xF73D,	// DotTrim(
 		0xF7E0,	// DotLife(
-		0xF7E8,	// ReadGraph(
-		0xF7E9,	// WriteGraph(
-		0xF7E1,	// Rect(
-		0xF7E2,	// FillRect(
-		0xF7F8,	// RefreshCtrl
-		0xF7FA,	// RefreshTime
+		0xF7F0,	// DotShape(
+
+		0xFFFF,	// 				-
 		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
 		0xF7FD, // FKey(
 		0xF7FE,	// BackLight
+		0xF7F8,	// RefreshCtrl
+		0xF7FA,	// RefreshTime
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -672,19 +927,22 @@ void FkeyRel(){
 	Fkey_DISPR( 5, " \x10 ");
 }
 
-int SelectOpcode5800P( short *oplist, int *select) {
+int SelectOpcode5800P() {
+	int *select=&selectCMD;
+	short *oplist=oplistCMD;
 	int opNum=0 ;
 	char buffer[22];
 	char tmpbuf[18];
 	unsigned int key;
 	int	cont=1;
 	int i,j,y,n;
-	int seltop=*select;
+	int seltop;
 	int shift=0;
 
 	while ( oplist[opNum++] ) ;
 	opNum-=2;
-	
+	seltop=*select;
+
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 
 	SaveDisp(SAVEDISP_PAGE1);
@@ -737,7 +995,7 @@ int SelectOpcode5800P( short *oplist, int *select) {
 		Bdisp_PutDisp_DD();	
 		
 		y = ((*select)-seltop) + 1 ;
-//		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+//		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
 		Bdisp_PutDisp_DD();
 
 		GetKey( &key );
@@ -780,7 +1038,7 @@ int SelectOpcode5800P( short *oplist, int *select) {
 				else if ( (*select) < 10*12 ) { (*select)= 0*12; break; }
 				else if ( (*select) < 14*12 ) { (*select)= 5*12; break; }
 				else if ( (*select) < 16*12 ) { (*select)=10*12; break; }
-				else                            { (*select)=14*12; break; }
+				else                          { (*select)=14*12; break; }
 				break;
 			case KEY_CTRL_RIGHT:
 				if ( (*select) < 5*12 )       { (*select)= 5*12; break; }
@@ -1661,24 +1919,20 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				break;
 		}
 
-//		if ( key == KEY_CTRL_OPTN ) {
-//				key=SelectOpcode(oplistInp,&selectOPTN);
-//				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
-//		}
 		if ( key == KEY_CTRL_F3 )  {
-				key=SelectOpcode5800P(oplistCMD,&selectCMD);
+				key=SelectOpcode5800P();
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( key == KEY_CTRL_OPTN ) {
-				key=SelectOpcode(oplistOPTN,&selectOPTN);
+				key=SelectOpcode( CMDLIST_OPTN );
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( key == KEY_CTRL_VARS ) {
-				key=SelectOpcode(oplistVARS,&selectVARS);
+				key=SelectOpcode( CMDLIST_VARS );
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( key == KEY_CTRL_PRGM ) {
-				key=SelectOpcode(oplistPRGM,&selectPRGM);
+				key=SelectOpcode( CMDLIST_PRGM );
 				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 		}
 		if ( alpha_mode || exp_mode ) {
@@ -1781,242 +2035,6 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
-//int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------
-/*
-double round( double x, int n ) {
-	unsigned char row[9];
-	int tmp,exp;
-	int i,j,bt;
-	double result;
-	unsigned char *ptr;
-
-	ptr=(unsigned char *)(&x);
-	for (i=0;i<8;i++) row[i]=ptr[i];
-
-	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
-	exp=tmp-1023; // 
-	if ( ( 0 > exp ) || ( exp > 51 ) ) result = x;
-	else {
-		tmp=52-exp;
-		i=7; j=0; bt=0xFE;
-		while ( tmp ) {
-			if (tmp>7) {
-				 tmp-=8; row[i]=0; i--;
-			} else {
-				row[i]&=bt;
-				bt=bt<<1;
-				j++;
-				tmp--;
-			}
-		}
-		ptr=(unsigned char *)(&result);
-		for (i=0;i<8;i++) ptr[i]=row[i];
-	}
-	return ( result ); 
-}
-*/
-
-
-double Round( double num, int round_mode, int digit){
-	int minus=0,exp,ex2;
-	double fabsnum=fabs(num),tmp,tmp2,tmp3,exf;
-
-	if ( num < 0 ) minus=-1;
-
-	switch ( round_mode ) {
-		case Fix: // fix
-			if (fabsnum<1e15) {
-				tmp=pow(10,digit);
-				num=floor(fabsnum*tmp+.5)/tmp;
-				fabsnum=num;
-				if ( minus ) num=-num;
-			}
-			break;
-		case Norm:	// normal
-			if ( digit==1 ) digit=10;
-			if ( digit==2 ) digit=10;
-		case Sci: // sci
-			if ( digit==0 ) break;
-			if ( digit>=16 ) break;
-			exf=log10(fabsnum);
-			exp=exf;
-			if ( exf > 0 ) exp++;
-			exf=pow(10,exp);
-			tmp=fabsnum/exf;
-			tmp2=pow(10,digit);
-			tmp3=floor(tmp*tmp2+.5)/tmp2;
-			num=tmp3*exf;
-			if ( minus ) num=-num;
-			break;
-	}
-	return num;
-}
-
-void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
-	int i,j,w,adj,minus=0,p,digit=round_digit;
-	char buffer2[32],fstr[16],tmp[16];
-	double fabsnum,pw;
-	unsigned char c;
-	char *nptr;
-	char *dptr,*eptr;
-	double dpoint=0.01;
-
-	if ( num < 0 ) minus=-1;
-	switch ( round_mode ) {
-		case Norm:
-			if ( round_digit==1 ) { dpoint=0.01;        digit=10; }
-			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; }
-			if ( round_digit==0 ) digit=16;
-//			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; i=11; c='f'; break; }
-//			num = Round( num, round_mode, digit);
-			fabsnum=fabs(num);
-		 	w=15; if ( w > width )  w=width;
-		 	pw=pow(10,w+minus);
-			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
-				w = floor((log10(fabsnum))) + (15-digit);
-				if ( digit >= width ) w= w+(digit-width);
-				i=14-w;
-				if ( i >= 18 ) i=18;
-				c='f';
-				if ( i <  0  ) { i=digit-1; c='e'; }
-				if ( i <  0  ) i=15;
-				if ( round_digit==2 ) if ( i>11 ) i=11;
-			} else {
-				adj = 1 - minus+ floor(log10(fabs(log10(fabsnum))))-1;
-				if ( ( 1e-10 <= fabsnum ) && ( fabsnum < dpoint )) adj++;
-				i=width-adj-5;
-				if ( i > digit-1 ) i=digit-1;
-				if ( i >= 18 ) i=18;
-				if ( i <  1  ) i=0;
-				if ( round_digit==2 ) if ( i>11 ) i=11;
-				c='e';
-			}
-			break;
-		case Fix:
-				i=digit;
-				c='f';
-			break;
-		case Sci:
-				num = Round( num, round_mode, digit);
-				i=digit-1; if ( i < 0 ) i=15;
-				c='e';
-			break;
-	}
-	
-	p=0;
-	fstr[p++]='%';
-	fstr[p++]='.';
-	if ( i >= 10 ) fstr[p++]='0'+i/10;
-	fstr[p++]='0'+i%10;
-	fstr[p++]=c;
-	fstr[p++]='\0';
-	sprintf((char*)buffer, fstr, num);
-
-	if ( round_mode == Norm ) {
-		dptr=strchr((char*)buffer,'.');
-		if ( dptr ) {
-			eptr=strchr((char*)buffer,'e');
-			i=strlen((char*)buffer); 
-			nptr=buffer+i;
-			if (  eptr != '\0' ) {	// 1.234500000e123  zero cut
-				eptr--; i=0;
-				while ( eptr[i] == '0' ) i-- ;
-				if ( i ) {
-					j=0;
-					while ( eptr[j] != '\0' ) eptr[++i]=eptr[++j];
-				}
-			} else {				// 1.234500000  zero cut
-				i=-1;
-				while ( nptr[i] == '0' ) nptr[i--]='\0';
-				if ( nptr[i]=='.' ) nptr[i]='\0';
-			}
-		}
-	}
-
-	if ( ENG==3 )  {	// 3 digit separate
-		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
-		nptr=strchr(buffer,'.');
-		if ( nptr==NULL ) w=strlen(buffer)+minus; else w=nptr-buffer+minus;
-		if ( w < 4  ) goto align;
-		i=0; j=0;
-		if ( minus ) buffer[i++]=buffer2[j++];
-		do {
-			buffer[i++]=buffer2[j++];
-			w--;
-			if ( ( w==3 ) || ( w==6 )|| ( w==9 )|| ( w==12 )|| ( w==15 ) ) buffer[i++] = ',';
-		} while ( buffer2[j] ) ;
-		buffer[i]='\0';
-	}
-	align:
-	if ( align_mode == RIGHT_ALIGN ) {
-		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
-		w=strlen((char*)buffer2);
-		if ( w < width ) {
-			for ( i=1; i<=w; i++)
-			 buffer2[width-i]=buffer2[w-i];
-			for ( i=0; i<width-w; i++) buffer2[i]=' ';
-		}
-		for(i=0; i<22; i++) buffer[i]=buffer2[i]; // 
-	}
-	
-	buffer[width]='\0';
-
-	i=-1;
-	while (i<width) {
-		c=buffer[++i];
-		switch ( c ) {
-			case '-':
-				buffer[i]=0x87;	// (-)
-				break;
-//			case '+':
-//				buffer[i]=0x89;	// (+)
-//				break;
-			case 'e':	// exp
-				buffer[i]=0x0F;	// (exp)
-				break;
-		}
-	}
-
-	return ;
-}
-
-void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
-	double fabsnum;
-	unsigned char c,d=0;
-	if ( ENG==1 ) { // ENG mode
-		fabsnum=fabs(num);
-		if ( ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
-			width-- ; 
-			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
-			else if ( fabsnum >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
-			else if ( fabsnum >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
-			else if ( fabsnum >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
-			else if ( fabsnum >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
-			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
-			else if ( fabsnum >= 1    ) {             c=' ';  }
-			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
-			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
-			else if ( fabsnum >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
-			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
-			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
-			sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
-			width=strlen((char*)buffer);
-			buffer[width++]=c;
-			buffer[width++]=d;
-			buffer[width]='\0';
-			return ;
-		}
-	}
-	sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
-}
-
-void sprintG( char* buffer, double num, int width, int align_mode) {
-	sprintGRS(buffer, num, width, align_mode, Norm, 15); // + round
-}
-//----------------------------------------------------------------------------------------------
 double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
 	char buffer[32];
 	int csrX=0;
@@ -2042,3 +2060,7 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_
 	return ( key );
 }
 
+//---------------------------------------------------------------------------------------------- align dummy
+int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

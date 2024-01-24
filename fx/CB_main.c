@@ -65,7 +65,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	unsigned int key;
 	char buffer[32];
 	char *ptr,*stat;
-	int i,j,reg,run=0;
+	int i,j;
 
 	char filename[50];
 	char *src;
@@ -96,7 +96,10 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		PictAry[0]=GetVRAMAddress();
 
 		InitsmallVar();		// init small lvariable
-	
+		ExecPtr=0;	
+		DebugMode=0;
+		DebugScreen=0;
+		
 		key =( SelectFile( filename ) ) ;
 		switch ( key ) {
 			case FileCMD_Prog:				// -- test for SDK (internal sample program)
@@ -107,28 +110,21 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				LoadFileSDK( bas_src3 );
 				LoadFileSDK( bas_src4 );
 				LoadFileSDK( bas_src5 );
-				DebugMode=0;
 				EditRun(2);		// Program listing & edit
-				run=0;
 				SaveConfig();
 				break;
+			case FileCMD_DebugRUN:
+				DebugMode=9; // debug mode start
 			case KEY_CTRL_EXE:
 			case FileCMD_RUN:
-				DebugMode=0;
-		runjp:	ExecPtr=0;
+		runjp:
 				i=LoadProgfile( filename, EditMaxfree ) ;
-				DebugScreen=0;
 				if ( i==0 )	EditRun(1);			// Program run
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				SaveConfig();
 				break;
-			case FileCMD_DebugRUN:
-				DebugMode=9; // debug mode start
- 				goto runjp;
-				break;
 			case FileCMD_EDIT:
-				DebugMode=0;
 				ExecPtr=0;
 				i=LoadProgfile( filename, EditMaxfree ) ;
 				if ( i==0 )	EditRun(2);			// Program listing & edit
@@ -138,37 +134,30 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				break;
 			case FileCMD_NEW:
 				if ( NewProg() ) break ;
-				DebugMode=0;
 				EditRun(2);			// Program listing & edit
 				SaveConfig();
 				break;
 			case FileCMD_RENAME:
 				RenameCopyFile(filename, 0);
-				run=0;
 				SaveConfig();
 				break;
 			case FileCMD_DEL:
 				DeleteFileFav(filename);
-				run=0;
 				SaveConfig();
 				break;
 			case FileCMD_COPY:
 				RenameCopyFile(filename, 1);
-				run=0;
 				SaveConfig();
 				break;
 			case FileCMD_TEXT:
 				ConvertToText(filename);
-				run=0;
 				SaveConfig();
 				break;
 			case FileCMD_PASS:
 				NewPassWord(filename);
-				run=0;
 				SaveConfig();
 				break;
 			default:
-				run=0;
 				break;
 		}
 		

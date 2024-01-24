@@ -39,7 +39,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v0.99t " );
+	locate( 3, 4 ); Print( (unsigned char*)"          v0.99u " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
 	GetKey(&key);
@@ -93,7 +93,7 @@ void SetLineStyle() {
 
 //-----------------------------------------------------------------------------
 
-void SetVeiwWindowInit(){	// Initialize	retrun 0: no change  -1 : change
+void SetVeiwWindowInit(){	// Initialize	return 0: no change  -1 : change
 		Xmin  =-6.3;
 		Xmax  = 6.3;
 		Xscl= 1;
@@ -209,7 +209,7 @@ unsigned int MathKey( unsigned int  key) {
 }
 
 
-int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no change  -1 : change
+int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no change  -1 : change
 	char buffer[32];
 	unsigned int key;
 	int	cont=1;
