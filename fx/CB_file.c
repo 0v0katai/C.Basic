@@ -22,6 +22,7 @@
 
 //-------------------------------------------------------------- source code refer to (WSC) file.c
 //---------------------------------------------------------------------------------------------
+
 #define FILENAMEMAX 13
 #define N_LINE 6
 
@@ -221,7 +222,7 @@ unsigned int Explorer( int size, char *folder )
 {
 	int cont=1;
 	int top, redraw;
-	int i,j,k,tmp;
+	int i,j,k,s,tmp;
 	unsigned int key;
 	int FavCount=0;
 	int StartLine;
@@ -265,10 +266,11 @@ unsigned int Explorer( int size, char *folder )
 		}
 		files[FavoritesMAX].filesize = 0xFFFE;	// separator
 		
-		if ( ( rename[0] != '\0' ) && ( index > FavCount) ){
-			for ( k=FavCount; k<size; k++ ) {
+		if ( rename[0] != '\0' ) {
+			if ( index > FavoritesMAX ) s=FavoritesMAX; else s=0;
+			for ( k=s; k<size; k++ ) {
 				if ( files[k].filesize != -1 ) {
-					if ( strncmp( files[k].filename,  rename,  strlen(rename) ) == 0 ) index=k; // rename name matching
+					if ( strncmp( files[k].filename,  rename,  strlen(rename) ) == 0 ) { index=k; break; } // rename name matching
 				}
 			}
 		}
@@ -409,8 +411,6 @@ unsigned int Explorer( int size, char *folder )
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_RUN;
-//						str=files[index].filename;
-//						if ( strcmp(str + strlen(str) - 4, ".txt") == 0 ) key=FileCMD_Txt2Op ;
 						break;
 					case 1:
 						key=FileCMD_TEXT;
@@ -422,8 +422,6 @@ unsigned int Explorer( int size, char *folder )
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_EDIT;
-//						str=files[index].filename;
-//						if ( strcmp(str + strlen(str) - 4, ".txt") == 0 ) key=FileCMD_Txt2Op ;
 						break;
 					case 1:
 						key=FileCMD_RENAME;
@@ -775,6 +773,9 @@ int ExistG1M( const char *sname ) {
 }
 
 //----------------------------------------------------------------------------------------------
+int YesNoOverwrite(){
+	return ( YesNo( "Overwrite OK?" ) ==0 ) ;
+}
 
 unsigned int InputStrFilename(int x, int y, int width, char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
@@ -971,7 +972,7 @@ int SaveProgfile( int progNo ){
   loop:
 	if ( InputFilename( basname, "Save File Name?" ) ) return 1 ;
 	basname8ToG1MHeader( filebase, basname);
-	if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) goto loop;
+	if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) goto loop;
 
 	sprintf(sname, "%s.g1m", basname );
 	strncpy( rename, sname, FILENAMEMAX);
@@ -1083,16 +1084,15 @@ void DeleteFile(char *fname) {
 void DeleteFileFav(char *fname ) {
 	
 	if ( YesNo( "Delete file?" ) == 0 ) return ;
-
 	DeleteFile( fname );
-
 }
 
 //----------------------------------------------------------------------------------------------
-int RenameFile( char *fname ) {
+int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 copy
 	char *filebase;
-	char name[32],sname[16],basname[16];
+	char name[32],sname[16],sname2[16],basname[16];
 	int size,i,j;
+	char msg[2][18]={"Rename File Name?" ,"Copy File Name?" };
 
 	if ( LoadProgfile( fname, 0 ) ) return 1 ; // error
 	filebase = ProgfileAdrs[0];
@@ -1100,31 +1100,36 @@ int RenameFile( char *fname ) {
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
 		strncpy( basname, sname, strlen(sname)-4);
 		basname[strlen(sname)-4]='\0';
-		if ( InputFilename( basname, "Rename File Name?" ) ) return 1 ; // cancel
+		if ( InputFilename( basname, msg[select] ) ) return 1 ; // cancel
 		SetFullfilenameExt( name, basname, "txt" );
 		if ( strcmp(name,fname)==0 ) return 0; // no rename
-		if ( ExistFile( name ) == 0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ; // cancel
-		if ( storeFile( name, (unsigned char*)filebase, strlen(filebase) )==0 ) DeleteFile( fname ) ;	// ok
-		else return 1;
+		if ( ExistFile( name ) == 0 ) if ( YesNoOverwrite() ) return 1 ; // cancel
+		if ( storeFile( name, (unsigned char*)filebase, strlen(filebase) )==0 ) {
+			if ( select == 0 ) DeleteFile( fname ) ;	// (rename) delete original file
+		} else return 1;
 		
 	} else {	// G1M file
 		G1MHeaderTobasname8( filebase, basname);
-		if ( InputFilename( basname, "Rename File Name?" ) ) return 1 ; // cancel
+		if ( InputFilename( basname, msg[select] ) ) return 1 ; // cancel
 		SetFullfilenameExt( name, basname, "g1m" );
 		if ( strcmp(name,fname)==0 ) return 0; // no rename
 		basname8ToG1MHeader( filebase, basname);
-		if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ; // cancel
-		if ( SaveG1M( filebase ) == 0 ) DeleteFile( fname ) ;
-		else return 1;
+		if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) return 1 ; // cancel
+		if ( SaveG1M( filebase ) == 0 ) { 
+			if ( select == 0 ) DeleteFile( fname ) ;	// (rename) delete original file
+		} else return 1;
 	}
 
 //	for (j=0;j<FILENAMEMAX;j++) sname[j]='\0';
-	SetShortName( sname, name);
+	SetShortName( sname, name);		// rename name
 	strncpy( rename, sname, FILENAMEMAX);
 	
+	if ( select ) return 0;	// (copy)
+
 	i=0;
+	SetShortName( sname2, fname);	// orignal name
 	while ( i < FavoritesMAX ) {	// file matching search
-		if ( strcmp( sname,  Favoritesfiles[i].filename )== 0 ) break; // not matching
+		if ( strcmp( sname2,  Favoritesfiles[i].filename )== 0 ) break; // not matching
 		i++;
 	}
 	if ( i < FavoritesMAX ) { 		//	rename Favorites 
@@ -1133,40 +1138,8 @@ int RenameFile( char *fname ) {
 	
 	return 0;
 }
+
 //----------------------------------------------------------------------------------------------
-int CopyFile( char *fname ) {
-	char *filebase;
-	char name[32],sname[16],basname[16];
-	int size,i,j;
-
-	if ( LoadProgfile( fname, 0 ) ) return 1 ; // error
-	filebase = ProgfileAdrs[0];
-	SetShortName( sname, fname);
-	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
-		strncpy( basname, sname, strlen(sname)-4);
-		basname[strlen(sname)-4]='\0';
-		if ( InputFilename( basname, "Rename File Name?" ) ) return 1 ; // cancel
-		SetFullfilenameExt( name, basname, "txt" );
-		if ( strcmp(name,fname)==0 ) return 0; // no rename
-		if ( ExistFile( name ) == 0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ; // cancel
-		if ( storeFile( name, (unsigned char*)filebase, strlen(filebase) ) )  return 1;
-		
-	} else {	// G1M file
-		G1MHeaderTobasname8( filebase, basname);
-		if ( InputFilename( basname, "Copy File Name?" ) ) return 1 ; // cancel
-		SetFullfilenameExt( fname, basname, "g1m" );
-		if ( strcmp(sname,fname)==0 ) return 0; // no rename
-		basname8ToG1MHeader( filebase, basname);
-		if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return 1 ; // cancel	
-		if ( SaveG1M( filebase ) ) return 1;
-	}
-	
-	SetShortName( sname, name);
-	strncpy( rename, sname, FILENAMEMAX);
-	
-	return 0;
-}
-
 //----------------------------------------------------------------------------------------------
 #define ConfigMAX 1000
 //--------------------------------------------------------------
@@ -1446,7 +1419,7 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 		ExecPtr++;
 	}
 	if ( ExistFile( fname ) == 0 ) { // ==0 existed 
-		if ( check ) if ( YesNo( "Overwrite OK?" ) == 0 ) return  ; // cancel
+		if ( check ) if ( YesNoOverwrite() ) return  ; // cancel
 		Bdisp_PutDisp_DD();
 	}
 	if ( storeFile( fname, (unsigned char*)FilePtr, matsize )==0 ) return ;	// 0:ok
@@ -1517,7 +1490,7 @@ void ConvertToText( char *fname ){
 		G1MHeaderTobasname8( filebase, basname);
 		SetFullfilenameExt( fname, basname, "g1m" );
 		basname8ToG1MHeader( filebase, basname);
-		if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) return  ; // cancel	
+		if ( ExistG1M( basname ) ==0 ) if ( YesNoOverwrite() ) return  ; // cancel	
 		if ( SaveG1M( filebase ) ) return ;
 		
 	} else {	// G1M file -> Text
@@ -1535,7 +1508,7 @@ void ConvertToText( char *fname ){
 		
 		SetFullfilenameExt( fname, basname, "txt" );
 		if ( ExistFile( fname ) == 0 ) { // ==0 existed 
-			if ( YesNo( "Overwrite OK?" ) == 0 ) { return ; } // cancel
+			if ( YesNoOverwrite() ) { return ; } // cancel
 			Bdisp_PutDisp_DD();
 		}
 		storeFile( fname, (unsigned char*)text, textsize );
