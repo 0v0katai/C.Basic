@@ -479,9 +479,9 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 //-----------------------------------------------------------------------------
 int CheckQuotCR( char *SRC, int ptr ) {
 	int c,d;
+	if ( SRC[ptr-1] != 0x22 ) return 0;	// "
 	c=SRC[ptr-2];
 	d=SRC[ptr-3];
-	if ( SRC[ptr-1] != 0x22 ) return 0;	// "
 	if ( d==0xFFFFFFF7 ) {
 		if ( ( c==0x01 ) || ( c==0x02 ) ) return 1;	// Then or Else
 	}
@@ -564,13 +564,11 @@ void GetNewAry8( int reg, int aryN, int aryMax ) {
 		DimMatrixSub( reg, 8, aryN, aryMax, 1 );	// byte matrix	base:1
 	} else { 
 		if ( MatAry[reg].SizeA < aryN ) {
-			if ( (int)MatAry[reg].Adrs > (int)CB_CurrentStr ) {
-				buffer=NewStrBuffer(); 
-				if ( buffer!=NULL ) {
-					size =MatAry[reg].SizeB; if ( size>CB_StrBufferMax ) size = CB_StrBufferMax;
-					memcpy( buffer, CB_CurrentStr, size );
-					CB_CurrentStr = buffer;
-				}
+			buffer=NewStrBuffer(); 
+			if ( buffer!=NULL ) {
+				size =MatAry[reg].SizeB; if ( size>CB_StrBufferMax ) size = CB_StrBufferMax;
+				memcpy( buffer, CB_CurrentStr, size );
+				CB_CurrentStr = buffer;
 			}
 			MatElementPlus( reg, aryN, aryMax );				// matrix +
 		}
@@ -1285,16 +1283,10 @@ double CB_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> double
 	int execptr=ExecPtr;
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = EvalIntsubTop( buffer );
-		else
-		if (CB_INT==0)	result = EvalsubTop( buffer );
-		else			result = Cplx_EvalsubTop( buffer ).real;
+		result = EvalsubTop( buffer );
 	}
     else {
-		if (CB_INT==1)	result = ListEvalIntsubTop( buffer );	// List calc
-		else
-		if (CB_INT==0)	result = ListEvalsubTop( buffer );	// List calc
-		else			result = Cplx_ListEvalsubTop( buffer ).real;	// List calc
+		result = ListEvalsubTop( buffer );	// List calc
 	}
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
@@ -1306,16 +1298,10 @@ complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> doubl
 	int execptr=ExecPtr;
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = Int2Cplx( EvalIntsubTop( buffer ) );
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( EvalsubTop( buffer ) );
-		else			result = Cplx_EvalsubTop( buffer );
+		result = Cplx_EvalsubTop( buffer );
 	}
     else {
-		if (CB_INT==1)	result = Int2Cplx( ListEvalIntsubTop( buffer ) );	// List calc
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( ListEvalsubTop( buffer ) );	// List calc
-		else			result = Cplx_ListEvalsubTop( buffer );	// List calc
+		result = Cplx_ListEvalsubTop( buffer );	// List calc
 	}
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return Int2Cplx(0); }

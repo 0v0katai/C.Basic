@@ -763,7 +763,7 @@ int InitOpcodeRecent() {
 int AddOpcodeRecent( short opcode ) {
 	int i,j;
 
-	if ( ( 0x0D == opcode ) || ( 0x0E == opcode ) || ( ',' == opcode ) ) return;
+	if ( ( ('a'<=opcode)&&(opcode<='z') ) || ( 0x0D == opcode ) || ( 0x0E == opcode ) || ( ',' == opcode ) ) return;
 	if ( MathKey( (unsigned int) opcode ) ) return ;
 	
 	for (i=0; i<OpRecentMax; i++) {

@@ -3229,6 +3229,7 @@ int PP_Search_CR_SPACE(char *SRC ){
 				PP_Search_CR_SPACE_Skip_quot(SRC, &ptr);
 				break ;
 			case 0x27:	// '
+			case 0x13:  // =>
 				PP_Search_CR_SPACE_Skip_comment(SRC, &ptr);
 				break ;
 			case 0x0C:	// <Disps>
@@ -3284,12 +3285,15 @@ int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 int CB_PreProcessIndent( char *filebase, int progno ) { //
 	char *dest,*SRC;
 	int ptr;
-	int c,i;
+	int c,i,j;
 	int size,maxsize,newsize;
 	int editMax;
 	int sptr=0,dptr=0;
 	int indent = 0;
 	int editIndent=(CB_EditIndent&0x07);
+	int switch_nest=0;
+	int switch_indent[16];
+	for( i=0;i<16;i++) switch_indent[i]=0;
 
 	if ( editIndent == 0 ) return 0;
 	if ( PP_Search_CR_SPACE( filebase+0x56 ) ) return 0;	// already exist indent
@@ -3304,6 +3308,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 
 	SRC  = filebase+maxsize-size +0x56;
 	dest = filebase +0x56;
+
 
 	while ( sptr < size ){
 		if ( dptr >= maxsize ) {
@@ -3340,18 +3345,48 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 					case 0x04:	// For
 					case 0x08:	// While
 					case 0x0A:	// Do
-					case 0x0FFFFFFEA:	// Switch
-//					case 0x0FFFFFFEB:	// Case
 						indent += editIndent;
 						break;
 					case 0x01:	// Then
 						if ( SRC[sptr] == ':' ) SRC[sptr]=0x0D;
 						break;
+					case 0x0FFFFFFEA:	// Switch
+						indent += editIndent;
+						if ( switch_nest<16 ) switch_nest++;
+						switch_indent[switch_nest]=indent;
+						break;
+					case 0x0FFFFFFEB:	// Case
+					case 0x0FFFFFFEC:	// Default
+						if ( switch_indent[switch_nest]==0 ) break;
+						if ( dest[dptr-3]==' ' ) {
+							indent = switch_indent[switch_nest];
+							j = editIndent;
+							goto jindent;
+						}
+						break;
+					case 0x0FFFFFFED:	// SwitchEnd
+						j = 0;
+						if ( dest[dptr-3]==' ' ) {
+							indent = switch_indent[switch_nest]-editIndent;
+							if ( switch_nest>1 ) switch_nest--;
+						  jindent:
+							dptr -= 3;
+							while ( dest[--dptr] == ' ') ;
+							dptr++;
+							i = 1 ;
+							while ( i <= indent ) {
+								dest[dptr++]=' ';
+								i++;
+							}
+							dest[dptr++]=0xF7;
+							dest[dptr++]=c;
+						}
+						indent += j;
+						break;
 					case 0x03:	// IfEnd
 					case 0x07:	// Next
 					case 0x09:	// WhileEnd
 					case 0x0B:	// LpWhile
-					case 0x0FFFFFFED:	// SwitchEnd
 						indent -= editIndent;
 						if ( indent < 0 ) indent =0 ;
 					case 0x02:	// Else
@@ -3363,7 +3398,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 								if ( i >= editIndent ) break;
 								dptr--;
 								i++;
-							} while ( dest[dptr]==' ' ) ;
+							} while ( dest[dptr] == ' ' ) ;
 							dest[dptr++]=0xF7;
 							dest[dptr++]=c;
 						}
@@ -3411,6 +3446,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				goto exit;
+			case 0x13:  // =>
 			case 0x22:	// "
 			case 0x27:	// '
 				PP_Indent_Skip_quot(SRC, dest, &sptr, &dptr);
@@ -3460,34 +3496,6 @@ void CB_Local( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-void Skip_rem_no_op( char *SRC ){
-	int c=SRC[ExecPtr];
-	if ( c=='/' ) { 	// '/ execute C.Basic only
-		ExecPtr++;
-		return;
-	}
-	while (1){
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
-				return ;
-				break;
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
-		}
-		c=SRC[ExecPtr++];
-	}
-}
-
 int PP_Search_IfEnd( char *SRC ){
 	int c,i;
 	int PP_ptr;
@@ -3947,7 +3955,6 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3996,6 +4003,7 @@ void FavoritesDowndummy4( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy5( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

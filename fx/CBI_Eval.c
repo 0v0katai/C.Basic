@@ -617,6 +617,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrixInt( reg, dimA, dimB);
 						
+				case 0x50 :		// i
+					CB_Error(NonRealERR);
+					return result;
+						
 				case 0x3A :				// MOD(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);
 					return fMODint(tmp,tmp2);
@@ -657,6 +661,15 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x5F :				// 1/128 Ticks
 					return CB_Ticks( SRC );	// 
 						
+				case 0xFFFFFF86 :		// RndFix(n,digit)
+					tmp=(EvalIntsubTop( SRC ));
+					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					if ( SRC[++ExecPtr] == 0xFFFFFFE4 ) { ExecPtr++; i=Sci; } else i=Fix;
+					tmp2 = EvalIntsubTop( SRC );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					result=Round( tmp, i, tmp2) ;
+					return result ;
+
 				case 0xFFFFFFF0 :		// GraphY str
 				case 0xFFFFFFF1:		// Graphr
 				case 0xFFFFFFF2:		// GraphXt
@@ -738,6 +751,19 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return CB_ColSize( SRC );
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
+
+				case 0x5D :				// GetRGB() ->ListAns
+					return CB_GetRGB( SRC, 0 );
+				case 0x5E :				// RGB(
+					return CB_RGB( SRC, 0 );
+				case 0x70 :				// GetHSV() ->ListAns
+					return CB_GetRGB( SRC, 1 );
+				case 0x71 :				// HSV(
+					return CB_RGB( SRC, 1 );
+				case 0x72 :				// GetHSL() ->ListAns
+					return CB_GetRGB( SRC, 2 );
+				case 0x73 :				// HSL(
+					return CB_RGB( SRC, 2 );
 
 				case 0x5C :				// ListCmp( List 1, List 2)
 					return CB_ListCmp( SRC );
@@ -991,7 +1017,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				result *= EvalIntsub4( SRC ) ;
 		} else if ( c == 0x7F ) { // 7F..
 				c = SRC[ExecPtr+1];
-				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) ) goto exitj;	// And Or Not xor
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result *= EvalIntsub4( SRC ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
@@ -1006,6 +1032,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
+				case 0x1B:	// fn
 				case 0x21:	// Xdot
 				case 0x31:	// StrLen(
 				case 0x32:	// StrCmp(
@@ -1254,7 +1281,7 @@ int	Hitickstmp=0;
 #define P7305_EXTRA_TMU5_COUNT 0xA44D00D8
 
 unsigned int GetTicks32768(){
-	if ( IsSH3 ) return RTC_GetTicks()<<8;
+	if ( IsSH3 ) return -(RTC_GetTicks()<<8);
 	return *(unsigned int*)P7305_EXTRA_TMU5_COUNT;
 }
 
@@ -1267,7 +1294,7 @@ void CB_StoreTicks( char *SRC, int value ) {
 		if ( IsSH3 == 0 ) high=1;
 	}
 	if ( high ) {
-		t=(int)GetTicks32768();
+		t=-(int)GetTicks32768();
 		CB_HiTicksAdjust=t-value;
 	} else {
 		t=RTC_GetTicks();
@@ -1277,7 +1304,7 @@ void CB_StoreTicks( char *SRC, int value ) {
 }
 
 int CB_RTC_GetTicks( int high ) {
-	if ( high ) return CB_HiTicksAdjust-(int)GetTicks32768() ;
+	if ( high ) return -(int)GetTicks32768()-CB_HiTicksAdjust ;
 	return RTC_GetTicks()-CB_TicksAdjust ;
 }
 int CB_Ticks( char *SRC ) {
@@ -1286,7 +1313,7 @@ int CB_Ticks( char *SRC ) {
 	int t;
 	if ( SRC[ExecPtr] == '%' ) {	// hi-res timer
 		ExecPtr++;
-		if ( IsSH3 == 0 ) high=1;
+		high=1;
 	}
 	t=CB_RTC_GetTicks(high);
 	if ( SRC[ExecPtr]==0xFFFFFFF9 ) {

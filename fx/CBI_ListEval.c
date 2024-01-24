@@ -183,6 +183,10 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrixInt( reg, dimA, dimB);
 					
+				case 0x50 :		// i
+					CB_Error(NonRealERR);
+					return result;
+						
 				case 0x3A :		// MOD(a,b)
 					result = ListEvalIntsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
@@ -252,6 +256,15 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x5F :				// 1/128 Ticks
 					return CB_Ticks( SRC );	// 
 						
+				case 0xFFFFFF86 :		// RndFix(n,digit)
+					tmp=(EvalIntsubTop( SRC ));
+					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					if ( SRC[++ExecPtr] == 0xFFFFFFE4 ) { ExecPtr++; i=Sci; } else i=Fix;
+					tmp2 = EvalIntsubTop( SRC );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					result=Round( tmp, i, tmp2) ;
+					return result ;
+
 				case 0xFFFFFFF0 :		// GraphY str
 				case 0xFFFFFFF1:		// Graphr
 				case 0xFFFFFFF2:		// GraphXt
@@ -334,6 +347,19 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
 					
+				case 0x5D :				// GetRGB() ->ListAns
+					return CB_GetRGB( SRC, 0 );
+				case 0x5E :				// RGB(
+					return CB_RGB( SRC, 0 );
+				case 0x70 :				// GetHSV() ->ListAns
+					return CB_GetRGB( SRC, 1 );
+				case 0x71 :				// HSV(
+					return CB_RGB( SRC, 1 );
+				case 0x72 :				// GetHSL() ->ListAns
+					return CB_GetRGB( SRC, 2 );
+				case 0x73 :				// HSL(
+					return CB_RGB( SRC, 2 );
+
 				case 0x5C :				// ListCmp( List 1, List 2)
 					return CB_ListCmp( SRC );
 					
@@ -616,7 +642,7 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
 				c = SRC[ExecPtr+1];
-				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) ) goto exitj;	// And Or Not xor
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
@@ -631,6 +657,7 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
+				case 0x1B:	// fn
 				case 0x21:	// Xdot
 				case 0x31:	// StrLen(
 				case 0x32:	// StrCmp(

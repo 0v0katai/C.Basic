@@ -378,6 +378,7 @@ void CB_BackColor( char *SRC );
 void CB_TransparentColor( char *SRC );
 int CB_GetColor( char *SRC );
 unsigned short CB_RGB( char *SRC, int mode ) ;	// n or (r,g,b)   return : color code	// mode 0:RGB  1:HSV 2:HSL
+int CB_GetRGB( char *SRC, int mode );	// GetRGB/HSV/HsL() -> ListAns
 
 void CB_GraphFunc( char *SRC, int c ) ;
 

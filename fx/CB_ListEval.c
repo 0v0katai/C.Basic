@@ -265,6 +265,10 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrix( reg, dimA, dimB);
 					
+				case 0x50 :		// i
+					CB_Error(NonRealERR);
+					return result;
+						
 				case 0x3A :		// MOD(a,b)
 					result = ListEvalsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
@@ -434,6 +438,19 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
 					
+				case 0x5D :				// GetRGB() ->ListAns
+					return CB_GetRGB( SRC, 0 );
+				case 0x5E :				// RGB(
+					return CB_RGB( SRC, 0 );
+				case 0x70 :				// GetHSV() ->ListAns
+					return CB_GetRGB( SRC, 1 );
+				case 0x71 :				// HSV(
+					return CB_RGB( SRC, 1 );
+				case 0x72 :				// GetHSL() ->ListAns
+					return CB_GetRGB( SRC, 2 );
+				case 0x73 :				// HSL(
+					return CB_RGB( SRC, 2 );
+
 				case 0x5C :				// ListCmp( List 1, List 2)
 					return CB_ListCmp( SRC );
 					
@@ -843,7 +860,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
 				c = SRC[ExecPtr+1];
-				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) ) goto exitj;	// And Or Not xor
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
@@ -858,6 +875,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
+				case 0x1B:	// fn
 				case 0x21:	// Xdot
 				case 0x31:	// StrLen(
 				case 0x32:	// StrCmp(
