@@ -2134,6 +2134,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		if ( ( strcmp( name, fname)==0 ) && ( strcmp(ext,ext2)==0 ) ) return 0; // no rename
 		basname8ToG1MHeader( filebase, basname);
 		if ( ExistG1Mext( basname, ext ) ==0 ) {
+			FkeyClearAll();
 			if ( YesNoOverwritefile(name) ) return 1 ; // cancel
 			DeleteFile( fname ) ;	// (rename) delete original file
 		} else {
@@ -2152,6 +2153,7 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		if ( strcmp(name,fname)==0 ) return 0; // no copy
 		strcpy( name2, name );
 		if ( ExistFile( name2, 1 ) == 0 ) {
+			FkeyClearAll();
 			if ( YesNoOverwritefile(name) ) return 1 ; // cancel
 			DeleteFile( name2 ) ;	// (rename) delete original file
 		} else {

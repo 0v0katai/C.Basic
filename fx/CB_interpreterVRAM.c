@@ -1923,6 +1923,7 @@ int CB_end( char *SRC ){
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+unsigned short CB_RGB( char *SRC, int mode ) ;	// n or (r,g,b)    return : color code	// mode 0:RGB  1:HSV 2:HSL
 
 void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 	char buffer[64];
@@ -1971,11 +1972,18 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 			else if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; cls =1; }
 			else if ( ( c=='T' ) || ( c=='t' ) ) { ExecPtr++; UseGraphic=0; CB_SelectTextVRAM(); }	// Select Text Screen
 		}
-//		if ( c==',' ) { c=SRC[++ExecPtr];
-//			(extend) = CB_EvalInt( SRC )-n;
-//			if ( (extend)+n>6 )  (extend) = 6-n;
-//			if ( 0>(extend) ) (extend) = 0;
-//		}
+		if ( c==',' ) {
+				c=SRC[++ExecPtr];
+				if ( c!=',' ) {
+					CB_GetColor( SRC );
+					c=SRC[ExecPtr];
+					if ( c==',' ) goto bcolj;
+				} else {
+			  bcolj:
+					ExecPtr++;
+					CB_GetColor( SRC );
+				}
+		} 
 	}
 	if ( direct ) Fkey_Icon( n-1, IconNo);
 	else {
