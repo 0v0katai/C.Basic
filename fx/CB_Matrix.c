@@ -1806,21 +1806,18 @@ void CB_List2Mat( char *SRC ) {	// List>Mat( List 1, List 2,..) -> Mat Ans
 	int ansreg=CB_MatListAnsreg;
 
 	c=1;
-	ListEvalsubTop(SRC);
-	if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
-	reg = CB_MatListAnsreg;
+	reg = ListEvalsubTop(SRC) +31;
+	if ( dspflag >= 3 ) reg = CB_MatListAnsreg;
 
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
-		ListEvalsubTop(SRC);
-		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
-		reg2 = CB_MatListAnsreg;
+		reg2 = ListEvalsubTop(SRC) +31;
+		if ( dspflag >= 3 ) reg2 = CB_MatListAnsreg;
 		c++;
 		if ( SRC[ExecPtr] == ',' ) { 
 			ExecPtr++;
-			ListEvalsubTop(SRC);
-			if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
-			reg3 = CB_MatListAnsreg;
+			reg3 = ListEvalsubTop(SRC) +31;
+			if ( dspflag >= 3 ) reg3 = CB_MatListAnsreg;
 			c++;
 		}
 	}
@@ -2069,6 +2066,7 @@ double CB_MinMax( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	int ElementSize;
 	int base;
 	double min,tmp;
+	int dspflagtmp=dspflag;
 	
 	ListEvalsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2102,7 +2100,7 @@ double CB_MinMax( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 				if ( min > tmp ) min=tmp;	// min
 			}
 		}
-		dspflag=2;
+		dspflag=dspflagtmp; 
 	}
 	DeleteMatListAns();
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -2115,6 +2113,7 @@ double CB_Mean( char *SRC ) {	// Mean( List 1 )
 	int ElementSize;
 	int base;
 	double result;
+	int dspflagtmp=dspflag;
 	
 	ListEvalsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2129,7 +2128,7 @@ double CB_Mean( char *SRC ) {	// Mean( List 1 )
 	}
 	
 	DeleteMatListAns();
-	dspflag=2;
+	dspflag=dspflagtmp; 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return result/sizeA;
 }
@@ -2140,6 +2139,7 @@ double CB_Sum( char *SRC ) {	// Sum List 1
 	int ElementSize;
 	int base;
 	double result;
+	int dspflagtmp=dspflag;
 	
 	ListEvalsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2155,7 +2155,7 @@ double CB_Sum( char *SRC ) {	// Sum List 1
 	}
 	
 	DeleteMatListAns();
-	dspflag=2;
+	dspflag=dspflagtmp; 
 	return result;
 }
 double CB_Prod( char *SRC ) {	// Prod List 1 
@@ -2165,6 +2165,7 @@ double CB_Prod( char *SRC ) {	// Prod List 1
 	int ElementSize;
 	int base;
 	double result;
+	int dspflagtmp=dspflag;
 	
 	ListEvalsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2180,7 +2181,7 @@ double CB_Prod( char *SRC ) {	// Prod List 1
 	}
 	
 	DeleteMatListAns();
-	dspflag=2;
+	dspflag=dspflagtmp; 
 	return result;
 }
 
@@ -2192,6 +2193,7 @@ int CB_MinMaxInt( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	int ElementSize;
 	int base;
 	int min,tmp;
+	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2225,7 +2227,7 @@ int CB_MinMaxInt( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 				if ( min > tmp ) min=tmp;	// min
 			}
 		}
-		dspflag=2;
+		dspflag=dspflagtmp; 
 	}
 	DeleteMatListAns();
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -2238,6 +2240,7 @@ int CB_MeanInt( char *SRC ) {	// Mean( List 1 )
 	int ElementSize;
 	int base;
 	int result;
+	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2252,7 +2255,7 @@ int CB_MeanInt( char *SRC ) {	// Mean( List 1 )
 	}
 	
 	DeleteMatListAns();
-	dspflag=2;
+	dspflag=dspflagtmp; 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return result/sizeA;
 }
@@ -2263,6 +2266,7 @@ int CB_SumInt( char *SRC ) {	// Sum List 1
 	int ElementSize;
 	int base;
 	int result;
+	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2278,7 +2282,7 @@ int CB_SumInt( char *SRC ) {	// Sum List 1
 	}
 	
 	DeleteMatListAns();
-	dspflag=2;
+	dspflag=dspflagtmp; 
 	return result;
 }
 int CB_ProdInt( char *SRC ) {	// Prod List 1 
@@ -2288,6 +2292,7 @@ int CB_ProdInt( char *SRC ) {	// Prod List 1
 	int ElementSize;
 	int base;
 	int result;
+	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -2303,7 +2308,7 @@ int CB_ProdInt( char *SRC ) {	// Prod List 1
 	}
 	
 	DeleteMatListAns();
-	dspflag=2;
+	dspflag=dspflagtmp; 
 	return result;
 }
 

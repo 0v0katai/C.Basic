@@ -80,6 +80,8 @@ double fMOD( double x, double y ) ;	// fMOD(x,y)
 double fIDIV( double x, double y ) ;	// (int)x / (int)y
 double flogab( double x, double y ) ;	// flogab(x,y)
 double frand() ;
+double fGCD( double x, double y ) ;	// GCD(x,y)
+double fLCM( double x, double y ) ;	// LCM(x,y)
 
 double Eval_atof(char *SRC, int c) ;
 double InputNumD_fullsub(int x, int y, int width, double defaultNum ) ;

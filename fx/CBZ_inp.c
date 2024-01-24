@@ -632,6 +632,9 @@ const short oplistOPTN[]={
 		0xB6,	// frac
 		0xAB,	// !
 		0x7F3A,	// MOD(
+		0x7F3C,	// GCD(
+		0x7F3D,	// LCM(
+		0x7F85,	// logab(
 		
 		0xFFFF,	// 				-
 		0x7FB0,	// And
@@ -647,6 +650,8 @@ const short oplistOPTN[]={
 		0xAA,	// or
 		0xA7,	// not
 		0x9A,	// xor
+//		0x26,	// &
+//		0x7C,	// |
 		0x7FBC,	// Int/
 		0x7FBD,	// Rmdr
 		
@@ -726,6 +731,7 @@ const short oplistOPTN[]={
 		0x23,	// #
 		0x24,	// $
 		0x25,	// %
+		0x7C,	// |
 		0x26,	// &
 		0x2A,	// *
 		0};
@@ -988,24 +994,25 @@ const short oplistCMD[]={		// 5800P like
 		0x25,	// %
 
 //											1
-//		0x3D,	// =			1
-//		0x11,	// !=			2
-//		0x3E,	// >			3
-//		0x3C,	// <			4
-//		0x12,	// >=			5
-//		0x10,	// <=			6
+		0x3D,	// =			1
+		0x11,	// !=			2
+		0x3E,	// >			3
+		0x3C,	// <			4
+		0x12,	// >=			5
+		0x10,	// <=			6
 		0x7FB0,	// And			6
-		0xBA,	// and
 		0x7FB1,	// Or			7
-		0xAA,	// or
 		0x7FB3,	// Not			8
-		0xA7,	// not
 		0x7FB4,	// Xor			9
-		0x9A,	// xor
-		0x26,	// &
-		0x7C,	// |
 		0x23,	// #
 		0x25,	// %
+
+//		0xBA,	// and
+//		0xAA,	// or
+//		0xA7,	// not
+//		0x9A,	// xor
+//		0x26,	// &
+//		0x7C,	// |
 		
 //											2
 		0xE8,	// Dsz			1
@@ -1168,14 +1175,28 @@ const short oplistCMD[]={		// 5800P like
 		0xDE,	// Intg
 		0x7F3A,	// MOD(
 		0xAB,	// !
+		0x7FBC,	// Int/
+		0x7FBD,	// Rmdr
+		0x7F85,	// logab(
+		0xFFFF,	// 
+		0x23,	// #
+		0x25,	// %
+
+//											14
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
 		0xB1,	// arcsinh
 		0xB2,	// arccosh
 		0xB3,	// arctanh
-
-//											14
+		0xBA,	// and
+		0xAA,	// or
+		0xA7,	// not
+		0x9A,	// xor
+		0x26,	// &
+		0x7C,	// |
+		
+//											15
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 		0xD3,	// Rnd
@@ -1189,7 +1210,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											15
+//											16
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
@@ -1203,7 +1224,7 @@ const short oplistCMD[]={		// 5800P like
 		0x80,	// Pol(
 		0xA0,	// Rec(
 
-//											16
+//											17
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -1217,7 +1238,7 @@ const short oplistCMD[]={		// 5800P like
 		0x0B,	// Exa
 		0x25,	// %	
 
-//											17	STR
+//											18	STR
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -1231,7 +1252,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %	
 		
-//											18
+//											19
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
@@ -1245,7 +1266,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %	
 
-//											19	EX
+//											20	EX
 		0xF90F,	// AliasVar
 		0x7F5F,	// Ticks
 		0xF941,	// DATE
@@ -1343,8 +1364,8 @@ void FkeyRel(){
 #define CMD_STD  0
 #define CMD_GR   7
 #define CMD_FN  13
-#define CMD_STR 17
-#define CMD_EX  19
+#define CMD_STR 18
+#define CMD_EX  20
 
 int SelectOpcode5800P( int flag ) {
 	int *select=&selectCMD;
@@ -2029,10 +2050,11 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 		PutKey( KEY_CTRL_SHIFT, 1 );
 		PutKey( KEY_CTRL_ALPHA, 1 );
 	}
-	
+
 	while (cont) {
 		Cursor_SetFlashMode(1);			// cursor flashing on
 		length=strlenOp( buffer );
+		if ( ptrX > length-1 ) ptrX=length;
 		csrX=0;
 		while (1) {
 			PrintOpcode(x, y, buffer, width, offsetX, ptrX, &csrX, rev_mode , SPC);

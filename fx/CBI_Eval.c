@@ -905,6 +905,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
 				case 0xFFFFFF8F:	// Getkey
+				case 0xFFFFFF86:	// RndFix(n,digit)
 				case 0xFFFFFF87:	// RanInt#(st,en)
 				case 0xFFFFFFB3 :	// Not
 				case 0xFFFFFFF0:	// GraphY
@@ -919,6 +920,19 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				case 0x0A:	// Thetaptch
 				case 0x0B:	// Xfct
 				case 0x0C:	// Yfct
+				case 0x20 :			// Max( List 1 )	Max( { 1,2,3,4,5 } )
+				case 0x29 :			// Sigma( X, X, 1, 1000)
+				case 0x2D :			// Min( List 1 )	Min( { 1,2,3,4,5 } )
+				case 0x2E :			// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
+				case 0x47 :			// Fill(
+				case 0x4A :			// List>Mat( List 1, List 2,..) -> List 5
+				case 0x4B :			// Mat>List( Mat A, m) -> List n
+				case 0x4C :			// Sum List 1
+				case 0x4D :			// Prod List 1
+				case 0x58 :			// ElemSize( Mat A )
+				case 0x59 :			// ColSize( Mat A )
+				case 0x5A :			// RowSize( Mat A )
+				case 0x5B :			// MatBase( Mat A )
 					result *= EvalIntsub4( SRC ) ;
 					break;
 				default:
