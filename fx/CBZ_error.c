@@ -88,6 +88,9 @@ void CB_ErrMsg(int ErrNo) {
 		case ReceiveERR:
 			ERROR(" Receive ERROR");
 			break;
+		case InvalidType:
+			ERROR(" Invalid Type");
+			break;
 
 		case NextWithoutForERR:
 			ERROR("Next without For");

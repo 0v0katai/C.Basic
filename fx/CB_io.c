@@ -157,6 +157,16 @@ void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
 		iptr2[0]=(int)HiddenRAM_MatTopPtr;
 	}
 }
+void HiddenRAM_MatAryClear(){	// MatAry ptr clear
+	int *iptr1=(int*)(HIDDENRAM_Top+12);
+	int *iptr2=(int*)(HiddenRAM_End+12);
+	if ( IsHiddenRAM ) {
+		memset( (char *)HIDDENRAM_Top, 0, sizeof(MatAryCheckStr) );
+		memset( HiddenRAM_End,         0, sizeof(MatAryCheckStr) );
+	}
+	FileListUpdate= 1;
+	HiddenRAM_MatAryInit();
+}
 int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 	char buffer[10];
 	int *iptr1=(int*)(HIDDENRAM_Top+12);
@@ -484,14 +494,14 @@ void ProgressBar(int current, int max) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int IObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int IObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int IObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

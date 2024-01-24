@@ -561,10 +561,10 @@ int Check_Favorite( char*folder, char *sname ) {
 	char buf1[32];
 	char buf2[32];
 	strcpy( buf1, sname );
-	ToLower( buf1 );
+	if ( ( StorageMode & 2 ) ==0 ) ToLower( buf1 );	// non MCS mode
 	while ( i < FavoritesMAX ) {	// file matching search
 		strcpy( buf2, Favoritesfiles[i].filename );
-		ToLower( buf2 );
+		if ( ( StorageMode & 2 ) ==0 ) ToLower( buf2 );	// non MCS mode
 		if ( strcmp( buf1, buf2 )== 0 )
 		if ( strcmp( Favoritesfiles[i].folder  ,  folder)== 0 ) break; // already favorite exist
 		i++;
@@ -768,7 +768,7 @@ unsigned int Explorer( int size, char *folder )
 					k=files[i + top].filesize;
 					if ( buf2[j-3]=='g' ) {
 //						k -= 0x38;	// file size adjust G1M
-						if ( StorageMode & 2 ) {
+						if ( StorageMode & 2 ) {	// MCS mode
 							buf2[j-4]='\0';
 							k = (k+21) & 0xFFFFFFFC;	// file size adjust G1M
 						}
@@ -934,7 +934,7 @@ unsigned int Explorer( int size, char *folder )
 					case 0:
 						key=FileCMD_NEW;
 						if ( Isfolder ) {
-							strcpy( folder, files[index].filename );
+//							strcpy( folder, files[index].filename );
 							index = 0;
 						}
 						cont =0 ;
@@ -1240,11 +1240,11 @@ unsigned int Explorer( int size, char *folder )
 			}
 		}
 
+		SaveFavorites();
 	}
 
 	if ( alphalock ) { PutKey( KEY_CTRL_ALPHA, 1 ); i=key; GetKey(&key); key=i; }
 	
-	SaveFavorites();
 
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
 	return key;
@@ -3060,16 +3060,8 @@ void LoadConfig1(){
 	double *bufdbl;
 	int size,i;
 	int handle,state;
-	char folder[32]="CBasic";		// default C.Basic working folder
 
-	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX ) < 0 ) {
-		if ( Is35E2 ) {	
-			CreateDirectorySub( folder, 1 );		// creat default C.Basic folder for III model
-			root2[0]='\\';
-			strcpy( root2+1, folder );				// current folder
-		}
-		return;
-	}
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX ) < 0 ) return;
 	
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
@@ -3144,8 +3136,16 @@ void LoadConfig2(){
 	double *bufdbl;
 	int size,i;
 	int handle,state;
+	char folder[32]="CBasic";		// default C.Basic working folder
 
-	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX2 ) < 0 ) return;
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX2 ) < 0 ) {
+		if ( Is35E2 ) {	
+			CreateDirectorySub( folder, 1 );		// creat default C.Basic folder for III model
+			root2[0]='\\';
+			strcpy( root2+1, folder );				// current folder
+		}
+		return;
+	}
 
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
