@@ -2061,6 +2061,6 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_
 }
 
 //---------------------------------------------------------------------------------------------- align dummy
-int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

@@ -54,6 +54,7 @@ void CB_MatTrn( char *SRC ) ; //	Trn Mat A
 
 //int MatOprand(    char *SRC, int reg );
 //int MatOprandInt( char *SRC, int reg );
+void MatOprand1( char *SRC, int reg, int *dimA, int *dimB );	// A0,A1,b3,c9 etc. error check
 void MatOprand2(    char *SRC, int reg, int *dimA, int *dimB );		// 0-
 void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB );		// 0-
 int  MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB );		// 0-

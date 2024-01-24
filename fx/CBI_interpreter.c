@@ -44,13 +44,13 @@ void CBint_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	
 	int c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='Z' ) ) {
+	if ( ( 'A'<=c )&&( c<='Z' ) ) {
 		reg=c-'A';
 		ExecPtr++;
 		if ( SRC[ExecPtr] == 0x7E ) {		// '~'
 			ExecPtr++;
 			c=SRC[ExecPtr];
-			if ( ( 'A' <= c ) && ( c <='Z' ) ) {
+			if ( ( 'A'<=c )&&( c<='Z' ) ) {
 				en=c-'A';
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[++ExecPtr];
@@ -64,19 +64,25 @@ void CBint_Store( char *SRC ){	// ->
 			if ( c=='#' ) { ExecPtr++;  REG[reg] = CBint_CurrentValue ; }
 			else
 			if ( c=='[' ) goto Matrix;
-			else {
+			else
+			if ( ( '0'<=c )&&( c<='9' ) ) {
+				ExecPtr++;
+				dimA=c-'0';
+				MatOprand1( SRC, reg, &dimA, &dimB );
+				goto Matrix2;
+			} else {
 				if ( c=='%' ) ExecPtr++;
 				REGINT[ reg ] = CBint_CurrentValue;
 			}
 		}
 	} else
-	if ( ( 'a' <= c ) && ( c <='z' ) ) {
+	if ( ( 'a'<=c )&&( c<='z' ) ) {
 		reg=c-'a';
 		ExecPtr++;
 		if ( SRC[ExecPtr] == 0x7E ) {		// '~'
 			ExecPtr++;
 			c=SRC[ExecPtr];
-			if ( ( 'a' <= c ) && ( c <='z' ) ) {
+			if ( ( 'a'<=c )&&( c<='z' ) ) {
 				en=c-'a';
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[++ExecPtr];
@@ -90,7 +96,13 @@ void CBint_Store( char *SRC ){	// ->
 			if ( c=='#' ) { ExecPtr++;  LocalDbl[ reg ][0] = CBint_CurrentValue ; }
 			else
 			if ( c=='[' ) goto Matrix;
-			else {
+			else
+			if ( ( '0'<=c )&&( c<='9' ) ) {
+				ExecPtr++;
+				dimA=c-'0';
+				MatOprand1( SRC, reg, &dimA, &dimB );
+				goto Matrix2;
+			} else {
 				if ( c=='%' ) ExecPtr++;
 				LocalInt[ reg ][0] = CBint_CurrentValue;
 			}
@@ -108,6 +120,7 @@ void CBint_Store( char *SRC ){	// ->
 			Matrix:
 				ExecPtr++;
 				MatOprandInt2( SRC, reg, &dimA, &dimB);
+			Matrix2:
 				if ( ErrorNo ) {  // error
 					if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
 					return ;
@@ -123,7 +136,7 @@ void CBint_Store( char *SRC ){	// ->
 						CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
 				else {
 					c = SRC[ExecPtr];
-					if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+					if ( ( 'A'<=c )&&( c<='z' ) ) {
 						ExecPtr++;
 						DeleteMatrix( c-'A' );
 					}
@@ -196,11 +209,11 @@ void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	if ( c == 0x0E ) {	// ->
 		ExecPtr++;
 		c=SRC[ExecPtr];
-		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+		if ( ( 'A'<=c )&&( c<='Z' ) ) {
 			StackFor->Var[StackFor->Ptr]=&REGINT[c-'A'];
 			CBint_Store(SRC);
 		} else
-		if ( ( 'a' <= c ) && ( c <= 'z' ) ) {
+		if ( ( 'a'<=c )&&( c<='z' ) ) {
 			StackFor->Var[StackFor->Ptr]=LocalInt[c-'a'];
 			CBint_Store(SRC);
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -257,7 +270,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+	if ( ( 'A'<=c )&&( c<='Z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -270,13 +283,19 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
+		} else
+		if ( ( '0'<=c )&&( c<='9' ) ) {
+			ExecPtr++;
+			dimA=c-'0';
+			MatOprand1( SRC, reg, &dimA, &dimB );
+			goto Matrix;
 		} else {
 			if ( c=='%' ) ExecPtr++;
 			REGINT[reg] --;
 			CBint_CurrentValue = REGINT[reg] ;
 		}
 	} else 
-	if ( ( 'a' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'a'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'a';
 		c=SRC[ExecPtr];
@@ -288,6 +307,12 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		if ( c=='[' ) { 
 			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
+			goto Matrix;
+		} else
+		if ( ( '0'<=c )&&( c<='9' ) ) {
+			ExecPtr++;
+			dimA=c-'0';
+			MatOprand1( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
 			if ( c=='%' ) ExecPtr++;
@@ -332,7 +357,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+	if ( ( 'A'<=c )&&( c<='Z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -345,13 +370,19 @@ void CBint_Isz( char *SRC ) { //	Isz
 			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
+		} else
+		if ( ( '0'<=c )&&( c<='9' ) ) {
+			ExecPtr++;
+			dimA=c-'0';
+			MatOprand1( SRC, reg, &dimA, &dimB );
+			goto Matrix;
 		} else {
 			if ( c=='%' ) ExecPtr++;
 			REGINT[reg] ++;
 			CBint_CurrentValue = REGINT[reg] ;
 		}
 	} else 
-	if ( ( 'a' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'a'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'a';
 		c=SRC[ExecPtr];
@@ -363,6 +394,12 @@ void CBint_Isz( char *SRC ) { //	Isz
 		if ( c=='[' ) { 
 			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
+			goto Matrix;
+		} else
+		if ( ( '0'<=c )&&( c<='9' ) ) {
+			ExecPtr++;
+			dimA=c-'0';
+			MatOprand1( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
 			if ( c=='%' ) ExecPtr++;

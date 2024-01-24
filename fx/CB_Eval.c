@@ -104,9 +104,20 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
-	if  ( ( '0'<= c ) && ( c<='9' ) ) return c-'0';
-	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REG[c-'A'];
-	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalDbl[c-'a'][0];
+	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
+	else if  ( ( 'A'<=c )&&( c<='Z' ) ) return REG[c-'A'];
+	else if  ( ( 'a'<=c )&&( c<='z' ) ) return LocalDbl[c-'a'][0];
+}
+//-----------------------------------------------------------------------------
+void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 etc. error check
+	int base=MatAry[reg].Base;
+	(*dimB)=MatAry[reg].Base;
+//	if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return ; }	// No Matrix Array error
+	if ( MatAry[reg].SizeA == 0 ) { 
+		DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+		if ( ErrorNo ) return ; // error
+	}
+	if ( ( (*dimA) < (*dimB) ) || ( MatAry[reg].SizeA-1+(*dimB) < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 }
 //-----------------------------------------------------------------------------
 void MatOprand2( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    base:1 1-
@@ -179,7 +190,7 @@ int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 //	ExecPtr+=2;
 	if ( ( SRC[ExecPtr] == 0x7F ) && ( SRC[ExecPtr+1] == 0x40 ) ) ExecPtr+=2;	// skip 'Mat '
 	c =SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		*reg=c-'A';
 		if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
@@ -403,7 +414,7 @@ void CheckMathERR( double *result ) {
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
 	double a=.1;
-	while ( ('0'<=c)&&(c<='9') ) {
+	while ( ( '0'<=c )&&( c<='9' ) ) {
 		(*num) = (*num) + (double)(c-'0')*a;
 		a*=.1;
 		c=SRC[++ExecPtr];
@@ -411,7 +422,7 @@ unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
 	return c;
 }
 unsigned int Eval_atofNumMult(char *SRC, int c, double *num ){
-	while ( ('0'<=c)&&(c<='9') ) {
+	while ( ( '0'<=c )&&( c<='9' ) ) {
 		(*num) = (*num)*10 +(c-'0');
 		c=SRC[++ExecPtr];
 	}
@@ -483,6 +494,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			else
 			if ( c=='[' ) goto Matrix;
 			else
+			if ( ( '0'<=c )&&( c<='9' ) ) {
+					goto Matrix1;
+			} else
 			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
 			if ( CB_INT) return REGINT[reg] ; else return REG[reg] ;
 	}
@@ -493,6 +507,13 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			else
 			if ( c=='[' ) goto Matrix;
 			else
+			if ( ( '0'<=c )&&( c<='9' ) ) {
+				Matrix1:
+					ExecPtr++;
+					dimA=c-'0';
+					MatOprand1( SRC, reg, &dimA, &dimB );
+					goto Matrix2;
+			} else
 			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
 			if ( CB_INT) return LocalInt[reg][0] ; else return LocalDbl[reg][0] ;
 	}
@@ -508,6 +529,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				Matrix:	
 					ExecPtr++;
 					MatOprand2( SRC, reg, &dimA, &dimB );
+				Matrix2:
 					if ( ErrorNo ) return 1 ; // error
 				} else { dspflag=3; dimA=MatAry[reg].Base; dimB=dimA; }	// Mat A
 				return ReadMatrix( reg, dimA, dimB);
@@ -624,7 +646,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[ExecPtr];
-			if ( ( '0' <= c ) && ( c <= '9' ) ) srand( Eval_atod( SRC, c ) );
+			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atod( SRC, c ) );
 			result=(double)rand()/(double)(RAND_MAX+1.0);
 			return result ;
 		case 0xFFFFFF97 :	// abs
@@ -852,7 +874,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 /*
 double Evaldummy1(char *SRC, int c, int *num){
 	double a=.1,result;
-	while ( ('0'<=c)&&(c<='9') ) {
+	while ( ( '0'<=c )&&( c<='9' ) ) {
 		(*num) = (*num) + (double)(c-'0')*a;
 		a*=.1;
 		c=SRC[++ExecPtr];
@@ -1011,8 +1033,8 @@ double Evalsub5(char *SRC) {	//  5th Priority
 	result = Evalsub4( SRC );
 	while ( 1 ) {
 		c = SRC[ExecPtr];
-		if ((( 'A' <= c ) && ( c <= 'Z' )) ||
-			(( 'a' <= c ) && ( c <= 'z' )) ||
+		if ((( 'A'<=c )&&( c<='Z' )) ||
+			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFD0 ) || // PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
 			 ( c == 0xFFFFFFC1 )) { // Ran#
@@ -1247,7 +1269,7 @@ double CB_BinaryEval( char *SRC ) {	// eval 2
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -1268,7 +1290,7 @@ double CB_BinaryEval( char *SRC ) {	// eval 2
 	opPtr=ExecPtr;
 	op=SRC[ExecPtr++];	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];
@@ -1329,7 +1351,7 @@ double CB_UnaryEval( char *SRC ) {	// eval 1
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		c=SRC[ExecPtr];

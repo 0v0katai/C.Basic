@@ -112,9 +112,9 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
-	if  ( ( '0'<= c ) && ( c<='9' ) ) return c-'0';
-	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REGINT[c-'A'];
-	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalInt[c-'a'][0];
+	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
+	else if  ( ( 'A'<=c )&&( c<='Z' ) ) return REGINT[c-'A'];
+	else if  ( ( 'a'<=c )&&( c<='z' ) ) return LocalInt[c-'a'][0];
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -293,8 +293,8 @@ int Eval_atod(char *SRC, int c ) {
 		c = SRC[++ExecPtr];
 		if ( (  c=='x' ) || ( c=='X' ) ) {
 			c=SRC[++ExecPtr];
-			while ( ( ('0'<=c)&&(c<='9') ) || ( ('A'<=c)&&(c<='F') ) || ( ('a'<=c)&&(c<='f') ) ) {
-				if ( ('0'<=c)&&(c<='9') ) result = result*16 +(c-'0');
+			while ( ( ( '0'<=c )&&( c<='9' ) ) || ( ('A'<=c)&&(c<='F') ) || ( ('a'<=c)&&(c<='f') ) ) {
+				if ( ( '0'<=c )&&( c<='9' ) ) result = result*16 +(c-'0');
 				else
 				if ( ('A'<=c)&&(c<='F') ) result = result*16 +(c-'A'+10);
 				else
@@ -312,7 +312,7 @@ int Eval_atod(char *SRC, int c ) {
 			return result ;
 		}
 	}
-	while ( ('0'<=c)&&(c<='9') ) {
+	while ( ( '0'<=c )&&( c<='9' ) ) {
 		result = result*10 +(c-'0');
 		c=SRC[++ExecPtr];
 	}
@@ -340,27 +340,37 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
 		return - EvalIntsub1( SRC );
 	}
-	if ( ( 'A' <= c )&&( c <= 'Z' ) )  {
+	if ( ( 'A'<=c )&&( c<='Z' ) )  {
 			reg=c-'A';
 			c=SRC[ExecPtr];
 			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
 			else
 			if ( c=='[' ) goto Matrix;
 			else
+			if ( ( '0'<=c )&&( c<='9' ) ) {
+					goto Matrix1;
+			} else
 			if ( c=='%' ) ExecPtr++;
 			return REGINT[reg] ;
 	}
-	if ( ( 'a' <= c )&&( c <= 'z' ) )  {
+	if ( ( 'a'<=c )&&( c<='z' ) )  {
 			reg=c-'a';
 			c=SRC[ExecPtr];
 			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
 			else
 			if ( c=='[' ) goto Matrix;
 			else
+			if ( ( '0'<=c )&&( c<='9' ) ) {
+				Matrix1:
+					ExecPtr++;
+					dimA=c-'0';
+					MatOprand1( SRC, reg, &dimA, &dimB );
+					goto Matrix2;
+			} else
 			if ( c=='%' ) ExecPtr++;
 			return LocalInt[reg][0] ;
 	}
-	if ( ( '0' <= c )&&( c <= '9' ) ) {
+	if ( ( '0'<=c )&&( c<='9' ) ) {
 		ExecPtr--; return  Eval_atod( SRC, c );
 	}
 	
@@ -373,6 +383,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				Matrix:
 					ExecPtr++;
 					MatOprandInt2( SRC, reg, &dimA, &dimB );
+				Matrix2:
 					if ( ErrorNo ) return 1 ; // error
 				} else { dspflag=3; dimA=MatAry[reg].Base; dimB=dimA; }	// Mat A
 				return ReadMatrixInt( reg, dimA, dimB);
@@ -475,7 +486,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[ExecPtr];
-			if ( ( '0' <= c ) && ( c <= '9' ) ) srand( Eval_atod( SRC, c ) );
+			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atod( SRC, c ) );
 			result=rand();
 			return result ;
 		case 0xFFFFFF97 :	// abs
@@ -642,8 +653,8 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 	result = EvalIntsub4( SRC );
 	while ( 1 ) {
 		c = SRC[ExecPtr];
-		if ((( 'A' <= c ) && ( c <= 'Z' )) ||
-			(( 'a' <= c ) && ( c <= 'z' )) ||
+		if ((( 'A'<=c )&&( c<='Z' )) ||
+			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFD0 ) || // PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
 			 ( c == 0xFFFFFFC1 )) { // Ran#
@@ -867,122 +878,6 @@ int CB_Getkey3( char *SRC ) {
 	return key;
 }
 
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-/*
-int CBint_BinaryEval( char *SRC ) {	// eval 2
-	int c,op;
-	int reg,mptr,opPtr;
-	int src,dst;
-	int dimA,dimB;
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	
-	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='#' ) {
-			ExecPtr++;
-			src = REG[reg] ;
-		} else {
-			if ( c=='%' ) ExecPtr++;
-			src = REGINT[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-			MatrixOprand( SRC, &reg, &dimA, &dimB );
-			if ( ErrorNo ) return ; // error
-			src = ReadMatrixInt( reg, dimA, dimB );
-	} else  src = EvalIntsub1(SRC);
-
-	opPtr=ExecPtr;
-	op=SRC[ExecPtr++];	
-	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='#' ) {
-			ExecPtr++;
-			dst = REG[reg] ;
-		} else {
-			if ( c=='%' ) ExecPtr++;
-			dst = REGINT[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-			MatrixOprand( SRC, &reg, &dimA, &dimB );
-			if ( ErrorNo ) return ; // error
-			dst = ReadMatrixInt( reg, dimA, dimB );
-	} else  dst = EvalIntsub1(SRC);
-
-//	ExecPtr++;
-	switch ( op ) {
-			case 0xFFFFFF89 :		// +
-				return src + dst;
-			case 0xFFFFFF99 :		// -
-				return src - dst;
-			case 0xFFFFFFA9 :		// ~
-				return src * dst;
-			case 0xFFFFFFB9 :		// €
-				if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				return src / dst;
-			case '=' :	// =
-				return src == dst;
-			case '>' :	// >
-				return src >  dst;
-			case '<' :	// <
-				return src <  dst;
-			case 0x11 :	// !=
-				return src != dst;
-			case 0x12 :	// >=
-				return src >= dst;
-			case 0x10 :	// <=
-				return src <= dst;
-			case 0xFFFFFFB0 :	// And
-				return (int)src & (int)dst;
-			case 0xFFFFFFB1 :	// Or
-				return (int)src | (int)dst;
-			default:
-				{ ErrorNo=SyntaxERR; ErrorPtr=opPtr; return; }  // Syntax error
-				break;
-	}
-}
-
-int CBint_UnaryEval( char *SRC ) {	// eval 1
-	int c,op;
-	int reg,mptr,opPtr;
-	int src,dst;
-	int dimA,dimB;
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	
-	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='#' ) {
-			ExecPtr++;
-			return REG[reg] ;
-		} else {
-			if ( c=='%' ) ExecPtr++;
-			return REGINT[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-			MatrixOprand( SRC, &reg, &dimA, &dimB );
-			if ( ErrorNo ) return ; // error
-			return ReadMatrixInt( reg, dimA, dimB );
-	} else  return EvalIntsub1(SRC);
-}
-
-*/
-//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //int EvalIntObjectAlign4e( unsigned int n ){ return n; }	// align +4byte

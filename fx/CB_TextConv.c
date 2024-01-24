@@ -748,7 +748,7 @@ const char ConvListF700[][17]={
 "Save ",				// F7EE
 "Load(",				// F7EF
 
-"DotShape(",			// F7F0
+"@FF70",			// F7F0
 "Local ",				// F7F1
 "@F7F2",			// F7F2
 "@F7F3",			// F7F3
