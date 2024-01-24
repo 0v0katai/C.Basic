@@ -343,7 +343,7 @@ int frandIntint( int x, int y ) {
 int fMODint( int x, int y ) {	// fMODint(x,y)
 	int result;
 	if ( y == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-	result= x-x/y*y;
+	result= abs(x % y);
 	if ( result == y  ) result--;
 	if ( x < 0 ) {
 		result=abs(y)-result;
