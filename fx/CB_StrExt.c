@@ -1,5 +1,7 @@
 #include "CB.h"
 
+char ReEnterSEE=0;
+
 const char TypeTitle[][10]={"Strings  ","Function ","Graphics "};
 const char TypeStr[][2]={"S","f","Y"};
 
@@ -13,12 +15,13 @@ int SelectMemoryNum( int type, int max, int store, unsigned int *key ) {		//
 	PopUpWin(4);
 	FkeyClearAll();
 	locate( 3,2); if ( store ) Print((unsigned char *)"Store In"); else Print((unsigned char *)"Recall From");
-	locate( 3,3); Print((unsigned char *)TypeTitle[type]);
+	locate( 5,3); Print((unsigned char *)TypeTitle[type]);
 	locate(14,3); Print((unsigned char *)"Memory");
 	locate( 3,5); sprintf(buffer,"%s[%d~%d]:",TypeStr[type],1,max); Print((unsigned char *)buffer);
 	buffer[0]='\0';
 	while (1) {
 		n=InputNumD(13+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &(*key));		// 0123456789
+		if ( (*key) == KEY_CTRL_EXIT ) break;
 		if ( n == n0 ) break;
 		if ( (1<=n)&&(n<=max) ) break;
 		n=n0;
@@ -67,6 +70,14 @@ char* GetStringPtr(int type, int n ){			// ----------- Store  String  type: 0:st
 	return str;
 }
 
+char* RecallStringSub( int reg, int select ) {
+	char *str;
+	if ( ( MatAry[reg].SizeA < select ) ) return NULL;
+	str = MatrixPtr( reg, select, 1 ) ; 
+	if ( str[0]=='\0' ) return NULL;
+	return str;
+}
+
 char* CB_RecallString(int type ){			// ----------- Recall String  type: 0:string  1:fn   2:GraphY
 	unsigned int key;
 	int reg,dimA;
@@ -74,13 +85,13 @@ char* CB_RecallString(int type ){			// ----------- Recall String  type: 0:string
 	char *string;
 	LoadStringType( type, &reg, &opNum );
 	dimA = MatAry[reg].SizeA ;
+	n = SelectMemoryNum( type, opNum, 0, &key );
+	if ( key == KEY_CTRL_EXIT ) return 0;
 	if ( dimA == 0 ) {
 		string = NULL;
 	} else { 
-		n = SelectMemoryNum( type, opNum, 0, &key );
-		if ( key == KEY_CTRL_EXIT ) return 0;
 		if ( dimA >= n ) {
-			string = MatrixPtr(reg, n,  1);
+			string = RecallStringSub(reg, n );
 		} else string = NULL;
 	}
 	return string;
@@ -124,7 +135,8 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 	int reg,dimA,dimB,ElementSize;
 	int base;
 	char *string=0,*str=0;
-
+	char opcodeFN[]="\xF9\x1B";
+	
 	char *scrbuf[896];
 	memcpy( scrbuf, PictAry[0], 896);	// store VRAM
 
@@ -175,8 +187,10 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 
 		Fkey_Icon( FKeyNo1,  69 );	//	Fkey_dispR( FKeyNo1, "STORE");
 		Fkey_Icon( FKeyNo2,  70 );	//	Fkey_dispR( FKeyNo2, "RECALL");
-		Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dispR( FKeyNo3, " fn ");
+		if ( type==1 ) Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dispR( FKeyNo3, " fn ");
 		Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
+		if ( ReEnterSEE == 0 ) Fkey_Icon( FKeyNo5, 389 );	//	Fkey_dispR( FKeyNo5,"EDIT");
+//		if ( ReEnterSEE == 0 ) Fkey_Icon( FKeyNo5,  42 );	//	Fkey_dispN( FKeyNo5, "Edit");
 
 //		Bdisp_PutDisp_DD();
 
@@ -185,13 +199,6 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 //		ElementSize=MatAry[reg].ElementSize;
 
 		GetKey( &key );
-		if ( KEY_CTRL_XTT   == key ) (*select)=23;	// X
-		if ( KEY_CHAR_ANS   == key ) (*select)=28;	// Ans
-		if ( KEY_CHAR_THETA == key ) (*select)=27;	// Theta
-		if ( KEY_CHAR_VALR  == key ) (*select)=26;	// <r>
-		if ( ( 'A' <= key ) && ( key <= 'z' ) ) {
-			(*select)=key-'A';
-		}
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				cont=0;
@@ -203,38 +210,61 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 			case KEY_CTRL_UP:
 				(*select) -= 1;
 				if ( (*select)<1 ) (*select)=opNum;
-//				if ( abs(i-(*select))>1 ) seltop=(*select);
 				break;
 			case KEY_CTRL_DOWN:
 				(*select) += 1;
 				if ( (*select)>opNum ) (*select)=1;
-//				if ( abs(i-(*select))>1 ) seltop=(*select);
 				break;
-			case KEY_CTRL_LEFT:
+			case KEY_CTRL_PAGEUP:
 				(*select) -= 6;
 				if ( (*select)<1 ) (*select)=opNum;
-//				if ( abs(i-(*select))>1 ) seltop=(*select);
 				break;
-			case KEY_CTRL_RIGHT:
-				(*select) -= 6;
+			case KEY_CTRL_PAGEDOWN:
+				(*select) += 6;
 				if ( (*select)>opNum ) (*select)=1;
-//				if ( abs(i-(*select))>1 ) seltop=(*select);
 				break;
 
 			case KEY_CTRL_F1:	// store
 				CB_StoreStringSub( type, (*select), clipbuffer );
 				break;
 			case KEY_CTRL_F2:	// recall
-				str = MatrixPtr( reg, (*select), 1 ) ;
+				str = RecallStringSub( reg, (*select) ) ;
 				cont=0;
 				break;
-			case KEY_CTRL_F3:	// fn
-				str='\0';
-				cont=0;
-				break;
-//			case KEY_CTRL_F4:
-//				break;
 				
+			case KEY_CTRL_F3:	// 
+				if ( type!=1 ) break;
+				str=opcodeFN;
+				cont=0;
+				break;
+
+			case KEY_CTRL_F5:
+			case KEY_CTRL_LEFT:
+			case KEY_CTRL_RIGHT:
+				if ( ReEnterSEE == 0 ) {
+					FkeyClearAll();
+					Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse (*select) line 
+					string=GetStringPtr(type, (*select) );
+					ReEnterSEE=1;
+					if ( key==KEY_CTRL_RIGHT ) {
+						key=InputStrSub( 5, y+1, 17, 0, string, MatAry[reg].SizeB-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_OFF);
+					} else {
+						key=InputStr( 5, y+1, 17,  string, MatAry[reg].SizeB-1, " ", REV_OFF);
+					}
+					ReEnterSEE=0;
+				}
+				break;
+
+//			case KEY_CHAR_STORE:
+//				if ( ReEnterSEE == 0 ) {
+//					FkeyClearAll();
+//					Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse (*select) line 
+//					string=GetStringPtr(type, (*select) );
+//					ReEnterSEE=1;
+//					key=InputStr( 5, y+1, 17,  string, MatAry[reg].SizeB-1, " ", REV_OFF);
+//					ReEnterSEE=0;
+//				}
+//				break;
 
 			default:
 				break;
