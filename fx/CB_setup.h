@@ -48,6 +48,7 @@ int SetupG(int select, int limit);
 int SetVarChar( char *buffer, int c ) ;
 int SetVarCharMat( char *buffer, int c ) ;
 int SetVarCharVct( char *buffer, int c ) ;
+#define SetVarCharVct SetVarCharMat
 
 int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key) ;		// 
 
