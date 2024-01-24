@@ -2246,8 +2246,8 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
@@ -2325,7 +2325,6 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2342,6 +2341,7 @@ void FavoritesDowndummy3( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy4( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

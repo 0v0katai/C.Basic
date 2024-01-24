@@ -87,7 +87,15 @@ extern "C" {
 #define ML_CONTRAST_MIN     130
 #define ML_CONTRAST_NORMAL  168
 #define ML_CONTRAST_MAX     190
-typedef enum {ML_TRANSPARENT=-1, ML_WHITE, ML_BLACK, ML_XOR, ML_CHECKER} ML_Color;
+
+extern int MLV_rand;	// randam pixel 0~RAND_MAX
+extern int MLV_width;	// ML_line width option
+
+//                                 0          1           2           3           4           5           6           7           8           9
+typedef enum {ML_TRANSPARENT=-1, ML_WHITE,  ML_BLACK,   ML_XOR,     ML_CHECKER, ML_RANDPX,  ML_22DOT0X, ML_22DOT1X, ML_22DOT2X, ML_22DOT3X, ML_22DOT4X,
+							 	ML_22DOT10, ML_22DOT11, ML_22DOT12, ML_22DOT13, ML_22DOT14, ML_22DOT15, ML_22DOT16, ML_22DOT17, ML_22DOT18, ML_22DOT19,
+							 	ML_22DOT20, ML_22DOT21, ML_22DOT22, ML_22DOT23, ML_22DOT24
+			 } ML_Color;
 
 char* ML_vram_adress();
 

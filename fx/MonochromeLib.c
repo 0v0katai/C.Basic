@@ -127,6 +127,11 @@
 //	measures of the error OS ver 2.09 
 #define ML_vram_adress (char*)GetVRAMAddress
 
+//----------------------------------------------------------------------------------------------
+int MLV_rand;	// randam pixel 0~RAND_MAX
+int MLV_width;	// ML_line width option
+//----------------------------------------------------------------------------------------------
+
 #ifdef ML_CLEAR_VRAM
 void ML_clear_vram()
 {
@@ -205,18 +210,253 @@ void ML_pixel(int x, int y, ML_Color color)
 	switch(color)
 	{
 		case ML_BLACK:
+		  black:
 			vram[(y<<4)+(x>>3)] |= 128>>(x&7);
 			break;
 		case ML_WHITE:
+		  white:
 			vram[(y<<4)+(x>>3)] &= ~(128>>(x&7));
 			break;
 		case ML_XOR:
+		  xor:
 			vram[(y<<4)+(x>>3)] ^= 128>>(x&7);
 			break;
 		case ML_CHECKER:
+		  checker:
 			if(y&1^x&1) vram[(y<<4)+(x>>3)] &= ~(128>>(x&7));
 			else vram[(y<<4)+(x>>3)] |= 128>>(x&7);
 			break;
+
+		case ML_RANDPX:
+			if ( MLV_rand >= rand() ) goto black;
+			break;
+			
+		case ML_22DOT10:
+					goto white;
+		case ML_22DOT11:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					goto black;
+				case 1:
+					goto white;
+				case 2:
+					goto white;
+				case 3:
+					goto white;
+			}
+			break;
+		case ML_22DOT12:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					goto black;
+				case 1:
+					goto white;
+				case 2:
+					goto white;
+				case 3:
+					goto black;
+			}
+			break;
+		case ML_22DOT13:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					goto black;
+				case 1:
+					goto black;
+				case 2:
+					goto black;
+				case 3:
+					goto white;
+			}
+			break;
+		case ML_22DOT14:
+					goto black;
+			
+		case ML_22DOT20:
+					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_WHITE);
+			break;
+		case ML_22DOT21:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					ML_pixel( x  , y  , ML_BLACK);
+					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 1:
+					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_BLACK);
+					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 2:
+					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_BLACK);
+					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 3:
+					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_BLACK);
+					break;
+			}
+			break;
+		case ML_22DOT22:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					ML_pixel( x  , y  , ML_BLACK);
+					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_BLACK);
+					break;
+				case 1:
+					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_BLACK);
+					ML_pixel( x  , y+1, ML_BLACK);
+					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 2:
+					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_BLACK);
+					ML_pixel( x  , y+1, ML_BLACK);
+					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 3:
+					ML_pixel( x  , y  , ML_BLACK);
+					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_BLACK);
+					break;
+			}
+			break;
+		case ML_22DOT23:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					ML_pixel( x  , y  , ML_BLACK);
+					ML_pixel( x+1, y  , ML_BLACK);
+					ML_pixel( x  , y+1, ML_BLACK);
+					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 1:
+					ML_pixel( x  , y  , ML_BLACK);
+					ML_pixel( x+1, y  , ML_BLACK);
+					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_BLACK);
+					break;
+				case 2:
+					ML_pixel( x  , y  , ML_BLACK);
+					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_BLACK);
+					ML_pixel( x+1, y+1, ML_BLACK);
+					break;
+				case 3:
+					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_BLACK);
+					ML_pixel( x  , y+1, ML_BLACK);
+					ML_pixel( x+1, y+1, ML_BLACK);
+					break;
+			}
+			break;
+		case ML_22DOT24:
+					ML_pixel( x  , y  , ML_BLACK);
+					ML_pixel( x+1, y  , ML_BLACK);
+					ML_pixel( x  , y+1, ML_BLACK);
+					ML_pixel( x+1, y+1, ML_BLACK);
+			break;
+
+/*
+		case ML_22DOT21X:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					goto xor;
+				case 1:
+//					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_XOR);
+//					ML_pixel( x  , y+1, ML_WHITE);
+//					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 2:
+//					ML_pixel( x  , y  , ML_WHITE);
+//					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_XOR);
+//					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 3:
+//					ML_pixel( x  , y  , ML_WHITE);
+//					ML_pixel( x+1, y  , ML_WHITE);
+//					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_XOR);
+					break;
+			}
+			break;
+		case ML_22DOT22X:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					ML_pixel( x  , y  , ML_XOR);
+//					ML_pixel( x+1, y  , ML_WHITE);
+//					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_XOR);
+					break;
+				case 1:
+//					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_XOR);
+					ML_pixel( x  , y+1, ML_XOR);
+//					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 2:
+//					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_XOR);
+					ML_pixel( x  , y+1, ML_XOR);
+//					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 3:
+					ML_pixel( x  , y  , ML_XOR);
+//					ML_pixel( x+1, y  , ML_WHITE);
+//					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_XOR);
+					break;
+			}
+			break;
+		case ML_22DOT23X:
+			switch ( (x&1)+(y&1)*2 ) {
+				case 0:
+					ML_pixel( x  , y  , ML_XOR);
+					ML_pixel( x+1, y  , ML_XOR);
+					ML_pixel( x  , y+1, ML_XOR);
+//					ML_pixel( x+1, y+1, ML_WHITE);
+					break;
+				case 1:
+					ML_pixel( x  , y  , ML_XOR);
+					ML_pixel( x+1, y  , ML_XOR);
+//					ML_pixel( x  , y+1, ML_WHITE);
+					ML_pixel( x+1, y+1, ML_XOR);
+					break;
+				case 2:
+					ML_pixel( x  , y  , ML_XOR);
+//					ML_pixel( x+1, y  , ML_WHITE);
+					ML_pixel( x  , y+1, ML_XOR);
+					ML_pixel( x+1, y+1, ML_XOR);
+					break;
+				case 3:
+//					ML_pixel( x  , y  , ML_WHITE);
+					ML_pixel( x+1, y  , ML_XOR);
+					ML_pixel( x  , y+1, ML_XOR);
+					ML_pixel( x+1, y+1, ML_XOR);
+					break;
+			}
+			break;
+		case ML_22DOT24X:
+			ML_pixel( x  , y  , ML_XOR);
+			ML_pixel( x+1, y  , ML_XOR);
+			ML_pixel( x  , y+1, ML_XOR);
+			ML_pixel( x+1, y+1, ML_XOR);
+			break;
+*/
 	}
 }
 #endif
@@ -273,7 +513,8 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 				cumul -= dx;
 				y += sy;
 			}
-			ML_pixel(x, y, color);
+			if ( MLV_width > 1 ) 	ML_point(x, y, MLV_width, color);		// 	(modified)
+			else					ML_pixel(x, y, color);					// 	(modified)
 		}
 	}
 	else
@@ -288,7 +529,8 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 				cumul -= dy;
 				x += sx;
 			}
-			ML_pixel(x, y, color);
+			if ( MLV_width > 1 ) 	ML_point(x, y, MLV_width, color);		// 	(modified)
+			else					ML_pixel(x, y, color);					// 	(modified)
 		}
 	}
 }
@@ -312,6 +554,7 @@ void ML_horizontal_line(int y, int x1, int x2, ML_Color color)
     switch(color)
     {
     	case ML_BLACK:
+    	  black:
 			if(x1>>3 != x2>>3)
 			{
 				vram[(y<<4)+(x1>>3)] |= 255 >> (x1&7);
@@ -322,6 +565,7 @@ void ML_horizontal_line(int y, int x1, int x2, ML_Color color)
 			else vram[(y<<4)+(x1>>3)] |= (255>>(x1%8 + 7-x2%8))<<(7-(x2&7));
 			break;
 		case ML_WHITE:
+		  white:
 			if(x1>>3 != x2>>3)
 			{
 				vram[(y<<4)+(x1>>3)] &= 255 << 8-(x1&7);
@@ -332,6 +576,7 @@ void ML_horizontal_line(int y, int x1, int x2, ML_Color color)
 			else vram[(y<<4)+(x1>>3)] &= (255<<8-(x1&7)) | (255>>1+(x2&7));
 			break;
 		case ML_XOR:
+		  xor:
 			if(x1>>3 != x2>>3)
 			{
 				vram[(y<<4)+(x1>>3)] ^= 255 >> (x1&7);
@@ -342,6 +587,7 @@ void ML_horizontal_line(int y, int x1, int x2, ML_Color color)
 			else vram[(y<<4)+(x1>>3)] ^= (255>>((x1&7) + 7-(x2&7)))<<(7-(x2&7));
 			break;
 		case ML_CHECKER:
+		  checker:
 			checker = (y&1 ? 85 : 170);
 			if(x1>>3 != x2>>3)
 			{
@@ -358,6 +604,90 @@ void ML_horizontal_line(int y, int x1, int x2, ML_Color color)
 				vram[(y<<4)+(x1>>3)] |= checker & (255>>(x1%8 + 7-x2%8))<<(7-(x2&7));
 			}
 			break;
+			
+		case ML_RANDPX:
+			for ( i=x1; i<=x2; i++ ) {
+//				if ( MLV_rand >= rand() ) ML_pixel(i, y, ML_BLACK );
+				if ( MLV_rand >= rand() ) vram[(y<<4)+(i>>3)] |= 128>>(i&7);
+			}
+			break;
+			
+		case ML_22DOT10:
+				goto white;
+			break;
+		case ML_22DOT11:
+			switch ( y&1 ) {
+				case 0:
+					goto checker;
+				case 1:
+					goto white;
+			}
+			break;
+		case ML_22DOT12:
+					goto checker;
+			break;
+		case ML_22DOT13:
+			switch ( y&1 ) {
+				case 0:
+					goto black;
+				case 1:
+					goto checker;
+			}
+			break;
+		case ML_22DOT14:
+					goto black;
+			break;
+			
+		case ML_22DOT20:
+					ML_horizontal_line( y  , x1, x2, ML_WHITE);
+					ML_horizontal_line( y+1, x1, x2, ML_WHITE);
+			break;
+		case ML_22DOT21:
+			switch ( y&1 ) {
+				case 0:
+					ML_horizontal_line( y  , x1, x2, ML_CHECKER);
+					ML_horizontal_line( y+1, x1, x2, ML_WHITE);
+					break;
+				case 1:
+					ML_horizontal_line( y  , x1, x2, ML_WHITE);
+					ML_horizontal_line( y+1, x1, x2, ML_CHECKER);
+					break;
+			}
+			break;
+		case ML_22DOT22:
+					ML_horizontal_line( y  , x1, x2, ML_CHECKER);
+					ML_horizontal_line( y+1, x1, x2, ML_CHECKER);
+			break;
+		case ML_22DOT23:
+			switch ( y&1 ) {
+				case 0:
+					ML_horizontal_line( y  , x1, x2, ML_BLACK);
+					ML_horizontal_line( y+1, x1, x2, ML_CHECKER);
+					break;
+				case 1:
+					ML_horizontal_line( y  , x1, x2, ML_CHECKER);
+					ML_horizontal_line( y+1, x1, x2, ML_BLACK);
+					break;
+			}
+			break;
+		case ML_22DOT24:
+					ML_horizontal_line( y  , x1, x2, ML_BLACK);
+					ML_horizontal_line( y+1, x1, x2, ML_BLACK);
+			break;
+/*
+		case ML_22DOT1X:
+				for ( i=x1; i<=x2; i+=2) ML_pixel( i, y, ML_22DOT1X );
+				break;
+		case ML_22DOT2X:
+				for ( i=x1; i<=x2; i+=2) ML_pixel( i, y, ML_22DOT2X );
+				break;
+		case ML_22DOT3X:
+				for ( i=x1; i<=x2; i+=2) ML_pixel( i, y, ML_22DOT3X );
+				break;
+		case ML_22DOT4X:
+				for ( i=x1; i<=x2; i+=2) ML_pixel( i, y, ML_22DOT4X );
+				break;
+*/
     }
 }
 
@@ -383,21 +713,25 @@ void ML_vertical_line(int x, int y1, int y2, ML_Color color)
 	switch(color)
 	{
 		case ML_BLACK:
+		  black:
 			byte = 128>>(x&7);
 			for( ; i<=j ; i+=16)
 				vram[i] |= byte;
 			break;
 		case ML_WHITE:
+		  white:
 			byte = ~(128>>(x&7));
 			for( ; i<=j ; i+=16)
 				vram[i] &= byte;
 			break;
 		case ML_XOR:
+		  xor:
 			byte = 128>>(x&7);
 			for( ; i<=j ; i+=16)
 				vram[i] ^= byte;
 			break;
 		case ML_CHECKER:
+		  checker:
 			byte = 128>>(x&7);
 			checker = y1&1^x&1;
 			for( ; i<=j ; i+=16)
@@ -407,6 +741,92 @@ void ML_vertical_line(int x, int y1, int y2, ML_Color color)
 				checker = !checker;
 			}
 			break;
+			
+		case ML_RANDPX:
+			for ( i=y1; i<=y2; i++ ) {
+//				if ( MLV_rand >= rand() ) ML_pixel(x, i, ML_BLACK );
+				if ( MLV_rand >= rand() ) vram[(i<<4)+(x>>3)] |= 128>>(x&7);
+			}
+			break;
+			
+		case ML_22DOT10:
+					goto white;
+			break;
+		case ML_22DOT11:
+			switch ( x&1 ) {
+				case 0:
+					goto checker;
+					break;
+				case 1:
+					goto white;
+					break;
+			}
+			break;
+		case ML_22DOT12:
+					goto checker;
+			break;
+		case ML_22DOT13:
+			switch ( x&1 ) {
+				case 0:
+					goto black;
+				case 1:
+					goto checker;
+			}
+			break;
+		case ML_22DOT14:
+					goto black;
+					break;
+
+		case ML_22DOT20:
+					ML_vertical_line( x  , y1, y2, ML_WHITE);
+					ML_vertical_line( x+1, y1, y2, ML_WHITE);
+			break;
+		case ML_22DOT21:
+			switch ( x&1 ) {
+				case 0:
+					ML_vertical_line( x  , y1, y2, ML_CHECKER);
+					ML_vertical_line( x+1, y1, y2, ML_WHITE);
+					break;
+				case 1:
+					ML_vertical_line( x  , y1, y2, ML_WHITE);
+					ML_vertical_line( x+1, y1, y2, ML_CHECKER);
+					break;
+			}
+			break;
+		case ML_22DOT22:
+					ML_vertical_line( x  , y1, y2, ML_CHECKER);
+					ML_vertical_line( x+1, y1, y2, ML_CHECKER);
+			break;
+		case ML_22DOT23:
+			switch ( x&1 ) {
+				case 0:
+					ML_vertical_line( x  , y1, y2, ML_BLACK);
+					ML_vertical_line( x+1, y1, y2, ML_CHECKER);
+					break;
+				case 1:
+					ML_vertical_line( x  , y1, y2, ML_CHECKER);
+					ML_vertical_line( x+1, y1, y2, ML_BLACK);
+					break;
+			}
+			break;
+		case ML_22DOT24:
+					ML_vertical_line( x  , y1, y2, ML_BLACK);
+					ML_vertical_line( x+1, y1, y2, ML_BLACK);
+					break;
+/*
+		case ML_22DOT1X:
+				for ( i=y1; i<=y2; i+=2) ML_pixel( x, i, ML_22DOT1X );
+				break;
+		case ML_22DOT2X:
+				for ( i=y1; i<=y2; i+=2) ML_pixel( x, i, ML_22DOT2X );
+				break;
+		case ML_22DOT3X:
+				for ( i=y1; i<=y2; i+=2) ML_pixel( x, i, ML_22DOT3X );
+				break;
+		case ML_22DOT4X:
+				for ( i=y1; i<=y2; i+=2) ML_pixel( x, i, ML_22DOT4X );
+				break;
+*/
 	}
 }
 #endif

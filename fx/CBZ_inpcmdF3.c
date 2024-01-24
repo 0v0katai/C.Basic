@@ -46,7 +46,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 		case CMD_PRGM_EXSTR:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF943;return;	// Sprintf(
-				case 1: (*code)=0xF940;return;	// Str(
+				case 1: (*code)=0xF948;return;	// StrBase(
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {

@@ -26,11 +26,9 @@ char ScreenModeEdit=0;
 char DebugScreen=0;		// 0:no   1:Screen debug mode with fkey    2: Screen debug mode
 char InpMethod=1;		// 0:C.Basic  1:Casio Basic
 char InpCommandList=0;	// 0:none  1:OPTN 
-char  editdummy1;
-char  editdummy2;
-short editdummy3;
-
-#define EDITpxMAX 123	//  max x pixel
+short EditLineNum=0;
+char  EDITpxNum=0;		//  EditLineNumber pixel
+char  EDITpxMAX=123;	//  max x pixel
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
@@ -193,6 +191,7 @@ void MiniCursorFlashing() {		// timer IRQ handler
 	DISPBOX area;
 	unsigned char CsrDATA[]={ 0xFF,0xFF,0xFF,0xFF,0xFF };
 	DISPGRAPH minicsr;
+	int mini=(EditFontSize & 0x0F);
 
 	if ( ( 0<=MiniCursorX ) && ( MiniCursorX<126 ) && ( 0<=MiniCursorY ) && ( MiniCursorY<60 ) ) {
 		switch (MiniCursorflag) {
@@ -203,8 +202,14 @@ void MiniCursorFlashing() {		// timer IRQ handler
 				if ( MiniCursorX + minicsr.GraphData.width > 127 ) minicsr.GraphData.width =2;
 				minicsr.GraphData.height = 5;
 				minicsr.GraphData.pBitmap = CsrDATA; 	// mini cursor pattern
-				minicsr.WriteModify = IMB_WRITEMODIFY_NORMAL; 
+				minicsr.WriteModify = IMB_WRITEMODIFY_NORMAL;
 				minicsr.WriteKind = IMB_WRITEKIND_OR;
+				if (   ( mini==2 ) || ( mini==4 ) )	minicsr.WriteKind = IMB_WRITEKIND_XOR;	// reverse mode
+				if ( ( ( mini==3 ) || ( mini==4 ) ) && ( CursorStyle < 0x06 ) ) {			// under cursor
+					minicsr.y = MiniCursorY+5;
+					minicsr.GraphData.height = 1;
+					minicsr.GraphData.width = 4;
+				}
 			    Bdisp_WriteGraph_DD(&minicsr); 		// drawing only display driver
 				MiniCursorflag=1;
 				break;
@@ -243,12 +248,12 @@ int OpcodeStrLenBufpx(char *buffer, int ofst) {
 	int opcode = GetOpcode( buffer, ofst );
 	if ( opcode=='\0' ) return 0;
 	if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) {
-		if ( EditFontSize == 0 ) return 6;
+		if ( (EditFontSize & 0x0F) == 0 ) return 6;
 		else return 5;	// minifont
 	}
 	CB_OpcodeToStr( opcode, tmpbuf ) ;		// SYSCALL
 	slen = CB_MB_ElementCount( tmpbuf ) ;	// SYSCALL
-	if ( EditFontSize == 0 ) return slen*6;
+	if ( (EditFontSize & 0x0F) == 0 ) return slen*6;
 //	MiniCursorflag=0;		// mini cursor initialize
 	return CB_PrintMiniLengthStr( (unsigned char*)tmpbuf );	// minifont
 }
@@ -276,7 +281,7 @@ void OpcodeLineXYsub( char *buffer, int len, int *px, int *y ) {
 	opstr2=(char *)buffer;
 	i=0;
 	while ( i < len ) {
-		if ( EditFontSize == 0 ) {
+		if ( (EditFontSize & 0x0F) == 0 ) {
 			(*px)+=6;
 		} else {
 			(*px)+=OpcodeMinilength( opstr2,&oplen ); opstr2+=oplen;
@@ -401,10 +406,14 @@ void PrevLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
 
 int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int ofst, int csrPtr, int *pcx, int *cy, int ClipStartPtr, int ClipEndPtr) {
 	char tmpbuf[18];
+	unsigned char buff[16];
 	unsigned char *tmpb;
 	int i,len,px=1,y=0,rev;
 	int opcode;
 	int  c=1;
+	int Numflag=0;
+	int yk,mini= EditFontSize & 0x0F ;
+	if ( mini ) yk=6; else yk=8;
 	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 	while ( 1 ) {
 		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
@@ -418,19 +427,26 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 		i=0;
 		while ( i < len ) {
 			if ( y == (*n) ) {
-				if ( EditFontSize == 0 ) {
-					CB_PrintXYC( px-1, ((*csry)-1)*8, tmpb, rev ) ;
+				if ( ( Numflag==0 ) && ( EDITpxNum ) ) { Numflag=1;
+					sprintf( (char*)buff, "%3d:", EditLineNum+(*csry) );
+					CB_PrintMini( 0, ((*csry)-1)*yk+2, buff, MINI_OVER );
+				}
+				if ( mini == 0 ) {
+//					CB_PrintXYC( px-1+EDITpxNum, ((*csry)-1)*8, tmpb, rev ) ;
+					if ( rev )
+							CB_PrintRevC( (px-1+EDITpxNum)/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
+					else	CB_PrintC(    (px-1+EDITpxNum)/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
 					px+=6;
 				} else {
-					if ( rev )	px+=CB_PrintMiniC( px, ((*csry)-1)*6+2, tmpb, MINI_REV  ) ;
-					else		px+=CB_PrintMiniC( px, ((*csry)-1)*6+2, tmpb, MINI_OVER ) ;
+					if ( rev )	px+=CB_PrintMiniC( px+EDITpxNum, ((*csry)-1)*6+2, tmpb, MINI_REV  ) ;
+					else		px+=CB_PrintMiniC( px+EDITpxNum, ((*csry)-1)*6+2, tmpb, MINI_OVER ) ;
 					MiniCursorflag=0;		// mini cursor initialize
 					MiniCursorFlashing();
 				}
-				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; }
+				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; Numflag=0; }
 //				Bdisp_PutDisp_DD();
 			} else {
-				if ( EditFontSize == 0 ) {
+				if ( mini == 0 ) {
 					px+=6;
 				} else {
 					px+=CB_PrintMiniLength( tmpb );
@@ -457,7 +473,7 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *pcx,
 	int ofst,ofst2,ofstYptr;
 	int count=60;
 	int ymin,ymax,ymaxpos;
-	if ( EditFontSize ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
+	if ( (EditFontSize & 0x0F) ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
 	if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; ymax++; }
 
 	*pcx=0; *cy=0;
@@ -481,8 +497,8 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *pcx,
 	  exit:
 		if ( ( (*pcx)!=0 ) && ( (*cy)>(ymin-1) ) && ( (*cy)<=ymax ) ) break ;
 		ofstYptr=OpcodeLineYptr( *offset_y, SrcBase, *offset, &px);
-		if ( csrPtr < ofstYptr ) PrevLinePhy( SrcBase, &(*offset), &(*offset_y) );
-		else 					 NextLinePhy( SrcBase, &(*offset), &(*offset_y) );
+		if ( csrPtr < ofstYptr ) { PrevLinePhy( SrcBase, &(*offset), &(*offset_y) ); EditLineNum--; }
+		else 					 { NextLinePhy( SrcBase, &(*offset), &(*offset_y) ); EditLineNum++; } 
 
 //		if ( SrcBase[ofst]==0x00 ) break ;
 		count--;
@@ -698,6 +714,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	offset = ExecPtr;
 	csrPtr = offset;
 	CursorStyle=0;	// insert mode
+	EditLineNum=0;
 
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
@@ -726,8 +743,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		
 	KeyRecover();
 	while ( cont ) {
-		if ( EditFontSize ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
+		if ( (EditFontSize & 0x0F) ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
 		if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; ymax++; }
+		if ( EditFontSize & 0xF0 ) EDITpxNum=18; else EDITpxNum=0;
+		EDITpxMAX=123-EDITpxNum;
 
 		ErrorNo=0;
 		filebase = ProgfileAdrs[ProgNo];
@@ -860,6 +879,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		}
 		
 		if ( CommandInputMethod ) DispGenuineCmdMenu();
+		if ( ( (EditFontSize & 0x0F) == 2 ) || ( (EditFontSize & 0x0F) == 4 ) )  ML_rectangle( 0, 0, 127, 55, 0, 0, 2);	// reverse
 //		Bdisp_PutDisp_DD();
 
 		if ( run != 1 ) {
@@ -870,7 +890,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			}
 
 			if ( dumpflg == 2 ) {
-					locate((pcx-1)/6+1,cy); 
+					locate((pcx-1+EDITpxNum)/6+1,cy); 
 			} else	locate(cx,cy);
 			
 			if  ( (dumpflg==2) || (dumpflg==4) ) {
@@ -880,9 +900,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else { 
 					if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
 				}
-				if ( EditFontSize ) {
+				if ( (EditFontSize & 0x0F) ) {
 					Cursor_SetFlashMode(0); 			// cursor flashing off
-					MiniCursorX=pcx-1;
+					MiniCursorX=pcx-1+EDITpxNum;
 					MiniCursorY=(cy-1)*6+2;
 					MiniCursorSetFlashMode( 1 );		// mini cursor flashing on
 					if ( DebugScreen ) MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
@@ -1302,7 +1322,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( x < 1 ) {
 									 NextOpcode( SrcBase, &csrPtr ); break ; }
 							}
-							if ( cy==ymin ) PrevLinePhy( SrcBase, &offset, &offset_y );
+							if ( cy==ymin ) { PrevLinePhy( SrcBase, &offset, &offset_y ); EditLineNum--; }
+
 							break;
 					case 4: 		// hex dump
 							cy--;
@@ -1331,7 +1352,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								x=pcx;
 								while ( 1 ) {
 									x += OpcodeStrLenBufpx( SrcBase, csrPtr);
-									if ( x > EDITpxMAX ) { x-=EDITpxMAX; NextOpcode( SrcBase, &csrPtr ); break ; }
+									if ( x > EDITpxMAX ) { x-=(EDITpxMAX); NextOpcode( SrcBase, &csrPtr ); break ; }
 									NextOpcode( SrcBase, &csrPtr );
 									c=SrcBase[csrPtr];
 									if ( ( c==0x0C ) || ( c==0x0D ) || ( c==0x00 ) ) { x=1; break; }
@@ -1346,7 +1367,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								c=SrcBase[csrPtr];
 								if ( ( c==0x0C ) || ( c==0x0D ) || ( c==0x00 ) ) break;
 							}
-							if ( cy==(ymaxpos) ) NextLinePhy( SrcBase, &offset, &offset_y );
+							if ( cy==(ymaxpos) ) { NextLinePhy( SrcBase, &offset, &offset_y ); EditLineNum++; }
 							break;
 					case 4: 		// hex dump
 							cy++;
@@ -1511,7 +1532,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_INS:
-							if ( EditFontSize ) {
+							if ( (EditFontSize & 0x0F) ) {
 //								CursorStyle=Cursor_GetFlashStyle();
 								if ( CursorStyle >= 0x6 )	CursorStyle-=0x6;		//  -> insert mode
 								else 						CursorStyle+=0x6;		//  -> overwrite mode
@@ -1692,7 +1713,7 @@ int CB_BreakStop() {
 }
 
 //----------------------------------------------------------------------------------------------
-//int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte

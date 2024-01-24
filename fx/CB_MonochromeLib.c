@@ -77,6 +77,7 @@
 #include "fx_syscall.h"
 #include "MonochromeLib.h"
 
+
 //----------------------------------------------------------------------------------------------
 //void CB_ML_ClrVRAM() { // ML_ClrVRAM
 //	ML_clear_vram();
@@ -213,28 +214,61 @@ void CB_GetOprand3VWxyy( char *SRC, int *px, int *py1, int *py2) {
 		*py2=CB_EvalInt( SRC );
 	}
 }
+void CB_GetOprand_MLcolor( char *SRC, int *color) {
+	*color=ML_BLACK;
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) return;
+	*color=CB_EvalInt( SRC );
+}
+void CB_GetOprand_MLrand( char *SRC ) {
+	double d;
+	int c;
+	MLV_rand=(RAND_MAX+1);	//
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+	c=SRC[ExecPtr];
+	if ( c == ',' ) return;
+	if ( c == '%') { ExecPtr++;
+		c=CB_EvalDbl( SRC );
+		if ( c <   0 ) c=0;
+		if ( c > 100 ) c=100;
+		MLV_rand = c*(RAND_MAX+1)/100;
+	} else {
+		d=CB_EvalDbl( SRC );
+		if ( d < 0 ) d=0;
+		if ( d > 1 ) d=1;
+		MLV_rand = d*(RAND_MAX+1);
+	}
+}
+void CB_GetOprand_MLwidth( char *SRC ) {
+	MLV_width=1;	// line width
+	if ( SRC[ExecPtr] != ',' ) return;
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) return;
+	MLV_width=CB_EvalInt( SRC );
+}
+
 //----------------------------------------------------------------------------------------------
 void CB_ML_Pixel( char *SRC ) { // ML_Pixel x, y, color
 	int x,y;
-	int color;
+	int color,rand;
 	CB_GetOprand2VW( SRC, &x, &y );
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_pixel( x, y, color);
 }
 
 void CB_ML_Point( char *SRC ) { // ML_Point x, y, width, color
 	int x,y;
-	int width;
-	int color;
+	int color,rand,width2;
 	CB_GetOprand2VW( SRC, &x, &y );
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	CB_GetOprand2( SRC, &width, &color );
+	CB_GetOprand_MLwidth( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
-	ML_point( x, y, width, color);
+	ML_point( x, y, MLV_width, color);
 }
 
 int CB_ML_PixelTest( char *SRC ) { // ML_PixelTest( x, y)
@@ -250,9 +284,9 @@ void CB_ML_Line( char *SRC ) { // ML_Line x1, y1, x2, y2, color
 	int x1,y1,x2,y2;
 	int color;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
+	CB_GetOprand_MLwidth( SRC );
 	if ( ErrorNo ) return ;
 	ML_line( x1, y1, x2, y2, color);
 }
@@ -261,9 +295,8 @@ void CB_ML_Horizontal( char *SRC ) { // ML_Horizontal y, x1, x2, color
 	int y,x1,x2;
 	int color;
 	CB_GetOprand3VWyxx( SRC, &y, &x1, &x2);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_horizontal_line( y, x1, x2, color);
 }
@@ -272,9 +305,8 @@ void CB_ML_Vertical( char *SRC ) { // ML_Vertical x, y1, y2, color
 	int x,y1,y2;
 	int color;
 	CB_GetOprand3VWxyy( SRC, &x, &y1, &y2);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_vertical_line( x, y1, y2, color);
 }
@@ -293,6 +325,7 @@ void CB_ML_Rect( char *SRC ) { // ML_Rectangle x1,y1,x2,y2, border_width, border
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	CB_GetOprand2( SRC, &border_color, &fill_color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_rectangle( x1, y1, x2, y2, border_width, border_color, fill_color);
 }
@@ -302,6 +335,7 @@ void CB_ML_Polygon( char *SRC, int fill ) { // ML_Polygon &Mat X, &Mat Y, nb_ver
 	int nb_vertices;
 	int color;
 	CB_GetOprand4( SRC, &ary_x, &ary_y, &nb_vertices, &color );
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
 	else		ML_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
@@ -313,9 +347,8 @@ void CB_ML_Circle( char *SRC, int fill ) { // ML_Circle x, y, radius, color
 	int radius;
 	int color;
 	CB_GetOprand3VWR( SRC, &x, &y, &radius);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_circle( x, y, radius, color);
 	else		ML_circle( x, y, radius, color);
@@ -328,9 +361,8 @@ void CB_ML_Ellipse( char *SRC, int fill ) { // ML_Ellipse x, y, radius1, radius2
 	int radius2;
 	int color;
 	CB_GetOprand4VWR( SRC, &x, &y, &radius1, &radius2);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_ellipse( x, y, radius1, radius2, color);
 	else		ML_ellipse( x, y, radius1, radius2, color);
@@ -340,9 +372,8 @@ void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x
 	int x1,y1,x2,y2;
 	int color;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_ellipse_in_rect( x1, y1, x2, y2, color);
 	else		ML_ellipse_in_rect( x1, y1, x2, y2, color);
@@ -611,6 +642,6 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 
 //----------------------------------------------------------------------------------------------
 int MLObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int MLObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
