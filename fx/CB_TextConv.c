@@ -505,7 +505,7 @@ const char ConvListF700[][17]={
 "WhileEnd",			// F709
 "Do",				// F70A
 "LpWhile ",			// F70B
-"Return",			// F70C
+"Return ",			// F70C
 "Break",			// F70D
 "Stop",				// F70E
 "ElseIf ",			// F70F

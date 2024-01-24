@@ -289,7 +289,7 @@ int Eval_atod(char *SRC, int c ) {
 	if ( c == '0' ) {
 		c = SRC[++ExecPtr];
 		if ( (  c=='x' ) || ( c=='X' ) ) {
-			c=SRC[ExecPtr];
+			c=SRC[++ExecPtr];
 			while ( ( ('0'<=c)&&(c<='9') ) || ( ('A'<=c)&&(c<='F') ) || ( ('a'<=c)&&(c<='f') ) ) {
 				if ( ('0'<=c)&&(c<='9') ) result = result*16 +(c-'0');
 				else

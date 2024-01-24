@@ -1266,6 +1266,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7FB4, " Xor " }, 
 	{ 0x7FF5, "IsExist(" }, 
 //	{ 0x7FF6, "Peek(" }, 
+	{ 0xF70C, "Return " }, 
 	{ 0xF717, "ACBreak" }, 
 	{ 0xF73F, "DotGet(" }, 
 	{ 0xF74F, "DotTrim(" }, 
