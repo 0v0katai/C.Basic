@@ -23,6 +23,7 @@
 #include "CB_Eval.h"
 #include "CB_file.h"
 #include "CB_edit.h"
+#include "CB_setup.h"
 
 #include "CB_interpreter.h"
 #include "CBI_interpreter.h"
