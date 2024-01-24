@@ -160,6 +160,10 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrixInt( reg, dimA, dimB);
 						
+				case 0xFFFFFF84 :	// Vct A[a,b]
+					reg=VctRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
+					goto Matrix1;
+
 				case 0x51 :		// List 1~26
 					reg=ListRegVar( SRC );
 				  Listj:
@@ -307,12 +311,12 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return 3;
 				case 0x2C:	// Seq
 					CB_SeqInt(SRC);
-					return 4;
+					return 3;
 				case 0x41:	// Trn
 					CB_MatTrn(SRC);
 					return 3;
 				case 0x21:	// Det
-					return CB_MatDet(SRC).real;
+					return Cplx_CB_MatDet(SRC).real;
 				
 				case 0x46 :				// Dim
 					result=CB_Dim( SRC );
@@ -453,6 +457,20 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return Xdot;
 				case 0x1B :		// fn str
 					return CBint_FnStr( SRC, 1 );
+					
+				case 0x4B:	// DotP(
+					return CB_DotPInt( SRC );
+				case 0x4A:	// CrossP(
+					CB_CrossP( SRC );
+					return 0;
+				case 0x6D:	// Angle(
+					return CB_AngleV( SRC );
+				case 0x5E:	// UnitV(
+					CB_UnitV( SRC );
+					return 0;
+				case 0x5B:	// Norm(
+					return CB_NormVInt( SRC );
+					
 				default:
 					ExecPtr--;	// error
 					break;
@@ -488,16 +506,21 @@ int ListEvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int c,i;
 	int base;
 	int resultreg,tmpreg;
+	int resultflag=dspflag;		// 2:result	3:Listresult
 	result = ListEvalIntsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
-				result = EvalFxInt( &fsquint, result) ; 
+				if ( resultflag==3 ) {
+						CopyMatList2Ans( resultreg );
+						result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, result ) ;
+				} else	result = EvalFxInt( &fsquint, result) ; 
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				result = EvalFxInt( &frecipint, result) ; 
+				if ( resultflag==3 ) Mat_inverse( resultreg );
+				else				 result = EvalFxInt( &frecipint, result) ; 
 				break;
 			case  0xFFFFFFAB  :	//  !
 				result = EvalFxInt( &ffactint, result) ; 
@@ -514,8 +537,8 @@ int ListEvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 }
 int ListEvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 	int result;
-	int c;
-	int resultreg;
+	int c,i;
+	int resultreg,resultreg2;
 	int resultflag;
 	int execptr;
 	
@@ -526,7 +549,24 @@ int ListEvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
-				result = EvalFxInt2( &fpowint, &resultflag, &resultreg, result, ListEvalIntsub2( SRC ) ) ;
+				if ( resultflag==3 ) {	// Mat
+					c = CB_EvalInt( SRC );
+					if ( c== 1 ) break;
+					else
+					if ( c==-1 ) { Mat_inverse( resultreg ); break; }
+					else
+					if ( c>= 1 ) {
+						resultreg2=resultreg;
+						CopyMatList2Ans( resultreg );	//	result -> new result2
+						resultreg=CB_MatListAnsreg;
+						for ( i=1; i<c; i++ ) {
+							CopyMatList2Ans( resultreg2 );
+							result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, result ) ;
+						}
+						CopyMatrix( resultreg2, resultreg );		// resultreg -> resultreg2
+						DeleteMatListAns();	// delete result2
+					} else { CB_Error(MathERR); break ; }
+				} else	result = EvalFxInt2( &fpowint, &resultflag, &resultreg, result, ListEvalIntsub2( SRC ) ) ;
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = EvalFxInt2( &fpowrootint, &resultflag, &resultreg, result, ListEvalIntsub2( SRC ) ) ;
@@ -566,6 +606,7 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x40:	// Mat A[a,b]
+				case 0xFFFFFF84 :	// Vct A[a,b]
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
 				case 0x3C:	// GCD(a,b)
@@ -697,7 +738,7 @@ int ListEvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = EvalFxInt2( &fDIVint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
+				c = SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFFBC:	// IntÅÄ
 						result = EvalFxInt2( &fDIVint, &resultflag, &resultreg, result, ListEvalIntsub7( SRC ) ) ;

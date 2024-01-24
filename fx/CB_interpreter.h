@@ -46,7 +46,7 @@ extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-#define VARMAXSIZE 26+6+26+26
+#define VARMAXSIZE 26+6+26+26+6
 extern complex  REG[VARMAXSIZE];
 extern double  REGv[11];
 extern double  VWIN[6][11];

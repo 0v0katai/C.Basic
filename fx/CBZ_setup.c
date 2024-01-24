@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.82\xE6\x41";
-#define VERSION 182
+const char VerMSG[]="C.Basic  v1.83\xE6\x41";
+#define VERSION 183
 
 //---------------------------------------------------------------------------------------------
 
@@ -698,7 +698,6 @@ int CmpAliasVarMat( int reg ) {	// AliasVar Mat?
 	}
 	return -1;
 }
-
 int SetVarCharMat( char *buffer, int c ) {
 	int ptr=0,len;
 	short alias_code;
@@ -732,6 +731,44 @@ int SetVarCharMat( char *buffer, int c ) {
 	}
 	return ptr;
 }
+
+int SetVarCharVct( char *buffer, int c ) {
+	int ptr=0,len;
+	short alias_code;
+	char buffer2[32];
+	int i=CmpAliasVarMat( c );
+	if ( i>=0 ) {	// 	Alias variable
+		if ( alias_code=AliasVarCodeMat[i].alias == 0x4040 ) {	// @ABCD
+			len=AliasVarCodeMat[i].len;
+			memcpy( buffer, AliasVarCodeMat[i].name, len);
+			buffer[len]='\0';
+			ptr=len;
+		} else {
+			CB_OpcodeToStr( alias_code, buffer2 ) ;		// SYSCALL+
+			StrMid( buffer, buffer2, 1, 8 );
+			ptr=CB_MB_strlen( buffer );
+		}
+	} else
+	if ( ( c == 26 ) ) {	// <r>
+		buffer[ptr++]=0xCD;	//	'r'
+	} else
+	if ( ( c == 27 ) ) { // Theta
+		buffer[ptr++]=0xE6;		// Theta
+		buffer[ptr++]=0x47;
+	} else
+	if ( ( 28 <= c ) && ( c <= 31 ) ) { // Ans
+		buffer[ptr++]='A';		//
+		buffer[ptr++]='n';
+		buffer[ptr++]='s';
+	} else
+	if ( c >= 58 ) {
+		buffer[ptr++]='A'+c-84;
+	} else {
+		buffer[ptr++]='A'+c;
+	}
+	return ptr;
+}
+
 int SetVarChar( char *buffer, int c ) {
 	int ptr=0,len;
 	short alias_code;
@@ -826,9 +863,10 @@ int SetVar(int select){		// ----------- Set Variable
 		for ( i=0; i<7; i++ ) {
 			k=seltop+i+small;
 			if ( ( small==58 ) && ( k > IsExtVar+1 ) ) break;	// ext   Var
+			
 			if ( ( small==32 ) && ( k >= 58 ) ) k-=(32);						// small Var
 			else
-			if ( ( small==58 ) && ( k > IsExtVar ) ) k=28;	// ext   Var
+			if ( ( small==58 ) && ( k > IsExtVar ) ) k=28;	// ext   Var  Ans
 			x=SetVarCharStr( buffer, VarMode, k);
 			CB_Print( 1, 1+i, (unsigned char*)buffer);
 
@@ -854,8 +892,13 @@ int SetVar(int select){		// ----------- Set Variable
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		Bdisp_PutDisp_DD();
 
-		k=select; if ( select<=25 ) k+=small;
-		if ( ( small==58 ) && ( k > IsExtVar ) ) k=28;	// ext   Var
+		k=select;
+		if ( small==58 ) {	// ext   Var
+			k+=small;
+			if ( k > IsExtVar ) k=28;	// ext   Var  Ans
+		} else {
+			 if ( select<=25 ) k+=small;
+		}
 		GetKey( &key );
 		switch (key) {
 			case KEY_CTRL_EXIT:
@@ -868,7 +911,7 @@ int SetVar(int select){		// ----------- Set Variable
 				else
 				if ( small == 32  ) { if ( IsExtVar < 58 ) small =0; else { small=58; if ( select > IsExtVar-58 ) select=IsExtVar-58; } }
 				else
-				if ( small == 58  ) small= 0;
+				if ( small == 58  ) { small= 0; if ( select >= 28 ) select=28; }
 				break;
 			case KEY_CTRL_F2:
 				InitVar(value,VarMode, small);

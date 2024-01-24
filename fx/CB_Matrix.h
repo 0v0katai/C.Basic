@@ -1,5 +1,5 @@
 #define LISTMAX 52
-#define MATARY_MAX 26+6+LISTMAX+1
+#define MATARY_MAX 26+6+LISTMAX+26+1	// add vctx26
 //extern int	MatAryMaxbyte[MatAryMax];		// Matrix array max memory size
 //extern char	MatAryBase[MatAryMax]			// Matrix array base 0 or 1
 //extern char	MatAryElementSize[MatAryMax];	// Matrix array word size
@@ -31,10 +31,9 @@ extern char listdsp;	// Mat:0  list:1
 
 //------------------------------------------------------------------------------
 int ReadMatrixInt( int reg, int dimA, int dimB);				// 0-
-void WriteMatrixint( int reg, int dimA, int dimB, int value);	// 0-
 double ReadMatrix( int reg, int dimA, int dimB);				// 0-
+void WriteMatrixint( int reg, int dimA, int dimB, int value);	// 0-
 void WriteMatrix( int reg, int dimA, int dimB, double value);	// 0-
-
 char *  MatrixPtr( int reg, int m, int n );						// 0-
 int	MatrixSize( int reg, int sizeA, int sizeB ) ;	// size 1-
 
@@ -51,14 +50,15 @@ void EditMatrix(int reg, int ans );		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
 
 int ElementSizeSelect( char *SRC, int *base, int ElementSize ) ;
-void CB_MatrixInitsubNoMat( char *SRC, int *reg, int dimA, int dimB , int ElementSize, int dimdim ) ; 	// 1-
+void CB_MatrixInitsubNoMat( char *SRC, int reg, int dimA, int dimB , int ElementSize, int dimdim ) ; 	// 1-
 void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize, int dimdim ) ; 	// 1-
 void CB_MatrixInit( char *SRC , int dimdim ) ; //	{n,m}->Dim Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2( char *SRC ) ; //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
 void CB_MatrixInit2Str( char *SRC ) ; //	["ABCD","12345","XYZ"]->Mat A[.B]
 void CB_ClrMat( char *SRC ) ; //	ClrMat A
+void CB_ClrVct( char *SRC ) ; //	ClrVct A
 void CB_ClrList( char *SRC ) ; //	ClrList A
-int CB_MatCalc( char *SRC ) ; //	Mat A -> Mat B  etc
+int CB_MatCalc( char *SRC, int Matflag ) ; //	Mat A -> Mat B  etc
 void CB_MatFill( char *SRC ) ; //	Fill(value, Mat A)
 void CB_MatTrn( char *SRC ) ; //	Trn Mat A
 
@@ -131,3 +131,15 @@ int CB_ProgPtr( char *SRC ) ; //	ProgPtr(
 
 void NumToBin( char *buffer, unsigned int n, int digit) ;
 void NumToHex( char *buffer, unsigned int n, int digit) ;
+
+double CB_DotP( char *SRC );		// DotP(Vct A,Vct B)
+int CB_DotPInt( char *SRC );		// DotP(Vct A,Vct B)
+void CB_CrossP( char *SRC );		// CrossP(Vct A,Vct B)
+double CB_AngleV( char *SRC );		// Angle(Vct A,Vct B)
+void  CB_UnitV( char *SRC );		// UnitV(Vct A)
+double CB_NormV( char *SRC );		// Norm(Vct A)
+int CB_NormVInt( char *SRC );		// Norm(Vct A)
+
+void Mat_inverse( int ansreg ) ;
+void Cplx_Mat_inverse( int ansreg ) ;
+void Cplx_CB_MatInv( char *SRC ) ;	// Inverse Mat A	

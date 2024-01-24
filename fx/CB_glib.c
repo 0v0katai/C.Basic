@@ -622,8 +622,8 @@ void Line(int style, int mode, int errorcheck ) {
 	Previous_PY = py2;
 	if ( errorcheck ) {
 		if ( i || j ) return ;
-	} else {
-		if ( i && j ) return ;
+//	} else {
+//		if ( i && j ) return ;
 	}
 	Linesub( px1, py1, px2, py2, style, mode);
 }
@@ -693,10 +693,10 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 
 //----------------------------------------------------------------------------------------------
 int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG2( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG3( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG4( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG5( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG2( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG3( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG4( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG5( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlignG6( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlignG7( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlignG8( unsigned int n ){ return n; }	// align +4byte

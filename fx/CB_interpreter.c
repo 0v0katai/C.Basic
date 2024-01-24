@@ -496,7 +496,8 @@ int CB_interpreter_sub( char *SRC ) {
 				c=SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x40:	// Mat
-						dspflagtmp=CB_MatCalc(SRC);
+					case 0xFFFFFF84:	// Vct
+						dspflagtmp=CB_MatCalc(SRC,c);
 						if ( dspflagtmp ) goto Evalexit2;
 						break;
 					case 0x51:	// List
@@ -515,6 +516,10 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x44 :				// Row+ A,2,3
 						CB_MatRowPlus( SRC );
 						break;
+					case 0x34 :				// Red
+					case 0x35 :				// Blue
+					case 0x36 :				// Green
+						break;
 					default:
 						goto Evalexit2;
 				}
@@ -524,9 +529,9 @@ int CB_interpreter_sub( char *SRC ) {
 				c=SRC[ExecPtr++];
 				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) && ( c != 0xFFFFFFC6 ) && ( c != 0xFFFFFFD8 ) ) { CB_ML_command( SRC, c ); break; }
 				else
-				if ( ( 0x34 <= c ) && ( c <= 0x37 ) )  goto strjp;
+				if ( ( 0x38 != c ) && ( 0x34 <= c ) && ( c <= 0x49 ) )  goto strjp;
 				else
-				if ( ( 0x39 <= c ) && ( c <= 0x49 ) )  goto strjp;
+				if ( ( 0xFFFFFF9B <= c ) && ( c <= 0xFFFFFF9F ) ) break;	// color command   Black/(White)/Magenta/Cyan/Yellow
 				switch ( c ) {
 					case 0x30:	// StrJoin(
 //					case 0x34:	// StrLeft(
@@ -579,6 +584,10 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x1E:	// ClrMat
 						CB_ClrMat(SRC);
+						dspflag=0;
+						break;
+					case 0x3E:	// ClrVct
+						CB_ClrVct(SRC);
 						dspflag=0;
 						break;
 					case 0x4F:	// Wait
@@ -1914,7 +1923,7 @@ void CB_Dsz( char *SRC ) { //	Dsz
 			CB_CurrentValue = LocalDbl[reg][0] ;
 		}
 	} else 
-	if ( ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) || ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or List
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -1981,7 +1990,7 @@ void CB_Isz( char *SRC ) { //	Isz
 			CB_CurrentValue = LocalDbl[reg][0] ;
 		}
 	} else 
-	if ( ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) || ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or List
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -2059,11 +2068,12 @@ void CB_Store( char *SRC ){	// ->
 	} else
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x40 ) {	// Mat A[a,b]
+		if ( c == 0x40 ) {	// Mat A[a,b]  Vct A[a,b]
 			ExecPtr+=2;
 			c=SRC[ExecPtr];
 			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+			Matrix0:
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ); MatdspNo=reg;  return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -2079,6 +2089,10 @@ void CB_Store( char *SRC ){	// ->
 				}
 				if ( CB_INT==0) WriteMatrix( reg, dimA, dimB, CB_CurrentValue.real); else Cplx_WriteMatrix( reg, dimA, dimB, CB_CurrentValue);
 			}
+		} else if ( c==0xFFFFFF84 ) {	//  Vct A[a,b]
+			ExecPtr+=2;
+			reg=VctRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+			goto Matrix0;
 		} else if ( c == 0x51 ) {	// List
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
@@ -2109,13 +2123,14 @@ void CB_Store( char *SRC ){	// ->
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				} else
-				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// {10,5} -> Dim Mat A
+				if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// {10,5} -> Dim Mat A  -> Dim Vct A
 					CB_MatrixInit( SRC, dimdim );
 					return ;
 				} else {
-					if ( CB_CurrentValue.real ) 			// 15->Dim Mat A
-							CB_MatrixInitsubNoMat( SRC, &reg, CB_CurrentValue.real, 1, 0, dimdim );
-					else {							//  0->Dim Mat A
+					if ( CB_CurrentValue.real ) {		// 15->Dim Mat A
+						reg=MatRegVar(SRC);
+						CB_MatrixInitsubNoMat( SRC, reg, CB_CurrentValue.real, 1, 0, dimdim );
+					} else {							//  0->Dim Mat A
 						reg=MatRegVar(SRC);
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
@@ -2392,7 +2407,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 	int alias_code, org_reg;
 	char name[32+1];
 	
-	if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// 	Alias Mat A=ƒ¿  or Mat A=_ABCD
+	if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// 	Alias Mat A=ƒ¿  or Mat A=_ABCD / Vct
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
 		reg=RegVar(c);
@@ -2406,7 +2421,6 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 			if ( c=='_' ) {	//	_ABCDE   var name
 				ExecPtr++; len=32;
 				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				if ( AliasVarMAXMat > ALIASVARMAXMAT ) { CB_Error(TooMuchData); return; }
 				for ( i=0; i<=AliasVarMAXMat; i++ ) {	// check already 
 					if ( ( len == AliasVarCodeMat[i].len ) && ( AliasVarCodeMat[i].alias == 0x4040 ) ) {	// @@
 						for (j=0; j<len; j++) {
@@ -2415,8 +2429,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 						if ( j==len ) return ;	// macth!!
 					}
 				}
+				if ( AliasVarMAXMat >= ALIASVARMAXMAT-1 ) { CB_Error(TooMuchData); return; }
 				AliasVarMAXMat++; 
-				if ( AliasVarMAXMat > ALIASVARMAXMAT ) { CB_Error(TooMuchData); return; }
 				AliasVarCodeMat[AliasVarMAXMat].org  =org_reg;
 				AliasVarCodeMat[AliasVarMAXMat].alias=0x4040;	// @@
 				if ( len > MAXNAMELEN ) len=MAXNAMELEN;
@@ -2430,8 +2444,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 				for ( i=0; i<=AliasVarMAXMat; i++ ) {	// check already 
 					if ( AliasVarCodeMat[i].alias==(short)alias_code ) return ; 	// macth!!
 				}
+				if ( AliasVarMAXMat >= ALIASVARMAXMAT-1 ) { CB_Error(TooMuchData); return; }
 				AliasVarMAXMat++; 
-				if ( AliasVarMAXMat > ALIASVARMAXMAT ) { CB_Error(TooMuchData); return; }
 				AliasVarCodeMat[AliasVarMAXMat].org  =org_reg;
 				AliasVarCodeMat[AliasVarMAXMat].alias=alias_code;
 			}
@@ -2451,7 +2465,6 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 			if ( c=='_' ) {	//	_ABCDE   var name
 				ExecPtr++; len=32;
 				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				if ( AliasVarMAXLbl > ALIASVARMAXLBL ) { CB_Error(TooMuchData); return; }
 				for ( i=0; i<=AliasVarMAXLbl; i++ ) {	// check already 
 					if ( ( len == AliasVarCodeLbl[i].len ) && ( AliasVarCodeLbl[i].alias == 0x4040 ) ) {	// @@
 						for (j=0; j<len; j++) {
@@ -2460,8 +2473,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 						if ( j==len ) return ;	// macth!!
 					}
 				}
+				if ( AliasVarMAXLbl >= ALIASVARMAXLBL-1 ) { CB_Error(TooMuchData); return; }
 				AliasVarMAXLbl++; 
-				if ( AliasVarMAXLbl > ALIASVARMAXLBL ) { CB_Error(TooMuchData); return; }
 				AliasVarCodeLbl[AliasVarMAXLbl].org  =org_reg+10;
 				AliasVarCodeLbl[AliasVarMAXLbl].alias=0x4040;	// @@
 				if ( len > MAXNAMELEN ) len=MAXNAMELEN;
@@ -2475,8 +2488,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 				for ( i=0; i<=AliasVarMAXLbl; i++ ) {	// check already 
 					if ( AliasVarCodeLbl[i].alias==(short)alias_code ) return ; 	// macth!!
 				}
+				if ( AliasVarMAXLbl >= ALIASVARMAXLBL-1 ) { CB_Error(TooMuchData); return; }
 				AliasVarMAXLbl++; 
-				if ( AliasVarMAXLbl > ALIASVARMAXLBL ) { CB_Error(TooMuchData); return; }
 				AliasVarCodeLbl[AliasVarMAXLbl].org  =org_reg+10;
 				AliasVarCodeLbl[AliasVarMAXLbl].alias=alias_code;
 			}
@@ -2494,7 +2507,6 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 			if ( c=='_' ) {	//	_ABCDE   var name
 				ExecPtr++; len=32;
 				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				if ( AliasVarMAX > ALIASVARMAX ) { CB_Error(TooMuchData); return; }
 				for ( i=0; i<=AliasVarMAX; i++ ) {	// check already 
 					if ( ( len == AliasVarCode[i].len ) && ( AliasVarCode[i].alias == 0x4040 ) ) {	// @@
 						for (j=0; j<len; j++) {
@@ -2503,8 +2515,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 						if ( j==len ) return ;	// macth!!
 					}
 				}
+				if ( AliasVarMAX >= ALIASVARMAX-1 ) { CB_Error(TooMuchData); return; }
 				AliasVarMAX++; 
-				if ( AliasVarMAX > ALIASVARMAX ) { CB_Error(TooMuchData); return; }
 				AliasVarCode[AliasVarMAX].org  =org_reg;
 				AliasVarCode[AliasVarMAX].alias=0x4040;	// @@
 				if ( len > MAXNAMELEN ) len=MAXNAMELEN;
@@ -2518,8 +2530,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD
 				for ( i=0; i<=AliasVarMAX; i++ ) {	// check already 
 					if ( AliasVarCode[i].alias==(short)alias_code ) return ; 	// macth!!
 				}
+				if ( AliasVarMAX >= ALIASVARMAX-1 ) { CB_Error(TooMuchData); return; }
 				AliasVarMAX++; 
-				if ( AliasVarMAX > ALIASVARMAX ) { CB_Error(TooMuchData); return; }
 				AliasVarCode[AliasVarMAX].org  =org_reg;
 				AliasVarCode[AliasVarMAX].alias=alias_code;
 			}
@@ -2745,7 +2757,7 @@ void  CB_Input( char *SRC ){
 	} else
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
-		if ( ( c == 0x40 ) || ( c == 0x51 ) ) {	// Mat A[a,b] or List 1[a]
+		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( c == 0x51 ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -2916,12 +2928,12 @@ void  CB_Input( char *SRC ){
 	return ;
 }
 //----------------------------------------------------------------------------------------------
-//int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

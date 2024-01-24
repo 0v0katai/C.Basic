@@ -851,7 +851,7 @@ void DrawStat(){	// DrawStat
 				Plot_X=regX.real;
 				Plot_Y=regY.real;
 				if ( Sgraph[No].GraphType == 1 ) {	// 1:xyLine
-					Line( S_L_Normal , 1, 1);	// error check
+					Line( S_L_Normal , 1, 0);	// error check
 				}
 //				Bdisp_PutDisp_DD();
 			}

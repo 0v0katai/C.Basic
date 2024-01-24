@@ -59,6 +59,7 @@ int receive_data( unsigned char *buffer, int n ){
 #define SERIAL_WORD   16
 #define SERIAL_LONG   32
 #define SERIAL_DOUBLE 64
+#define SERIAL_CPLX  128
 #define SERIAL_STRING 99
 //------------------------------------------------------------------------------
 int send_formatdata( unsigned char *buffer, int type, int n ){
@@ -121,7 +122,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		else
 		if (CB_INT==1)	{ result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; } else { result=(int)&LocalDbl[reg][0]; (*length)=8; *type=SERIAL_DOUBLE; }
 	} else
-	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// Mat or Vct
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
 		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
@@ -187,8 +188,15 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 				else {
 				if ( c=='#' ) ExecPtr++;
 				  cdbl:
-					CB_CurrentValue=CB_Cplx_EvalDbl(SRC); *type=SERIAL_DOUBLE;
-					result=(int)&CB_CurrentValue; (*length)=8; 
+					if ( CB_INT==0 ) {
+						*type=SERIAL_DOUBLE;
+						(*length)=8; 
+					} else {
+						*type=SERIAL_CPLX;
+						(*length)=16; 
+					}
+					CB_CurrentValue=CB_Cplx_EvalDbl(SRC);
+					result=(int)&CB_CurrentValue; 
 				}
 			}
 		}
@@ -217,6 +225,16 @@ int CB_length( char *SRC, int *length ){
 	return 1;
 }
 
+int Serial_Close_sub(){
+	int r;
+	while ( Serial_Close(0)==5 );	// transmissions are under way?
+	Serial_ClearTransmitBuffer();	// clear buffer
+	Serial_ClearReceiveBuffer();	// clear buffer
+	r=Serial_Close( 1 );	// close
+	if ( r ) CB_Error(ComERR);
+	return r;
+}
+
 void CB_Send( char *SRC ){				// Send( data )
 	int ptr;
 	int length,type;
@@ -226,13 +244,13 @@ void CB_Send( char *SRC ){				// Send( data )
 	ptr=VarPtrLength(SRC, &length, &type, 0 );
 	if ( ErrorNo ) return;
 //	CB_length( SRC, &length );
+	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
-	Serial_Close( 1 );	// close
-	Serial_ClearTransmitBuffer();	// clear buffer
 	Serial_Open( mode );	// open
 	r=send_formatdata( (unsigned char*)ptr, type, length );
-	while ( Serial_Close(0)==5 );	// transmissions are under way?
-	Serial_Close( 1 );	// close
+//	while ( Serial_Close(0)==5 );	// transmissions are under way?
+//	Serial_Close( 1 );	// close
+	if ( Serial_Close_sub() ) return ;	// error
 	if ( r ) CB_Error(TransmitERR);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 }
@@ -246,14 +264,14 @@ void CB_Receive( char *SRC ){			// Receive( data )
 	ptr=VarPtrLength(SRC, &length, &type, 1 );
 	if ( ErrorNo ) return;
 //	CB_length( SRC, &length );
+	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
-	Serial_Close( 1 );	// close
-	Serial_ClearTransmitBuffer();
 	Serial_Open( mode );
 	type2=type;
 	r=receive_formatdata( (unsigned char*)ptr, &type2, &length );
-	while ( Serial_Close(0)==5 );	// transmissions are under way?
-	Serial_Close( 1 );	// close
+//	while ( Serial_Close(0)==5 );	// transmissions are under way?
+//	Serial_Close( 1 );	// close
+	if ( Serial_Close_sub() ) return ;	// error
 	if ( type2 != type ) CB_Error(TypeMismatchERR);
 	if ( r ) CB_Error(ReceiveERR);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -263,7 +281,7 @@ void CB_OpenComport38k( char *SRC ){	// OpenComport38k
 	int c,r;
 	int tmode=1;
 	unsigned char mode[]={0,7,0,0,0,0};
-	Serial_ClearTransmitBuffer();	// clear buffer
+	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
 	CB_length( SRC, &tmode );
 	Transfermode=tmode;
@@ -271,11 +289,7 @@ void CB_OpenComport38k( char *SRC ){	// OpenComport38k
 //	if ( r==3 ) CB_Error(AlreadyOpenERR);
 }
 void CB_CloseComport38k( char *SRC ){	// CloseComport38k
-	int r;
-	while ( Serial_Close(0)==5 );	// transmissions are under way?
-	Serial_ClearTransmitBuffer();	// clear buffer
-	r=Serial_Close( 1 );	// close
-	if ( r ) CB_Error(ComERR);
+	Serial_Close_sub();
 }
 void CB_Send38k( char *SRC ){			// Send38k
 	int ptr;
@@ -409,3 +423,14 @@ void CB_Beep( char *SRC ){
 	ntime=n*a/1000;
 	Direct3Pin_out( microsecond, ntime );
 }
+
+//----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//int SerialObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+int SerialObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int SerialObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int SerialObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int SerialObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int SerialObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int SerialObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+

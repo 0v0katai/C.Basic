@@ -234,6 +234,10 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrix( reg, dimA, dimB);
 						
+				case 0xFFFFFF84 :	// Vct A[a,b]
+					reg=VctRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+					goto Matrix1;	
+					
 				case 0x51 :		// List 1~26
 					reg=ListRegVar( SRC );
 				  Listj:
@@ -404,7 +408,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					CB_MatTrn(SRC);
 					return 3;
 				case 0x21:	// Det
-					return CB_MatDet(SRC).real;
+					return Cplx_CB_MatDet(SRC).real;
 				
 				case 0x46 :				// Dim
 					result=CB_Dim( SRC );
@@ -594,6 +598,20 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return Xdot;
 				case 0x1B :		// fn str
 					return CB_FnStr( SRC, 1 );
+					
+				case 0x4B:	// DotP(
+					return CB_DotP( SRC );
+				case 0x4A:	// CrossP(
+					CB_CrossP( SRC );
+					return 0;
+				case 0x6D:	// Angle(
+					return CB_AngleV( SRC );
+				case 0x5E:	// UnitV(
+					CB_UnitV( SRC );
+					return 0;
+				case 0x5B:	// Norm(
+					return CB_NormV( SRC );
+					
 				default:
 					ExecPtr--;	// error
 					break;
@@ -629,16 +647,21 @@ double ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int c,i;
 	int base;
 	int resultreg,tmpreg;
+	int resultflag=dspflag;		// 2:result	3:Listresult
 	result = ListEvalsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
-				result = EvalFxDbl( &fsqu, result) ; 
+				if ( resultflag==3 ) {
+						CopyMatList2Ans( resultreg );
+						result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, result ) ;
+				} else	result = EvalFxDbl( &fsqu, result) ; 
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				result = EvalFxDbl( &frecip, result) ; 
+				if ( resultflag==3 ) Mat_inverse( resultreg );
+				else 				 result = EvalFxDbl( &frecip, result) ; 
 				break;
 			case  0xFFFFFFAB  :	//  !
 				result = EvalFxDbl( &ffact, result) ; 
@@ -704,8 +727,8 @@ double ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 }
 double ListEvalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 	double result;
-	int c;
-	int resultreg;
+	int c,i;
+	int resultreg,resultreg2;
 	int resultflag;
 	int execptr;
 	
@@ -716,7 +739,24 @@ double ListEvalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
-				result = EvalFxDbl2( &fpow, &resultflag, &resultreg, result, ListEvalsub2( SRC ) ) ;
+				if ( resultflag==3 ) {	// Mat
+					c = CB_EvalInt( SRC );
+					if ( c== 1 ) break;
+					else
+					if ( c==-1 ) { Mat_inverse( resultreg ); break; }
+					else
+					if ( c>= 1 ) {
+						resultreg2=resultreg;
+						CopyMatList2Ans( resultreg );	//	result -> new result2
+						resultreg=CB_MatListAnsreg;
+						for ( i=1; i<c; i++ ) {
+							CopyMatList2Ans( resultreg2 );
+							result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, result ) ;
+						}
+						CopyMatrix( resultreg2, resultreg );		// resultreg -> resultreg2
+						DeleteMatListAns();	// delete result2
+					} else { CB_Error(MathERR); break ; }
+				} else	result = EvalFxDbl2( &fpow, &resultflag, &resultreg, result, ListEvalsub2( SRC ) ) ;
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = EvalFxDbl2( &fpowroot, &resultflag, &resultreg, result, ListEvalsub2( SRC ) ) ;
@@ -778,6 +818,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x40:	// Mat A[a,b]
+				case 0xFFFFFF84 :	// Vct A[a,b]
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
 				case 0x3C:	// GCD(a,b)
@@ -924,7 +965,7 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = EvalFxDbl2( &fDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
+				c = SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFFBC:	// IntÅÄ
 						result = EvalFxDbl2( &fIDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;

@@ -579,6 +579,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrixInt( reg, dimA, dimB);
 					
+				case 0xFFFFFF84 :	// Vct A[a,b]
+					reg=VctRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
+					goto Matrix1;
+
 				case 0x51 :		// List 1~26
 					reg=ListRegVar( SRC );
 				  Listj:
@@ -697,12 +701,12 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return 3;
 				case 0x2C:	// Seq
 					CB_SeqInt(SRC);
-					return 4;
+					return 3;
 				case 0x41:	// Trn
 					CB_MatTrn(SRC);
 					return 3;
 				case 0x21:	// Det
-					return CB_MatDet(SRC).real;
+					return Cplx_CB_MatDet(SRC).real;
 				
 				case 0x46 :				// Dim
 					result=CB_Dim( SRC );
@@ -850,6 +854,20 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return Xdot;
 				case 0x1B :		// fn str
 					return CBint_FnStr( SRC, 0 );
+					
+				case 0x4B:	// DotP(
+					return CB_DotPInt( SRC );
+				case 0x4A:	// CrossP(
+					CB_CrossP( SRC );
+					return 0;
+				case 0x6D:	// Angle(
+					return CB_AngleV( SRC );
+				case 0x5E:	// UnitV(
+					CB_UnitV( SRC );
+					return 0;
+				case 0x5B:	// Norm(
+					return CB_NormVInt( SRC );
+					
 				default:
 					ExecPtr--;	// error
 					break;
@@ -945,6 +963,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x40:	// Mat A[a,b]
+				case 0xFFFFFF84 :	// Vct A[a,b]
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
 				case 0x3C:	// GCD(a,b)
@@ -1067,7 +1086,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result /= tmp ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr]; while ( c==0x20 )c=SRC[++ExecPtr]; ExecPtr++; // Skip Space
+				c = SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int€
 						tmp = EvalIntsub7( SRC );
@@ -1408,5 +1427,8 @@ void CB_Wait( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign6f( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalIntObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+int EvalIntObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int EvalIntObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

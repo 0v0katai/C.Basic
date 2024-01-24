@@ -25,6 +25,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 			} break;
 		case CMD_PRGM_CLR:
 			switch ( CommandPage ) {
+				case 0: (*code)=0xF93E;return;	// ClrVct
 			} break;
 		case CMD_PRGM_DISP:
 			switch ( CommandPage ) {
@@ -67,6 +68,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F49;return;	// Argument(
 				case 1: CommandType=CMD_OPTN_MAT_SIZE; CommandPage=0;break;
+				case 2: (*code)=0xF95E;return;	// UnitV(
 			} break;
 		case CMD_OPTN_CALC:
 			break;

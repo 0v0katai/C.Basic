@@ -79,6 +79,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F4B;return;	// Mat->List(
 				case 1: (*code)=0x7F46;return;	// Dim
+				case 2: (*code)=0xF94B;return;	// DotP(
 			} break;
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {
