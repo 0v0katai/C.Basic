@@ -446,7 +446,7 @@ int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr){
 	{ *csrptr=csrbkup; return 0; }	// No search
 }
 
-int SearchForText( char *SrcBase, char *searchstr, int *csrptr){
+int SearchForText( char *SrcBase, char *searchstr, int *csrptr ){
 	unsigned int key;
 	int i=0,sptr;
 	int csrp;
@@ -481,7 +481,7 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr){
 }
 
 //---------------------------------------------------------------------------------------------
-void editmenu( char lowercase ){
+void editmenu(){
 	Fkey_dispR( 0, "JUMP");
 	Fkey_dispR( 1, "SRC");
 	Fkey_dispR( 2, "CMD");
@@ -548,7 +548,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char cont=1,stat;
 	char buffer[32];
 	char buffer2[32];
-	char searchbuf[64];
+	char searchbuf[64]="";
 	unsigned char c;
 	int i,j,n,d,x,y,cx,cy,ptr,ptr2,tmpkey=0;
 	int 	offset=0;
@@ -558,7 +558,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int 	csrPtr_y=0;
 	char 	dumpflg=2;
 	unsigned short opcode;
-	char lowercase=0, CursorStyle;
+	char CursorStyle;
 	int ClipStartPtr = -1 ;
 	int ClipEndPtr   = -1 ;
 	char alphalock = 0 ;
@@ -566,7 +566,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int ContinuousSelect=0;
 	char DebugMenuSw=0;
 	char JumpMenuSw=0;
-	
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -683,18 +682,18 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								break;
 							case 0:
 								if ( JumpMenuSw ) {		// Jump Mode
-									jumpmenu(lowercase );
+									jumpmenu();
 								} else {
-									editmenu(lowercase );
+									editmenu();
 									Fkey_DISPN( 5," \xE6\x9E ");
 								}
 								break;
 						}
 					} else {	// normal mode
 						if ( JumpMenuSw ) {		// Jump Mode
-							jumpmenu(lowercase );
+							jumpmenu();
 						} else {
-							editmenu(lowercase );
+							editmenu();
 							Fkey_dispN( 5, "EXE");
 						}
 					}
@@ -729,7 +728,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		}						
 		
 		switch (dumpflg) {
-			case 4: 		// hex dump
+			case 4: 		// hex edit
 				if ( ( ( KEY_CHAR_0 <= key ) && ( key <= KEY_CHAR_9 ) ) ||
 					 ( ( KEY_CHAR_A <= key ) && ( key <= KEY_CHAR_Z ) ) ||
 					   ( KEY_CTRL_XTT == key ) ||
@@ -761,7 +760,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				}
 				break;
 //			case 2: 		// Opcode
-//			case 16:		// Ascii dump
 //				break;
 			default:
 				break;
@@ -809,7 +807,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										case 2: 		// Opcode
 											break;
 										case 4: 		// hex dump
-										case 16:		// Ascii dump
 											cx=6; cy=2;
 											break;
 										default:
@@ -847,7 +844,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										PrevLinePhyN( 6, SrcBase, &offset, &offset_y ) ;
 										break;
 									case 4: 		// hex dump
-									case 16:		// Ascii dump
 										cx=6; cy=2;
 										break;
 									default:
@@ -858,10 +854,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 									EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
 									ClipBuffer[63]='\0';
-									i=SearchForText(  SrcBase, ClipBuffer, &csrPtr) ;
+									i=SearchForText(  SrcBase, ClipBuffer, &csrPtr ) ;
 								} else {
-									searchbuf[0]='\0';
-									i=SearchForText(  SrcBase, searchbuf, &csrPtr) ;
+//									searchbuf[0]='\0';
+									i=SearchForText(  SrcBase, searchbuf, &csrPtr ) ;
 								}
 								if ( i ) SearchMode=1; 
 								else	 SearchMode=0;
@@ -994,14 +990,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( (cx==1)&&(cy==2) ) PrevLinePhy( SrcBase, &offset, &offset_y );
 							break;
 					case 4: 		// hex dump
-							cx--;
+							cx--; 
+							if ( ( cx==8 ) || ( cx==11 ) || (cx==14) ) cx--;
 							if ( cx<6 ) {
 									cy--; cx=16;
 									if ( cy<2 ) { (offset)-=4; cy=2; }
 							}
-							break;
-					case 16:		// Ascii dump
-							offset-=1;
 							break;
 					default:
 							break;
@@ -1019,13 +1013,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case 4: 		// hex dump
 							cx++;
+							if ( ( cx==8 ) || ( cx==11 ) || (cx==14) ) cx++;
 							if ( cx>16 ) {
 									cy++; cx=6;
 									if ( cy>7 ) { (offset)+=4; cx=6; cy=7; }
 							}
-							break;
-					case 16:		// Ascii dump
-							offset+=1;
 							break;
 					default:
 							break;
@@ -1075,9 +1067,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( cy<2 ) { (offset)-=4; cy=2; }
 							if ( (cx==7) || (cx==10) || (cx==13) ) cx--;
 							break;
-					case 16:		// Ascii dump
-							offset-=dumpflg;
-							break;
 					default:
 							break;
 				}
@@ -1120,9 +1109,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							cy++;
 							if ( cy>7 ) { (offset)+=4; cy=7; }
 							if ( (cx==7) || (cx==10) || (cx==13) ) cx--;
-							break;
-					case 16:		// Ascii dump
-							offset+=dumpflg;
 							break;
 					default:
 							break;
@@ -1233,10 +1219,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 								EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
 								ClipBuffer[63]='\0';
-								i=SearchForText(  SrcBase, ClipBuffer, &csrPtr) ;
+								i=SearchForText(  SrcBase, ClipBuffer, &csrPtr ) ;
 							} else {
-								searchbuf[0]='\0';
-								i=SearchForText(  SrcBase, searchbuf, &csrPtr) ;
+//								searchbuf[0]='\0';
+								i=SearchForText(  SrcBase, searchbuf, &csrPtr ) ;
 							}
 							if ( i ) SearchMode=1; 
 							else	 SearchMode=0;
@@ -1367,7 +1353,7 @@ int CB_BreakStop() {
 	int stat;
 	int scrmode=ScreenMode;
 
-	if ( BreakPtr == -9999) return BreakPtr;
+	if ( BreakPtr == -9999) return BreakPtr;	// stack error
 
 	Bdisp_PutDisp_DD();
 	CB_SelectTextVRAM();	// Select Text Screen
@@ -1426,10 +1412,12 @@ int CB_BreakStop() {
 }
 
 //----------------------------------------------------------------------------------------------
-//int eObjectAlign4( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
-//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //int edeitdummy(int x, int y){

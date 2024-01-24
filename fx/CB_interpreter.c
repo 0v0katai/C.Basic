@@ -64,6 +64,9 @@ char TimeDsp=0;		// Execution Time Display  0:off 1:on
 char MatXYmode=0;		// 0: normal  1:reverse
 char PictMode=1;	// StoPict/RclPict  StrageMem:0  heap:1
 char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
+
+char  RefreshCtrl=1;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
+char  Refreshtime=2;	// Refresh time  n/128
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
@@ -494,6 +497,14 @@ int CB_interpreter_sub( char *SRC ) {
 //						CB_Poke(SRC);
 //						dspflag=0;
 //						break;
+					case 0xFFFFFFF9:	// RefreshCtrl
+						CB_RefreshCtrl(SRC);
+						dspflag=0;
+						break;
+					case 0xFFFFFFFA:	// RefreshTime
+						CB_RefreshTime(SRC);
+						dspflag=0;
+						break;
 					case 0xFFFFFFFB:	// Screen
 						CB_Screen(SRC);
 						dspflag=0;
@@ -2246,6 +2257,30 @@ void CB_SelectGraphVRAM() {
 //	Bdisp_PutDisp_DD();
 //}
 
+void CB_RefreshCtrl( char *SRC ){	// PutDispDD Refresh control
+	int c,n;
+	switch ( CB_EvalInt( SRC ) ) {
+		case 0:
+			RefreshCtrl=0;	// off
+			break;
+		case 1:
+			RefreshCtrl=1;	// graphics only
+			break;
+		case 2:
+			RefreshCtrl=2;	// all
+			break;
+		default:
+			CB_Error(ArgumentERR);	// Argument error
+	}
+}
+void CB_RefreshTime( char *SRC ){	// PutDispDD Refresh time
+	int c,n;
+	n=CB_EvalInt( SRC );
+	if ( ( 2<=n ) && ( n<=128 ) ) Refreshtime=n-1; 
+	else 
+	{ CB_Error(ArgumentERR); return; }	// Argument error
+}
+
 void CB_Screen( char *SRC ){
 	int c;
 	c=SRC[ExecPtr++];
@@ -2327,7 +2362,7 @@ void CB_ClrText( char *SRC ){
 	CursorX=1;
 	CursorY=1;
 	Bdisp_AllClr_VRAM();
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 }
 void CB_ClrGraph( char *SRC ){
 	CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -2666,7 +2701,7 @@ void CB_Locate( char *SRC ){
 	}
 	if ( CB_LocateMode(SRC) ) CB_PrintRev( lx,ly, (unsigned char*)buffer );
 	else 		   			  CB_Print( lx,ly, (unsigned char*)buffer );
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 }
 //-----------------------------------------------------------------------------
 int RangeErrorCK( char *SRC ) {
@@ -2729,7 +2764,7 @@ void CB_Text( char *SRC ) { //	Text
 	}
 	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode);
 		else 	       PrintMini( px, py, (unsigned char*)buffer, mode);
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 }
 //-----------------------------------------------------------------------------
 void CB_LocateYX( char *SRC ){
@@ -2756,7 +2791,8 @@ void CB_LocateYX( char *SRC ){
 		sprintGR(buffer, value, d,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 	}
 	CB_PrintXY(  px,py, (unsigned char*)buffer, CB_LocateMode(SRC));	
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
+
 }
 //----------------------------------------------------------------------------------------------
 
@@ -3059,7 +3095,7 @@ void CB_StoPict( char *SRC ) { //	StoPict
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	if ( PictMode ) StoPictM(n); else StoPict(n);
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 void CB_RclPict( char *SRC ) { //	RclPict
 	int n;
@@ -3067,7 +3103,7 @@ void CB_RclPict( char *SRC ) { //	RclPict
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	if ( PictMode ) RclPictM(n); else RclPict(n);
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 
 

@@ -657,7 +657,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 			i++;
 		}
 		if ( buffer[0]=='\0' ) CursorX=22;
-		Bdisp_PutDisp_DD_DrawBusy_through( SRC );
+		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 	}
 }
 
@@ -1130,7 +1130,7 @@ void CB_Fkey( char *SRC) {
 		}
 	}
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	Bdisp_PutDisp_DD_DrawBusy_through(SRC);
+	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 }
 
 //----------------------------------------------------------------------------------------------

@@ -517,6 +517,12 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					result = Bdisp_GetPoint_VRAM(x, y) ;			// 
 					return result ;
 			} else
+			if ( c == 0xFFFFFFF9 ) {	// RefreshTime
+					return  Refreshtime+1;
+			} else
+			if ( c == 0xFFFFFFFA ) {	// RefreshCtrl
+					return  RefreshCtrl;
+			} else
 			if ( c == 0xFFFFFFFB ) {	// Screen
 					return  ScreenMode;
 			} else

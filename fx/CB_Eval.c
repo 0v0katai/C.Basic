@@ -444,7 +444,7 @@ double Eval_atof(char *SRC, int c) {
 			}
 		}
 		lblexp:
-		if ( ( c == 0x0F  ) || ( c == 'E'  ) || ( c == 'e'  ) ){ // exp
+		if ( ( c == 0x0F  ) || ( c == 'e'  ) ){ // exp
 				c=SRC[++ExecPtr];
 				if ( ( c == 0xFFFFFF89 ) || ( c == '+'  ) ) c=SRC[++ExecPtr];
 				if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) { sign=-1; c=SRC[++ExecPtr]; }	// (-) & -
@@ -654,6 +654,12 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result = PxlTest(y, x) ;			// 
 					return result ;
+			} else
+			if ( c == 0xFFFFFFF9 ) {	// RefreshTime
+					return  Refreshtime+1;
+			} else
+			if ( c == 0xFFFFFFFA ) {	// RefreshCtrl
+					return  RefreshCtrl;
 			} else
 			if ( c == 0xFFFFFFFB ) {	// Screen
 					return  ScreenMode;

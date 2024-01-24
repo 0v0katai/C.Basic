@@ -73,7 +73,7 @@ void DrawBusy()		// BusyInd=0: running indicator off,  BusyInd=1: on
 */
 
 //-----------------------------------------------------------------------------
-unsigned int skip_count=0;
+int skip_count=0;
 
 void Bdisp_PutDisp_DD_DrawBusy() {
 	Bdisp_PutDisp_DD();
@@ -82,7 +82,7 @@ void Bdisp_PutDisp_DD_DrawBusy() {
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip() {
 	unsigned int t=RTC_GetTicks();
-	if ( abs(t-skip_count)>2 ) { skip_count=t;
+	if ( abs(t-skip_count)>Refreshtime ) { skip_count=t;		// 128/3=42  1/42s
 		Bdisp_PutDisp_DD_DrawBusy();
 	}
 }
@@ -92,18 +92,32 @@ void Bdisp_PutDisp_DD_DrawBusy_skip() {
 //	ExecPtr--;
 //	Bdisp_PutDisp_DD_DrawBusy();
 //}
-void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
-	unsigned char c=SRC[ExecPtr++];
+//void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
+//	char c=SRC[ExecPtr++];
+//	if ( c == ':' ) return ;
+//	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
+//	ExecPtr--;
+//	Bdisp_PutDisp_DD_DrawBusy();
+//}
+void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) {	// Locate text Clrtext ""...
+	char c=SRC[ExecPtr++];
 	if ( c == ':' ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
-	Bdisp_PutDisp_DD_DrawBusy();
+	if ( RefreshCtrl == 2 ) 	// refresh control 
+			Bdisp_PutDisp_DD_DrawBusy_skip();
+	else
+			Bdisp_PutDisp_DD_DrawBusy();
 }
-void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) {
-	unsigned char c;
-	if ( SRC[ExecPtr++] == ':' ) return ;
+void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) {	// graphics command
+	char c=SRC[ExecPtr++];
+	if ( c == ':' ) return ;
+	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
-	Bdisp_PutDisp_DD_DrawBusy_skip();
+	if ( RefreshCtrl == 0 ) 	// refresh control 
+			Bdisp_PutDisp_DD_DrawBusy();
+	else
+			Bdisp_PutDisp_DD_DrawBusy_skip();
 }
 //------------------------------------------------------------------------------
 double MOD(double numer, double denom) {

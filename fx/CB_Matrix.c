@@ -53,7 +53,8 @@ char * MatrixPtr( int reg, int m, int n ){		// base:0  0-    base:1 1-
 	n-=base;
 	switch ( MatAry[reg].ElementSize ) {
 		case  2:	// Vram
-			m++; n++;
+			m+=base;
+			n+=base;
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;
 			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>3)*n+(m>>3));
@@ -1240,13 +1241,15 @@ void CB_MatrixInit2Str( char *SRC ) { //	["ABCD","12345","XYZ"]->Mat A[.B]
 	ExecPtr++;
 	exptr=ExecPtr;
 	m=1;
+	SkipSpcCR(SRC);
 	while ( 1 ) {
 		len=MatGetOpcode(SRC, buffer, 128);
 		if ( len > maxlen ) maxlen=len;
-		c =SRC[ExecPtr];
+		c=SkipSpcCR(SRC);
 		if ( c == ']' ) break;
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-		c =SRC[++ExecPtr];
+		ExecPtr++;
+		c=SkipSpcCR(SRC);
 		if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		SkipSpcCR(SRC);
@@ -1270,10 +1273,11 @@ void CB_MatrixInit2Str( char *SRC ) { //	["ABCD","12345","XYZ"]->Mat A[.B]
 		len=MatGetOpcode(SRC, buffer, 128);
 		cptr=MatrixPtr( reg, m, 1 );
 		strncpy(cptr, buffer, len);
-		c =SRC[ExecPtr];
+		c=SkipSpcCR(SRC);
 		if ( c == ']' ) break;
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-		c =SRC[++ExecPtr];
+		ExecPtr++;
+		c=SkipSpcCR(SRC);
 		if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		SkipSpcCR(SRC);
@@ -1298,14 +1302,16 @@ void CopyMatrix( int reg2, int reg ) {	// reg -> reg2
 	int ElementSize,ElementSize2;
 	int base,base2;
 	
-	ElementSize  = MatAry[reg ].ElementSize; if ( ElementSize  == 2 ) ElementSize  == 1;
-	ElementSize2 = MatAry[reg2].ElementSize; if ( ElementSize2 == 2 ) ElementSize2 == 1;
 	sizeA        = MatAry[reg ].SizeA;
 	sizeA2       = MatAry[reg2].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
 	sizeB2       = MatAry[reg2].SizeB;
 	base         = MatAry[reg ].Base;
 	base2        = MatAry[reg2].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+	if ( ElementSize  == 2 ) ElementSize  == 1+base;
+	ElementSize2 = MatAry[reg2].ElementSize;
+	if ( ElementSize2 == 2 ) ElementSize2 == 1+base2;
 
 	if ( base < base2 ) { CB_Error(ArraySizeERR); return; }	// Illegal Ary size
 	
@@ -1589,7 +1595,7 @@ int CB_Call( char *SRC ) {	// Call(adrs,p1,p2,p3,p4)
 }
 */
 //-----------------------------------------------------------------------------
-//int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 

@@ -643,6 +643,8 @@ const short oplistVARS[]={
 		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
+		0xF7F9,	// RefreshCtrl
+		0xF7FA,	// RefreshTime
 		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
 		0xF7FD, // FKey(
@@ -972,8 +974,8 @@ const short oplistCMD[]={
 		0xF7D2,	// AxesOff
 		0xF7C4,	// LabelOn
 		0xF7D4,	// LabelOff
-		0x23,	// #
-		0x25,	// %
+		0xF7F9,	// RefreshCtrl
+		0xF7FA,	// RefreshTime
 		
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
@@ -1287,6 +1289,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7F1, "Local " }, 
 //	{ 0xF7F5, "Call " }, 
 //	{ 0xF7F6, "Poke(" }, 
+	{ 0xF7F9, "RefrshCtrl " }, 
+	{ 0xF7FA, "RefrshTime " }, 
 	{ 0xF7FB, "Screen" }, 
 	{ 0xF7FC, "PutDispDD" }, 
 	{ 0xF7FD, "FKeyMenu(" }, 
@@ -1439,6 +1443,7 @@ int selectCMD=0;
 int selectOPTN=0;
 int selectVARS=0;
 int selectPRGM=0;
+char lowercase=0;
 
 int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
 	char buffer2[128];
@@ -1451,7 +1456,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	int offsetX=0;	// offsetX:  buffer offset for display
 	int length;		// buffer length (<MaxStrlen)
 	int csrwidth;	// 
-	int lowercase=0, CursorStyle;
+	int CursorStyle;
 	int key2,multibyte=0;	// 0:mono   non 0:multi
 	int dspX;
 	int oplen,oplenL,oplenR;

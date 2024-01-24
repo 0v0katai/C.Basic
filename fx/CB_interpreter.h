@@ -34,6 +34,8 @@ extern char TimeDsp;
 extern char MatXYmode;
 extern char PictMode;	// StoPict/RclPict  StrageMem:0  heap:1
 extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
+extern char RefreshCtrl;	// 0:no refresh   1: GrphicsCMD refresh     2: all refresh
+extern char Refreshtime;	// Refresh time  n/128
 
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
@@ -274,6 +276,8 @@ void PlotXYtoPrevPXY() ;
 void PlotPreviousPXY() ;
 void PlotCurrentXY();
 
+void CB_RefreshCtrl( char *SRC );	// PutDispDD Refresh control
+void CB_RefreshTime( char *SRC );	// PutDispDD Refresh time
 void CB_Screen( char *SRC );
 void CB_ViewWindow( char *SRC ) ; //	ViewWindow
 void CB_FLine( char *SRC) ; //	F-Line
@@ -306,7 +310,4 @@ void CB_DotGet( char *SRC );	// DotGet(px1,py1, px2,py2)->Mat B [x,y]
 void CB_DotPut( char *SRC );	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 void CB_DotTrim( char *SRC );	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 void CB_DotLife( char *SRC ) ;
-
-double CB_BinaryEval( char *SRC ) ;	// eval 2
-double CB_UnaryEval( char *SRC ) ;	// eval 1
 

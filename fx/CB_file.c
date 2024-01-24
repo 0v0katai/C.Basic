@@ -27,15 +27,18 @@
 #define FOLDERMAX 9
 #define N_LINE 6
 
+#define FOLDER_FLAG -1
+#define FOLDER_SEPALATOR -2
+
 typedef struct{
 	char filename[FILENAMEMAX];
 	char folder[FOLDERMAX];
-	unsigned short filesize;
+	int filesize;
 }Files;
 
 #define FavoritesMAX 7
 
-static Files *files;
+static Files *files = NULL;
 static int index = 0;
 
 static int ReadFile( char *folder );
@@ -60,7 +63,10 @@ unsigned int SelectFile (char *filename)
 	while( 1 ){
 		if ( FileListUpdate  ) {
 			MSG1("File Reading.....");
-			size = ReadFile( folder );
+			if ( ( UseHiddenRAM == 0 ) && ( files != NULL ) ) {
+				free( files );	// *file free
+			}
+ 			size = ReadFile( folder );
 			qsort( files, size, sizeof(Files), FileCmp );
 		}
 		key = Explorer( size, folder ) ;
@@ -77,7 +83,7 @@ unsigned int SelectFile (char *filename)
 			index = 0;
 			SaveConfig();
 		} else
-		if( files[index].filesize == 0xFFFF ){				//folder
+		if( files[index].filesize == FOLDER_FLAG ){				//folder
 			strcpy( folder, files[index].filename );
 			index = 0;
 			FileListUpdate = 1 ;
@@ -98,11 +104,11 @@ unsigned int SelectFile (char *filename)
 	return key ;
 }
 
-void FileListfree() {
-	if ( FileListUpdate ) {
-		if ( UseHiddenRAM == 0 ) if ( files != NULL ) free( files );
-	}
-}
+//void FileListfree() {
+//	if ( FileListUpdate ) {
+//		if ( UseHiddenRAM == 0 ) if ( files != NULL ) free( files );
+//	}
+//}
 
 void Abort(){		// abort program
 	unsigned int key;
@@ -148,7 +154,7 @@ static int ReadFile( char *folder )
 			FontToChar(find_name, str);
 			strncpy( files[i].filename, str, FILENAMEMAX);
 			strncpy( files[i].folder, folder, FOLDERMAX);
-			files[i].filesize = (file_info.type == DT_DIRECTORY ? -1 : file_info.dsize);
+			files[i].filesize = (file_info.type == DT_DIRECTORY ? FOLDER_FLAG : file_info.dsize);
 			++i;
 		}
 		while(Bfile_FindNext(find_h, find_name, &file_info)==0)
@@ -157,7 +163,7 @@ static int ReadFile( char *folder )
 				FontToChar(find_name,str);
 				strncpy( files[i].filename, str, FILENAMEMAX);
 				strncpy( files[i].folder, folder, FOLDERMAX);
-				files[i].filesize = (file_info.type == DT_DIRECTORY ? -1 : file_info.dsize);
+				files[i].filesize = (file_info.type == DT_DIRECTORY ? FOLDER_FLAG : file_info.dsize);
 				++i;
 			}
 		}
@@ -171,14 +177,14 @@ static int ReadFile( char *folder )
 
 //--------------------------------------------------------------
 void DeleteFavorites( int i ) {	// i:index
-	files[i].filesize = 0;
-	memset( Favoritesfiles[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
-	while ( i > 0 ) {	// space adjust
-		files[i].filesize = files[i-1].filesize ;
-		files[i-1].filesize = 0;
-		strncpy( files[i].filename, files[i-1].filename, FILENAMEMAX );
-		strncpy( files[i].folder,   files[i-1].folder,   FOLDERMAX );
-		memset( Favoritesfiles[i-1].filename, 0x00, FILENAMEMAX +FOLDERMAX );
+	while ( i >= 0 ) {	// space adjust
+		files[i].filesize = 0;
+		memset( files[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
+		if ( i ) {
+			files[i].filesize = files[i-1].filesize ;
+			strncpy( files[i].filename, files[i-1].filename, FILENAMEMAX );
+			strncpy( files[i].folder,   files[i-1].folder,   FOLDERMAX );
+		}
 		i--;
 	}
 	SaveFavorites();
@@ -186,8 +192,11 @@ void DeleteFavorites( int i ) {	// i:index
 
 void FavoritesFunc( int *index ) {
 	char tmpname[FILENAMEMAX];
-	int i;
-	if ( files[(*index)].filesize == 0 ) return;
+	int i=(*index);
+	if ( files[i].filesize == 0 ) {
+		if ( i < FavoritesMAX ) DeleteFavorites( i ) ;
+		return;
+	}
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
 		if ( strcmp( files[i].filename,  files[(*index)].filename )== 0 ) 
@@ -281,19 +290,19 @@ unsigned int Explorer( int size, char *folder )
 			strncpy( files[i].folder,   Favoritesfiles[i].folder,   FOLDERMAX );
 			files[i].filesize = Favoritesfiles[i].filesize ;
 		}
-		files[FavoritesMAX].filesize = 0xFFFE;	// separator
+		files[FavoritesMAX].filesize = FOLDER_SEPALATOR;	// separator
 		
 		if ( renamename[0] != '\0' ) {
 			if ( index > FavoritesMAX ) s=FavoritesMAX; else s=0;
 			for ( k=s; k<size; k++ ) {
-				if ( files[k].filesize != -1 ) {
+				if ( files[k].filesize != FOLDER_FLAG ) {
 					if ( strncmp( files[k].filename,  renamename  ,  strlen(renamename  ) ) == 0 )
 					if ( strncmp( files[k].folder  ,  renamefolder,  strlen(renamefolder) ) == 0 ) { index=k; break; } // rename name matching
 				}
 			}
 		}
 	}
-	FileListUpdate = 0 ;
+	FileListUpdate = 0 ;	// 1:update
 	renamename[0] = '\0';
 	renamefolder[0] = '\0';
 
@@ -304,7 +313,8 @@ unsigned int Explorer( int size, char *folder )
 			if ( files[i].filesize ) FavCount++;
 		}
 		StartLine=FavoritesMAX - FavCount; 
-		if ( FavCount == 0 ) StartLine++; else {
+		if ( FavCount == 0 ) StartLine++; 
+		else {
 			if ( redrawsubfolder==0 ) if ( strlen(folder) ) { index=FavoritesMAX +1; top=index-1; redrawsubfolder=1; }
 		}
 
@@ -354,10 +364,10 @@ unsigned int Explorer( int size, char *folder )
 				if( files[i + top].filesize == 0 ) {
 					sprintf( buf, "---------------------");
 				} else
-				if ( files[i + top].filesize == 0xFFFE ) {
+				if ( files[i + top].filesize == FOLDER_SEPALATOR ) {
 					sprintf( buf, "------Favorites------");
 				} else
-				if( files[i + top].filesize == 0xFFFF ) {
+				if( files[i + top].filesize == FOLDER_FLAG ) {
 					sprintf( buf, " [%s]", files[i + top].filename );
 				} else {
 					strncpy( buf2, files[i + top].filename, FILENAMEMAX );
@@ -392,7 +402,7 @@ unsigned int Explorer( int size, char *folder )
 				PrintXY( 120, N_LINE*8, (unsigned char*)"\xE6\x93" , top + N_LINE - 1 == index );
 		}
 
-		Isfolder= ( files[index].filesize == 0xFFFF ) ;
+		Isfolder= ( files[index].filesize == FOLDER_FLAG ) ;
 		
 		GetKey(&key);
 		if ( KEY_CTRL_XTT  == key ) key='A';
@@ -424,7 +434,7 @@ unsigned int Explorer( int size, char *folder )
 		if ( ( 'A' <= key ) && ( key <= 'Z' ) ) {
 			i=FavoritesMAX;
 			while ( i<size ) {
-				if ( files[i].filesize == 0xFFFF ) i++;
+				if ( files[i].filesize == FOLDER_FLAG ) i++;
 				else if ( files[i].filename[0]==key ) {
 						index = i;
 						top = index;
@@ -438,14 +448,14 @@ unsigned int Explorer( int size, char *folder )
 				do {
 					if( --index < StartLine  )
 						index = size - 1;
-				} while ( files[index].filesize == 0xFFFE ) ;
+				} while ( files[index].filesize == FOLDER_SEPALATOR ) ;
 				break;
 			case KEY_CTRL_DOWN:
 				if ( nofile ) break;
 				do {
 					if( ++index > size - 1 )
 						index = StartLine ;
-				} while ( files[index].filesize == 0xFFFE ) ;
+				} while ( files[index].filesize == FOLDER_SEPALATOR ) ;
 				break;
 			case KEY_CTRL_EXE:
 				if ( filemode != 0 ) break;
@@ -541,7 +551,7 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispR( 2, "V-W");
 				Fkey_Clear( 3 );
 				Fkey_Clear( 4 );
-				sprintf( buffer, "[%d]", size-FavoritesMAX-1); PrintMini(12*6, 7*8+2, buffer , MINI_OVER);  // number of file 
+				sprintf( buffer, "[%d]", size-FavoritesMAX-1); PrintMini(12*6, 7*8+2, (unsigned char*)buffer , MINI_OVER);  // number of file 
 //				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
 //				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
 				Fkey_dispN( 5, "Debg");
@@ -549,8 +559,9 @@ unsigned int Explorer( int size, char *folder )
 				switch (key) {
 					case KEY_CHAR_POWROOT:
 							key=FileCMD_Prog;
-					case KEY_CTRL_EXIT:
+//					case KEY_CTRL_EXIT:
 					case KEY_CTRL_QUIT:
+							FileListUpdate = 1 ; // 
 							cont =0 ;
 							break;
 					case KEY_CTRL_SETUP:
@@ -620,11 +631,11 @@ static int FileCmp( const void *p1, const void *p2 )
 	Files *f1 = (Files *)p1;
 	Files *f2 = (Files *)p2;
 
-	if( f1->filesize == 0xFFFF && f2->filesize == 0xFFFF )
+	if( f1->filesize == FOLDER_FLAG && f2->filesize == FOLDER_FLAG )
 		return strcmp( f1->filename + 1, f2->filename + 1);
-	else if( f1->filesize == 0xFFFF )
+	else if( f1->filesize == FOLDER_FLAG )
 		return 1;
-	else if( f2->filesize == 0xFFFF )
+	else if( f2->filesize == FOLDER_FLAG )
 		return -1;
 	else
 		return strcmp( f1->filename, f2->filename );
@@ -1249,9 +1260,14 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 void SaveFavorites(){
 	int i;
 	for( i=0; i<FavoritesMAX; i++){			//	backup Favorites list
+		if ( files[i].filesize == 0 ) {
+			memset(  Favoritesfiles[i].filename, 0x00, FILENAMEMAX +FOLDERMAX );
+			Favoritesfiles[i].filesize = 0;
+		} else {
 			strncpy( Favoritesfiles[i].filename, files[i].filename, FILENAMEMAX );
 			strncpy( Favoritesfiles[i].folder,   files[i].folder,   FOLDERMAX );
 			Favoritesfiles[i].filesize = files[i].filesize;
+		}
 	}
 	SaveConfig();
 }
@@ -1295,8 +1311,8 @@ void SaveConfig(){
 	buffer[11]='n';
 
 	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=UseHiddenRAM;
-	bufshort[ 9]=DrawType;			bufshort[ 8]=0;
-	bufshort[11]=Coord;				bufshort[10]=0;
+	bufshort[ 9]=DrawType;			bufshort[ 8]=RefreshCtrl;
+	bufshort[11]=Coord;				bufshort[10]=Refreshtime;
 	bufshort[13]=Grid;				bufshort[12]=0;
 	bufshort[15]=Axes;				bufshort[14]=0;
 	bufshort[17]=Label;				bufshort[16]=0;
@@ -1379,8 +1395,8 @@ void LoadConfig(){
 		 ( buffer[11]=='n' ) ) {
 									// load config & memory
 		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =bufshort[6];
-		DrawType      =bufshort[ 9];        
-		Coord         =bufshort[11];        
+		DrawType      =bufshort[ 9];        RefreshCtrl   =bufshort[8];
+		Coord         =bufshort[11];        Refreshtime   =bufshort[10]; if ( Refreshtime == 0 ) Refreshtime = 2;
 		Grid          =bufshort[13];        
 		Axes          =bufshort[15];        
 		Label         =bufshort[17];        
@@ -1388,7 +1404,7 @@ void LoadConfig(){
 		S_L_Style     =bufshort[21];        
 		Angle         =bufshort[23];        
 		BreakCheck    =bufshort[25];        
-		TimeDsp       =bufshort[27];        PageUpDownNum=bufshort[26];  if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
+		TimeDsp       =bufshort[27];        PageUpDownNum =bufshort[26]; if ( PageUpDownNum < 1 ) PageUpDownNum = PageUpDownNumDefault;
 		MatXYmode     =bufshort[29];        MatBaseDefault=1-bufshort[28];
 		PictMode      =bufshort[31];        CheckIfEnd    =bufshort[30];
 
@@ -1847,10 +1863,48 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	SetSrcSize( SRC-0x56 , ExecPtr+0x56+1 );
 }
 
-//----------------------------------------------------------------------------------------------
-//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//---------------------------------------------------------------------------------------------- align dummy
+int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------
-
+//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+/*
+void FavoritesDowndummy( int *index ) {
+	int tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	files[(*index)].filesize=tmp;
+	(*index)++;
+	SaveFavorites();
+}
+*/
+//void FavoritesDowndummy2( int *index ) {
+//	int tmp;
+//	char tmpname[FILENAMEMAX];
+//	char tmpfolder[FOLDERMAX];
+//	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+//	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+//	tmp=files[(*index)+1].filesize;
+//	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+//	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+//	files[(*index)+1].filesize=files[(*index)].filesize;
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	files[(*index)].filesize=tmp;
+//	(*index)++;
+//	SaveFavorites();
+//}
