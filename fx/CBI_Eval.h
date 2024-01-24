@@ -50,6 +50,7 @@ int fpowint( int x, int y ) ;	// pow(x,y)
 int fpowrootint( int x, int y ) ;	// powroot(x,y)
 int flogabint( int x, int y ) ;	// flogab(x,y)
 int frandint() ;
+int frandIntint( int x, int y ) ;
 int fMODint( int x, int y ) ;	// fMODint(x,y)
 int fGCDint( int x, int y ) ;	// GCD(x,y)
 int fLCMint( int x, int y ) ;	// LCM(x,y)

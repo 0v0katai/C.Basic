@@ -372,57 +372,56 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int c;
 	int ptr=0;
-	while (1){
-		c = SRC[ExecPtr++];
-		buffer[ptr++]=c;
-		switch ( c ) {
-			case 0x00:	// <EOF>
-			case 0x22:	// "
-				buffer[--ptr]='\0' ;
-				return ptr;
-			case 0x5C:	//
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
-				buffer[ptr++]=SRC[ExecPtr++];
-				break;
-			default:
-				break;
+	c=SRC[ExecPtr-1];
+	if ( ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
+		while (1){
+			c = SRC[ExecPtr++];
+			buffer[ptr++]=c;
+			switch ( c ) {
+				case 0x00:	// <EOF>
+				case 0x22:	// "
+					buffer[--ptr]='\0' ;
+					return ptr;
+				case 0x5C:	//
+				case 0x7F:	// 
+				case 0xFFFFFFF7:	// 
+				case 0xFFFFFFF9:	// 
+				case 0xFFFFFFE5:	// 
+				case 0xFFFFFFE6:	// 
+				case 0xFFFFFFE7:	// 
+				case 0xFFFFFFFF:	// 
+					buffer[ptr++]=SRC[ExecPtr++];
+					break;
+				default:
+					break;
+			}
+			if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 		}
-		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
-	}
-	return ptr;
-}
-int CB_GetLocatetOpcode(char *SRC, char *buffer, int Maxlen) {
-	int c;
-	int ptr=0;
-	while (1){
-		c = SRC[ExecPtr++];
-		buffer[ptr++]=c;
-		switch ( c ) {
-			case 0x00:	// <EOF>
-			case 0x0D:	// <CR>
-			case 0x22:	// "
-				buffer[--ptr]='\0' ;
-				return ptr;
-			case 0x5C:	//
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
-				buffer[ptr++]=SRC[ExecPtr++];
-				break;
-			default:
-				break;
+	} else {
+		while (1){
+			c = SRC[ExecPtr++];
+			buffer[ptr++]=c;
+			switch ( c ) {
+				case 0x00:	// <EOF>
+				case 0x0D:	// <CR>
+				case 0x22:	// "
+					buffer[--ptr]='\0' ;
+					return ptr;
+				case 0x5C:	//
+				case 0x7F:	// 
+				case 0xFFFFFFF7:	// 
+				case 0xFFFFFFF9:	// 
+				case 0xFFFFFFE5:	// 
+				case 0xFFFFFFE6:	// 
+				case 0xFFFFFFE7:	// 
+				case 0xFFFFFFFF:	// 
+					buffer[ptr++]=SRC[ExecPtr++];
+					break;
+				default:
+					break;
+			}
+			if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 		}
-		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 	}
 	return ptr;
 }
@@ -579,7 +578,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 	return buffer;
 }
 
-char* CB_GetOpStr( char *SRC, int *maxoplen  ) {	// Get opcode String 
+char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String 
 	int c;
 	char *buffer;
 	char *CB_StrAddBuffer;

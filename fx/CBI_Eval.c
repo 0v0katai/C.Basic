@@ -317,20 +317,39 @@ int flogabint( int x, int y ) {	// flogab(x,y)
 int frandint() {
 	return rand();
 }
-
+int frandIntint( int x, int y ) {
+	int i;
+	if ( x>y ) { i=x; x=y; y=i; }
+	return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+}
 int fMODint( int x, int y ) {	// fMODint(x,y)
-	int tmp,tmp2,result;
-	tmp  = x;
-	tmp2 = y;
-	if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-	result= tmp-tmp/tmp2*tmp2;
-	if ( result == tmp2  ) result--;
-	if ( tmp < 0 ) {
-		result=abs(tmp2)-result;
-		if ( result == tmp2  ) result=0;
+	int result;
+	if ( y == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
+	result= x-x/y*y;
+	if ( result == y  ) result--;
+	if ( x < 0 ) {
+		result=abs(y)-result;
+		if ( result == y  ) result=0;
 	}
 	return result ;
 }
+
+int fGCDint( int x, int y ) {	// GCD(x,y)
+	int tmp;
+	if ( x<y ) { tmp=x; x=y; y=tmp; }
+	tmp=fMODint(x,y);
+	while( tmp != 0 ) {
+		x=y;
+		y=tmp;
+		tmp=fMODint(x,y);
+	}
+	return y;
+}
+int fLCMint( int x, int y ) {	// LCM(x,y)
+	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
+	return x/fGCDint(x,y)*y;
+}
+
 //-----------------------------------------------------------------------------
 int EvalIntObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
@@ -467,6 +486,13 @@ int Eval_atod(char *SRC, int c ) {
 	return result ;
 }
 //-----------------------------------------------------------------------------
+void Get2EvalInt( char *SRC, int *tmp, int *tmp2){
+	(*tmp) = EvalIntsubTop( SRC );
+	if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+	ExecPtr++;
+	(*tmp2) = EvalIntsubTop( SRC );
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+}
 
 int EvalIntsub1(char *SRC) {	// 1st Priority
 	int result,tmp,tmp2;
@@ -551,23 +577,21 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x6F :		// List6
 					reg=c+(32-0x6A); goto Listj;
 						
-				case 0x3A :		// MOD(a,b)
-					tmp = EvalIntsubTop( SRC );
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++;
-					tmp2 = EvalIntsubTop( SRC );
-					result= fMODint(tmp,tmp2);
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return result ;
+				case 0x3A :				// MOD(a,b)
+					Get2EvalInt( SRC, &tmp, &tmp2);
+					return fMODint(tmp,tmp2);
+					
+				case 0x3C :				// GCD(a,b)
+					Get2EvalInt( SRC, &tmp, &tmp2);
+					return fGCDint(tmp,tmp2);
+
+				case 0x3D :				// LCM(a,b)
+					Get2EvalInt( SRC, &tmp, &tmp2);
+					return fLCMint(tmp,tmp2);
 					
 				case 0xFFFFFF85 :		// logab(a,b)
-					tmp = EvalIntsubTop( SRC );
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++;
-					tmp2 = EvalIntsubTop( SRC );
-					result = flogab(tmp,tmp2);
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return result ;
+					Get2EvalInt( SRC, &tmp, &tmp2);
+					return flogabint(tmp,tmp2);
 
 				case 0xFFFFFFB3 :		// Not
 					return ( ! EvalIntsub5(SRC) ) ;
@@ -591,19 +615,14 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return	result ;
 					
 				case 0xFFFFFF87 :		// RanInt#(st,en)
-					x=(EvalIntsubTop( SRC ));
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++ ;	// ',' skip
-					y=(EvalIntsubTop( SRC ));
+					Get2EvalInt( SRC, &x, &y);
+					if ( SRC[ExecPtr] == ',' ) {
+						ExecPtr++;
+						CB_RanInt( SRC, x, y );
+					}
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-//					if ( x>=y ) CB_Error(ArgumentERR);  // Argument error
-					if ( x>y ) { i=x; x=y; y=i; }
-					return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+					return frandIntint( x, y ) ;
 
-				case 0xFFFFFF88 :		// RanList(n) ->ListAns
-					CB_RanList( SRC ) ;
-					return 4 ;
-					
 				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
 					if ( ErrorNo ) return ; // error
@@ -904,7 +923,10 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				case 0x40:	// Mat A[a,b]
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
+				case 0x3C:	// GCD(a,b)
+				case 0x3D:	// LCM(a,b)
 				case 0xFFFFFF8F:	// Getkey
+				case 0xFFFFFF85:	// logab(a,b)
 				case 0xFFFFFF86:	// RndFix(n,digit)
 				case 0xFFFFFF87:	// RanInt#(st,en)
 				case 0xFFFFFFB3 :	// Not

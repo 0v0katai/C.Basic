@@ -82,6 +82,8 @@ double flogab( double x, double y ) ;	// flogab(x,y)
 double frand() ;
 double fGCD( double x, double y ) ;	// GCD(x,y)
 double fLCM( double x, double y ) ;	// LCM(x,y)
+double fRanNorm( double sd, double mean) ;	// RanNorm#
+double fRanBin( double n, double p) ;	// RanBin#
 
 double Eval_atof(char *SRC, int c) ;
 double InputNumD_fullsub(int x, int y, int width, double defaultNum ) ;
@@ -111,6 +113,8 @@ double EvalsubTop(char *SRC);
 double CB_EvalDbl( char *SRC ) ;
 int RegVar( int c ) ;
 int ListRegVar( char *SRC ) ;	// return reg no
+void Get2Eval( char *SRC, double *tmp, double *tmp2);
+
 //-----------------------------------------------------------------------------
 void NewMatListAns( int dimA, int dimB, int base, int element );
 void DeleteMatListAns() ;

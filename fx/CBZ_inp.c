@@ -636,8 +636,10 @@ const short oplistOPTN[]={
 		0x7FB3,	// Not
 		0x7FB4,	// Xor
 		0xC1,	// Ran#
-		0x7F87,	// RanInt#(		
-		0x7F88,	// RanList#(		
+		0x7F87,	// RanInt#(	
+		0x7F8A,	// RanNorm#(	
+		0x7F89,	// RanBin#(	
+		0x7F88,	// RanList#(
 		
 		0xFFFF,	// 				-
 		0xBA,	// and
@@ -1199,6 +1201,8 @@ const short oplistCMD[]={		// 5800P like
 //											15
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
+		0x7F8A,	// RanNorm#(
+		0x7F89,	// RanBin#(	
 		0xD3,	// Rnd
 		0x7F86,	// RndFix(
 		0xD9,	// Norm
@@ -1207,8 +1211,8 @@ const short oplistCMD[]={		// 5800P like
 		0xDD,	// Eng
 		0xF90B,	// EngOn
 		0xF90C,	// EngOff
-		0x23,	// #
-		0x25,	// %
+//		0x23,	// #
+//		0x25,	// %
 
 //											16
 		0x9C,	// deg
@@ -1761,6 +1765,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F3D, "LCM(" }, 		// SDK emu not support
 	{ 0x7F87, "RanInt#(" }, 	// SDK emu not support
 	{ 0x7F88, "RanList#(" }, 	// SDK emu not support
+	{ 0x7F89, "RanBin#(" }, 	// SDK emu not support
+	{ 0x7F8A, "RanNorm#(" }, 	// SDK emu not support
 	{ 0x7F58, "ElemSize(" }, 
 	{ 0x7F59, "ColSize(" }, 
 	{ 0x7F5A, "RowSize(" }, 

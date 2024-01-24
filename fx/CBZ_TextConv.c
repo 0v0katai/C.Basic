@@ -1382,6 +1382,7 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 	int textofst=18;
 	char *opstr;
 	char flag=0;	// ' "
+	char quotflag=0;	// ""  no <CR>
 	
 	strncpy( text, cbasicstr,18);	// header
 	while ( cont ) {
@@ -1390,11 +1391,16 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 		if ( code == 0 ) break;
 
 		if ( ( code == 0x0D ) && ( flag == 0x27 ) ) flag=0;	// ' end
+		if ( ( code == 0x0D ) && ( flag == 0x22 ) && ( quotflag == 0 ) ) flag=0;	// " end
 		if ( code == 0x22 ) {	// "
-			if ( flag == 0x22 )  flag=0; // " end
-			else flag=code;	// "
+			if ( flag == 0x22 ) { flag=0; // " end
+			} else {
+				flag=0x22;	// "
+				c=srcbase[ofst-1];
+				if ( ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) quotflag=1; else quotflag=0;
+			}
 		}
-		if ( ( code == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=code;	// '
+		if ( ( code == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=0x27;	// '
 
 		if ( ( code != 0x21 ) && ( code != 0x2A ) && ( code != 0x2B ) && ( code != 0x2D ) && ( code != 0x2F ) && ( 0x20 <= code ) && ( code <= 0x7E ) ){
 				text[textofst++] = code;
@@ -1645,6 +1651,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	char *opstr;
 	char flag=0;	// ' "
 	char flag_=0;
+	char quotflag=0;	// ""  no <CR>
 
 	srcbase=filebase+0x56;
 	if ( strncmp( text, cbasicstr, 18 ) == 0 ) textofst+=18;
@@ -1657,17 +1664,21 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		flag_=0; 
 		if ( c==0 ) break;
 		if ( ( c==0x0D ) && ( text[textofst+1]==0x0A ) ) { 	// 0x0D 0x0A
-			if ( flag == 0x27 ) { flag=0; }	// ' end
+			if ( ( flag == 0x27 ) || ( ( flag == 0x22 ) && ( quotflag == 0 ) ) ) { flag=0; }	// ' end
 			srcbase[ofst++] = c;
 			textofst++;
 			textofst++;
 			goto tokenloop;
 		}
 		if ( c == 0x22 ) {	// "
-			if ( flag == 0x22 )  { flag=0; goto tokenskip; }	// " end
-			else flag=c;	// "
+			if ( flag == 0x22 )  { flag=0; goto tokenskip;	// " end
+			} else {
+				flag=0x22;	// "
+				d = text[textofst-1];
+				if ( ( d==' ' ) || ( d==0x0A ) || ( d==':' ) ) quotflag=1; else quotflag=0;
+			}
 		}
-		if ( ( c == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=c;	// '
+		if ( ( c == 0x27 ) && ( flag != 0x27 ) && ( flag != 0x22 ) ) flag=0x27;	// '
 		if ( flag ) {
 			if ( c!='_' ) {
 				if ( ( c!=0x0D ) && ( c!='+' ) && ( c!='-' ) && ( c!='*' ) && ( c!='/' ) && ( c!='!' ) && ( c!='^' ) ) goto tokenskip;

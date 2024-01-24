@@ -435,9 +435,9 @@ double fdegree( double x ) {	//	Rad,Grad ->Deg
 		case 0:	// Deg
 			return x;
 		case 1:	// Rad
-			return x*180./PI;
+			return x*(180./PI);
 		case 2:	// Grad
-			return x*180/200;
+			return x*(180/200);
 	}
 }
 double finvdegree( double x ) {	//	Deg -> Rad,Grad
@@ -445,17 +445,17 @@ double finvdegree( double x ) {	//	Deg -> Rad,Grad
 		case 0:	// Deg
 			return x;
 		case 1:	// Rad
-			return x*PI/180.;
+			return x*(PI/180.);
 		case 2:	// Grad
-			return x*200./180.;
+			return x*(200./180.);
 	}
 }
 double fgrad( double x ) {		//	Deg,Rad -> Grad
 	switch ( Angle ) { 
 		case 0:	// Deg
-			return x*180./200.;
+			return x*(180./200.);
 		case 1:	// Rad
-			return x*PI/200.;
+			return x*(PI/200.);
 		case 2:	// Grad
 			return x;
 	}
@@ -463,9 +463,9 @@ double fgrad( double x ) {		//	Deg,Rad -> Grad
 double finvgrad( double x ) {		//	Grad -> Deg,Rad
 	switch ( Angle ) { 
 		case 0:	// Deg
-			return x/200.*180.;
+			return x*(180./200.);
 		case 1:	// Rad
-			return x/200.*PI;
+			return x*(PI/200.);
 		case 2:	// Grad
 			return x;
 	}
@@ -474,21 +474,21 @@ double finvgrad( double x ) {		//	Grad -> Deg,Rad
 double fradian( double x ) {	//	Deg,Grad ->Rad
 	switch ( Angle ) { 
 		case 0:	// Deg
-			return x*PI/180.;
+			return x*(PI/180.);
 		case 1:	// Rad
 			return x;
 		case 2:	// Grad
-			return x*PI/200.;
+			return x*(PI/200.);
 	}
 }
 double finvradian( double x ) {	//	Rad -> Deg,Grad
 	switch ( Angle ) { 
 		case 0:	// Deg
-			return x*180/PI;
+			return x*(180./PI);
 		case 1:	// Rad
 			return x;
 		case 2:	// Grad
-			return x*200/PI;
+			return x*(200./PI);
 	}
 }
 double fsin( double x ) {
@@ -724,25 +724,29 @@ double fpowroot( double x, double y ) {	// powroot(x,y)
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
-double fMOD( double x, double y ) {	// fMOD(x,y)
+
+double fDIVcheck( double *x, double *y ) {	//
 	double tmp,tmp2,result;
-	tmp  = floor( x +.5);
-	tmp2 = floor( y +.5);
-	if ( tmp2 == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-	result= floor(fabs(fmod( tmp, tmp2 ))+.5);
-	if ( result == tmp2  ) result--;
-	if ( tmp < 0 ) {
-		result=fabs(tmp2)-result;
-		if ( result == tmp2  ) result=0;
+	(*x)  = floor( (*x) +.5);
+	(*y) = floor( (*y) +.5);
+	if ( (*y) == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
+}
+
+double fMOD( double x, double y ) {	// fMOD(x,y)
+	double result;
+	fDIVcheck( &x, &y );
+	result= floor(fabs(fmod( x, y ))+.5);
+	if ( result == y  ) result--;
+	if ( x < 0 ) {
+		result=fabs(y)-result;
+		if ( result == y  ) result=0;
 	}
 	return result ;
 }
 double fIDIV( double x, double y ) {	// (int)x / (int)y
-	double tmp,tmp2,result;
-	tmp  = floor( x +.5);
-	tmp2 = floor( y +.5);
-	if ( tmp2 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-	return floor((tmp/tmp2)+.5);
+	double result;
+	fDIVcheck( &x, &y );
+	return floor((x/y)+.5);
 }
 double flogab( double x, double y ) {	// flogab(x,y)
 	double base,tmp,result;
@@ -755,10 +759,46 @@ double flogab( double x, double y ) {	// flogab(x,y)
 double frand() {
 	return (double)rand()/(double)(RAND_MAX+1.0);
 }
+
+double fGCD( double x, double y ) {	// GCD(x,y)
+	double tmp;
+	if ( x<y ) { tmp=x; x=y; y=tmp; }
+	tmp=fMOD(x,y);
+	while( tmp != 0 ) {
+		x=y;
+		y=tmp;
+		tmp=fMOD(x,y);
+	}
+	return y;
+}
+double fLCM( double x, double y ) {	// LCM(x,y)
+	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
+	return x/fGCD(x,y)*y;
+}
+
+double fRanNorm( double sd, double mean) {	// RanNorm#
+	double a1,a2,b,g1;
+	do {
+		a1 = 2.0*(double)rand()/(double)RAND_MAX-1.0;
+		a2 = 2.0*(double)rand()/(double)RAND_MAX-1.0;
+		b = a1*a1+a2*a2;
+	} while ( b>=1.0 );
+	b = sqrt( ( -2.0*log(b) ) / b );
+	g1 = a1*b;
+	return g1*sd+mean;
+}
+double fRanBin( double n, double p) {	// RanBin#
+	double a;
+	int i,r,m=0;
+	if ( ( n > 1000000 ) || ( p < 0 ) || ( p > 1 ) ) { CB_Error(MathERR) ; return 0; } // Math error
+	r=(RAND_MAX+1.0)*p;
+	for ( i=0; i<n; i++ ) if ( rand() <= r ) m++;
+	return m;
+}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4f( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4ee( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4ff( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
@@ -811,6 +851,14 @@ double Eval_atof(char *SRC, int c) {
 }
 
 //-----------------------------------------------------------------------------
+
+void Get2Eval( char *SRC, double *tmp, double *tmp2){
+	(*tmp) = EvalsubTop( SRC );
+	if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+	ExecPtr++;
+	(*tmp2) = EvalsubTop( SRC );
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+}
 
 double Evalsub1(char *SRC) {	// 1st Priority
 	double result=0,tmp,tmp2;
@@ -898,23 +946,21 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x6F :		// List6
 					reg=c+(32-0x6A); goto Listj;
 						
-				case 0x3A :		// MOD(a,b)
-					tmp = EvalsubTop( SRC );
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++;
-					tmp2 = EvalsubTop( SRC );
-					result = fMOD(tmp,tmp2);
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return result ;
+				case 0x3A :				// MOD(a,b)
+					Get2Eval( SRC, &tmp, &tmp2);
+					return fMOD(tmp,tmp2);
+					
+				case 0x3C :				// GCD(a,b)
+					Get2Eval( SRC, &tmp, &tmp2);
+					return fGCD(tmp,tmp2);
+
+				case 0x3D :				// LCM(a,b)
+					Get2Eval( SRC, &tmp, &tmp2);
+					return fLCM(tmp,tmp2);
 					
 				case 0xFFFFFF85 :		// logab(a,b)
-					tmp = EvalsubTop( SRC );
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++;
-					tmp2 = EvalsubTop( SRC );
-					result = flogab(tmp,tmp2);
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return result ;
+					Get2Eval( SRC, &tmp, &tmp2);
+					return flogab(tmp,tmp2);
 					
 				case 0xFFFFFFB3 :		// Not
 					return ( Evalsub5( SRC ) == 0 ) ;
@@ -936,19 +982,23 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					} else	result = CB_Getkey() ;
 					return 	result ;
 					
-				case 0xFFFFFF87 :		// RanInt#(st,en)
-					x=EvalsubTop( SRC );
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					ExecPtr++ ;	// ',' skip
-					y=EvalsubTop( SRC );
+				case 0xFFFFFF87 :		// RanInt#(st,en[,n])
+					Get2Eval( SRC, &tmp, &tmp2);
+					x=tmp; y=tmp2;
+					if ( SRC[ExecPtr] == ',' ) {
+						ExecPtr++;
+						CB_RanInt( SRC, x, y );
+					}
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-//					if ( x>=y ) CB_Error(ArgumentERR);  // Argument error
-					if ( x>y ) { i=x; x=y; y=i; }
-					return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+					return frandIntint( x, y ) ;
 					
-				case 0xFFFFFF88 :		// RanList(n) ->ListAns
+				case 0xFFFFFF88 :		// RanList#(n) ->ListAns
 					CB_RanList( SRC ) ;
 					return 4 ;
+				case 0xFFFFFF89 :		// RanBin#(n,p[,m]) ->ListAns
+					return CB_RanBin( SRC ) ;
+				case 0xFFFFFF8A :		// RanNorm#(sd,mean[,n]) ->ListAns
+					return CB_RanNorm( SRC ) ;
 					
 				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
@@ -1252,7 +1302,7 @@ double DmsToDec( char *SRC, double h ) {	// 12"34"56 -> 12.5822222
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
@@ -1398,7 +1448,10 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x40:	// Mat A[a,b]
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
+				case 0x3C:	// GCD(a,b)
+				case 0x3D:	// LCM(a,b)
 				case 0xFFFFFF8F:	// Getkey
+				case 0xFFFFFF85:	// logab(a,b)
 				case 0xFFFFFF86:	// RndFix(n,digit)
 				case 0xFFFFFF87:	// RanInt#(st,en)
 				case 0xFFFFFFB3 :	// Not
@@ -1668,10 +1721,10 @@ double Eval(char *SRC) {		// Eval temp
 	double result;
 	int execptr=ExecPtr;
 	int oplen=strlenOp((char*)SRC);
-	if ( oplen == 0 ) return 0;
-	ExecPtr= 0;
 	ErrorPtr= 0;
 	ErrorNo = 0;
+	if ( oplen == 0 ) return 0;
+	ExecPtr= 0;
 	CB_StrBufferCNT=0;			// Quot String buffer clear
 	result = EvalsubTop( SRC );
 	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 

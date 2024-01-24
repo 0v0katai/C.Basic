@@ -388,8 +388,8 @@ void DispGenuineCmdMenu(){
 				case 0:
 					Fkey_Icon( FKeyNo1, 152 );	//	Fkey_dspRB( FKeyNo1, "Ran#");
 					Fkey_Icon( FKeyNo2, 158 );	//	Fkey_dspRB( FKeyNo2, "Int ");
-					FkeyClear( FKeyNo3 );
-					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo3,1108 );	//	Fkey_dspRB( FKeyNo2, "Norm");
+					Fkey_Icon( FKeyNo4, 504 );	//	Fkey_dspRB( FKeyNo2, "Bin ");
 					Fkey_Icon( FKeyNo5, 162 );	//	Fkey_dspRB( FKeyNo5, "List");
 					FkeyClear( FKeyNo6 );
 					break;

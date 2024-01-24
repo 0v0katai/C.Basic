@@ -100,6 +100,11 @@ int CB_MedianInt( char *SRC ) ;	// Median( List 1, List 2 )
 int CB_SumInt( char *SRC ) ;	// Sum( List 1 )
 int CB_ProdInt( char *SRC ) ;	// Prod( List 1 )
 
+void CB_RanList( char *SRC ) ;	// RanList#( 50 ) -> List Ans
+void CB_RanInt( char *SRC, int x, int y ) ;	// RanIntNorm#( st, en [,n] ) -> List Ans
+double CB_RanNorm( char *SRC ) ;	// RanNorm#( sd, mean [,n] ) -> List Ans
+double CB_RanBin( char *SRC ) ;	// RanBin#( n, p [,m] ) -> List Ans
+
 //-----------------------------------------------------------------------------
 double CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f
 int CB_PeekInt( char *SRC, int adrs ) ;	// Peek(123456).w
