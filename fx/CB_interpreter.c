@@ -1218,6 +1218,60 @@ void Skip_block( char *SRC ){
 	}
 }
 
+//----------------------------------------------------------------------------------------------
+void Skip_rem( char *SRC ){	// skip '...
+	int c=SRC[ExecPtr];
+	if ( c=='/' ) { 	// '/ execute C.Basic only
+		ExecPtr++;
+		return;
+	} else 
+	if ( c=='#' ) {
+		ExecPtr++;
+		if ( strncmp( (char*)SRC+ExecPtr,"CBint",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
+		if ( strncmp( (char*)SRC+ExecPtr,"CBINT",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
+		if ( strncmp( (char*)SRC+ExecPtr,"CBdbl",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
+		if ( strncmp( (char*)SRC+ExecPtr,"CBDBL",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
+		if ( strncmp( (char*)SRC+ExecPtr,"CBasic",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
+		if ( strncmp( (char*)SRC+ExecPtr,"CBASIC",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
+	}
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+//			case 0x3A:	// <:>
+			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				return ;
+				break;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+//			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+}
+void CB_Rem( char *SRC, CchRem *CacheRem ){
+	int i;
+	
+	for ( i=0; i<CacheRem->CNT; i++ ) {
+		if ( CacheRem->Ptr[i]==ExecPtr ) { ExecPtr=CacheRem->Adrs[i]; return ; }	// adrs ok
+	}
+	CacheRem->Ptr[CacheRem->CNT]=ExecPtr;
+	Skip_rem( SRC );
+	if ( CacheRem->CNT < RemCntMax ) {
+		CacheRem->Adrs[CacheRem->CNT]=ExecPtr;
+		CacheRem->CNT++;
+	} else CacheRem->CNT=0;	// over reset
+}
 //-----------------------------------------------------------------------------
 
 void CB_Lbl( char *SRC, short *StackGotoAdrs ){
@@ -1246,7 +1300,7 @@ int Search_Lbl( char *SRC, int lc ){
 				return 0 ;
 				break;
 			case 0x27:	// ' rem
-				Skip_block(SRC);
+				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFE2:	// Lbl
 				c=SRC[ExecPtr++];
@@ -1288,55 +1342,6 @@ void CB_Goto( char *SRC, short *StackGotoAdrs){
 	} else  ExecPtr = ptr ;
 }
 
-//----------------------------------------------------------------------------------------------
-void Skip_rem( char *SRC ){	// skip '...
-	int c;
-	while (1){
-		c=SRC[ExecPtr++];
-		if ( c=='#' ) {
-			if ( strncmp( (char*)SRC+ExecPtr,"CBint",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBINT",5)  == 0 ) { ExecPtr+=5; CB_INT=1; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBdbl",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBDBL",5)  == 0 ) { ExecPtr+=5; CB_INT=0; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBasic",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
-			if ( strncmp( (char*)SRC+ExecPtr,"CBASIC",6) == 0 ) { ExecPtr+=6; CB_INT=0; }
-		} else 
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-//			case 0x3A:	// <:>
-			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
-				return ;
-				break;
-			case 0x22:	// "
-				Skip_quot(SRC);
-				break;
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
-		}
-	}
-}
-void CB_Rem( char *SRC, CchRem *CacheRem ){
-	int i;
-	
-	for ( i=0; i<CacheRem->CNT; i++ ) {
-		if ( CacheRem->Ptr[i]==ExecPtr ) { ExecPtr=CacheRem->Adrs[i]; return ; }	// adrs ok
-	}
-	CacheRem->Ptr[CacheRem->CNT]=ExecPtr;
-	Skip_rem( SRC );
-	if ( CacheRem->CNT < RemCntMax ) {
-		CacheRem->Adrs[CacheRem->CNT]=ExecPtr;
-		CacheRem->CNT++;
-	} else CacheRem->CNT=0;	// over reset
-}
 
 //-----------------------------------------------------------------------------
 void Search_IfEnd( char *SRC ){
@@ -1348,7 +1353,7 @@ void Search_IfEnd( char *SRC ){
 				ExecPtr--;
 				return ;
 			case 0x27:	// ' rem
-				Skip_block(SRC);
+				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				c=SRC[ExecPtr++];
@@ -1379,7 +1384,7 @@ void Search_ElseIfEnd( char *SRC ){
 				ExecPtr--;
 				return ;
 			case 0x27:	// ' rem
-				Skip_block(SRC);
+				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				c=SRC[ExecPtr++];
@@ -1410,7 +1415,8 @@ void CB_If( char *SRC, CchIf *CacheIf ){
 	else		value = CB_Eval( SRC ) ;
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  c=SRC[++ExecPtr];
-	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x01 ) ) { CB_Error(SyntaxERR); return; } // not Then error 
+	if ( c == 0x27 ) if ( SRC[++ExecPtr]=='/' )  c=SRC[++ExecPtr];
+	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x01 ) ) { CB_Error(ThenWithoutIfERR); return; } // not Then error 
 	ExecPtr+=2 ;
 	if ( value ) return ; // true
 	
@@ -1503,7 +1509,7 @@ int Search_Next( char *SRC ){
 				ExecPtr--;
 				return 0 ;
 			case 0x27:	// ' rem
-				Skip_block(SRC);
+				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				if ( SRC[ExecPtr] == 0x04 ) { ExecPtr++;				// For
@@ -1532,7 +1538,7 @@ int Search_WhileEnd( char *SRC ){
 				ExecPtr--;
 				return 0 ;
 			case 0x27:	// ' rem
-				Skip_block(SRC);
+				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				if ( SRC[ExecPtr] == 0x08 ) { ExecPtr++;				// While
@@ -1561,7 +1567,7 @@ int Search_LpWhile( char *SRC ){
 				ExecPtr--;
 				return 0 ;
 			case 0x27:	// ' rem
-				Skip_block(SRC);
+				Skip_rem(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
 				if ( SRC[ExecPtr] == 0x0A ) { ExecPtr++;				// Do
@@ -2889,6 +2895,7 @@ int CB_interpreter_sub( char *SRC ) {
 	int cont=1;
 	int i;
 	int c;
+	int dspflagtmp=0;
 	
 	short StackGotoAdrs[StackGotoMax];
 
@@ -2914,6 +2921,7 @@ int CB_interpreter_sub( char *SRC ) {
 //	UseGraphic=0;
 
 	while (cont) {
+		dspflagtmp=0;
 		if ( ErrorNo  ) return ErrorPtr;
 		if ( BreakPtr ) { if ( CB_BreakStop() ) return -1 ; }
 		c=SRC[ExecPtr++];
@@ -2922,10 +2930,8 @@ int CB_interpreter_sub( char *SRC ) {
 				if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); }	// [AC] break?
 		}
 		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryN )  return -1;  else  break; }
+		
 		switch (c) {
-			case 0xFFFFFFE2:	// Lbl
-				CB_Lbl(SRC, StackGotoAdrs );
-				break;
 			case 0xFFFFFFEC:	// Goto
 				CB_Goto(SRC, StackGotoAdrs );
 				break;
@@ -2934,6 +2940,9 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case 0xFFFFFFE9:	// Isz
 				if (CB_INT) CBint_Isz(SRC) ; else CB_Isz(SRC) ;
+				break;
+			case 0xFFFFFFE2:	// Lbl
+				CB_Lbl(SRC, StackGotoAdrs );
 				break;
 				
 			case 0xFFFFFFF7:	// F7
@@ -2967,44 +2976,86 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x0B:	// LpWhile
 						CB_LpWhile(SRC, &StackWhileDo, &CurrentStruct );
 						break;
-					case 0x0C:	// Return
-						if ( ProgEntryN ) return -1 ; //	in sub Prog
-						cont=0;
-						break;
 					case 0x0D:	// Break
 						CB_Break(SRC, &StackFor, &StackWhileDo, &CurrentStruct );
 						dspflag=0;
 						break;
-					case 0x0E:	// Stop
-						BreakPtr=ExecPtr;
-						cont=0; 
+					case 0x0C:	// Return
+						if ( ProgEntryN ) return -1 ; //	in sub Prog
+						cont=0;
 						break;
 					case 0x10:	// Locate
 						CB_Locate(SRC);
-						dspflag=3;
+						dspflag=1;
 						break;
-					case 0x18:	// ClrText
-						CB_ClrText(SRC);
+					case 0xFFFFFFA5:	// Text
 						dspflag=0;
+						CB_Text(SRC);
+						UseGraphic=99;
 						break;
-					case 0x19:	// ClrGraph
-						CB_ClrGraph(SRC);
+					case 0xFFFFFFAB:	// PxlOn
+						if (CB_INT)	CBint_PxlOn(SRC); else CB_PxlOn(SRC);
 						dspflag=0;
-						UseGraphic=0;
+						UseGraphic=99;
 						break;
-					case 0x1C:	// S-L-Normal
+					case 0xFFFFFFAC:	// PxlOff
+						if (CB_INT)	CBint_PxlOff(SRC); else CB_PxlOff(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFAD:	// PxlChg
+						if (CB_INT)	CBint_PxlChg(SRC); else CB_PxlChg(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFA8:	// PlotOn
+						CB_PlotOn(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFA9:	// PlotOff
+						CB_PlotOff(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFAA:	// PlotChg
+						CB_PlotChg(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFA7:	// F-Line
+						CB_FLine(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFA3:	// Vertical
+						CB_Vertical(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFA4:	// Horizontal
+						CB_Horizontal(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFFA6:	// Circle
+						CB_Circle(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0x1C:			// S-L-Normal
 						S_L_Style = S_L_Normal;
 						dspflag=0;
 						break;
-					case 0x1D:	// S-L-Thick
+					case 0x1D:			// S-L-Thick
 						S_L_Style = S_L_Thick;
 						dspflag=0;
 						break;
-					case 0x1E:	// S-L-Broken
+					case 0x1E:			// S-L-Broken
 						S_L_Style = S_L_Broken;
 						dspflag=0;
 						break;
-					case 0x1F:	// S-L-Dot
+					case 0x1F:			// S-L-Dot
 						S_L_Style = S_L_Dot;
 						dspflag=0;
 						break;
@@ -3024,76 +3075,20 @@ int CB_interpreter_sub( char *SRC ) {
 						tmp_Style = S_L_Dot;
 						dspflag=0;
 						break;
-					case 0xFFFFFF93:	// StoPict
-						CB_StoPict(SRC);
+					case 0x18:			// ClrText
+						CB_ClrText(SRC);
 						dspflag=0;
-						UseGraphic=99;
 						break;
-					case 0xFFFFFF94:	// RclPict
-						CB_RclPict(SRC);
+					case 0x19:			// ClrGraph
+						CB_ClrGraph(SRC);
 						dspflag=0;
-						UseGraphic=99;
+						UseGraphic=0;
 						break;
-					case 0xFFFFFFA3:	// Vertical
-						CB_Vertical(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFA4:	// Horizontal
-						CB_Horizontal(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFA5:	// Text
-						dspflag=0;
-						CB_Text(SRC);
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFA6:	// Circle
-						CB_Circle(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFA7:	// F-Line
-						CB_FLine(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFA8:	// PlotOn
-						CB_PlotOn(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFA9:	// PlotOff
-						CB_PlotOff(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFAA:	// PlotChg
-						CB_PlotChg(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFAB:	// PxlOn
-						if (CB_INT)	CBint_PxlOn(SRC); else CB_PxlOn(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFAC:	// PxlOff
-						if (CB_INT)	CBint_PxlOff(SRC); else CB_PxlOff(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFAD:	// PxlChg
-						if (CB_INT)	CBint_PxlChg(SRC); else CB_PxlChg(SRC);
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0x7A:	// GridOff
+					case 0x7A:			// GridOff
 						Grid=0;
 						dspflag=0;
 						break;
-					case 0x7D:	// GridOn
+					case 0x7D:			// GridOn
 						Grid=1;
 						dspflag=0;
 						break;
@@ -3121,16 +3116,16 @@ int CB_interpreter_sub( char *SRC ) {
 						Label=0;
 						dspflag=0;
 						break;
-					case 0x20:	// DrawGraph
+					case 0x20:			// DrawGraph
 						CB_DrawGraph(SRC);
 						dspflag=0;
 						UseGraphic=2;
 						break;
-					case 0x3F:	// DotGet(
+					case 0x3F:			// DotGet(
 						CB_DotGet(SRC);
 						dspflag=0;
 						break;
-					case 0x4F:	// DotTirm(
+					case 0x4F:			// DotTirm(
 						CB_DotTrim(SRC);
 						dspflag=0;
 						break;
@@ -3138,9 +3133,27 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_DotLife(SRC);
 						dspflag=0;
 						break;
+					case 0xFFFFFF94:	// RclPict
+						CB_RclPict(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0xFFFFFF93:	// StoPict
+						CB_StoPict(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
+					case 0x01:	// Then
+						ExecPtr-=2;
+						CB_Error(ThenWithoutIfERR); // not Then error 					
+						break;
+					case 0x0E:	// Stop
+						BreakPtr=ExecPtr;
+						cont=0; 
+						break;
 					default:
 						ExecPtr-=2;
-						dspflag=2;
+						dspflagtmp=2;
 						if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 						else		CB_CurrentValue    = CB_Eval( SRC );
 				}
@@ -3154,7 +3167,7 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					default:
 						ExecPtr-=2;
-						dspflag=2;
+						dspflagtmp=2;
 						if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 						else		CB_CurrentValue    = CB_Eval( SRC );
 				}
@@ -3180,14 +3193,29 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					default:
 						ExecPtr-=2;
-						dspflag=2;
+						dspflagtmp=2;
 						if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 						else		CB_CurrentValue    = CB_Eval( SRC );
 				}
 				break;
 				
+			case 0xFFFFFFE0:	// Plot
+				CB_Plot(SRC);
+				dspflag=0;
+				UseGraphic=1;
+				break;
+			case 0xFFFFFFE1:	// Line
+				CB_Line(SRC);
+				dspflag=0;
+				UseGraphic=99;
+				break;
+			case 0xFFFFFFED:	// Prog "..."
+				CB_Prog(SRC);
+				if ( BreakPtr ) return BreakPtr;
+				dspflag=0;
+				break;
 			case 0x27:	// ' rem
-				if ( SRC[ExecPtr] == 0x27 ) { ExecPtr++; break; }	// '' execute C.Basic only
+				if ( SRC[ExecPtr] == '/' ) { ExecPtr++; break; }	// '/ execute C.Basic only
 				CB_Rem(SRC, &CacheRem );
 				dspflag=0;
 				break;
@@ -3198,7 +3226,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0x3F:	// ?
 				CB_Input(SRC);
 				CB_TicksStart=RTC_GetTicks();	// 
-				dspflag=2;
+				dspflagtmp=2;
 				c=SRC[ExecPtr++];
 				if ( c == 0x0E ) {		// ->
 					if (CB_INT)	CBint_Store(SRC); else CB_Store(SRC);
@@ -3211,6 +3239,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case 0x0C:	// dsps
 				if ( CB_Disps(SRC,dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
+				CB_TicksStart=RTC_GetTicks();	// 
 				break;
 			case 0xFFFFFFD1:	// Cls
 				CB_Cls(SRC);
@@ -3229,21 +3258,6 @@ int CB_interpreter_sub( char *SRC ) {
 				Angle = 2;
 				dspflag=0;
 				break;
-			case 0xFFFFFFE0:	// Plot
-				CB_Plot(SRC);
-				dspflag=0;
-				UseGraphic=1;
-				break;
-			case 0xFFFFFFE1:	// Line
-				CB_Line(SRC);
-				dspflag=0;
-				UseGraphic=99;
-				break;
-			case 0xFFFFFFED:	// Prog "..."
-				CB_Prog(SRC);
-				if ( BreakPtr ) return BreakPtr;
-				dspflag=0;
-				break;
 				
 //			case 0xDD:	// Eng
 //				ENG=1-ENG;
@@ -3251,22 +3265,22 @@ int CB_interpreter_sub( char *SRC ) {
 //				break;
 			case 0xFFFFFFD3:	// Rnd
 				CB_Rnd();
-				dspflag=2;
+				dspflagtmp=2;
 				break;
 			case 0xFFFFFFD9:	// Norm
 				CBint_CurrentValue = CB_Norm(SRC);
 				CB_CurrentValue    = CBint_CurrentValue ;
-				dspflag=2;
+				dspflagtmp=2;
 				break;
 			case 0xFFFFFFE3:	// Fix
 				CBint_CurrentValue = CB_Fix(SRC);
 				CB_CurrentValue    = CBint_CurrentValue ;
-				dspflag=2;
+				dspflagtmp=2;
 				break;
 			case 0xFFFFFFE4:	// Sci
 				CBint_CurrentValue = CB_Sci(SRC);
 				CB_CurrentValue    = CBint_CurrentValue ;
-				dspflag=2;
+				dspflagtmp=2;
 				break;
 			case 0xFFFFFFEB:	// ViewWindow
 				CB_ViewWindow(SRC);
@@ -3280,19 +3294,19 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case 0xFFFFFFFB:	//  P(  Unary Eval operation
-				dspflag=2;
+				dspflagtmp=2;
 				if (CB_INT)	CBint_CurrentValue = CBint_UnaryEval(SRC);
 				else		CB_CurrentValue    = CB_UnaryEval(SRC);
 				break;
 			case 0xFFFFFFFC:	//  Q(  binaly Eval operation
-				dspflag=2;
+				dspflagtmp=2;
 				if (CB_INT)	CBint_CurrentValue = CBint_BinaryEval(SRC);
 				else		CB_CurrentValue    = CB_BinaryEval(SRC);
 				break;
 		
 			default:
-				dspflag=2;
 				ExecPtr--;
+				dspflagtmp=2;
 				if (CB_INT)	CBint_CurrentValue = CBint_Eval( SRC );
 				else		CB_CurrentValue    = CB_Eval( SRC );
 				break;
@@ -3300,16 +3314,17 @@ int CB_interpreter_sub( char *SRC ) {
 		c=SRC[ExecPtr];
 		if ( c == 0x0E ) { 
 			ExecPtr++;
-			if (CB_INT)	CBint_Store(SRC);		// ->
+			if (CB_INT)	CBint_Store(SRC);	// ->
 			else		CB_Store(SRC);		// ->
 			c=SRC[ExecPtr];
 		}
 		if ( c == 0x13 ) {					// =>
 			ExecPtr++;
-			dspflag=0;
+			dspflagtmp=0;
 			if (CB_INT)	{ if ( CBint_CurrentValue == 0 ) Skip_block(SRC); }		// false
 			else 		{ if ( CB_CurrentValue    == 0 ) Skip_block(SRC); }		// false
 		}
+		if ( dspflagtmp ) dspflag=dspflagtmp;
 	}
 	CB_TicksEnd=RTC_GetTicks();	// 
 	CB_end(SRC);

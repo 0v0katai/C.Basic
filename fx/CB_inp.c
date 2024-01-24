@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.05                                       */
+/*   inp Library  ver 1.10                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -503,6 +503,16 @@ const short oplistVARS[]={
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
+
+void FkeyRel(){
+	Fkey_DISPR( 0, " = ");
+	Fkey_DISPR( 1, " \x11 ");
+	Fkey_DISPR( 2, " > ");
+	Fkey_DISPR( 3, " < ");
+	Fkey_DISPR( 4, " \x12 ");
+	Fkey_DISPR( 5, " \x10 ");
+}
+
 int SelectOpcode5800P( short *oplist, int *select) {
 	int opNum=0 ;
 	char buffer[22];
@@ -511,6 +521,7 @@ int SelectOpcode5800P( short *oplist, int *select) {
 	int	cont=1;
 	int i,j,y,n;
 	int seltop=*select;
+	int shift=0;
 
 	while ( oplist[opNum++] ) ;
 	opNum-=2;
@@ -541,13 +552,21 @@ int SelectOpcode5800P( short *oplist, int *select) {
 			Print((unsigned char *)buffer);
 			if ( i==11 ) { locate(0+(i%2)*12,2+i/2); Print((unsigned char *)"\x0F"); }
 		}
-		Fkey_DISPR( 0, " ? ");
-		Fkey_DISPR( 1, " \x0C ");
-		Fkey_DISPR( 2, " : ");
-		Fkey_DISPR( 3, " ' ");
-		Fkey_DISPR( 4, " = ");
-		Fkey_DISPR( 5, " \x11 ");
-
+		if ( shift ) {
+			Fkey_DISPR( 0, " = ");
+			Fkey_DISPR( 1, " \x11 ");
+			Fkey_DISPR( 2, " > ");
+			Fkey_DISPR( 3, " < ");
+			Fkey_DISPR( 4, " \x12 ");
+			Fkey_DISPR( 5, " \x10 ");
+		} else {
+			Fkey_DISPR( 0, " ? ");
+			Fkey_DISPR( 1, " \x0C ");
+			Fkey_DISPR( 2, " : ");
+			Fkey_DISPR( 3, " \x13 ");
+			Fkey_DISPR( 4, " ' ");
+			Fkey_DISPR( 5, " / ");
+		}
 		Bdisp_PutDisp_DD();	
 		
 		y = ((*select)-seltop) + 1 ;
@@ -565,27 +584,27 @@ int SelectOpcode5800P( short *oplist, int *select) {
 		
 			case KEY_CTRL_F1:	// ?
 				RestoreDisp(SAVEDISP_PAGE1);
-				return '?';
+				if ( shift ) return '='; else return '?';
 				break;
 			case KEY_CTRL_F2:	// dsps
 				RestoreDisp(SAVEDISP_PAGE1);
-				return 0x0C;
+				if ( shift ) return 0x11; else return 0x0C;
 				break;
 			case KEY_CTRL_F3:	// :
 				RestoreDisp(SAVEDISP_PAGE1);
-				return ':';
+				if ( shift ) return '>'; else return ':';
 				break;
 			case KEY_CTRL_F4:	// '
 				RestoreDisp(SAVEDISP_PAGE1);
-				return 0x27;
+				if ( shift ) return '<'; else return 0x13;
 				break;
-			case KEY_CTRL_F5:	// =
+			case KEY_CTRL_F5:	// =>
 				RestoreDisp(SAVEDISP_PAGE1);
-				return '=';
+				if ( shift ) return 0x12; else return 0x27;
 				break;
 			case KEY_CTRL_F6:	// !=
 				RestoreDisp(SAVEDISP_PAGE1);
-				return 0x11;
+				if ( shift ) return 0x10; else return '/';
 				break;
 
 			case KEY_CTRL_LEFT:
@@ -662,6 +681,11 @@ int SelectOpcode5800P( short *oplist, int *select) {
 				n=11;
 				cont=0;
 				break;
+			case KEY_CTRL_SHIFT:
+//			case KEY_CTRL_OPTN:
+//			case KEY_CTRL_VARS:
+				shift=1-shift;
+				break;
 			default:
 				break;
 		}
@@ -697,12 +721,12 @@ const short oplistCMD[]={
 		0x3C,	// <			4
 		0x12,	// >=			5
 		0x10,	// <=			6
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
 		0xF718,	// ClrText	
 		0xF719,	// ClrGraph	
 		0xF71A,	// ClrList	
 		0xF91E,	// ClrMat	
+		0x23,	// #
+		0x25,	// %
 		
 		0xE8,	// Dsz			1
 		0xE9,	// Isz			2
@@ -714,8 +738,8 @@ const short oplistCMD[]={
 		0x7FB3,	// Not			8
 		0x7FB4,	// Xor			9
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0x25,	// 	%			-
+		0x23,	// #
+		0x25,	// %
 		
 		0xF704,	// For			1
 		0xF705,	// To			2
@@ -737,12 +761,12 @@ const short oplistCMD[]={
 		0x7F8F,	// Getkey		4
 		0xED,	// Prog			5
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
 		0xFFFF,	// 				-
+		0x23,	// #
+		0x25,	// %
 
 		0xD1,	// Cls
 		0xF719,	// ClrGraph
@@ -793,8 +817,8 @@ const short oplistCMD[]={
 		0x7F0C,	// Yfct
 		0XF921,	// Xdot
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
+		0x23,	// #
+		0x25,	// %
 
 		0x97,	// Abs
 		0xA6,	// Int
@@ -813,14 +837,14 @@ const short oplistCMD[]={
 		0x7F86,	// RndFix(
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
-		0xFFFF,	// 				-
-		0xFFFF,	// 				-
 		0xD9,	// Norm
 		0xE3,	// Fix
 		0xE4,	// Sci
 		0xDD,	// Eng
 		0xF90B,	// EngOn
 		0xF90C,	// EngOff
+		0x23,	// #
+		0x25,	// %
 
 		0x01,	// femto
 		0x02,	// pico
@@ -848,7 +872,8 @@ const short oplistCMD[]={
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
-		0xFFFF,	// 				-
+		0x23,	// #
+		0x25,	// %
 
 		0};
 

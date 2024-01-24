@@ -118,6 +118,9 @@ void CB_ErrMsg(int ErrNo) {
 		case TooManyProgERR:
 			ERROR("Too many SubProg");
 			break;
+		case ThenWithoutIfERR:
+			ERROR("Then without If");
+			break;
 		default:
 			break;
 	}

@@ -254,6 +254,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					ExecPtr++ ;	// ',' skip
 					y=EvalsubTop( SRC );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+//					if ( x>=y ) CB_Error(ArgumentERR);  // Argument error
 					if ( x>y ) { i=x; x=y; y=i; }
 					return rand()*(y-x+1)/(RAND_MAX+1) +x ;
 			} else if ( c == 0xFFFFFFE9 ) {	// CellSum(Mat A[x,y])
@@ -526,13 +527,6 @@ double Evalsub1(char *SRC) {	// 1st Priority
 	CB_Error(SyntaxERR) ; // Syntax error 
 	return 0 ;
 }
-
-double Evaldummy(char *SRC) {	// dummy
-	double result,tmp;
-	int c;
-	result *= Evalsub1( SRC )*Evalsub1( SRC );
-}
-
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
