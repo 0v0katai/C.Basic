@@ -90,7 +90,6 @@ unsigned int SelectFile (char *filename)
 			index = 0;
 			FileListUpdate = 1 ;
 			redrawsubfolder= 0 ;
-			if ( key == FileCMD_DELDIR ) break ;	// delete Directory
 		} else {										//file
 			strcpy( name,   files[index].filename );
 			if ( strcmp( files[index].folder  ,  folder ) != 0 ) FileListUpdate=1;
@@ -646,7 +645,7 @@ unsigned int Explorer( int size, char *folder )
 				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
-					if ( Isfolder ) break;
+						if ( Isfolder ) break;
 						key=FileCMD_EDIT;
 						cont =0 ;
 						break;
@@ -663,13 +662,17 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F3:	// New file
-				if ( Isfolder ) break;
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_NEW;
+						if ( Isfolder ) {
+							strcpy( folder, files[index].filename );
+							index = 0;
+						}
 						cont =0 ;
 						break;
 					case 1:
+						if ( Isfolder ) break;
 						index = FavoritesFunc( index );
 //						FavoritesFunc( index );
 						break;
@@ -1310,7 +1313,7 @@ int SaveProgfile( int progNo ){
 
 int NewProg(){
 	char *filebase;
-	char fname[32],basname[32];
+	char sname[16],fname[32],basname[32];
 	int size,i;
 
 	size=NewMax;
@@ -1345,6 +1348,7 @@ int NewProg(){
 	ProgNo=0;
 	ExecPtr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
+
 	return 0;	// ok
 }
 
@@ -2241,7 +2245,7 @@ int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
@@ -2289,7 +2293,6 @@ int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
-/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2303,8 +2306,8 @@ void FavoritesDowndummy( int *index ) {
 	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
 	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
 	files[(*index)].filesize=tmp;
-//	(*index)++;
-//	SaveFavorites();
+	(*index)++;
+	SaveFavorites();
 }
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
@@ -2322,6 +2325,7 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
