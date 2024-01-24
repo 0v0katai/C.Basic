@@ -76,6 +76,9 @@ void CB_ErrMsg(int ErrNo) {
 		case NonRealERR:
 			ERROR(" Non-Real ERROR");
 			break;
+		case TooMuchData:
+			ERROR(" Too Much Data");
+			break;
 		case ComERR:
 			ERROR(" Com ERROR");
 			break;
@@ -85,9 +88,6 @@ void CB_ErrMsg(int ErrNo) {
 		case ReceiveERR:
 			ERROR(" Receive ERROR");
 			break;
-		case TooMuchData:
-			ERROR(" Too Much Data");
-			break;
 
 		case NextWithoutForERR:
 			ERROR("Next without For");
@@ -96,10 +96,10 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR("For without Next");
 			break;
 		case WhileWithoutWhileEndERR:
-			ERROR("While w/o WEnd");
+			ERROR("While w/o W.End");
 			break;
 		case WhileEndWithoutWhileERR:
-			ERROR("WEnd w/o While");
+			ERROR("W.End w/o While");
 			break;
 		case LpWhileWithoutDoERR:
 			ERROR("LpWhile w/o Do");
@@ -150,7 +150,7 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR("Switch w/o S.End ");
 			break;
 		case SwitchEndWithoutSwitchERR:
-			ERROR("S.End w/o Switch");
+			ERROR("S.End w/o Switch ");
 			break;
 		case CantFindFileERR:
 			ERROR("Can't find file");
@@ -159,31 +159,31 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR("Illegal Element");
 			break;
 		case AlreadyOpenERR:
-			ERROR("Already Open ERR");
+			ERROR("Already Opened");
 			break;
 		case ComNotOpenERR:
-			ERROR("Com Not Open ERR");
+			ERROR("Com Not Opened");
 			break;
 		case TypeMismatchERR:
-			ERROR("Type Mismatch ERR");
+			ERROR("Type Mismatched");
 			break;
 		case OutOfDomainERR:
-			ERROR("Out of Domain ERR");
+			ERROR("Out of Domain ");
 			break;
 		case UndefinedVarERR:
-			ERROR("Undefined Var");
+			ERROR("Undefined Var.");
 			break;
 		case UndefinedFuncERR:
-			ERROR("Undefined Func");
+			ERROR("Undefined Func.");
 			break;
 		case NotSupportERR:
-			ERROR("Not Support ERR");
+			ERROR("Not Supported");
 			break;
 		case TooManyVarERR:
-			ERROR("Too many Var ERR");
+			ERROR("Exceed Var. limit");
 			break;
 		case DuplicateDefERR:
-			ERROR("Duplicate Def ERR");
+			ERROR("Duplicated Def.");
 			break;
 		case AlignmentERR:
 //			ERROR("Alignment ERR");
@@ -193,8 +193,11 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR("Try w/o Except  ");
 			break;
 		case ExcpetWithoutTryERR:
-			ERROR("Except w/o Try ");
+			ERROR("Except w/o Try  ");
 			break;
+//		case TryEndWithoutTryERR:
+//			ERROR("TryEnd w/o Try ");
+//			break;
 			
 		default:
 //		case FileERR:

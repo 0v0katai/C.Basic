@@ -97,6 +97,8 @@ void ConvertToText( char *sname );
 int NewProg();
 void CB_Local( char *SRC ) ;
 void CB_ProgEntry( char *SRC ) ; //	Prog "..." into memory
+int CB_GetProgEntry( char *SRC, char *folder16 ) ; //	Prog "..." into memory
+void CB_GetAliasLocalProg( char *SRC ) ; //	Preprocess Alias/Local
 
 void CopyFilesToFavorites();
 void CopyFavoritesToFiles();

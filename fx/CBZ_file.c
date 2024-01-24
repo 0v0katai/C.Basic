@@ -2937,9 +2937,9 @@ void LoadConfig(){
 //------------------------------------------------------------------------------/Indent
 
 void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
-	int c,flag=((*ptr)==1);
+	int c,flag=0;
 	c=SRC[(*ptr)-2];
-	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) flag=1;	// "   "
+	if ( CheckQuotCR( SRC, (*ptr) ) ) flag=1;	// "   "
 	while (1){
 		c=SRC[(*ptr)++];
 		switch ( c ) {
@@ -3015,9 +3015,9 @@ int PP_Search_CR_SPACE(char *SRC ){
 }
 
 int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
-	int c,d=0,flag=((*sptr)==1);
+	int c,flag=0,d=0;
 	c=SRC[(*sptr)-2];
-	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) flag=1;	// "   "
+	if ( CheckQuotCR( SRC, (*sptr) ) ) flag=1;	// "   "
 	if ( SRC[(*sptr)-1] == 0x27 ) { d=1; flag=0; }
 	while (1){
 		c=SRC[(*sptr)++];
@@ -3213,7 +3213,7 @@ void CB_Local( char *SRC ) {
 	while ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
 		reg=RegVarAliasEx(SRC);
 		if ( reg>=0 ) {
-			ProgLocalVar[ProgEntryN-1][i] = reg;	// local var set
+			ProgLocalVar[ProgEntryN][i] = reg;	// local var set
 		} 
 		i++;
 		c=SRC[ExecPtr];
@@ -3221,7 +3221,7 @@ void CB_Local( char *SRC ) {
 		ExecPtr++;
 		if ( i >= ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
 	}
-	ProgLocalN[ProgEntryN-1] = i;
+	ProgLocalN[ProgEntryN] = i;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -3312,6 +3312,7 @@ void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
 }
 
 //----------------------------------------------------------------------------------------------
+/*
 void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	int c=1,r;
 	char buffer[32]="",folder16[21];
@@ -3416,7 +3417,87 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 
 	SetSrcSize( SRC-0x56 , ExecPtr+0x56+1 );
 }
+*/
+void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
+	int c=1;
+	ExecPtr=0;
+	while ( c!=0 ) {
+		c=SRC[ExecPtr++];
+		if ( c==0x00 ) { ExecPtr--; break; }
+		switch ( c ) {
+			case 0x3A:	// <:>
+			case 0x0D:	// <CR>
+				break;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0x27:	// ' rem
+				Skip_rem(SRC);
+				break;
+			case 0xFFFFFFF7:	// 
+				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
+				break;
+			case 0xFFFFFFF9:	// 
+				if ( SRC[ExecPtr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	//
+				ExecPtr++;
+				break;
+			default:
+				break;
+		}
+	}
+}
+	
+int CB_GetProgEntry( char *SRC, char *buffer ) { //	Prog "..." into memory
+	int i,c,r;
+	char folder16[21];
+	char filename[64];
+	char sname[32],basname[32];
+	char ext[8];
+	char *filebase;
+	int ExecPtr_bk=ExecPtr;
+	int progEntryN;
+	int ProgEntryN_bk = ProgEntryN;
+	char *SRC_bk = SRC;
 
+	for (i=0; i<=ProgMax; i++) {			// memory free
+		if ( ProgfileAdrs[i] == NULL ) break;		// Prog
+	}
+	ProgEntryN = i;
+	if ( ProgEntryN >= ProgMax ) { CB_Error(TooManyProgERR); return -1; } // Too Many Prog error
+
+	HelpText = NULL;	// help buffer cancel
+	
+	strcpy( basname, buffer);
+	Setfoldername16( folder16, basname );
+//	MSG2("Prog Loading.....",buffer);
+	Getfolder( folder16 );
+	SetFullfilenameExt( filename, buffer, "g1m" ) ;		// g1m 1st reading
+	r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
+	if ( r ) {
+		ErrorNo=0;	// clear error
+		SetFullfilenameExt( filename, buffer, "txt" ) ;	// retry 2nd text file
+		r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
+	}
+	Restorefolder();
+	if ( ( ErrorNo ) || r ) { CB_Error(GoERR); return -1; }	// Can't find Prog
+
+	filebase=ProgfileAdrs[ProgEntryN];
+	strncpy( filebase+0x3C, basname, 8);		// set filename to g1m/g3m header
+
+	SRC = filebase +0x56;
+	CB_GetAliasLocalProg( SRC ) ; //	Preprocess Alias/Local
+	SetSrcSize( SRC-0x56 , ExecPtr+0x56+1 );
+	ExecPtr    = ExecPtr_bk;
+	r = ProgEntryN ;
+	ProgEntryN = ProgEntryN_bk;
+	return r;
+}
 
 //--------------------------------------------------------------------------------------------- battery
 // refer to SuperH-based fx calculators (version 20) by SimonLothar
@@ -3551,10 +3632,10 @@ int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte

@@ -419,6 +419,7 @@ int StrBase( char *str1, char *str2, int base1, int base2 ) {	// Strbase( str1.b
 int OpcodeCopy(char *buffer, char *SRC, int Maxlen) {
 	int c;
 	int srcPtr=0,ptr=0;
+	if ( buffer == SRC ) return 0;
 	while ( 1 ){
 		c = SRC[srcPtr++];
 		switch ( c ) {
@@ -476,12 +477,22 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 	buffer[ptr]='\0' ;
 }
 //-----------------------------------------------------------------------------
+int CheckQuotCR( char *SRC, int ptr ) {
+	int c,d;
+	c=SRC[ptr-2];
+	d=SRC[ptr-3];
+	if ( SRC[ptr-1] != 0x22 ) return 0;	// "
+	if ( d==0xFFFFFFF7 ) {
+		if ( ( c==0x01 ) || ( c==0x02 ) ) return 1;	// Then or Else
+	}
+	return ( ( c==' ' ) || ( c==0x0D ) || ( c==0x13 ) || ( c==':' ) || ( c==0xFFFFFF89 ) );
+}
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int c;
 	int quotflag=( ExecPtr==1 );
 	int ptr=0;
-	c=SRC[ExecPtr-2];
-	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) || ( c==0xFFFFFF89 ) ) quotflag=1;
+//	c=SRC[ExecPtr-2];
+	if ( CheckQuotCR( SRC, ExecPtr ) ) quotflag=1;
 	while (1){
 		c = SRC[ExecPtr++];
 		buffer[ptr++]=c;
@@ -493,6 +504,13 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 				buffer[--ptr]='\0' ;
 				return ptr;
 			case 0x5C:	//
+				c=SRC[ExecPtr];
+				if ( ( c == 0x0D ) || ( c == 'n' ) ) {
+					buffer[ptr-1]=0x0D;	// <CR>
+					ExecPtr++;
+					break;
+				}
+//				if ( ( 0x00<c ) && ( c<0x7F ) ) ptr--;
 			case 0x7F:	// 
 			case 0xFFFFFFF7:	// 
 			case 0xFFFFFFF9:	// 
@@ -1033,7 +1051,14 @@ int CB_StrLen( char *SRC ) {
 	int	buffercnt=CB_StrBufferCNT;
 	char *buffer;
 	int	realbyte=0;
-	if ( SRC[ExecPtr] == '@' ) { ExecPtr++; realbyte=1; }		// Force OS Font
+	int length,type,c=SRC[ExecPtr];
+	if ( c == '@' ) { ExecPtr++; realbyte=1; }
+	else
+	if ( c == '!' ) { ExecPtr++;		// C/C++ specifcation
+		buffer = (char*)VarPtrLength(SRC, &length, &type, 0 ); 
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		return strlen( buffer );
+	}
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -1046,6 +1071,20 @@ int CB_StrCmp( char *SRC ) {
 	int maxoplen;
 	int	buffercnt=CB_StrBufferCNT;
 	char *buffer, *buffer2;
+	int length,type;
+	int n;
+	if ( SRC[ExecPtr] == '!' ) { ExecPtr++;		// C/C++ specifcation
+		buffer  = (char*)VarPtrLength(SRC, &length, &type, 0 ); 
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		buffer2 = (char*)VarPtrLength(SRC, &length, &type, 0 ); 
+		length = -1;
+		if ( SRC[ExecPtr] == ',' ) { ExecPtr++;
+			length = CB_EvalInt( SRC );
+		}
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( length>=0 )	return strncmp( buffer, buffer2, length );
+		else				return strcmp( buffer, buffer2 );
+	}
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
@@ -1357,6 +1396,20 @@ int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 int CB_StrJoin( char *SRC ) {
 	int maxoplen;
 	char *CB_StrAddBuffer, *buffer;
+	char *ptr1,*ptr2;
+	int length,type,c=SRC[ExecPtr];
+	if ( c=='!' ) {	// strcat() 		// C/C++ specifcation
+		ExecPtr++;
+		ptr1 = (char*)VarPtrLength(SRC, &length, &type, 1 );
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		ExecPtr++;
+		ptr2 = (char*)VarPtrLength(SRC, &length, &type, 0 );
+		if ( ErrorNo ) return 0;
+		strcat( ptr1, ptr2);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		CB_CurrentStr=ptr1;
+		return 0;
+	}
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error

@@ -2521,8 +2521,10 @@ void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) { //	Prog "...
 	
 	Setfoldername16( folder16, buffer );
 	ProgNo = CB_SearchProg( folder16 );
-	if ( ProgNo < 0 ) { ProgNo=ProgNo_bk; ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
-
+	if ( ProgNo < 0 ) { 
+		ProgNo = CB_GetProgEntry( SRC, buffer );
+		if ( ProgNo < 0 ) { ProgNo=ProgNo_bk; ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
+	}
 	src = ProgfileAdrs[ProgNo];
 	SRC = src + 0x56 ;
 	ExecPtr=0;
