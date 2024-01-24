@@ -398,7 +398,7 @@ unsigned int Explorer( int size, char *folder )
 							PopUpWin( 6 );
 							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.60" );
+							locate( 3, 4 ); Print( (unsigned char*)"            v0.61" );
 							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 							GetKey(&key);
@@ -1265,7 +1265,7 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 				break;
 			case 0xED:	// Prog "..."
 				ExecPtr++;	// " skip
-				GetQuotOpcode(SRC, buffer);	// Prog name
+				GetQuotOpcode(SRC, buffer, 32);	// Prog name
 //				locate( 1, 2); PrintLine(" ",21);						//
 //				locate( 1, 2); Print(buffer);							//
 //				locate( 1, 3); PrintLine(" ",21); GetKey(&key);			//

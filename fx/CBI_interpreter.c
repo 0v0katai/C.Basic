@@ -301,7 +301,7 @@ void CBint_Locate( unsigned char *SRC ){
 	c=SRC[ExecPtr];
 	if ( c == 0x22 ) {	// String
 		ExecPtr++;
-		GetLocateStr(SRC, buffer);
+		GetLocateStr(SRC, buffer, 32);
 		CB_Print( lx,ly, (unsigned char*)buffer );
 	} else {			// expression
 		value = CBint_Eval( SRC );
@@ -313,7 +313,7 @@ void CBint_Locate( unsigned char *SRC ){
 
 void CBint_Text( unsigned char *SRC, int *dspflag ) { //	Text
 	unsigned int key;
-	unsigned char buffer[32];
+	unsigned char buffer[64];
 	unsigned int c;
 	int px,py,d;
 	int value;
@@ -331,7 +331,7 @@ void CBint_Text( unsigned char *SRC, int *dspflag ) { //	Text
 	c=SRC[ExecPtr];
 	if ( c == 0x22 ) {	// String
 		ExecPtr++;
-		GetLocateStr(SRC, buffer);
+		GetLocateStr(SRC, buffer, 64);
 		Text(py, px, buffer);
 	} else {			// expression
 		value = CBint_Eval( SRC );
@@ -969,43 +969,6 @@ int CBint_UnaryEval( unsigned char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 
-void CBint_Prog( unsigned char *SRC ) { //	Prog "..."
-	unsigned int c;
-	unsigned char buffer[32]="";
-	unsigned char *src;
-	unsigned char *StackProgSRC;
-	int StackProgExecPtr;
-	int stat;
-	int ProgNo_bk;
-
-	c=SRC[ExecPtr];
-	if ( c == 0x22 ) {	// String
-		ExecPtr++;
-		GetQuotOpcode(SRC, buffer);	// Prog name
-	}
-	StackProgSRC     = SRC;
-	StackProgExecPtr = ExecPtr;
-	ProgNo_bk = ProgNo;
-	
-	ProgNo = CB_SearchProg( buffer );
-	if ( ProgNo < 0 ) { ErrorNo=GoERR; ErrorPtr=ExecPtr; return; }  // undefined Prog
-	src = ProgfileAdrs[ProgNo];
-	SRC = src + 0x56 ;
-	ExecPtr=0;
-	
-	ProgEntryN++;
-	
-	stat=CBint_interpreter_sub( SRC ) ;
-	if ( stat > 0 ) return ;	// error or break
-	
-	ProgEntryN--;
-	SRC     = StackProgSRC ;
-	ExecPtr = StackProgExecPtr ;
-	ProgNo  = ProgNo_bk;
-}
-
-//----------------------------------------------------------------------------------------------
-
 int CBint_interpreter_sub( unsigned char *SRC ) {
 	int cont=1;
 	int i;
@@ -1043,14 +1006,12 @@ int CBint_interpreter_sub( unsigned char *SRC ) {
 		if ( ErrorNo  ) return ErrorPtr;
 		if ( BreakPtr ) { CB_BreakStop(); return BreakPtr; }
 		c=SRC[ExecPtr++];
-		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryN )  return -1;  else  break; }
-		if ( c==':'  )   { c=SRC[ExecPtr++]; if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
-		switch (c) {
-//			case 0x3A:	// <:>
-//				break;
-			case 0x0D:	// <CR>
+		if ( c==':'  ) { c=SRC[ExecPtr++]; if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
+		if ( c==0x0D ) { while ( c==0x0D ) c=SRC[ExecPtr++];
 				if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); }	// [AC] break?
-				break;
+		}
+		if ( c==0x00 ) { ExecPtr--; if ( ProgEntryN )  return -1;  else  break; }
+		switch (c) {
 			case 0xE2:	// Lbl
 				CB_Lbl(SRC, StackGotoAdrs );
 				break;
@@ -1131,35 +1092,35 @@ int CBint_interpreter_sub( unsigned char *SRC ) {
 						UseGraphic=0;
 						break;
 					case 0x1C:	// S-L-Normal
-						CB_S_L_Normal();
+						S_L_Style = S_L_Normal;
 						dspflag=0;
 						break;
 					case 0x1D:	// S-L-Thick
-						CB_S_L_Thick();
+						S_L_Style = S_L_Thick;
 						dspflag=0;
 						break;
 					case 0x1E:	// S-L-Broken
-						CB_S_L_Broken();
+						S_L_Style = S_L_Broken;
 						dspflag=0;
 						break;
 					case 0x1F:	// S-L-Dot
-						CB_S_L_Dot();
+						S_L_Style = S_L_Dot;
 						dspflag=0;
 						break;
 					case 0x8C:	// SketchNormal
-						CB_SketchNormal();
+						tmp_Style = S_L_Normal;
 						dspflag=0;
 						break;
 					case 0x8D:	// SketchThick
-						CB_SketchThick();
+						tmp_Style = S_L_Thick;
 						dspflag=0;
 						break;
 					case 0x8E:	// SketchBroken
-						CB_SketchBroken();
+						tmp_Style = S_L_Broken;
 						dspflag=0;
 						break;
 					case 0x8F:	// SketchDot
-						CB_SketchDot();
+						tmp_Style = S_L_Dot;
 						dspflag=0;
 						break;
 					case 0x93:	// StoPict
@@ -1228,41 +1189,54 @@ int CBint_interpreter_sub( unsigned char *SRC ) {
 						UseGraphic=99;
 						break;
 					case 0x7A:	// GridOff
-						CB_GridOff();
+						Grid=0;
 						dspflag=0;
 						break;
 					case 0x7D:	// GridOn
-						CB_GridOn();
+						Grid=1;
 						dspflag=0;
 						break;
 					case 0xC2:	// AxesOn
-						CB_AxesOn();
+						Axes=0;
 						dspflag=0;
 						break;
 					case 0xC3:	// CoordOn
-						CB_CoordOn();
+						Coord=1;
 						dspflag=0;
 						break;
 					case 0xC4:	// LabelOn
-						CB_LabelOn();
+						Label=1;
 						dspflag=0;
 						break;
 					case 0xD2:	// AxesOff
-						CB_AxesOff();
+						Axes=1;
 						dspflag=0;
 						break;
 					case 0xD3:	// CoordOff
-						CB_CoordOff();
+						Coord=0;
 						dspflag=0;
 						break;
 					case 0xD4:	// LabelOff
-						CB_LabelOff();
+						Label=0;
 						dspflag=0;
 						break;
 					case 0x20:	// DrawGraph
 						CB_DrawGraph(SRC);
 						dspflag=0;
 						UseGraphic=2;
+						break;
+					default:
+						ExecPtr-=2;
+						CBint_CurrentValue = CBint_Eval( SRC );
+						dspflag=2;
+				}
+				break;
+				
+			case 0x7F:	// 7F
+				c=SRC[ExecPtr++];
+				switch ( c ) {
+					case 0x40:	// Mat
+						CB_MatCalc(SRC,&dspflag);
 						break;
 					default:
 						ExecPtr-=2;
@@ -1285,6 +1259,11 @@ int CBint_interpreter_sub( unsigned char *SRC ) {
 					case 0x1E:	// ClrMat
 						CB_ClrMat(SRC);
 						dspflag=0;
+						break;
+					case 0x4B:	// DotP(Z,x,y)
+						CB_DotP(SRC);
+						dspflag=0;
+						UseGraphic=99;
 						break;
 					default:
 						ExecPtr-=2;
@@ -1344,7 +1323,7 @@ int CBint_interpreter_sub( unsigned char *SRC ) {
 				UseGraphic=99;
 				break;
 			case 0xED:	// Prog "..."
-				CBint_Prog(SRC);
+				CB_Prog(SRC);
 				if ( BreakPtr ) return BreakPtr;
 				dspflag=0;
 				break;

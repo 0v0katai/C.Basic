@@ -81,6 +81,7 @@ extern	double Yfct;
 
 extern double	traceAry[130];		// Graph trace array
 
+#define GraphStrMAX 64
 extern unsigned char *GraphY;
 extern unsigned char GraphY1[];
 extern unsigned char GraphY2[];
@@ -145,11 +146,12 @@ void CB_Sci( unsigned char *SRC );
 void CB_Norm( unsigned char *SRC );
 void CB_Rnd();
 
+
 void CB_ClrMat( unsigned char *SRC ) ; //	ClrMat A
 int  CB_Input( unsigned char *SRC );
-int GetQuotOpcode(unsigned char *SRC, unsigned char *buffer ) ;
-void GetQuotStr(unsigned char *SRC, unsigned char *buffer ) ;
-void GetLocateStr(unsigned char *SRC, unsigned char *buffer ) ;
+int GetQuotOpcode(unsigned char *SRC, unsigned char *buffer, int Maxlen) ;
+void GetQuotStr(unsigned char *SRC, unsigned char *buffer, int Maxlen ) ;
+void GetLocateStr(unsigned char *SRC, unsigned char *buffer, int Maxlen ) ;
 void CB_Quot( unsigned char *SRC );		// "" ""
 void PrintDone() ;
 void CB_Done();
@@ -202,7 +204,10 @@ void RclPict( int pictNo );
 void CB_StoPict( unsigned char *SRC ) ; //	StoPict
 void CB_RclPict( unsigned char *SRC ) ; //	RclPict
 
+void CB_MatCalc( unsigned char *SRC ,int *dspflag ) ; //	Mat A -> Mat B  etc
+
 int CB_SearchProg( unsigned char *name ) ; //	Prog search
+void CB_Prog( unsigned char *SRC ) ; //	Prog "..."
 
 int CB_interpreter( unsigned char *SRC) ;
 

@@ -37,6 +37,7 @@ extern int  REGINT[59];
 extern int CBint_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
+void CBint_PxlOprand( unsigned char *SRC, int *py, int *px) ;
 
 int CBint_interpreter( unsigned char *SRC) ;
 

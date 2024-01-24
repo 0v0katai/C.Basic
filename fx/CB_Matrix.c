@@ -144,7 +144,7 @@ int DimMatrix( int reg, int dimA, int dimB ) {
 		
 		MatAryElementSize[reg]=ElementSize;
 		dptr = malloc( dimA*dimB*ElementSize );
-   		if( dptr == NULL ) { ErrorPtr=-1; return NotEnoughMemoryERR;}	// Not enough memory error
+		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
 		MatAry[reg] = dptr ;							// Matrix array ptr*
 	}
 
@@ -159,6 +159,7 @@ void DeleteMatrix( int reg ) {
 	if ( ( 0 <= reg ) && ( reg <= 25 ) ) {
 			ptr = MatAry[reg] ;							// Matrix array ptr*
 			if (ptr != NULL ) free(ptr);		
+			MatAryElementSize[reg]=0;
 			MatArySizeA[reg]=0;							// Matrix array size
 			MatArySizeB[reg]=0;							// Matrix array size
 			MatAry[reg]=NULL ;							// Matrix array ptr*
@@ -166,6 +167,7 @@ void DeleteMatrix( int reg ) {
 		for ( reg=0; reg<26; reg++){
 			ptr = MatAry[reg] ;							// Matrix array ptr*
 			if (ptr != NULL ) free(ptr);		
+			MatAryElementSize[reg]=0;
 			MatArySizeA[reg]=0;							// Matrix array size
 			MatArySizeB[reg]=0;							// Matrix array size
 			MatAry[reg]=NULL ;							// Matrix array ptr*		
@@ -261,9 +263,12 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 			sprintf((char*)buffer,"%3d",seltopX+x+1);
 			PrintMini(x*28+24,1,buffer,MINI_OVER);
 		}
+		Bdisp_DrawLineVRAM( 17,8,17,14+j*8);
 		for ( y=0; y<=j; y++ ) {
 				sprintf((char*)buffer,"%4d",seltopY+y+1);
 				PrintMini(1,y*8+10,buffer,MINI_OVER);
+				if ( seltopY   == 0    ) { Bdisp_ClearLineVRAM( 17, 8,    17,10    ); Bdisp_DrawLineVRAM( 17,10,    18,10    ); }
+				if ( seltopY+y == dimB ) { Bdisp_ClearLineVRAM( 17,14+y*8,17,16+y*8); Bdisp_DrawLineVRAM( 17,14+y*8,18,14+y*8); }
 			for ( x=0; x<=i; x++ ) {
 				if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
 					value=ReadMatrix( reg, seltopY+y, seltopX+x);
@@ -274,6 +279,9 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				}
 			}
 		}
+		if ( ( seltopX ) )                PrintMini( 17,1,"\xE6\x90",MINI_OVER);	// <-
+		if ( ( seltopX==0 )&&( dimA>3 ) ) PrintMini(124,1,"\xE6\x91",MINI_OVER);	// ->
+
 		value=ReadMatrix( reg, selectY, selectX);
 		sprintG(buffer, value,21,RIGHT_ALIGN);
 		locate(1,7); Print( buffer );
@@ -329,11 +337,19 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				
 			case KEY_CTRL_RIGHT:
 				selectX++;
-				if ( selectX > dimA ) selectX =0;
+				if ( selectX > dimA ) { 
+					selectX = 0;
+					selectY++;
+					if ( selectY > dimB ) selectY =0;
+				}
 				break;
 			case KEY_CTRL_LEFT:
 				selectX--;
-				if ( selectX < 0 ) selectX = dimA;
+				if ( selectX < 0 ) {
+					selectX = dimA;
+					selectY--;
+					if ( selectY < 0 ) selectY = dimB;
+				}
 				break;
 				
 			default:

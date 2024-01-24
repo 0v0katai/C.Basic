@@ -564,6 +564,9 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					return Xdot;
 			}
 			break;
+		case '%' :	// 1/128 Ticks
+			ExecPtr++;
+			return RTC_GetTicks() ;
 		default:
 			break;
 	}

@@ -102,6 +102,12 @@ void CB_ErrMsg(int ErrNo) {
 		case NotEnoughMemoryERR:
 			ERROR("Not enough Memory");
 			break;
+		case StringTooLongERR:
+			ERROR("String Too Long");
+			break;
+		case NoMatrixArrayERR:
+			ERROR("No Matrix array");
+			break;
 		default:
 			break;
 	}
