@@ -2104,7 +2104,7 @@ int CB_SearchProg( char *name ) { //	Prog search
 }
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	int c,i,j;
-	char buffer[32],folder16[17];
+	char buffer[32],folder16[21];
 	char *src;
 	char *StackProgSRC;
 	int StackProgExecPtr;
