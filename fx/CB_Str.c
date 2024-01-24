@@ -169,7 +169,7 @@ int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){
 		sptr=0;
 		opcode =StrGetOpcode( SrcBase, csrptr ) ;
 		srccode=StrGetOpcode( searchstr, sptr ) ;
-		if ( opcode == 0 ) { return 0; }	// No search
+		if ( opcode == 0 ) break;	// No search
 		if ( opcode != srccode ) {
 			StrNextOpcode( SrcBase, &(csrptr) ); (*strptr)++;
 		} else {
@@ -180,7 +180,7 @@ int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){
 				if ( srccode == 0x00 ) { (*strptr)=cptr; return 1; }	// Search Ok
 				StrNextOpcode( SrcBase, &(csrptr) ); (*strptr)++;
 				opcode =StrGetOpcode( SrcBase, csrptr ) ;
-				if ( (csrptr) >= size ) { (*strptr)=opbkup; return 0; }	// No search
+//				if ( (csrptr) >= size ) { (*strptr)=opbkup; return 0; }	// No search
 				if ( opcode != srccode ) break ;
 			}
 		}
@@ -740,14 +740,14 @@ double CB_EvalStr( char *SRC) {		// Eval str -> double
 	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
 	if ( ErrorNo ) return 0;  // error
 	
-	oplen=strlenOp((char*)buffer);
+	oplen=strlenOp( buffer );
 	if ( oplen == 0 ) return 0;
 	execptr=ExecPtr;
 	ExecPtr= 0;
 	ErrorPtr= 0;
 	ErrorNo = 0;
 	result = EvalsubTop( buffer );
-	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
+	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
 	ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;
@@ -765,14 +765,14 @@ int CBint_EvalStr( char *SRC) {		// Eval str -> int
 	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
 	if ( ErrorNo ) return 0;  // error
 
-	oplen=strlenOp((char*)buffer);
+	oplen=strlenOp( buffer );
 	if ( oplen == 0 ) return 0;
 	execptr=ExecPtr;
 	ExecPtr= 0;
 	ErrorPtr= 0;
 	ErrorNo = 0;
 	result = EvalIntsubTop( buffer );
-	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
+	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
 	ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;

@@ -505,10 +505,12 @@ unsigned int Trace(int *index ) {
 double Graph_Eval( char *SRC) {		// Eval Graph
 	double result;
 	int execptr=ExecPtr;
+	int oplen=strlenOp( SRC );
     ExecPtr = 0;
     ErrorPtr= 0;
 	ErrorNo = 0;
     result = EvalsubTop( SRC );
+	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
@@ -530,7 +532,7 @@ void Graph_Draw(){
 			Plot_X=regX;
 			Plot_Y=regY;
 			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
-				Line( S_L_Default , 1);
+				Line( S_L_Default , 1, 0);	// No error check
 			}
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 		}

@@ -121,7 +121,7 @@ void PXYtoVW(int px, int py, double *x, double *y){	// pixel(x,y) -> ViewWwindow
 //	if ( fabs(*y)*1e10 < ydot ) *y=0;	// zero adjust
 }
 int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(x,y)
-	if ( ( Xdot == 0 ) || ( Ydot == 0 ) || ( Xmax == Xmin ) || ( Ymax == Ymin ) ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return ErrorNo ; }	// Range error
+	if ( ( Xdot == 0 ) || ( Ydot == 0 ) || ( Xmax == Xmin ) || ( Ymax == Ymin ) ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return -1 ; }	// Range error
 	*px =   1 + ( (x-Xmin)/Xdot + 0.5 ) ;
 //	if ( Xmax >  Xmin )		*px =       (x-Xmin)/Xdot  +1.5 ;
 //	if ( Xmax <  Xmin )		*px = 126 - (x-Xmax)/-Xdot +1.49999999999999 ;
@@ -670,7 +670,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 }
 
 
-void Line(int style, int mode) {
+void Line(int style, int mode, int errorcheck ) {
 	int px1,px2,py1,py2;
 	int i,j;
 	if ( Previous_X > 1e307 ) { 
@@ -684,8 +684,11 @@ void Line(int style, int mode) {
 	Previous_Y = Plot_Y;
 	Previous_PX = px2;
 	Previous_PY = py2;
-	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
-	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
+	if ( errorcheck ) {
+		if ( i || j ) return ;
+	} else {
+		if ( i && j ) return ;
+	}
 	Linesub( px1, py1, px2, py2, style, mode);
 }
 
@@ -694,8 +697,7 @@ void F_Line(double x1, double y1, double x2, double y2, int style, int mode) {
 	int i,j;
 	i = VWtoPXY( x1, y1, &px1, &py1) ;
 	j = VWtoPXY( x2, y2, &px2, &py2) ;
-	if ( ( i < 0 ) ||  ( i==RangeERR ) ) return ;
-	if ( ( j < 0 ) ||  ( j==RangeERR ) ) return ;
+	if ( i || j ) return ;
 	Linesub( px2, py2, px1, py1 ,style, mode);
 }
 

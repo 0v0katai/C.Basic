@@ -5,6 +5,7 @@
 #include <fxlib.h>
 
 #include "CB_io.h"
+#include "CB_glib.h"
 #include "KeyScan.h"
 
 struct st_round CB_Round = { Norm , 1} ; // Round
@@ -265,14 +266,14 @@ void MSG1(char*buffer1){
 	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(1);
 	locate(3,4); Print((unsigned char *)buffer1);
-	Bdisp_PutDisp_DD();
+	Bdisp_PutDisp_DD_DrawBusy();
 }
 void MSG2(char*buffer1,char*buffer2){
 	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(2);
 	locate(3,3); Print((unsigned char *)buffer1);
 	locate(3,4); Print((unsigned char *)buffer2);
-	Bdisp_PutDisp_DD();
+	Bdisp_PutDisp_DD_DrawBusy();
 }
 void MSGpop(void){
 	RestoreDisp(SAVEDISP_PAGE1);

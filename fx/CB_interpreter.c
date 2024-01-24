@@ -134,7 +134,7 @@ CchRem	CacheRem;
 void ClrCahche();
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
@@ -2739,7 +2739,7 @@ void CB_Line( char *SRC ) { //	Line
 	if ( tmp_Style >= 0 ) style=tmp_Style;
 	if ( RangeErrorCK(SRC) ) return;
 	CB_SelectGraphVRAM();	// Select Graphic Screen
-	Line(style, CB_SetPointMode(SRC) );
+	Line( style, CB_SetPointMode(SRC) , 1 );	// error check
 	Bdisp_PutDisp_DD_DrawBusy_skip_through(SRC);
 	tmp_Style = -1;
 }
