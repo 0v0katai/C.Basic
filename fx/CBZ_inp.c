@@ -44,8 +44,7 @@ double Round( double num, int round_mode, int digit){
 			exp=exf;
 			if ( exf > 0 ) exp++;
 			exf=pow(10,exp);
-			tmp=fabsnum/exf;
-			tmp3=RoundSub( fabsnum, digit );
+			tmp3=RoundSub( fabsnum/exf, digit );
 			num=tmp3*exf;
 			if ( minus ) num=-num;
 			break;
@@ -3345,10 +3344,10 @@ complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV
 	return InputNumC_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy
-int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte

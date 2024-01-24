@@ -296,7 +296,7 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 		locate( 3,3); 
 		if ( MatXYmode ) Print((unsigned char *) "  X  :           "); else Print((unsigned char *) "  m  :           ");
 		sprintG(buffer,*dimA,  10,LEFT_ALIGN); locate( 9, 3); Print((unsigned char*)buffer);
-		if ( list==0 ) {
+		if ( list!=1 ) {
 			locate( 3,4); 
 			if ( MatXYmode ) Print((unsigned char *) "  Y  :           "); else Print((unsigned char *) "  n  :           ");
 			sprintG(buffer,*dimB,  10,LEFT_ALIGN); locate( 9, 4); Print((unsigned char*)buffer);
@@ -322,12 +322,12 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 			case KEY_CTRL_UP:
 				select-=1;
 				if ( select < 0 ) select=3;
-				if ( ( list )&&( select==1 ) ) select=0;
+				if ( ( list==1 )&&( select==1 ) ) select=0;
 				break;
 			case KEY_CTRL_DOWN:
 				select+=1;
 				if ( select > 3 ) select=0;
-				if ( ( list )&&( select==1 ) ) select=2;
+				if ( ( list==1 )&&( select==1 ) ) select=2;
 				break;
 
 			case KEY_CTRL_RIGHT:
@@ -336,19 +336,23 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 				y++;
 				switch (select) {
 					case 0: // dim m
+					  INPdimA:
 						e = *dimA;
 						do {
 							*dimA = e;
 							*dimA  =InputNumD_full( 9, y, 10, *dimA);	// 
 						} while ( *dimA<1 ) ;
-						select++;	if ( list ) select++;
+						select++;	if ( list==1 ) select++;
+						if ( list==2 ) *dimB=1;	// vct
 						break;
 					case 1: // dim n
+					  INPdimB:
 						e = *dimB;
 						do {
 							*dimB = e;
 							*dimB  =InputNumD_full( 9, y, 10, *dimB);	// 
 						} while ( *dimB<1 ) ;
+						if ( list==2 ) *dimA=1;	// vct
 						break;
 					case 2: // size
 						if ( (*Elsize)==  1 ) { (*Elsize)=  2; break; }
@@ -373,19 +377,23 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 				y++;
 				switch (select) {
 					case 0: // dim m
+						goto INPdimA;
 						e = *dimA;
 						do {
 							*dimA = e;
 							*dimA  =InputNumD_full( 9, y, 10, *dimA);	// 
-						} while ( *dimA<1 ) ;	
-						select++;	if ( list ) select++;
+						} while ( *dimA<1 ) ;
+						select++;	if ( list==1 ) select++;
+						if ( list==2 ) *dimB=1;	// vct
 						break;
 					case 1: // dim n
+//						goto INPdimB;
 						e = *dimB;
 						do {
 							*dimB = e;
 							*dimB  =InputNumD_full( 9, y, 10, *dimB);	// 
 						} while ( *dimB<1 ) ;
+						if ( list==2 ) *dimA=1;	// vct
 						break;
 					case 2: // size
 						if ( (*Elsize)==  1 ) { (*Elsize)=128; break; }
@@ -420,7 +428,8 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 							*dimA  =InputNumD_Char( 9, y, 10, *dimA, key);	// 
 							key=0;
 						} while ( *dimA<1 ) ;
-						select++;	if ( list ) select++;
+						select++;	if ( list==1 ) select++;
+						if ( list==2 ) *dimB=1;	// vct
 						break;
 					case 1: // dim n
 						e = *dimB;
@@ -429,6 +438,7 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 							*dimB  =InputNumD_Char( 9, y, 10, *dimB, key);	// 
 							key=0;
 						} while ( *dimB<1 ) ;
+						if ( list==2 ) *dimA=1;	// vct
 						break;
 					case 2: // size
 						e = *Elsize;
@@ -4797,6 +4807,28 @@ int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M0( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MA( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MB( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MC( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MD( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4ME( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MF( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MG( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MH( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MI( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MJ( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MK( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4ML( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MM( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MN( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MO( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MU( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 

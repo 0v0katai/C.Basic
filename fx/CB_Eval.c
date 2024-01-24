@@ -368,7 +368,7 @@ int VctRegVar( char *SRC ) {
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++ ;	// 
 			goto jp1;
 		}
-		i=RegVarVct( c );
+		i=RegVar( c );
 		if ( i>=0 ) { ExecPtr++;
 			if (CB_INT==1) reg=LocalInt[i][0] ; else reg=LocalDbl[i][0].real ;
 			goto jp1;
@@ -382,9 +382,9 @@ int VctRegVar( char *SRC ) {
 			reg=Eval_atoi( SRC, c );
 		  jp1:
 			if ( ( reg<1 ) || ( ExtListMax<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
-			if ( 26<reg ) reg+=6;
-			if ( 58<reg ) reg+=26+26;	// +26(Vct)
-			return reg-1+84 ;
+			if ( 52<reg ) reg+=57-5;	// +26(Vct)
+			if ( reg<=26 ) reg+=83-5;
+			return reg+5;
 	}
 	if ( c=='_' ) { //	_ABCDE   Vct(Mat) name
 		ExecPtr++;

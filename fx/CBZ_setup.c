@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.89\xE6\x41";
-#define VERSION 189
+const char VerMSG[]="C.Basic  v1.90\xE6\x41";
+#define VERSION 190
 
 //---------------------------------------------------------------------------------------------
 
@@ -722,17 +722,20 @@ int SetVarCharMat( char *buffer, int c ) {
 			ptr=CB_MB_strlen( buffer );
 		}
 	} else
-	if ( ( c == 26 ) || ( c == 26+32 ) || ( c == 26+26+32 ) ) {	// <r>
+	if ( ( c == 26 ) ) {	// <r>
 		buffer[ptr++]=0xCD;	//	'r'
 	} else
-	if ( ( c == 27 ) || ( c == 27+32 ) || ( c == 27+26+32 ) ) { // Theta
+	if ( ( c == 27 ) ) { // Theta
 		buffer[ptr++]=0xE6;		// Theta
 		buffer[ptr++]=0x47;
 	} else
-	if ( ( ( 28 <= c ) && ( c <= 31 ) ) || ( ( 28+32 <= c ) && ( c <= 31+32 ) ) || ( ( 28+32+26 <= c ) && ( c <= 31+32+26 ) ) ) { // Ans
+	if ( ( 28 <= c ) && ( c <= 31 ) ) { // Ans
 		buffer[ptr++]='A';		//
 		buffer[ptr++]='n';
 		buffer[ptr++]='s';
+	} else
+	if ( c >= 84 ) {
+		buffer[ptr++]='A'+c-84;
 	} else { 
 		buffer[ptr++]='A'+c;
 	}
