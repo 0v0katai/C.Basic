@@ -463,7 +463,6 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFFD:	//  Eval(
 			return CBint_EvalStr(SRC);
 		default:
-			ExecPtr--;
 			break;
 	}
 	if ( c == '#') {
@@ -739,9 +738,11 @@ int CB_Getkey3( char *SRC ) {
 	int shift=0;
 	int time1,time2;
 	int t0=RTC_GetTicks()-CB_TicksAdjust;
-	if ( SRC[ExecPtr] == '(' ) ExecPtr++;
+	if ( SRC[ExecPtr] != '(' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
+	ExecPtr++;
 	time1 = CB_EvalInt( SRC );
-	if ( SRC[ExecPtr] == ',' )  { ExecPtr++;
+	if ( SRC[ExecPtr] == ',' )  {
+			ExecPtr++;
 			time2 = CB_EvalInt( SRC );
 	} else	time2 = t0;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;

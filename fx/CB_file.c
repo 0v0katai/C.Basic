@@ -649,7 +649,7 @@ char * loadFile( const char *name , int editMax)
 	buffer = ( char *)malloc( size*sizeof(char)+editMax+4 );
 	if( buffer == NULL )
 	{
-		ErrorMSG( "Out of memory",-1);
+		CB_ErrMsg(NotEnoughMemoryERR);
 		return NULL;
 	}
 	memset( buffer, 0x00,     size*sizeof(char)+editMax+4 );
@@ -1311,7 +1311,7 @@ int NewProg(){
 	filebase = (char *)malloc( size*sizeof(char)+4 );
 	memset( filebase, 0x77,             size*sizeof(char)+4 );
 	if( filebase == NULL ) {
-		ErrorMSG( "Out of memory",-1);
+		CB_ErrMsg(NotEnoughMemoryERR);
 		return 1;
 	}
 	for (i=0; i<0x56+4; i++) filebase[i]=0x00;	// header clear

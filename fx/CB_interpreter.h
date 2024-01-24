@@ -222,7 +222,7 @@ void ClrCahche();
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."
-void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs, int *localvarInt, double *localvarDbl  ); //	Gosub N
+void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ); //	Gosub N
 
 void Skip_quot( char *SRC ); // skip "..."
 void Skip_block( char *SRC );

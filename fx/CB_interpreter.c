@@ -188,20 +188,16 @@ int CB_interpreter_sub( char *SRC ) {
 	while (cont) {
 		dspflagtmp=0;
 		CB_StrBufferCNT=0;			// Quot String buffer clear
-		if ( ErrorNo  ) return ErrorPtr;
-		if ( BreakPtr ) { if ( CB_BreakStop() ) return -7 ; }
+		if ( ErrorNo || BreakPtr ) { if ( CB_BreakStop() ) return -7 ; }
 		c=SRC[ExecPtr++];
 		if ( c==':'  ) { c=SRC[ExecPtr++]; }
-//		if ( c==':'  ) { c=SRC[ExecPtr++]; if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); } }	// [AC] break?
 		if ( c==0x0D ) {
 				while ( c==0x0D ) c=SRC[ExecPtr++];
-				if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { BreakPtr=ExecPtr-1; KeyRecover(); }	// [AC] break?
+				if (BreakCheck) if ( KeyScanDown(KEYSC_AC) ) { KeyRecover(); if ( BreakPtr == 0 ) BreakPtr=ExecPtr-1; }	// [AC] break?
 		}
 		if ( c==0x00 ) { ExecPtr--;
-			if ( ProgEntryN )  { 
-//				if ( BreakPtr ) CB_BreakStop();
-				return -1;
-			} else  break;
+			if ( ProgEntryN ) return -1;
+			else  break;
 		}
 		
 		while ( c==0x20 ) c=SRC[ExecPtr++];
@@ -276,10 +272,7 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x0C:	// Return
 						if ( GosubNestN > 0 ) { ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return form subroutin 
-						if ( ProgEntryN ) {	//	return from  sub Prog
-//							if ( BreakPtr ) CB_BreakStop();
-							return -2 ; 
-						}
+						if ( ProgEntryN ) { return -2 ; }	//	return from  sub Prog
 						cont=0;
 						break;
 					case 0x10:	// Locate
@@ -497,7 +490,10 @@ int CB_interpreter_sub( char *SRC ) {
 							ACBreak=0;
 							break;
 						}
-						if ( ACBreak ) BreakPtr=ExecPtr;
+						if ( ACBreak ) {
+							BreakPtr=ExecPtr; 
+//							DebugMode=2;	// enable debug mode
+						}
 						break;
 					case 0x0E:	// Stop
 						cont=0; 
@@ -586,7 +582,7 @@ int CB_interpreter_sub( char *SRC ) {
 				goto jpgsb;
 				break;
 			case 0xFFFFFFFE:	// Gosub
-				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs, localvarInt, localvarDbl );
+				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs );
 		jpgsb:	if ( BreakPtr > 0 ) return BreakPtr;
 				dspflag=0;
 				break;
@@ -746,7 +742,7 @@ int CB_interpreter( char *SRC ) {
 	Argc=0;	// 
 	stat = CB_interpreter_sub( SRC );
 	KeyRecover(); 
-    if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
+//	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
 	return stat;
 }
 
@@ -1960,8 +1956,10 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	char *src;
 	char *StackProgSRC;
 	int StackProgExecPtr;
-	int stat;
-	int ProgNo_bk;
+	char stat;
+	char ProgNo_bk;
+	char BreakPtr_bk; 
+	char StepOutProgNo=0;
 
 	c=SRC[ExecPtr];
 	if ( c == 0x22 ) {	// String
@@ -1987,8 +1985,19 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	ExecPtr=0;
 	
 	ProgEntryN++;
+
+	if ( DebugMode == 3 ) {		// step over
+		BreakPtr_bk = BreakPtr;
+		BreakPtr = 0;
+	}
 	
-	stat=CB_interpreter_sub( SRC ) ;
+	stat=CB_interpreter_sub( SRC ) ;	// --- execute sub program
+
+	if ( DebugMode == 3 ) {		// step over
+		BreakPtr = BreakPtr_bk;
+	}
+	if ( DebugMode == 4 ) { DebugMode = 2;  BreakPtr = -1; }	// step out
+	
 	if ( stat ) {
 		if ( ( ErrorNo ) && ( ErrorNo != StackERR ) )return ;			// error
 		else if ( BreakPtr > 0 ) return ;	// break
@@ -2020,9 +2029,10 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	if ( ErrorNo == StackERR ) { ErrorPtr=ExecPtr; }
 }
 
-void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs, int *localvarInt, double *localvarDbl  ){ //	Gosub N
+void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosub N
 	int c,i,j;
 	int execptr=ExecPtr;
+
 	c=SRC[ExecPtr+1];
 	if ( c == ',' ) {	// arg
 		ExecPtr+=2;
@@ -2036,13 +2046,6 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs, int *loca
 	if ( GosubNestN > StackGosubMax ) { CB_Error(NestingERR);  return; }	// Nesting  error
 	CB_Goto( SRC, &(*StackGotoAdrs) );	// Goto Sub label
 	
-	for ( i=0; i<ProgLocalN[ProgNo]; i++ ) {
-		j=ProgLocalVar[ProgNo][i];
-		if ( j>=0 ) { 
-				LocalDbl[j][0]=LocalDbltmp[i];
-				LocalInt[j][0]=LocalInttmp[i];
-		}
-	}
 }
 
 //----------------------------------------------------------------------------------------------
@@ -2956,9 +2959,35 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 			box.right =px2;
 			box.top   =py1;
 			box.bottom=py2;
-
-			ElementSize=1;	// 1 bit matrix
-			DimMatrixSub( reg, ElementSize, px2-px1+1, py2-py1+1 ) ;
+			
+			ElementSize=ElementSizeSelect( SRC, reg );
+			if ( ( ElementSize == 2 ) || ( ElementSize > 0x100 ) ) ElementSize=1;	// 1 bit matrix
+			ElementSize &= 0xFF;
+			dx= px2-px1;
+			dy= py2-py1;
+			switch ( ElementSize ) {
+				case  1:
+					dimA=dx+1;
+					dimB=dy+1;
+					break;
+				case  8:
+					dimA=dy+1;
+					dimB=(dx/8)+1;
+					break;
+				case 16:
+					dimA=dy+1;
+					dimB=(dx/16)+1;
+					break;
+				case 32:
+					dimA=dy+1;
+					dimB=(dx/32)+1;
+					break;
+				case 64:
+					dimA=dy+1;
+					dimB=(dx/64)+1;
+					break;
+			}
+			DimMatrixSub( reg, ElementSize, dimA, dimB ) ;
 			if ( ErrorNo )  return ; 	// error
 			
 			ptr=(unsigned char*)MatAry[reg];
