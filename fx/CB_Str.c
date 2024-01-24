@@ -1183,11 +1183,11 @@ int DateToStr( char *buffer) {	// "2017/01/17 TUE"
 	y = y1*1000+y2*100+y3*10+y4;	// days of the week calculation (Zeller's congruence)
 	m = m1*10+m2;
 	d = d1*10+d2;
-	if ( m<=2 ) { m+=12; y--; }
+	if ( m <= 2 ) { m+=12; y--; }
 	
 	C = y / 100;
 	Y = y % 100 ;
-	if ( y > 1582 ) r=5*C+(C/4); else r=6*C+5;
+	if ( y >= 1582 ) r=5*C+(C/4); else r=6*C+5;
 	w = ( d + (26*(m+1))/10 + Y + (Y/4) + r ) % 7;
 	
 	buffer[0]=y1+'0';
