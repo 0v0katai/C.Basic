@@ -148,7 +148,6 @@ int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
 		MatAry[reg].Base        = base;						// Matrix array base
 	}
 	memset( dptr, 0, matsize );	// initialize
-
 	return 0;	// ok
 }
 
@@ -224,6 +223,7 @@ void DeleteMatrix( int reg ) {
 		}
 		HiddenRAM_MatTopPtr = HiddenRAM_End;
 	}
+	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 }
 
 //-----------------------------------------------------------------------------
@@ -1038,6 +1038,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				key=SetDimension(k, &dimA, &dimB, &ElementSize, &base);
 				if ( key==KEY_CTRL_EXIT ) break;
 				if ( DimMatrixSub(k, ElementSize, dimA, dimB, base ) ) CB_ErrMsg(NotEnoughMemoryERR);
+				HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 				EditMatrix( k, 0 );
 				break;
 			case KEY_CTRL_F4:

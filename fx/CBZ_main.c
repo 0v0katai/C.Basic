@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 1.10 
+ Casio Basic Interpreter (& Compiler) ver 1.40 
 
  copyright(c)2015/2016 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -56,6 +56,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	CB_INT=0;	// double mode default
 	
 	HiddenRAM();	// Check HiddenRAM
+	HiddenRAM_MatAryRestore();	//  HiddenRAM -> MatAry ptr
+
 	TVRAM = (char *)malloc( 2048+4 );
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 	GVRAM = TVRAM+1024;;

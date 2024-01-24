@@ -6,7 +6,7 @@
 //extern short	MatArySizeB[MatAryMax];			// Matrix array size n X
 //extern double *MatAry[MatAryMax];				// Matrix array ptr*
 
-typedef struct {		// 20 bytes
+typedef struct {		// 16 bytes
 	int		Maxbyte;
 	short	Base;
 	short	ElementSize;

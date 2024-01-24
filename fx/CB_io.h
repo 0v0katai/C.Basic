@@ -22,6 +22,7 @@ extern char * HiddenRAM_MatTopPtr;		// Hidden RAM Mat top ptr
 
 extern char IsSH3;	//	1:SH3   0:SH4
 
+
 //-----------------------------------------------------------------------------
 
 int CPU_check(void);
@@ -30,6 +31,8 @@ void * HiddenRAM_mallocMat( size_t size );
 void * HiddenRAM_mallocProg( size_t size );
 void HiddenRAM_freeProg( void *ptr );
 void HiddenRAM_freeMat( int reg );
+void HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
+void HiddenRAM_MatAryRestore();	//  HiddenRAM -> MatAry ptr
 
 void CB_Print( int x, int y, const unsigned char *str);
 void CB_PrintRev( int x, int y, const unsigned char *str);

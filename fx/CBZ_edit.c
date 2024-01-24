@@ -1391,6 +1391,7 @@ int CB_BreakStop() {
 
 	if ( BreakPtr == -9999) return BreakPtr;	// stack error
 
+	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	Bdisp_PutDisp_DD();
 	CB_SelectTextVRAM();	// Select Text Screen
 	CB_SelectGraphVRAM();	// Select Graphic screen

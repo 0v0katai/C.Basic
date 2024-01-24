@@ -1511,6 +1511,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	int scrmode;
 	
 	KeyRecover();
+	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	scrmode=ScreenMode;
 	if ( dspflag == 2 ) {
 		CB_SelectTextVRAM();	// Select Text Screen
@@ -1570,6 +1571,7 @@ void CB_end( char *SRC ){
 	ExecPtr++;
 	
 	KeyRecover();
+	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	CB_SelectTextVRAM();	// Select Text Screen
 	if ( dspflag == 2 ) {
 		if ( CursorX >1 ) Scrl_Y();
@@ -1765,6 +1767,49 @@ void CB_Menu( char *SRC, short *StackGotoAdrs) {		// Menu "title name","Branch n
 				if ( select > (listmax) ) {select=0; scrl=0;}
 				if ((select - scrl) > 5 ) scrl+=1;
 				if ( scrl > (listmax) ) scrl=(listmax)-5;
+				break;
+			case KEY_CHAR_1:
+				select=0;
+				cont=0;
+				break;
+			case KEY_CHAR_2:
+				select=1;
+				cont=0;
+				break;
+			case KEY_CHAR_3:
+				if ( listmax < 2 ) break;
+				select=2;
+				cont=0;
+				break;
+			case KEY_CHAR_4:
+				if ( listmax < 3 ) break;
+				select=3;
+				cont=0;
+				break;
+			case KEY_CHAR_5:
+				if ( listmax < 4 ) break;
+				select=4;
+				cont=0;
+				break;
+			case KEY_CHAR_6:
+				if ( listmax < 5 ) break;
+				select=5;
+				cont=0;
+				break;
+			case KEY_CHAR_7:
+				if ( listmax < 6 ) break;
+				select=6;
+				cont=0;
+				break;
+			case KEY_CHAR_8:
+				if ( listmax < 7 ) break;
+				select=7;
+				cont=0;
+				break;
+			case KEY_CHAR_9:
+				if ( listmax < 8 ) break;
+				select=8;
+				cont=0;
 				break;
 			default:
 				break;
@@ -2004,7 +2049,7 @@ void CB_RclVWin( char *SRC ) {
 int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
