@@ -113,6 +113,10 @@ void GetGenuineCmdF5( unsigned int *code ){
 				case 0: return;	// setup mode
 				case 1: (*code)=0xF93F;return;	// Str
 			} break;
+		case CMD_VARS_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7FF4;return;	// GRAPHX
+			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7FE;return;	// BackLight

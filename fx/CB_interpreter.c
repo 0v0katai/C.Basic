@@ -400,7 +400,6 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0xFFFFFFFB:	// Screen
 						CB_Screen(SRC);
-						dspflag=0;
 						break;
 					case 0xFFFFFFF1:	// Local
 						Skip_block(SRC);

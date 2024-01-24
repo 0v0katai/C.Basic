@@ -47,7 +47,8 @@ void CopyAns2MatList( char* SRC, int reg ) {	// ListAns -> List 1
 	int sizeA,sizeB;
 	int ElementSize,ElementSize2;
 	int base;
-	
+
+	if ( CB_MatListAnsreg == reg ) return ;	// ListAns -> ListAns
 	sizeA        = MatAry[CB_MatListAnsreg].SizeA;
 	sizeB        = MatAry[CB_MatListAnsreg].SizeB;
 	base         = MatAry[CB_MatListAnsreg].Base;
