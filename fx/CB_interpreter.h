@@ -142,9 +142,9 @@ void CB_ClrText( unsigned char *SRC );
 void CB_ClrGraph( unsigned char *SRC );
 int RangeErrorCK( unsigned char *SRC ) ;
 
-void CB_Fix( unsigned char *SRC );
-void CB_Sci( unsigned char *SRC );
-void CB_Norm( unsigned char *SRC );
+int CB_Fix( unsigned char *SRC );
+int CB_Sci( unsigned char *SRC );
+int CB_Norm( unsigned char *SRC );
 void CB_Rnd();
 
 

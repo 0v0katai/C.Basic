@@ -184,7 +184,7 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	unsigned int key;
 	int code;
 	
-	KeyRecover();
+//	KeyRecover();
 	GetKey(&key);
 
 	switch (key) {
@@ -401,6 +401,9 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 		case KEY_CTRL_F6:
 			code=29;
 			break;
+		default:
+			code=0;
+			break;	
 	}
 	return code;
 }

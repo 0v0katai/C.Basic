@@ -860,7 +860,7 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 					if ( CursorStyle < 0x6 ) {		// insert mode
 						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
 					} else {					// overwrite mode
-						DeleteOpcode1( buffer, MaxStrlen, &ptrX);
+						if ( buffer[ptrX] != 0x00 ) DeleteOpcode1( buffer, MaxStrlen, &ptrX);
 						i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
 					}
 					if ( i==0 ) NextOpcode( buffer, &ptrX );
@@ -928,8 +928,8 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 			if ( CursorStyle < 0x6 ) {		// insert mode
 					i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
 			} else {					// overwrite mode
-					DeleteOpcode1( buffer, MaxStrlen, &ptrX);
-					i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
+				if ( buffer[ptrX] != 0x00 ) DeleteOpcode1( buffer, MaxStrlen, &ptrX);
+				i=InsertOpcode1( buffer, MaxStrlen, ptrX, key );
 			}
 			if ( i==0 ) NextOpcode( buffer, &ptrX );
 			key=0;

@@ -1557,7 +1557,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					if ( CursorStyle < 0x6 ) {		// insert mode
 						InsertOpcode( FileBase, csrPtr, key );
 					} else {					// overwrite mode
-						DeleteOpcode( FileBase, &csrPtr);
+						if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( FileBase, &csrPtr);
 						InsertOpcode( FileBase, csrPtr, key );
 					}
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
@@ -1578,7 +1578,7 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 					if ( CursorStyle < 0x6 ) {		// insert mode
 							InsertOpcode( FileBase, csrPtr, key );
 					} else {					// overwrite mode
-							DeleteOpcode( FileBase, &csrPtr);
+							if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( FileBase, &csrPtr);
 							InsertOpcode( FileBase, csrPtr, key );
 					}
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
