@@ -33,6 +33,7 @@ char *FontToChar( const FONTCHARACTER *fFileName, char *cFileName );
 #define FileCMD_DEL    10006
 #define FileCMD_COPY   10007
 #define FileCMD_TEXT   10008
+#define FileCMD_PASS   10009
 
 char *loadFile( const char *name , int editMax);
 int  storeFile( const char *name, unsigned char* codes, int size);
@@ -63,3 +64,5 @@ void CB_Save( char *SRC ) ; //	Save "TEST",Mat A[1,3]
 void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3] 
 
 void Setfoldername16( char *folder16, char *sname ) ;
+int CheckPassWord( char *filebase );	// 1:cancel  0:Ok  -1:no pass
+void NewPassWord(char *name) ;

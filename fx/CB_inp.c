@@ -1544,6 +1544,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 			case KEY_CTRL_DOWN:
 					ptrX=length;
 				break;
+			case KEY_CTRL_F1:
+				if ( length ) cont=0;
+				break;
 			case KEY_CTRL_F4:
 				if ( ( pallet_mode ) && ( alpha_mode ) ) {
 					lowercase=1-lowercase;
