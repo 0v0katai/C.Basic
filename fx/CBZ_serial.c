@@ -417,19 +417,58 @@ int PortCR = P7305_SERIAL_DIRECT_PORTCR;
 	*(unsigned short*)P11CR = *(unsigned short*)P11CR | P11CR_ENABLE_SERIAL_MASK;
 }
 //------------------------------------------------------------------------------
-void CB_Beep( char *SRC ){
-	int r,a=1000, n=500;
+void ExecBeep( int Hz, int length ){
 	int microsecond, ntime;
-	int c=SRC[ExecPtr];
-	if ( ( c==':' )||( c==0x0D )||( c==0x0C )||( c==0 ) ) goto next;
-	a=CB_EvalInt( SRC );
-	CB_GetOprand_int1( SRC, &n);
-	if ( ( a<=0 ) || ( n<=0 ) || ( n>10000 ) ) {  CB_Error(ArgumentERR); return ; } // Argument error
-  next:
-	microsecond=1000000/a/8;
-	ntime=n*a/1000;
+	if ( ( Hz<=0 ) || ( length<=0 ) || ( length>10000 ) ) {  CB_Error(ArgumentERR); return ; } // Argument error
+	microsecond=1000000/Hz/8;
+	ntime=Hz*length/1000;
 	Direct3Pin_out( microsecond, ntime );
 }
+
+int CB_BeepEval( char *SRC, int *result ) {
+	dspflag=0;
+	(*result) = (int)ListEvalsubTop(SRC);	// List calc
+	if ( dspflag>=3 ) {
+		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return 0; } // Argument error
+		return CB_MatListAnsreg;	// List
+	}
+	return 0;
+}
+
+void CB_Beep( char *SRC ){
+	int r,a=1000, n=500;
+	int listreg1,listreg2;
+	int size1,size2,base1,base2,ptr1,ptr2;
+	int c=SRC[ExecPtr];
+	if ( ( c==':' )||( c==0x0D )||( c==0x0C )||( c==0 ) ) goto next;
+	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
+	listreg1 = CB_BeepEval(SRC, &a);	// List calc
+	if ( listreg1 ) {
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		listreg2 = CB_BeepEval( SRC, &n );
+		if ( listreg2 ) {
+			size1=MatAry[listreg1].SizeA;
+			size2=MatAry[listreg2].SizeA;
+			base1=MatAry[listreg1].Base;
+			base2=MatAry[listreg2].Base;
+			if ( size1 != size2 ) { CB_Error(ArgumentERR); return ; } // Argument error
+			ptr2=base2;
+			for ( ptr1=base1; ptr1<size1+base1; ptr1++) {
+				a = ReadMatrixInt( listreg1, ptr1, base1 ) ;
+				n = ReadMatrixInt( listreg2, ptr2, base2 ) ;
+				ExecBeep( a, n );
+				ptr2++;
+			}
+			return ;
+		}
+		{  CB_Error(ArgumentERR); return ; } // Argument error
+	}
+	CB_GetOprand_int1( SRC, &n);
+  next:
+  	ExecBeep( a, n );
+}
+
 
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

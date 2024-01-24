@@ -720,7 +720,7 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER | (0x100*EditExtFont) ) ;
 				}
 				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; }
-				if ( ( opcode==0x0D ) ) { Numflag=0; (*NumOfset)++; }
+				if ( ( opcode==0x0D ) && ( buffer[ofst-2]!=0x5C ) ) { Numflag=0; (*NumOfset)++; }
 //				Bdisp_PutDisp_DD();
 			} else {
 				if ( mini == 0 ) {
@@ -1658,11 +1658,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										DebugMenuSw = 1-DebugMenuSw;
 									} else {
 										if ( DebugMode == 9 ) { DebugMode=2; BreakPtr=-1; } else BreakPtr=0;
-										ProgEntryN=1;
+										ProgEntryN=0;
 //										MSG1("Prog Loading.....");
 										CB_AliasVarClr();
 										StoreRoot2();
-										CB_ProgEntry( SrcBase ) ;		// sub program search
+										CB_GetAliasLocalProg( SrcBase );	//	Preprocess Alias/Local
 										if ( ErrorNo ) { 
 											ProgNo=ErrorProg; 
 											stat=1;

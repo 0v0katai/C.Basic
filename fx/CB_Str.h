@@ -43,6 +43,7 @@ void DeleteStrBuffer();
 char* NewStrBuffer();
 void GetNewAry8( int reg, int aryN, int aryMax ) ;
 
+int CheckQuotCR( char *SRC, int ptr ) ;
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) ;

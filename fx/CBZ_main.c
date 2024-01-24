@@ -10,7 +10,7 @@
 */
 #include "CB.h"
 
-#define BE_MAX 7
+#define BE_MAX 16
 
 typedef struct{	//
 	char sname[12];
