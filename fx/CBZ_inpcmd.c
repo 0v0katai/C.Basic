@@ -617,12 +617,20 @@ void DispGenuineCmdMenu(){
 			switch ( CommandPage ) {
 				case 0:
 					Fkey_dspRB( FKeyNo1, "Ticks");
-					Fkey_dspRB( FKeyNo2, "DATE");
-					Fkey_dspRB( FKeyNo3, "TIME");
-					Fkey_dspRB( FKeyNo4, "BackL");
-					Fkey_dspRB( FKeyNo5, "RfCtl");
-					Fkey_dspRB( FKeyNo6, "RfTm");
+					Fkey_dspRB( FKeyNo2, "Wait");
+					Fkey_dspRB( FKeyNo3, "DATE");
+					Fkey_dspRB( FKeyNo4, "TIME");
+					Fkey_dspRB( FKeyNo5, "BackL");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
+//				case 1:
+//					Fkey_dspRB( FKeyNo1, "RfCtl");
+//					Fkey_dspRB( FKeyNo2, "RfTm");
+//					FkeyClear( FKeyNo3 );
+//					FkeyClear( FKeyNo4 );
+//					FkeyClear( FKeyNo5 );
+//					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+//					break;
 			}
 			break;
 

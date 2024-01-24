@@ -1007,7 +1007,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return Cellsum( reg, x, y );
 	
 				case 0x5F :				// 1/128 Ticks
-					return RTC_GetTicks()-CB_TicksAdjust;	// 
+					return CB_Ticks( SRC );	// 
 					
 				case 0xFFFFFF86 :		// RndFix(n,digit)
 					tmp=(EvalsubTop( SRC ));
@@ -1153,7 +1153,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			return result ;
 
 		case '%' :	// 1/128 Ticks
-			return RTC_GetTicks()-CB_TicksAdjust;	// 
+			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
 			return CB_Peek( SRC, Evalsub1( SRC ) );	// 
 			

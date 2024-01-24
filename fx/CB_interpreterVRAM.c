@@ -117,10 +117,10 @@ void CB_RefreshCtrl( char *SRC ){	// PutDispDD Refresh control
 			CB_Error(ArgumentERR);	// Argument error
 	}
 }
-void CB_RefreshTime( char *SRC ){	// PutDispDD Refresh time
+void CB_RefreshTime( char *SRC ){	// Bdisp_PutDisp_DD() Refresh time
 	int c,n;
 	n=CB_EvalInt( SRC );
-	if ( ( 1<=n ) && ( n<=128 ) ) Refreshtime=n-1; 
+	if ( ( 0<=n ) && ( n<=128 ) ) Refreshtime=n-1; //	0: no Refresh
 	else 
 	{ CB_Error(ArgumentERR); return; }	// Argument error
 }
@@ -2062,9 +2062,9 @@ void CB_RclVWin( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte

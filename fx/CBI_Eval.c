@@ -630,7 +630,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return Cellsum( reg, x, y );
 
 				case 0x5F :				// 1/128 Ticks
-					return RTC_GetTicks()-CB_TicksAdjust;	// 
+					return CB_Ticks( SRC );	// 
 						
 				case 0xFFFFFFF0 :		// GraphY str
 					return CBint_GraphYStr( SRC, 0 );
@@ -761,7 +761,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			return result ;
 			
 		case '%' :	// 1/128 Ticks
-			return RTC_GetTicks()-CB_TicksAdjust;	// 
+			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
 			return CB_PeekInt( SRC, EvalIntsub1( SRC ) );	// 
 
@@ -1195,12 +1195,37 @@ int EvalInt(char *SRC) {		// Eval temp
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
+int	tickstmp=0;
+
+int CB_RTC_GetTicks() {
+	return RTC_GetTicks()-CB_TicksAdjust ;
+}
+
+int CB_Ticks( char *SRC ) {
+	int n;
+	int t=CB_RTC_GetTicks();
+	if ( SRC[ExecPtr]==0xFFFFFFF9 ) {
+		if ( SRC[ExecPtr+1]==0x4F ) {	// Wait
+			ExecPtr+=2;		// TicksWait n
+			n = CB_EvalInt( SRC );
+			if ( n<0 ) n=-n;  else tickstmp=CB_RTC_GetTicks();
+			do {
+				if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
+				t=CB_RTC_GetTicks();
+			} while ( abs( t-tickstmp ) <= n ) ;
+			tickstmp=CB_RTC_GetTicks();
+			return tickstmp;
+		}
+	} 
+	return t;
+}
+
 int CB_Getkey3( char *SRC ) {
 	int key,tmpkey=0;
 	int result=0;
 	int shift=0;
 	int time1,time2;
-	int t0=RTC_GetTicks()-CB_TicksAdjust;
+	int t0=CB_RTC_GetTicks();
 	if ( SRC[ExecPtr] != '(' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
 	ExecPtr++;
 	time1 = CB_EvalInt( SRC );
@@ -1214,7 +1239,7 @@ int CB_Getkey3( char *SRC ) {
 		key=CB_Getkey();
 		if ( key == 34 ) return key;	// [AC]
 		if ( key ) tmpkey=key;
-	} while ( abs ( RTC_GetTicks()-CB_TicksAdjust - time2 ) < time1 ) ;
+	} while ( abs ( CB_RTC_GetTicks() - time2 ) < time1 ) ;
 	key=tmpkey;
 	return key;
 }

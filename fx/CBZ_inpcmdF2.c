@@ -149,7 +149,8 @@ void GetGenuineCmdF2( unsigned int *code ){
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
-				case 0: (*code)=0xF941;return;	// DATE
+				case 0: (*code)=0xF94F;return;	// Wait
+//				case 1: (*code)=0xF7FA;return;	// RefreshTime
 			} break;
 
 		case CMD_SHIFT:		//	-----------------------------------------------------------SHIFT_F2
@@ -232,7 +233,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_SETUP_COOR;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_SL;  CommandPage=0;break;
-				case 3: (*code)=0xF7F8;return;	// RefreshCtrl
+				case 3: (*code)=0xF7FA;return;	// RefreshTime
 			} break;
 		case CMD_SETUP_ANGL:
 			switch ( CommandPage ) {

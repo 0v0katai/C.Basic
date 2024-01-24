@@ -155,6 +155,7 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F5F;return;	// Ticks
+//				case 1: (*code)=0xF7F8;return;	// RefreshCtrl
 			} break;
 
 		case CMD_SHIFT:		//	-----------------------------------------------------------SHIFT_F1
@@ -242,7 +243,7 @@ void GetGenuineCmdF1( unsigned int *code ){
 				case 0: CommandType=CMD_SETUP_ANGL;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_DISP;CommandPage=0;break;
 				case 2: CommandType=CMD_SETUP_FUNC;CommandPage=0;break;
-				case 3: (*code)=0xF7FE;return;	// BackLight
+				case 3: (*code)=0xF7F8;return;	// RefreshCtrl
 			} break;
 		case CMD_SETUP_ANGL:
 			switch ( CommandPage ) {

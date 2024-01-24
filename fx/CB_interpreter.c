@@ -2630,13 +2630,13 @@ void  CB_Input( char *SRC ){
 	return ;
 }
 //----------------------------------------------------------------------------------------------
-int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

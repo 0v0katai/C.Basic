@@ -81,9 +81,12 @@ void Bdisp_PutDisp_DD_DrawBusy() {
 //	DrawBusy();
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip() {
-	unsigned int t=RTC_GetTicks();
-	if ( abs(t-skip_count)>Refreshtime ) { skip_count=t;		// default 128/3=42  1/42s
-		Bdisp_PutDisp_DD_DrawBusy();
+	unsigned int t;
+	if ( Refreshtime >= 0 ) {
+		t=RTC_GetTicks();
+		if ( abs(t-skip_count)>Refreshtime ) { skip_count=t;		// default 128/3=42  1/42s
+			Bdisp_PutDisp_DD_DrawBusy();
+		}
 	}
 }
 //void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
@@ -104,7 +107,7 @@ void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) {	// Locate text C
 	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
-	if ( RefreshCtrl == 2 ) 	// refresh control 
+	if ( RefreshCtrl == 2 ) 	// refresh control all
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 	else
 			Bdisp_PutDisp_DD_DrawBusy();
@@ -114,7 +117,7 @@ void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) {	// graphics command
 	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
-	if ( RefreshCtrl == 0 ) 	// refresh control 
+	if ( RefreshCtrl == 0 ) 	// refresh control off
 			Bdisp_PutDisp_DD_DrawBusy();
 	else
 			Bdisp_PutDisp_DD_DrawBusy_skip();
@@ -801,12 +804,12 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 
 //----------------------------------------------------------------------------------------------
 int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG2( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG3( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG4( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG5( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG6( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG7( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG8( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG9( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG2( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG3( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG4( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG5( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG6( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG7( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG8( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlignG9( unsigned int n ){ return n; }	// align +4byte
 

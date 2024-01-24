@@ -728,6 +728,7 @@ const short oplistOPTN[]={
 		0xF941,	// DATE
 		0xF942,	// TIME
 		0x7F5F,	// Ticks
+		0xF94F,	// Wait 
 
 		0xFFFF,	// 				-
 		0x23,	// #
@@ -804,7 +805,6 @@ const short oplistPRGM[]={
 		0xF710,	// Locate
 		0x7F8F,	// Getkey
 		0xF7E4,	// Disp
-		0xF94F,	// Wait 
 		
 		0xFFFF,	// 				-
 		0x7F9F,	// KeyRow(
@@ -1281,11 +1281,13 @@ const short oplistCMD[]={		// 5800P like
 		0xF7DF,	// Delete 
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
-		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
+		0xF94F,	// Wait 
 		0x23,	// #
 		0x25,	// %
 		
+		0xF7FB,	// Screen
+		0xF7FC,	// PutDispDD
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
 		0xF7E8,	// ReadGraph(
@@ -1295,8 +1297,6 @@ const short oplistCMD[]={		// 5800P like
 		0xF73D,	// DotTrim(
 		0xF7E0,	// DotLife(
 		0x7FE9,	// CellSum(
-		0xF94F,	// Wait 
-		0x23,	// #
 		0x25,	// %
 
 		0xF7F4,	// SysCall
