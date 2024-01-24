@@ -29,8 +29,8 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.44\xE6\x41";
-#define VERSION 244
+const char VerMSG[]="C.Basic  v2.45\xE6\x41";
+#define VERSION 245
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );
@@ -52,7 +52,7 @@ void VerDispSub( int flag ) {
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2020" );
 
-	PrintMini(13*6+2, 2*8+1, (unsigned char*)" build 16", MINI_OVER );
+	PrintMini(13*6+2, 2*8+1, (unsigned char*)" build 01", MINI_OVER );
 	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {

@@ -1314,8 +1314,8 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			}
 		}
 
-		if ( ( seltopX ) )               						PrintMini( 16,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
-		if ( ( dimA > MaxDX ) && ( seltopX+MaxDX <= dimA ) ) 	PrintMini(122,1,(unsigned char*)"\xE6\x91",MINI_OR);		// ->
+		if ( ( seltopX ) ) 				PrintMini( 16,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
+		if ( ( seltopX+MaxX < dimA ) )	PrintMini(122,1,(unsigned char*)"\xE6\x91",MINI_OR);		// ->
 
 		if ( ( strdisp ) && ( ElementSize > 4 ) )  {
 			if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectY+base, selectX+base), 64-1 );
