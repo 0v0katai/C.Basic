@@ -2144,6 +2144,7 @@ void CB_Store( char *SRC ){	// ->
 				TThetamax = CB_CurrentValue.real ;
 				goto Graphj;
 		} else if ( c == 0x0A) {	// Thetaptch
+				if ( CB_CurrentValue.real == 0 ) { CB_Error(RangeERR); return; }	// Range error
 				TThetaptch = CB_CurrentValue.real ;
 				goto Graphj;
 		} else if ( c == 0x0B ) {	// Xfct

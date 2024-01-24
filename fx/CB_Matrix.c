@@ -1523,6 +1523,13 @@ int SetMatrix(int select){		// ----------- Set Matrix
 		ElementSize=MatAry[reg].ElementSize;
 
 		GetKey( &key );
+		if ( KEY_CTRL_XTT   == key ) select=23;	// X
+		if ( KEY_CHAR_ANS   == key ) select=28;	// Ans
+		if ( KEY_CHAR_THETA == key ) select=27;	// Theta
+		if ( KEY_CHAR_VALR  == key ) select=26;	// <r>
+		if ( ( 'A' <= key ) && ( key <= 'z' ) ) {
+			select=key-'A';
+		}
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				cont=0;
@@ -3604,6 +3611,172 @@ int CB_ListCmp( char *SRC ) { //	ListCmp( List1, n) or ListCmp( List,List2)
 		}
 	}
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+//	refer to https://hikalium.com/page/lectures/c/0004.md
+/*
+double determinant( double *m, int N)
+{
+    int x, y, i;
+    double det = 1, r;
+    double tmp;
+ 
+    // 上三角行列に変換しつつ、対角成分の積を計算する。
+    for(y = 0; y < N - 1; y++){
+        if(m[y * N + y] == 0){
+            // 対角成分が0だった場合は、その列の値が0でない行と交換する
+            for(i = y + 1; i < N; i++){
+                if(m[i * N + y] != 0){
+                    break;
+                }
+            }
+            if(i < N){
+                for(x = 0; x < N; x++){
+                    SWAP(m[i * N + x], m[y * N + x]);
+                }
+                // 列を交換したので行列式の値の符号は反転する。
+                det = -det;
+            }
+        }
+        for(i = y + 1; i < N; i++){
+            r = m[i * N + y] / m[y * N + y];
+            for(x = y; x < N; x++){
+                m[i * N + x] -= r * m[y * N + x];
+            }
+        }
+        det *= m[y * N + y];
+    }
+    det *= m[y * N + y];
+ 
+    return det;
+}
+*/
+/*
+double Mat_determinant( int reg ) {
+    int x, y, i, N;
+    double det = 1, r;
+    double tmp;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	
+    for(y = base; y < N - 1; y++){
+        if( ReadMatrix( reg, y, y ) == 0){
+            for(i = y + 1; i < N; i++){
+                if( ReadMatrix( reg, i, y ) != 0){
+                    break;
+                }
+            }
+            if(i < N){
+                for(x = base ; x < N; x++){
+					tmp = ReadMatrix( reg, i, x); 
+					WriteMatrix( reg, i, x, ReadMatrix( reg, y, x) ) ;
+					WriteMatrix( reg, y, x, tmp);
+                }
+                det = -det;
+            }
+        }
+        for(i = y + 1; i < N; i++){
+            r = ReadMatrix( reg, i, y ) / ReadMatrix( reg, y, y );
+            for(x = y; x < N; x++){
+                WriteMatrix( reg, i, x,  ReadMatrix( reg, i, x)- r * ReadMatrix( reg, y, x) );
+            }
+        }
+        det *= ReadMatrix( reg, y, y );
+    }
+    det *= ReadMatrix( reg, y, y );
+ 
+    return det;
+}
+*/
+complex Mat_determinant( int reg ) {
+	int x, y, i, N;
+	complex det = {1,0}, r, z;
+	complex tmp;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+	sizeA		 = MatAry[reg ].SizeA;
+	sizeB		 = MatAry[reg ].SizeB;
+	base		 = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	
+	for(y = base; y < N - 1; y++){
+		z = Cplx_ReadMatrix( reg, y, y );
+		if ( ( z.real == 0 ) && ( z.imag == 0 ) ) {
+			for(i = y + 1; i < N; i++){
+				z = Cplx_ReadMatrix( reg, i, y );
+				if( ( z.real != 0 ) || ( z.imag != 0 ) ) {
+					break;
+				}
+			}
+			if (i < N){
+				for(x = base ; x < N; x++){
+					tmp = Cplx_ReadMatrix( reg, i, x); 
+					Cplx_WriteMatrix( reg, i, x, Cplx_ReadMatrix( reg, y, x) ) ;
+					Cplx_WriteMatrix( reg, y, x, tmp);
+				}
+				Cplx_fsign( det );
+			}
+		}
+		for(i = y + 1; i < N; i++){
+			z = Cplx_ReadMatrix( reg, y, y );
+			if ( ( z.real != 0 ) || ( z.imag != 0 ) ) r = Cplx_fDIV( Cplx_ReadMatrix( reg, i, y ), z ); else r=Int2Cplx(0);
+			for(x = y; x < N; x++){
+				Cplx_WriteMatrix( reg, i, x,  Cplx_fSUB( Cplx_ReadMatrix( reg, i, x), Cplx_fMUL( r,  Cplx_ReadMatrix( reg, y, x))) );
+			}
+		}
+		det = Cplx_fMUL( det, Cplx_ReadMatrix( reg, y, y ) );
+	}
+	det = Cplx_fMUL( det, Cplx_ReadMatrix( reg, y, y ) );
+ 
+	return det;
+}
+complex CB_MatDet( char *SRC ) {	// Det Mat A	
+	int reg,reg2;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int dspflagtmp=dspflag;
+	complex result;
+
+	MatrixOprandreg( SRC, &reg);
+	if ( reg>=0 ) {
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+		NewMatListAns( MatAry[reg].SizeA, MatAry[reg].SizeB, MatAry[reg].Base, MatAry[reg].ElementSize );
+		if ( ErrorNo ) return Int2Cplx(0);
+		reg2=reg;
+		reg=CB_MatListAnsreg;
+		CopyMatrix( reg, reg2 );	// reg2->reg
+	} else {	ErrorNo=0;	// error cancel
+		ListEvalsubTop(SRC);
+		if ( dspflag != 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
+		reg = CB_MatListAnsreg;
+	}
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+	if ( ElementSize  == 2 ) ElementSize  == 1;
+
+	if ( sizeA != sizeB ) { CB_Error(DimensionERR); return Int2Cplx(0); }	// Dimension error
+	result = Mat_determinant( reg );
+
+	DeleteMatListAns();
+	dspflag=dspflagtmp; 
+	return result;
 }
 
 //-----------------------------------------------------------------------------

@@ -74,6 +74,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 			} break;
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
+				case 0: (*code)=0x7F21;return;	// Det
 				case 1: (*code)=0x7F47;return;	// Fill(
 			} break;
 		case CMD_OPTN_CPLX:

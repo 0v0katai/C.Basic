@@ -701,6 +701,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x41:	// Trn
 					CB_MatTrn(SRC);
 					return 3;
+				case 0x21:	// Det
+					return CB_MatDet(SRC).real;
 				
 				case 0x46 :				// Dim
 					result=CB_Dim( SRC );
@@ -965,6 +967,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				case 0x0B:	// Xfct
 				case 0x0C:	// Yfct
 				case 0x20 :			// Max( List 1 )	Max( { 1,2,3,4,5 } )
+				case 0x21 :			// Det Mat A
 				case 0x29 :			// Sigma( X, X, 1, 1000)
 				case 0x2D :			// Min( List 1 )	Min( { 1,2,3,4,5 } )
 				case 0x2E :			// Mean( List 1 )	Mean( { 1,2,3,4,5 } )

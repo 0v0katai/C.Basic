@@ -1391,10 +1391,12 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 				 ( (code=='n')&&('1'<=n)&&(n<='2') ) ||
 				 ( (code=='f')&&('1'<=n)&&(n<='6') ) ||
 				 ( (code=='Q')&&(('1'==n)||(n=='3')) ) ) {
-					text[textofst++] = code;
-					ofst++;
-					text[textofst++] = 0x5C;
-					code=n;
+					if ( srcbase[ofst-1] != '0' ) {	// without 0x1234 0b1101 etc
+						text[textofst++] = code;
+						ofst++;
+						text[textofst++] = 0x5C;
+						code=n;
+					}
 			}
 			text[textofst++] = code;
 			ofst++;

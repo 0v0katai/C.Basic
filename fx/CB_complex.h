@@ -186,3 +186,4 @@ complex CB_Sum( char *SRC ) ;	// Sum( List 1 )
 complex CB_Prod( char *SRC ) ;	// Prod( List 1 )
 complex CB_MinMax( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max
 complex CB_Mean( char *SRC ) ;	// Mean( List 1 )
+complex CB_MatDet( char *SRC ) ;	// Det Mat A	

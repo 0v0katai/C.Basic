@@ -338,7 +338,7 @@ void DispGenuineCmdMenu(){
 				case 0:
 					Fkey_Icon( FKeyNo1, 200 );	//	Fkey_dspRB( FKeyNo1, "Mat");
 					Fkey_Icon( FKeyNo2, 201 );	//	Fkey_dspRB( FKeyNo2, "M\xE6\x91L");
-					FkeyClear( FKeyNo3 );
+					Fkey_Icon( FKeyNo3, 202 );	//	Fkey_dspRB( FKeyNo3, "Det ");
 					Fkey_Icon( FKeyNo4, 203 );	//	Fkey_dspRB( FKeyNo4, "Trn ");
 					Fkey_Icon( FKeyNo5, 204 );	//	Fkey_dspRB( FKeyNo5, "Aug ");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
