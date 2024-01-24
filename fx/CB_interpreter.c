@@ -1945,7 +1945,7 @@ void CB_Store( char *SRC ){	// ->
 			ExecPtr+=2;
 			c=SRC[ExecPtr];
 			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
-			else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ); MatdspNo=reg;  return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -1976,7 +1976,7 @@ void CB_Store( char *SRC ){	// ->
 			}
 		} else if ( (0x6A<=c) && (c<=0x6F) ) {	// List1~List6
 			ExecPtr+=2;
-			reg=c+(32-0x6A);
+			reg=c+(58-0x6A);
 			goto Listj;
 			
 		} else if ( c == 0x46 ) {	// -> Dim
@@ -1997,7 +1997,7 @@ void CB_Store( char *SRC ){	// ->
 					if ( CB_CurrentValue ) 
 							CB_MatrixInitsubNoMat( SRC, &reg, CB_CurrentValue, 1, 0 );
 					else {
-						reg=RegVarAliasEx(SRC);
+						reg=MatRegVar(SRC);
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				}
@@ -2374,9 +2374,9 @@ void  CB_Input( char *SRC ){
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	int		width=255,option=0,rev=REV_OFF;
-	char	spcchr=' ';
-	
+	int		width=255,length=ExpMax-1,option=0,rev=REV_OFF;
+	char	spcchr[]={0x20,0,0};
+
 	KeyRecover();
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	CB_SelectTextDD();	// Select Text Screen
@@ -2384,7 +2384,7 @@ void  CB_Input( char *SRC ){
 	if ( CursorX==23 ) Scrl_Y();
 	
 	c=SRC[ExecPtr];
-	if ( c=='(' ) {	// ?option([csrX][,csrY][,width][,spcchr][,R])
+	if ( c=='(' ) {	// ?option([csrX][,csrY][,width][,spcchr][,length][,R])
 		c=SRC[++ExecPtr];
 		if ( ( c==')' ) || ( c==0x0E ) ) goto optionexit;
 		if ( c!=',' ) {
@@ -2410,7 +2410,15 @@ void  CB_Input( char *SRC ){
 			if ( c ) {	// string
 				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 			} else { CB_Error(ArgumentERR); return ; } // Argument error
-			spcchr=buffer[0];
+			spcchr[0]=buffer[0];
+			spcchr[1]=buffer[1];
+			spcchr[2]=buffer[2];
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {
+			length=CB_EvalInt( SRC ); if ( ( length<1 ) || ( ExpMax-1<length ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 			c=SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
@@ -2575,19 +2583,19 @@ void  CB_Input( char *SRC ){
 
 	switch ( flag ) {
 		case 0:	// ? -> A value
-			CB_CurrentValue = InputNumD_CB( CursorX, CursorY, width, spcchr, rev, 0 );
+			CB_CurrentValue = InputNumD_CB( CursorX, CursorY, width, length, spcchr, rev, 0 );
 			ErrorNo=0; // error cancel
 			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			break;
 		case 1:	// ?A value
 			if ( option ) {
-				CB_CurrentValue = InputNumD_CB2( CursorX, CursorY, width, spcchr, rev, DefaultValue );
+				CB_CurrentValue = InputNumD_CB2( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
 			} else {
 				sprintGR(buffer, DefaultValue, 22-CursorX, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 				locate( CursorX, CursorY); Print((unsigned char*)buffer);
 				Scrl_Y();
-				CB_CurrentValue = InputNumD_CB1( CursorX, CursorY, width, spcchr, rev, DefaultValue );
+				CB_CurrentValue = InputNumD_CB1( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
 			}
 			ErrorNo=0; // error cancel
 			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
@@ -2602,7 +2610,7 @@ void  CB_Input( char *SRC ){
 			CB_CurrentStr=CB_StrBuffer[0];
 			CB_CurrentStr[0]='\0';
 	Inpj1:	if ( option == 0 ) CursorX=1;
-			key=InputStr( CursorX, CursorY, width, CB_CurrentStr, CB_StrBufferMax-1, spcchr, rev);
+			key=InputStr( CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
 			ErrorNo=0; // error cancel
 			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return ; }
 			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
@@ -2615,7 +2623,7 @@ void  CB_Input( char *SRC ){
 //			CB_Print(CursorX, CursorY, (unsigned char*)buffer);
 //			Scrl_Y();
 			if ( width > MatAry[reg].SizeB-1 ) width=MatAry[reg].SizeB-1;
-			key=InputStr( CursorX, CursorY, width,  CB_CurrentStr, CB_StrBufferMax-1, spcchr, rev);
+			key=InputStr( CursorX, CursorY, width,  CB_CurrentStr, length, spcchr, rev);
 			ErrorNo=0; // error cancel
 			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return ; }
 			CB_StorStr( SRC );

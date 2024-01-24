@@ -148,7 +148,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
 		if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
-		else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
 			ExecPtr++;

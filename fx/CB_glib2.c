@@ -105,7 +105,7 @@ int PictSelectNum2( char*msg ) {		//
 
 	buffer[0]='\0';
 	while (1) {
-		key= InputStrSub( 17, 5, 2, 0, buffer, 2, ' ', REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		key= InputStrSub( 17, 5, 2, 0, buffer, 2, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return -1;  // exit
 		n=atof( (char*)buffer );
  		if ( (1<=n)&&(n<=20) ) break;

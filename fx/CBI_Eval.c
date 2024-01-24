@@ -350,6 +350,17 @@ int fLCMint( int x, int y ) {	// LCM(x,y)
 	return x/fGCDint(x,y)*y;
 }
 
+int CB_rand( char *SRC ) {
+	int c = SRC[ExecPtr];
+	if ( ( '0'<=c )&&( c<='9' ) ) {
+		jp:
+		srand(CB_EvalInt(SRC));
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	} else
+	if ( c=='#' ) { ExecPtr++; goto jp; }
+	return rand() ;
+}
+
 //-----------------------------------------------------------------------------
 int EvalIntObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
@@ -540,9 +551,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			c = SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x40 :		// Mat A[a,b]
+				  Matjmp:
 					c=SRC[ExecPtr];
 					if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
-					else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+					else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 					Matrix1:
 					if ( SRC[ExecPtr] == '[' ) {
 					Matrix:
@@ -575,7 +587,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x6D :		// List4
 				case 0x6E :		// List5
 				case 0x6F :		// List6
-					reg=c+(32-0x6A); goto Listj;
+					reg=c+(58-0x6A); goto Listj;
 						
 				case 0x3A :				// MOD(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);
@@ -714,10 +726,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFD0 :	// PI
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
-			c = SRC[ExecPtr];
-			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atoi( SRC, c ) );
-			result=rand();
-			return result ;
+			return CB_rand( SRC ) ;
 		case 0xFFFFFF97 :	// abs
 			result = abs( EvalIntsub5( SRC ) );
 			return result ;
@@ -735,6 +744,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
 			return CB_PeekInt( SRC, EvalIntsub1( SRC ) );	// 
+		case '@' :	// Mat @A
+			ExecPtr--;
+			goto Matjmp;
 
 		case '{':	// { 1,2,3,4,5... }->List Ans
 			CB_List(SRC);

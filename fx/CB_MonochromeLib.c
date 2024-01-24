@@ -224,32 +224,27 @@ void CB_GetOprand3VWxyy( char *SRC, int *px, int *py1, int *py2) {
 	}
 }
 
-int CB_GetOprand_MLwidth( char *SRC ) {
-	MLV_width=1;	// line width
+int CB_GetOprand_int1( char *SRC, int *value ) {
 	if ( SRC[ExecPtr] != ',' ) return 0;
 	ExecPtr++;
 	if ( SRC[ExecPtr] == ',' ) return 1;
-	MLV_width=CB_EvalInt( SRC );
+	*value =CB_EvalInt( SRC );
 	return 1;
 }
+int CB_GetOprand_MLwidth( char *SRC ) {
+	MLV_width=1;	// line width
+	return CB_GetOprand_int1( SRC, &MLV_width );
+}
 int CB_GetOprand_MLangle( char *SRC, int *start, int *end, int *n ) {
+	int r;
 	*start=0;
 	*end=360;
 	*n=0;
-	if ( SRC[ExecPtr] != ',' ) return 0;
-	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) goto jp;
-	*start=CB_EvalInt( SRC );
-	if ( SRC[ExecPtr] != ',' ) return 1;
-  jp:
-	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) goto jp2;
-	*end=CB_EvalInt( SRC );
-	if ( SRC[ExecPtr] != ',' ) return 1;
-  jp2:
-	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) goto jp;
-	*n=CB_EvalInt( SRC );
+	r=CB_GetOprand_int1( SRC, &(*start) );
+	if ( r == 0 ) return 0;
+	r=CB_GetOprand_int1( SRC, &(*end) );
+	if ( r == 0 ) return 0;
+	r=CB_GetOprand_int1( SRC, &(*n) );
 	return 1;
 }
 
@@ -433,16 +428,36 @@ void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x
 
 //----------------------------------------------------------------------------------------------
 void CB_ML_H_Scroll( char *SRC ) { // ML_H_Scroll scroll
+	int c;
 	int scroll;
+	int x1,y1,x2,y2;
 	scroll=CB_EvalInt( SRC );
-	if ( ErrorNo ) return ;
-	ML_horizontal_scroll( scroll );
+	c=SRC[ExecPtr];
+	if ( c == ',' ) {
+		ExecPtr++;
+		CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
+		if ( ErrorNo ) return ;
+		ML_horizontal_scroll2( scroll, x1, y1, x2, y2 );
+	} else {
+		if ( ErrorNo ) return ;
+		ML_horizontal_scroll( scroll );
+	}
 }
 void CB_ML_V_Scroll( char *SRC ) { // ML_V_Scroll scroll
+	int c;
 	int scroll;
+	int x1,y1,x2,y2;
 	scroll=CB_EvalInt( SRC );
-	if ( ErrorNo ) return ;
-	ML_vertical_scroll( scroll );
+	c=SRC[ExecPtr];
+	if ( c == ',' ) {
+		ExecPtr++;
+		CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
+		if ( ErrorNo ) return ;
+		ML_vertical_scroll2( scroll, x1, y1, x2, y2 );
+	} else {
+		if ( ErrorNo ) return ;
+		ML_vertical_scroll( scroll );
+	}
 }
 
 //----------------------------------------------------------------------------------------------
@@ -656,15 +671,87 @@ void CB_ML_BmpRotate( char *SRC ) { // ML_BmpRotate( &Mat A,  x, y, width, heigh
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	CB_GetOprand4( SRC, &x, &y, &width, &height );
-	if ( SRC[ExecPtr] == ',' ) { 
-		ExecPtr++;
-		angle=-CB_EvalInt( SRC );
-	}
+	CB_GetOprand_int1( SRC, &angle );
 	CB_GetOprand_MLcolor( SRC, &color);
 	if ( ErrorNo ) return ;
 
 	ML_bmp_rotate( array, x, y, width, height, angle, color);
 }
+void ML_bmp_zoommem( unsigned char *vram, const unsigned char *bmp, int width, int height, float zoom_w, float zoom_h, int *width2, int *height2 ) {
+    int i, j, iz, jz, width_z, height_z, nb_width, i3, bit, x_screen, pixel;
+    int zoom_w14, zoom_h14;
+    int begin_x, end_x, begin_y, end_y;
+
+    if (!bmp) return;
+    if (zoom_h < 0) zoom_h = 0;
+    if (zoom_w < 0) zoom_w = 0;
+    zoom_w14 = zoom_w * 16384;
+    zoom_h14 = zoom_h * 16384;
+    width_z = width * zoom_w14 >> 14 ;
+    height_z = height * zoom_h14 >> 14;
+    nb_width = width + 7 >> 3;
+
+    if (width_z > 144) end_x = 144;
+    else end_x = width_z;
+    if (height_z > 72) end_y = 72;
+    else end_y = height_z;
+
+    for (iz=0; iz<end_x; iz++)
+    {
+        i = (iz << 14) / zoom_w14;
+        i3 = i >> 3;
+        bit = 0x80 >> (i & 7);
+        x_screen = iz;
+
+        for (jz=0; jz<end_y; jz++)
+        {
+            j = (jz << 14) / zoom_h14;
+            pixel = bmp[i3 + nb_width * j] & bit;
+
+			if (pixel != 0)	vram[(jz<<5)+(x_screen>>3)] |= 128>>(x_screen&7);
+			else			vram[(jz<<5)+(x_screen>>3)] &= ~(128>>(x_screen&7));
+        }
+    }
+    *width2 =end_x;
+    *height2=end_y;
+}
+
+void CB_ML_BmpZoomRotate( char *SRC ) { // ML_BmpZoom( &Mat A,  x, y, width, height, zoomwidth, zoomheight, angle [,color][,rand])
+	unsigned char* array;
+	unsigned char vram2[4096];	// vram buffer2
+	int x,y;
+	int width;
+	int height;
+	int angle=0;
+	int width2;
+	int height2;
+	int color;
+	float zoomwidth, zoomheight;
+	int i,j,k,k2,w,w2;
+	
+	array=(unsigned char *)CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	CB_GetOprand4( SRC, &x, &y, &width, &height );
+  	zoomwidth  = (float)CB_GetOprand_percent( SRC ) / (float)100 ;
+  	zoomheight = (float)CB_GetOprand_percent( SRC ) / (float)100 ;
+	CB_GetOprand_int1( SRC, &angle );
+	CB_GetOprand_MLcolor( SRC, &color);
+	if ( ErrorNo ) return ;
+	
+	ML_bmp_zoommem( vram2, array, width, height, zoomwidth, zoomheight, &width2, &height2 );
+	w=(width2+7)/8;
+	w2=256/8;
+	for ( i=1; i<height2; i++) {
+		k =i*w;
+		k2=i*w2;
+		for ( j=0; j<w; j++) {
+			vram2[k+j]=vram2[k2+j];
+		}
+	}
+	ML_bmp_rotate( vram2, x, y, width2, height2, angle, color);
+}
+
 //----------------------------------------------------------------------------------------------
 
 void CB_DrawMat( char *SRC ) { // DrawMat Mat A[x,y],px,py,width, height[,zoomwidth][,zoomheight][,ML_Color color][,chance])
@@ -895,6 +982,9 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 			break;
 		case 0xFFFFFFDA:	// _BmpRotate
 			CB_ML_BmpRotate( SRC );
+			break;
+		case 0xFFFFFFDE:	// _BmpZoomRotate
+			CB_ML_BmpZoomRotate( SRC );
 			break;
 			
 		case 0xFFFFFFC0:	// _ClrVRAM

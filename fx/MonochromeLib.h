@@ -131,7 +131,9 @@ void ML_filled_ellipse(int x, int y, int radius1, int radius2, ML_Color color);
 void ML_filled_ellipse_in_rect(int x, int y, int radius1, int radius2, ML_Color color);
 
 void ML_horizontal_scroll(int scroll);
+void ML_horizontal_scroll2(int scroll, int x1, int y1, int x2, int y2);
 void ML_vertical_scroll(int scroll);
+void ML_vertical_scroll2(int scroll, int x1, int y1, int x2, int y2);
 
 void ML_bmp_or(const unsigned char *bmp, int x, int y, int width, int height);
 void ML_bmp_and(const unsigned char *bmp, int x, int y, int width, int height);
