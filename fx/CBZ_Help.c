@@ -137,9 +137,9 @@ int PrintHelpLine( int *csry, int ymax, char *buffer, int ofst, int check ) {
 			if ( escape == 0 ) {
 				if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) { (*csry)+=6; break; }
 			}
+ 			if ( px > 122 ) { (*csry)+=6; px=1; }
 			if ( check ) px+=CB_PrintMiniLength( tmpb, 0 );
 			else px+=CB_PrintMiniC( c+1, d, tmpb, MINI_OVER ) ;
- 			if ( px > 122 ) { (*csry)+=6; px=1; }
  //			Bdisp_PutDisp_DD();
 			c=(char)*tmpb & 0xFF;
 			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) { tmpb++; }

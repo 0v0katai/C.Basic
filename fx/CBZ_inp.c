@@ -75,14 +75,15 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 
 	if ( num < 0 ) minus=-1;
 	if ( cplx ) { width--; minus=-1; }
+	fabsnum=fabs(num);
 	switch ( round_mode ) {
 		case Norm:
+		  norm:
 			if ( round_digit==1 ) { dpoint=0.01;        digit=10; }
 			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; }
 			if ( round_digit==0 ) digit=16;
 //			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; i=11; c='f'; break; }
 //			num = Round( num, round_mode, digit);
-			fabsnum=fabs(num);
 		 	w=15; if ( w > width )  w=width;
 		 	pw=pow(10,w+minus);
 			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
@@ -106,9 +107,15 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 			}
 			break;
 		case Fix:
-				i=digit;
-				c='f';
-			break;
+				num = Round( num, round_mode, digit);
+				if ( num==0 ) minus=0;
+				if ( fabsnum < 1e17 ) {
+					i=digit;
+					c='f';
+					break;
+				}
+				round_mode=Norm; round_digit=0;
+				goto norm;
 		case Sci:
 				num = Round( num, round_mode, digit);
 				i=digit-1; if ( i < 0 ) i=15;
@@ -218,7 +225,8 @@ void sprintGRSiE( char* buffer, double num, int width, int align_mode, int round
 	int r;
 	if ( ENG==1 ) { // ENG mode
 		fabsnum=fabs(num);
-		if ( ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
+		num = Round( num, round_mode, round_digit );
+		if ( ( num != 0 ) && ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
 			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
 			else if ( fabsnum >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
 			else if ( fabsnum >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
@@ -232,6 +240,7 @@ void sprintGRSiE( char* buffer, double num, int width, int align_mode, int round
 			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
 			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
 			width-- ; 
+			round_mode=Norm; round_digit=0;
 			sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, cplx );
 			width=strlen((char*)buffer);
 			if ( ( cplx ) && ( buffer[width-1] == 0x50 ) && c ) { 
@@ -246,6 +255,8 @@ void sprintGRSiE( char* buffer, double num, int width, int align_mode, int round
 			}
 			buffer[width]='\0';
 			return ;
+		} else {
+			if ( round_mode==Fix ) { round_mode=Norm; round_digit=0; }
 		}
 	}
 	sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, cplx );

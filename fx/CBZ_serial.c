@@ -101,10 +101,22 @@ int receive_formatdata( unsigned char *buffer, int *type, int *n ){
 
 //------------------------------------------------------------------------------
 
+int type_DBLorCPLX( int *type ){
+	int length;
+	if ( CB_INT==0 ) {
+		(*type)=SERIAL_DOUBLE;
+		length=8; 
+	} else {
+		(*type)=SERIAL_CPLX;
+		length=16; 
+	}
+	return length;
+}
 
 int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	int c,result,maxoplen;
 	int reg,dimA, dimB,ElementSize,m,n;
+	int base;
 	c=SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
 		ExecPtr++;
@@ -121,9 +133,9 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 		} else
-		if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; (*length)=8; *type=SERIAL_DOUBLE; }
+		if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; (*length)=type_DBLorCPLX(&(*type)); }
 		else
-		if (CB_INT==1)	{ result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; } else { result=(int)&LocalDbl[reg][0]; (*length)=8; *type=SERIAL_DOUBLE; }
+		if (CB_INT==1)	{ result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; } else { result=(int)&LocalDbl[reg][0]; (*length)=type_DBLorCPLX(&(*type)); }
 	} else
 	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// Mat or Vct
 		ExecPtr+=2;
@@ -137,19 +149,19 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		Matrix2:	
 			if ( ErrorNo ) return 0 ; // error
 			result=(int)MatrixPtr( reg, dimA, dimB );
+			goto Matrix3;
+		Matrix3base:
+			dimA = MatAry[reg].Base;
+			dimB = MatAry[reg].Base;
 		Matrix3:
+			base = 1-MatAry[reg].Base;
+			(*length) = MatrixSize( reg, MatAry[reg].SizeA, MatAry[reg].SizeB ) - MatrixSize( reg, dimA+base, dimB+base ) + MatrixSize( reg, 1, 1 );
+
 			ElementSize=MatAry[reg].ElementSize; if ( ElementSize==2 ) ElementSize=1;
-			m=MatAry[reg].SizeA;
-			n=MatAry[reg].SizeB;
-			if ( ElementSize>1 ) {
-				(*length)=m*n*(ElementSize>>3);
-			} else {	// 1 bit matrix
-				(*length)=( ((m-1)>>3)+1 )*n;
-			}
 			*type=ElementSize;
 		} else {
 			result=(int)MatAry[reg].Adrs;	// Mat A
-			goto Matrix3;
+			goto Matrix3base;
 		}
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
@@ -165,7 +177,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 			goto Matrix3;
 		} else {
 			result=(int)MatAry[reg].Adrs;	// List 1
-			goto Matrix3;
+			goto Matrix3base;
 		}
 	} else {
 		c=CB_IsStr( SRC, ExecPtr );
@@ -191,13 +203,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 				else {
 				if ( c=='#' ) ExecPtr++;
 				  cdbl:
-					if ( CB_INT==0 ) {
-						*type=SERIAL_DOUBLE;
-						(*length)=8; 
-					} else {
-						*type=SERIAL_CPLX;
-						(*length)=16; 
-					}
+					(*length)=type_DBLorCPLX(&(*type));
 					CB_CurrentValue=CB_Cplx_EvalDbl(SRC);
 					result=(int)&CB_CurrentValue; 
 				}

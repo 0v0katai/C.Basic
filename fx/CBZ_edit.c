@@ -986,9 +986,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							BdispSetPointVRAM2( 127, y  , 2);		//
 							BdispSetPointVRAM2( 127, y+1, 2);		//
 						}											//
-
-						CB_Help( help_code, cy>(ymax/2+1) );	// help display
-						help_code = 0;
 						break;
 				case 4: 		// hex dump
 						i = csrPtr-offset;
@@ -1111,6 +1108,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			}
 
 			if ( dumpflg == 2 ) {
+					CB_Help( help_code, cy>(ymax/2+1) );	// help display
+					help_code = 0;
+					
 					locate((pcx-1+EDITpxNum)/6+1,cy); 
 			} else	locate(cx,cy);
 			
