@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.3                                        */
+/*   inp Library  ver 1.4                                        */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -14,6 +14,8 @@
 #include "CB_inp.h"
 #include "CB_io.h"
 #include "CB_Kana.h"
+#include "CB_interpreter.h"
+#include "CB_setup.h"
 
 //----------------------------------------------------------------------------------------------
 //int inpObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
@@ -286,7 +288,7 @@ const short CharKANA[]= {
 	
 
 short *oplist=CharMATH;
-int CharPtr=0;
+char CharPtr=0;
 
 unsigned int SelectChar( int *ContinuousSelect ) {
 
@@ -473,6 +475,7 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 }
 
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 void DMS_Opcode( char * buffer, short code ) {
 	if ( code == 0x9C ) { strcat( buffer,"(deg)"); }
 	if ( code == 0xAC ) { strcat( buffer,"(rad)"); }
@@ -480,7 +483,7 @@ void DMS_Opcode( char * buffer, short code ) {
 }
 
 int SelectOpcode( int listselect, int flag ) {
-	int *select;
+	short *select;
 	short *oplist;
 	int opNum;
 	char buffer[22];
@@ -632,8 +635,8 @@ const short oplistOPTN[]={
 		0xB6,	// frac
 		0xAB,	// !
 		0x7F3A,	// MOD(
-		0x7F3C,	// GCD(
-		0x7F3D,	// LCM(
+//		0x7F3C,	// GCD(
+//		0x7F3D,	// LCM(
 		0x7F85,	// logab(
 		
 		0xFFFF,	// 				-
@@ -669,6 +672,10 @@ const short oplistOPTN[]={
 		0x7F46,	// Dim
 		0x7F41,	// Trn 
 		0x7F47,	// Fill(
+		0x7F45,	// Swap
+		0x7F42,	// *Row
+		0x7F43,	// *Row+
+		0x7F44,	// Row+
 		0x7F58,	// ElemSize(
 		0x7F59,	// ColSize(
 		0x7F5A,	// RowSize(
@@ -745,11 +752,11 @@ const short oplistPRGM[]={
 		
 		0xFFFF,	// 				-
 		0x3D,	// =
-		0x3C,	// <
-		0x3E,	// >
-		0x10,	// <=
 		0x11,	// !=
+		0x3E,	// >
+		0x3C,	// <
 		0x12,	// >=
+		0x10,	// <=
 		
 		0xFFFF,	// 				-
 		0xE2,	// Lbl
@@ -830,7 +837,7 @@ const short oplistPRGM[]={
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
-		0xF93A,	// StrDwr(
+		0xF93A,	// StrLwr(
 		0xF93B,	// StrInv(
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
@@ -866,6 +873,8 @@ const short oplistVARS[]={
 		0xDA,	// Deg
 		0xDB,	// Rad
 		0xDC,	// Grad
+		0xF770,	// G-Connect
+		0xF771,	// G-Plot
 		0xF7C3,	// CoordOn
 		0xF7D3,	// CoordOff
 		0xF77D,	// GridOn
@@ -874,8 +883,8 @@ const short oplistVARS[]={
 		0xF7D2,	// AxesOff
 		0xF7C4,	// LabelOn
 		0xF7D4,	// LabelOff
-		0xF770,	// G-Connect
-		0xF771,	// G-Plot
+		0xF7C5,	// DerivOn
+		0xF7D5,	// DerivOff
 
 		0xFFFF,	// 				-
 		0xF71C,	// S-L-Normal
@@ -1060,28 +1069,28 @@ const short oplistCMD[]={		// 5800P like
 //											5
 		0x7F46,	// Dim	
 		0x7F49,	// Argument(
-		0x7F2C,	// Seq(
 		0x7F4B,	// Mat->List(
-		0xF7B0,	// SortA(
-		0xF7B1,	// SortB(
-		0x7F20,	// Max(
-		0x7F2D,	// Min(
-		0x7F2E,	// Mean(
-		0x7F88,	// RanList#(
+		0x7F4A,	// List->Mat(
+		0x7F41,	// Trn 
+		0x7F47,	// Fill(
+		0x7F45,	// Swap
+		0x7F42,	// *Row
+		0x7F43,	// *Row+
+		0x7F44,	// Row+
 		0x23,	// #
 		0x25,	// %
 
 //											6
-		0xF91E,	// ClrMat	
-		0xF71A,	// ClrList	
-		0x7F4A,	// List->Mat(
-		0x7F4B,	// Mat->List(
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
+		0x7F49,	// Argument(
+		0x7F2C,	// Seq(
+		0x7F20,	// Max(
+		0x7F2D,	// Min(
+		0x7F2E,	// Mean(
+		0x7F88,	// RanList#(
+		0xF7B0,	// SortA(
+		0xF7B1,	// SortB(
 		0x7F4C,	// Sum
 		0x7F4D,	// Prod
-		0x7F29,	// Sigma( 
-		0x7E,	// ~
 		0x23,	// #
 		0x25,	// %
 
@@ -1177,8 +1186,8 @@ const short oplistCMD[]={		// 5800P like
 		0xAB,	// !
 		0x7FBC,	// Int/
 		0x7FBD,	// Rmdr
+		0x7F29,	// Sigma( 
 		0x7F85,	// logab(
-		0xFFFF,	// 
 		0x23,	// #
 		0x25,	// %
 
@@ -1256,7 +1265,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
-		0xF93A,	// StrDwr(
+		0xF93A,	// StrLwr(
 		0xF93B,	// StrInv(
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
@@ -1312,10 +1321,10 @@ const short oplistCMD[]={		// 5800P like
 		0xF7FA,	// RefreshTime
 		0x7F9F,	// KeyRow(
 		0xF7FE,	// BackLight
+		0x7F5B,	// MatBase(
 		0x7F58,	// ElemSize(
 		0x7F59,	// ColSize(
 		0x7F5A,	// RowSize(
-		0x7F5B,	// MatBase(
 		0x23,	// #
 		0x25,	// %
 		
@@ -1368,7 +1377,7 @@ void FkeyRel(){
 #define CMD_EX  20
 
 int SelectOpcode5800P( int flag ) {
-	int *select=&selectCMD;
+	short *select=&selectCMD;
 	short *oplist=oplistCMD;
 	int opNum=0 ;
 	char buffer[22];
@@ -2011,15 +2020,16 @@ void PutAlphamode1( int CursorStyle ){
 	if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 }
 
-int selectCMD=0;
-int selectOPTN=0;
-int selectVARS=0;
-int selectPRGM=0;
+short selectCMD=0;
+short selectOPTN=0;
+short selectVARS=0;
+short selectPRGM=0;
 char lowercase=0;
 
 int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
 	char buffer2[256];
 	char buf[22];
+	char fnbuf[16*8];
 	unsigned int key=0;
 	int keyH,keyL;
 	int cont=1;
@@ -2032,7 +2042,6 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	int key2,multibyte=0;	// 0:mono   non 0:multi
 	int dspX;
 	int oplen,oplenL,oplenR;
-	int selectOPTN=0;
 	int alphalock = 0 ;
 	int ContinuousSelect=0;
 
@@ -2051,6 +2060,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 		PutKey( KEY_CTRL_ALPHA, 1 );
 	}
 
+	memcpy( fnbuf, GetVRAMAddress()+16*8*7, 16*8);		// fn key image save
+	CommandType=0; CommandPage=0;
+
 	while (cont) {
 		Cursor_SetFlashMode(1);			// cursor flashing on
 		length=strlenOp( buffer );
@@ -2063,9 +2075,10 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				else				PrevOpcode( buffer, &offsetX);
 		}
 		
+		memcpy( GetVRAMAddress()+16*8*7, fnbuf, 16*8);		// fn key image restore
 		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
 		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_dispR(4,"CHAR"); }
-
+		if ( CommandInputMethod ) DispGenuineCmdMenu();
 
 		CursorStyle=Cursor_GetFlashStyle();
 		if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
@@ -2086,10 +2099,15 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				alphalock = 0 ;
 				break;
 			case KEY_CTRL_EXIT:
-			case KEY_CTRL_QUIT:
-			 	if ( exit_cancel == 0 ) {
-					cont=0;
-					for(i=0; i<=MaxStrlen; i++) buffer[i]=buffer2[i]; // restore
+				if ( CommandType ) {
+					CommandType>>=4;
+					CommandPage=CommandType & 0xF;
+					CommandType>>=4;
+				} else { 
+			inpexit:	if ( exit_cancel == 0 ) {
+						cont=0;
+						for(i=0; i<=MaxStrlen; i++) buffer[i]=buffer2[i]; // restore
+					}
 				}
 				break;
 			case KEY_CTRL_EXE:
@@ -2118,55 +2136,112 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 					ptrX=length;
 				break;
 			case KEY_CTRL_F1:
-				if ( length ) cont=0;
+				if ( CommandType ) GetGenuineCmdF1( &key );
+				else if ( length ) cont=0;
+				break;
+			case KEY_CTRL_F2:
+				if ( CommandType ) GetGenuineCmdF2( &key );
+				break;
+			case KEY_CTRL_F3:
+				if ( CommandType ) GetGenuineCmdF3( &key );
+				else {
+					if ( CommandInputMethod ) { 
+						CommandType=CMD_MENU; CommandPage=0;
+					} else {
+						key=SelectOpcode5800P( 0 );
+						if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+					}
+				}
 				break;
 			case KEY_CTRL_F4:
-				if ( ( pallet_mode ) && ( alpha_mode ) ) {
-					lowercase=1-lowercase;
-					if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+				if ( CommandType ) GetGenuineCmdF4( &key );
+				else {
+					if ( ( pallet_mode ) && ( alpha_mode ) ) {
+						lowercase=1-lowercase;
+						if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+					}
 				}
 				break;
 			case KEY_CTRL_F5:
-				Cursor_SetFlashMode(0); 		// cursor flashing off
-				if ( ( pallet_mode ) && ( alpha_mode ) ) {
-					key=SelectChar( &ContinuousSelect);
-					if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+				if ( CommandType ) { GetGenuineCmdF5( &key );
+					if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); CommandType=0; }
+				} else {
+					Cursor_SetFlashMode(0); 		// cursor flashing off
+					if ( ( pallet_mode ) && ( alpha_mode ) ) {
+						key=SelectChar( &ContinuousSelect);
+						if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+					}
 				}
 				break;
 			case KEY_CTRL_F6:	// !=
-				key='/';
+				if ( CommandType ) GetGenuineCmdF6( &key );
+				else key='/';
 				break;
 			case KEY_CTRL_SHIFT:
 				alphalock = 0 ;
+				if ( CommandInputMethod ) SHIFT_MENU();
 				GetKey(&key);
 				switch (key) {
+					case KEY_CTRL_QUIT:
+						goto inpexit;
 					case KEY_CTRL_ALPHA:
 						if ( ( pallet_mode ) && ( alpha_mode ) ) alphalock = 1 ;
 						break;
+					case KEY_CTRL_F3:
+							if ( CommandInputMethod ) {
+								CommandType=CMD_SHIFT_VWIN; CommandPage=0;
+							}
+							break;
+					case KEY_CTRL_F4:
+							if ( CommandInputMethod ) {
+								CommandType=CMD_SHIFT_SKTCH; CommandPage=0;
+							}
+							break;
+//					case KEY_CTRL_F5:
+//							break;
+//					case KEY_CTRL_F6:
+//							break;
+					case KEY_CTRL_SETUP:
+							if ( CommandInputMethod ) {
+								CommandType=CMD_SETUP; CommandPage=0;
+							} else {
+								selectSetup=SetupG(selectSetup);
+							}
+							break;
+					case KEY_CTRL_PRGM:
+							if ( CommandInputMethod ) {
+								CommandType=CMD_PRGM; CommandPage=0;
+							} else {
+								key=SelectOpcode( CMDLIST_PRGM, 0 );
+								if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+							}
+							break;
 					default:
-						break;
+							break;
 				}
 				break;
+
+			case KEY_CTRL_OPTN:
+				if ( CommandInputMethod ) { 
+					CommandType=CMD_OPTN; CommandPage=0;
+				} else {
+					key=SelectOpcode( CMDLIST_OPTN, 0 );
+					if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+				}
+				break;
+			case KEY_CTRL_VARS:
+				if ( CommandInputMethod ) { 
+					CommandType=CMD_VARS; CommandPage=0;
+				} else {
+					key=SelectOpcode( CMDLIST_VARS, 0 );
+					if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+				}
+				break;
+
 			default:
 				break;
 		}
 
-		if ( key == KEY_CTRL_F3 )  {
-				key=SelectOpcode5800P( 0 );
-				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
-		}
-		if ( key == KEY_CTRL_OPTN ) {
-				key=SelectOpcode( CMDLIST_OPTN, 0 );
-				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
-		}
-		if ( key == KEY_CTRL_VARS ) {
-				key=SelectOpcode( CMDLIST_VARS, 0 );
-				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
-		}
-		if ( key == KEY_CTRL_PRGM ) {
-				key=SelectOpcode( CMDLIST_PRGM, 0 );
-				if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
-		}
 		if ( alpha_mode || exp_mode ) {
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;

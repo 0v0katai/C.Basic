@@ -80,7 +80,10 @@ void CB_Seq( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_ListCalc( char *SRC ) ; //	List 1 -> List 2  etc
 void CB_Argument( char *SRC ) ;	// Argument( List1, List2 )		Argument( Mat A, Mat B)
 void CB_SortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )
-void CB_MatSwap( char *SRC ) ;	// Swap Mat A,2,3
+void CB_MatSwap( char *SRC ) ;		// Swap Mat A,2,3
+void CB_MatxRow( char *SRC ) ;		// *Row 5,A,2
+void CB_MatxRowPlus( char *SRC ) ;	// *Row+ 5,A,2,3
+void CB_MatRowPlus( char *SRC ) ;	// Row+ A,2,3
 void CB_Mat2List( char *SRC ) ;	// Mat>List( Mat A, m) -> List n
 void CB_List2Mat( char *SRC ) ;	// List>Mat( List 1, List 2,..) -> List 5
 

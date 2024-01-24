@@ -44,7 +44,8 @@ void CB_PrintMini( int px, int py, const unsigned char *str, int mode);
 
 void PrintXYR(int ,int ,char *,int );
 void Fkey_dispN(int ,char *);
-void Fkey_dispR(int ,char *) ;
+void Fkey_dspRB(int ,char *);
+void Fkey_dispR(int ,char *);
 void Fkey_DISPN(int ,char *);
 void Fkey_DISPR(int ,char *);
 void Fkey_Clear(int );
