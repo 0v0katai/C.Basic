@@ -513,7 +513,7 @@ char * loadFile( const char *name , int editMax)
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 )
 	{
-		ErrorMSGfile( "Can't open file", name);
+		ErrorMSGfile( "Can't find file", name);
 		return NULL;
 	}
 

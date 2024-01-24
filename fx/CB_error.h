@@ -53,6 +53,7 @@ extern int ErrorNo;
 #define ArraySizeERR 45
 #define NotfoundProgERR 46
 #define TooManyProgERR 47
+#define ThenWithoutIfERR 48
 
 //------------------------------------------------------------------------------
 void ERROR(char *buffer) ;
