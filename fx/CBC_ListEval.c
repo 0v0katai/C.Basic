@@ -376,6 +376,19 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x5B :				// MatBase( Mat A )
 					return Int2Cplx( CB_MatBase( SRC ) );
 					
+				case 0x5D :				// GetRGB() ->ListAns
+					return Int2Cplx(CB_GetRGB( SRC , 0 ) );
+				case 0x5E :				// RGB(
+					return Int2Cplx(CB_RGB( SRC , 0 ) );
+				case 0x70 :				// GetHSV() ->ListAns
+					return Int2Cplx(CB_GetRGB( SRC , 0x11 ) );
+				case 0x71 :				// HSV(
+					return Int2Cplx(CB_RGB( SRC , 1) );
+				case 0x72 :				// GetHSL() ->ListAns
+					return Int2Cplx(CB_GetRGB( SRC , 0x12 ) );
+				case 0x73 :				// HSL(
+					return Int2Cplx(CB_RGB( SRC , 2 ) );
+
 				case 0x5C :				// ListCmp( List 1, List 2)
 					return Int2Cplx( CB_ListCmp( SRC ) );
 					
@@ -785,7 +798,7 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
 				c = SRC[ExecPtr+1];
-				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) ) goto exitj;	// And Or Not xor
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
@@ -800,6 +813,7 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
+				case 0x1B:	// fn
 				case 0x21:	// Xdot
 				case 0x31:	// StrLen(
 				case 0x32:	// StrCmp(

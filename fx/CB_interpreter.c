@@ -869,6 +869,7 @@ int CB_interpreter_sub( char *SRC ) {
 			else		CB_Store(SRC);		// ->
 			dspflagtmp=dspflag+0x10; //	12:nomal  13:mat  14:list
 			c=SRC[ExecPtr];
+			if ( c == 0x0E ) goto inext1;
 		}
 		if ( c == 0x13 ) {					// =>
 		  inext2:
@@ -1172,13 +1173,15 @@ void Skip_quot( char *SRC ){ // skip "..."
 }
 
 //----------------------------------------------------------------------------------------------
-void Skip_rem( char *SRC ){	// skip '...
+void Skip_rem_sub( char *SRC, int nonopflag ){	// skip '...
 	int c,reg;
 remloop:
 	c=SRC[ExecPtr++];
 	if ( c=='/' ) { 	// '/ execute C.Basic only
 		return;
 	} else 
+	if ( nonopflag ) goto next;
+	else
 	if ( c=='#' ) {
 		c=SRC[ExecPtr++];
 		if ( c=='C') {
@@ -1280,6 +1283,7 @@ remloop:
 
 		}
 	}
+  next:
 	while (1){
 		switch ( c ) {
 			case 0x00:	// <EOF>
@@ -1310,11 +1314,15 @@ remloop:
 	}
 }
 
+void Skip_rem_no_op( char *SRC ){
+	Skip_rem_sub( SRC, 1 );
+}
+
 void CB_Rem( char *SRC, CchIf *Cache ){
 	int i,ii,j,execptr;
 	int c=SRC[ExecPtr];
 	if ( c=='#' ) { 	// C.Basic command
-		Skip_rem( SRC );
+		Skip_rem_sub( SRC, 0 );
 		return;
 	}
 	j=0; i=Cache->TOP;
@@ -1333,7 +1341,7 @@ void CB_Rem( char *SRC, CchIf *Cache ){
 		i++; if ( i >= IfCntMax ) i=0;
 	}
 	execptr=ExecPtr;
-	Skip_rem( SRC );
+	Skip_rem_sub( SRC, 0 );
 	if ( Cache->CNT < IfCntMax ) Cache->CNT++;
 	Cache->TOP--; if ( Cache->TOP<0 ) Cache->TOP=IfCntMax-1;
 	Cache->Ptr[Cache->TOP] =execptr;
@@ -1568,7 +1576,7 @@ void Search_IfEnd( char *SRC ){
 }
 
 int Search_ElseIfEnd( char *SRC ){
-	unsigned int c;
+	int c;
 	while (1){	// Search  Else or IfEnd
 		c=SRC[ExecPtr++];
 		switch ( c ) {
@@ -1587,11 +1595,11 @@ int Search_ElseIfEnd( char *SRC ){
 					Search_IfEnd(SRC);
 					break;
 				} else
-				if ( c == 0x02 ) return 1 ; 	// Else
+				if ( c == 0x02 ) return c ; 	// Else
 				else
-				if ( c == 0x03 ) return 2 ; 	// IfEnd
+				if ( c == 0x03 ) return c ; 	// IfEnd
 				else
-				if ( c == 0x0F ) return 3 ; 	// ElseIf
+				if ( c == 0x0F ) return c ; 	// ElseIf
 				break;
 			case 0x0000007F:	// 
 			case 0xFFFFFFF9:	// 
@@ -1613,7 +1621,7 @@ void CB_If( char *SRC, CchIf *Cache ){
 	judge  = CB_EvalCheckZero( SRC );
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
-	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
+	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c=SRC[ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
 	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
 	if ( judge ) return ; // true
 	
@@ -1634,7 +1642,7 @@ void CB_If( char *SRC, CchIf *Cache ){
 	}
 	execptr=ExecPtr;
 	stat=Search_ElseIfEnd( SRC );
-	if ( stat == 3 ) goto loop; 	// ElseIf
+	if ( stat == 0x0F ) goto loop; 	// ElseIf
 	if ( Cache->CNT < IfCntMax ) Cache->CNT++;
 	Cache->TOP--; if ( Cache->TOP<0 ) Cache->TOP=IfCntMax-1;
 	Cache->Ptr[Cache->TOP] =execptr;
@@ -2983,24 +2991,24 @@ int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

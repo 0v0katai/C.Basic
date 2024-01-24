@@ -540,10 +540,6 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
@@ -698,6 +694,10 @@ double EvalsubTop( char *SRC ) {	// eval 1
 }
 
 //----------------------------------------------------------------------------------------------
+int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 
 double frac( double x ) {
@@ -1294,6 +1294,10 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrix( reg, dimA, dimB);
 											
+				case 0x50 :		// i
+					CB_Error(NonRealERR);
+					return result;
+						
 				case 0x3A :				// MOD(a,b)
 					Get2Eval( SRC, &tmp, &tmp2);
 					return fMOD(tmp,tmp2);
@@ -1433,6 +1437,19 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x5B :				// MatBase( Mat A )
 					return CB_MatBase( SRC );
 					
+				case 0x5D :				// GetRGB() ->ListAns
+					return CB_GetRGB( SRC, 0 );
+				case 0x5E :				// RGB(
+					return CB_RGB( SRC, 0 );
+				case 0x70 :				// GetHSV() ->ListAns
+					return CB_GetRGB( SRC, 1 );
+				case 0x71 :				// HSV(
+					return CB_RGB( SRC, 1 );
+				case 0x72 :				// GetHSL() ->ListAns
+					return CB_GetRGB( SRC, 2 );
+				case 0x73 :				// HSL(
+					return CB_RGB( SRC, 2 );
+
 				case 0x5C :				// ListCmp( List 1, List 2)
 					return CB_ListCmp( SRC );
 					
@@ -1843,7 +1860,7 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				result *= Evalsub4( SRC ) ;
 		} else if ( c == 0x7F ) { // 7F..
 				c = SRC[ExecPtr+1];
-				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) ) goto exitj;	// And Or Not xor
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result *= Evalsub4( SRC ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
@@ -1858,6 +1875,7 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
+				case 0x1B:	// fn
 				case 0x21:	// Xdot
 				case 0x31:	// StrLen(
 				case 0x32:	// StrCmp(
