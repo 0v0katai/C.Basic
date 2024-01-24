@@ -204,7 +204,7 @@ void MiniCursorFlashing() {		// timer IRQ handler
 				minicsr.GraphData.pBitmap = CsrDATA; 	// mini cursor pattern
 				minicsr.WriteModify = IMB_WRITEMODIFY_NORMAL;
 				minicsr.WriteKind = IMB_WRITEKIND_OR;
-				if (   ( mini==2 ) || ( mini==4 ) )	minicsr.WriteKind = IMB_WRITEKIND_XOR;	// reverse mode
+				if (   ( mini>=2 ) )	minicsr.WriteKind = IMB_WRITEKIND_XOR;	// reverse mode
 				if ( ( ( mini==3 ) || ( mini==4 ) ) && ( CursorStyle < 0x06 ) ) {			// under cursor
 					minicsr.y = MiniCursorY+5;
 					minicsr.GraphData.height = 1;
@@ -410,7 +410,7 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 	unsigned char *tmpb;
 	int i,len,px=1,y=0,rev;
 	int opcode;
-	int  c=1;
+	int  c=1,d;
 	int Numflag=0;
 	int yk,mini= EditFontSize & 0x0F ;
 	if ( mini ) yk=6; else yk=8;
@@ -431,15 +431,14 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 					sprintf( (char*)buff, "%3d:", EditLineNum+(*csry) );
 					CB_PrintMini( 0, ((*csry)-1)*yk+2, buff, MINI_OVER );
 				}
-				if ( mini == 0 ) {
+				if ( mini == 0 ) { c=px-1+EDITpxNum;
 //					CB_PrintXYC( px-1+EDITpxNum, ((*csry)-1)*8, tmpb, rev ) ;
-					if ( rev )
-							CB_PrintRevC( (px-1+EDITpxNum)/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
-					else	CB_PrintC(    (px-1+EDITpxNum)/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
+					if ( rev )	CB_PrintRevC( c/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
+					else		CB_PrintC(    c/6+1 ,(*csry), (unsigned char*)(tmpb) ) ;
 					px+=6;
-				} else {
-					if ( rev )	px+=CB_PrintMiniC( px+EDITpxNum, ((*csry)-1)*6+2, tmpb, MINI_REV  ) ;
-					else		px+=CB_PrintMiniC( px+EDITpxNum, ((*csry)-1)*6+2, tmpb, MINI_OVER ) ;
+				} else { c=px+EDITpxNum; d=((*csry)-1)*6+2;
+					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV  ) ;
+					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER ) ;
 					MiniCursorflag=0;		// mini cursor initialize
 					MiniCursorFlashing();
 				}

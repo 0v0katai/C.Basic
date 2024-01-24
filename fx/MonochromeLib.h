@@ -72,6 +72,9 @@
 // #define ML_BMP_16_AND_CL
 // #define ML_BMP_16_XOR_CL
 
+// #define ML_BMP_ZOOM
+
+// #define ML_BMP_ROTATE
 
 /**************************/
 /** Functions prototypes **/
@@ -150,6 +153,21 @@ void ML_bmp_16_xor(const unsigned short *bmp, int x, int y);
 void ML_bmp_16_or_cl(const unsigned short *bmp, int x, int y);
 void ML_bmp_16_and_cl(const unsigned short *bmp, int x, int y);
 void ML_bmp_16_xor_cl(const unsigned short *bmp, int x, int y);
+
+void ML_bmp_zoom(const unsigned char *bmp, int x, int y, int width, int height, float zoom_w, float zoom_h, ML_Color color);
+void ML_bmp_rotate(const unsigned char *bmp, int x, int y, int width, int height, int angle, ML_Color color);
+
+void ML_circle2(int x, int y, int radius, ML_Color color, int start, int end, int n ) ;	// start:end  0~360
+void ML_DrawMat( int x, int y, int width, int height, unsigned char *Mat, int mx1, int my1, int mx2, int my2, ML_Color color ) ;
+
+int MLTest_point(int x, int y, int width );
+int MLTest_line(int x1, int y1, int x2, int y2);
+int MLTest_horizontal_line(int y, int x1, int x2 );
+int MLTest_rectangle(int x1, int y1, int x2, int y2 );
+int MLTest_filled_polygon(const int *x, const int *y, int nb_vertices );
+int MLTest_filled_circle(int x, int y, int radius);
+int MLTest_filled_ellipse(int x, int y, int radius1, int radius2 );
+int MLTest_filled_ellipse_in_rect(int x1, int y1, int x2, int y2);
 
 #ifdef __cplusplus
 }

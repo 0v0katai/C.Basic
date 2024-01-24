@@ -678,7 +678,7 @@ int CB_interpreter_sub( char *SRC ) {
 				
 			case 0xFFFFFFF9:	// F9
 				c=SRC[ExecPtr++];
-				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) && ( c != 0xFFFFFFC6 ) ) { CB_ML_command( SRC, c ); break; }
+				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) && ( c != 0xFFFFFFC6 ) && ( c != 0xFFFFFFD8 ) ) { CB_ML_command( SRC, c ); break; }
 				else
 				if ( ( 0x34 <= c ) && ( c <= 0x37 ) )  goto strjp;
 				else
@@ -1028,10 +1028,10 @@ remloop:
 					defaultStrAry= reg;
 					if ( SRC[ExecPtr] == ',') {
 						c=SRC[++ExecPtr];
-						defaultStrAryN=Eval_atod( SRC, c );
+						defaultStrAryN=Eval_atoi( SRC, c );
 						if ( SRC[ExecPtr] == ',') {
 							c=SRC[++ExecPtr];
-							defaultStrArySize=Eval_atod( SRC, c );
+							defaultStrArySize=Eval_atoi( SRC, c );
 						}
 					}
 				}
@@ -1042,10 +1042,10 @@ remloop:
 					defaultFnAry= reg;
 					if ( SRC[ExecPtr] == ',') {
 						c=SRC[++ExecPtr];
-						defaultFnAryN=Eval_atod( SRC, c );
+						defaultFnAryN=Eval_atoi( SRC, c );
 						if ( SRC[ExecPtr] == ',') {
 							c=SRC[++ExecPtr];
-							defaultFnArySize=Eval_atod( SRC, c );
+							defaultFnArySize=Eval_atoi( SRC, c );
 						}
 					}
 				}
@@ -1059,10 +1059,10 @@ remloop:
 					defaultGraphAry= reg;
 					if ( SRC[ExecPtr] == ',') {
 						c=SRC[++ExecPtr];
-						defaultGraphAryN=Eval_atod( SRC, c );
+						defaultGraphAryN=Eval_atoi( SRC, c );
 						if ( SRC[ExecPtr] == ',') {
 							c=SRC[++ExecPtr];
-							defaultGraphArySize=Eval_atod( SRC, c );
+							defaultGraphArySize=Eval_atoi( SRC, c );
 						}
 					}
 				}
@@ -1692,7 +1692,7 @@ void CB_Case( char *SRC, StkSwitch *StackSwitch, CurrentStk *CurrentStruct ) {
 	StackSwitch->Ptr--;
 
 	c=SRC[ExecPtr];
-	value=Eval_atod( SRC, c );
+	value=Eval_atoi( SRC, c );
 //	c=SRC[ExecPtr];
 //	if ( ( c!=0x0D ) && ( c!=':' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 //	ExecPtr++;
@@ -2336,8 +2336,8 @@ int CB_interpreter( char *SRC ) {
 	ErrorNo = 0;
 
 	defaultStrAry=26;	// <r>
-	defaultStrAryN=20;
-	defaultStrArySize=255+1;
+//	defaultStrAryN=20;
+//	defaultStrArySize=255+1;
 	defaultFnAry=27;		// Theta
 	defaultGraphAry=27;		// Theta
 

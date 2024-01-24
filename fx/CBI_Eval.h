@@ -69,9 +69,11 @@ int EvalIntsub7(char *SRC);
 int EvalIntsub14(char *SRC);
 int EvalIntsubTop(char *SRC);
 int CB_EvalInt( char *SRC ) ;
+int Eval_atoi(char *SRC, int c ) ;
 
 int EvalInt(char *SRC) ;		// Eval temp
 int CB_RTC_GetTicks() ;
+int CB_GetkeyEntry( char *SRC ) ;
 int CB_Getkey3( char *SRC ) ;
 int CB_KeyRow( char *SRC ) ;		// Row Keyscan
 

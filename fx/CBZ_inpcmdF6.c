@@ -139,7 +139,8 @@ void GetGenuineCmdF6( unsigned int *code ){
 				case 1: CommandPage=2;break;
 				case 2: CommandPage=3;break;
 				case 3: CommandPage=4;break;
-				case 4: CommandPage=0;break;
+				case 4: CommandPage=5;break;
+				case 5: CommandPage=0;break;
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F6

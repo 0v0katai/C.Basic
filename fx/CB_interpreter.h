@@ -113,7 +113,7 @@ extern char *GraphX;
 
 #define PI 3.1415926535897932
 
-#define PictMax 20
+#define PictMax 99
 extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
 
 extern char BG_Pict_No;

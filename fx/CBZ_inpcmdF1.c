@@ -203,10 +203,11 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_SHIFT_SKTCH_ML:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9C0;return;	// _ClrVRAM
-				case 1: (*code)=0xF9C6;return;	// _PixelTest(
-				case 2: (*code)=0xF9CB;return;	// _Polygon
+				case 1: (*code)=0xF9C4;return;	// _Pixel 
+				case 2: (*code)=0xF9CA;return;	// _Rect 
 				case 3: (*code)=0xF9CF;return;	// _Elips 
 				case 4: (*code)=0xF9D3;return;	// _Hscroll
+				case 5: (*code)=0xF9D9;return;	// _BmpZoom
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F1

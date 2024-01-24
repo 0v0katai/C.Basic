@@ -180,10 +180,11 @@ void GetGenuineCmdF3( unsigned int *code ){
 		case CMD_SHIFT_SKTCH_ML:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9C2;return;	// _DispVRAM
-				case 1: (*code)=0xF9CA;return;	// _Rect 
-				case 2: (*code)=0xF9CD;return;	// _Circle
+				case 1: (*code)=0xF9C7;return;	// _Line 
+				case 2: (*code)=0xF9CC;return;	// _Fporgon 
 				case 3: (*code)=0xF9D1;return;	// _ElipsInRct 
 				case 4: (*code)=0xF9D5;return;	// _Bmp 
+//				case 5: (*code)=0xF9DB;return;	// _DrawMat
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F3

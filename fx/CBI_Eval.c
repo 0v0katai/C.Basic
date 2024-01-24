@@ -454,7 +454,7 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 //int EvalintObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
 //int EvalintObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
-int Eval_atod(char *SRC, int c ) {
+int Eval_atoi(char *SRC, int c ) {
 	int	result=0;
 	if ( c == '0' ) {
 		c = SRC[++ExecPtr];
@@ -532,7 +532,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 		return LocalInt[reg][0] ;
 	}
 	if ( ( '0'<=c )&&( c<='9' ) ) {
-		ExecPtr--; return  Eval_atod( SRC, c );
+		ExecPtr--; return  Eval_atoi( SRC, c );
 	}
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
@@ -599,20 +599,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
 				case 0xFFFFFF8F :		// Getkey
-					c = SRC[ExecPtr];
-					if ( ( '0'<=c )&&( c<='3' )) {	ExecPtr++ ;
-						switch ( c ) {
-							case '3':
-								result = CB_Getkey3( SRC ) ; 
-								break;
-							default:
-								result = CB_GetkeyN(c-'0') ;
-								break;
-						}
-						if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } 
-					}
-					else	result = CB_Getkey() ;
-					return	result ;
+					return CB_GetkeyEntry( SRC );
 					
 				case 0xFFFFFF87 :		// RanInt#(st,en)
 					Get2EvalInt( SRC, &x, &y);
@@ -692,38 +679,22 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return 3;
 				
 				case 0x46 :				// Dim
-					if ( SRC[ExecPtr]==0x7F ) {
-						if ( SRC[ExecPtr+1]==0x40 ) {	// Dim Mat
-							MatrixOprandreg( SRC, &reg );
-							WriteListAns2( MatAry[reg].SizeA, MatAry[reg].SizeB );
-							return MatAry[reg].SizeA;
-						} else
-						if ( SRC[ExecPtr+1]==0x51 ) {	// Dim List
-							MatrixOprandreg( SRC, &reg );
-							return MatAry[reg].SizeA;
-						}
-					} 
+					result=CB_Dim( SRC );
+					if ( result >= 0 ) return result;
 					ExecPtr--;	// error
 					break;
 				case 0x58 :				// ElemSize( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					i=MatAry[reg].ElementSize;
-					if (i <= 4 ) i=1;
-					return i;
+					return CB_ElemSize( SRC );
 				case 0x59 :				// ColSize( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAry[reg].SizeA;
+					return CB_ColSize( SRC );
 				case 0x5A :				// RowSize( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAry[reg].SizeB;
+					return CB_RowSize( SRC );
 				case 0x5B :				// MatBase( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAry[reg].Base;
+					return CB_MatBase( SRC );
 
+				case 0x5C :				// ListCmp( List 1, List 2)
+					return CB_ListCmp( SRC );
+					
 				case 0x4A :				// List>Mat( List 1, List 2,..) -> List 5
 					CB_List2Mat( SRC );
 					return 0;
@@ -744,7 +715,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[ExecPtr];
-			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atod( SRC, c ) );
+			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atoi( SRC, c ) );
 			result=rand();
 			return result ;
 		case 0xFFFFFF97 :	// abs
@@ -796,6 +767,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result = PxlTest(y, x) ;			// 
 					return result ;
+				case 0xFFFFFFB0 :				// SortA( List 1)
+					return CB_EvalSortAD( SRC, 1 );
+				case 0xFFFFFFB1 :				// SortD( List 1)
+					return CB_EvalSortAD( SRC, 0 );
 				case 0xFFFFFFF4:	// SysCall(
 					return  CB_SysCall( SRC );
 				case 0xFFFFFFF5:	// Call(
@@ -818,6 +793,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			switch ( c ) {
 				case 0xFFFFFFC6:	// M_PixelTest(
 					return CB_ML_PixelTest( SRC );
+				case 0xFFFFFFD8:	// M_Test
+					return CB_MLTest( SRC );
 //				case 0x53:	// M_Contrast(
 //					return CB_ML_GetContrast( SRC );
 				case 0x31:	// StrLen(
@@ -1244,17 +1221,80 @@ int CB_Getkey3( char *SRC ) {
 	return key;
 }
 
-int CB_KeyRow( char *SRC ) {		// Row Keyscan
-	int row;
-	row = CB_EvalInt( SRC );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-
+int CB_KeyRowSub(int row){
 	if ( IsSH3 ) {
 		return ( CheckKeyRow(row) ) ;			//SH3
 	}
 	else {
 		return ( CheckKeyRow7305(row) ) ;		//SH4A
 	}
+}
+
+int CB_KeyRow( char *SRC ) {		// Row Keyscan
+	int row;
+	row = CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+
+	return CB_KeyRowSub(row) ;
+}
+
+//----------------------------------------------------------------------------------------------
+int CB_GetkeyM() {	//	Getkey multi  -> list { }
+	//				   6  5  4  3  2  1
+//	char keycode9[]={ 79,69,59,49,39,29};
+//	char keycode8[]={ 78,68,58,48,38,28};
+//	char keycode7[]={ 77,67,57,47,37,27};
+//	char keycode6[]={ 76,66,56,46,36,26};
+//	char keycode5[]={ 75,65,55,45,35,25};
+//	char keycode4[]={ 74,64,54,44,34};
+//	char keycode3[]={ 73,63,53,43,33};
+//	char keycode2[]={ 72,62,52,42,32};
+//	char keycode1[]={ 71,61,51,41,31};
+	char rowdata[10];
+	char result[55];
+	int i,j,a,b,c=0;
+	for(i=1; i<=9; i++) rowdata[i]=CB_KeyRowSub(i);
+	b=128;
+	for(j=6; j>=1; j--) {
+		b>>=1;
+		for(i=9; i>=1; i--) {
+			if ( rowdata[i] & b ) result[c++] = i+(j+1)*10;
+		}
+	}
+
+	dspflag=4;	// List ans
+	if ( c==0 ) {
+		c=1;
+		result[0]=0;
+	}
+	
+	NewMatListAns( c, 1, 1, 8 );		// List Ans[c].b
+	for (i=0; i<c; i++) {
+		WriteMatrix( CB_MatListAnsreg, i+1, 1, result[i] ) ;	//
+	}
+	return 1;
+}
+
+int CB_GetkeyEntry( char *SRC ) {	// CB_GetKey entry
+	int c = SRC[ExecPtr];
+	int result;
+	if ( ( ( '0'<=c )&&( c<='3' )) || ( c=='m') || ( c=='M') ) {
+		ExecPtr++ ;
+		switch ( c ) {
+			case 'M':
+			case 'm':
+				result=CB_GetkeyM() ; 
+				break;
+			case '3':
+				result=CB_Getkey3( SRC ) ; 
+				break;
+			default:
+				result=CB_GetkeyN(c-'0') ;
+				break;
+		}
+		if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } 
+	} else result=CB_Getkey();
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------

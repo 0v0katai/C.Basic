@@ -57,18 +57,24 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	CB_INT=0;	// double mode default
 	
 	HiddenRAM();	// Check HiddenRAM
-	HiddenRAM_MatAryRestore();	//  HiddenRAM -> MatAry ptr
+//	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 
 	TVRAM = (char *)malloc( 2048+4 );
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+
 	GVRAM = TVRAM+1024;;
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+
 	ClipBuffer = (char *)malloc( ClipMax+1+4 );
 //	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
+
 	traceAry = (double *)malloc( 130*8+4 );
 //	if ( traceAry == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
 
+	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
+	
+	HiddenRAM_MatAryInit();	// HiddenRAM Initialize
+	
 	PictAry[0]=GetVRAMAddress();
 	
 	while (1) {

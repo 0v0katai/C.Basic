@@ -316,7 +316,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 174 );	//	Fkey_dspRB( FKeyNo2, "Prod");
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
-					FkeyClear( FKeyNo5 );
+//					FkeyClear( FKeyNo5 );
+					Fkey_dispN( FKeyNo5, "Comp");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
@@ -635,7 +636,8 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo3, "DATE");
 					Fkey_dspRB( FKeyNo4, "TIME");
 					Fkey_dspRB( FKeyNo5, "BackL");
-					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+//					FkeyClear( FKeyNo6 );
+//					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 //				case 1:
 //					Fkey_dspRB( FKeyNo1, "RfCtl");
@@ -784,25 +786,24 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo1, "ClVra");
 					Fkey_dspRB( FKeyNo2, "ClScr");
 					Fkey_dspRB( FKeyNo3, "DspVr");
-					Fkey_dspRB( FKeyNo4, "Point");
-					Fkey_dspRB( FKeyNo5, "Pixel");
+					Fkey_dspRB( FKeyNo4, "PxTest");
+					Fkey_dispN( FKeyNo5, "Test");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( FKeyNo1, "PxTest");
-					Fkey_dspRB( FKeyNo2, "Line");
-					Fkey_dspRB( FKeyNo3, "Rect");
+					Fkey_dspRB( FKeyNo1, "Pixel");
+					Fkey_dspRB( FKeyNo2, "Point");
+					Fkey_dspRB( FKeyNo3, "Line");
 					Fkey_dspRB( FKeyNo4, "Horiz");
 					Fkey_dspRB( FKeyNo5, "Verti");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dspRB( FKeyNo1, "Poly");
-					Fkey_dspRB( FKeyNo2, "FPoly");
-					Fkey_dspRB( FKeyNo3, "Circl");
-					Fkey_dspRB( FKeyNo4, "FCirc");
-					Fkey_dspRB( FKeyNo5, "Contr");
-//					FkeyClear( FKeyNo5 );
+					Fkey_dspRB( FKeyNo1, "Rect");
+					Fkey_dspRB( FKeyNo2, "Poly");
+					Fkey_dspRB( FKeyNo3, "FPoly");
+					Fkey_dspRB( FKeyNo4, "Circl");
+					Fkey_dspRB( FKeyNo5, "FCirc");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:
@@ -819,6 +820,14 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo3, "Bmp");
 					Fkey_dspRB( FKeyNo4, "Bm8");
 					Fkey_dspRB( FKeyNo5, "Bm16");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 5:
+					Fkey_dspRB( FKeyNo1, "BmpZ");
+					Fkey_dspRB( FKeyNo2, "BmpR");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					Fkey_dspRB( FKeyNo5, "Contr");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}

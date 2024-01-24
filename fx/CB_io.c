@@ -11,6 +11,7 @@
 #include "CB_Kana.h"
 #include "CB_Matrix.h"
 #include "CB_glib.h"
+#include "CB_setup.h"
 #include "KeyScan.h"
 #include "MonochromeLib.h"
 
@@ -20,12 +21,12 @@ char ENG=0;	// ENG flag  1:ENG  3:3digit separate
 char UseHiddenRAM=0;	//	0x11 :HiddenRAMInit off
 char IsHiddenRAM=0;
 
-#define MATBACKSPACE 1360	//	(85*16=1360)
-char * HiddenRAM_Top =(char*)0x88040000+16+20480;	// Hidden RAM TOP
-char * HiddenRAM_End =(char*)0x88080000-MATBACKSPACE-128;	// Hidden RAM END
+#define PICTBACKSPACE 512	//
+char * HiddenRAM_Top  =(char*)0x88040000+16;	// Hidden RAM TOP
+char * HiddenRAM_End  =(char*)0x88080000-PICTBACKSPACE;	// Hidden RAM END
 
-char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16+20480;	// Hidden RAM Prog next ptr
-char * HiddenRAM_MatTopPtr =(char*)0x88080000-MATBACKSPACE-128;	// Hidden RAM Mat top ptr
+char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16;	// Hidden RAM Prog next ptr
+char * HiddenRAM_MatTopPtr =(char*)0x88080000-PICTBACKSPACE;	// Hidden RAM Mat top ptr
 
 char IsSH3;	//	3:SH3   4:SH4
 
@@ -38,17 +39,161 @@ HiddenRAM_Top(0x88040000)
 			(free area)
 				...
 				(Mat area)	HiddenRAM_MatTopPtr
+				<<<
+					Matrix & List data area
 					<<<
-						HiddenRAM_End(0x88080000-1920-128)
-						MatAry ptr backup (1920bytes)
+					(*MatAry)
+					MatAry index area
+						<<<
+							Pict buffer ( 1~20~99)
+							<<<
+								HiddenRAM_End(0x88080000)
 ----------------------------------------
 */
+//---------------------------------------------------------------------------------------------
+int CPU_check(void) {					// SH3:1 SH4A:0
+	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) ;
+}
 
+//---------------------------------------------------------------------------------------------
+void * HiddenRAM(void){	// Check HiddenRAM 
+	volatile unsigned int *NorRAM=(volatile unsigned int*)0xA8000000;	// Nomarl RAM TOP (no cache area)
+	volatile unsigned int *HidRAM=(volatile unsigned int*)0x88040000;	// Hidden RAM TOP (cashe area)
+	int a,b;
+	int K55=0x55555555;
+	int KAA=0xAAAAAAAA;
+	char * HidAddress=NULL;
+
+	IsHiddenRAM=0;
+	a= *NorRAM;
+	b= *HidRAM;
+	*NorRAM=K55;
+	*HidRAM=KAA;
+	if ( *NorRAM != *HidRAM ) {
+			HidAddress=(char*)HidRAM;	// Hidden RAM Exist
+			IsHiddenRAM=1;
+	}
+	*NorRAM=a;
+	*HidRAM=b;
+	return HidAddress;
+}
+
+void * HiddenRAM_mallocProg( size_t size ){
+	char * ptr;
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		ptr = HiddenRAM_ProgNextPtr;
+		HiddenRAM_ProgNextPtr += ( (size+3) & 0xFFFFFFFC );	// 4byte align
+		if ( HiddenRAM_ProgNextPtr < HiddenRAM_MatTopPtr ) return ptr;
+		HiddenRAM_ProgNextPtr = ptr;
+		return malloc( size );
+	} else {
+		return malloc( size );
+	}
+}
+
+void * HiddenRAM_mallocMat( size_t size ){
+	char * ptr;
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		ptr = HiddenRAM_MatTopPtr;
+		ptr -= ( (size+7) & 0xFFFFFFF8 );	// 8byte align
+		if ( ptr < HiddenRAM_ProgNextPtr ) return malloc( size );
+		HiddenRAM_MatTopPtr = ptr;
+		return ptr;
+	} else {
+		return malloc( size );
+	}
+}
+
+unsigned char * GetheapPict(){
+	unsigned char *pict;
+	if ( PictbaseCount >= PictbaseCountMAX ) {
+		if ( PictbasePtr < PictbaseMAX ) Pictbase[++PictbasePtr] = (unsigned char *) malloc( 1024 * PictbaseMAX +4 );
+		else { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
+		if( Pictbase[PictbasePtr] == NULL ) { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
+		PictbaseCount=0;
+	}
+	pict = Pictbase[PictbasePtr] + 1024 * PictbaseCount;
+	PictbaseCount++;
+	return pict;
+}
+unsigned char *  HiddenRAM_mallocPict( int pictNo ){
+	char *  ptr;
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		ptr = HiddenRAM_End-1024*(pictNo);
+		return (unsigned char *)ptr;
+	} else {
+		return GetheapPict();
+	}
+}
+
+void HiddenRAM_freeProg( void *ptr ){
+	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
+	else 
+		HiddenRAM_ProgNextPtr=HiddenRAM_Top;	// Hidden RAM Prog next ptr
+}
+void HiddenRAM_freeMat( int reg ){
+	char *ptr = (char *)MatAry[reg].Adrs;
+	int	size = MatAry[reg].Maxbyte; 
+	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
+	else {
+		if ( (int)HiddenRAM_MatTopPtr == (int)ptr ) HiddenRAM_MatTopPtr += ( (size+7) & 0xFFFFFFF8 );
+	}
+}
+
+const char MatAryCheckStr[]="#CBasic160#";
+
+void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
+	int *iptr1=(int*)(HiddenRAM_Top- 4);
+	int *iptr2=(int*)(HiddenRAM_End+12);
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		memcpy( HiddenRAM_Top-16, MatAryCheckStr, sizeof(MatAryCheckStr) );
+		memcpy( HiddenRAM_End,    MatAryCheckStr, sizeof(MatAryCheckStr) );
+		memcpy( HiddenRAM_End+16, PictAry, sizeof(PictAry) );
+		iptr1[0]=(int)MatAry;
+		iptr2[0]=(int)HiddenRAM_MatTopPtr;
+	}
+}
+int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
+	char buffer[10];
+	int *iptr1=(int*)(HiddenRAM_Top- 4);
+	int *iptr2=(int*)(HiddenRAM_End+12);
+	char *tmp;
+	tmp=HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
+	if ( !(UseHiddenRAM&0xF0) )return 0;	// hidden init
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) && ( (char *)iptr1[0]==tmp ) ){
+		if ( ( strcmp(HiddenRAM_Top-16, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
+			memcpy( PictAry, HiddenRAM_End+16, sizeof(PictAry) );
+			HiddenRAM_MatTopPtr=(char*)iptr2[0];
+			MatAry=(matary *)tmp;
+			return 1;	// ok
+		}
+	}
+	return 0;
+}
+void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
+	char buffer[10];
+	int *iptr1=(int*)(HiddenRAM_Top- 4);
+	int *iptr2=(int*)(HiddenRAM_End+12);
+	MatAryMax=MATARY_MAX +ExtendList*52;
+	ExtListMax=MatAryMax-33;
+	if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {		// hidden RAM init
+		HiddenRAM_MatTopPtr = HiddenRAM_End - 1024*(20+ExtendPict) - sizeof(matary)*MatAryMax ;
+		MatAry = (matary *)HiddenRAM_MatTopPtr;
+		HiddenRAM_MatAryStore();
+	} else {		// use heap RAM
+		MatAry = ( matary *)malloc( sizeof(matary)*MatAryMax );
+	}
+	memset( MatAry, 0, sizeof(matary)*MatAryMax );
+	Mattmpreg=MatAryMax;
+}
+
+//---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 void CB_PrintC( int x, int y,const unsigned char *c ){
 	if ( *c == 0xFF ) {
 		*c++;
-		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xDF ) ) KPrintChar( (--x)*6, (--y)*8, *c );
+		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xE2 ) ) KPrintChar( (--x)*6, (--y)*8, *c );
 		else {
 			locate (x,y);
 			Print( (unsigned char*)"@" );
@@ -61,7 +206,7 @@ void CB_PrintC( int x, int y,const unsigned char *c ){
 void CB_PrintRevC( int x, int y,const unsigned char *c ){
 	if ( *c == 0xFF ) {
 		*c++;
-		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xDF ) ) KPrintRevChar( (--x)*6, (--y)*8, *c );
+		if ( ( (*c)>=0xA0 ) && ( (*c)<=0xE2 ) ) KPrintRevChar( (--x)*6, (--y)*8, *c );
 		else	{
 			locate (x,y);
 			PrintRev( (unsigned char*)"@" );
@@ -260,7 +405,6 @@ void MSGpop(void){
 	Bdisp_PutDisp_DD();
 }
 
-
 //---------------------------------------------------------------------------------------------
 
 void ProgressBarPopUp( char *buffer, char *buffer2 ) {
@@ -279,126 +423,6 @@ void ProgressBar(int current, int max) {
 		Bdisp_PutDisp_DD();
 	}
 }
-
-//---------------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------
-int CPU_check(void) {					// SH3:1 SH4A:0
-	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) ;
-}
-
-//---------------------------------------------------------------------------------------------
-void * HiddenRAM(void){	// Check HiddenRAM 
-	volatile unsigned int *NorRAM=(volatile unsigned int*)0xA8000000;	// Nomarl RAM TOP (no cache area)
-	volatile unsigned int *HidRAM=(volatile unsigned int*)0x88040000;	// Hidden RAM TOP (cashe area)
-	int a,b;
-	int K55=0x55555555;
-	int KAA=0xAAAAAAAA;
-	char * HidAddress=NULL;
-
-	IsHiddenRAM=0;
-	a= *NorRAM;
-	b= *HidRAM;
-	*NorRAM=K55;
-	*HidRAM=KAA;
-	if ( *NorRAM != *HidRAM ) {
-			HidAddress=(char*)HidRAM;	// Hidden RAM Exist
-			IsHiddenRAM=1;
-	}
-	*NorRAM=a;
-	*HidRAM=b;
-	return HidAddress;
-}
-
-void * HiddenRAM_mallocProg( size_t size ){
-	char * ptr;
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		ptr = HiddenRAM_ProgNextPtr;
-		HiddenRAM_ProgNextPtr += ( (size+3) & 0xFFFFFFFC );	// 4byte align
-		if ( HiddenRAM_ProgNextPtr < HiddenRAM_MatTopPtr ) return ptr;
-		HiddenRAM_ProgNextPtr = ptr;
-		return malloc( size );
-	} else {
-		return malloc( size );
-	}
-}
-
-void * HiddenRAM_mallocMat( size_t size ){
-	char * ptr;
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		ptr = HiddenRAM_MatTopPtr;
-		ptr -= ( (size+7) & 0xFFFFFFF8 );	// 8byte align
-		if ( ptr < HiddenRAM_ProgNextPtr ) return malloc( size );
-		HiddenRAM_MatTopPtr = ptr;
-		return ptr;
-	} else {
-		return malloc( size );
-	}
-}
-
-unsigned char * GetheapPict(){
-	unsigned char *pict;
-	if ( PictbaseCount >= PictbaseCountMAX ) {
-		if ( PictbasePtr < PictbaseMAX ) Pictbase[++PictbasePtr] = (unsigned char *) malloc( 1024 * PictbaseMAX +4 );
-		else { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
-		if( Pictbase[PictbasePtr] == NULL ) { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
-		PictbaseCount=0;
-	}
-	pict = Pictbase[PictbasePtr] + 1024 * PictbaseCount;
-	PictbaseCount++;
-	return pict;
-}
-unsigned char *  HiddenRAM_mallocPict( int pictNo ){
-	char *  ptr;
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		ptr = HiddenRAM_Top-20480+1024*(pictNo-1);
-		return (unsigned char *)ptr;
-	} else {
-		return GetheapPict();
-	}
-}
-
-void HiddenRAM_freeProg( void *ptr ){
-	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
-	else 
-		HiddenRAM_ProgNextPtr=HiddenRAM_Top;	// Hidden RAM Prog next ptr
-}
-void HiddenRAM_freeMat( int reg ){
-	char *ptr = (char *)MatAry[reg].Adrs;
-	int	size = MatAry[reg].Maxbyte; 
-	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
-	else {
-		if ( (int)HiddenRAM_MatTopPtr == (int)ptr ) HiddenRAM_MatTopPtr += ( (size+7) & 0xFFFFFFF8 );
-	}
-}
-
-const char MatAryCheckStr[]="##CBasic17#";
-
-void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
-	int *iptr1=(int*)(HiddenRAM_Top-4);
-	int *iptr2=(int*)(HiddenRAM_End+12);
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
-		memcpy( HiddenRAM_Top-16, MatAryCheckStr, sizeof(MatAryCheckStr) );
-		memcpy( HiddenRAM_End,    MatAryCheckStr, sizeof(MatAryCheckStr) );
-		memcpy( HiddenRAM_End+16, MatAry, sizeof(MatAry) );
-		memcpy( HiddenRAM_End+16+MATBACKSPACE, PictAry, sizeof(PictAry) );
-		iptr1[0]=(int)HiddenRAM_MatTopPtr;
-		iptr2[0]=(int)HiddenRAM_MatTopPtr;
-	}
-}
-void HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
-	char buffer[10];
-	int *iptr1=(int*)(HiddenRAM_Top-4);
-	int *iptr2=(int*)(HiddenRAM_End+12);
-	if ( !(UseHiddenRAM&0xF0) ) return;
-	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) && ( iptr1[0]==iptr2[0] ) ){
-		if ( ( strcmp(HiddenRAM_Top-16, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
-			memcpy( MatAry, HiddenRAM_End+16, sizeof(MatAry) );
-			memcpy( PictAry, HiddenRAM_End+16+MATBACKSPACE, sizeof(PictAry) );
-			HiddenRAM_MatTopPtr=(char*)iptr1[0];
-		}
-	}
-}
-
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

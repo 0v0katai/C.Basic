@@ -152,9 +152,9 @@ void GetGenuineCmdF4( unsigned int *code ){
 			} break;
 		case CMD_SHIFT_SKTCH_ML:
 			switch ( CommandPage ) {
-				case 0: (*code)=0xF9C5;return;	// _Point 
+				case 0: (*code)=0xF9C6;return;	// _PixelTest(
 				case 1: (*code)=0xF9C8;return;	// _Horizontal
-				case 2: (*code)=0xF9CE;return;	// _Fcircle 
+				case 2: (*code)=0xF9CD;return;	// _Circle
 				case 3: (*code)=0xF9D2;return;	// _FelipsInRct 
 				case 4: (*code)=0xF9D6;return;	// _Bmp8
 			} break;
