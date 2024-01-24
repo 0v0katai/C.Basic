@@ -1389,7 +1389,7 @@ int CB_GetkeyEntry( char *SRC ) {	// CB_GetKey entry
 				result=CB_GetkeyN( c-'0', 1, sdkcode ) ;
 				break;
 		}
-		if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } 
+		if ( sdkcode==0 ) if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } 
 	} else result=CB_Getkey();
 	return result;
 }

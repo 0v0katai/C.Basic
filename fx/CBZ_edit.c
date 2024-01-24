@@ -1290,6 +1290,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						break;
 					} else {
 						if ( ClipStartPtr >= 0 ) {
+						  F3del:					// clip delete
 							if ( ClipEndPtr < 0 ) goto F3j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 							EditCutDel( filebase, ClipBuffer, &csrPtr, ClipStartPtr, ClipEndPtr, 1 );	// delete
@@ -1639,6 +1640,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				break;
 				
 			case KEY_CTRL_SHIFT:
+				if ( ClipStartPtr > 0 ) {  ClipStartPtr = -1 ; 	// ClipMode cancel
+					DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &pcx, &cy, ClipStartPtr, ClipEndPtr);
+				 }
+				if ( SearchMode ) break;;
 				if ( SearchMode ) break;;
 				ShiftF6loop:
 				DebugScreen = 0;
@@ -1674,6 +1679,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							cont=0;
 							break;
 							
+					case KEY_CTRL_ALPHA:
+							alphalock = 1 ;
+							break;
+//					case KEY_CTRL_SHIFT:
+//							key=0;
+//							ClipStartPtr = -1 ;		// ClipMode cancel
+//							break;
+
 					case KEY_CTRL_PAGEUP:
 							switch (dumpflg) {
 								case 2: 		// Opcode
@@ -1721,6 +1734,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
+							
 					case KEY_CTRL_F1:
 							selectVar=SetVar(selectVar);		// A - 
 							key=0;
@@ -1781,6 +1795,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 							}
 							break;
+							
 					case KEY_CTRL_CLIP:
 							ClipStartPtr=csrPtr;
 							key=0;
@@ -1796,9 +1811,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							key=0;
 							break;
 							
-					case KEY_CTRL_ALPHA:
-							alphalock = 1 ;
-							break;
 					case KEY_CTRL_PRGM:
 							if ( dumpflg==2 ) {
 								if ( CommandInputMethod ) { 
@@ -1819,7 +1831,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case KEY_CHAR_3:
 							PopUpWin(1);
-							locate(3,4); Print((unsigned char*)"Hit GetKey Code");
+							locate(3,4); Print((unsigned char*)"Hit Getkey Code");
 							KeyRecover();
 							GetKey_DisableMenu(&key);
 							MSGpop();
@@ -1833,11 +1845,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				break;
 				
 			case KEY_CTRL_DEL:
-				if ( CursorStyle < 0x6 ) {		// insert mode
-					PrevOpcode( SrcBase, &csrPtr );
+				if ( ClipStartPtr >= 0 ) {
+					goto F3del;
+				} else {
+					if ( CursorStyle < 0x6 ) {		// insert mode
+						PrevOpcode( SrcBase, &csrPtr );
+					}
+					DeleteOpcode( filebase, &csrPtr);
+					key=0;
 				}
-				DeleteOpcode( filebase, &csrPtr);
-				key=0;
 				ClipStartPtr = -1 ;		// ClipMode cancel
 				SearchMode=0;
 				break;
@@ -1957,9 +1973,14 @@ int CB_BreakStop() {
 
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	Bdisp_PutDisp_DD();
-	CB_SelectTextVRAM();	// Select Text Screen
-	CB_SelectGraphVRAM();	// Select Graphic screen
-	CB_SelectTextVRAM();	// Select Text Screen
+	if ( ScreenMode ) {
+		CB_SaveGraphVRAM();	// save Graphic screen
+	} else {
+		CB_SaveTextVRAM();	// save Graphic screen
+	}
+//	CB_SelectTextVRAM();	// Select Text Screen
+//	CB_SelectGraphVRAM();	// Select Graphic screen
+//	CB_SelectTextVRAM();	// Select Text Screen
 
 	if ( ErrorNo ) { 
 		CB_ErrMsg( ErrorNo );
@@ -2016,8 +2037,14 @@ int CB_BreakStop() {
 	cont:
 	KeyRecover(); 
 	if ( DebugMode == 1 ) DebugMode=0;
-	CB_RestoreTextVRAM();	// Resotre Text screen
-	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
+//	CB_RestoreTextVRAM();	// Resotre Text screen
+//	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
+	ScreenMode=scrmode;
+	if ( ScreenMode ) {
+		CB_RestoreGraphVRAM();	// Resotre Graphic screen
+	} else {
+		CB_RestoreTextVRAM();	// Resotre Text screen
+	}
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0;
 }

@@ -59,7 +59,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	
 	HiddenRAM_MatAryInit();	// RAM Initialize
 	
-	if ( StorageMode ) StorageMode = CheckSD() ; // SD mode
+	if ( StorageMode & 1 ) StorageMode = CheckSD() | ( StorageMode & 1) ; // SD mode
 	
 	PictAry[0]=GetVRAMAddress();
 

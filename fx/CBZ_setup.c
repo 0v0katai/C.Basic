@@ -24,8 +24,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.78\xE6\x41";
-#define VERSION 178
+const char VerMSG[]="C.Basic  v1.79\xE6\x41";
+#define VERSION 179
 
 //---------------------------------------------------------------------------------------------
 
@@ -68,9 +68,9 @@ int CB_System( char *SRC ) {	// System( n )
 //		case -3:
 //			r=MAXHEAP/1024;
 //			break;
-//		case -2:
-//			r=OS_Version();
-//			break;
+		case -2:
+			r=OS_Version();
+			break;
 		case -1:	// model 	bit0 :SH3:0  SH4A:1	 256KB bit1		// 9860G:0  9860GII(SH3):2   9860GII(SH4A):3
 			r = 0; if ( IsSH3 ) r = 1 ;
 			if ( IsHiddenRAM ) r |= 0x2;;
@@ -966,6 +966,7 @@ int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key ) {		//
 	char buffer[32];
 	int n0=n;
 	PopUpWin(3);
+	FkeyClearAll();
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 3,5); sprintf(buffer,"%s[%d~%d]:",msg,min,max); Print((unsigned char *)buffer);
 	while (1) {
@@ -984,6 +985,7 @@ int SelectNum3( int n ) {		//
 	unsigned int key;
 	int n0=n;
 	PopUpWin(3);
+	FkeyClearAll();
 	locate( 3,3); Print((unsigned char *)"SkipUp/Dw Number");
 	locate( 6,5); Print((unsigned char *)"[1~9999]:");
 	while (1) {
@@ -998,6 +1000,7 @@ int SelectNum4( int n ) {		//
 	unsigned int key;
 	int n0=n;
 	PopUpWin(3);
+	FkeyClearAll();
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 3,3); Print((unsigned char *)"RefrshTime n/128s");
 	locate( 4,5); Print((unsigned char *)"[0=\x7F\x53,1~128]:");
@@ -1047,12 +1050,12 @@ int SelectNum4( int n ) {		//
 #define SETUP_SkipUpDown	32
 #define SETUP_MatDspmode	33
 #define SETUP_Matrixbase	34
-#define SETUP_Pictmode		35
-#define SETUP_DATE			36
-#define SETUP_TIME			37
-#define SETUP_Storagemode	38
-#define SETUP_AutoSaveMode	39
-#define SETUP_Forceg1msave	40
+#define SETUP_DATE			35
+#define SETUP_TIME			36
+#define SETUP_AutoSaveMode	37
+#define SETUP_Forceg1msave	38
+#define SETUP_Pictmode		39
+#define SETUP_Storagemode	40
 #define SETUP_RefrshCtlDD	41
 #define SETUP_DefaultWaitcount	42
 #define SETUP_Executemode	43
@@ -1071,9 +1074,9 @@ int SetupG(int select){		// ----------- Setup
     const char *CharSize[] ={"Standard","Mini","Mini Rev","Mini_","Mini_Rev"};
     const char *Matmode[]    ={"[m,n]","[X,Y]"};
     const char *Matbase[]    ={"0","1"};
-    const char *Pictmode[]    ={"S.Mem","Heap","Both"};
-    const char *PictmodeSD[]  ={"SDcard ","Heap","Both"};
-    const char *Stragemode[]  ={"S.Mem","SDcard "};
+    const char *Pictmode[]    ={"S.Mem","Heap","Both","Main Mem"};
+    const char *PictmodeSD[]  ={"SDcard ","Heap","Both","Main Mem"};
+    const char *Storagemode[]  ={"S.Mem","SDcard ","Main Mem","Main/SD"};
     const char *DDmode[]    ={"off","Grph","All"};
     const char *ListChar[]    ={"List"," \xE5\xB7"," \xFF\xE0"};
     const char *Returnmode[]    ={"None","F1","EXE","F1&EXE"};
@@ -1260,29 +1263,29 @@ int SetupG(int select){		// ----------- Setup
 			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 34
 			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 35
-			locate(14,cnt-scrl); if ( StorageMode ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 36
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 35
 			DateCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 37
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 36
 			TimeCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 38
-			locate(14,cnt-scrl); Print((unsigned char*)Stragemode[StorageMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 39
+			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 37
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[AutoSaveMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 40
+			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 38
 			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 39
+			locate(14,cnt-scrl); if ( StorageMode & 1 ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 40
+			locate(14,cnt-scrl); Print((unsigned char*)Storagemode[StorageMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 41
@@ -1405,13 +1408,15 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispR( FKeyNo3, "Sec");
 				break;
 			case SETUP_Pictmode: // Pict mode
-				if ( StorageMode ) Fkey_dispN( FKeyNo1, " SD "); else Fkey_dispN( FKeyNo1, "MEM ");
+				if ( StorageMode & 1 ) Fkey_dispN( FKeyNo1, " SD "); else Fkey_dispN( FKeyNo1, "MEM ");
 				Fkey_dispN( FKeyNo2, "Heap");
 				Fkey_dispN( FKeyNo3, "Both");
+				Fkey_dispN( FKeyNo4, "Main");
 				break;
-			case SETUP_Storagemode: // Strage mode
-				Fkey_dispN( FKeyNo1, "MEM ");
+			case SETUP_Storagemode: // Storage mode
+				Fkey_dispN( FKeyNo1, "SMEM");
 				Fkey_dispN( FKeyNo2, " SD ");
+				Fkey_dispN( FKeyNo3, "Main");
 				break;
 			case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 				Fkey_Icon( FKeyNo1, 18 );	//	Fkey_dispN( FKeyNo1, "off ");
@@ -1618,17 +1623,17 @@ int SetupG(int select){		// ----------- Setup
 						TimeStr[1]=(hour)%10+'0';
 						StorTIME( TimeStr );
 						break;
-					case SETUP_Pictmode: // Pict mode
-						PictMode = 0 ; // Memory mode
-						break;
-					case SETUP_Storagemode: // Strage mode
-						StorageMode = 0 ; // Memory mode
-						break;
 					case SETUP_AutoSaveMode: // Auto save
 						AutoSaveMode = 1;
 						break;
 					case SETUP_Forceg1msave: // Force g1m save
 						ForceG1Msave = 1 ; // g1m and text
+						break;
+					case SETUP_Pictmode: // Pict mode
+						PictMode = 0 ; // Storage Memory mode (default)
+						break;
+					case SETUP_Storagemode: // Storage mode
+						StorageMode = 0 ; // Memory mode
 						break;
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 0 ; // off
@@ -1774,9 +1779,6 @@ int SetupG(int select){		// ----------- Setup
 						MatBaseDefault = 1 ; // base
 						MatBase = MatBaseDefault;
 						break;
-					case SETUP_Pictmode: // Pict mode
-						PictMode = 1 ; // heap mode
-						break;
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 1 ; // graphics
 						break;
@@ -1794,14 +1796,17 @@ int SetupG(int select){		// ----------- Setup
 						TimeStr[4]=(min)%10+'0';
 						StorTIME( TimeStr );
 						break;
-					case SETUP_Storagemode: // Strage mode
-						StorageMode = CheckSD() ; // SD mode
-						break;
 					case SETUP_AutoSaveMode: // Auto save
 						AutoSaveMode = 0;
 						break;
 					case SETUP_Forceg1msave: // Force g1m save
 						ForceG1Msave = 0 ; // text only
+						break;
+					case SETUP_Pictmode: // Pict mode
+						PictMode = 1 ; // heap mode
+						break;
+					case SETUP_Storagemode: // Storage mode
+						StorageMode = CheckSD() ; // SD mode
 						break;
 					case SETUP_DefaultWaitcount: // Wait count -
 						DefaultWaitcount-=10; if ( DefaultWaitcount < 0 ) DefaultWaitcount = 0;
@@ -1853,9 +1858,6 @@ int SetupG(int select){		// ----------- Setup
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						RefreshCtrl = 2 ; // graphics+text
 						break;
-					case SETUP_Pictmode: // Pict mode
-						PictMode = 2 ; // Memory(read) & Smem(save) mode
-						break;
 					case SETUP_DATE: // DATE day
 						day = (DateStr[8]-'0')*10+(DateStr[9]-'0');
 						day = SelectNum2("Day",day,1,31);
@@ -1869,6 +1871,12 @@ int SetupG(int select){		// ----------- Setup
 						TimeStr[6]=(sec/10)%10+'0';
 						TimeStr[7]=(sec)%10+'0';
 						StorTIME( TimeStr );
+						break;
+					case SETUP_Pictmode: // Pict mode
+						PictMode = 2 ; // Memory(read) & Smem(save) mode
+						break;
+					case SETUP_Storagemode: // Storage mode
+						StorageMode |= 2;	// main memory
 						break;
 					case SETUP_DefaultWaitcount: // Wait count set
 						DefaultWaitcount =  SelectNum2( "Wait", DefaultWaitcount, 0, 9999);
@@ -1925,6 +1933,9 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
 						if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
+						break;
+					case SETUP_Pictmode: // Pict mode
+						PictMode = 3 ; // MCS mode
 						break;
 					case SETUP_DefaultWaitcount: // Wait count init
 						DefaultWaitcount = 0;

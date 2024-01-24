@@ -39,6 +39,8 @@ void GetFKeyIconPointer( int FKeyNo, unsigned char *pBitmap );
 void DisplayFKeyIcon( int FKeyPos, unsigned char *pBitmap );
 void GUI_ProgressBar( int current, int max);
 
+void System_GetOSVersion( unsigned char*version );
+
 //------------------------------------------------------- MCS
 typedef struct {
   unsigned char name[8];

@@ -84,6 +84,8 @@
  .EXPORT _GUI_ProgressBar
  .EXPORT _DD_SetContrast
 
+ .EXPORT _System_GetOSVersion
+
  .EXPORT _Calljmp
  .EXPORT _SysCalljmp
  .EXPORT _SysCalljmp12
@@ -519,6 +521,12 @@ _Serial_GetStatus:
 _Serial_IsOpen:
 	mov.l SYSCALL,r1
 	mov.l #H'0425,r0
+	jmp @r1
+	nop
+
+_System_GetOSVersion:
+	mov.l SYSCALL,r1
+	mov.l #H'02EE,r0
 	jmp @r1
 	nop
 

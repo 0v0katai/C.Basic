@@ -422,11 +422,11 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 		switch ( gaiji ) {	
 			case 0:
-				LoadExtFontKana(  flag, sname, no ); return ;
+				LoadExtFontKanafolder(  flag, sname, folder, no ); return ;
 			case 1:
-				LoadExtFontGaiji( flag, sname, no ); return ;
+				LoadExtFontGaijifolder( flag, sname, folder, no ); return ;
 			case 2:
-				LoadExtFontAnk(   flag, sname, no ); return ;
+				LoadExtFontAnkfolder(   flag, sname, folder, no ); return ;
 		}
 	}
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error

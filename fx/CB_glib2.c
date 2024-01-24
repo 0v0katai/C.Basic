@@ -109,8 +109,8 @@ unsigned int Pict() {
 				cont=0;
 				break;
 			case KEY_CTRL_F1:
-				Fkey_Icon( FKeyNo1, 693 );	//	Fkey_dispR( FKeyNo1, "STO");
-				Fkey_Icon( FKeyNo2, 700 );	//	Fkey_dispR( FKeyNo2, "RCL");
+				Fkey_Icon( FKeyNo1, 69 );	//	Fkey_dispR( FKeyNo1, "STO");
+				Fkey_Icon( FKeyNo2, 70 );	//	Fkey_dispR( FKeyNo2, "RCL");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_AC:
@@ -873,3 +873,5 @@ int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

@@ -183,7 +183,7 @@ extern int BreakPtr;
 extern int CBint_CurrentValue;	// Ans
 extern complex CB_CurrentValue;	// Ans
 
-#define ProgMax 31
+#define ProgMax 40
 extern char ProgEntryN;		// how many subroutin
 extern char ProgNo;			// current Prog No
 extern char *ProgfileAdrs[ProgMax+1];

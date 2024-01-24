@@ -118,7 +118,7 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 	}
 	mats = matsize;
 	matsize = (matsize+7) & 0xFFFFFFF8;	// 8byte align
-	if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].Maxbyte >= matsize ) && ( MatAry[reg].ElementSize!=2 ) ) { // already exist
+	if ( ( MatAry[reg].Adrs != NULL ) && ( abs(MatAry[reg].Maxbyte) >= matsize ) && ( MatAry[reg].ElementSize!=2 ) ) { // already exist
 		if ( adrs )	MatAry[reg].Adrs = (double *)adrs ;		// Matrix array ptr*
 		MatAry[reg].SizeA       = m;						// Matrix array size
 		MatAry[reg].SizeB       = n;						// Matrix array size
@@ -128,6 +128,7 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 		if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );	// free
 		if ( adrs ) {
 			dptr = (double *)adrs ;
+			matsize = -matsize;	// Adrs redefinition flag
 			if ( CheckAdrsAlignError( ElementSize, (int)adrs ) ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 		} else {
 			dptr = (double*)HiddenRAM_mallocMat( matsize );
@@ -211,25 +212,27 @@ int DimMatrix( int reg, int dimA, int dimB, int base ) {
 }
 
 //-----------------------------------------------------------------------------
+void DeleteMatrix1( int reg ){
+	int i;
+	MatAry[reg].SizeA       = 0;				// Matrix array size
+	MatAry[reg].SizeB       = 0;				// Matrix array size
+	MatAry[reg].ElementSize = 0;				// Matrix array Elementsize
+	MatAry[reg].Adrs        = NULL ;			// Matrix array ptr*
+	MatAry[reg].Maxbyte     = 0;				// Matrix array max byte
+	memset( MatAry[reg].name, 0, 9 );
+}
+
 void DeleteMatrix( int reg ) {
 	double *ptr;
 	if ( ( 0<=reg ) && ( reg<MatAryMax ) ) {
 			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
 			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );
-			MatAry[reg].SizeA       = 0;				// Matrix array size
-			MatAry[reg].SizeB       = 0;				// Matrix array size
-			MatAry[reg].ElementSize = 0;				// Matrix array Elementsize
-			MatAry[reg].Adrs        = NULL ;			// Matrix array ptr*
-			MatAry[reg].Maxbyte     = 0;				// Matrix array max byte
+			DeleteMatrix1( reg );
 	} else {
 		for ( reg=0; reg<MatAryMax; reg++){
 			ptr = MatAry[reg].Adrs ;					// Matrix array ptr*
 			if ( (ptr != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );
-			MatAry[reg].SizeA       = 0;				// Matrix array size
-			MatAry[reg].SizeB       = 0;				// Matrix array size
-			MatAry[reg].ElementSize = 0;				// Matrix array Elementsize
-			MatAry[reg].Adrs        = NULL ;			// Matrix array ptr*
-			MatAry[reg].Maxbyte     = 0;				// Matrix array max byte
+			DeleteMatrix1( reg );
 		}
 		HiddenRAM_MatTopPtr = (char *)MatAry;
 	}
@@ -1487,6 +1490,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			x=5+CB_MB_ElementCount( buffer );
 			locate( x, 1+i); MatAryElementSizePrint( MatAry[reg].ElementSize ) ;
 			if ( MatAry[reg].SizeA ) {
+				locate( 4, 1+i); if ( MatAry[reg].Maxbyte <= 0 ) Print((unsigned char*)"*");	// Adrs redefinition
 				sprintf((char*)buffer,"%3d",MatAry[reg].SizeA);
 				locate(14,1+i); Print((unsigned char*)buffer);
 				len=strlen((char*)buffer)-3;
@@ -1635,6 +1639,7 @@ int ElementSizeSelectAdrs( char *SRC, int *base, int *adrs, int ElementSize ) {	
 		else
 		if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; ElementSize=128; }
 		c =SRC[ExecPtr];
+		if ( c=='.' ) c =SRC[++ExecPtr];
 		if ( ( c=='0' ) || ( c=='1' ) ) { 
 			*base = c-'0' ;
 			c = SRC[++ExecPtr];
@@ -1939,7 +1944,7 @@ void MatCalcDimCopySub( char *SRC, int reg, int reg2, int dim ) {
 	int dimA,dimB,dimA2,dimB2;
 	int ElementSize,ElementSize2;
 	ElementSize =MatAry[reg].ElementSize;
-	ElementSize2=ElementSizeSelect( SRC, &base2, 0 ) & 0xFF;
+	ElementSize2=ElementSizeSelect( SRC, &base2, ElementSize ) & 0xFF;
 	if ( dim ) { 		// Mat A -> Dim Mat B[.w]
 		if ( ( ElementSize == 2 ) || ( ElementSize2 == 2 ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 		if ( ElementSize == ElementSize2 ) return;
@@ -2549,7 +2554,7 @@ void CB_Mat2List( char *SRC ) {	// Mat>List( Mat A, m) -> List Ans
 	int base;
 
 	reg=MatRegVar(SRC);
-	if ( reg<0 ) {
+	if ( reg<0 ) {	ErrorNo=0;	// error cancel
 		ListEvalsubTop(SRC);
 		if ( dspflag != 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
 		reg = CB_MatListAnsreg;
@@ -2608,14 +2613,21 @@ void CB_List2Mat( char *SRC ) {	// List>Mat( List 1[,List 2][,List 3]...) -> Mat
 	int ansreg=CB_MatListAnsreg;
 
 	i=0;
-	reg = ListRegVar( SRC );
-	if ( dspflag >= 3 ) areg[i++] = CB_MatListAnsreg;
+	reg=ListRegVar(SRC);
+	if ( reg<0 ) {	ErrorNo=0;	// error cancel
+		ListEvalsubTop(SRC);
+		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		areg[i++] = CB_MatListAnsreg;
+	} else  areg[i++] = reg;
 
 	while ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
-		reg = ListRegVar( SRC );
-		if ( dspflag >= 3 ) areg[i++] = CB_MatListAnsreg;
-		
+		reg=ListRegVar(SRC);
+		if ( reg<0 ) {	ErrorNo=0;	// error cancel
+			ListEvalsubTop(SRC);
+			if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
+			areg[i++] = CB_MatListAnsreg;
+		} else  areg[i++] = reg;
 		if ( i>8 ) { CB_Error(TooMuchData); }
 		if ( ErrorNo ) return ;
 	}

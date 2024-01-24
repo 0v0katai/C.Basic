@@ -19,7 +19,11 @@ extern const unsigned char KanaFont[][8] ;
 extern const unsigned char Fontmini[][8] ;
 extern const unsigned char KanaFontmini[][8];
 
+void ClearExtFontflag();
 int Make_FontFoloder();
+void LoadExtFontKanafolder(  int flag, char* sname, int folder, int no );		// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no );		// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+void LoadExtFontAnkfolder(   int flag, char* sname, int folder, int no );		// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
 void LoadExtFontKana(  int flag, char* sname, int no );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 void LoadExtFontGaiji( int flag, char* sname, int no );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
 void LoadExtFontAnk(   int flag, char* sname, int no );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6

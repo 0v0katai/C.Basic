@@ -33,7 +33,7 @@ char ACBreak=1;		// AC Break on/off
 
 char TimeDsp=0;		// Execution Time Display  0:off 1:on
 char MatXYmode=0;		// 0: normal  1:reverse
-char PictMode=1;	// StoPict/RclPict  StrageMem:0  heap:1  both:2
+char PictMode=3;	// StoPict/RclPict  StrageMem:0  heap:1  both:2  MSC:3
 char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
 
 char CommandInputMethod=1;	//	0:C.Basic  1:Genuine

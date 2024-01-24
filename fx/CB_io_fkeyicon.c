@@ -51,6 +51,7 @@ void Fkey_Icon(int n, int IconNo){
 		case  884: pBitmap=FKEYICON_0884;break;	// MOD
 		case 1088: pBitmap=FKEYICON_1088;break;	// ABC
 		default:
+			if ( ( OS_Version() < 200 ) && ( 1044 <= IconNo ) ) IconNo = 0;
 			GetFKeyIconPointer( IconNo, (unsigned char *)&pBitmap );	// 
 	}
 	DisplayFKeyIcon( n, pBitmap );			// 
@@ -58,6 +59,10 @@ void Fkey_Icon(int n, int IconNo){
 
 void FkeyClear(int n) {
 	Fkey_Icon(n, 0 );	// clear
+}
+void FkeyClearAll(){
+	int n;
+	for (n=0; n<6; n++ ) FkeyClear( n );
 }
 void Fkey_dispN(int n,char *buffer) {
 	FkeyClear(n);

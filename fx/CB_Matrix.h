@@ -7,13 +7,14 @@
 //extern short	MatArySizeB[MatAryMax];			// Matrix array size n X
 //extern double *MatAry[MatAryMax];				// Matrix array ptr*
 
-typedef struct {		// 20 bytes
-	int		Maxbyte;
-	short	Base;
+typedef struct {		// 32 bytes
+	int		Maxbyte;	// 0>:Adrs redefinition
+	char	Base;
 	short	ElementSize;
 	int		SizeA;
 	int		SizeB;
 	double *Adrs;
+	char	name[9];
 } matary;
 
 extern int MatAryMax;
