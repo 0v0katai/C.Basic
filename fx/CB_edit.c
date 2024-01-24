@@ -647,6 +647,7 @@ unsigned short oplistVARS[]={
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
+		0xF94B,	// DotP
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -858,7 +859,7 @@ unsigned short oplistCMD[]={
 		0x7FB4,	// Xor			9
 		0xFFFF,	// 				-
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
+		0x25,	// 	%			-
 		
 		0xF704,	// For			1
 		0xF705,	// To			2
@@ -983,7 +984,7 @@ unsigned short oplistCMD[]={
 		0x7FF0,	// GraphY
 		0xFFFF,	// 				-
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
+		0xF94B,	// DotP
 		0xFFFF,	// 				-
 		0xFFFF,	// 				-
 //		0xF797,	// StoV-Win

@@ -47,6 +47,8 @@ extern int ErrorNo;
 #define DivisionByZeroERR 40
 #define UndefinedLabelERR 41
 #define NotEnoughMemoryERR 42
+#define StringTooLongERR 43
+#define NoMatrixArrayERR 44
 
 //------------------------------------------------------------------------------
 void ERROR(char *buffer) ;
