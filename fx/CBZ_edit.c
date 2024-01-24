@@ -2311,7 +2311,7 @@ int CB_BreakStop() {
 
 	if ( BreakPtr == -7 ) return BreakPtr;	// return to main program
 	if ( ErrorNo == StackERR ) { BreakPtr=-999; TryFlag=0; return BreakPtr; }	// stack error
-	if ( TryFlag ) return 0;
+	if ( ( BreakPtr ==  0 ) && ( TryFlag ) ) return 0;
 
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	Bdisp_PutDisp_DD();
