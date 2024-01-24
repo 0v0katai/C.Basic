@@ -1971,7 +1971,7 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
-void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
+void CB_Menu( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct) {		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
 	int c,i,j,n;
 	unsigned int key;
 	char buffer[128];
@@ -2124,7 +2124,11 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 		ExecPtr++;
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
+	
+	if ( CurrentStruct->CNT > 0 ) CB_Goto_sub( SRC, StackGotoAdrs, CurrentStruct ) ;
+
 	CB_ResetExecTicks();
+
 }
 
 //----------------------------------------------------------------------------------------------

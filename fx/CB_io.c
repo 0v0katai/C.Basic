@@ -7,7 +7,7 @@ char UseHiddenRAM=1;	//	0x11 :HiddenRAMInit off
 char IsHiddenRAM =0;
 
 #define HIDDENRAM_TOP   0x88040000
-#define HIDDENRAM_TOP2  0x88060000
+#define HIDDENRAM_TOP2  0x88051400
 #define HIDDENRAM_END   0x88080000
 char * HIDDENRAM_Top        =(char*)HIDDENRAM_TOP;				// Hidden RAM TOP
 

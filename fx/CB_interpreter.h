@@ -266,6 +266,7 @@ void Skip_block( char *SRC );
 void Skip_rem( char *SRC );	// skip '...
 void CB_Rem( char *SRC, CchIf *CacheRem );
 void CB_Lbl( char *SRC, int *StackGotoAdrs );
+void CB_Goto_sub( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) ;
 void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) ;
 void CB_If( char *SRC, CchIf *CacheIf );
 void CB_Else( char *SRC, CchIf *CacheElse );
@@ -360,7 +361,7 @@ void CB_DotLife( char *SRC ) ;
 
 void CB_FkeyMenu( char *SRC) ;
 int CB_PopUpWin( char *SRC );	//
-void CB_Menu( char *SRC, int *StackGotoAdrs) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
+void CB_Menu( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
 void CB_Wait( char *SRC ) ;
 
 //-----------------------------------------------------------------------------

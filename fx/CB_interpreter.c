@@ -153,7 +153,9 @@ int CB_interpreter_sub( char *SRC ) {
 	complex	localvarDbl[ArgcMAX];	//	local var
 	int		localvarInt[ArgcMAX];	//	local var
 
-	if ( 0x0200 > ( (int)&cont & 0xFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
+	StackPtr = (int)&cont;
+	c = (int)&cont & 0xFFFF;
+	if ( Is35E2*0xA000+0x400 > c ) { CB_Error(StackERR); return -1; } //  stack error
 	
 	ClrCahche();
 	
@@ -440,7 +442,7 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						break;
 					case 0xFFFFFF9E:	// Menu
-						CB_Menu( SRC, StackGotoAdrs );
+						CB_Menu( SRC, StackGotoAdrs, &CurrentStruct );
 						dspflag=0;
 						break;
 					case 0xFFFFFFEE:	// Save
@@ -1348,23 +1350,11 @@ int Search_WhileEnd( char *SRC );
 int Search_LpWhile( char *SRC );
 int Search_SwitchEnd( char *SRC );
 
-void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) {
+void CB_Goto_sub( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) {
 	int c;
-	int label;
 	int ptr;
 	int execbuf;
 	int endp;
-	label = CB_CheckLbl( SRC );
-	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
-	
-	ptr = StackGotoAdrs[label] ;
-	if ( ptr == 0 ) {
-		if ( Search_Lbl(SRC, label) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
-		ExecPtr++;
-		StackGotoAdrs[label]=ExecPtr;
-	} else  ExecPtr = ptr ;
-
-	if ( CurrentStruct->CNT <= 0 ) return;  // Not in Loop
 	do {
 		if ( CurrentStruct->GosubNest[CurrentStruct->CNT-1] < GosubNestN ) break; 	//	Check Gosub level
 		switch ( CurrentStruct->TYPE[CurrentStruct->CNT-1] ) {
@@ -1437,6 +1427,25 @@ void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) {
 		}
 		CurrentStruct->CNT--;
 	} while ( CurrentStruct->CNT > 0 );
+}
+
+void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) {
+	int c;
+	int label;
+	int ptr;
+	int execbuf;
+	int endp;
+	label = CB_CheckLbl( SRC );
+	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
+	
+	ptr = StackGotoAdrs[label] ;
+	if ( ptr == 0 ) {
+		if ( Search_Lbl(SRC, label) == 0 ) { CB_Error(UndefinedLabelERR); return; }	// undefined label error
+		ExecPtr++;
+		StackGotoAdrs[label]=ExecPtr;
+	} else  ExecPtr = ptr ;
+
+	if ( CurrentStruct->CNT > 0 ) CB_Goto_sub( SRC, StackGotoAdrs, CurrentStruct ) ;
 }
 
 //----------------------------------------------------------------------------------------------

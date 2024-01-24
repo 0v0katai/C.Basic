@@ -28,6 +28,9 @@ extern char  ComplexMode ;		// Complex mode  real:0   a+bi:1  a_b:2
 extern const char *CBmode[];    //{"DBL#","INT%","CPLX"};
 extern char  CB_fx5800P ;		// fx-5800P mode
 extern char  CB_HelpOn;			// Help function
+extern char  CB_EditIndent;		// indent function  0:Non  1~4:indent space
+
+extern int StackPtr;
 
 //------------------------------------------------------------------------------
 void VerDispSub() ;
