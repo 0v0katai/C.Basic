@@ -112,7 +112,7 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
-	if  ( ( '1'<= c ) && ( c<='9' ) ) return c-'0';
+	if  ( ( '0'<= c ) && ( c<='9' ) ) return c-'0';
 	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REGINT[c-'A'];
 	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalInt[c-'a'][0];
 }

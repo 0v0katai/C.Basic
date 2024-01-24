@@ -104,7 +104,7 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
-	if  ( ( '1'<= c ) && ( c<='9' ) ) return c-'0';
+	if  ( ( '0'<= c ) && ( c<='9' ) ) return c-'0';
 	else if  ( ( 'A'<= c ) && ( c<='Z' ) ) return REG[c-'A'];
 	else if  ( ( 'a'<= c ) && ( c<='z' ) ) return LocalDbl[c-'a'][0];
 }
