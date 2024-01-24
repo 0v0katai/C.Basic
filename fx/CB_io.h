@@ -22,6 +22,12 @@ extern char * HiddenRAM_MatTopPtr;		// Hidden RAM Mat top ptr
 
 extern char IsSH3;	//	1:SH3   0:SH4
 
+#define FKeyNo1	0
+#define FKeyNo2	1
+#define FKeyNo3	2
+#define FKeyNo4	3
+#define FKeyNo5	4
+#define FKeyNo6	5
 
 //-----------------------------------------------------------------------------
 
@@ -48,7 +54,12 @@ void Fkey_dspRB(int ,char *);
 void Fkey_dispR(int ,char *);
 void Fkey_DISPN(int ,char *);
 void Fkey_DISPR(int ,char *);
-void Fkey_Clear(int );
+void FkeyClear(int );
+void Fkey_Icon(int n, int IconNo);
+void Fkey_dispN_Aa(int n, char *buffer) ;
+void Fkey_dispN_aA(int n, char *buffer) ;
+
+
 void Hex8PrintXY(int , int , char *, unsigned int );
 void Hex4PrintXY(int , int , char *, unsigned int );
 void Hex2PrintXY(int , int , char *, unsigned int );

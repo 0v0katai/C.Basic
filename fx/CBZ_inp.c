@@ -224,21 +224,12 @@ void sprintG( char* buffer, double num, int width, int align_mode) {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void Fkey_KDISPN(int n,char *buffer) {
-	Fkey_Clear(n);
+	FkeyClear(n);
 	CB_PrintXY(n*21+3,7*8+1,(unsigned char *)buffer,0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+20,7*8+1,n*21+20,7*8+7);
-}
-
-void Fkey_dispN_Aa(int n, char *buffer) {
-	Fkey_dispN(n,buffer);
-	Bdisp_AreaReverseVRAM( n*21+3, 7*8+1, n*21+7, 7*8+7);	// reverse
-}
-void Fkey_dispN_aA(int n, char *buffer) {
-	Fkey_dispN(n,buffer);
-	Bdisp_AreaReverseVRAM( n*21+15, 7*8+1, n*21+20, 7*8+7);	// reverse
 }
 
 //----------------------------------------------------------------------------------------------
@@ -363,11 +354,11 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 				locate(21,7); Print((unsigned char*)"\xE6\x93"); // 
 			}
 		}
-		Fkey_dispN( 0, "MATH");
-		Fkey_dispN( 1, "SYBL");
-		Fkey_dispN( 2, "AB\xCD");
-		Fkey_DISPN( 3, "\xE6\x40\xE6\x41\xE6\x42");
-		Fkey_dispN( 4, "ABC");
+		Fkey_Icon( FKeyNo1, 120 );	//	Fkey_dispN( FKeyNo1, "MATH");
+		Fkey_Icon( FKeyNo2, 308 );	//	Fkey_dispN( FKeyNo2, "SYBL");
+		Fkey_Icon( FKeyNo3, 674 );	//	Fkey_dispN( FKeyNo3, "AB\xCD");
+		Fkey_Icon( FKeyNo4, 307 );	//	Fkey_DISPN( FKeyNo4, "\xE6\x40\xE6\x41\xE6\x42");
+		Fkey_Icon( FKeyNo5,1088 );	//	Fkey_dispN( FKeyNo5, " ABC");
 		Fkey_KDISPN(5, "\xFF\xA7\xFF\xA8\xFF\xA9");
 		
 		if ( *ContinuousSelect ) {
@@ -635,8 +626,8 @@ const short oplistOPTN[]={
 		0xB6,	// frac
 		0xAB,	// !
 		0x7F3A,	// MOD(
-//		0x7F3C,	// GCD(
-//		0x7F3D,	// LCM(
+		0x7F3C,	// GCD(
+		0x7F3D,	// LCM(
 		0x7F85,	// logab(
 		
 		0xFFFF,	// 				-
@@ -1188,8 +1179,8 @@ const short oplistCMD[]={		// 5800P like
 		0x7FBD,	// Rmdr
 		0x7F29,	// Sigma( 
 		0x7F85,	// logab(
-		0x23,	// #
-		0x25,	// %
+		0x7F3C,	// GCD(
+		0x7F3D,	// LCM(
 
 //											14
 		0xA1,	// sinh
@@ -1361,15 +1352,6 @@ const short oplistCMD[]={		// 5800P like
 
 		0};
 
-void FkeyRel(){
-	Fkey_DISPR( 0, " = ");
-	Fkey_DISPR( 1, " \x11 ");
-	Fkey_DISPR( 2, " > ");
-	Fkey_DISPR( 3, " < ");
-	Fkey_DISPR( 4, " \x12 ");
-	Fkey_DISPR( 5, " \x10 ");
-}
-
 #define CMD_STD  0
 #define CMD_GR   7
 #define CMD_FN  13
@@ -1427,19 +1409,9 @@ int SelectOpcode5800P( int flag ) {
 			if ( i==11 ) { locate(0+(i%2)*12,2+i/2); Print((unsigned char *)"\x0F"); }
 		}
 		if ( shift ) {
-			Fkey_DISPR( 0, " = ");
-			Fkey_DISPR( 1, " \x11 ");
-			Fkey_DISPR( 2, " > ");
-			Fkey_DISPR( 3, " < ");
-			Fkey_DISPR( 4, " \x12 ");
-			Fkey_DISPR( 5, " \x10 ");
+			Menu_CMD_PRGM_REL();
 		} else {
-			Fkey_DISPR( 0, " ? ");
-			Fkey_DISPR( 1, " \x0C ");
-			Fkey_DISPR( 2, " : ");
-			Fkey_DISPR( 3, " \x13 ");
-			Fkey_DISPR( 4, " ' ");
-			Fkey_DISPR( 5, " / ");
+			Menu_CMD_MENU_EXT();
 		}
 		Bdisp_PutDisp_DD();	
 		
@@ -1785,6 +1757,8 @@ typedef struct {
 
 const topcodes OpCodeStrList[] = {
 	{ 0x7F3A, "MOD(" }, 		// SDK emu not support
+	{ 0x7F3C, "GCD(" }, 		// SDK emu not support
+	{ 0x7F3D, "LCM(" }, 		// SDK emu not support
 	{ 0x7F87, "RanInt#(" }, 	// SDK emu not support
 	{ 0x7F88, "RanList#(" }, 	// SDK emu not support
 	{ 0x7F58, "ElemSize(" }, 
@@ -2076,8 +2050,8 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 		}
 		
 		memcpy( GetVRAMAddress()+16*8*7, fnbuf, 16*8);		// fn key image restore
-		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
-		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_dispR(4,"CHAR"); }
+		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
+		if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_dispR( FKeyNo5, "CHAR"); }
 		if ( CommandInputMethod ) DispGenuineCmdMenu();
 
 		CursorStyle=Cursor_GetFlashStyle();
@@ -2179,7 +2153,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				break;
 			case KEY_CTRL_SHIFT:
 				alphalock = 0 ;
-				if ( CommandInputMethod ) SHIFT_MENU();
+				if ( CommandInputMethod ) Menu_SHIFT_MENU();
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_QUIT:
@@ -2334,7 +2308,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	}
 
 	Cursor_SetFlashMode(0);		// cursor flashing off
-	if ( alpha_mode ) { Fkey_Clear(3); Fkey_Clear(4); Fkey_Clear(5);}
+	if ( alpha_mode ) { FkeyClear( FKeyNo4 ); FkeyClear( FKeyNo5 ); FkeyClear( FKeyNo6 );}
 	
 	buffer[length]='\0';
 	return key ;	// EXE:0

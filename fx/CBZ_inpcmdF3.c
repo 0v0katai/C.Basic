@@ -80,6 +80,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 		case CMD_OPTN_NUM:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x00B6;return;	// Frac
+				case 1: (*code)=0x7F3D;return;	// LCM
 			} break;
 		case CMD_OPTN_ANGL:
 			switch ( CommandPage ) {

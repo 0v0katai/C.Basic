@@ -96,6 +96,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 		case CMD_OPTN_NUM:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x00A6;return;	// Int
+				case 1: (*code)=0x7F3C;return;	// GCD
 			} break;
 		case CMD_OPTN_ANGL:
 			switch ( CommandPage ) {

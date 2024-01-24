@@ -820,10 +820,10 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		x = (selectX-seltopX) ;
 		Bdisp_AreaReverseVRAM(x*dx+20, y*8+9, x*dx+20+dx-5, y*8+15);	// reverse select element
 
-		if ( ans==0 ) Fkey_dispN(0,"Edit");
-		Fkey_dispN(1,"Goto");
-		if ( ans==0 ) Fkey_dispR(2,"Init");
-		if ( MatXYmode ) Fkey_dispN(3,"X,Y"); else Fkey_dispN(3,"m,n"); 
+		if ( ans==0 ) Fkey_Icon( FKeyNo1,  42 );	//	Fkey_dispN( FKeyNo1, "Edit");
+		Fkey_dispN( FKeyNo2, "GOTO");
+		if ( ans==0 ) Fkey_Icon( FKeyNo3,  95 );	//	Fkey_dispR( FKeyNo3, "Init");
+		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "X,Y"); else Fkey_dispN( FKeyNo4, "m,n"); 
 		locate(16, 8); MatAryElementSizePrint( ElementSize ) ;
 
 		Bdisp_PutDisp_DD();
@@ -997,12 +997,12 @@ int SetMatrix(int select){		// ----------- Set Matrix
 		y = (select-seltop) ;
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 
-		Fkey_dispR(0,"DEL");
-		Fkey_dispR(1,"DelA");
-		Fkey_dispR(2,"DIM");
-		Fkey_dispR(3,"Init");
-		if ( MatXYmode ) Fkey_dispN(4,"X,Y"); else Fkey_dispN(4,"m,n"); 
-		Fkey_dispN(5, "A<>a");
+		Fkey_Icon( FKeyNo1,  56 );	//	Fkey_dispR( FKeyNo1, "DEL");
+		Fkey_Icon( FKeyNo2, 260 );	//	Fkey_dispR( FKeyNo2, "DelA");
+		Fkey_Icon( FKeyNo3, 306 );	//	Fkey_dispR( FKeyNo3, "DIM");
+		Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispR( FKeyNo4, "Init");
+		if ( MatXYmode ) Fkey_dispN( FKeyNo5, "X,Y"); else Fkey_dispN( FKeyNo5, "m,n"); 
+		Fkey_Icon( FKeyNo6, 775 );	//	Fkey_dispN( FKeyNo6,  "A<>a");
 
 		Bdisp_PutDisp_DD();
 

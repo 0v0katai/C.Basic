@@ -416,11 +416,15 @@ void DumpMix( char *SrcBase, int offset){
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 void editmenu(){
-	Fkey_dispR( 0, "JUMP");
-	Fkey_dispR( 1, "SRC");
-	if ( CommandInputMethod ) Fkey_dispR( 2, "MENU"); else Fkey_dispR( 2, "CMD");
-	if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
-	Fkey_dispR( 4, "CHAR");
+	Fkey_Icon( FKeyNo1, 508 );	//	Fkey_dispR( FKeyNo1, "JUMP");
+	Fkey_Icon( FKeyNo2, 391 );	//	Fkey_dispR( FKeyNo2, "SRC");
+	if ( CommandInputMethod ) {
+			Fkey_Icon( FKeyNo3, 396 );	//	Fkey_dispR( FKeyNo3, "MENU"); 
+		} else {
+			Fkey_dispR( FKeyNo3, "CMD");
+		}
+	if ( lowercase  ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
+	Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 }
 
 int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr){
@@ -458,8 +462,8 @@ int SearchOpcodeEdit( char *SrcBase, char *searchstr, int *csrptr){
 
 void srcmenu(){
 	editmenu();
-	Fkey_dispN( 0, "SRC ");
-	Fkey_Clear( 1 );
+	Fkey_Icon( FKeyNo1, 165 );	//	Fkey_dispN( FKeyNo1, "SRC ");
+	FkeyClear( FKeyNo2 );
 }
 
 int SearchForText( char *SrcBase, char *searchstr, int *csrptr ){
@@ -500,11 +504,11 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr ){
 
 //---------------------------------------------------------------------------------------------
 void jumpmenu(){
-	Fkey_dispN( 0, "TOP ");
-	Fkey_dispN( 1, "BTM");
-	Fkey_dispR( 2, "Goto");
-	Fkey_dispN_aA( 4, "Skp\xE6\x92");
-	Fkey_dispN_aA( 5, "Skp\xE6\x93");
+	Fkey_Icon( FKeyNo1, 393 );	//	Fkey_dispN( FKeyNo1, "TOP ");
+	Fkey_Icon( FKeyNo2, 394 );	//	Fkey_dispN( FKeyNo2, "BTM");
+	Fkey_dispN( FKeyNo3, "GOTO");
+	Fkey_dispN_aA( FKeyNo5, "Skp\xE6\x92");
+	Fkey_dispN_aA( FKeyNo6, "Skp\xE6\x93");
 }
 
 int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
@@ -699,29 +703,29 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		if ( ( DebugScreen != 1 ) && ( run != 1 ) ) {
 			locate(1,8); PrintLine((unsigned char*)" ",21);
 			if (SearchMode ) {
-					Fkey_dispN( 0, "SRC ");
+					Fkey_Icon( FKeyNo1, 391 );	//	Fkey_dispN( FKeyNo1, "SRC ");
 			} else {
 			if ( ClipStartPtr>=0 ) {
-					Fkey_dispN( 0, "COPY ");
-					Fkey_dispN( 1, "CUT ");
+					Fkey_Icon( FKeyNo1,  52 );	//	Fkey_dispN( FKeyNo1, "COPY ");
+					Fkey_Icon( FKeyNo2, 105 );	//	Fkey_dispN( FKeyNo2, "CUT ");
 				} else {
 					ClipEndPtr   = -1 ;		// ClipMode cancel
 					if ( DebugMode >=1 ) {  // debug mode
 						switch ( DebugMenuSw ) {
 							case 1:
-								Fkey_dispN( 0, "CONT");
-								Fkey_dispN( 1, "Trce");
-								Fkey_dispN( 2, "Step");
-								Fkey_dispN( 3, "S.ot");
-								Fkey_dispN( 4, "L<>S");
-								Fkey_DISPN( 5," \xE6\x9E ");
+								Fkey_dispN( FKeyNo1, "CONT");
+								Fkey_dispN( FKeyNo2, "TRCE");
+								Fkey_dispN( FKeyNo3, "STEP");
+								Fkey_dispN( FKeyNo4, "S.OT");
+								Fkey_dispN( FKeyNo5, "L<>S");
+								Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 								break;
 							case 0:
 								if ( JumpMenuSw ) {		// Jump Mode
 									jumpmenu();
 								} else {
 									editmenu();
-									Fkey_DISPN( 5," \xE6\x9E ");
+									Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 								}
 								break;
 						}
@@ -730,7 +734,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							jumpmenu();
 						} else {
 							editmenu();
-							Fkey_dispN( 5, "EXE");
+							Fkey_Icon( FKeyNo6, 388 );	//	Fkey_dispN( FKeyNo6, "EXE");
 						}
 					}
 				}
@@ -1193,17 +1197,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				DebugScreen = 0;
 				alphalock = 0 ;
 				if ( CommandInputMethod ) { 
-					SHIFT_MENU();
-					Fkey_dispN( 0, "Var");
-					Fkey_dispN( 1, "Mat");
+					Menu_SHIFT_MENU();
 				} else {
-					Fkey_dispR( 0, "Var");
-					Fkey_dispR( 1, "Mat");
-					Fkey_dispR( 2, "V-W");
-					Fkey_Clear( 3 );
+					FkeyClear( FKeyNo4 );
 				}
-				if ( dumpflg==2 ) Fkey_dispN( 4, "Dump"); else Fkey_dispN( 4, "List");
-				Fkey_dispN( 5, "G<>T");
+				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
+				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
+				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
+				if ( dumpflg==2 ) Fkey_dispN( FKeyNo5, "Dump"); else Fkey_dispN( FKeyNo5, "List");
+				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 				GetKey(&key);
 				switch (key) {
 //					case KEY_CTRL_EXIT:

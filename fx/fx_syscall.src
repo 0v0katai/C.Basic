@@ -53,6 +53,9 @@
  .EXPORT _GetVRAMAddress
  .EXPORT _Bdisp_ShapeToVRAM
 
+ .EXPORT _GetFKeyIconPointer
+ .EXPORT _DisplayFKeyIcon
+
  .EXPORT _Calljmp
  .EXPORT _SysCalljmp
 
@@ -326,6 +329,18 @@ _GetVRAMAddress:
 _Bdisp_ShapeToVRAM:
 	mov.l SYSCALL,r1
 	mov.l #H'02F,r0
+	jmp @r1
+	nop
+
+_GetFKeyIconPointer:
+	mov.l SYSCALL,r1
+	mov.l #H'268,r0
+	jmp @r1
+	nop
+
+_DisplayFKeyIcon:
+	mov.l SYSCALL,r1
+	mov.l #H'4D1,r0
 	jmp @r1
 	nop
 

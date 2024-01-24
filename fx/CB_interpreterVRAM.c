@@ -1401,12 +1401,12 @@ unsigned int GWait( int exit_cancel ) {
 			case KEY_CTRL_SHIFT:
 				SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
 				locate(1,8); PrintLine((unsigned char*)" ",21);
-				Fkey_dispR( 0, "Var");
-				Fkey_dispR( 1, "Mat");
-				Fkey_dispR( 2, "V-W");
-				Fkey_Clear( 3 );
-				Fkey_Clear( 4 );
-				Fkey_dispN( 5, "G<>T");
+				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
+				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
+				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
+				FkeyClear( FKeyNo4 );
+				FkeyClear( FKeyNo5 );
+				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 				if (key2==0) GetKey(&key2);
 				switch (key2) {
 					case KEY_CTRL_SETUP:
@@ -1654,7 +1654,7 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 			case 'C':
 			case 'c':
 				ExecPtr++;	
-				Fkey_Clear( n-1 );			// clear
+				FkeyClear( n-1 );			// clear
 				break;
 			case 'R':
 			case 'r':

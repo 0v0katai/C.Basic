@@ -121,7 +121,7 @@ unsigned int Pict() {
 
 	while ( cont ) {
 		locate(1,8); PrintLine((unsigned char *)" ",21);
-		Fkey_dispR( 0, "PICT");
+		Fkey_dispR( FKeyNo1, "PICT");
 		GetKey(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
@@ -131,8 +131,8 @@ unsigned int Pict() {
 				cont=0;
 				break;
 			case KEY_CTRL_F1:
-				Fkey_dispR( 0, "STO");
-				Fkey_dispR( 1, "RCL");
+				Fkey_dispR( FKeyNo1, "STO");
+				Fkey_dispR( FKeyNo2, "RCL");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_AC:
@@ -237,9 +237,10 @@ unsigned int Plot()
 				break;
 			case KEY_CTRL_SHIFT:
 				locate(1,8); PrintLine((unsigned char *)" ",21);
-				Fkey_dispR( 0, "Var");
-				Fkey_dispR( 2, "V-W");
-				Fkey_dispN( 5, "G<>T");
+				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
+				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
+				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
+				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 				GetKey(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
@@ -250,8 +251,11 @@ unsigned int Plot()
 					case KEY_CTRL_F1:
 						selectVar=SetVar(selectVar);		// A - 
 						break;
-					case KEY_CTRL_F3:
+					case KEY_CTRL_F2:
 						selectMatrix=SetMatrix(selectMatrix);		// 
+						break;
+					case KEY_CTRL_F3:
+						SetViewWindow();
 						break;
 					case KEY_CTRL_F6:
 						cont=0;
@@ -279,16 +283,16 @@ unsigned int Plot()
 //----------------------------------------------------------------------------------------------
 void FkeyZoom(){
 	locate(1,8); PrintLine((unsigned char *)" ",21);
-	Fkey_dispR( 1, "FACT");
-	Fkey_dispN( 2, " IN");
-	Fkey_dispN( 3, "OUT");
+	Fkey_dispR( FKeyNo2, "FACT");
+	Fkey_dispN( FKeyNo3, " IN");
+	Fkey_dispN( FKeyNo4, "OUT");
 }
 void FkeyGraph(){
 	locate(1,8); PrintLine((unsigned char *)" ",21);
-	Fkey_dispN( 0, "TRCE");
-	Fkey_dispR( 1, "ZOOM");
-	Fkey_dispR( 2, "V-W");
-	Fkey_dispN( 5, "G<>T");
+	Fkey_dispN( FKeyNo1, "TRCE");
+	Fkey_dispR( FKeyNo2, "ZOOM");
+	Fkey_dispR( FKeyNo3, "V-W");
+	Fkey_dispN( FKeyNo6, "G<>T");
 }
 //--------------------------------------------------------------
 unsigned int ZoomXY() {

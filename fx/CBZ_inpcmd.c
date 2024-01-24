@@ -20,13 +20,29 @@
 int  CommandType=0;
 char CommandPage=0;
 
-void SHIFT_MENU(){
-					Fkey_Clear( 0 );
-					Fkey_Clear( 1 );
-					Fkey_dispR( 2, "VWIN");
-					Fkey_dispR( 3, "SKTCH");
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+void Menu_SHIFT_MENU(){
+					FkeyClear( FKeyNo1 );
+					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
+					Fkey_Icon( FKeyNo4, 561 );	//	Fkey_dispR( FKeyNo4, "SKTCH");
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+}
+void Menu_CMD_PRGM_REL(){
+					Fkey_Icon( FKeyNo1, 548 );	//	Fkey_DISPR( FKeyNo1, " = ");
+					Fkey_Icon( FKeyNo2, 549 );	//	Fkey_DISPR( FKeyNo2, " \x11 ");
+					Fkey_Icon( FKeyNo3, 550 );	//	Fkey_DISPR( FKeyNo3, " > ");
+					Fkey_Icon( FKeyNo4, 551 );	//	Fkey_DISPR( FKeyNo4, " < ");
+					Fkey_Icon( FKeyNo5, 552 );	//	Fkey_DISPR( FKeyNo5, " \x12 ");
+					Fkey_Icon( FKeyNo6, 553 );	//	Fkey_DISPR( FKeyNo6, " \x10 ");
+}
+void Menu_CMD_MENU_EXT(){
+					Fkey_Icon( FKeyNo1, 509 );	//	Fkey_DISPR( FKeyNo1, " ? ");
+					Fkey_Icon( FKeyNo2, 510 );	//	Fkey_DISPR( FKeyNo2, " \x0C ");
+					Fkey_Icon( FKeyNo3, 515 );	//	Fkey_DISPR( FKeyNo3, " :");
+					Fkey_Icon( FKeyNo4, 534 );	//	Fkey_DISPR( FKeyNo4, " \x13 ");
+					Fkey_DISPR( FKeyNo5, " ' ");
+					Fkey_Icon( FKeyNo6, 402 );	//	FFkey_DISPR( FKeyNo6, " / ");
 }
 
 void DispGenuineCmdMenu(){
@@ -34,208 +50,203 @@ void DispGenuineCmdMenu(){
 		case CMD_PRGM:		//	------------------------------------------------------------PRGM
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dispR( 0, "COM");
-					Fkey_dispR( 1, "CTL");
-					Fkey_dispR( 2, "JUMP");
-					Fkey_DISPR( 3, " ? ");
-					Fkey_DISPR( 4, " \x0C ");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 506 );	//	Fkey_dispR( FKeyNo1, "COM");
+					Fkey_Icon( FKeyNo2, 507 );	//	Fkey_dispR( FKeyNo2, "CTL");
+					Fkey_Icon( FKeyNo3, 508 );	//	Fkey_dispR( FKeyNo3, "JUMP");
+					Fkey_Icon( FKeyNo4, 509 );	//	Fkey_DISPR( FKeyNo4, " ? ");
+					Fkey_Icon( FKeyNo5, 510 );	//	Fkey_DISPR( FKeyNo5, " \x0C ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dispR( 0, "CLR ");
-					Fkey_dispR( 1, "DISP");
-					Fkey_dispR( 2, "REL ");
-					Fkey_dispR( 3, "I/O ");
-					Fkey_DISPR( 4, " :");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 511 );	//	Fkey_dispR( FKeyNo1, "CLR ");
+					Fkey_Icon( FKeyNo2, 512 );	//	Fkey_dispR( FKeyNo2, "DISP");
+					Fkey_Icon( FKeyNo3, 513 );	//	Fkey_dispR( FKeyNo3, "REL ");
+					Fkey_Icon( FKeyNo4, 514 );	//	Fkey_dispR( FKeyNo4, "I/O ");
+					Fkey_Icon( FKeyNo5, 515 );	//	Fkey_DISPR( FKeyNo5, " :");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dispR( 0, "STR ");
-					Fkey_DISPR( 1, " $ ");		// $
-					Fkey_Clear( 2 );
-					Fkey_dspRB( 3, "Alias");
-					Fkey_dispR( 4, "EXEC");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 467 );	//	Fkey_dispR( FKeyNo1, "STR ");
+					Fkey_Icon( FKeyNo2, 952 );	//	Fkey_DISPR( FKeyNo2, " $ ");		// $
+					FkeyClear( FKeyNo3 );
+					Fkey_dspRB( FKeyNo4, "Alias");
+					Fkey_dispR( FKeyNo5, "EXEC");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_PRGM_COM:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "If ");
-					Fkey_dspRB( 1, "Then");
-					Fkey_dspRB( 2, "Else");
-					Fkey_dspRB( 3, "IEnd");
-					Fkey_dspRB( 4, "E.If");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 516 );	//	Fkey_dspRB( FKeyNo1, "If ");
+					Fkey_Icon( FKeyNo2, 517 );	//	Fkey_dspRB( FKeyNo2, "Then");
+					Fkey_Icon( FKeyNo3, 518 );	//	Fkey_dspRB( FKeyNo3, "Else");
+					Fkey_Icon( FKeyNo4, 519 );	//	Fkey_dspRB( FKeyNo4, "IEnd");
+					Fkey_dspRB( FKeyNo5, "E.If");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "For ");
-					Fkey_dspRB( 1, " To ");
-					Fkey_dspRB( 2, "Step");
-					Fkey_dspRB( 3, "Next");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 520 );	//	Fkey_dspRB( FKeyNo1, "For ");
+					Fkey_Icon( FKeyNo2, 521 );	//	Fkey_dspRB( FKeyNo2, " To ");
+					Fkey_Icon( FKeyNo3, 522 );	//	Fkey_dspRB( FKeyNo3, "Step");
+					Fkey_Icon( FKeyNo4, 523 );	//	Fkey_dspRB( FKeyNo4, "Next");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dspRB( 0, "Whle");
-					Fkey_dspRB( 1, "WEnd");
-					Fkey_dspRB( 2, " Do");
-					Fkey_dspRB( 3, "Lp.W");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 524 );	//	Fkey_dspRB( FKeyNo1, "Whle");
+					Fkey_Icon( FKeyNo2, 525 );	//	Fkey_dspRB( FKeyNo2, "WEnd");
+					Fkey_Icon( FKeyNo3, 526 );	//	Fkey_dspRB( FKeyNo3, " Do");
+					Fkey_Icon( FKeyNo4, 527 );	//	Fkey_dspRB( FKeyNo4, "Lp.W");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:
-					Fkey_dspRB( 0, "Swit");
-					Fkey_dspRB( 1, "Case");
-					Fkey_dspRB( 2, "Deft");
-					Fkey_dspRB( 3, "Brk");
-					Fkey_dspRB( 4, "S.End");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "Swit");
+					Fkey_dspRB( FKeyNo2, "Case");
+					Fkey_dspRB( FKeyNo3, "Deft");
+					Fkey_Icon( FKeyNo4, 530 );	//	Fkey_dspRB( FKeyNo4, "Brk");
+					Fkey_dspRB( FKeyNo5, "S.End");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_PRGM_CTL:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Prog");
-					Fkey_dspRB( 1, "Rtrn");
-					Fkey_dspRB( 2, "Brk");
-					Fkey_dspRB( 3, "Stop");
-					Fkey_dspRB( 4, "Locl");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 528 );	//	Fkey_dspRB( FKeyNo1, "Prog");
+					Fkey_Icon( FKeyNo2, 529 );	//	Fkey_dspRB( FKeyNo2, "Rtrn");
+					Fkey_Icon( FKeyNo3, 530 );	//	Fkey_dspRB( FKeyNo3, "Brk");
+					Fkey_Icon( FKeyNo4, 531 );	//	Fkey_dspRB( FKeyNo4, "Stop");
+					Fkey_dspRB( FKeyNo5, "Local");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "Gsub");
-					Fkey_dspRB( 1, "ACB");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "Gosub");
+					Fkey_dspRB( FKeyNo2, "ACBrk");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_PRGM_JUMP:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Lbl");
-					Fkey_dspRB( 1, "Goto");
-					Fkey_DISPR( 2, " \x13 ");
-					Fkey_dspRB( 3, "ISZ");
-					Fkey_dspRB( 4, "DSZ");
-					Fkey_dspRB( 5, "Menu");
+					Fkey_Icon( FKeyNo1, 532 );	//	Fkey_dspRB( FKeyNo1, "Lbl");
+					Fkey_Icon( FKeyNo2, 533 );	//	Fkey_dspRB( FKeyNo2, "Goto");
+					Fkey_Icon( FKeyNo3, 534 );	//	Fkey_DISPR( FKeyNo3, " \x13 ");
+					Fkey_Icon( FKeyNo4, 535 );	//	Fkey_dspRB( FKeyNo4, "ISZ");
+					Fkey_Icon( FKeyNo5, 536 );	//	Fkey_dspRB( FKeyNo5, "DSZ");
+					Fkey_Icon( FKeyNo6, 253 );	//	Fkey_dspRB( FKeyNo6, "Menu");
 					break;
 			}
 			break;
 		case CMD_PRGM_CLR:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Text");		// ClrText
-					Fkey_dspRB( 1, "Grph");		// ClrGraph
-					Fkey_dspRB( 2, "List");		// ClrList
-					Fkey_dspRB( 3, "Mat ");		// ClrMat
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 537 );	//	Fkey_dspRB( FKeyNo1, "Text");		// ClrText
+					Fkey_Icon( FKeyNo2, 541 );	//	Fkey_dspRB( FKeyNo2, "Grph");		// ClrGraph
+					Fkey_Icon( FKeyNo3, 162 );	//	Fkey_dspRB( FKeyNo3, "List");		// ClrList
+					Fkey_Icon( FKeyNo4, 200 );	//	Fkey_dspRB( FKeyNo4, "Mat ");		// ClrMat
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_PRGM_DISP:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Stat");		// DrawStat
-					Fkey_dspRB( 1, "Grph");		// DrawGraph
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_dspRB( 5, "Disp");		// Disp
+					Fkey_Icon( FKeyNo1, 540 );	//	Fkey_dspRB( FKeyNo1, "Stat");		// DrawStat
+					Fkey_Icon( FKeyNo2, 541 );	//	Fkey_dspRB( FKeyNo2, "Grph");		// DrawGraph
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					Fkey_dspRB( FKeyNo6, "Disp");		// Disp
 					break;
 			}
 			break;
 		case CMD_PRGM_REL:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_DISPR( 0, " = ");
-					Fkey_DISPR( 1, " \x11 ");
-					Fkey_DISPR( 2, " > ");
-					Fkey_DISPR( 3, " < ");
-					Fkey_DISPR( 4, " \x12 ");
-					Fkey_DISPR( 5, " \x10 ");
+					Menu_CMD_PRGM_REL();
 					break;
 			}
 			break;
 		case CMD_PRGM_I_O:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Lcte");
-					Fkey_dspRB( 1, "Gtky");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_dspRB( 4, "KeyR");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 554 );	//	Fkey_dspRB( FKeyNo1, "Lcte");
+					Fkey_Icon( FKeyNo2, 555 );	//	Fkey_dspRB( FKeyNo2, "Gtky");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					Fkey_dspRB( FKeyNo5, "KeyR");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "IsExs");
-					Fkey_dspRB( 1, "Save");
-					Fkey_dspRB( 2, "Load");
-					Fkey_dspRB( 3, "Delet");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "IsExs");
+					Fkey_dspRB( FKeyNo2, "Save");
+					Fkey_dspRB( FKeyNo3, "Load");
+					Fkey_dspRB( FKeyNo4, "Delet");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_PRGM_STR:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Join");
-					Fkey_dspRB( 1, "Len");
-					Fkey_dspRB( 2, "Cmp");
-					Fkey_dspRB( 3, "Src");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 371 );	//	Fkey_dspRB( FKeyNo1, "Join");
+					Fkey_Icon( FKeyNo2, 377 );	//	Fkey_dspRB( FKeyNo2, "Len");
+					Fkey_Icon( FKeyNo3, 378 );	//	Fkey_dspRB( FKeyNo3, "Cmp");
+					Fkey_Icon( FKeyNo4, 379 );	//	Fkey_dspRB( FKeyNo4, "Src");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "Left");
-					Fkey_dspRB( 1, "Right");
-					Fkey_dspRB( 2, "Mid");
-					Fkey_dspRB( 3, "E\xE6\x9ES");
-					Fkey_dspRB( 4, "Exp");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 868 );	//	Fkey_dspRB( FKeyNo1, "Left");
+					Fkey_Icon( FKeyNo2, 869 );	//	Fkey_dspRB( FKeyNo2, "Right");
+					Fkey_Icon( FKeyNo3, 380 );	//	Fkey_dspRB( FKeyNo3, "Mid");
+					Fkey_Icon( FKeyNo4, 381 );	//	Fkey_dspRB( FKeyNo4, "E\xE6\x9ES");
+					Fkey_Icon( FKeyNo5, 439 );	//	Fkey_dspRB( FKeyNo5, "Exp");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dspRB( 0, "Upr");
-					Fkey_dspRB( 1, "Lwr");
-					Fkey_dspRB( 2, "Inv");
-					Fkey_dspRB( 3, "Shift");
-					Fkey_dspRB( 4, "Rot");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 382 );	//	Fkey_dspRB( FKeyNo1, "Upr");
+					Fkey_Icon( FKeyNo2, 383 );	//	Fkey_dspRB( FKeyNo2, "Lwr");
+					Fkey_Icon( FKeyNo3, 640 );	//	Fkey_dspRB( FKeyNo3, "Inv");
+					Fkey_Icon( FKeyNo4, 395 );	//	Fkey_dspRB( FKeyNo4, "Shift");
+					Fkey_Icon( FKeyNo5, 414 );	//	Fkey_dspRB( FKeyNo5, "Rot");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:
-					Fkey_dspRB( 0, "Str");		// Str
-					Fkey_dspRB( 1, "Str(");		// Str(
-					Fkey_dspRB( 2, "Sptf");		// Sprintf
-					Fkey_DISPR( 3, " % ");
-					Fkey_DISPR( 4, " # ");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 268 );	//	Fkey_dspRB( FKeyNo1, "Str");		// Str
+					Fkey_dspRB( FKeyNo2, "Str(");		// Str(
+					Fkey_dspRB( FKeyNo3, "Sptf");		// Sprintf
+					Fkey_Icon( FKeyNo4, 176 );	//	Fkey_DISPR( FKeyNo4, " % ");
+					Fkey_Icon( FKeyNo5, 403 );	//	Fkey_DISPR( FKeyNo5, " # ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "SysCl");
-					Fkey_dspRB( 1, "Call");
-					Fkey_dspRB( 2, "Poke");
-					Fkey_dspRB( 3, "Peek");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "SysCl");
+					Fkey_dspRB( FKeyNo2, "Call");
+					Fkey_dspRB( FKeyNo3, "Poke");
+					Fkey_dspRB( FKeyNo4, "Peek");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "VarPt");
-					Fkey_dspRB( 1, "PrgPt");
-					Fkey_DISPR( 2, " *");
-					Fkey_DISPR( 3, " &");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "VarPt");
+					Fkey_dspRB( FKeyNo2, "PrgPt");
+					Fkey_Icon( FKeyNo3, 401 );	//	Fkey_DISPR( FKeyNo3, " *");
+					Fkey_DISPR( FKeyNo4, " &");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
@@ -243,268 +254,268 @@ void DispGenuineCmdMenu(){
 		case CMD_OPTN:		//	------------------------------------------------------------OPTN
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dispR( 0, "LIST");
-					Fkey_dispR( 1, "MAT ");
-					Fkey_dispN( 2, "Extd");
-					Fkey_dispR( 3, "CALC");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 178 );	//	Fkey_dispR( FKeyNo1, "LIST");
+					Fkey_Icon( FKeyNo2, 179 );	//	Fkey_dispR( FKeyNo2, "MAT ");
+					Fkey_dispN( FKeyNo3, "Extd");
+					Fkey_Icon( FKeyNo4, 2 );	//	Fkey_dispR( FKeyNo4, "CALC");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_Clear( 0 );
-					Fkey_dispR( 1, "HYP");
-					Fkey_dispR( 2, "PROB");
-					Fkey_dispR( 3, "NUM");
-					Fkey_dispR( 4, "ANGL");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					FkeyClear( FKeyNo1 );
+					Fkey_Icon( FKeyNo2, 142 );	//	Fkey_dispR( FKeyNo2, "HYP");
+					Fkey_Icon( FKeyNo3, 143 );	//	Fkey_dispR( FKeyNo3, "PROB");
+					Fkey_Icon( FKeyNo4, 144 );	//	Fkey_dispR( FKeyNo4, "NUM");
+					Fkey_Icon( FKeyNo5, 145 );	//	Fkey_dispR( FKeyNo5, "ANGL");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dispR( 0, "ESYM");
-					Fkey_dispR( 1, "PICT");
-					Fkey_dispR( 2, "fMEM");
-					Fkey_dispR( 3, "LOGIC");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 146 );	//	Fkey_dispR( FKeyNo1, "ESYM");
+					Fkey_Icon( FKeyNo2, 183 );	//	Fkey_dispR( FKeyNo2, "PICT");
+					Fkey_Icon( FKeyNo3, 147 );	//	Fkey_dispR( FKeyNo3, "fMEM");
+					Fkey_Icon( FKeyNo4, 148 );	//	Fkey_dispR( FKeyNo4, "LOGIC");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_LIST:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "LIST");
-					Fkey_dspRB( 1, "L\xE6\x91M");
-					Fkey_dspRB( 2, "Dim ");
-					Fkey_dspRB( 3, "Fill");
-					Fkey_dspRB( 4, "Seq ");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 162 );	//	Fkey_dspRB( FKeyNo1, "List");
+					Fkey_Icon( FKeyNo2, 167 );	//	Fkey_dspRB( FKeyNo2, "L\xE6\x91M");
+					Fkey_Icon( FKeyNo3, 164 );	//	Fkey_dspRB( FKeyNo3, "Dim ");
+					Fkey_Icon( FKeyNo4, 206 );	//	Fkey_dspRB( FKeyNo4, "Fill");
+					Fkey_Icon( FKeyNo5, 166 );	//	Fkey_dspRB( FKeyNo5, "Seq ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "Min ");
-					Fkey_dspRB( 1, "Max ");
-					Fkey_dspRB( 2, "Mean");
-					Fkey_Clear( 3 );
-					Fkey_dspRB( 4, "Augm");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 169 );	//	Fkey_dspRB( FKeyNo1, "Min ");
+					Fkey_Icon( FKeyNo2, 170 );	//	Fkey_dspRB( FKeyNo2, "Max ");
+					Fkey_Icon( FKeyNo3, 171 );	//	Fkey_dspRB( FKeyNo3, "Mean");
+					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo5, 204 );	//	Fkey_dspRB( FKeyNo5, "Aug ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dspRB( 0, "Sum ");
-					Fkey_dspRB( 1, "Prod");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 173 );	//	Fkey_dspRB( FKeyNo1, "Sum ");
+					Fkey_Icon( FKeyNo2, 174 );	//	Fkey_dspRB( FKeyNo2, "Prod");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Mat");
-					Fkey_dspRB( 1, "M\xE6\x91L");
-					Fkey_Clear( 2 );
-					Fkey_dspRB( 3, "Trn ");
-					Fkey_dspRB( 4, "Aug ");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 200 );	//	Fkey_dspRB( FKeyNo1, "Mat");
+					Fkey_Icon( FKeyNo2, 201 );	//	Fkey_dspRB( FKeyNo2, "M\xE6\x91L");
+					FkeyClear( FKeyNo3 );
+					Fkey_Icon( FKeyNo4, 203 );	//	Fkey_dspRB( FKeyNo4, "Trn ");
+					Fkey_Icon( FKeyNo5, 204 );	//	Fkey_dspRB( FKeyNo5, "Aug ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_Clear( 0 );
-					Fkey_dspRB( 1, "Dim ");
-					Fkey_dspRB( 2, "Fill");
-					Fkey_Clear( 3 );
-					Fkey_dispR( 4, "Size");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					FkeyClear( FKeyNo1 );
+					Fkey_Icon( FKeyNo2, 164 );	//	Fkey_dspRB( FKeyNo2, "Dim ");
+					Fkey_Icon( FKeyNo3, 206 );	//	Fkey_dspRB( FKeyNo3, "Fill");
+					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo5, 790 );	//	Fkey_dispR( FKeyNo5, "SIZE");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_MAT_SIZE:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Base");
-					Fkey_dspRB( 1, "Elem");
-					Fkey_dspRB( 2, "Col");
-					Fkey_dspRB( 3, "Row");
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_dspRB( FKeyNo1, "Base");
+					Fkey_dspRB( FKeyNo2, "Elem");
+					Fkey_dspRB( FKeyNo3, "Col");
+					Fkey_dspRB( FKeyNo4, "Row");
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
 				case 1:
-					Fkey_Clear( 0 );
-					Fkey_Clear( 1 );
-					Fkey_dspRB( 2, " \xE5\x51( ");
-					Fkey_dspRB( 3, "logab");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					FkeyClear( FKeyNo1 );
+					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo3, 190 );	//	Fkey_dspRB( FKeyNo3, " \xE5\x51( ");	// sigma
+					Fkey_Icon( FKeyNo4, 410 );	//	Fkey_dspRB( FKeyNo4, "logab");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dspRB( 0, "Int\xB9");
-					Fkey_dspRB( 1, "Rmdr");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 168 );	//	Fkey_dspRB( FKeyNo1, "Int\xB9");
+					Fkey_Icon( FKeyNo2, 669 );	//	Fkey_dspRB( FKeyNo2, "Rmdr");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_HYP:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "sinh");
-					Fkey_dspRB( 1, "cosh");
-					Fkey_dspRB( 2, "tanh");
-					Fkey_dspRB( 3, "sih\xE5\xCA");
-					Fkey_dspRB( 4, "coh\xE5\xCA");
-					Fkey_dspRB( 5, "tah\xE5\xCA");
+					Fkey_Icon( FKeyNo1, 234 );	//	Fkey_dspRB( FKeyNo1, "sinh");
+					Fkey_Icon( FKeyNo2, 235 );	//	Fkey_dspRB( FKeyNo2, "cosh");
+					Fkey_Icon( FKeyNo3, 236 );	//	Fkey_dspRB( FKeyNo3, "tanh");
+					Fkey_Icon( FKeyNo4, 237 );	//	Fkey_dspRB( FKeyNo4, "sih\xE5\xCA");
+					Fkey_Icon( FKeyNo5, 238 );	//	Fkey_dspRB( FKeyNo5, "coh\xE5\xCA");
+					Fkey_Icon( FKeyNo6, 239 );	//	Fkey_dspRB( FKeyNo6, "tah\xE5\xCA");
 					break;
 			}
 			break;
 		case CMD_OPTN_PROB:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, " X !");
-					Fkey_Clear( 1 );
-					Fkey_Clear( 2 );
-					Fkey_dispR( 3, "RAND");
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 149 );	//	Fkey_dspRB( FKeyNo1, " X !");
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					Fkey_Icon( FKeyNo4, 345 );	//	Fkey_dispR( FKeyNo4, "RAND");
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_OPTN_PROB_RAND:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Ran#");
-					Fkey_dspRB( 1, "Int ");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_dspRB( 4, "List");
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 152 );	//	Fkey_dspRB( FKeyNo1, "Ran#");
+					Fkey_Icon( FKeyNo2, 158 );	//	Fkey_dspRB( FKeyNo2, "Int ");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo5, 162 );	//	Fkey_dspRB( FKeyNo5, "List");
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_OPTN_NUM:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Abs ");
-					Fkey_dspRB( 1, "int ");
-					Fkey_dspRB( 2, "Frac");
-					Fkey_dspRB( 3, "Rnd ");
-					Fkey_dspRB( 4, "Intg");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 157 );	//	Fkey_dspRB( FKeyNo1, "Abs ");
+					Fkey_Icon( FKeyNo2, 158 );	//	Fkey_dspRB( FKeyNo2, "Int ");
+					Fkey_Icon( FKeyNo3, 159 );	//	Fkey_dspRB( FKeyNo3, "Frac");
+					Fkey_Icon( FKeyNo4, 160 );	//	Fkey_dspRB( FKeyNo4, "Rnd ");
+					Fkey_Icon( FKeyNo5, 161 );	//	Fkey_dspRB( FKeyNo5, "Intg");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "RndFi");
-					Fkey_Clear( 1 );
-					Fkey_Clear( 2 );
-					Fkey_dspRB( 3, "MOD ");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 107 );	//	Fkey_dspRB( FKeyNo1, "RndFi");
+					Fkey_Icon( FKeyNo2, 883 );	//	Fkey_dspRB( FKeyNo2, "GCD");
+					Fkey_Icon( FKeyNo3, 574 );	//	Fkey_dspRB( FKeyNo3, "LCM");
+					Fkey_Icon( FKeyNo4, 884 );	//	Fkey_dspRB( FKeyNo4, "MOD ");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_ANGL:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_DISPR( 0, " \x9C ");
-					Fkey_DISPR( 1, " \xAC ");
-					Fkey_DISPR( 2, " \xBC ");
-					Fkey_dspRB( 3, "\x9C,,,");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 193 );	//	Fkey_DISPR( FKeyNo1, " \x9C ");
+					Fkey_Icon( FKeyNo2, 194 );	//	Fkey_DISPR( FKeyNo2, " \xAC ");
+					Fkey_Icon( FKeyNo3, 195 );	//	Fkey_DISPR( FKeyNo3, " \xBC ");
+					Fkey_Icon( FKeyNo4, 196 );	//	Fkey_dspRB( FKeyNo4, "\x9C,,,");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "Pol(");
-					Fkey_dspRB( 1, "Rec(");
-					Fkey_dspRB( 2, "\xE6\x9E.DMS");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 198 );	//	Fkey_dspRB( FKeyNo1, "Pol(");
+					Fkey_Icon( FKeyNo2, 199 );	//	Fkey_dspRB( FKeyNo2, "Rec(");
+					Fkey_Icon( FKeyNo3, 108 );	//	Fkey_dspRB( FKeyNo3, "\xE6\x9E.DMS");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_ESYM:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_DISPR( 0, " m ");
-					Fkey_DISPR( 1, " \xE6\x4B ");
-					Fkey_DISPR( 2, " \x03 ");
-					Fkey_DISPR( 3, " p ");
-					Fkey_DISPR( 4, " \x01 ");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 215 );	//	Fkey_DISPR( FKeyNo1, " m ");
+					Fkey_Icon( FKeyNo2, 216 );	//	Fkey_DISPR( FKeyNo2, " \xE6\x4B ");
+					Fkey_Icon( FKeyNo3, 217 );	//	Fkey_DISPR( FKeyNo3, " \x03 ");
+					Fkey_Icon( FKeyNo4, 218 );	//	Fkey_DISPR( FKeyNo4, " p ");
+					Fkey_Icon( FKeyNo5, 219 );	//	Fkey_DISPR( FKeyNo5, " \x01 ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_DISPR( 0, " K ");
-					Fkey_DISPR( 1, " \x07 ");
-					Fkey_DISPR( 2, " \x08 ");
-					Fkey_DISPR( 3, " \x09 ");
-					Fkey_DISPR( 4, " \x0A ");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 220 );	//	Fkey_DISPR( FKeyNo1, " K ");
+					Fkey_Icon( FKeyNo2, 221 );	//	Fkey_DISPR( FKeyNo2, " \x07 ");
+					Fkey_Icon( FKeyNo3, 222 );	//	Fkey_DISPR( FKeyNo3, " \x08 ");
+					Fkey_Icon( FKeyNo4, 223 );	//	Fkey_DISPR( FKeyNo4, " \x09 ");
+					Fkey_Icon( FKeyNo5, 224 );	//	Fkey_DISPR( FKeyNo5, " \x0A ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_DISPR( 0, " \x0B ");
-					Fkey_Clear( 1 );
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 225 );	//	Fkey_DISPR( FKeyNo1, " \x0B ");
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_PICT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Sto ");
-					Fkey_dspRB( 1, "Rcl ");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 699 );	//	Fkey_dspRB( FKeyNo1, "Sto ");
+					Fkey_Icon( FKeyNo2, 700 );	//	Fkey_dspRB( FKeyNo2, "Rcl ");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_OPTN_FMEM:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_Clear( 0 );
-					Fkey_Clear( 1 );
-					Fkey_dspRB( 2, " fn ");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					FkeyClear( FKeyNo1 );
+					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dspRB( FKeyNo3, " fn ");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_OPTN_LOGIC:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "And");
-					Fkey_dspRB( 1, " Or");
-					Fkey_dspRB( 2, "Not");
-					Fkey_dspRB( 3, "Xor");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 254 );	//	Fkey_dspRB( FKeyNo1, "And");
+					Fkey_Icon( FKeyNo2, 255 );	//	Fkey_dspRB( FKeyNo2, " Or");
+					Fkey_Icon( FKeyNo3, 256 );	//	Fkey_dspRB( FKeyNo3, "Not");
+					Fkey_Icon( FKeyNo4, 610 );	//	Fkey_dspRB( FKeyNo4, "Xor");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "and");
-					Fkey_dspRB( 1, " or");
-					Fkey_dspRB( 2, "not");
-					Fkey_dspRB( 3, "xor");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "and");
+					Fkey_dspRB( FKeyNo2, " or");
+					Fkey_dspRB( FKeyNo3, "not");
+					Fkey_dspRB( FKeyNo4, "xor");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_OPTN_EXT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Alias");
-					Fkey_DISPR( 1, " ~ ");
-					Fkey_DISPR( 2, " & ");
-					Fkey_DISPR( 3, " | ");
-					Fkey_DISPR( 4, " # ");
-					Fkey_DISPR( 5, " % ");
+					Fkey_dspRB( FKeyNo1, "Alias");
+					Fkey_Icon( FKeyNo2, 400 );	//	Fkey_DISPR( FKeyNo2, " ~ ");
+					Fkey_DISPR( FKeyNo3, " & ");
+					Fkey_DISPR( FKeyNo4, " | ");
+					Fkey_Icon( FKeyNo5, 403 );	//	Fkey_DISPR( FKeyNo5, " # ");
+					Fkey_Icon( FKeyNo6, 176 );	//	Fkey_DISPR( FKeyNo6, " % ");
 					break;
 			}
 			break;
@@ -512,104 +523,105 @@ void DispGenuineCmdMenu(){
 		case CMD_VARS:		//	------------------------------------------------------------VARS
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dispR( 0, "VWin");
-					Fkey_dispR( 1, "FACT");
-					Fkey_dispN( 2, "Extd");
-					Fkey_dispR( 3, "GRPH");
-					Fkey_dispN( 4, "Setup");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 560 );	//	Fkey_dispR( FKeyNo1, "VWIN");
+					Fkey_Icon( FKeyNo2, 565 );	//	Fkey_dispR( FKeyNo2, "FACT");
+					Fkey_dispN( FKeyNo3, "Extd");
+					Fkey_Icon( FKeyNo4,   1 );	//	Fkey_dispR( FKeyNo4, "GRPH");
+					Fkey_dispN( FKeyNo5, "SETUP");
+//					Fkey_Icon( FKeyNo5, 172 );	//	Fkey_dispN( FKeyNo5, "Setup");
+					Fkey_Icon( FKeyNo6,   6 );	//	Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_Clear( 0 );
-					Fkey_Clear( 1 );
-					Fkey_Clear( 2 );
-					Fkey_DISPR( 3, " $ ");
-					Fkey_dspRB( 4, "Str ");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					FkeyClear( FKeyNo1 );
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					Fkey_Icon( FKeyNo4, 952 );	//	Fkey_DISPR( FKeyNo4, " $ ");
+					Fkey_Icon( FKeyNo5, 268 );	//	Fkey_dspRB( FKeyNo5, "Str ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_VARS_VWIN:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_DISPR( 0, " X ");
-					Fkey_DISPR( 1, " Y ");
-					Fkey_DISPR( 2, "T,\xE6\x47");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 580 );	//	Fkey_DISPR( FKeyNo1, " X ");
+					Fkey_Icon( FKeyNo2, 581 );	//	Fkey_DISPR( FKeyNo2, " Y ");
+					Fkey_Icon( FKeyNo3, 582 );	//	Fkey_DISPR( FKeyNo3, "T,\xE6\x47");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_VARS_VWIN_X:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "min");
-					Fkey_dspRB( 1, "max");
-					Fkey_dspRB( 2, "scal");
-					Fkey_dspRB( 3, "dot" );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 577 );	//	Fkey_dspRB( FKeyNo1, "min");
+					Fkey_Icon( FKeyNo2, 578 );	//	Fkey_dspRB( FKeyNo2, "max");
+					Fkey_Icon( FKeyNo3, 579 );	//	Fkey_dspRB( FKeyNo3, "scal");
+					Fkey_Icon( FKeyNo4, 281 );	//	Fkey_dspRB( FKeyNo4, "dot" );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_VARS_VWIN_Y:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "min");
-					Fkey_dspRB( 1, "max");
-					Fkey_dspRB( 2, "scal");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 577 );	//	Fkey_dspRB( FKeyNo1, "min");
+					Fkey_Icon( FKeyNo2, 578 );	//	Fkey_dspRB( FKeyNo2, "max");
+					Fkey_Icon( FKeyNo3, 579 );	//	Fkey_dspRB( FKeyNo3, "scal");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_VARS_VWIN_T:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "min");
-					Fkey_dspRB( 1, "max");
-					Fkey_dspRB( 2, "ptch");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 577 );	//	Fkey_dspRB( FKeyNo1, "min");
+					Fkey_Icon( FKeyNo2, 578 );	//	Fkey_dspRB( FKeyNo2, "max");
+					Fkey_Icon( FKeyNo3, 586 );	//	Fkey_dspRB( FKeyNo3, "ptch");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_VARS_FACT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Xfct");
-					Fkey_dspRB( 1, "Yfct");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 587 );	//	Fkey_dspRB( FKeyNo1, "Xfct");
+					Fkey_Icon( FKeyNo2, 588 );	//	Fkey_dspRB( FKeyNo2, "Yfct");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_VARS_GRPH:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_DISPR( 0, " \xE5\xB4 ");
-					Fkey_Clear( 1 );
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 622 );	//	Fkey_DISPR( FKeyNo1, " \xE5\xB4 ");
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Ticks");
-					Fkey_dspRB( 1, "DATE");
-					Fkey_dspRB( 2, "TIME");
-					Fkey_dspRB( 3, "BackL");
-					Fkey_dspRB( 4, "RfCtl");
-					Fkey_dspRB( 5, "RfTm");
+					Fkey_dspRB( FKeyNo1, "Ticks");
+					Fkey_dspRB( FKeyNo2, "DATE");
+					Fkey_dspRB( FKeyNo3, "TIME");
+					Fkey_dspRB( FKeyNo4, "BackL");
+					Fkey_dspRB( FKeyNo5, "RfCtl");
+					Fkey_dspRB( FKeyNo6, "RfTm");
 					break;
 			}
 			break;
@@ -617,95 +629,95 @@ void DispGenuineCmdMenu(){
 		case CMD_SHIFT:		//	-----------------------------------------------------------SHIFT
 			switch ( CommandPage ) {
 				case 0:
-					SHIFT_MENU();
+					Menu_SHIFT_MENU();
 					break;
 			}
 			break;
 		case CMD_SHIFT_VWIN:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "VWin");
-					Fkey_dspRB( 1, "Sto");
-					Fkey_dspRB( 2, "Rcl");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 698 );	//	Fkey_dspRB( FKeyNo1, "VWin");
+					Fkey_Icon( FKeyNo2, 699 );	//	Fkey_dspRB( FKeyNo2, "Sto");
+					Fkey_Icon( FKeyNo3, 700 );	//	Fkey_dspRB( FKeyNo3, "Rcl");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SHIFT_SKTCH:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Cls");
-					Fkey_dispN( 1, "Extd");
-					Fkey_dispN( 2, " ML ");
-					Fkey_Clear( 3 );
-					Fkey_dispR( 4, "GRPH");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 638 );	//	Fkey_dspRB( FKeyNo1, "Cls");
+					Fkey_dispN( FKeyNo2, "Extd");
+					Fkey_dispN( FKeyNo3, " ML ");
+					FkeyClear( FKeyNo4 );
+					Fkey_Icon(FKeyNo5, 1 );		// Fkey_dispR( FKeyNo5, "GRPH");
+					Fkey_Icon(FKeyNo6, 6 );		//Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dispR( 0, "PLOT");
-					Fkey_dispR( 1, "LINE");
-					Fkey_dspRB( 2, "Crcl");
-					Fkey_dspRB( 3, "Vert");
-					Fkey_dspRB( 4, "Hztl");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 641 );	//	Fkey_dispR( FKeyNo1, "PLOT");
+					Fkey_Icon( FKeyNo2, 642 );	//	Fkey_dispR( FKeyNo2, "LINE");
+					Fkey_Icon( FKeyNo3, 643 );	//	Fkey_dspRB( FKeyNo3, "Crcl");
+					Fkey_Icon( FKeyNo4, 644 );	//	Fkey_dspRB( FKeyNo4, "Vert");
+					Fkey_Icon( FKeyNo5, 645 );	//	Fkey_dspRB( FKeyNo5, "Hztl");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_Clear( 0 );
-					Fkey_dspRB( 1, "Text");
-					Fkey_dispR( 2, "PIXL");
-					Fkey_dspRB( 3, "Test");
-					Fkey_dispR( 4, "STYL");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					FkeyClear( FKeyNo1 );
+					Fkey_Icon( FKeyNo2, 537 );	//	Fkey_dspRB( FKeyNo2, "Text");
+					Fkey_Icon( FKeyNo3, 701 );	//	Fkey_dispR( FKeyNo3, "PIXL");
+					Fkey_Icon( FKeyNo4, 702 );	//	Fkey_dspRB( FKeyNo4, "Test");
+					Fkey_Icon( FKeyNo5, 305 );	//	Fkey_dispR( FKeyNo5, "STYL");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_SHIFT_SKTCH_GRPH:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Y= ");
-					Fkey_Clear( 1 );
-					Fkey_dspRB( 2, "Parm");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 472 );	//	Fkey_dspRB( FKeyNo1, "Y= ");
+					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo3, 474 );	//	Fkey_dspRB( FKeyNo3, "Parm");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SHIFT_SKTCH_PLOT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Plot");
-					Fkey_dspRB( 1, "PlOn");
-					Fkey_dspRB( 2, "PlOff");
-					Fkey_dspRB( 3, "PlChg");
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 497 );	//	Fkey_dspRB( FKeyNo1, "Plot");
+					Fkey_Icon( FKeyNo2, 654 );	//	Fkey_dspRB( FKeyNo2, "PlOn");
+					Fkey_Icon( FKeyNo3, 655 );	//	Fkey_dspRB( FKeyNo3, "PlOff");
+					Fkey_Icon( FKeyNo4, 656 );	//	Fkey_dspRB( FKeyNo4, "PlChg");
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SHIFT_SKTCH_LINE:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Line");
-					Fkey_dspRB( 1, "FLine");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 664 );	//	Fkey_dspRB( FKeyNo1, "Line");
+					Fkey_Icon( FKeyNo2, 665 );	//	Fkey_dspRB( FKeyNo2, "FLine");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SHIFT_SKTCH_PIXL:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "On ");
-					Fkey_dspRB( 1, "Off");
-					Fkey_dspRB( 2, "Chg");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 480 );	//	Fkey_dspRB( FKeyNo1, "On ");
+					Fkey_Icon( FKeyNo2, 422 );	//	Fkey_dspRB( FKeyNo2, "Off");
+					Fkey_Icon( FKeyNo3, 660 );	//	Fkey_dspRB( FKeyNo3, "Chg");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
@@ -719,72 +731,72 @@ void DispGenuineCmdMenu(){
 		case CMD_SHIFT_SKTCH_EXT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Scrn");
-					Fkey_dspRB( 1, "DspDD");
-					Fkey_dspRB( 2, "LctYX");
-					Fkey_dspRB( 3, "Fkey(");
-					Fkey_dspRB( 4, "PupW");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "Scrn");
+					Fkey_dspRB( FKeyNo2, "DspDD");
+					Fkey_dspRB( FKeyNo3, "LctYX");
+					Fkey_dspRB( FKeyNo4, "Fkey(");
+					Fkey_dspRB( FKeyNo5, "PupW");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "Rect");
-					Fkey_dspRB( 1, "FRect");
-					Fkey_dspRB( 2, "RdGR");
-					Fkey_dspRB( 3, "WrGR");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "Rect");
+					Fkey_dspRB( FKeyNo2, "FRect");
+					Fkey_dspRB( FKeyNo3, "RdGR");
+					Fkey_dspRB( FKeyNo4, "WrGR");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dspRB( 0, "DGet");
-					Fkey_dspRB( 1, "DPut");
-					Fkey_dspRB( 2, "Dtrim");
-					Fkey_dspRB( 3, "Dlife");
-					Fkey_dspRB( 4, "CeSum");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "DGet");
+					Fkey_dspRB( FKeyNo2, "DPut");
+					Fkey_dspRB( FKeyNo3, "Dtrim");
+					Fkey_dspRB( FKeyNo4, "Dlife");
+					Fkey_dspRB( FKeyNo5, "CeSum");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_SHIFT_SKTCH_ML:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "ClVra");
-					Fkey_dspRB( 1, "ClScr");
-					Fkey_dspRB( 2, "DspVr");
-					Fkey_dspRB( 3, "Point");
-					Fkey_dspRB( 4, "Pixel");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "ClVra");
+					Fkey_dspRB( FKeyNo2, "ClScr");
+					Fkey_dspRB( FKeyNo3, "DspVr");
+					Fkey_dspRB( FKeyNo4, "Point");
+					Fkey_dspRB( FKeyNo5, "Pixel");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( 0, "PxTest");
-					Fkey_dspRB( 1, "Line");
-					Fkey_dspRB( 2, "Rect");
-					Fkey_dspRB( 3, "Horiz");
-					Fkey_dspRB( 4, "Verti");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "PxTest");
+					Fkey_dspRB( FKeyNo2, "Line");
+					Fkey_dspRB( FKeyNo3, "Rect");
+					Fkey_dspRB( FKeyNo4, "Horiz");
+					Fkey_dspRB( FKeyNo5, "Verti");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dspRB( 0, "Poly");
-					Fkey_dspRB( 1, "FPoly");
-					Fkey_dspRB( 2, "Circl");
-					Fkey_dspRB( 3, "FCirc");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "Poly");
+					Fkey_dspRB( FKeyNo2, "FPoly");
+					Fkey_dspRB( FKeyNo3, "Circl");
+					Fkey_dspRB( FKeyNo4, "FCirc");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:
-					Fkey_dspRB( 0, "Elips");
-					Fkey_dspRB( 1, "FElip");
-					Fkey_dspRB( 2, "EInR");
-					Fkey_dspRB( 3, "FEInR");
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "Elips");
+					Fkey_dspRB( FKeyNo2, "FElip");
+					Fkey_dspRB( FKeyNo3, "EInR");
+					Fkey_dspRB( FKeyNo4, "FEInR");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 4:
-					Fkey_dspRB( 0, "Hscrl");
-					Fkey_dspRB( 1, "Vscrl");
-					Fkey_dspRB( 2, "Bmp");
-					Fkey_dspRB( 3, "Bm8");
-					Fkey_dspRB( 4, "Bm16");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "Hscrl");
+					Fkey_dspRB( FKeyNo2, "Vscrl");
+					Fkey_dspRB( FKeyNo3, "Bmp");
+					Fkey_dspRB( FKeyNo4, "Bm8");
+					Fkey_dspRB( FKeyNo5, "Bm16");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
@@ -792,96 +804,91 @@ void DispGenuineCmdMenu(){
 		case CMD_MENU:		//	------------------------------------------------------------MENU
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dispR( 0, "STAT");
-					Fkey_dispR( 1, "MAT ");
-					Fkey_dispR( 2, "LIST");
-					Fkey_dispN( 3, "extc");
-					Fkey_DISPN( 4, " % ");
-					Fkey_DISPN( 5, " # ");
+					Fkey_Icon( FKeyNo1, 181 );	//	Fkey_dispR( FKeyNo1, "STAT");
+					Fkey_Icon( FKeyNo2, 179 );	//	Fkey_dispR( FKeyNo2, "MAT ");
+					Fkey_Icon( FKeyNo3, 178 );	//	Fkey_dispR( FKeyNo3, "LIST");
+					Fkey_dispN( FKeyNo4, "extc");
+					Fkey_Icon( FKeyNo5, 176 );	//	Fkey_DISPN( FKeyNo5, " % ");
+					Fkey_Icon( FKeyNo6, 403 );	//	Fkey_DISPN( FKeyNo6, " # ");
 					break;
 			}
 			break;
 		case CMD_MENU_STAT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dispR( 0, "DRAW");
-					Fkey_dispR( 1, "GRPH ");
-					Fkey_dspRB( 2, "List");
-					Fkey_dispR( 3, "TYPE");
-					Fkey_Clear( 4 );	// DIST
-					Fkey_Clear( 5 );	// CALC
+					Fkey_Icon( FKeyNo1, 759 );	//	Fkey_dispR( FKeyNo1, "DRAW");
+					Fkey_Icon( FKeyNo2,   1 );	//	Fkey_dispR( FKeyNo2, "GRPH ");
+					Fkey_Icon( FKeyNo3, 162 );	//	Fkey_dspRB( FKeyNo3, "List");
+					Fkey_Icon( FKeyNo4,  57 );	//	Fkey_dispR( FKeyNo4, "TYPE");
+					FkeyClear( FKeyNo5 );	// DIST
+					FkeyClear( FKeyNo6 );	// CALC
 					break;
 			}
 			break;
 		case CMD_MENU_STAT_DRAW:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "On ");
-					Fkey_dspRB( 1, "Off");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 480 );	//	Fkey_dspRB( FKeyNo1, "On ");
+					Fkey_Icon( FKeyNo2, 422 );	//	Fkey_dspRB( FKeyNo2, "Off");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_MENU_STAT_GRPH:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "GPH1");
-					Fkey_dspRB( 1, "GPH2");
-					Fkey_dspRB( 2, "GPH3");
-					Fkey_dspRB( 3, "Scat");
-					Fkey_dspRB( 4, "xy");
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 423 );	//	Fkey_dspRB( FKeyNo1, "GPH1");
+					Fkey_Icon( FKeyNo2, 424 );	//	Fkey_dspRB( FKeyNo2, "GPH2");
+					Fkey_Icon( FKeyNo3, 425 );	//	Fkey_dspRB( FKeyNo3, "GPH3");
+					Fkey_Icon( FKeyNo4, 426 );	//	Fkey_dspRB( FKeyNo4, "Scat");
+					Fkey_Icon( FKeyNo5, 427 );	//	Fkey_dspRB( FKeyNo5, "xy");
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_MENU_STAT_TYPE:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, " \xE6\xA5 ");	// Square
-					Fkey_dspRB( 1, " \xA9 ");		// Cross
-					Fkey_dspRB( 2, " \xE6\xAA ");	// Dot
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 449 );	//	Fkey_dspRB( FKeyNo1, " \xE6\xA5 ");	// Square
+					Fkey_Icon( FKeyNo2, 450 );	//	Fkey_dspRB( FKeyNo2, " \xA9 ");		// Cross
+					Fkey_Icon( FKeyNo3, 451 );	//	Fkey_dspRB( FKeyNo3, " \xE6\xAA ");	// Dot
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_MENU_MAT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Swap");
-					Fkey_dspRB( 1, "*Rw");
-					Fkey_dspRB( 2, "*Rw+");
-					Fkey_dspRB( 3, "Rw+");
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 456 );	//	Fkey_dspRB( FKeyNo1, "Swap");
+					Fkey_Icon( FKeyNo2, 457 );	//	Fkey_dspRB( FKeyNo2, "*Rw");
+					Fkey_Icon( FKeyNo3, 458 );	//	Fkey_dspRB( FKeyNo3, "*Rw+");
+					Fkey_Icon( FKeyNo4, 459 );	//	Fkey_dspRB( FKeyNo4, "Rw+");
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_MENU_LIST:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "SrtA");
-					Fkey_dspRB( 1, "SrtD");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 460 );	//	Fkey_dspRB( FKeyNo1, "SrtA");
+					Fkey_Icon( FKeyNo2, 461 );	//	Fkey_dspRB( FKeyNo2, "SrtD");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_DISPR( 0, " ? ");
-					Fkey_DISPR( 1, " \x0C ");
-					Fkey_DISPR( 2, " : ");
-					Fkey_DISPR( 3, " \x13 ");
-					Fkey_DISPR( 4, " ' ");
-					Fkey_DISPR( 5, " / ");
+					Menu_CMD_MENU_EXT();
 					break;
 			}
 			break;
@@ -889,48 +896,48 @@ void DispGenuineCmdMenu(){
 		case CMD_SETUP:		//	-----------------------------------------------------------SETUP
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dispR( 0, "ANGL");
-					Fkey_dispR( 1, "COOR");
-					Fkey_dispR( 2, "GRID");
-					Fkey_dispR( 3, "AXES");
-					Fkey_dispR( 4, "LABL");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 145 );	//	Fkey_dispR( FKeyNo1, "ANGL");
+					Fkey_Icon( FKeyNo2, 754 );	//	Fkey_dispR( FKeyNo2, "COOR");
+					Fkey_Icon( FKeyNo3, 755 );	//	Fkey_dispR( FKeyNo3, "GRID");
+					Fkey_Icon( FKeyNo4, 756 );	//	Fkey_dispR( FKeyNo4, "AXES");
+					Fkey_Icon( FKeyNo5, 757 );	//	Fkey_dispR( FKeyNo5, "LABL");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dispR( 0, "DISP");
-					Fkey_dispR( 1, "S/L");
-					Fkey_dispR( 2, "DRAW");
-					Fkey_dispR( 3, "DERV");
-					Fkey_dispR( 4, "BACK");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 512 );	//	Fkey_dispR( FKeyNo1, "DISP");
+					Fkey_Icon( FKeyNo2, 758 );	//	Fkey_dispR( FKeyNo2, "S/L");
+					Fkey_Icon( FKeyNo3, 759 );	//	Fkey_dispR( FKeyNo3, "DRAW");
+					Fkey_Icon( FKeyNo4, 760 );	//	Fkey_dispR( FKeyNo4, "DERV");
+					Fkey_Icon( FKeyNo5, 689 );	//	Fkey_dispR( FKeyNo5, "BACK");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
-					Fkey_dispR( 0, "FUNC");
-					Fkey_Clear( 1 );
-					Fkey_dispR( 2, "SWin");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_Icon( FKeyNo1, 761 );	//	Fkey_dispR( FKeyNo1, "FUNC");
+					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo3, 762 );	//	Fkey_dispR( FKeyNo3, "SWin");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:
-					Fkey_dspRB( 0, "RfCtl");
-					Fkey_dspRB( 1, "RfTm");
-					Fkey_dspRB( 2, "DATE");
-					Fkey_dspRB( 3, "TIME");
-					Fkey_dspRB( 4, "Wait");
-					Fkey_DISPN( 5," \xE6\x9E ");
+					Fkey_dspRB( FKeyNo1, "RfCtl");
+					Fkey_dspRB( FKeyNo2, "RfTm");
+					Fkey_dspRB( FKeyNo3, "DATE");
+					Fkey_dspRB( FKeyNo4, "TIME");
+					Fkey_dspRB( FKeyNo5, "Wait");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
 		case CMD_SETUP_ANGL:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Deg ");
-					Fkey_dspRB( 1, "Rad ");
-					Fkey_dspRB( 2, "Gra ");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 489 );	//	Fkey_dspRB( FKeyNo1, "Deg ");
+					Fkey_Icon( FKeyNo2, 490 );	//	Fkey_dspRB( FKeyNo2, "Rad ");
+					Fkey_Icon( FKeyNo3, 491 );	//	Fkey_dspRB( FKeyNo3, "Gra ");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
@@ -942,24 +949,24 @@ void DispGenuineCmdMenu(){
 		case CMD_SETUP_FUNC:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "On ");
-					Fkey_dspRB( 1, "Off");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 480 );	//	Fkey_dspRB( FKeyNo1, "On ");
+					Fkey_Icon( FKeyNo2, 422 );	//	Fkey_dspRB( FKeyNo2, "Off");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SETUP_DISP:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Fix");
-					Fkey_dspRB( 1, "Sci");
-					Fkey_dspRB( 2, "Nrm");
-					Fkey_dispR( 3, "Eng");
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 485 );	//	Fkey_dspRB( FKeyNo1, "Fix");
+					Fkey_Icon( FKeyNo2, 486 );	//	Fkey_dspRB( FKeyNo2, "Sci");
+					Fkey_Icon( FKeyNo3, 487 );	//	Fkey_dspRB( FKeyNo3, "Nrm");
+					Fkey_Icon( FKeyNo4, 275 );	//	Fkey_dispR( FKeyNo4, "Eng");
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
@@ -973,48 +980,48 @@ void DispGenuineCmdMenu(){
 		case CMD_SETUP_DISP_ENG:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "On ");
-					Fkey_dspRB( 1, "off");
-					Fkey_dspRB( 2, "Eng");
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 480 );	//	Fkey_dspRB( FKeyNo1, "On ");
+					Fkey_Icon( FKeyNo2, 422 );	//	Fkey_dspRB( FKeyNo2, "Off");
+					Fkey_Icon( FKeyNo3, 488 );	//	Fkey_dspRB( FKeyNo3, "Eng");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SETUP_DRAW:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Con");
-					Fkey_dspRB( 1, "Plot");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 496 );	//	Fkey_dspRB( FKeyNo1, "Con");
+					Fkey_Icon( FKeyNo2, 497 );	//	Fkey_dspRB( FKeyNo2, "Plot");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SETUP_BACK:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "None");
-					Fkey_dspRB( 1, "Pict");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 494 );	//	Fkey_dspRB( FKeyNo1, "None");
+					Fkey_Icon( FKeyNo2, 495 );	//	Fkey_dspRB( FKeyNo2, "Pict");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;
 		case CMD_SETUP_SWIN:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_dspRB( 0, "Auto");
-					Fkey_dspRB( 1, "Man");
-					Fkey_Clear( 2 );
-					Fkey_Clear( 3 );
-					Fkey_Clear( 4 );
-					Fkey_Clear( 5 );
+					Fkey_Icon( FKeyNo1, 492 );	//	Fkey_dspRB( FKeyNo1, "Auto");
+					Fkey_Icon( FKeyNo2, 493 );	//	Fkey_dspRB( FKeyNo2, "Man");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
 					break;
 			}
 			break;

@@ -154,9 +154,6 @@
 
 
 
-void Fkey_dispN_Aa(int n, char *buffer) ;
-void Fkey_dispN_aA(int n, char *buffer) ;
-
 extern const short oplistInp[];
 extern const short oplistOPTN[];
 extern const short oplistPRGM[];
@@ -203,7 +200,9 @@ unsigned int InputStr( int x, int y, int width,  char* buffer,      char SPC, in
 extern int CommandType;
 extern char CommandPage;
 
-void SHIFT_MENU();
+void Menu_SHIFT_MENU();
+void Menu_CMD_PRGM_REL();
+void Menu_CMD_MENU_EXT();
 void DispGenuineCmdMenu();
 void GetGenuineCmdF1( unsigned int *code );
 void GetGenuineCmdF2( unsigned int *code );
