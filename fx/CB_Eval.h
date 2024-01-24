@@ -85,6 +85,9 @@ double fLCM( double x, double y ) ;	// LCM(x,y)
 double fRanNorm( double sd, double mean) ;	// RanNorm#
 double fRanBin( double n, double p) ;	// RanBin#
 
+double CB_frand( char *SRC ) ;
+int CB_rand( char *SRC ) ;
+
 double Eval_atof(char *SRC, int c) ;
 
 double Eval(char *SRC);
@@ -106,6 +109,7 @@ double Evalsub14(char *SRC);
 double EvalsubTop(char *SRC);
 double CB_EvalDbl( char *SRC ) ;
 int RegVar( int c ) ;
+int MatRegVar( char *SRC ) ;	// 
 int ListRegVar( char *SRC ) ;	// return reg no
 void Get2Eval( char *SRC, double *tmp, double *tmp2);
 

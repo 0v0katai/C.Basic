@@ -162,7 +162,8 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 			c = SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x40 :		// Mat A[a,b]
-					reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
+				  Matjmp:
+					reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
 					Matrix1:
 					if ( SRC[ExecPtr] == '[' ) {
 					Matrix:	
@@ -195,7 +196,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 				case 0x6D :		// List4
 				case 0x6E :		// List5
 				case 0x6F :		// List6
-					reg=c+(32-0x6A); goto Listj;
+					reg=c+(58-0x6A); goto Listj;
 						
 				case 0x3A :		// MOD(a,b)
 					result = ListEvalIntsubTop( SRC );
@@ -356,9 +357,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFD0 :	// PI
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
-			c = SRC[ExecPtr];
-			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atoi( SRC, c ) );
-			return rand();
+			return CB_rand( SRC );
 		case 0xFFFFFF97 :	// abs
 			return EvalFxInt( &fabsint, ListEvalIntsub5( SRC ) ) ; 
 		case 0xFFFFFFA6 :	// int
@@ -373,6 +372,9 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
 			return CB_Peek( SRC, ListEvalIntsub1( SRC ) );	// 
+		case '@' :	// Mat @A
+			ExecPtr--;
+			goto Matjmp;
 
 		case '{':	// { 1,2,3,4,5... }->List Ans
 			CB_List(SRC);

@@ -162,6 +162,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 		case CMD_SHIFT_SKTCH_BMP:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9D9;return;	// _BmpZoom
+				case 1: (*code)=0xF9DE;return;	// _BmpZoomRotate
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F4

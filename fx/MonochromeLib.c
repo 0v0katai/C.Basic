@@ -1244,14 +1244,123 @@ void ML_horizontal_scroll(int scroll)
 		{
 			word = next << shift;
 			next = line[j-1];
-			vram[(i<<4)+j] |= *((char*)&word+1);
+			vram[(i<<4)+j]  |= *((char*)&word+1);
 			vram[(i<<4)+j-1] = *((char*)&word);
 		}
 		word = next << shift;
-		vram[(i<<4)] |= *((char*)&word+1);
+		vram[(i<<4)]    |= *((char*)&word+1);
 		vram[(i<<4)+15] |= *((char*)&word);
 	}
 }
+
+void ML_horizontal_scroll2(int scroll, int x1, int y1, int x2, int y2)
+{
+	int i, j;
+	char line[32], shift, *vram;
+	unsigned char next;
+	unsigned short word;
+	int height,width;
+	int tmp;
+	int xscroll,xmask;
+	int j1,j2;
+	unsigned char buf1[1024],buf2[1024];
+	DISPBOX box,box2;
+	vram = ML_vram_adress();
+
+	if(x1&~127 || (y1<0 && y2<0) || (y1>63 && y2>63)) return;
+	if(y1 > y2) {
+		tmp = y1;
+		y1 = y2;
+		y2 = tmp;
+	}
+	if(y1 < 0) y1 = 0;
+	if(y2 > 63) y2 = 63;
+	height=y2-y1+1;
+	
+	if(x1 > x2) {
+		tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
+	if(x1 < 0) x1 = 0;
+	if(x2 > 127) x2 = 127;
+	width=x2-x1+1;
+
+	scroll %= width;
+	shift = 8-(scroll&7);
+	j1=x1>>3; j2=x2>>3;
+	if ( ( (x1&7)==0 ) && ( (x2&7)==7 ) && ( j1 != j2) ) {
+		for(i=y1 ; i<=y2 ; i++)
+		{
+			width=j2-j1+1;
+			xscroll=(scroll>>3)-(width-1);
+			for(j=j1 ; j<=j2 ; j++) {
+				tmp = j-xscroll;
+				if ( tmp < j1 ) tmp += width;
+				if ( tmp > j2 ) tmp -= width;
+				line[j] = vram[(i<<4)+tmp];
+			}
+			next = line[j2];
+			vram[(i<<4)+j2] = 0;
+			for(j=j2 ; j>j1 ; j--)
+			{
+				word = next << shift;
+				next = line[j-1];
+				vram[(i<<4)+j]  |= *((char*)&word+1);
+				vram[(i<<4)+j-1] = *((char*)&word);
+			}
+			word = next << shift;
+			vram[(i<<4)+j1] |= *((char*)&word+1);
+			vram[(i<<4)+j2] |= *((char*)&word);
+		}
+	} else { 
+		if ( scroll==0 ) return;
+		if ( scroll > 0 ) {
+			box.left   =x2-scroll;
+			box.right  =x2;
+			box.top    =y1;
+			box.bottom =y2;
+			Bdisp_ReadArea_VRAM( &box,  buf1);
+			box2.left  =x1;
+			box2.right =x2-scroll;
+			box2.top   =y1;
+			box2.bottom=y2;
+			Bdisp_ReadArea_VRAM( &box2, buf2);
+			ML_rectangle(x1, y1, x2, y2, 0, ML_TRANSPARENT, ML_WHITE);
+			ML_bmp_or( buf1, x1, y1, scroll, height);
+			ML_bmp_or( buf2, x1+scroll, y1, width-scroll, height);
+		} else {
+			scroll=-scroll;
+			box.left   =x1+scroll;
+			box.right  =x2;
+			box.top    =y1;
+			box.bottom =y2;
+			Bdisp_ReadArea_VRAM( &box,  buf1);
+			box2.left  =x1;
+			box2.right =x1+scroll;
+			box2.top   =y1;
+			box2.bottom=y2;
+			Bdisp_ReadArea_VRAM( &box2, buf2);
+			ML_rectangle(x1, y1, x2, y2, 0, ML_TRANSPARENT, ML_WHITE);
+			ML_bmp_or( buf1, x1, y1, width-scroll, height);
+			ML_bmp_or( buf2, x2-scroll, y1, scroll, height);
+		}
+/*		
+		for(i=y1 ; i<=y2 ; i++) {		// 
+			for(j=j1 ; j<=j2 ; j++) line[j] = vram[(i<<4)+j];
+			for(j=x1 ; j<=x2 ; j++) {
+				tmp = j - scroll;
+				if ( tmp < x1 ) tmp += width;
+				if ( tmp > x2 ) tmp -= width;
+				if ( line[(tmp>>3)] & (1<<(7-(tmp&7))) )		// pixel test
+						vram[(i<<4)+(j>>3)] |= 128>>(j&7);		// pixel black
+				else	vram[(i<<4)+(j>>3)] &= ~(128>>(j&7));	// pixel white
+			}
+		}
+*/
+	}
+}
+
 #endif
 
 #ifdef ML_VERTICAL_SCROLL
@@ -1264,6 +1373,84 @@ void ML_vertical_scroll(int scroll)
 	{
 		for(j=0 ; j<64 ; j++) column[j] = vram[(j<<4)+i];
 		for(j=0 ; j<64 ; j++) vram[(j<<4)+i] = column[(j-scroll+64)&63];
+	}
+}
+
+void ML_vertical_scroll2(int scroll, int x1, int y1, int x2, int y2)
+{
+	int i, j;
+	char column[64], *vram = ML_vram_adress();
+	int height,width;
+	int tmp;
+	int xshift,xmask;
+	int x,y,i1,i2;
+	
+	if(x1&~127 || (y1<0 && y2<0) || (y1>63 && y2>63)) return;
+	if(y1 > y2) {
+		tmp = y1;
+		y1 = y2;
+		y2 = tmp;
+	}
+	if(y1 < 0) y1 = 0;
+	if(y2 > 63) y2 = 63;
+	height=y2-y1+1;
+	
+	if(x1 > x2) {
+		tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
+	if(x1 < 0) x1 = 0;
+	if(x2 > 127) x2 = 127;
+	width=x2-x1+1;
+	
+	scroll %= height;
+	i1=x1>>3; i2=x2>>3;
+	xshift=x1&7;
+	if ( xshift>0 ) {		// left bit vscroll
+		xmask=255>>xshift;
+		if ( i1==i2 ) {
+			xmask &= (255<<(7-(x2&7)));
+		}
+		i=i1;
+			for(j=y1 ; j<=y2 ; j++) column[j] = vram[(j<<4)+i];
+			for(j=y1 ; j<=y2 ; j++) {
+				vram[(j<<4)+i] &=(~xmask);
+				tmp = j - scroll;
+				if ( tmp < y1 ) tmp += height;
+				if ( tmp > y2 ) tmp -= height;
+				vram[(j<<4)+i] |= column[tmp] & xmask;
+			}
+		x1=x1-xshift+8;
+		i1=x1>>3;
+	}
+	if ( x1>x2 ) return;
+	
+	xshift=x2&7;
+	if ( xshift<7 ) {		// right bit vscroll
+		xmask=~(255>>xshift);
+		i=i2;
+			for(j=y1 ; j<=y2 ; j++) column[j] = vram[(j<<4)+i];
+			for(j=y1 ; j<=y2 ; j++) {
+				vram[(j<<4)+i] &=(~xmask);
+				tmp = j - scroll;
+				if ( tmp < y1 ) tmp += height;
+				if ( tmp > y2 ) tmp -= height;
+				vram[(j<<4)+i] |= column[tmp] & xmask;
+			}
+		x2=x2-xshift;
+		i2=x2>>3;
+	}
+	if ( i1>i2 ) return;
+
+	for(i=i1 ; i<=i2 ; i++) {	// center byte vscroll
+			for(j=y1 ; j<=y2 ; j++) column[j] = vram[(j<<4)+i];
+			for(j=y1 ; j<=y2 ; j++) {
+				tmp = j - scroll;
+				if ( tmp < y1 ) tmp += height;
+				if ( tmp > y2 ) tmp -= height;
+				vram[(j<<4)+i] = column[tmp];
+			}
 	}
 }
 #endif

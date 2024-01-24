@@ -83,7 +83,7 @@ void CBint_Store( char *SRC ){	// ->
 			ExecPtr+=2;
 			c=SRC[ExecPtr];
 			if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
-			else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
@@ -114,7 +114,7 @@ void CBint_Store( char *SRC ){	// ->
 			}
 		} else if ( (0x6A<=c) && (c<=0x6F) ) {	// List1~List6
 			ExecPtr+=2;
-			reg=c+(32-0x6A);
+			reg=c+(58-0x6A);
 			goto Listj;
 			
 		} else if ( c == 0x46 ) {	// -> Dim
@@ -136,7 +136,7 @@ void CBint_Store( char *SRC ){	// ->
 							CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
 					else {
 						c = SRC[ExecPtr];
-						reg=RegVarAliasEx(SRC);
+						reg=MatRegVar(SRC);
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				}
@@ -651,7 +651,7 @@ int CB_VarPtr( char *SRC ) {
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
 		if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
-		else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
 			ExecPtr++;

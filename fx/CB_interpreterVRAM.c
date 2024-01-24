@@ -1029,7 +1029,7 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 		c =SRC[ExecPtr];
 		if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
-		reg=RegVarAliasEx(SRC);
+		reg=MatRegVar(SRC);
 		if ( reg>=0 ) {
 			if (px1>px2) { i=px1; px1=px2; px2=i; }
 			if (py1>py2) { i=py1; py1=py2; py2=i; }
@@ -1269,7 +1269,7 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 	c =SRC[ExecPtr];
 	if ( ( c == 0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat A
 		ExecPtr+=2;
-		reg=RegVarAliasEx(SRC); if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		reg=MatRegVar(SRC); if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 		c=SRC[ExecPtr];
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -2063,7 +2063,7 @@ int GetListNo( char *SRC ) {
 		} else
 		if ( (0x6A<=d) && (d<=0x6F) ) {
 			ExecPtr+=2;
-			reg=d+(32-0x6A);
+			reg=d+(58-0x6A);
 		}
 	}
 	return reg;

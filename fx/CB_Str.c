@@ -911,32 +911,22 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		ExecPtr++;
 		CB_StorStr( SRC );
 		dspflag=0;
+		if ( ErrorNo ) return ;  // error
 	} else {			// display str
 		OpcodeStringToAsciiString( buffer, CB_CurrentStr, CB_StrBufferMax-1 );
 		CB_SelectTextVRAM();	// Select Text Screen
-		if ( ( CursorX >1 ) ) Scrl_Y();
+		if ( CursorX >1 ) Scrl_Y();
 		CursorX+=csrX;
 		while ( buffer[i] ) {
-			if ( ( CursorX > 21 ) ) Scrl_Y();
 			CB_PrintC( CursorX, CursorY, (unsigned char*)buffer+i );
-			CursorX++;
+			CursorX++; if ( ( CursorY < 7 ) && ( CursorX > 21 ) ) Scrl_Y();
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
 			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
 			i++;
-			Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		}
-		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
-		if ( CursorX == 22 ) {
-			if ( CursorY < 7 ) {
-				Scrl_Y();
-				CursorX=22;
-				if ( SRC[ExecPtr] != '?' ) CursorX=23;
-			} else {	// CursorY == 7 
-				CursorX=23;
-			}
-		}
-		if ( ( buffer[0]==0 ) && ( SRC[ExecPtr] != '?' ) ) CursorX=23;
+//		if ( buffer[0]==NULL ) CursorX=22;
+		if ( ( CursorY < 7 ) && ( CursorX == 1 ) ) Scrl_Y();
 		dspflag=1;
 		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 	}

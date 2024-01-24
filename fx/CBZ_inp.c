@@ -652,6 +652,7 @@ int SelectOpcodeRecent( int listselect ) {
 				case KEY_CTRL_UP:
 					select--;
 					if ( select < 0 ) select = opNum-1;
+					if ( select < 0 ) select = 0;
 					break;
 				case KEY_CTRL_DOWN:
 					select++;
@@ -1201,6 +1202,7 @@ const short oplistVARS[]={
 		0xF9D7,	// _Bmp16
 		0xF9D9,	// _BmpZoom
 		0xF9DA,	// _BmpRotate
+		0xF9DE,	// _BmpZoomRotate
 		0xF9DD,	// _DrawMat
 		0xF9D8,	// _Test
 		0xF9DB,	// BmpSave 
@@ -1619,7 +1621,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF9DC,	// BmpLoad(
 		0xF9DD,	// DrawMat
 		0xF9D8,	// _Test
-		0x23,	// #
+		0xF9DE,	// _BmpZoomRotate
 		0x25,	// %
 		
 		
@@ -2144,6 +2146,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF9DB, "BmpSave " },
 	{ 0xF9DC, "BmpLoad(" },
 	{ 0xF9DD, "DrawMat " },
+	{ 0xF9DE, "_BmpZmRotate " },
 	{ 0x00FA, "Gosub "},
 	{ 0x00A7, "not "}, 			// small
 	{ 0x009A, " xor "}, 		// add space
@@ -2271,9 +2274,8 @@ void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr){
 }
 
 //----------------------------------------------------------------------------------------------
-int PrintOpcode(int x, int y, char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char SPC) {
+int PrintOpcode(int x, int y, char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char *SPC) {
 	char tmpbuf[18],*tmpb;
-	char spcbuf[2];
 	int i,len,xmax=x+width;
 	int opcode=1;
 	int  c=1;
@@ -2298,10 +2300,9 @@ int PrintOpcode(int x, int y, char *buffer, int width, int ofst, int ptrX, int *
 			i++ ;
 		}
 	}
-	spcbuf[0]=SPC;
 	while ( x < xmax ) {
-				if ( rev_mode ) CB_PrintRevC( x,y, (unsigned char*)spcbuf ) ;
-					else        CB_PrintC(    x,y, (unsigned char*)spcbuf ) ;
+				if ( rev_mode ) CB_PrintRevC( x,y, (unsigned char*)SPC ) ;
+					else        CB_PrintC(    x,y, (unsigned char*)SPC ) ;
 				x++ ;
 	}
 	return x;
@@ -2319,7 +2320,7 @@ short selectVARS=0;
 short selectPRGM=0;
 char lowercase=0;
 
-int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
+int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel) {
 	char buffer2[256];
 	char buf[22];
 	char fnbuf[16*8];
@@ -2356,9 +2357,9 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	memcpy( fnbuf, GetVRAMAddress()+16*8*7, 16*8);		// fn key image save
 	CommandType=0; CommandPage=0;
 
-	SaveDisp(SAVEDISP_PAGE2);
+	SaveDisp(SAVEDISP_PAGE1);
 	while (cont) {
-		RestoreDisp(SAVEDISP_PAGE2);
+		RestoreDisp(SAVEDISP_PAGE1);
 		Cursor_SetFlashMode(1);			// cursor flashing on
 		length=strlenOp( buffer );
 		if ( ptrX > length-1 ) ptrX=length;
@@ -2384,7 +2385,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 //		sprintf(buf,"len=%2d ptr=%2d off=%2d   csr=%2d  ",length,ptrX,offsetX,csrX); PrintMini( 0,7*8+2,(unsigned char *)buf, MINI_OVER);
 
-		SaveDisp(SAVEDISP_PAGE2);
+		SaveDisp(SAVEDISP_PAGE1);
 		if ( ContinuousSelect ) key=KEY_CTRL_F5; else GetKey_DisableMenu(&key);
 		
 		switch (key) {
@@ -2642,7 +2643,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
+double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode) {		// 0123456789.(-)exp
 	char buffer[32];
 	int csrX=0;
 	unsigned int key;
@@ -2657,7 +2658,7 @@ double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_m
 	return atof( (char*)buffer );
 }
 
-unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
+unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char* SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
 	
@@ -2671,11 +2672,11 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, cha
 double InputNumD_sub(int x, int y, int width, int ptrX, double defaultNum) {		//  1st char key in
 	unsigned int key;
 	double result;
-	key= InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	key= InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 	result = Eval( ExpBuffer );
 	while ( ErrorNo ) {	// error loop
-		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 		result = Eval( ExpBuffer );
 	}
@@ -2713,21 +2714,21 @@ double InputNumD_replay(int x, int y, int width, double defaultNum) {		//  repla
 }
 
 //-----------------------------------------------------------------------------
-double InputNumD_CB(int x, int y, int width, int SPC, int REV, double defaultNum) {		//  Basic Input
+double InputNumD_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input
 	unsigned int key;
 	double result;
 	ExpBuffer[0]='\0';
-	key=InputStrSub( x, y, width, 0, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+	key=InputStrSub( x, y, width, 0, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 	result = Eval( ExpBuffer );
 	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
-		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
 		result = Eval( ExpBuffer );
 	}
 	return result; // value ok
 }
-double InputNumD_CB_sub(int x, int y, int width, int ptrX, int SPC, int REV, double defaultNum ) {		//  Basic Input sub
+double InputNumD_CB_sub(int x, int y, int width, int MaxStrlen, int ptrX, char* SPC, int REV, double defaultNum ) {		//  Basic Input sub
 	unsigned int key;
 	double result;
 	key=InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
@@ -2742,14 +2743,14 @@ double InputNumD_CB_sub(int x, int y, int width, int ptrX, int SPC, int REV, dou
 	}
 	return result; // value ok
 }
-double InputNumD_CB1(int x, int y, int width, int SPC, int REV, double defaultNum) {		//  Basic Input 1
+double InputNumD_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input 1
 	ExpBuffer[0]='\0';
-	return InputNumD_CB_sub( x, y, width, 0, SPC, REV, defaultNum);
+	return InputNumD_CB_sub( x, y, width, MaxStrlen, 0, SPC, REV, defaultNum);
 }
 
-double InputNumD_CB2(int x, int y, int width, int SPC, int REV, double defaultNum) {		//  Basic Input 2
+double InputNumD_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input 2
 	sprintGR(ExpBuffer, defaultNum, ExpMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-	return InputNumD_CB_sub( x, y, width, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
+	return InputNumD_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy
 int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte

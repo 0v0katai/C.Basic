@@ -40,7 +40,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.63\xE6\x41";
+const char VerMSG[]="C.Basic  v1.64\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -833,7 +833,7 @@ int SelectNum2( char*msg, int n ,int min, int max) {		//
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 3,5); sprintf(buffer,"%s[%d~%d]:",msg,min,max); Print((unsigned char *)buffer);
 	while (1) {
-		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
 		if ( (min<=n)&&(n<=max) ) break;
 		n=n0;
 	}
@@ -846,7 +846,7 @@ int SelectNum3( int n ) {		//
 	locate( 3,3); Print((unsigned char *)"SkipUp/Dw Number");
 	locate( 6,5); Print((unsigned char *)"[1~9999]:");
 	while (1) {
-		n=InputNumD(15, 5, 4, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD(15, 5, 4, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
 		if ( (1<=n)&&(n<=9999) ) break;
 		n=n0;
 	}
@@ -860,7 +860,7 @@ int SelectNum4( int n ) {		//
 	locate( 3,3); Print((unsigned char *)"RefrshTime n/128s");
 	locate( 4,5); Print((unsigned char *)"[0=\x7F\x53,1~128]:");
 	while (1) {
-		n=InputNumD(16, 5, 3, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD(16, 5, 3, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
 		if ( (0<=n)&&(n<=128) ) break;
 		n=n0;
 	}
@@ -1327,7 +1327,6 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
 						EditTopLine=1;
-						EditLineNum++;
 						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// Standard
@@ -1477,7 +1476,6 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
 						EditTopLine=0;
-						EditLineNum--;
 						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// Standard

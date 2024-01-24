@@ -27,6 +27,7 @@ char DebugScreen=0;		// 0:no   1:Screen debug mode with fkey    2: Screen debug 
 char InpMethod=1;		// 0:C.Basic  1:Casio Basic
 char InpCommandList=0;	// 0:none  1:OPTN 
 short EditLineNum=0;
+short CurrentLineNum;
 char  EDITpxNum=0;		//  EditLineNumber pixel
 char  EDITpxMAX=123;	//  max x pixel
 char  UpdateLineNum;
@@ -326,6 +327,20 @@ int OpcodeLineYptr(int n, char *buffer, int ofst, int *px ) {
 	}
 	return ofst;
 }
+int OpcodeLinePtr(int n, char *buffer, int ofst ) {
+	int i,len,y=0,cont=1;
+	char opstr[18];
+	char *opstr2;
+	int oplen;
+	int px=1;
+	if ( y == n ) return ofst;
+	while ( cont ) {
+		if ( OpcodeLineSub( buffer, &ofst, &len, opstr ) == 0 ) break;
+		OpcodeLineXYsub( opstr, len, &px, &y );
+		if ( y == n ) break;
+	}
+	return ofst;
+}
 int OpcodeLineSrcXendpos(int n, char *buffer, int ofst) {
 	int i,len,px0,px=1,y=0,cont=1;
 	char opstr[18];
@@ -365,6 +380,7 @@ void NextLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 		} else {
 			*ofst_y = 1;
 		}
+//		EditLineNum++;		// Physical line number
 	} else {
 		ofst2= *ofst;
 		px=1; y=0;
@@ -376,7 +392,6 @@ void NextLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 			*ofst_y = 0;
 		}
 	}
-	EditLineNum++;
 }
 
 void PrevLinePhy( char *buffer, int *ofst, int *ofst_y ) {
@@ -393,10 +408,10 @@ void PrevLinePhy( char *buffer, int *ofst, int *ofst_y ) {
 				*ofst_y = y;
 			}
 		}
+//		if ( EditLineNum > 1 ) EditLineNum--;		// Physical line number
 	} else {
 		(*ofst_y)--;
 	}
-	if ( EditLineNum > (EditTopLine-1) ) EditLineNum--;
 }
 
 int NextLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
@@ -416,19 +431,70 @@ int PrevLinePhyN( int n, char *SrcBase, int *offset, int *offset_y ) {
 	return i;
 }
 
-int HomeYpos( char * SrcBase, int offset, int offset_y ) {
-	int ofst,ofsty;
-
-	ofst=0; ofsty=0;
-	EditLineNum=(EditTopLine-1);
-	while ( ( (offset) != ofst ) || ( (offset_y) != ofsty ) ){
-		NextLinePhy( SrcBase, &ofst, &ofsty );
+int HomeLineNum( char * SrcBase, int offset ) {	// Logical line numbrer
+	int ofst;
+	int c,no;
+	ofst=0;
+	no=1;
+	while ( ofst < offset ){
+		c=SrcBase[ofst++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				return no;
+//			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				no++;
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				ofst++;
+				break;
+		}
 	}
-	return EditLineNum ; // 
+	return no ; // 
+}
+
+int JumpLineNum( char * SrcBase, int lineNum ) {	// Logical line numbrer
+	int ofst;
+	int c,no;
+	ofst=0; 
+	no=1;
+	while ( no < lineNum ){
+		c=SrcBase[ofst++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				return ofst;
+//			case 0x0C:	// dsps
+			case 0x0D:	// <CR>
+				no++;
+				break;
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				ofst++;
+				break;
+		}
+	}
+	return ofst;
+}
+
+int AllLineNum( char * SrcBase ) {	// Logical line numbrer
+	int ptr=0;
+	ptr=EndOfSrc( SrcBase, ptr );
+	return HomeLineNum( SrcBase, ptr );
 }
 
 
-int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int ofst, int csrPtr, int *pcx, int *cy, int ClipStartPtr, int ClipEndPtr) {
+int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int ofst, int csrPtr, int *pcx, int *cy, int ClipStartPtr, int ClipEndPtr, int *NumOfset) {
 	char tmpbuf[18];
 	unsigned char buff[16];
 	unsigned char *buf;
@@ -436,13 +502,14 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 	int i,len,px=1,y=0,rev;
 	int opcode;
 	int  c=1,d;
-	int Numflag=0;
+	int Numflag=0,CurrentLine;
 	int yk,mini= EditFontSize & 0x0F ;
 	if ( mini ) yk=6; else yk=8;
 	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 	while ( 1 ) {
+		CurrentLine=EditLineNum+(*NumOfset);
 		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
-		if ( y == (*n) )if (ofst==csrPtr) { *pcx=px; *cy=(*csry); }
+		if ( y == (*n) )if (ofst==csrPtr) { *pcx=px; *cy=(*csry); CurrentLineNum=CurrentLine; }
 		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
 		ofst += OpcodeLen( opcode );
@@ -453,7 +520,7 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 		while ( i < len ) {
 			if ( y == (*n) ) {
 				if ( ( Numflag==0 ) && ( EDITpxNum ) ) { Numflag=1;
-					sprintf( (char*)buff, "%3d", EditLineNum+(*csry) );
+					sprintf( (char*)buff, "%3d", CurrentLine );
 					buf=buff; if ( strlen((char*)buff)>3 ) buf++;
 					CB_PrintMini( 0, ((*csry)-1)*yk+2, buf, MINI_OVER );
 				}
@@ -468,7 +535,8 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 					MiniCursorflag=0;		// mini cursor initialize
 					MiniCursorFlashing();
 				}
-				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; Numflag=0; }
+				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; }
+				if ( ( opcode==0x0D ) ) { Numflag=0; (*NumOfset)++; }
 //				Bdisp_PutDisp_DD();
 			} else {
 				if ( mini == 0 ) {
@@ -486,8 +554,8 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 		if ( (*csry) > ymax ) break ;
 		if ( (*n) > ynum ) break;
 	}
-	if ( y == (*n) )  if (ofst==csrPtr) { *pcx=px; *cy=(*csry); }
-	if ( y == (*n)+1 )if (ofst==csrPtr) { *pcx=px; *cy=(*csry)+1; }
+	if ( y == (*n) )  if (ofst==csrPtr) { *pcx=px; *cy=(*csry); CurrentLineNum=CurrentLine; }
+	if ( y == (*n)+1 )if (ofst==csrPtr) { *pcx=px; *cy=(*csry)+1; CurrentLineNum=CurrentLine; }
 	return ofst;
 }
 
@@ -498,42 +566,46 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *pcx,
 	int ofst,ofst2,ofstYptr;
 	int count=60;
 	int ymin,ymax,ymaxpos;
+	int NumOfset;
 	if ( (EditFontSize & 0x0F) ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
 	if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; ymax++; }
+	if ( ( EDITpxNum ) && ( UpdateLineNum==0 ) ) {
+		EditLineNum=HomeLineNum(SrcBase, *offset );	// line number re-adjust
+	}
   jp:
 	*pcx=0; *cy=0;
-
 	while ( 1 ) {
+		NumOfset=0;	// line number offset
 		for ( y=ymin; y<8; y++ ) { locate(1,y); PrintLine((unsigned char*)" ",21); }
 		y=ymin; ofst=(*offset);
 		ofst2=ofst;
 		px=1; ynum=0;
 		OpcodeLineN( SrcBase, &ofst2 ,&px ,&ynum);
 		n=(*offset_y);
-		ofst=PrintOpcodeLineN( &y, ynum, ymax, &n, SrcBase, ofst, csrPtr, &(*pcx), &(*cy), ClipStartPtr, ClipEndPtr);
+		ofst=PrintOpcodeLineN( &y, ynum, ymax, &n, SrcBase, ofst, csrPtr, &(*pcx), &(*cy), ClipStartPtr, ClipEndPtr, &NumOfset);
 		while ( y <= ymaxpos ) {
 				if ( SrcBase[ofst]==0x00 ) break ;
 				ofst2=ofst;
 				px=1; ynum=0;
 				OpcodeLineN( SrcBase, &ofst2 ,&px ,&ynum);
 				n=0;
-				ofst = PrintOpcodeLineN( &y, ynum, ymax, &n, SrcBase, ofst, csrPtr, &(*pcx), &(*cy), ClipStartPtr, ClipEndPtr);
+				ofst = PrintOpcodeLineN( &y, ynum, ymax, &n, SrcBase, ofst, csrPtr, &(*pcx), &(*cy), ClipStartPtr, ClipEndPtr, &NumOfset);
 		}
 	  exit:
 		if ( ( (*pcx)!=0 ) && ( (*cy)>(ymin-1) ) && ( (*cy)<=ymax ) ) break ;
 		ofstYptr=OpcodeLineYptr( *offset_y, SrcBase, *offset, &px);
 		if ( csrPtr < ofstYptr ) { PrevLinePhy( SrcBase, &(*offset), &(*offset_y) ); }
 		else 					 { NextLinePhy( SrcBase, &(*offset), &(*offset_y) ); } 
-
 //		if ( SrcBase[ofst]==0x00 ) break ;
 		count--;
 		if ( count<50 ) if ( csrPtr > 0 ) csrPtr--;
 		if ( count==0 ) {  // error reset
-			(*offset)=0; (*offset_y)=0; (*pcx)=0; (*cy)=(ymin); EditLineNum=(EditTopLine-1); return -1; 
+			(*offset)=0; (*offset_y)=0; (*pcx)=0; (*cy)=(ymin); EditLineNum=1; return -1; 	// line number reset
 		}
+		UpdateLineNum=1;
 	}
 	if ( ( EDITpxNum ) && ( UpdateLineNum ) ) {
-		EditLineNum=HomeYpos(SrcBase, *offset, *offset_y);	// line number re-adjust
+		EditLineNum=HomeLineNum(SrcBase, *offset );	// line number re-adjust
 		UpdateLineNum=0;
 		goto jp;
 	}
@@ -625,7 +697,7 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	
 	do {
 		srcmenu();
 		Fkey_dispN( FKeyNo2, "REPL");
-		key= InputStrSub( 1, 3, 21, strlenOp(searchstr), searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+		key= InputStrSub( 1, 3, 21, strlenOp(searchstr), searchstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( key == KEY_CTRL_AC ) ;	// AC
 	if ( key == KEY_CTRL_EXIT ) return 0;	// exit
 	if ( strlenOp(searchstr) == 0 ) goto loop;
@@ -636,7 +708,7 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	
 		KeyRecover(); 
 		do {
 			srcmenu();
-			key= InputStrSub( 1, 5, 21, strlenOp(repstr), repstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+			key= InputStrSub( 1, 5, 21, strlenOp(repstr), repstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 		} while ( key == KEY_CTRL_AC ) ;	// AC
 		if ( key == KEY_CTRL_EXIT ) return 0;	// exit
 		srcmode=2;	// replace
@@ -665,37 +737,27 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 	int lineAll,curline;
 	int ofst,ofsty;
 	int i,n;
-	int EditLineNumBack=EditLineNum;
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Goto Line Number");
 	Bdisp_PutDisp_DD_DrawBusy();
 
-	if ( EDITpxNum )  curline=EditLineNum; else curline=HomeYpos(SrcBase, *offset, *offset_y);	// line number
-	curline+=(cy);
-	sprintf(buffer,"current:%d",curline);
+	sprintf(buffer,"current:%d",CurrentLineNum);
 	locate( 3,4); Print((unsigned char *)buffer);
 	Bdisp_PutDisp_DD_DrawBusy();
 	
-	ofst=0; ofsty=0;
-	lineAll=0;
-	while ( SrcBase[ofst] ) {
-		NextLinePhy( SrcBase, &ofst, &ofsty );
-		lineAll++;
-	}
-//	lineAll+=(1-EditTopLine);
+	lineAll=AllLineNum( SrcBase );
 	
 	sprintf(buffer,"[1~%d]:",lineAll);
 	locate( 3,5); Print((unsigned char *)buffer);
 	i=strlen(buffer)+3;
 	n=0;
 	while (1) {
-		n=InputNumD( i, 5, 5, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		n=InputNumD( i, 5, 5, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
  		if ( (1<=n)&&(n<=lineAll) ) break;
  		if ( n==0 ) break;
  		if ( n < 0 ) n=1;
  		if ( n > lineAll ) n=lineAll;
  	}
- 	EditLineNum=EditLineNumBack;
 	return n ; // ok
 }
 
@@ -759,7 +821,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 
 	PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 	if ( EditFontSize & 0xF0 ) EDITpxNum=18; else EDITpxNum=0;
-	if ( EDITpxNum ) EditLineNum=HomeYpos(SrcBase, offset, offset_y);	// line number re-adjust
+	UpdateLineNum=1;
 	
 	if ( run == 1 ) { ProgNo=0; ExecPtr=0; key=KEY_CTRL_F6; }	// direct run
 
@@ -772,7 +834,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	KeyRecover();
 	while ( cont ) {
 		if ( (EditFontSize & 0x0F) ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
-		if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; ymax++; }
+		if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; }
 		if ( EditFontSize & 0xF0 ) EDITpxNum=12; else EDITpxNum=0;
 		EDITpxMAX=123-EDITpxNum;
 
@@ -857,7 +919,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		if ( ( DebugScreen != 1 ) && ( run != 1 ) ) {
 			locate(1,8); PrintLine((unsigned char*)" ",21);
 			if ( SearchMode ) {
-					Fkey_Icon( FKeyNo1, 391 );	//	Fkey_dispR( FKeyNo1, "SRC ");
+					Fkey_Icon( FKeyNo1, 165 );	//	Fkey_dispR( FKeyNo1, "SRC ");
 					switch ( SearchMode ) {
 						case 1:
 							break;
@@ -865,8 +927,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							Fkey_dispN( FKeyNo2, "REPL");
 							Fkey_dispN( FKeyNo4, "ALL");
 							break;
+						case 3:
+							locate (12,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode
+							break;
 					}
-					if ( SearchMode == 3 ) locate (12,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode
 			} else {
 			if ( ClipStartPtr>=0 ) {
 					Fkey_Icon( FKeyNo1,  52 );	//	Fkey_dispN( FKeyNo1, "COPY ");
@@ -1003,14 +1067,18 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					ClipStartPtr = -1 ;		// ClipMode cancel
 //					break;
 			case KEY_CTRL_EXIT:
-					if ( CommandType ) {
-						CommandType>>=4;
-						CommandPage=CommandType & 0xF;
-						CommandType>>=4;
-					} else { 
-						if ( JumpMenuSw  ) { JumpMenuSw  = 0; break; }
-						if ( DebugScreen ) { DebugScreen = 0; break; }
-						if ( ClipEndPtr < 0 ) cont=0;
+					if ( SearchMode ) {
+						SearchMode=0;		//	Search mode cancel
+					} else {
+						if ( CommandType ) {
+							CommandType>>=4;
+							CommandPage=CommandType & 0xF;
+							CommandType>>=4;
+						} else { 
+							if ( JumpMenuSw  ) { JumpMenuSw  = 0; break; }
+							if ( DebugScreen ) { DebugScreen = 0; break; }
+							if ( ClipEndPtr < 0 ) cont=0;
+						}
 					}
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
@@ -1036,7 +1104,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								} else {
 									if ( JumpMenuSw ) {		// ====== Jump Mode
 										csrPtr=0;
-										offset=0; offset_y=0; EditLineNum=(EditTopLine-1);	// line number reset
+										offset=0; offset_y=0; EditLineNum=1;	// line number reset
 										switch (dumpflg) {
 											case 2: 		// Opcode
 												break;
@@ -1131,11 +1199,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								} else {
 									if ( JumpMenuSw ) {		// ====== Jump Mode
 										i=JumpGoto( SrcBase, &offset, &offset_y, cy );					// Goto
-										if ( i>0 ) { 
-											offset=0; offset_y=0; EditLineNum=(EditTopLine-1);	// line number reset
-											NextLinePhyN( i-1, SrcBase, &offset, &offset_y );
+										if ( i>0 ) {
+											EditLineNum=i;
+											offset=JumpLineNum( SrcBase, EditLineNum);
+											offset_y=0;
 											csrPtr=offset;
-											if ( SrcBase[csrPtr]==0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
 										}
 									} else {	// command select
 										if ( CommandInputMethod ) {
@@ -1204,7 +1272,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						} else {
 							if ( JumpMenuSw ) {		// ====== Jump Mode
 									PrevLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Up
-									csrPtr=offset;
+									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
 							} else {
 								key=SelectChar( &ContinuousSelect);
 								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
@@ -1230,7 +1298,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						else {
 							if ( JumpMenuSw ) {		// ====== Jump Mode
 								NextLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Down
-								csrPtr=offset;
+								csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
 								if ( SrcBase[offset] == 0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
 							} else {
 								if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
@@ -1448,7 +1516,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							switch (dumpflg) {
 								case 2: 		// Opcode
 									PrevLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Page Up
-									csrPtr=offset;
+									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
 									break;
 								case 4: 		// hex dump
 									csrPtr-=0x100;
@@ -1466,7 +1534,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							switch (dumpflg) {
 								case 2: 		// Opcode
 									NextLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Page Down
-									csrPtr=offset;
+									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
 									if ( SrcBase[offset] == 0 ) PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
 									break;
 								case 4: 		// hex dump
@@ -1651,7 +1719,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				default:
 					break;
 			}
-			if ( key == KEY_CTRL_EXE )   key=0x0D; // <CR>
+			if ( key == KEY_CTRL_EXE ) {
+					if ( SearchMode ) {		//	Next Search
+						i=SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 1 );
+						if ( i==0 ) SearchMode=0;
+					} else  key=0x0D; // <CR>
+			}
 			if ( ( 0x00 < key ) && ( key < 0xFF ) || ( key == KEY_CTRL_XTT ) ) {		// ----- 1 byte code -----
 				if ( ClipStartPtr >= 0 ) { 
 						ClipStartPtr = -1 ;		// ClipMode cancel			
@@ -1757,7 +1830,7 @@ int CB_BreakStop() {
 //----------------------------------------------------------------------------------------------
 int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte

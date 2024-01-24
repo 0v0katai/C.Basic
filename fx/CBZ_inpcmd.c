@@ -280,7 +280,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 179 );	//	Fkey_dispR( FKeyNo2, "MAT ");
 					Fkey_dispN( FKeyNo3, "Extd");
 					Fkey_Icon( FKeyNo4, 2 );	//	Fkey_dispR( FKeyNo4, "CALC");
-					FkeyClear( FKeyNo5 );
+					Fkey_dispN( FKeyNo5, " @ ");
+//					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
@@ -657,7 +658,7 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo3, "DATE");
 					Fkey_dspRB( FKeyNo4, "TIME");
 					Fkey_dspRB( FKeyNo5, "BackL");
-//					FkeyClear( FKeyNo6 );
+					FkeyClear( FKeyNo6 );
 //					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 //				case 1:
@@ -860,7 +861,7 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo1, "Save");
 					Fkey_dspRB( FKeyNo2, "Load");
 					Fkey_dspRB( FKeyNo3, "Draw");
-					FkeyClear( FKeyNo4 );
+					Fkey_dspRB( FKeyNo4, "ZmRt");
 					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;

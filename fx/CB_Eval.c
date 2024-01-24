@@ -121,7 +121,7 @@ int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 			case 0x6D :		// List4
 			case 0x6E :		// List5
 			case 0x6F :		// List6
-				*reg=d+(32-0x6A); return 1;
+				*reg=d+(58-0x6A); return 1;
 			default:
 				break;
 		}
@@ -132,7 +132,7 @@ int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 		*reg=c-'A';
 		if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 	} else {
-		*reg=RegVarAliasEx(SRC); 
+		*reg=MatRegVar(SRC); 
 		if ( *reg>=0 ) {
 			if ( MatAry[*reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 		} else {
@@ -166,9 +166,10 @@ int MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB  ) {	// base:0  0-  
 }
 //-----------------------------------------------------------------------------
 void MatOprand1num( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 etc. error check
-	int base;
-	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, CB_INT? 32:64, 10-MatBase, 1, MatBase );	// new matrix
+	int base,ElementSize;
+	if ( MatAry[reg].SizeA == 0 ) {
+		ElementSize=ElementSizeSelect( SRC, &base, ElementSize) & 0xFF;
+		DimMatrixSub( reg, ElementSize, 10-MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 	base=MatAry[reg].Base;
@@ -193,9 +194,41 @@ int RegVarAliasEx( char *SRC ) {	//
 	int i,reg;
 	int alias_code, org_reg;
 	int exptr=ExecPtr;
-	int c=SRC[ExecPtr++];
-	reg=RegVar(c); if ( reg>=0 ) return reg;
-	ExecPtr--;
+	int c=SRC[ExecPtr];
+	reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; return reg; }
+	ExecPtr += GetOpcodeLen( SRC, ExecPtr ,&alias_code );
+	for ( i=0; i<AliasVarMAX; i++ ) {
+		if ( AliasVarCode[i].alias==(short)alias_code ) return AliasVarCode[i].org;
+		if ( AliasVarCode[i].org<0 ) break;
+	}
+	ExecPtr = exptr;
+	return -1;
+}
+int MatRegVar( char *SRC ) {	// 
+	int i,reg;
+	int alias_code, org_reg;
+	int exptr=ExecPtr;
+	int c=SRC[ExecPtr];
+	reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; return reg; }
+	if ( c=='@' ) { c=SRC[++ExecPtr];
+		i=RegVar( c );
+		if ( i>=0 ) { ExecPtr++;
+			if ( CB_INT ) reg=LocalInt[i][0] ; else reg=LocalDbl[i][0] ;
+			goto jp1;
+		} else
+		if ( ( '0'<=c )&&( c<='9' ) ) { 
+			goto jp0;
+		}
+	}
+	if ( ( '0'<=c )&&( c<='9' ) ) { 
+		  jp0:
+			reg=Eval_atoi( SRC, c );
+		  jp1:
+			if ( ( reg<1 ) || ( ExtListMax<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
+			if ( 26<reg ) reg+=6;
+			if ( 58<reg ) reg+=26;
+			return reg-1 ;
+	}
 	ExecPtr += GetOpcodeLen( SRC, ExecPtr ,&alias_code );
 	for ( i=0; i<AliasVarMAX; i++ ) {
 		if ( AliasVarCode[i].alias==(short)alias_code ) return AliasVarCode[i].org;
@@ -210,14 +243,18 @@ int ListRegVar( char *SRC ) {	// return reg no
 	c=SRC[ExecPtr++];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		if ( CB_INT ) reg=LocalInt[c-'A'][0] ; else reg=LocalDbl[c-'A'][0] ;
-		return reg+31;
+		goto jp1;
 	}
 	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) )	return c-0xFFFFFFCD+26 ;	// <r> or Theta
 	ExecPtr--;
 	reg=Eval_atoi( SRC, c );
 	if ( ( reg<1 ) || ( ExtListMax<reg ) ) { CB_Error(ArgumentERR); return -1 ; } // Argument error
-	return reg+31;
+  jp1:
+  	if ( reg<=52 ) {
+		if ( 27<=reg ) return reg+5;
+		return reg+57;
+	} else return reg+31;
 }
 
 //-----------------------------------------------------------------------------
@@ -297,7 +334,7 @@ int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
 int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
 int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
@@ -914,9 +951,10 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			c = SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x40 :		// Mat A[a,b]
+				  Matjmp:
 					c=SRC[ExecPtr];
 					if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
-					else { reg=RegVarAliasEx(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+					else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 					Matrix1:	
 					if ( SRC[ExecPtr] == '[' ) {
 					Matrix:	
@@ -949,7 +987,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0x6D :		// List4
 				case 0x6E :		// List5
 				case 0x6F :		// List6
-					reg=c+(32-0x6A); goto Listj;
+					reg=c+(58-0x6A); goto Listj;
 						
 				case 0x3A :				// MOD(a,b)
 					Get2Eval( SRC, &tmp, &tmp2);
@@ -1105,9 +1143,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFD0 :	// PI
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
-			c = SRC[ExecPtr];
-			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atoi( SRC, c ) );
-			return frand() ;
+			return CB_frand( SRC );
 		case 0xFFFFFF97 :	// abs
 			result = fabs( Evalsub5( SRC ) );
 			return result ;
@@ -1133,6 +1169,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
 			return CB_Peek( SRC, Evalsub1( SRC ) );	// 
+		case '@' :	// Mat @A
+			ExecPtr--;
+			goto Matjmp;
 			
 		case '{':	// { 1,2,3,4,5... }->List Ans
 			CB_List(SRC);
@@ -1270,6 +1309,16 @@ double Evalsub1(char *SRC) {	// 1st Priority
 	return 0 ;
 }
 
+double CB_frand( char *SRC ) {
+	int c = SRC[ExecPtr];
+	if ( ( '0'<=c )&&( c<='9' ) ) {
+		jp:
+		srand(CB_EvalInt(SRC));
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	} else
+	if ( c=='#' ) { ExecPtr++; goto jp; }
+	return frand() ;
+}
 
 double DmsToDec( char *SRC, double h ) {	// 12"34"56 -> 12.5822222
 	double m,s,f=1;

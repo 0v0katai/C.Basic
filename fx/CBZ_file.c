@@ -928,14 +928,14 @@ int YesNoOverwrite(){
 	return ( YesNo( "Overwrite OK?" ) ==0 ) ;
 }
 
-unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
+unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer ) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
 	int i;
 
 	buffer[width]='\0';
 	csrX=strlenOp((char*)buffer);
-	key=InputStrSub( x, y, width, csrX, buffer, maxLen, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	key=InputStrSub( x, y, width, csrX, buffer, maxLen, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	for( i=0; i<strlenOp((char*)buffer); i++ ) {	// kana cancel
 		if ( buffer[i]==0xFFFFFFFF ) { 
 			buffer[i]=0x7E;
@@ -957,7 +957,7 @@ int InputFilename( char * buffer, char* msg) {		//
 	FkeyClear( FKeyNo2 );
 	FkeyClear( FKeyNo3 );
 	Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
-	key=InputStrFilename( 5, 4, 12, 18, buffer, ' ', REV_OFF ) ;
+	key=InputStrFilename( 5, 4, 12, 18, buffer ) ;
 //	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;
@@ -1073,7 +1073,7 @@ int InputPassname( int y, char* inputpassname, char *msg) {		// password input
 	FkeyClear( FKeyNo1 );
 	FkeyClear( FKeyNo2 );
 	FkeyClear( FKeyNo3 );
-	key=InputStrFilename( 2, y+1, 8, 8, inputpassname, ' ', REV_OFF ) ;
+	key=InputStrFilename( 2, y+1, 8, 8, inputpassname ) ;
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;
 	return 0; // ok
@@ -1124,7 +1124,7 @@ int InputFilenamePassname( char *filebase, char *basname, char* msg) {		//
 	Fkey_Icon( FKeyNo1, 406 );	//	Fkey_dispN( FKeyNo1, "Pass");
 	FkeyClear( FKeyNo2 );
 	FkeyClear( FKeyNo3 );
-	key=InputStrFilename( 2, 2, 8, 8, basname, ' ', REV_OFF ) ;
+	key=InputStrFilename( 2, 2, 8, 8, basname ) ;
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;
 	if (key==KEY_CTRL_F1) {	// password input
@@ -2444,9 +2444,9 @@ int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
@@ -2488,6 +2488,7 @@ int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2497,14 +2498,13 @@ void FavoritesDowndummy( int *index ) {
 	tmp=files[(*index)+1].filesize;
 	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
 	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-//	files[(*index)+1].filesize=files[(*index)].filesize;
-//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-//	files[(*index)].filesize=tmp;
-//	(*index)++;
-//	SaveFavorites();
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	files[(*index)].filesize=tmp;
+	(*index)++;
+	SaveFavorites();
 }
-/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
