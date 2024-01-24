@@ -9,6 +9,11 @@
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+typedef struct Ev1i {
+	int flag;
+	int value;
+};
+//-----------------------------------------------------------------------------
 int InputNumI_full(int x, int y, int width, int defaultNum) ;
 int InputNumI_Char(int x, int y, int width, int defaultNum, char code) ;
 int InputNumI_replay(int x, int y, int width, int defaultNum) ;

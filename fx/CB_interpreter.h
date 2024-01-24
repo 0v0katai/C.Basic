@@ -126,6 +126,7 @@ extern double CB_CurrentValue;	// Ans
 //------------------------------------------------------------------------------
 #define StackGotoMax 10+26+6+26+2
 #define IfCntMax 16
+#define RemCntMax 16
 #define StackForMax 8
 #define StackWhileMax 8
 #define StackDoMax 8
@@ -135,6 +136,12 @@ typedef struct {
 	short	Ptr[IfCntMax];
 	short	Adrs[IfCntMax];
 } CchIf;
+
+typedef struct {
+	int	CNT;
+	short	Ptr[RemCntMax];
+	short	Adrs[RemCntMax];
+} CchRem;
 
 typedef struct {
 	int	Ptr;
@@ -181,5 +188,10 @@ void PlotPreviousPXY() ;
 void PlotCurrentXY();
 
 int CB_interpreter( char *SRC) ;
+
+double CB_BinaryEval( char *SRC ) ;	// eval 2
+double CB_UnaryEval( char *SRC ) ;	// eval 1
+
+void CB_Prog( char *SRC ) ; //	Prog "..."
 
 void CB_test() ;
