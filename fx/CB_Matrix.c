@@ -3972,13 +3972,16 @@ complex Cplx_CB_MatDet( char *SRC ) {	// Det Mat A
 }
 
 
+//
+// refer to http://www.yamamo10.jp/yamamoto/lecture/2004/5E/linear_equations/how_to_make_GJ/html/node2.html
+
 void Mat_inverse( int ansreg ) {
 	int x,y,i,k,N,flag=0,x1,x2;
 	int sizeA,sizeB;
 	int ElementSize;
 	int base;
 	int reg,tmpreg=Mattmpreg;
-	int pv[1000],pvrow;
+	int pv[256],pvrow;
 	double a,b,c,d;
 	double z,tmp,tmp2,tmp3;
 	base    = MatAry[ansreg ].Base;
@@ -3986,47 +3989,32 @@ void Mat_inverse( int ansreg ) {
 	N = sizeA +base ;
 
 	ErrorNo=0;
-	if ( ( sizeA == 0 ) || ( sizeA != MatAry[ansreg].SizeB ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	if ( ( sizeA > 255 ) || ( sizeA == 0 ) || ( sizeA != MatAry[ansreg].SizeB ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 
-	ElementSize = MatAry[ansreg ].ElementSize;
-	DimMatrixSub( tmpreg, ElementSize, sizeA, sizeA, base);	//
-	if ( ErrorNo ) return ;
-	reg=tmpreg;
-	CopyMatrix( reg, ansreg );	// ansreg->reg
-/*
 	if ( sizeA==1 ) {
-		tmp = frecip( ReadMatrix( reg, base+0, base+0 ) );
+		tmp = frecip( ReadMatrix( ansreg, base+0, base+0 ) );
 		if ( ErrorNo ) return ;
-		WriteMatrix( reg, base+0, base+0, tmp );
+		WriteMatrix( ansreg, base+0, base+0, tmp );
 		return ;
 	}
 	if ( sizeA==2 ) {
-		a =  ReadMatrix( reg, base+0, base+0 );
-		b =  ReadMatrix( reg, base+0, base+1 );
-		c =  ReadMatrix( reg, base+1, base+0 );
-		d =  ReadMatrix( reg, base+1, base+1 );
+		a =  ReadMatrix( ansreg, base+0, base+0 );
+		b =  ReadMatrix( ansreg, base+0, base+1 );
+		c =  ReadMatrix( ansreg, base+1, base+0 );
+		d =  ReadMatrix( ansreg, base+1, base+1 );
 		tmp = frecip( a*d + b*c );
 		if ( ErrorNo ) return ;
-		WriteMatrix( reg, base+0, base+0, d*tmp );
-		WriteMatrix( reg, base+0, base+1, fsign(b)*tmp );
-		WriteMatrix( reg, base+1, base+0, fsign(c)*tmp );
-		WriteMatrix( reg, base+1, base+1, a*tmp );
+		WriteMatrix( ansreg, base+0, base+0, d*tmp );
+		WriteMatrix( ansreg, base+0, base+1, fsign(b)*tmp );
+		WriteMatrix( ansreg, base+1, base+0, fsign(c)*tmp );
+		WriteMatrix( ansreg, base+1, base+1, a*tmp );
 		return ;
 	}
-*/
-	for ( y=base; y<N; y++ ){
-		for ( x=base; x<N; x++ ) {
-			if ( x==y ) {
-				WriteMatrix( ansreg, y, x, 1 );
-			} else {
-				WriteMatrix( ansreg, y, x, 0 );
-			}
-		}
-	}
+
 	for ( y=base; y<N; y++ ){
 		b=0.0; pvrow = y;
 		for(i = y ; i < N; i++){
-			z = fabs(ReadMatrix( reg, i, y ));
+			z = fabs(ReadMatrix( ansreg, i, y ));
 			if ( z > b ) {
 				b = z;
 				pvrow = i;
@@ -4037,23 +4025,23 @@ void Mat_inverse( int ansreg ) {
 		
 		if ( y != pvrow ) {
 			for(x = base ; x < N; x++){
-				tmp = ReadMatrix( reg, pvrow, x); 
-				WriteMatrix( reg, pvrow, x, ReadMatrix( reg, y, x) ) ;
-				WriteMatrix( reg, y,     x, tmp);
+				tmp = ReadMatrix( ansreg, y, x); 
+				WriteMatrix( ansreg, y, x, ReadMatrix( ansreg, pvrow, x) ) ;
+				WriteMatrix( ansreg, pvrow, x, tmp);
 			}
 		}
 
-		tmp = frecip( ReadMatrix( reg, y, y ) );
+		tmp = frecip( ReadMatrix( ansreg, y, y ) );
+		WriteMatrix( ansreg, y, y, 1.0 );
 		for ( x=base; x<N; x++ ) {
-			tmp2 = ReadMatrix(    reg, y, x );	WriteMatrix(    reg, y, x, tmp*tmp2 );
 			tmp2 = ReadMatrix( ansreg, y, x );	WriteMatrix( ansreg, y, x, tmp*tmp2 );
 		}
 		
 		for ( x=base; x<N; x++ ){
 			if ( y != x ) {
-				tmp = ReadMatrix( reg, x, y );
+				tmp = ReadMatrix( ansreg, x, y );
+				WriteMatrix( ansreg, x, y, 0.0 );
 				for ( k=base; k<N; k++ ) {
-					tmp2 = ReadMatrix(    reg, y, k );	tmp3 = ReadMatrix(    reg, x, k );	WriteMatrix(    reg, x, k, tmp3-tmp*tmp2 );
 					tmp2 = ReadMatrix( ansreg, y, k );	tmp3 = ReadMatrix( ansreg, x, k );	WriteMatrix( ansreg, x, k, tmp3-tmp*tmp2 );
 				}
 			}
@@ -4076,7 +4064,7 @@ void Cplx_Mat_inverse( int ansreg ) {
 	int ElementSize;
 	int base;
 	int reg,tmpreg=Mattmpreg;
-	int pv[1000],pvrow;
+	int pv[256],pvrow;
 	complex a,b,c,d;
 	complex k0={0,0},k1={1,0};
 	complex z,tmp,tmp2,tmp3;
@@ -4085,47 +4073,33 @@ void Cplx_Mat_inverse( int ansreg ) {
 	N = sizeA +base ;
 
 	ErrorNo=0;
-	if ( ( sizeA == 0 ) || ( sizeA != MatAry[ansreg].SizeB ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	if ( ( sizeA > 255 ) || ( sizeA == 0 ) || ( sizeA != MatAry[ansreg].SizeB ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 
-	ElementSize = MatAry[ansreg ].ElementSize;
-	DimMatrixSub( tmpreg, ElementSize, sizeA, sizeA, base);	//
-	if ( ErrorNo ) return ;
-	reg=tmpreg;
-	CopyMatrix( reg, ansreg );	// ansreg->reg
-/*
 	if ( sizeA==1 ) {
-		tmp = Cplx_frecip( Cplx_ReadMatrix( reg, base+0, base+0 ) );
+		tmp = Cplx_frecip( Cplx_ReadMatrix( ansreg, base+0, base+0 ) );
 		if ( ErrorNo ) return ;
-		Cplx_WriteMatrix( reg, base+0, base+0, tmp );
+		Cplx_WriteMatrix( ansreg, base+0, base+0, tmp );
 		return ;
 	}
+/*
 	if ( sizeA==2 ) {
-		a =  Cplx_ReadMatrix( reg, base+0, base+0 );
-		b =  Cplx_ReadMatrix( reg, base+0, base+1 );
-		c =  Cplx_ReadMatrix( reg, base+1, base+0 );
-		d =  Cplx_ReadMatrix( reg, base+1, base+1 );
+		a =  Cplx_ReadMatrix( ansreg, base+0, base+0 );
+		b =  Cplx_ReadMatrix( ansreg, base+0, base+1 );
+		c =  Cplx_ReadMatrix( ansreg, base+1, base+0 );
+		d =  Cplx_ReadMatrix( ansreg, base+1, base+1 );
 		tmp = Cplx_frecip( Cplx_fSUB( Cplx_fMUL(a,d), Cplx_fMUL(b,c) ) );
 		if ( ErrorNo ) return ;
-		Cplx_WriteMatrix( reg, base+0, base+0, Cplx_fMUL( d, tmp ) );
-		Cplx_WriteMatrix( reg, base+0, base+1, Cplx_fMUL( Cplx_fsign(b), tmp ) );
-		Cplx_WriteMatrix( reg, base+1, base+0, Cplx_fMUL( Cplx_fsign(c), tmp ) );
-		Cplx_WriteMatrix( reg, base+1, base+1, Cplx_fMUL( a, tmp ) );
+		Cplx_WriteMatrix( ansreg, base+0, base+0, Cplx_fMUL( d, tmp ) );
+		Cplx_WriteMatrix( ansreg, base+0, base+1, Cplx_fMUL( Cplx_fsign(b), tmp ) );
+		Cplx_WriteMatrix( ansreg, base+1, base+0, Cplx_fMUL( Cplx_fsign(c), tmp ) );
+		Cplx_WriteMatrix( ansreg, base+1, base+1, Cplx_fMUL( a, tmp ) );
 		return ;
 	}
 */
 	for ( y=base; y<N; y++ ){
-		for ( x=base; x<N; x++ ) {
-			if ( x==y ) {
-				Cplx_WriteMatrix( ansreg, y, x, k1 );
-			} else {
-				Cplx_WriteMatrix( ansreg, y, x, k0 );
-			}
-		}
-	}
-	for ( y=base; y<N; y++ ){
 		b.real=0.0; pvrow = y;
 		for(i = y ; i < N; i++){
-			z.real = Cplx_fabs( Cplx_ReadMatrix( reg, i, y ) ).real;
+			z.real = Cplx_fabs( Cplx_ReadMatrix( ansreg, i, y ) ).real;
 			if ( z.real > b.real ) {
 				b.real = z.real;
 				pvrow = i;
@@ -4136,22 +4110,22 @@ void Cplx_Mat_inverse( int ansreg ) {
 		
 		if ( y != pvrow ) {
 			for(x = base ; x < N; x++){
-				tmp = Cplx_ReadMatrix( reg, pvrow, x); 
-				Cplx_WriteMatrix( reg, pvrow, x, Cplx_ReadMatrix( reg, y, x) ) ;
-				Cplx_WriteMatrix( reg, y,     x, tmp);
+				tmp = Cplx_ReadMatrix( ansreg, pvrow, x); 
+				Cplx_WriteMatrix( ansreg, pvrow, x, Cplx_ReadMatrix( ansreg, y, x) ) ;
+				Cplx_WriteMatrix( ansreg, y,     x, tmp);
 			}
 		}
 		
-		tmp = Cplx_frecip( Cplx_ReadMatrix( reg, y, y ) );
+		tmp = Cplx_frecip( Cplx_ReadMatrix( ansreg, y, y ) );
+		Cplx_WriteMatrix( ansreg, y, y, k1 );
 		for ( x=base; x<N; x++ ) {
-			tmp2 = Cplx_ReadMatrix(    reg, y, x );	Cplx_WriteMatrix(    reg, y, x, Cplx_fMUL( tmp, tmp2 ) );
 			tmp2 = Cplx_ReadMatrix( ansreg, y, x );	Cplx_WriteMatrix( ansreg, y, x, Cplx_fMUL( tmp, tmp2 ) );
 		}
 		for ( x=base; x<N; x++ ){
 			if ( y != x ) {
-				tmp = Cplx_ReadMatrix( reg, x, y );
+				tmp = Cplx_ReadMatrix( ansreg, x, y );
+				Cplx_WriteMatrix( ansreg, x, y, k0 );
 				for ( k=base; k<N; k++ ) {
-					tmp2 = Cplx_ReadMatrix(    reg, y, k );	tmp3 = Cplx_ReadMatrix(    reg, x, k );	Cplx_WriteMatrix(    reg, x, k, Cplx_fSUB( tmp3, Cplx_fMUL( tmp, tmp2 ) ) );
 					tmp2 = Cplx_ReadMatrix( ansreg, y, k );	tmp3 = Cplx_ReadMatrix( ansreg, x, k );	Cplx_WriteMatrix( ansreg, x, k, Cplx_fSUB( tmp3, Cplx_fMUL( tmp, tmp2 ) ) );
 				}
 			}
@@ -4802,11 +4776,11 @@ void CB_ListFile( char *SRC ){
 int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4M0( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MA( unsigned int n ){ return n; }	// align +4byte
@@ -4821,14 +4795,16 @@ int MatrixObjectAlign4MI( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MJ( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MK( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4ML( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MM( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MN( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MO( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MU( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MM( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MN( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MO( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MU( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MV( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4MW( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 

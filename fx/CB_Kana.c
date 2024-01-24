@@ -1353,8 +1353,8 @@ int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // ƒJƒi‘Î‰ž
     kfont.x = px;
     kfont.y = py;
     kfont.GraphData = kfont_info;
-    if ( px+kfont_info.width > 127 ) kfont_info.width=127-px; 
-    if ( kfont_info.width > 0 ) Bdisp_WriteGraph_VRAM(&kfont);
+    if ( px+kfont_info.width > 128 ) kfont_info.width = 127-px;
+    if ( kfont_info.width > 1 ) Bdisp_WriteGraph_VRAM(&kfont);
   exit:
     return kfont_info.width;
 }

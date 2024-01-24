@@ -15,7 +15,7 @@ char  EditListChar = 0;	// List character change
 char  EditExtFont=0;	// Edit ext Font enable:1
 
 char  ExtendPict=0;	// 0:20  21~99						( use hidden ram only )
-char  ExtendList=0;	// 0:52(default) 1:+52 ~ 19:+988	( use hidden ram only )
+char  ExtendList=5;	// 0:52(default) 1:+52 ~ 19:+988	( use hidden ram only )
 char  ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
 char  ForceReturn;		// 0:none  1:return
 char  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.91\xE6\x41";
-#define VERSION 191
+const char VerMSG[]="C.Basic  v1.92\xE6\x41";
+#define VERSION 192
 
 //---------------------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ void VerDispSub() {
 	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
 	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
-	locate( 3, 7 ); Print( (unsigned char*)"          (c)2018" );
+	locate( 3, 7 ); Print( (unsigned char*)"          (c)2019" );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
@@ -1679,7 +1679,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_ExtendList:		// Max List
 						if ( limit ) break;
-//						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						ExtendList++;
 						if ( 19<ExtendList ) ExtendList=19;
 						HiddenRAM_MatAryInit();
@@ -1690,13 +1690,15 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
-						if ( IsHiddenRAM ) UseHiddenRAM = 1 ; // on
+						if ( IsHiddenRAM == 0 ) break;
+						UseHiddenRAM = 1 ; // on
 						ExtendList=(6-1);
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
-						if ( UseHiddenRAM ) UseHiddenRAM &= 0x0F;	// on
+						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						UseHiddenRAM &= 0x0F;	// on
 						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
@@ -1860,7 +1862,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_ExtendList:		// Max List
 						if ( limit ) break;
-//						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
 						ExtendList--;
 						if (ExtendList<0) ExtendList=0;
 						HiddenRAM_MatAryInit();
