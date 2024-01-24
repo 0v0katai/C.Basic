@@ -190,7 +190,7 @@ extern char  ProgLocalVar[ProgMax+1][26];
 extern  char *TVRAM;
 extern  char *GVRAM;
 //------------------------------------------------------------------------------
-#define StackGotoMax 10+26
+#define StackGotoMax 10+26+2
 #define StackGosubMax 4
 #define IfCntMax 32
 #define RemCntMax 32

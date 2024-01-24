@@ -175,7 +175,7 @@ int CB_interpreter_sub( char *SRC ) {
 
 	if ( 0x88020200 > (int)&cont ) { CB_Error(StackERR); return -1; } //  stack error
 	
-	for (c=0; c<StackGotoMax; c++) StackGotoAdrs[c]=0;
+	for (c=0; c<StackGotoMax; c++) StackGotoAdrs[c]=0;	// init goto
 	
 	ClrCahche();
 	
@@ -1073,17 +1073,25 @@ void CB_Rem( char *SRC, CchRem *CacheRem ){
 }
 //-----------------------------------------------------------------------------
 
+int CB_CheckLbl( int c ){
+	if ( ( '0'<=c )&&( c<='9' ) ) {
+		ExecPtr++;
+		return c-'0';
+	} else if ( ( 'A'<=c )&&( c<='Z' ) ) {
+		ExecPtr++;
+		return  c-'A'+10;
+	} else 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) {	// <r> or Theta
+		ExecPtr++;
+		return  c-0xFFFFFFCD+10+26;
+	} else { CB_Error(SyntaxERR); return -1; }	// syntax error
+}
+
 void CB_Lbl( char *SRC, short *StackGotoAdrs ){
 	int c;
 	int label;
 	c=SRC[ExecPtr];
-	if ( ( '0'<=c )&&( c<='9' ) ) {
-		ExecPtr++;
-		label = c-'0';
-	} else if ( ( 'A'<=c )&&( c<='Z' ) ) {
-		ExecPtr++;
-		label = c-'A'+10;
-	} else { CB_Error(SyntaxERR); return; }	// syntax error
+	label = CB_CheckLbl( c );
+	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 	if ( StackGotoAdrs[label] == 0 ) StackGotoAdrs[label]=ExecPtr;
 }
 
@@ -1128,13 +1136,8 @@ void CB_Goto( char *SRC, short *StackGotoAdrs){
 	int label;
 	int ptr;
 	c=SRC[ExecPtr];
-	if ( ( '0'<=c )&&( c<='9' ) ) {
-		ExecPtr++;
-		label = c-'0';
-	} else if ( ( 'A'<=c )&&( c<='Z' ) ) {
-		ExecPtr++;
-		label = c-'A'+10;
-	} else { CB_Error(SyntaxERR); return; }	// goto error
+	label = CB_CheckLbl( c );
+	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 	
 	ptr = StackGotoAdrs[label] ;
 	if ( ptr == 0 ) {
@@ -2202,7 +2205,7 @@ void  CB_Input( char *SRC ){
 			sprintGR(buffer, DefaultValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 			locate( CursorX, CursorY); Print((unsigned char*)buffer);
 			Scrl_Y();
-			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
+			CB_CurrentValue = InputNumD_CB1( CursorX, CursorY, 21, DefaultValue );
 			ErrorNo=0; // error cancel
 			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
 			CBint_CurrentValue = CB_CurrentValue ;
@@ -2225,8 +2228,8 @@ void  CB_Input( char *SRC ){
 			MatAryC=MatrixPtr( reg, dimA, dimB );
 			OpcodeStringToAsciiString(buffer, MatAryC, 31);
 			CB_CurrentStr=MatAryC;
-			CB_Print(CursorX, CursorY, (unsigned char*)buffer);
-			Scrl_Y();
+//			CB_Print(CursorX, CursorY, (unsigned char*)buffer);
+//			Scrl_Y();
 			key=InputStr( 1, CursorY, MatAry[reg].SizeB-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
 			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return ; }
@@ -2235,8 +2238,9 @@ void  CB_Input( char *SRC ){
 		case 4:	// ?DATE
 			CB_DateToStr();
 			CB_CurrentStr[10]='\0';	// week cancel
-	Inpj2:	CB_Print(CursorX, CursorY, (unsigned char*)CB_CurrentStr);
-			Scrl_Y();
+	Inpj2:
+//			CB_Print(CursorX, CursorY, (unsigned char*)CB_CurrentStr);
+//			Scrl_Y();
 			goto Inpj1;
 			break;
 		case 5:	// ?TIME
@@ -2406,6 +2410,7 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	ProgNo  = ProgNo_bk;
 	
 	InitLocalVar();		// init Local variable
+	for (c=0; c<StackGotoMax; c++) StackGotoAdrs[c]=0;	// init goto
 
 	for ( i=0; i<ProgLocalN[ProgNo]; i++ ) {		// restore local variable
 		j=ProgLocalVar[ProgNo][i];
@@ -2531,9 +2536,14 @@ int CB_interpreter( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-//int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
