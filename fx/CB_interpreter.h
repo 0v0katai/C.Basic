@@ -227,7 +227,8 @@ typedef struct {		// 34+4 bytes
 	char	ForPtr;
 	char	TYPE[20];
 	char	GosubNest[20];
-	
+
+	char ForType[StackForMax];
 	int	*Var[StackForMax];
 	int	ForAdrs[StackForMax];
 	int	NextAdrs[StackForMax];
