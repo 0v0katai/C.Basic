@@ -20,6 +20,7 @@ extern matary MatAry[MatAryMax];
 extern char	MatBaseDefault;
 extern char	MatBase;
 
+extern char   defaultListAry;
 //------------------------------------------------------------------------------
 int ReadMatrixInt( int reg, int dimA, int dimB);				// 0-
 double ReadMatrix( int reg, int dimA, int dimB);				// 0-
@@ -61,6 +62,9 @@ int  MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB );		// 0-
 int MatrixOprandreg( char *SRC, int *reg) ;
 
 int Cellsum( int reg, int x, int y );								// 0-
+
+//-----------------------------------------------------------------------------
+void CB_ListInitsub( char *SRC, int *reg, int dimA , int ElementSize ) ; 	// 1-
 
 //-----------------------------------------------------------------------------
 double CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f

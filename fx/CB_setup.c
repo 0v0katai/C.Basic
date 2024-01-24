@@ -39,7 +39,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v1.00\xE6\x41\x35" );
+	locate( 3, 4 ); Print( (unsigned char*)"          v1.00\xE6\x41\x36" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2017" );
 	GetKey(&key);
@@ -553,11 +553,9 @@ void InitVar( double value, int VarMode, int small) {
 
 	if ( YesNo("Initialize Ok?") ) {
 		if ( VarMode ) {
-			if ( small ) for ( i=0; i<26; i++) LocalInt[i][0]=value;
-			else		 for ( i=0; i<26; i++) REGINT[i]=value;
+			for ( i=0; i<26; i++) LocalInt[i+small][0]=value;
 		} else {
-			if ( small ) for ( i=0; i<26; i++) LocalDbl[i][0]=value;
-			else		 for ( i=0; i<26; i++) REG[i]=value;
+			for ( i=0; i<26; i++) LocalDbl[i+small][0]=value;
 		}
 	}
 }
@@ -576,22 +574,36 @@ void SetVarDblToHex( char * buffer, double n ) {
 	}
 }
 
+int SetVarChar( char *buffer, int c ) {
+	int ptr=0;
+	if ( ( c == 26 ) || ( c == 26+32 ) ) {	// <r>
+		buffer[ptr++]=0xCD;	//	'r'
+	} else
+	if ( ( c == 27 ) || ( c == 27+32 ) ) { // Theta
+		buffer[ptr++]=0xE6;		// Theta
+		buffer[ptr++]=0x47;
+	} else { 
+		buffer[ptr++]='A'+c;
+	}
+	return ptr;
+}
+
 int SetVar(int select){		// ----------- Set Variable
 	char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int scrl=0;
 	int seltop=select;
-	int i,y;
+	int i,j,k,f,y;
 	int selectreplay=-1;
-	int opNum=25;
+	int opNum=25+2;
 	int small=0;
 	double value=0;
 	int VarMode=CB_INT;	// 0:double  1:int
 	int hex=0;	// 0:normal  1:hex
 
 	Cursor_SetFlashMode(0); 		// cursor flashing off
-
+	
 	if (select>=32) { small=32; select-=32; }
 
 	while (cont) {
@@ -600,50 +612,40 @@ int SetVar(int select){		// ----------- Set Variable
 		if (  select<seltop ) seltop = select;
 		if ( (select-seltop) > 6 ) seltop = select-6;
 		if ( (opNum -seltop) < 6 ) seltop = opNum -6; 
+		
 		for ( i=0; i<7; i++ ) {
-			buffer[0]='A'+seltop+i+small;
-			if ( VarMode ) {
-				buffer[1]='%';
-				buffer[2]='='; 
-				buffer[3]='\0';
-				if ( small ) {
-					if ( LocalInt[seltop+i] != &REGINTsmall[seltop+i] ) { 
-						buffer[2]=0xE5;
-						buffer[3]=0xB8;
-						buffer[4]='\0';
-					}
-				}
-			} else {
-				buffer[1]='=';
-				buffer[2]='\0';
-				if ( small ) {
-					if ( LocalDbl[seltop+i] != &REGsmall[seltop+i] ) { 
-						buffer[1]=0xE5;
-						buffer[2]=0xB8;
-						buffer[3]='\0';
-					}
-				}
+			j=0;
+			k=seltop+i+small;
+			if ( VarMode ) {		// Int variable
+				buffer[j++]='%';
 			}
+			
+			j+=SetVarChar( buffer+j, k );
+			
+			if ( ( k == 26+32 ) || ( k == 27+32 ) ) k=k-32;
+			if ( VarMode ) {		// Int variable
+				f=( LocalInt[k] == &REGINT[k] );
+			} else {				// Double variable
+				f=( LocalDbl[k] == &REG[k] );
+			}
+			if ( f ) {
+				buffer[j++]='=';
+			} else {
+				buffer[j++]=0xE5;		// reverse '='
+				buffer[j++]=0xB8;
+			}
+			
+			buffer[j++]='\0';
 			locate(1,1+i); Print((unsigned char*)buffer);
-
+			
 			if ( VarMode ) {
 				locate(4 ,1+i);		// int
-				if ( small ) {
-					if ( hex )	sprintf(buffer,"0x%08X        ",(int)LocalInt[seltop+i][0]);
-						else	sprintG(buffer, (double)LocalInt[seltop+i][0], 18,LEFT_ALIGN);
-				} else {
-					if ( hex )	sprintf(buffer,"0x%08X        ",(int)REGINT[seltop+i]);
-						else	sprintG(buffer, (double)REGINT[seltop+i],   18,LEFT_ALIGN);
-					}
+				if ( hex )	sprintf(buffer,"0x%08X        ",(int)LocalInt[k][0]);
+					else	sprintG(buffer, (double)LocalInt[k][0], 18,LEFT_ALIGN);
 			} else {
 				locate(3 ,1+i);		// dbl
-				if ( small ) {
-					if ( hex )	SetVarDblToHex( buffer, LocalDbl[seltop+i][0] );
-						else	sprintG(buffer, (double)LocalDbl[seltop+i][0], 18,LEFT_ALIGN);
-				} else {
-					if ( hex )	SetVarDblToHex( buffer, REG[seltop+i] );
-						else	sprintG(buffer, (double)REG[seltop+i],      18,LEFT_ALIGN);
-				}
+				if ( hex )	SetVarDblToHex( buffer, LocalDbl[k][0] );
+					else	sprintG(buffer, (double)LocalDbl[k][0], 18,LEFT_ALIGN);
 			}
 			Print((unsigned char*)buffer);
 		}
@@ -658,6 +660,7 @@ int SetVar(int select){		// ----------- Set Variable
 		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line 
 		Bdisp_PutDisp_DD();
 
+		k=select; if ( select<=25 ) k+=small;
 		GetKey( &key );
 		switch (key) {
 			case KEY_CTRL_EXIT:
@@ -692,13 +695,11 @@ int SetVar(int select){		// ----------- Set Variable
 				SetVarSel(VarMode,y);
 				y++;
 				selectreplay = select; 
-				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
+				if ( ( 0 <= select ) && ( select <=25+2 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						if ( small )	LocalInt[select][0]= InputNumD_fullhex( 4, y, 18, (double)LocalInt[select][0], hex);
-						else			REGINT[select]  = InputNumD_fullhex( 4, y, 18, (double)REGINT[select], hex);
+						LocalInt[k][0]= InputNumD_fullhex( 4, y, 18, (double)LocalInt[k][0], hex);
 					else
-						if ( small )	LocalDbl[select][0]= InputNumD_fullhex( 3, y, 19, (double)LocalDbl[select][0], hex);
-						else			REG[select]     = InputNumD_fullhex( 3, y, 19, (double)REG[select], hex);
+						LocalDbl[k][0]= InputNumD_fullhex( 3, y, 19, (double)LocalDbl[k][0], hex);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -709,13 +710,11 @@ int SetVar(int select){		// ----------- Set Variable
 				SetVarSel(VarMode,y);
 				y++;
 				selectreplay = select; 
-				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
+				if ( ( 0 <= select ) && ( select <=25+2 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						if ( small )	LocalInt[select][0]= InputNumD_replay( 4, y, 18, (double)LocalInt[select][0]);
-						else			REGINT[select]  = InputNumD_replay( 4, y, 18, (double)REGINT[select]);
+						LocalInt[k][0]= InputNumD_replay( 4, y, 18, (double)LocalInt[k][0]);
 					else
-						if ( small )	LocalDbl[select][0]= InputNumD_replay( 3, y, 19, (double)LocalDbl[select][0]);
-						else			REG[select]     = InputNumD_replay( 3, y, 19, (double)REG[select]);
+						LocalDbl[k][0]= InputNumD_replay( 3, y, 19, (double)LocalDbl[k][0]);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -728,13 +727,11 @@ int SetVar(int select){		// ----------- Set Variable
 				SetVarSel(VarMode,y);
 				y++;
 				selectreplay = select; 
-				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
+				if ( ( 0 <= select ) && ( select <=25+2 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						if ( small )	LocalInt[select][0]= InputNumD_Char( 4, y, 18, (double)LocalInt[select][0], key);
-						else			REGINT[select]  = InputNumD_Char( 4, y, 18, (double)REGINT[select], key);
+						LocalInt[k][0]= InputNumD_Char( 4, y, 18, (double)LocalInt[k][0], key);
 					else
-						if ( small )	LocalDbl[select][0]= InputNumD_Char( 3, y, 19, (double)LocalDbl[select][0], key);
-						else			REG[select]     = InputNumD_Char( 3, y, 19, (double)REG[select], key);
+						LocalDbl[k][0]= InputNumD_Char( 3, y, 19, (double)LocalDbl[k][0], key);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}

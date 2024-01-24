@@ -44,46 +44,16 @@ void CBint_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	
 	int c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='Z' ) ) {
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
 		reg=c-'A';
+	  regj:
 		ExecPtr++;
-		if ( SRC[ExecPtr] == 0x7E ) {		// '~'
+		c=SRC[ExecPtr];
+		if ( c == 0x7E ) {		// '~'
 			ExecPtr++;
 			c=SRC[ExecPtr];
-			if ( ( 'A'<=c )&&( c<='Z' ) ) {
-				en=c-'A';
-				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				c=SRC[++ExecPtr];
-				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) REG[ i ] = CBint_CurrentValue; }
-				else
-				if ( c=='%' ) ExecPtr++;
-				for ( i=reg; i<=en; i++) REGINT[ i ] = CBint_CurrentValue;
-			}
-		} else {
-			c=SRC[ExecPtr];
-			if ( c=='#' ) { ExecPtr++;  REG[reg] = CBint_CurrentValue ; }
-			else
-			if ( c=='[' ) goto Matrix;
-			else
-			if ( ( '0'<=c )&&( c<='9' ) ) {
-				ExecPtr++;
-				dimA=c-'0';
-				MatOprand1( SRC, reg, &dimA, &dimB );
-				goto Matrix2;
-			} else {
-				if ( c=='%' ) ExecPtr++;
-				REGINT[ reg ] = CBint_CurrentValue;
-			}
-		}
-	} else
-	if ( ( 'a'<=c )&&( c<='z' ) ) {
-		reg=c-'a';
-		ExecPtr++;
-		if ( SRC[ExecPtr] == 0x7E ) {		// '~'
-			ExecPtr++;
-			c=SRC[ExecPtr];
-			if ( ( 'a'<=c )&&( c<='z' ) ) {
-				en=c-'a';
+			en=RegVar(c);
+			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				c=SRC[++ExecPtr];
 				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) LocalDbl[ i ][0] = CBint_CurrentValue; }
@@ -92,12 +62,11 @@ void CBint_Store( char *SRC ){	// ->
 				for ( i=reg; i<=en; i++) LocalInt[ i ][0] = CBint_CurrentValue;
 			}
 		} else {
-			c=SRC[ExecPtr];
 			if ( c=='#' ) { ExecPtr++;  LocalDbl[ reg ][0] = CBint_CurrentValue ; }
 			else
-			if ( c=='[' ) { reg+=('a'-'A'); goto Matrix; }
+			if ( c=='[' ) { goto Matrix; }
 			else
-			if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
+			if ( ( '0'<=c )&&( c<='9' ) ) {
 				ExecPtr++;
 				dimA=c-'0';
 				MatOprand1( SRC, reg, &dimA, &dimB );
@@ -108,11 +77,13 @@ void CBint_Store( char *SRC ){	// ->
 			}
 		}
 	} else
+	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) { reg=c-0xFFFFFFCD+26 ; goto regj;	// <r> or Theta
+	} else
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
-			c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+			c=SRC[ExecPtr]; reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
 			if ( SRC[ExecPtr] != '[' ) { 
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatIntSub( reg, CBint_CurrentValue);
@@ -132,13 +103,23 @@ void CBint_Store( char *SRC ){	// ->
 				goto StoreTicks;
 		} else if ( c == 0x46 ) {	// ->DimZ
 				ExecPtr+=2;
-				if ( CBint_CurrentValue ) 
-						CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
-				else {
-					c = SRC[ExecPtr];
-					if ( ( 'A'<=c )&&( c<='z' ) ) {
-						ExecPtr++;
-						DeleteMatrix( c-'A' );
+				if ( ( SRC[ExecPtr]==0x7F ) || ( SRC[ExecPtr+1]==0x51 ) ) {	// -> Dim List
+					ExecPtr+=2;
+					c=SRC[ExecPtr];
+					reg=ListRegVar( SRC, c );
+					if ( CBint_CurrentValue ) 
+							CB_ListInitsub( SRC,  &reg, CBint_CurrentValue, 0 );
+					else 	DeleteMatrix( reg );
+				} else {
+					if ( CBint_CurrentValue ) 
+							CB_MatrixInitsubNoMat( SRC, &reg, CBint_CurrentValue, 1, 0 );
+					else {
+						c = SRC[ExecPtr];
+						reg=RegVar(c);
+						if ( reg>=0 ) {
+							ExecPtr++;
+							DeleteMatrix( reg );
+						}
 					}
 				}
 		} else if ( c == 0x00 ) {	// Xmin
@@ -212,34 +193,9 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='Z' ) ) {
+	reg=RegVar(c);
+	if ( reg>=0 ) {
 		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='#' ) {
-			ExecPtr++;
-			REG[reg] --;
-			CBint_CurrentValue = REG[reg] ;
-		} else
-		if ( c=='[' ) { 
-			ExecPtr++;
-			MatOprandInt2( SRC, reg, &dimA, &dimB );
-			goto Matrix;
-		} else
-		if ( ( '0'<=c )&&( c<='9' ) ) {
-			ExecPtr++;
-			dimA=c-'0';
-			MatOprand1( SRC, reg, &dimA, &dimB );
-			goto Matrix;
-		} else {
-			if ( c=='%' ) ExecPtr++;
-			REGINT[reg] --;
-			CBint_CurrentValue = REGINT[reg] ;
-		}
-	} else 
-	if ( ( 'a'<=c )&&( c<='z' ) ) {
-		ExecPtr++;
-		reg=c-'a';
 		c=SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
@@ -247,11 +203,11 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 			CBint_CurrentValue = LocalDbl[reg][0] ;
 		} else
 		if ( c=='[' ) { 
-			ExecPtr++; reg+=('a'-'A');
+			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else
-		if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
+		if ( ( '0'<=c )&&( c<='9' ) ) {
 			ExecPtr++;
 			dimA=c-'0';
 			MatOprand1( SRC, reg, &dimA, &dimB );
@@ -299,34 +255,9 @@ void CBint_Isz( char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='Z' ) ) {
+	reg=RegVar(c);
+	if ( reg>=0 ) {
 		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='#' ) {
-			ExecPtr++;
-			REG[reg] ++;
-			CBint_CurrentValue = REG[reg] ;
-		} else
-		if ( c=='[' ) { 
-			ExecPtr++;
-			MatOprandInt2( SRC, reg, &dimA, &dimB );
-			goto Matrix;
-		} else
-		if ( ( '0'<=c )&&( c<='9' ) ) {
-			ExecPtr++;
-			dimA=c-'0';
-			MatOprand1( SRC, reg, &dimA, &dimB );
-			goto Matrix;
-		} else {
-			if ( c=='%' ) ExecPtr++;
-			REGINT[reg] ++;
-			CBint_CurrentValue = REGINT[reg] ;
-		}
-	} else 
-	if ( ( 'a'<=c )&&( c<='z' ) ) {
-		ExecPtr++;
-		reg=c-'a';
 		c=SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
@@ -334,11 +265,11 @@ void CBint_Isz( char *SRC ) { //	Isz
 			CBint_CurrentValue = LocalDbl[reg][0] ;
 		} else
 		if ( c=='[' ) { 
-			ExecPtr++; reg+=('a'-'A');
+			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else
-		if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
+		if ( ( '0'<=c )&&( c<='9' ) ) {
 			ExecPtr++;
 			dimA=c-'0';
 			MatOprand1( SRC, reg, &dimA, &dimB );

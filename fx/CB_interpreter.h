@@ -40,8 +40,7 @@ extern char Refreshtime;	// Refresh time  n/128
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-extern double  REG[26];
-extern double  REGsmall[26];
+extern double  REG[26+6+26];
 extern double  REGv[11];
 
 #define regA REG[ 0]
@@ -70,6 +69,13 @@ extern double  REGv[11];
 #define regX REG[23]
 #define regY REG[24]
 #define regZ REG[25]
+#define reg_r 		REG[26]	// [	<r>
+#define reg_Theta	REG[27]	// \	Theta
+#define reg28 REG[28]	// ]
+#define reg29 REG[29]	// ^
+#define reg30 REG[30]	// _
+#define reg31 REG[31]	// `
+
 
 #define Xmin REGv[ 0]
 #define Xmax REGv[ 1]
@@ -89,8 +95,8 @@ extern	double Xfct;
 extern	double Yfct;
 
 #define ArgcMAX 10
-extern	double 	*LocalDbl[26];		// local var ptr
-extern	int		*LocalInt[26];		// local var ptr
+extern	double 	*LocalDbl[26+6+26];		// local var ptr
+extern	int		*LocalInt[26+6+26];		// local var ptr
 
 extern double	traceAry[130];		// Graph trace array
 
@@ -106,8 +112,7 @@ extern char GraphY3[];
 extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
 
 //------------------------------------------------------------------------------
-extern int  REGINT[26];
-extern int  REGINTsmall[26];
+extern int  REGINT[26+6+26];
 
 #define regintA REGINT[ 0]
 #define regintB REGINT[ 1]
@@ -135,6 +140,12 @@ extern int  REGINTsmall[26];
 #define regintX REGINT[23]
 #define regintY REGINT[24]
 #define regintZ REGINT[25]
+#define regint_r 		REG[26]	// [	<r>
+#define regint_Theta	REG[27]	// \	Theta
+#define regint28 REG[28]	// ]
+#define regint29 REG[29]	// ^
+#define regint30 REG[30]	// _
+#define regint31 REG[31]	// `
 
 //------------------------------------------------------------------------------
 extern int	CB_TicksStart;
@@ -224,7 +235,7 @@ typedef struct {		// 16 bytes
 #define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
 //------------------------------------------------------------------------------
 void ClrCahche();
-void InitsmallVar();
+void InitLocalVar();
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."

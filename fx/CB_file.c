@@ -444,7 +444,7 @@ unsigned int Explorer( int size, char *folder )
 	FileListUpdate = 0 ;	// 1:update
 	renamename[0] = '\0';
 	renamefolder[0] = '\0';
-	
+
 	GetMediaFreeStr10(buffer2);
 	
 	while( cont )
@@ -1554,11 +1554,9 @@ void SaveConfig(){
 
 	bufdbl[ 8]=Xfct;
 	bufdbl[ 9]=Yfct;
-	for ( i= 10; i<  10+26 ; i++ ) bufdbl[i]=REG[i-10];
-	for ( i= 42; i<  42+26 ; i++ ) bufdbl[i]=REGsmall[i-42];
+	for ( i= 10; i<  10+58 ; i++ ) bufdbl[i]=REG[i-10];
 	for ( i= 68; i<  68+11 ; i++ ) bufdbl[i]=REGv[i-68];
-	for ( i=160; i< 160+26 ; i++ ) bufint[i]=REGINT[i-160];
-	for ( i=192; i< 192+26 ; i++ ) bufint[i]=REGINTsmall[i-192];
+	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
 
 	bufshort[218*2]=(short)KeyRepeatFirstCount;
 	bufshort[219*2]=(short)KeyRepeatNextCount;
@@ -1638,11 +1636,9 @@ void LoadConfig(){
 
 		Xfct=bufdbl[ 8];
 		Yfct=bufdbl[ 9];
-		for ( i= 10; i<  10+26 ; i++ ) REG[i-10]   =bufdbl[i];
-		for ( i= 42; i<  42+26 ; i++ ) REGsmall[i-42] =bufdbl[i];
+		for ( i= 10; i<  10+58 ; i++ ) REG[i-10]   =bufdbl[i];
 		for ( i= 68; i<  68+11 ; i++ ) REGv[i-68]=bufdbl[i];
-		for ( i=160; i< 160+26 ; i++ ) REGINT[i-160]=bufint[i];
-		for ( i=192; i< 192+26 ; i++ ) REGINTsmall[i-192]=bufint[i];
+		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
 
 		KeyRepeatFirstCount=bufshort[218*2]; if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount = 20;
 		KeyRepeatNextCount =bufshort[219*2]; if ( KeyRepeatNextCount  < 1 ) KeyRepeatNextCount  =  5;
@@ -1892,13 +1888,14 @@ void ConvertToText( char *fname ){
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 void CB_Local( char *SRC ) {
-	int c=1,i;
+	int c=1,i,reg;
 	i=0;
 	while ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
 		c=SRC[ExecPtr];
-		if ( ( 'a' <= c ) && ( c <='z' ) ) {
+		reg=RegVar(c);
+		if ( reg>=0 ) {
 			ExecPtr++;
-			ProgLocalVar[ProgEntryN-1][i] = c-'a';	// local var set
+			ProgLocalVar[ProgEntryN-1][i] = reg;	// local var set
 		} 
 		i++;
 		c=SRC[ExecPtr];
@@ -2084,7 +2081,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 
 //---------------------------------------------------------------------------------------------- align dummy
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
@@ -2111,7 +2108,6 @@ int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2144,4 +2140,5 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 */

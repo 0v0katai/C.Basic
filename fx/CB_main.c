@@ -72,7 +72,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		}
 		PictAry[0]=GetVRAMAddress();
 
-		InitsmallVar();		// init small lvariable
+		InitLocalVar();		// init Local variable
 		ExecPtr=0;	
 		DebugMode=0;
 		DebugScreen=0;

@@ -604,8 +604,8 @@ void CB_DrawGraph(  char *SRC ){
 
 void CB_GraphY( char *SRC ){
 	if ( RangeErrorCK( SRC ) ) return;
+	CB_Str( SRC );				// graph text print
 	CB_ChangeGraphicMode( SRC );	// Select Graphic Mode
-	CB_Str( SRC );
 	GraphY=CB_CurrentStr;
 	Graph_Draw();
 }
@@ -834,8 +834,8 @@ void CB_ReadGraph( char *SRC ){	// ReadGraph(px1,py1, px2,py2)->Mat C
 		if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
-		if ( ( 'A'<=c )&&( c<='z' ) ) {
-			reg=c-'A';
+		reg=RegVar(c);
+		if ( reg>=0 ) {
 			ExecPtr++;
 
 			if (px1>px2) { i=px1; px1=px2; px2=i; }
@@ -1089,8 +1089,7 @@ void CB_DotTrim( char *SRC ){	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 	if ( ( c == 0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat A
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
-		if ( ( 'A' > c ) || ( c > 'z' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
-		reg=c-'A';
+		reg=RegVar(c); if ( reg>=0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 		ExecPtr++;
 		c=SRC[ExecPtr];
@@ -1465,7 +1464,7 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 
 int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	char buffer[32];
-	int c;
+	int c,reg;
 	unsigned int key=0;
 	int scrmode;
 	
@@ -1484,7 +1483,8 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 	} else
 	if ( dspflag == 3 ) { 	// Matrix display
 		c=SRC[ExecPtr-2];
-		if ( ( 'A'<=c )&&( c<='z' ) ) {
+		reg=RegVar(c);
+		if ( reg>=0 ) {
 			CB_SelectTextVRAM();	// Select Text Screen
 			CB_SaveTextVRAM();
 			EditMatrix( c -'A' );
@@ -1524,7 +1524,7 @@ int CB_Disps( char *SRC , short dspflag ){	// Disps command
 
 void CB_end( char *SRC ){
 	char buffer[32];
-	int c,t;
+	int c,t,reg;
 	unsigned int key=0;
 	int scrmode=ScreenMode;
 
@@ -1544,9 +1544,10 @@ void CB_end( char *SRC ){
 	} else
 	if ( dspflag == 3 ) { 	// Matrix display
 		c=SRC[ExecPtr-2];
-		if ( ( 'A'<=c )&&( c<='z' ) ) {
+		reg=RegVar(c);
+		if ( reg>=0 ) {
 			CB_SaveTextVRAM();
-			EditMatrix( c -'A' );
+			EditMatrix( reg );
 			CB_RestoreTextVRAM();	// Resotre Graphic screen
 			CB_Done();
 		}

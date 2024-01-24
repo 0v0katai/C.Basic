@@ -114,8 +114,10 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
-	else if  ( ( 'A'<=c )&&( c<='Z' ) ) return REGINT[c-'A'];
-	else if  ( ( 'a'<=c )&&( c<='z' ) ) return LocalInt[c-'a'][0];
+	if ( ( 'A'<=c )&&( c<='z' ) )  return LocalInt[c-'A'][0] ;
+	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) return LocalInt[c-0xFFFFFFCD+26][0] ;	// <r> or Theta
+	CB_Error(SyntaxERR);
+	return -1 ; 	// Syntax error
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -232,11 +234,11 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result <= dst;
 	} else
-	if ( c==0xFFFFFFA9 ) { // ~
+	if ( c==0xFFFFFFA9 ) { // *
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result*dst;
 	} else
-	if ( c==0xFFFFFFB9 ) { // €
+	if ( c==0xFFFFFFB9 ) { // /
 		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr];
 		if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
 		if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) || ( c==0 ) ) return result/dst;
@@ -341,45 +343,34 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
 		return - EvalIntsub1( SRC );
 	}
-	if ( ( 'A'<=c )&&( c<='Z' ) )  {
-			reg=c-'A';
-			c=SRC[ExecPtr];
-			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
-			else
-			if ( c=='[' ) goto Matrix;
-			else
-			if ( ( '0'<=c )&&( c<='9' ) ) {
-					goto Matrix1;
-			} else
-			if ( c=='%' ) ExecPtr++;
-			return REGINT[reg] ;
-	}
-	if ( ( 'a'<=c )&&( c<='z' ) )  {
-			reg=c-'a';
-			c=SRC[ExecPtr];
-			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
-			else
-			if ( c=='[' )  { reg+=('a'-'A'); goto Matrix; }
-			else
-			if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
-				Matrix1:
-					ExecPtr++;
-					dimA=c-'0';
-					MatOprand1( SRC, reg, &dimA, &dimB );
-					goto Matrix2;
-			} else
-			if ( c=='%' ) ExecPtr++;
-			return LocalInt[reg][0] ;
+	if ( ( 'A'<=c )&&( c<='z' ) ) {
+		reg=c-'A';
+	  regj:
+		c=SRC[ExecPtr];
+		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
+		else
+		if ( c=='[' )  { goto Matrix; }
+		else
+		if ( ( '0'<=c )&&( c<='9' ) ) { 
+				ExecPtr++;
+				dimA=c-'0';
+				MatOprand1( SRC, reg, &dimA, &dimB );
+				goto Matrix2;
+		} else
+		if ( c=='%' ) ExecPtr++;
+		return LocalInt[reg][0] ;
 	}
 	if ( ( '0'<=c )&&( c<='9' ) ) {
 		ExecPtr--; return  Eval_atod( SRC, c );
 	}
+	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) { reg=c-0xFFFFFFCD+26 ; goto regj; }	// <r> or Theta
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
 			c = SRC[ExecPtr++];
 			if ( c == 0x40 ) {	// Mat A[a,b]
-				c=SRC[ExecPtr]; if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+				c=SRC[ExecPtr]; reg=RegVar(c); if ( reg>=0 ) { ExecPtr++; } else CB_Error(SyntaxERR) ; // Syntax error 
+				Matrix1:
 				if ( SRC[ExecPtr] == '[' ) {
 				Matrix:
 					ExecPtr++;
@@ -389,6 +380,13 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				} else { dspflag=3; dimA=MatAry[reg].Base; dimB=dimA; }	// Mat A
 				return ReadMatrixInt( reg, dimA, dimB);
 
+			} else if ( c == 0x51 ) {	// List 1
+				c = SRC[ExecPtr];
+				reg=Eval_atod( SRC, c );
+				if ( ( reg<1 ) || ( 26<reg ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+				reg+=31;
+				goto Matrix1;
+					
 			} else if ( c == 0x3A ) {	// MOD(a,b)
 					tmp = EvalIntsubTop( SRC );
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -666,8 +664,9 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 	result = EvalIntsub4( SRC );
 	while ( 1 ) {
 		c = SRC[ExecPtr];
-		if ((( 'A'<=c )&&( c<='Z' )) ||
-			(( 'a'<=c )&&( c<='z' )) ||
+		if ((( 'A'<=c )&&( c<='z' )) ||
+			 ( c == 0xFFFFFFCD ) || // <r>
+			 ( c == 0xFFFFFFCE ) || // Theta
 			 ( c == 0xFFFFFFD0 ) || // PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
 			 ( c == 0xFFFFFFC1 )) { // Ran#
@@ -712,13 +711,13 @@ int EvalIntsub5(char *SRC) {	//  5th Priority
 					return result;
 					break;
 			}
-		} else if ( c == 0xFFFFFFE7 ) { // E7..
-			c = SRC[ExecPtr+1];
-			switch ( c ) {
-				default:
-					return result;
-					break;
-			}
+//		} else if ( c == 0xFFFFFFE7 ) { // E7..
+//			c = SRC[ExecPtr+1];
+//			switch ( c ) {
+//				default:
+//					return result;
+//					break;
+//			}
 		} else return result;
 	 }
 }

@@ -109,7 +109,7 @@ const char ConvList0080[][16]={
 "xor",		// 9A
 "^<-1>",	// 9B
 "deg",		// 9C
-"@9D",		// 9D
+"@009D",	// 9D
 "Med",		// 9E
 "Sigmax",	// 9F
 			   
