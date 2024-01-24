@@ -150,6 +150,10 @@ void GetGenuineCmdF3( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F0A;return;	// TThetaptch
 			} break;
+		case CMD_VARS_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7FF2;return;	// GRAPHXt
+			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF941;return;	// DATE

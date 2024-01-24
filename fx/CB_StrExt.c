@@ -141,7 +141,7 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 		Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dispR( FKeyNo3, " fn ");
 		Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
 
-		Bdisp_PutDisp_DD();
+//		Bdisp_PutDisp_DD();
 
 		k=(*select);
 		

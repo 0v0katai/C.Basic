@@ -397,6 +397,7 @@ void CB_Screen( char *SRC ){	// Screen.G   Screen.T
 	double x,y;
 	int px,py;
 	int c;
+	dspflag=0;	//
 	c=SRC[ExecPtr++];
 	if ( c == '.' ) { c=SRC[ExecPtr++];
 		if ( ( c=='G' ) || ( c=='g' ) ) goto scrG;	// Select Graphic Screen
@@ -427,9 +428,11 @@ void CB_Screen( char *SRC ){	// Screen.G   Screen.T
 		CB_GetOperandNDbl( SRC, 4, ScrOp );
 	  jmp:
 	  	if ( ScrOp[0]-ScrOp[1] == 0 ) { CB_Error(RangeERR); return; }
-		x =   1 + ( (x-ScrOp[0])*126.0/(ScrOp[1]-ScrOp[0]) + 0.5 ) ;
+		px =   1 + ( (x-ScrOp[0])*126.0/(ScrOp[1]-ScrOp[0]) + 0.5 ) ;
 	  	if ( ScrOp[2]-ScrOp[3] == 0 ) { CB_Error(RangeERR); return; }
-		y =  63 - ( (y-ScrOp[2])* 62.0/(ScrOp[3]-ScrOp[2]) - 0.49999999999999 ) ;
+		py =  63 - ( (y-ScrOp[2])* 62.0/(ScrOp[3]-ScrOp[2]) - 0.49999999999999 ) ;
+		x=px;
+		y=py;
 		goto listout;
 	} else
 	if ( c == '%' ) {	// Screen(PX,PY[,Xmin][,Xmax][,Ymin][,Ymax] -> ViewWindow(X,Y)
@@ -450,7 +453,6 @@ void CB_Screen( char *SRC ){	// Screen.G   Screen.T
 	 listout:
 		if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 		WriteListAns2( x, y );	//	->List Ans{px,py}
-		dspflag=4;	// List ans
 	} else
 	if ( ( c==0 ) || ( c==0x0D ) || ( c==0x0C ) || ( c==':' ) ) {
 			if ( ScreenMode == 0 )  goto scrG;	// Select Graphic Screen

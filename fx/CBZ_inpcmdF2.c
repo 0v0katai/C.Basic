@@ -169,6 +169,10 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F0C;return;	// Yfct
 			} break;
+		case CMD_VARS_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7FF1;return;	// GRAPHr
+			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF94F;return;	// Wait

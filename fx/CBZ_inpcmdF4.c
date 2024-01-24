@@ -134,6 +134,10 @@ void GetGenuineCmdF4( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF921;return;	// Xdot
 			} break;
+		case CMD_VARS_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7FF3;return;	// GRAPHYt
+			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF942;return;	// TIME

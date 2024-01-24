@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   Genuine Command input Library  ver 1.8x                     */
+/*   Genuine Command input Library  ver 2.x                      */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -34,7 +34,7 @@ void Menu_CMD_MENU_EXT(){
 					Fkey_Icon( FKeyNo3, 515 );	//	Fkey_DISPR( FKeyNo3, " :");
 					Fkey_Icon( FKeyNo4, 534 );	//	Fkey_DISPR( FKeyNo4, " \x13 ");
 					Fkey_Icon( FKeyNo5, 398 );	//	Fkey_DISPR( FKeyNo5, " ' ");
-					Fkey_Icon( FKeyNo6, 402 );	//	FFkey_DISPR( FKeyNo6, " / ");
+					Fkey_Icon( FKeyNo6, 402 );	//	Fkkey_DISPR( FKeyNo6, " / ");
 }
 
 void DispGenuineCmdMenu(){
@@ -328,7 +328,7 @@ void DispGenuineCmdMenu(){
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
 //					FkeyClear( FKeyNo5 );
-					Fkey_dispN( FKeyNo5, "Comp");
+					Fkey_Icon( FKeyNo5, 378 );	//	Fkey_dispN( FKeyNo5, "Comp");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
@@ -564,10 +564,10 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_dspRB( FKeyNo1, "and");
-					Fkey_dspRB( FKeyNo2, " or");
+					Fkey_Icon( FKeyNo1,337 );	//	Fkey_dspRB( FKeyNo1, "and");
+					Fkey_Icon( FKeyNo2,338 );	//	Fkey_dspRB( FKeyNo2, "or");
 					Fkey_dspRB( FKeyNo3, "not");
-					Fkey_dspRB( FKeyNo4, "xor");
+					Fkey_Icon( FKeyNo4,339 );	//	Fkey_dspRB( FKeyNo4, "xor");
 					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
@@ -682,11 +682,11 @@ void DispGenuineCmdMenu(){
 		case CMD_VARS_GRPH:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_Icon( FKeyNo1, 622 );	//	Fkey_DISPR( FKeyNo1, " \xE5\xB4 ");
-					FkeyClear( FKeyNo2 );
-					FkeyClear( FKeyNo3 );
-					FkeyClear( FKeyNo4 );
-					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo1, 622 );	//	Fkey_DISPR( FKeyNo1, " Y ");
+					Fkey_Icon( FKeyNo2, 623 );	//	Fkey_DISPR( FKeyNo1, " r ");
+					Fkey_Icon( FKeyNo3, 624 );	//	Fkey_DISPR( FKeyNo1, " Xt ");
+					Fkey_Icon( FKeyNo4, 625 );	//	Fkey_DISPR( FKeyNo1, " Yt ");
+					Fkey_Icon( FKeyNo5, 626 );	//	Fkey_DISPR( FKeyNo1, " X ");
 					FkeyClear( FKeyNo6 );
 					break;
 			}
@@ -771,7 +771,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo3, 474 );	//	Fkey_dspRB( FKeyNo3, "Parm");
 					Fkey_Icon( FKeyNo4, 468 );	//	Fkey_dspRB( FKeyNo4, "X= ");
 					Fkey_Icon( FKeyNo5, 652 );	//	Fkey_dspRB( FKeyNo5, "integral= ");
-					FkeyClear( FKeyNo5 );
+//					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:

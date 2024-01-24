@@ -2773,6 +2773,8 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 	int displaystatus=0;
 	int ClipStartPtr = -1 ;
 	int ClipEndPtr   = -1 ;
+	int selectStr=0;
+	char *string;
 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
@@ -3125,6 +3127,23 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 				break;
 		}
 
+		if ( key == 0x1F91B ) { 	// Graph Y Store
+			CB_StoreString( 1, ClipBuffer );
+			key=0;
+		}
+		if ( key == 0x2F91B ) { 	// Graph Y Recall
+			string = CB_RecallString( 1 );
+			goto pastestring;
+		}
+		if ( key == 0x4F91B ) { 	// Graph Y See
+			string = CB_SeeString( 1, &selectStr, ClipBuffer );
+		  pastestring:
+			if ( string != NULL ) {
+				EditPaste1( buffer, string, &ptrX, MaxStrlen );
+				UpdateLineNum=1;
+			}
+			key=0;
+		}
 		if ( ( displaystatus == 0 ) && ( ( alpha_mode || exp_mode ) ) ) {
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
@@ -3389,4 +3408,4 @@ int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int InpObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4o( unsigned int n ){ return n; }	// align +4byte

@@ -2152,16 +2152,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				break;
 		}
 
-
-		if ( key == 0x1F91B ) { 
+		if ( key == 0x1F91B ) { 	// Graph Y Store
 			CB_StoreString( 1, ClipBuffer );
 			key=0;
 		}
-		if ( key == 0x2F91B ) { 
+		if ( key == 0x2F91B ) { 	// Graph Y Recall
 			string = CB_RecallString( 1 );
 			goto pastestring;
 		}
-		if ( key == 0x4F91B ) { 
+		if ( key == 0x4F91B ) { 	// Graph Y See
 			string = CB_SeeString( 1, &selectStr, ClipBuffer );
 		  pastestring:
 			if ( string != NULL ) {
