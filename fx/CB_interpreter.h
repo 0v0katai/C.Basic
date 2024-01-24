@@ -134,16 +134,10 @@ extern int  REGINTsmall[26];
 #define regintY REGINT[24]
 #define regintZ REGINT[25]
 
-extern int CBint_CurrentValue;	// Ans
-
 //------------------------------------------------------------------------------
 extern int	CB_TicksStart;
 extern int	CB_TicksEnd;
 extern int	CB_TicksAdjust;
-
-extern int CB_INT;		// current mode  0:normal  1: integer mode
-extern int ExecPtr;
-extern int BreakPtr;
 
 extern int ScreenMode;	//  0:Text  1:Graphic
 extern int UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
@@ -151,6 +145,13 @@ extern int dspflag;
 
 extern int CursorX;	// text cursor X
 extern int CursorY;	// text cursor X
+
+extern int CB_INT;		// current mode  0:normal  1: integer mode
+extern int ExecPtr;
+extern int BreakPtr;
+
+extern int CBint_CurrentValue;	// Ans
+extern double CB_CurrentValue;	// Ans
 
 #define ProgMax 30
 extern char ProgEntryN;		// how many subroutin
@@ -160,10 +161,6 @@ extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize
 extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 extern char  ProgLocalN[ProgMax+1];
 extern char  ProgLocalVar[ProgMax+1][26];
-
-#define CurrentStrMax 128
-extern char   CB_CurrentStr[CurrentStrMax];	//
-extern double CB_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
 #define StackGotoMax 10+26
@@ -226,12 +223,6 @@ int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
 void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."
 void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs, int *localvarInt, double *localvarDbl  ); //	Gosub N
-double CB_EvalStr( char *SRC) ;		// Eval str -> double
-int CBint_EvalStr( char *SRC) ;		// Eval str -> int
-
-void GetMatStr(char *SRC, char *buffer, int Maxlen ) ;
-void GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;
-void CB_QuotMat( char *SRC );		// &Mat A
 
 void Skip_quot( char *SRC ); // skip "..."
 void Skip_block( char *SRC );
@@ -271,7 +262,6 @@ int CB_Fix( char *SRC );
 int CB_Sci( char *SRC );
 int CB_Norm( char *SRC );
 void CB_Rnd();
-void CB_Quot( char *SRC );		// "" ""
 int CB_Disps( char *SRC ,short dspflag);
 void CB_end( char *SRC );
 

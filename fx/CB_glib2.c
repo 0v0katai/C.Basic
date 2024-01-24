@@ -509,6 +509,7 @@ double Graph_Eval( char *SRC) {		// Eval Graph
 	ErrorNo = 0;
     result = EvalsubTop( SRC );
     ExecPtr=execptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	return result;
 }
 

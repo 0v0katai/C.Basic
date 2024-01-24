@@ -4,7 +4,8 @@
 
 #define ClipMax 1024
 
-extern char ClipBuffer[ClipMax];
+extern char *ClipBuffer;
+//extern char ClipBuffer[ClipMax];
 
 extern int Contflag;	// Continue mode    0:disable  1:enable
 

@@ -89,6 +89,7 @@ int SelectChar( int *ContinuousSelect ) {
 	char tmpbuf[18];
 	short opcode;
 	int opNum=0, n ;
+	int mini=0;
 
 	SaveDisp(SAVEDISP_PAGE1);		// --------
 	Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -101,10 +102,27 @@ int SelectChar( int *ContinuousSelect ) {
 		if ( scrl == 0 ) if ( CharPtr>=114 ) scrl=1;
 		if ( scrl == 1 ) if ( CharPtr<  19 ) scrl=0;
 		Bdisp_AllClr_VRAM();
-		if ( *ContinuousSelect ) {
-			locate(1,1); PrintRev((unsigned char*)"==Continuous Select==");
-		} else {
-			locate(1,1);    Print((unsigned char*)"==Character Select===");
+		switch ( mini ) {
+			case 2:
+				if ( *ContinuousSelect ) {
+					PrintMini( 1,1, (unsigned char*)"===Continuous Select= C.Basic =", MINI_REV );
+				} else {
+					PrintMini( 1,1, (unsigned char*)"===Character Select== C.Basic =", MINI_OVER );
+				}
+				break;
+			case 1:
+				if ( *ContinuousSelect ) {
+					PrintMini( 1,1, (unsigned char*)"===Continuous Select= Default =", MINI_REV );
+				} else {
+					PrintMini( 1,1, (unsigned char*)"===Character Select== Default =", MINI_OVER );
+				}
+				break;
+			default:
+				if ( *ContinuousSelect ) {
+					locate(1,1); PrintRev((unsigned char*)"==Continuous Select==");
+				} else {
+					locate(1,1);    Print((unsigned char*)"==Character Select===");
+				}
 		}
 		x=2; y=2;
 		opcode=1;
@@ -112,7 +130,20 @@ int SelectChar( int *ContinuousSelect ) {
 			ptr=(y-2+scrl)*19+x-2 ;
 			opcode=oplist[ ptr ];
 			CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
-			if ( CharPtr == ptr ) CB_PrintRevC( x, y, (unsigned char*)tmpbuf ); else CB_PrintC( x, y, (unsigned char*)tmpbuf );
+		switch ( mini ) {
+				case 2:
+					if ( CharPtr == ptr )	CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV );
+					else 					CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER );
+					break;
+				case 1:
+					if ( CharPtr == ptr )	PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV );
+					else 					PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER );
+					break;
+				default:
+					if ( CharPtr == ptr )	CB_PrintRevC( x, y, (unsigned char*)tmpbuf );
+					else 					CB_PrintC( x, y, (unsigned char*)tmpbuf );
+					break;
+			}
 			x++;
 			if (x>20) { x=2; y++; if ( y>7 ) break ; }
 //			Bdisp_PutDisp_DD();
@@ -203,6 +234,28 @@ int SelectChar( int *ContinuousSelect ) {
 				break;
 			case KEY_CTRL_SHIFT:
 				*ContinuousSelect=1-*ContinuousSelect;
+				break;
+			case KEY_CTRL_OPTN:
+				switch ( mini ) {
+					case 0:
+					case 1:
+						mini=2;
+						mini=2;
+						break;
+					case 2:
+						mini=0;
+				}
+				break;
+			case KEY_CTRL_VARS:
+				switch ( mini ) {
+					case 0:
+					case 2:
+						mini=1;
+						mini=1;
+						break;
+					case 1:
+						mini=0;
+				}
 				break;
 			default:
 				break;
@@ -412,11 +465,13 @@ const short oplistOPTN[]={
 //		0xF798,	// RclV-Win
 //		0xF79F,	// RclCapt
 //		0xF74C,	// Sum
-		0x0FB,	// ProbP(
-		0x0FC,	// ProbQ(
-		0x0FD,	// Eval(
+//		0x0FB,	// ProbP(
+//		0x0FC,	// ProbQ(
+		0xF938,	// Exp(
+//		0x0FD,	// Eval(
 //		0x0FE,	// Gosub
 		0x7FE9,	// CellSum(
+		0x7F5F,	// Ticks
 		0};
 							
 const short oplistPRGM[]={	
@@ -477,6 +532,23 @@ const short oplistPRGM[]={
 		0x7FF5,	// IsExist(
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
+		
+		0xF930,	// StrJoin(
+		0xF931,	// StrLen
+		0xF932,	// StrCmp(
+		0xF933,	// StrSrc(
+		0xF934,	// StrLeft(
+		0xF935,	// StrRight(
+		0xF936,	// StrMid(
+		0xF937,	// Exp>Str(
+		0xF938,	// Exp(
+		0xF939,	// StrUpr(
+		0xF93A,	// StrDwr(
+		0xF93B,	// StrInv(
+		0xF93C,	// StrShift(
+		0xF93D,	// StrRotate(
+		0xF93E,	// Sprintf(
+		0xF93F,	// Str
 		0};
 		
 const short oplistVARS[]={
@@ -793,7 +865,7 @@ const short oplistCMD[]={
 		0x7FB1,	// Or			7
 		0x7FB3,	// Not			8
 		0x7FB4,	// Xor			9
-		0x26,	// &
+		0x7F5F,	// Ticks
 		0x23,	// #
 		0x25,	// %
 		
@@ -847,7 +919,7 @@ const short oplistCMD[]={
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
-		0x26,	// &
+		0x5C,	// 
 		0x23,	// #
 		0x25,	// %
 
@@ -861,7 +933,7 @@ const short oplistCMD[]={
 		0xF71E,	// S-L-Broken
 		0xF71F,	// S-L-Dot
 		0x7F58,	// ElemSize(
-		0x20,	// 				-
+		0x7F5F,	// Ticks
 		0x7F59,	// ColSize(
 		0x7F5A,	// RowSize(
 
@@ -896,7 +968,7 @@ const short oplistCMD[]={
 		0xB6,	// frac
 		0xAB,	// !
 		0x7F3A,	// MOD(
-		0x0FD,	// Eval(
+		0x7F5F,	// Ticks
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
@@ -928,7 +1000,33 @@ const short oplistCMD[]={
 		0x09,	// Tera
 		0x0A,	// Peta
 		0x0B,	// Exa
-		0x20,	// 				-
+		0x5C,	// 
+
+		0xF93F,	// Str
+		0xF930,	// StrJoin(
+		0xF931,	// StrLen
+		0xF932,	// StrCmp(
+		0xF933,	// StrSrc(
+		0xF934,	// StrLeft(
+		0xF935,	// StrRight(
+		0xF936,	// StrMid(
+		0x24,	// $
+		0x26,	// &
+		0x23,	// #
+		0x25,	// %	
+		
+		0xF937,	// Exp>Str(
+		0xF938,	// Exp(
+		0xF939,	// StrUpr(
+		0xF93A,	// StrDwr(
+		0xF93B,	// StrInv(
+		0xF93C,	// StrShift(
+		0xF93D,	// StrRotate(
+		0xF93E,	// Sprintf(
+		0x24,	// $	
+		0x26,	// &
+		0x23,	// #
+		0x25,	// %	
 
 		0xF73F,	// DotGet(
 		0xF94B,	// DotPut(
@@ -937,7 +1035,7 @@ const short oplistCMD[]={
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
 		0xF7E3,	// LocateYX
-		0x20,	// 				-
+		0x7F5F,	// Ticks
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
 //		0xF797,	// StoV-Win
@@ -1113,317 +1211,79 @@ int PrevLine( char *SRC, int *offset ){
 }
 
 //---------------------------------------------------------------------------------------------
+
+typedef struct {
+	short code;
+	char str[12];
+} topcodes;
+
+const topcodes OpCodeStrList[] = {
+	{ 0x7F87, "RanInt#(" }, 
+	{ 0x7F3A, "MOD(" }, 
+	{ 0x7F58, "ElemSize(" }, 
+	{ 0x7F59, "ColSize(" }, 
+	{ 0x7F5A, "RowSize(" }, 
+	{ 0x7F5F, "Ticks" }, 
+	{ 0x7FB4, " xor " }, 
+	{ 0x7FF5, "IsExist(" }, 
+	{ 0xF717, "ACBreak" }, 
+	{ 0xF73F, "DotGet(" }, 
+	{ 0xF74F, "DotTrim(" }, 
+	{ 0xF7E0, "DotLife(" }, 
+	{ 0xF7E1, "Rect " }, 
+	{ 0xF7E2, "FillRect " }, 
+	{ 0xF7E3, "LocateYX " }, 
+	{ 0xF7E8, "ReadGraph(" }, 
+	{ 0xF7E9, "WriteGraph " }, 
+	{ 0xF70F, "ElseIf " }, 
+	{ 0xF7EA, "Switch " }, 
+	{ 0xF7EB, "Case " }, 
+	{ 0xF7EC, "Default " }, 
+	{ 0xF7ED, "SwitchEnd" }, 
+	{ 0xF7EE, "Save " }, 
+	{ 0xF7EF, "Load(" }, 
+	{ 0xF7F0, "DotShape(" }, 
+	{ 0xF7F1, "Local " }, 
+	{ 0xF930, "StrJoin(" }, 
+	{ 0xF931, "StrLen(" }, 
+	{ 0xF932, "StrCmp(" }, 
+	{ 0xF933, "StrSrc(" }, 
+	{ 0xF934, "StrLeft(" }, 
+	{ 0xF935, "StrRight(" }, 
+	{ 0xF936, "StrMid(" }, 
+	{ 0xF937, "Exp\xE6\x9EStr(" }, 
+	{ 0xF938, "Exp(" }, 
+	{ 0xF939, "StrUpr(" }, 
+	{ 0xF93A, "StrLwr(" }, 
+	{ 0xF93B, "StrInv(" }, 
+	{ 0xF93C, "StrShift(" }, 
+	{ 0xF93D, "StrRotate(" }, 
+	{ 0xF93E, "Sprintf(" }, 
+	{ 0xF93F, "Str " }, 
+	{ 0xF94B, "DotPut(" }, 
+	{ 0x00FB, "Ev1(" }, 
+	{ 0x00FC, "Ev2(" }, 
+	{ 0x00FD, "Eval(" }, 
+	{ 0x00FE, "Gosub "},
+	{ 0, "" }
+};
+
 int CB_OpcodeToStr( int opcode, char *string  ) {
+	int i;
+	int code;
 	opcode &= 0xFFFF;
-	if ( opcode >= 0xFF00 ) {
+	i=0;
+	do {
+		code = OpCodeStrList[i].code & 0xFFFF ;
+		if ( code == opcode ) { strcpy( string, OpCodeStrList[i].str ); return ; }
+		i++;
+	} while ( code ) ;
+	if ( opcode >= 0xFF00 ) {	// kana
 		string[0]=0xFF;
 		string[1]=opcode&0xFF;
 		string[2]='\0';
 	} else
-	if ( opcode == 0x7F87 ) {	// RanInt#(
-		string[0]='R';
-		string[1]='a';
-		string[2]='n';
-		string[3]='I';
-		string[4]='n';
-		string[5]='t';
-		string[6]='#';
-		string[7]='(';
-		string[8]='\0';
-	} else
-	if ( opcode == 0x7F3A ) {	// MOD(
-		string[0]='M';
-		string[1]='O';
-		string[2]='D';
-		string[3]='(';
-		string[4]='\0';
-	} else
-	if ( opcode == 0x7F58 ) {	// ElemSize( Mat A )
-		string[0]='E';
-		string[1]='l';
-		string[2]='e';
-		string[3]='m';
-		string[4]='S';
-		string[5]='i';
-		string[6]='z';
-		string[7]='e';
-		string[8]='(';
-		string[9]='\0';
-	} else
-	if ( opcode == 0x7F59 ) {	// ColSize( Mat A )
-		string[0]='C';
-		string[1]='o';
-		string[2]='l';
-		string[3]='S';
-		string[4]='i';
-		string[5]='z';
-		string[6]='e';
-		string[7]='(';
-		string[8]='\0';
-	} else
-	if ( opcode == 0x7F5A ) {	// RowSize( Mat A )
-		string[0]='R';
-		string[1]='o';
-		string[2]='w';
-		string[3]='S';
-		string[4]='i';
-		string[5]='z';
-		string[6]='e';
-		string[7]='(';
-		string[8]='\0';
-	} else
-	if ( opcode == 0x7FB4 ) {	// Xor
-		string[0]=' ';
-		string[1]='X';
-		string[2]='o';
-		string[3]='r';
-		string[4]=' ';
-		string[5]='\0';
-	} else
-	if ( opcode == 0x7FF5 ) {	// IsExist(
-		string[0]='I';
-		string[1]='s';
-		string[2]='E';
-		string[3]='x';
-		string[4]='i';
-		string[5]='s';
-		string[6]='t';
-		string[7]='(';
-		string[8]='\0';
-	} else
-	if ( opcode == 0xF94B ) {	// DotPut(
-		string[0]='D';
-		string[1]='o';
-		string[2]='t';
-		string[3]='P';
-		string[4]='u';
-		string[5]='t';
-		string[6]='(';
-		string[7]='\0';
-	} else
-	if ( opcode == 0xF717 ) {	// ACBreak
-		string[0]='A';
-		string[1]='C';
-		string[2]='B';
-		string[3]='r';
-		string[4]='e';
-		string[5]='a';
-		string[6]='k';
-		string[7]='\0';
-	} else
-	if ( opcode == 0xF73F ) {	// DotGet(
-		string[0]='D';
-		string[1]='o';
-		string[2]='t';
-		string[3]='G';
-		string[4]='e';
-		string[5]='t';
-		string[6]='(';
-		string[7]='\0';
-	} else
-	if ( opcode == 0xF74F ) {	// DotTrim(
-		string[0]='D';
-		string[1]='o';
-		string[2]='t';
-		string[3]='T';
-		string[4]='r';
-		string[5]='i';
-		string[6]='m';
-		string[7]='(';
-		string[8]='\0';
-	} else
-	if ( opcode == 0xF7E0 ) {	// DotLife(
-		string[0]='D';
-		string[1]='o';
-		string[2]='t';
-		string[3]='L';
-		string[4]='i';
-		string[5]='f';
-		string[6]='e';
-		string[7]='(';
-		string[8]='\0';
-	} else
-	if ( opcode == 0xF7E1 ) {	// Rect
-		string[0]='R';
-		string[1]='e';
-		string[2]='c';
-		string[3]='t';
-		string[4]=' ';
-		string[5]='\0';
-	} else
-	if ( opcode == 0xF7E2 ) {	// FillRect(
-		string[0]='F';
-		string[1]='i';
-		string[2]='l';
-		string[3]='l';
-		string[4]='R';
-		string[5]='e';
-		string[6]='c';
-		string[7]='t';
-		string[8]=' ';
-		string[9]='\0';
-	} else
-	if ( opcode == 0xF7E3 ) {	// LocateYX
-		string[0]='L';
-		string[1]='o';
-		string[2]='c';
-		string[3]='a';
-		string[4]='t';
-		string[5]='e';
-		string[6]='Y';
-		string[7]='X';
-		string[8]=' ';
-		string[9]='\0';
-	} else
-	if ( opcode == 0xF7E8 ) {	// ReadGraph(
-		string[0]='R';
-		string[1]='e';
-		string[2]='a';
-		string[3]='d';
-		string[4]='G';
-		string[5]='r';
-		string[6]='a';
-		string[7]='p';
-		string[8]='h';
-		string[9]='(';
-		string[10]='\0';
-	} else
-	if ( opcode == 0xF7E9 ) {	// WriteGraph
-		string[0]='W';
-		string[1]='r';
-		string[2]='i';
-		string[3]='t';
-		string[4]='e';
-		string[5]='G';
-		string[6]='r';
-		string[7]='a';
-		string[8]='p';
-		string[9]='h';
-		string[10]=' ';
-		string[11]='\0';
-	} else
-	if ( opcode == 0xF70F ) {	// ElseIf
-		string[0]='E';
-		string[1]='l';
-		string[2]='s';
-		string[3]='e';
-		string[4]='I';
-		string[5]='f';
-		string[6]=' ';
-		string[7]='\0';
-	} else
-	if ( opcode == 0xF7EA ) {	// Switch
-		string[0]='S';
-		string[1]='w';
-		string[2]='i';
-		string[3]='t';
-		string[4]='c';
-		string[5]='h';
-		string[6]=' ';
-		string[7]='\0';
-	} else
-	if ( opcode == 0xF7EB ) {	// Case
-		string[0]='C';
-		string[1]='a';
-		string[2]='s';
-		string[3]='e';
-		string[4]=' ';
-		string[5]='\0';
-	} else
-	if ( opcode == 0xF7EC ) {	// Default
-		string[0]='D';
-		string[1]='e';
-		string[2]='f';
-		string[3]='a';
-		string[4]='u';
-		string[5]='l';
-		string[6]='t';
-		string[7]=' ';
-		string[8]='\0';
-	} else
-	if ( opcode == 0xF7ED ) {	// SwitchEnd
-		string[0]='S';
-		string[1]='w';
-		string[2]='i';
-		string[3]='t';
-		string[4]='c';
-		string[5]='h';
-		string[6]='E';
-		string[7]='n';
-		string[8]='d';
-		string[9]=' ';
-		string[10]='\0';
-	} else
-	if ( opcode == 0xF7EE ) {	// Save
-		string[0]='S';
-		string[1]='a';
-		string[2]='v';
-		string[3]='e';
-		string[4]=' ';
-		string[5]='\0';
-	} else
-	if ( opcode == 0xF7EF ) {	// Load(
-		string[0]='L';
-		string[1]='o';
-		string[2]='a';
-		string[3]='d';
-		string[4]='(';
-		string[5]='\0';
-	} else
-	if ( opcode == 0xF7F0 ) {
-		string[0]='D';
-		string[1]='o';
-		string[2]='t';
-		string[3]='S';
-		string[4]='h';
-		string[5]='a';
-		string[6]='p';
-		string[7]='e';
-		string[8]='(';
-		string[9]='\0';
-	} else
-	if ( opcode == 0xF7F1 ) {
-		string[0]='L';
-		string[1]='o';
-		string[2]='c';
-		string[3]='a';
-		string[4]='l';
-		string[5]=' ';
-		string[6]='\0';
-	} else
-/*	if ( opcode == 0xFB ) { // P(
-		string[0]='E';
-		string[1]='v';
-		string[2]='1';
-		string[3]='(';
-		string[4]='\0';
-	} else
-	if ( opcode == 0xFC ) { // Q(
-		string[0]='E';
-		string[1]='v';
-		string[2]='2';
-		string[3]='(';
-		string[4]='\0';
-	} else {
-*/	if ( opcode == 0xFD ) { // Eval(
-		string[0]='E';
-		string[1]='v';
-		string[2]='a';
-		string[3]='l';
-		string[4]='(';
-		string[5]='\0';
-	} else {
-	if ( opcode == 0xFE ) { // t(
-		string[0]='G';
-		string[1]='o';
-		string[2]='s';
-		string[3]='u';
-		string[4]='b';
-		string[5]=' ';
-		string[6]='\0';
-	} else
 		return OpcodeToStr( (short)opcode, (unsigned char *)string ) ; // SYSCALL
-	}
 }
 
 int CB_MB_ElementCount( char *str ) {
@@ -1445,7 +1305,7 @@ int CB_MB_ElementCount( char *str ) {
 //----------------------------------------------------------------------------------------------
 
 int strlenOp( char *buffer ) {
-	int	i=0,len;
+	int	i=0;
 	while ( 1 ) {
 		if ( NextOpcode( buffer, &i ) == 0x00 ) break;
 	}
@@ -1557,7 +1417,8 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
-	
+
+	if ( MaxStrlen > 127 ) MaxStrlen = 127;
 	for(i=0; i<=MaxStrlen; i++) buffer2[i]=buffer[i]; // backup
 
 	CursorStyle=Cursor_GetFlashStyle();
@@ -1773,7 +1634,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	}
 
 	Cursor_SetFlashMode(0);		// cursor flashing off
-	if ( alpha_mode ) { Fkey_Clear(4); Fkey_Clear(5); }
+	if ( alpha_mode ) { Fkey_Clear(3); Fkey_Clear(4); Fkey_Clear(5);}
 	
 	buffer[length]='\0';
 	return key ;	// EXE:0
@@ -1951,9 +1812,9 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 			case '-':
 				buffer[i]=0x87;	// (-)
 				break;
-//			case '+':
-//				buffer[i]=0x89;	// (+)
-//				break;
+			case '+':
+				buffer[i]=0x89;	// (+)
+				break;
 			case 'e':	// exp
 				buffer[i]=0x0F;	// (exp)
 				break;
@@ -2015,11 +1876,9 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_
 	int csrX=0;
 	unsigned int key;
 	
-	SaveDisp(SAVEDISP_PAGE1);
 	buffer[width]='\0';
 	csrX=strlenOp(buffer);
 	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
-	RestoreDisp(SAVEDISP_PAGE1);
 	return ( key );
 }
 

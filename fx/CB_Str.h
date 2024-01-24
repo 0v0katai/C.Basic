@@ -1,40 +1,56 @@
-#define STRLENMAX 32
+extern char  *CB_CurrentStr;	//
+extern char  *CB_CurrentStr2;	//
 
-typedef struct{
-	char str[STRLENMAX];
-	int flag;
-} Ststring;
+#define CB_StrBufferCNTMax 8
+#define CB_StrBufferMax 128
+extern char   CB_StrBufferCNT;
+extern char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+//-----------------------------------------------------------------------------
 
-extern char  Str[STRLENMAX*20];
-extern char* StrPtr[20];
+int StrSrc( char *SrcBase, char *searchstr, int *csrptr, int size);
+void StrJoin( char *str1, char *str2, int maxlen ) ;
+int StrLen( char *str , int *oplen ) ;
+void StrMid( char *str1, char *str2, int n, int m ) ;	// mid$(str2,n,m) -> str1
+void StrRight( char *str1, char *str2, int n ) ;	// Right$(str2,n) -> str1
+int StrInv( char *str1, char *str2 ) ;	// mirror$(str2) -> str1
+int StrRotate( char *str1, char *str2, int n ) ;	// Rotate$("1234567",  2) -> "6712345"
+int StrShift( char *str1, char *str2, int n ) ;		// Shift$("1234567",  2) -> "34567"
+int StrLwr( char *str1, char *str2 ) ;		// Lwr$(str2, n) -> str1
+int StrUpr( char *str1, char *str2 ) ;		// Upr$(str2, n) -> str1
 
-int StrSrc( char *str ) ;
-int StrJoin( char *str1, char *str2 ) ;
-int StrLen( char *str ) ;
-int StrLeft( char *str, int n ) ;
-int StrMid( char *str, int n, int m ) ;
-int StrRight( char *str, int n ) ;
-int StrInv( char *str ) ;
-int StrRotate( char *str, int n ) ;
-int StrShift( char *str, int n ) ;
-int StrLwr( char *str ) ;
-int StrUpr( char *str ) ;
+int OpcodeCopy(char *buffer, char *SRC, int Maxlen) ;
+void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) ;	// Opcode String  ->  Ascii String
+
+
 //-----------------------------------------------------------------------------
 // Casio Basic
 //-----------------------------------------------------------------------------
+int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
+
+int CB_IsStr( char *SRC, int execptr ) ;
+char* CB_GetOpStr1( char *SRC ,int *maxlen) ;		// String -> buffer	return
+char* CB_GetOpStr( char *SRC, int *maxoplen  ) ;	// Get opcode String 
+double CB_EvalStr( char *SRC) ;		// Eval str -> double
+int CBint_EvalStr( char *SRC) ;		// Eval str -> int
+void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;
+
+void CB_StorStr( char *SRC ) ;	// ->Stor
+void CB_Str( char *SRC );		// "" ""
+
+int CB_StrCmp( char *SRC ) ;
+int CB_StrSrc( char *SRC ) ;
+int CB_StrLen( char *SRC ) ;
 void CB_Exp( char *SRC ) ;
-void CB_ExpToStr( char *SRC ) ;
-void CB_StrCmp( char *SRC ) ;
-void CB_StrSrc( char *SRC ) ;
 
-void CB_StrJoin( char *SRC ) ;
-void CB_StrLen( char *SRC ) ;
-void CB_StrLeft( char *SRC ) ;
-void CB_StrMid( char *SRC ) ;
-void CB_StrRight( char *SRC ) ;
+int CB_StrJoin( char *SRC ) ;
+int CB_StrLeft( char *SRC ) ;
+int CB_StrMid( char *SRC ) ;
+int CB_StrRight( char *SRC ) ;
+int CB_ExpToStr( char *SRC ) ;
 
-void CB_StrInv( char *SRC ) ;
-void CB_StrRotate( char *SRC ) ;
-void CB_StrShift( char *SRC ) ;
-void CB_StrLwr( char *SRC ) ;
-void CB_StrUpr( char *SRC ) ;
+int CB_StrUpr( char *SRC ) ;
+int CB_StrLwr( char *SRC ) ;
+int CB_StrInv( char *SRC ) ;
+int CB_StrShift( char *SRC ) ;
+int CB_StrRotate( char *SRC ) ;
+int CB_Sprintf( char *SRC ) ;	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
