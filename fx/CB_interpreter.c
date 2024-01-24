@@ -2130,7 +2130,7 @@ void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) { //	Prog "..."
 	c=SRC[ExecPtr];
 	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
-	CB_GetQuotOpcode(SRC, buffer,32);	// Prog name
+	CB_GetQuotOpcode(SRC, buffer,32-1);	// Prog name
 
 	c=SRC[ExecPtr];
 	if ( c == ',' ) {	// arg

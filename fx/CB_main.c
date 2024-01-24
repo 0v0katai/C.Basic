@@ -17,6 +17,7 @@
 #include "CB_inp.h"
 #include "CB_file.h"
 #include "CB_edit.h"
+#include "CB_Str.h"
 
 #include "CB_interpreter.h"
 #include "CB_error.h"
@@ -81,7 +82,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 	GVRAM = (char *)malloc( 1024 );
 //	if ( TVRAM == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
-//	ClipBuffer = (char *)malloc( ClipMax+1 );
+	ClipBuffer = (char *)malloc( ClipMax+1 );
 //	if ( ClipBuffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
 	while (1) {

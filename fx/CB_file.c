@@ -33,7 +33,7 @@
 typedef struct{
 	char filename[FILENAMEMAX];
 	char folder[FOLDERMAX];
-	short filesize;
+	int filesize;
 }Files;
 
 #define FavoritesMAX 7
@@ -1791,7 +1791,7 @@ void ConvertToText( char *fname ){
 		if ( SaveBasG1M( filebase ) ) return ;
 		
 	} else {	// G1M file -> Text
-		buffersize=files[index].filesize /2;	// buffersize 50% up
+		buffersize=files[index].filesize /1;	// buffersize 100% up
 		if ( buffersize < EditMaxfree ) buffersize=EditMaxfree;
 		if ( LoadProgfile( fname, buffersize ) ) return ; // error
 		filebase = ProgfileAdrs[0];
@@ -1994,7 +1994,7 @@ int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
@@ -2049,6 +2049,7 @@ void FavoritesDowndummy2( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
+*/
 
 void FavoritesDowndummy3( int *index ) {
 	int tmp;
@@ -2057,8 +2058,8 @@ void FavoritesDowndummy3( int *index ) {
 	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
 	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
 	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+//	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+//	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
 //	files[(*index)+1].filesize=files[(*index)].filesize;
 //	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
 //	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
@@ -2066,4 +2067,3 @@ void FavoritesDowndummy3( int *index ) {
 //	(*index)++;
 //	SaveFavorites();
 }
-*/

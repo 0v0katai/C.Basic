@@ -15,8 +15,8 @@
 #include "CB_setup.h"
 
 //----------------------------------------------------------------------------------------------
-char ClipBuffer[ClipMax];
-//char *ClipBuffer;
+//char ClipBuffer[ClipMax];
+char *ClipBuffer;
 char DebugMode=0;	// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
 char ScreenModeEdit=0;
 char DebugScreen=0;		// 0:no   1:Screen debug mode with fkey    2: Screen debug mode
