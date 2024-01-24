@@ -1304,7 +1304,7 @@ int CB_StrChar( char *SRC ) {	// StrChar("*"[,n]) StrChar( code [,n])
 	} else {	// expression
 		n = CB_EvalInt( SRC );
 		c = (n&0xFF00)>>8;
-		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) code[i++] = c; 
+		if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) code[i++] = c; 
 		code[i++] = n&0xFF;
 		code[i++] = '\0';
 		buffer=code;
