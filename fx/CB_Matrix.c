@@ -757,6 +757,7 @@ void MatNumToExpBuf( complex value, int bit ){	// value -> ExpBuffer
 }
 
 char* NewclipBuffer( int *size );
+void AdjclipBuffer( int size );
 
 void List2Clip( int reg, int bit ) {	// 
 	int i,j,dimA,dimB,x,y;
@@ -793,7 +794,7 @@ void List2Clip( int reg, int bit ) {	//
 	ptr--;
 	buffer[ptr++]='}';
 	buffer[ptr++]='\0';
-	NewclipBuffer( &ptr );	// adjust size
+	AdjclipBuffer( ptr );	// adjust size
 	ErrorMSGstr1("List to Clip Ok!");
 }
 
@@ -838,7 +839,7 @@ void Mat2Clip( int reg, int bit ) {	//
 	ptr--;
 	buffer[ptr++]=']';
 	buffer[ptr++]='\0';
-	NewclipBuffer( &ptr );	// adjust size
+	AdjclipBuffer( ptr );	// adjust size
 	ErrorMSGstr1("Mat to Clip Ok!");
 }
 
