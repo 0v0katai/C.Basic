@@ -463,9 +463,9 @@ void DumpAsc(unsigned char *SrcBase, int offset){
 //---------------------------------------------------------------------------------------------
 
 unsigned short oplistOPTN[]={
-//		0x23,	// #
+		0x23,	// #
 //		0x24,	// $
-//		0x25,	// %
+		0x25,	// %
 //		0x26,	// &
 //		0x27,	// '
 		0x97,	// Abs
@@ -832,8 +832,10 @@ unsigned short oplistCMD[]={
 		0xEC,	// Goto			8
 		0x27,	// '
 		0x7E,	// ~
-		0x0C,	// dsps	
-		0x3A,	// :	
+		0x23,	// #
+		0x25,	// %
+//		0x0C,	// dsps	
+//		0x3A,	// :	
 
 		0x3D,	// =			1
 		0x11,	// !=			2

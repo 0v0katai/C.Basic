@@ -55,16 +55,21 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 		return - EvalIntsub1( SRC );
 	}
 	if ( ( 'A'<=c )&&( c<='Z' ) || ( 'a'<=c )&&( c<='z' ) )  {
-			ExecPtr++ ;
-			return REGINT[c-'A'] ;
+			reg=c-'A';
+			c=SRC[++ExecPtr];
+			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
+			else
+			if ( c=='%' ) ExecPtr++;
+			return REGINT[reg] ;
 	}
 	if ( ( '0'<=c )&&( c<='9' ) ) {
-			result=0;
-			while ( ('0'<=c)&&(c<='9') ) {
-				result = result*10 +(c-'0');
-				c=SRC[++ExecPtr];
-			}
-			return result ;
+//		return  Eval_atof( SRC );
+		result=0;
+		while ( ('0'<=c)&&(c<='9') ) {
+			result = result*10 +(c-'0');
+			c=SRC[++ExecPtr];
+		}
+		return result ;
 	}
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..

@@ -105,6 +105,31 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB){
 	return key;
 }
 //-----------------------------------------------------------------------------
+int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	int i;
+
+	if ( ( ElementSize==MatAryElementSize[reg] ) && ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
+		dptr = MatAry[reg] ;							// Matrix array ptr*
+	} else {
+		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
+		MatArySizeA[reg]=dimA;						// Matrix array size
+		MatArySizeB[reg]=dimB;						// Matrix array size
+		
+		MatAryElementSize[reg]=ElementSize;
+		dptr = malloc( dimA*dimB*ElementSize );
+		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
+		MatAry[reg] = dptr ;							// Matrix array ptr*
+	}
+
+	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
+
+	return 0;	// ok
+}
+
 int DimMatrix( int reg, int dimA, int dimB ) {
 	char	*cptr;
 	short	*wptr;
@@ -135,22 +160,7 @@ int DimMatrix( int reg, int dimA, int dimB ) {
 			ElementSize= CB_INT?4:8 ;
 			break;
 	}
-	if ( ( ElementSize==MatAryElementSize[reg] ) && ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
-		dptr = MatAry[reg] ;							// Matrix array ptr*
-	} else {
-		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
-		MatArySizeA[reg]=dimA;						// Matrix array size
-		MatArySizeB[reg]=dimB;						// Matrix array size
-		
-		MatAryElementSize[reg]=ElementSize;
-		dptr = malloc( dimA*dimB*ElementSize );
-		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
-		MatAry[reg] = dptr ;							// Matrix array ptr*
-	}
-
-	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
-
-	return 0;	// ok
+	return	DimMatrixSub( reg, ElementSize, dimA, dimB );
 }
 
 //-----------------------------------------------------------------------------
@@ -279,8 +289,8 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				}
 			}
 		}
-		if ( ( seltopX ) )                PrintMini( 17,1,"\xE6\x90",MINI_OVER);	// <-
-		if ( ( seltopX==0 )&&( dimA>3 ) ) PrintMini(124,1,"\xE6\x91",MINI_OVER);	// ->
+		if ( ( seltopX ) )                PrintMini( 17,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
+		if ( ( seltopX==0 )&&( dimA>3 ) ) PrintMini(124,1,(unsigned char*)"\xE6\x91",MINI_OVER);	// ->
 
 		value=ReadMatrix( reg, selectY, selectX);
 		sprintG(buffer, value,21,RIGHT_ALIGN);

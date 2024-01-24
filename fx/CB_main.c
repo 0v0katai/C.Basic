@@ -73,6 +73,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 //	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
 //	Previous_PX=-1;   Previous_PY=-1; 		// ViewWindow Previous PXY init
 	LoadConfig();
+	CB_INT=0;	// double mode default
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
