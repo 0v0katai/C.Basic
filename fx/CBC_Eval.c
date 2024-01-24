@@ -821,7 +821,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFF5 :		// IsExist(
 					return Int2Cplx( CB_IsExist( SRC ,0 ) );
 				case 0xFFFFFFF6 :		// Peek(
-					return Int2Cplx( CB_Peek( SRC, Cplx_EvalsubTop( SRC ).real ) );
+					return CB_Peek( SRC, Cplx_EvalsubTop( SRC ).real );
 				case 0xFFFFFFF8 :		// VarPtr(
 					return Int2Cplx( CB_VarPtr( SRC ) );
 				case 0xFFFFFFFA :		// ProgPtr(
@@ -937,7 +937,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 		case '%' :	// 1/128 Ticks
 			return Int2Cplx( CB_Ticks( SRC ) );	// 
 		case '*' :	// peek
-			return Dbl2Cplx( CB_Peek( SRC, Cplx_Evalsub1( SRC ).real ) );	// 
+			return CB_Peek( SRC, Cplx_Evalsub1( SRC ).real );	// 
 //		case '@' :	// Mat @A
 //			ExecPtr--;
 //			goto Matjmp;
@@ -1554,7 +1554,7 @@ complex Cplx_Eval2(char *SRC, int *ptr) {		// Eval temp mat
 	ExecPtr= *ptr;
 	CB_StrBufferCNT=0;			// Quot String buffer clear
 	result = Cplx_EvalsubTop( SRC );
-//	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
+	if ( ( EvalEndCheck( SRC[ExecPtr] ) == 0 ) && ( ExecPtr < oplen ) ) CB_Error(SyntaxERR) ; // Syntax error 
 //	if ( ( ComplexMode==0 ) && ( result.imag != 0 ) ) CB_Error(NonRealERR) ; // Non Real error 
 	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
 	*ptr=ExecPtr;

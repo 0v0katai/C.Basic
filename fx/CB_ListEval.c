@@ -347,7 +347,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC, 1 );
 				case 0xFFFFFFF6 :		// Peek(
-					return  CB_Peek( SRC, NoListEvalsubTop( SRC ) );
+					return  CB_Peek( SRC, NoListEvalsubTop( SRC ) ).real;
 				case 0xFFFFFFF8 :		// VarPtr(
 					return  CB_VarPtr( SRC );
 				case 0xFFFFFFFA :		// ProgPtr(
@@ -451,7 +451,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 		case '%' :	// 1/128 Ticks
 			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
-			return CB_Peek( SRC, ListEvalsub1( SRC ) );	// 
+			return CB_Peek( SRC, ListEvalsub1( SRC ) ).real;	// 
 		case '@' :	// Mat @A
 			ExecPtr--;
 			goto Matjmp;

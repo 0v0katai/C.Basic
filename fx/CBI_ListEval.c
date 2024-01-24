@@ -255,7 +255,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC, 1 );
 				case 0xFFFFFFF6 :		// Peek(
-					return  CB_Peek( SRC, NoListEvalIntsubTop( SRC ) );
+					return  CB_PeekInt( SRC, NoListEvalIntsubTop( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
 					return  CB_VarPtr( SRC );
 				case 0xFFFFFFFA :		// ProgPtr(
@@ -358,7 +358,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 		case '%' :	// 1/128 Ticks
 			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
-			return CB_Peek( SRC, ListEvalIntsub1( SRC ) );	// 
+			return CB_PeekInt( SRC, ListEvalIntsub1( SRC ) );	// 
 		case '@' :	// Mat @A
 			ExecPtr--;
 			goto Matjmp;

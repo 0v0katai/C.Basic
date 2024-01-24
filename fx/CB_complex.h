@@ -148,6 +148,10 @@ int Cplx_ListEvalsubTopAns(char *SRC) ;	//
 complex CB_Sigma( char *SRC ) ; //	Sigma(X^2,X,1.10)
 
 //-----------------------------------------------------------------------------
+complex CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f
+void CB_PokeSub( char *SRC, complex data, int adrs ) ;	// Poke(123456).f
+
+//-----------------------------------------------------------------------------
 complex Cplx_Round( complex num, int round_mode, int digit);
 
 void sprintGi( char* buffer, double num, int width, int align_mode) ;
@@ -168,7 +172,7 @@ complex InputNumC_replay(int x, int y, int width, complex defaultNum) ;
 
 complex InputNumC_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) ;		//  Basic Input
 complex InputNumC_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) ;		//  Basic Input 1
-complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) ;		//  Basic Input 2
+complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum, int dispzero) ;		//  Basic Input 2
 
 //-----------------------------------------------------------------------------
 

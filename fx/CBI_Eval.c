@@ -645,7 +645,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC, 0 );
 				case 0xFFFFFFF6 :		// Peek(
-					return  CB_Peek( SRC, EvalsubTopReal( SRC ) );
+					return  CB_PeekInt( SRC, EvalIntsubTop( SRC ) );
 				case 0xFFFFFFF8 :		// VarPtr(
 					return  CB_VarPtr( SRC );
 				case 0xFFFFFFFA :		// ProgPtr(

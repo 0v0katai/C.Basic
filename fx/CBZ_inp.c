@@ -240,7 +240,7 @@ void sprintGi( char* buffer, double num, int width, int align_mode) {
 }
 
 void Cplx_sprintGR1s( char* buffer, complex num, int width, int align_mode, int round_mode, int round_digit, int cut ) { // + round  ENG  + i
-	char buffer2[32];
+	char buffer2[64];
 	char bufferR[]="\x7F\x54";
 	double a,b,r,t;
 	int i,w,oplen;
@@ -3109,7 +3109,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode, unsigned int *key ) {		// 0123456789.(-)exp
-	char buffer[32];
+	char buffer[64];
 	int csrX=0;
 	
 	buffer[csrX]='\0';
@@ -3235,8 +3235,8 @@ complex InputNumC_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV
 	return InputNumC_CB_sub( x, y, width, MaxStrlen, 0, SPC, REV, defaultNum);
 }
 
-complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) {		//  Basic Input 2
-	if ( Cplx_fcmpEQ_0( defaultNum ).real ) ExpBuffer[0]='\0';
+complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum, int dispzero ) {		//  Basic Input 2
+	if ( ( dispzero==0 ) && ( Cplx_fcmpEQ_0( defaultNum ).real ) ) ExpBuffer[0]='\0';
 	else Cplx_sprintGR1s(ExpBuffer, defaultNum, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT ,0 );
 	return InputNumC_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }

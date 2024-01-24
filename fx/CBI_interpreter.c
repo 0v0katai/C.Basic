@@ -390,34 +390,53 @@ int WordSizeSelect( char *SRC ) {
 		if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; WordSize=32; }
 		else
 		if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; WordSize=64; }
+		else
+		if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; WordSize=128; }
 	}
 	return WordSize;
 }
+int CheckAdrsAlignError( int wsize, int adrs ){
+	switch ( wsize ) {
+		case 128:
+		case 64:
+		case 32:
+			if ( adrs & 3 ) { CB_Error(AlignmentERR); return -1; } // Address Alignment error
+			break;
+		case 16:
+			if ( adrs & 1 ) { CB_Error(AlignmentERR); return -1; } // Address Alignment error
+			break;
+		default:
+			break;
+	}
+	return 0;	// Ok!
+}
 
-double CB_Peek( char *SRC, int adrs ) {	// Peek(123456).f
+complex CB_Peek( char *SRC, int adrs ) {	// Peek(123456).f
 	int wsize;
 	char *cptr;
 	short *sptr;
 	int *iptr;
 	double *dptr;
+	complex *cplxptr;
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
+	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AlignmentERR); return Int2Cplx(0); } // Address Alignment error
 	switch ( wsize ) {
+		case 128:
+			cplxptr=(complex *)adrs;
+			return *cplxptr;
 		case 64:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			dptr=(double *)adrs;
-			return *dptr;
+			return Dbl2Cplx(*dptr);
 		case 32:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			iptr=(int *)adrs;
-			return *iptr;
+			return Int2Cplx(*iptr);
 		case 16:
-			if ( adrs & 1 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			sptr=(short *)adrs;
-			return *sptr;
+			return Int2Cplx(*sptr);
 		default:
 			cptr=(char *)adrs;
-			return *cptr;
+			return Int2Cplx(*cptr);
 	}
 }
 
@@ -427,19 +446,21 @@ int CB_PeekInt( char *SRC, int adrs ) {	// Peek(123456).w
 	short *sptr;
 	int *iptr;
 	double *dptr;
+	complex *cplxptr;
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
+	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 	switch ( wsize ) {
+		case 128:
+			cplxptr=(complex *)adrs;
+			return (*cplxptr).real;
 		case 64:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			dptr=(double *)adrs;
 			return *dptr;
 		case 32:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			iptr=(int *)adrs;
 			return *iptr;
 		case 16:
-			if ( adrs & 1 ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 			sptr=(short *)adrs;
 			return *sptr;
 		default:
@@ -448,33 +469,36 @@ int CB_PeekInt( char *SRC, int adrs ) {	// Peek(123456).w
 	}
 }
 
-void CB_PokeSub( char *SRC, double data, int adrs ) {	// Poke(123456).f
+void CB_PokeSub( char *SRC, complex data, int adrs ) {	// Poke(123456).f
 	int wsize;
 	char *cptr;
 	short *sptr;
 	int *iptr;
 	double *dptr;
+	complex *cplxptr;
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
+	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 	switch ( wsize ) {
+		case 128:
+			cplxptr=(complex *)adrs;
+			*cplxptr=data;
+			break;
 		case 64:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			dptr=(double *)adrs;
-			*dptr=data;
+			*dptr=data.real;
 			break;
 		case 32:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			iptr=(int *)adrs;
-			*iptr=data;
+			*iptr=data.real;
 			break;
 		case 16:
-			if ( adrs & 1 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			sptr=(short *)adrs;
-			*sptr=data;
+			*sptr=data.real;
 			break;
 		default:
 			cptr=(char *)adrs;
-			*cptr=data;
+			*cptr=data.real;
 			break;
 	}
 }
@@ -484,21 +508,24 @@ void CB_PokeSubInt( char *SRC, int data, int adrs ) {	// Poke(123456).w
 	short *sptr;
 	int *iptr;
 	double *dptr;
+	complex *cplxptr;
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
+	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 	switch ( wsize ) {
+		case 128:
+			cplxptr=(complex *)adrs;
+			(*cplxptr).real=data;
+			break;
 		case 64:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			dptr=(double *)adrs;
 			*dptr=data;
 			break;
 		case 32:
-			if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			iptr=(int *)adrs;
 			*iptr=data;
 			break;
 		case 16:
-			if ( adrs & 1 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 			sptr=(short *)adrs;
 			*sptr=data;
 			break;
@@ -516,26 +543,30 @@ void CB_Poke( char *SRC ) {	// Poke(123456).w,123,...
 	short *sptr;
 	int *iptr;
 	double *dptr;
+	complex *cplxptr;
 	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
+	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 	if ( SRC[ExecPtr]!=',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	do {
 		ExecPtr++;
 		switch ( wsize ) {
+			case 128:
+				cplxptr=(complex *)adrs;
+				*cplxptr=CB_Cplx_EvalDbl( SRC );
+				adrs+=16;
+				break;
 			case 64:
-				if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 				dptr=(double *)adrs;
 				*dptr=CB_EvalDbl( SRC );
 				adrs+=8;
 				break;
 			case 32:
-				if ( adrs & 3 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 				iptr=(int *)adrs;
 				*iptr=CB_EvalInt( SRC );
 				adrs+=4;
 				break;
 			case 16:
-				if ( adrs & 1 ) { CB_Error(AlignmentERR); return ; } // Address Alignment error
 				sptr=(short *)adrs;
 				*sptr=CB_EvalInt( SRC );
 				adrs+=2;

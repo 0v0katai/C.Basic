@@ -287,7 +287,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFF5 :		// IsExist(
 					return  Int2Cplx( CB_IsExist( SRC, 1 ) );
 				case 0xFFFFFFF6 :		// Peek(
-					return  Int2Cplx( CB_Peek( SRC, Cplx_NoListEvalsubTop( SRC ).real ) );
+					return  CB_Peek( SRC, Cplx_NoListEvalsubTop( SRC ).real );
 				case 0xFFFFFFF8 :		// VarPtr(
 					return  Int2Cplx( CB_VarPtr( SRC ) );
 				case 0xFFFFFFFA :		// ProgPtr(
@@ -403,7 +403,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 		case '%' :	// 1/128 Ticks
 			return Int2Cplx( CB_Ticks( SRC ) );	// 
 		case '*' :	// peek
-			return Dbl2Cplx( CB_Peek( SRC, Cplx_ListEvalsub1( SRC ).real ) );	// 
+			return CB_Peek( SRC, Cplx_ListEvalsub1( SRC ).real );	// 
 //		case '@' :	// Mat @A
 //			ExecPtr--;
 //			goto Matjmp;
