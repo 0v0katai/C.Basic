@@ -1389,7 +1389,7 @@ int CB_BreakStop() {
 		locate(9,3); Print((unsigned char *)"Break");
 		locate(6,5); Print((unsigned char *) "Press:[EXIT]");
 //		locate(6,6); Print((unsigned char *) " Cont:[EXE]");
-		PrintMini(26,46,"Continue : [EXE]/[F1]",MINI_OVER);
+		PrintMini(26,46,(unsigned char *)"Continue : [EXE]/[F1]",MINI_OVER);
 		Bdisp_PutDisp_DD();
 		
 		KeyRecover(); 

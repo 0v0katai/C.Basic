@@ -35,7 +35,7 @@ char ExpBuffer[ExpMax+1];
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int MatrixObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -400,6 +400,10 @@ void CheckMathERR( double *result ) {
 	pt=(char *)(result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
 }
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+int MatrixObjectAlignE4e( unsigned int n ){ return n ; }	// align +4byte
+//int MatrixObjectAlignE4f( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){

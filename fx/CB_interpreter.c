@@ -1684,7 +1684,10 @@ void CB_Store( char *SRC ){	// ->
 				if ( ErrorNo ) return ; // error
 				WriteMatrix( reg, dimA, dimB, CB_CurrentValue);
 			}
-		} else if ( c == 0x46 ) {	// Dim A
+		} else if ( c == 0x5F ) {	// Ticks
+				ExecPtr+=2;
+				goto StoreTicks;
+		} else if ( c == 0x46 ) {	// ->DimZ
 				ExecPtr+=2;
 				if ( CB_CurrentValue ) 
 						CB_MatrixInitsubNoMat( SRC, &reg, CB_CurrentValue, 1, 0 );
@@ -1725,7 +1728,8 @@ void CB_Store( char *SRC ){	// ->
 				Yfct = CB_CurrentValue ;
 		}
 	} else
-	if ( c=='%' ) {
+	if ( c=='%' ) { ExecPtr++;
+		StoreTicks:
 		CB_TicksStart=RTC_GetTicks()-CB_TicksStart;
 		SetRtc( CB_CurrentValue );
 		i=RTC_GetTicks();

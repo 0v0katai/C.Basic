@@ -1741,7 +1741,7 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 				if ( round_digit==2 ) if ( i>11 ) i=11;
 			} else {
 				adj = 1 - minus+ floor(log10(fabs(log10(fabsnum))))-1;
-				if ( ( 1e-10 <= num ) && ( num < 0.001 )) adj++;
+				if ( ( 1e-10 <= fabsnum ) && ( fabsnum < 0.001 )) adj++;
 				i=width-adj-5;
 				if ( i > digit-1 ) i=digit-1;
 				if ( i >= 18 ) i=18;
@@ -1816,6 +1816,7 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 				break;
 			case 'e':	// exp
 				buffer[i]=0x0F;	// (exp)
+				if ( buffer[++i] == ' ' ) buffer[i]=0x89;	// ' '->(+)
 				break;
 		}
 	}
@@ -1881,3 +1882,8 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_
 	return ( key );
 }
 
+//----------------------------------------------------------------------------------------------
+//int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
