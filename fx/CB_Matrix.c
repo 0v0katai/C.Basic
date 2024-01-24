@@ -20,147 +20,7 @@
 //-----------------------------------------------------------------------------
 // Matrix edit
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-unsigned int SetDimension(int reg, int *dimA, int *dimB){
-	unsigned char buffer[22];
-	unsigned int key;
-	int	cont=1;
-	int select=0;
-	int y;
-
-	PopUpWin(3);
-	
-	*dimA=MatArySizeA[reg];	//
-	*dimB=MatArySizeB[reg];	//
-	if ( *dimA==0 ) *dimA=1;
-	if ( *dimB==0 ) *dimB=1;
-
-	while (cont) {
-		locate( 3,3); Print((unsigned char *)"Dimension m\xA9n");
-//		locate(18,3); sprintf(buffer,"%d",MatAryElementSize[reg]); Print(buffer);
-		locate( 3,4); Print((unsigned char *) "  m  :           ");
-		sprintG(buffer,*dimA,  10,LEFT_ALIGN); locate( 9, 4); Print(buffer);
-		locate( 3,5); Print((unsigned char *) "  n  :           ");
-		sprintG(buffer,*dimB,  10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
-
-		y = select + 3 ;
-		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
-		Bdisp_PutDisp_DD();
-
-		GetKey( &key );
-		switch (key) {
-			case KEY_CTRL_EXIT:
-			case KEY_CTRL_EXE:
-				cont=0;
-				break;
-		
-			case KEY_CTRL_UP:
-				select-=1;
-				if ( select < 0 ) select=1;
-				break;
-			case KEY_CTRL_DOWN:
-				select+=1;
-				if ( select > 1 ) select=0;
-				break;
-
-			case KEY_CTRL_RIGHT:
-				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
-				Bdisp_PutDisp_DD();
-				y++;
-				switch (select) {
-					case 0: // dim m
-						*dimA  =InputNumD_full( 9, y, 10, *dimA);	// 
-						select+=1;
-						break;
-					case 1: // dim n
-						*dimB  =InputNumD_full( 9, y, 10, *dimB);	// 
-						break;
-					default:
-						break;
-				}
-				break;
-			default:
-				break;
-		}
-		key=MathKey( key );
-		if ( key ) {
-				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
-				Bdisp_PutDisp_DD();
-				y++;
-				switch (select) {
-					case 0: // dim m
-						*dimA  =InputNumD_Char( 9, y, 10, *dimA, key);	// 
-						select+=1;
-						break;
-					case 1: // dim n
-						*dimB  =InputNumD_Char( 9, y, 10, *dimB, key);	// 
-						break;
-					default:
-						break;
-				}
-		}
-
-	}
-	return key;
-}
-//-----------------------------------------------------------------------------
-int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
-	char	*cptr;
-	short	*wptr;
-	int		*iptr;
-	double	*dptr;
-	int i;
-
-	if ( ( ElementSize==MatAryElementSize[reg] ) && ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
-		dptr = MatAry[reg] ;							// Matrix array ptr*
-	} else {
-		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
-		dptr = malloc( dimA*dimB*ElementSize );
-		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
-		MatArySizeA[reg]=dimA;						// Matrix array size
-		MatArySizeB[reg]=dimB;						// Matrix array size
-		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
-		MatAry[reg] = dptr ;							// Matrix array ptr*
-	}
-	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
-
-	return 0;	// ok
-}
-
-int DimMatrix( int reg, int dimA, int dimB ) {
-	char	*cptr;
-	short	*wptr;
-	int		*iptr;
-	double	*dptr;
-	int i;
-	unsigned int c=reg+'A';
-	int ElementSize;
-
-	switch (c) {
-		case 'B':
-		case 'C':
-			ElementSize=1;
-			break;
-		case 'D':
-		case 'W':
-			ElementSize=2;
-			break;
-		case 'L':
-		case 'I':
-			ElementSize=4;
-			break;
-		case 'E':
-		case 'F':
-			ElementSize=8;
-			break;
-		default:
-			ElementSize= CB_INT?4:8 ;
-			break;
-	}
-	return	DimMatrixSub( reg, ElementSize, dimA, dimB );
-}
-
+double MatDefaultValue=0;
 //-----------------------------------------------------------------------------
 void DeleteMatrix( int reg ) {
 	double *ptr;
@@ -281,6 +141,325 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){
 	}
 }
 //-----------------------------------------------------------------------------
+void MatAryElementSizePrint( int ElementSize ) {
+		switch ( ElementSize ) {
+			case 1:
+				Print((unsigned char*)"(byte)");
+				break;
+			case 2:
+				Print((unsigned char*)"(word)");
+				break;
+			case 4:
+				Print((unsigned char*)"(long)");
+				break;
+			case 8:
+				Print((unsigned char*)"(double)");
+				break;
+		}
+}
+
+unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize){
+	unsigned char buffer[22];
+	unsigned int key;
+	int	cont=1;
+	int select=0;
+	int y;
+
+	PopUpWin(4);
+	
+	*dimA=MatArySizeA[reg];	//
+	*dimB=MatArySizeB[reg];	//
+	if ( *dimA==0 ) *dimA=1;
+	if ( *dimB==0 ) *dimB=1;
+
+	while (cont) {
+		locate( 3,2); Print((unsigned char *)"Dimension m\xA9n");
+		locate( 3,3); Print((unsigned char *) "  m  :           ");
+		sprintG(buffer,*dimA,  10,LEFT_ALIGN); locate( 9, 3); Print(buffer);
+		locate( 3,4); Print((unsigned char *) "  n  :           ");
+		sprintG(buffer,*dimB,  10,LEFT_ALIGN); locate( 9, 4); Print(buffer);
+		locate( 3,5); Print((unsigned char *) " byte:           ");
+		sprintG(buffer,*Elsize,10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
+		locate(11,5); MatAryElementSizePrint( *Elsize ) ;
+
+		y = select + 2 ;
+		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
+		switch (key) {
+			case KEY_CTRL_EXIT:
+			case KEY_CTRL_EXE:
+				cont=0;
+				return key;
+				break;
+		
+			case KEY_CTRL_UP:
+				select-=1;
+				if ( select < 0 ) select=2;
+				break;
+			case KEY_CTRL_DOWN:
+				select+=1;
+				if ( select > 2 ) select=0;
+				break;
+
+			case KEY_CTRL_RIGHT:
+				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+				Bdisp_PutDisp_DD();
+				y++;
+				switch (select) {
+					case 0: // dim m
+						*dimA  =InputNumD_full( 9, y, 10, *dimA);	// 
+						select+=1;
+						break;
+					case 1: // dim n
+						*dimB  =InputNumD_full( 9, y, 10, *dimB);	// 
+						break;
+					case 2: // size
+						do	{
+							*Elsize =InputNumD_full( 9, y, 10, (*Elsize));	// 
+						} while ( (*Elsize!=1)&&(*Elsize!=2)&&(*Elsize!=4)&&(*Elsize!=8) ) ;
+						break;
+					default:
+						break;
+				}
+				break;
+			default:
+				break;
+		}
+		key=MathKey( key );
+		if ( key ) {
+				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+				Bdisp_PutDisp_DD();
+				y++;
+				switch (select) {
+					case 0: // dim m
+						*dimA  =InputNumD_Char( 9, y, 10, *dimA, key);	// 
+						select+=1;
+						break;
+					case 1: // dim n
+						*dimB  =InputNumD_Char( 9, y, 10, *dimB, key);	// 
+						break;
+					case 2: // size
+						do	{
+							*Elsize =InputNumD_Char( 9, y, 10, (*Elsize), key);	// 
+						} while ( (*Elsize!=1)&&(*Elsize!=2)&&(*Elsize!=4)&&(*Elsize!=8) ) ;
+						break;
+					default:
+						break;
+				}
+		}
+
+	}
+	return key;
+}
+//-----------------------------------------------------------------------------
+
+unsigned int GotoMatrixElement(int reg, int *m, int *n ){
+	unsigned char buffer[22];
+	unsigned int key;
+	int	cont=1;
+	int select=0;
+	int y;
+	int dimA,dimB;
+	
+	dimA=MatArySizeA[reg]-1;	//
+	dimB=MatArySizeB[reg]-1;	//
+
+	PopUpWin(3);
+
+	while (cont) {
+		locate( 3,3); Print((unsigned char *)"Goto Element");
+		locate( 3,4); sprintf( buffer," m(1~%3d)  ", dimA+1); Print(buffer);
+		locate(13,4); Print((unsigned char *)":     ");
+		sprintG(buffer,*m+1,  5,LEFT_ALIGN); locate(14, 4); Print(buffer);
+		locate( 3,5); sprintf( buffer," n(1~%3d)  ", dimB+1); Print(buffer);
+		locate(13,5); Print((unsigned char *)":     ");
+		sprintG(buffer,*n+1,  5,LEFT_ALIGN); locate(14, 5); Print(buffer);
+
+		y = select + 3 ;
+		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
+		switch (key) {
+			case KEY_CTRL_EXIT:
+			case KEY_CTRL_EXE:
+				cont=0;
+				return key;
+				break;
+		
+			case KEY_CTRL_UP:
+				select-=1;
+				if ( select < 0 ) select=1;
+				break;
+			case KEY_CTRL_DOWN:
+				select+=1;
+				if ( select > 1 ) select=0;
+				break;
+
+			case KEY_CTRL_RIGHT:
+				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+				Bdisp_PutDisp_DD();
+				y++;
+				switch (select) {
+					case 0: // dim m
+						do {
+							*m =InputNumD_full( 14, y, 5, *m+1)-1;	// 
+						} while ( ( *m < 0 ) || ( *m > dimA ) ) ;
+						select+=1;
+						break;
+					case 1: // dim n
+						do {
+							*n =InputNumD_full( 14, y, 5, *n+1)-1;	// 
+						} while ( ( *n < 0 ) || ( *n > dimB ) ) ;
+						break;
+					default:
+						break;
+				}
+				break;
+			default:
+				break;
+		}
+		key=MathKey( key );
+		if ( key ) {
+				Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
+				Bdisp_PutDisp_DD();
+				y++;
+				switch (select) {
+					case 0: // dim m
+						do {
+							*m =InputNumD_Char( 14, y, 5, *m+1, key)-1;	// 
+						} while ( ( *m < 0 ) || ( *m > dimA ) ) ;
+						select+=1;
+						break;
+					case 1: // dim n
+						do {
+							*n =InputNumD_Char( 14, y, 5, *n+1, key)-1;	// 
+						} while ( ( *n < 0 ) || ( *n > dimB ) ) ;
+						break;
+					default:
+						break;
+				}
+		}
+
+	}
+	return key;
+}
+//-----------------------------------------------------------------------------
+double InitMatrix( int reg, double value ,int ElementSize ) {
+	unsigned char buffer[32];
+	unsigned int key;
+	int	cont=1;
+	int i,j;
+	int dimA,dimB;
+	PopUpWin(3);
+
+	if (MatArySizeA[reg]==0) return;
+
+	while (cont) {
+		locate( 3,3); Print((unsigned char *)"Init Matrix array");
+		locate( 3,5); Print((unsigned char *)"value:           ");
+		sprintG(buffer,value,  10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
+		locate(1,8); PrintLine((unsigned char *)" ",21);
+		locate(1,8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
+//		Bdisp_PutDisp_DD();
+
+		GetKey( &key );
+		switch (key) {
+			case KEY_CTRL_EXIT:
+				return 0 ;
+				break;
+			case KEY_CTRL_EXE:
+				cont=0;
+				break;
+			case KEY_CTRL_RIGHT:
+				value  =InputNumD_full( 9, 5, 10, value);	// 
+				break;
+			default:
+				break;
+		}
+		key=MathKey( key );
+		if ( key ) {
+			value  =InputNumD_Char( 9, 5, 10, value, key);	// 
+		}
+	}
+
+	if ( YesNo("Initialize Ok?") ) {
+			dimA=MatArySizeA[reg]-1;
+			dimB=MatArySizeB[reg]-1;
+			MatAryElementSize[reg];
+			for (j=0; j<=dimB; j++ ) {
+				for (i=0; i<=dimA; i++ ) {
+					WriteMatrix( reg, i, j, value);
+				}
+			}
+	}
+	return value;
+}
+
+
+//-----------------------------------------------------------------------------
+int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	int i;
+
+	if ( ( ElementSize==MatAryElementSize[reg] ) && ( MatAry[reg] != NULL ) && ( MatArySizeA[reg] >= dimA ) && ( MatArySizeB[reg] >= dimB ) ) { // already exist
+		dptr = MatAry[reg] ;							// Matrix array ptr*
+	} else {
+		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
+		dptr = malloc( dimA*dimB*ElementSize );
+		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
+		MatArySizeA[reg]=dimA;						// Matrix array size
+		MatArySizeB[reg]=dimB;						// Matrix array size
+		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
+		MatAry[reg] = dptr ;							// Matrix array ptr*
+	}
+	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
+
+	return 0;	// ok
+}
+
+int DimMatrixDefaultElementSize( int reg ) {
+	switch ( reg+'A' ) {
+		case 'B':
+		case 'C':
+			return 1;
+			break;
+		case 'D':
+		case 'W':
+			return 2;
+			break;
+		case 'L':
+		case 'I':
+			return 4;
+			break;
+		case 'E':
+		case 'F':
+			return 8;
+			break;
+		default:
+			return CB_INT?4:8 ;
+			break;
+	}
+}
+
+int DimMatrix( int reg, int dimA, int dimB ) {
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	int i;
+	int ElementSize;
+	
+	ElementSize = DimMatrixDefaultElementSize( reg ) ;
+	return	DimMatrixSub( reg, ElementSize, dimA, dimB );
+}
+
+//-----------------------------------------------------------------------------
 
 void EditMatrix(int reg){		// ----------- Edit Matrix
 	unsigned char buffer[22];
@@ -319,12 +498,12 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 			sprintf((char*)buffer,"%3d",seltopX+x+1);
 			PrintMini(x*28+24,1,buffer,MINI_OVER);
 		}
-		Bdisp_DrawLineVRAM( 17,8,17,14+j*8);
+		Bdisp_DrawLineVRAM( 16,8,16,14+j*8);
 		for ( y=0; y<=j; y++ ) {
 				sprintf((char*)buffer,"%4d",seltopY+y+1);
-				PrintMini(1,y*8+10,buffer,MINI_OVER);
-				if ( seltopY   == 0    ) { Bdisp_ClearLineVRAM( 17, 8,    17,10    ); Bdisp_DrawLineVRAM( 17,10,    18,10    ); }
-				if ( seltopY+y == dimB ) { Bdisp_ClearLineVRAM( 17,14+y*8,17,16+y*8); Bdisp_DrawLineVRAM( 17,14+y*8,18,14+y*8); }
+				PrintMini(0,y*8+10,buffer,MINI_OVER);
+				if ( seltopY   == 0    ) { Bdisp_ClearLineVRAM( 16, 8,    16,10    ); Bdisp_DrawLineVRAM( 16,10,    18,10    ); }
+				if ( seltopY+y == dimB ) { Bdisp_ClearLineVRAM( 16,14+y*8,16,16+y*8); Bdisp_DrawLineVRAM( 16,14+y*8,18,14+y*8); }
 			for ( x=0; x<=i; x++ ) {
 				if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
 					value=ReadMatrix( reg, seltopY+y, seltopX+x);
@@ -347,21 +526,9 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 		Bdisp_AreaReverseVRAM(x*28+20, y*8+9, x*28+43, y*8+15);	// reverse selectY line 
 
 		Fkey_dispN(0,"Edit");
-		locate( 11, 8);
-		switch ( MatAryElementSize[reg] ) {
-			case 1:
-				Print((unsigned char*)"(byte)");
-				break;
-			case 2:
-				Print((unsigned char*)"(word)");
-				break;
-			case 4:
-				Print((unsigned char*)"(long)");
-				break;
-			case 8:
-				Print((unsigned char*)"(double)");
-				break;
-		}
+		Fkey_dispN(1,"Goto");
+		Fkey_dispR(2,"Init");
+		locate(12, 8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
 
 		Bdisp_PutDisp_DD();
 
@@ -375,12 +542,20 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				break;
 				
 			case KEY_CTRL_F1:
+				locate(1,8); PrintLine((unsigned char *)" ",21);
+				locate(1,8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
 				value=ReadMatrix( reg, selectY, selectX);
 				WriteMatrix( reg, selectY, selectX, InputNumD_full( 1, 7, 21, value));
 				selectX++;
-				if ( selectX > dimA ) { 
+				if ( selectX > dimA ) { selectX = dimA;
 					if ( selectY < dimB ) { selectY++; selectX =0; }
 				}
+				break;
+			case KEY_CTRL_F2:
+				GotoMatrixElement( reg, &selectY, &selectX );
+				break;
+			case KEY_CTRL_F3:
+				MatDefaultValue = InitMatrix( reg, MatDefaultValue ,MatAryElementSize[reg] ) ;
 				break;
 			case KEY_CTRL_UP:
 				selectY--;
@@ -413,10 +588,12 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 		}
 		key=MathKey( key );
 		if ( key ) {
+				locate(1,8); PrintLine((unsigned char *)" ",21);
+				locate(1,8); MatAryElementSizePrint( MatAryElementSize[reg] ) ;
 				value=ReadMatrix( reg, selectY, selectX);
 				WriteMatrix( reg, selectY, selectX, InputNumD_Char( 1, 7, 21, value, key));
 				selectX++;
-				if ( selectX > dimA ) { 
+				if ( selectX > dimA ) { selectX = dimA;
 					if ( selectY < dimB ) { selectY++; selectX =0; }
 				}
 		}
@@ -430,10 +607,10 @@ int SetMatrix(int select){		// ----------- Set Matrix
 	unsigned int key;
 	int	cont=1;
 	int seltop=select;
-	int i,j,y;
+	int i,j,y,len;
 	int opNum=25;
-	int dimA,dimB;
-	
+	int dimA,dimB,ElementSize;
+
 	while (cont) {
 		Bdisp_AllClr_VRAM();
 		
@@ -447,27 +624,15 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			locate( 1, 1+i); Print((unsigned char*)"Mat");
 			locate( 5, 1+i); Print(buffer);
 			locate(13, 1+i); Print((unsigned char*)":");
-			locate( 6, 1+i);
-			switch ( MatAryElementSize[j] ) {
-				case 1:
-					Print((unsigned char*)"(byte)");
-					break;
-				case 2:
-					Print((unsigned char*)"(word)");
-					break;
-				case 4:
-					Print((unsigned char*)"(long)");
-					break;
-				case 8:
-					Print((unsigned char*)"(dbl)");
-					break;
-			}
+			locate( 6, 1+i); MatAryElementSizePrint( MatAryElementSize[j] ) ;
 			if ( MatArySizeA[j] ) {
 				sprintf((char*)buffer,"%3d",MatArySizeA[j]);
 				locate(14,1+i); Print(buffer);
-				locate(17,1+i); Print((unsigned char*)"\xA9");
-				sprintf((char*)buffer,"%3d",MatArySizeB[j]);
-				locate(18,1+i); Print(buffer);
+				len=strlen(buffer)-3;
+				locate(17+len,1+i); Print((unsigned char*)"\xA9");
+				if (len) sprintf((char*)buffer,"%2d",MatArySizeB[j]);
+				else	 sprintf((char*)buffer,"%3d",MatArySizeB[j]);
+				locate(18+len,1+i); Print(buffer);
 			} else {
 				locate(14,1+i); Print((unsigned char*)"None");
 			}
@@ -479,8 +644,11 @@ int SetMatrix(int select){		// ----------- Set Matrix
 		Fkey_dispR(0,"DEL");
 		Fkey_dispR(1,"DelA");
 		Fkey_dispR(2,"DIM");
+		Fkey_dispR(3,"Init");
 
 		Bdisp_PutDisp_DD();
+		
+		ElementSize=MatAryElementSize[select];
 
 		GetKey( &key );
 		switch (key) {
@@ -489,6 +657,11 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				break;
 		
 			case KEY_CTRL_EXE:
+				if ( ElementSize==0 ) {	ElementSize = DimMatrixDefaultElementSize(select) ;
+					key=SetDimension(select,&dimA,&dimB,&ElementSize);
+					if ( key==KEY_CTRL_EXIT ) break;
+					if ( DimMatrixSub(select,ElementSize,dimA,dimB) ) CB_ErrMsg(NotEnoughMemoryERR);
+				}
 				EditMatrix(select);
 				break;
 				
@@ -502,9 +675,13 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				break;
 			case KEY_CTRL_F3:
 			case KEY_CTRL_LEFT:
-				key=SetDimension(select,&dimA,&dimB);
+				if ( ElementSize==0 ) 	ElementSize = DimMatrixDefaultElementSize(select) ;
+				key=SetDimension(select,&dimA,&dimB,&ElementSize);
 				if ( key==KEY_CTRL_EXIT ) break;
-				if ( DimMatrix(select,dimA,dimB) ) CB_ErrMsg(NotEnoughMemoryERR);
+				if ( DimMatrixSub(select,ElementSize,dimA,dimB) ) CB_ErrMsg(NotEnoughMemoryERR);
+				break;
+			case KEY_CTRL_F4:
+				MatDefaultValue = InitMatrix( select, MatDefaultValue ,ElementSize ) ;
 				break;
 				
 			case KEY_CTRL_UP:

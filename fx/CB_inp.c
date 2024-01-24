@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.03                                       */
+/*   inp Library  ver 1.04                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -519,6 +519,24 @@ int CB_OpcodeToStr( unsigned short opcode, unsigned char *string  ) {
 		string[3]='G';
 		string[4]='(';
 		string[5]='\0';
+	} else
+	if ( opcode == 0x00FB ) { // P(
+		string[0]='E';
+		string[1]='v';
+		string[2]='a';
+		string[3]='l';
+		string[4]='1';
+		string[5]='(';
+		string[6]='\0';
+	} else
+	if ( opcode == 0x00FC ) { // Q(
+		string[0]='E';
+		string[1]='v';
+		string[2]='a';
+		string[3]='l';
+		string[4]='2';
+		string[5]='(';
+		string[6]='\0';
 	} else {
 		return OpcodeToStr( opcode, string ) ; // SYSCALL
 	}
@@ -773,11 +791,13 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				cont=0;
 				break;
 			case KEY_CTRL_DEL:
-				if ( CursorStyle < 0x6 ) {		// insert mode
-					PrevOpcode( buffer, &ptrX );
-					if ( offsetX ) if ( ptrX == offsetX ) PrevOpcode( buffer, &offsetX );
+				if ( length ) {
+					if ( CursorStyle < 0x6 ) {		// insert mode
+						PrevOpcode( buffer, &ptrX );
+						if ( offsetX ) if ( ptrX == offsetX ) PrevOpcode( buffer, &offsetX );
+					}
+					DeleteOpcode1( buffer, MaxStrlen, &ptrX );
 				}
-				DeleteOpcode1( buffer, MaxStrlen, &ptrX );
 				break;
 			case KEY_CTRL_LEFT:
 				PrevOpcode( buffer, &ptrX );

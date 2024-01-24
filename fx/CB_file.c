@@ -149,6 +149,12 @@ unsigned int Explorer( int size, char *folder )
 	int StartLine;
 	char tmpname[FILENAMEMAX];
 	
+	long FirstCount;		// pointer to repeat time of first repeat
+	long NextCount; 		// pointer to repeat time of second repeat
+
+	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
+	Bkey_Set_RepeatTime(FirstCount,3);				// set cursor rep
+
 	FavCount=0;
 	j=FavoritesMAX-1;
 	for( i=FavoritesMAX-1; i>=0; i--){			//	set favorites list
@@ -398,7 +404,7 @@ unsigned int Explorer( int size, char *folder )
 							PopUpWin( 6 );
 							locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 							locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-							locate( 3, 4 ); Print( (unsigned char*)"            v0.63" );
+							locate( 3, 4 ); Print( (unsigned char*)"            v0.64" );
 							locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 							locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 							GetKey(&key);

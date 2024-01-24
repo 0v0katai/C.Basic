@@ -1056,57 +1056,58 @@ void EditRun(int run){		// run:1 exec      run:2 edit
 		ErrorNo=0;
 		FileBase = ProgfileAdrs[ProgNo];
 		SrcBase  = FileBase+0x56;
-		Bdisp_AllClr_VRAM();
-		strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
-		buffer2[8]='\0';
-		sprintf(buffer,"==%-8s==%s",buffer2, CB_INT?" INT mode":" Double");
-//		sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
-		locate (1,1); Print( (unsigned char*)buffer );
-		if ( ClipStartPtr>=0 ) {
-			Fkey_dispN( 0, "COPY ");
-			Fkey_dispN( 1, "CUT ");
-		} else {
-			ClipEndPtr   = -1 ;		// ClipMode cancel
-			Fkey_dispN( 0, "TOP ");
-			Fkey_dispN( 1, "BTM");
-			Fkey_dispR( 2, "CMD");
-			if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
-			Fkey_dispR( 4, "CHAR");
-			Fkey_dispN( 5, "EXE");
-		}
-		switch (dumpflg) {
-			case 2: 		// Opcode
-					DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr);
-					break;
-			case 4: 		// hex dump
-					DumpMix( SrcBase, offset );
-					break;
-			case 16:		// Ascii dump
-					DumpAsc( SrcBase, offset );
-					break;
-			default:
-					break;
-		}
-		Bdisp_PutDisp_DD();
-
-
-		locate(cx,cy);
-		if ( (dumpflg==2) || (dumpflg==4) ) {
-			Cursor_SetFlashMode(1);			// cursor flashing on
-			if (Cursor_GetFlashStyle()<0x6) {
-				if ( ClipStartPtr>=0 ) 	Cursor_SetFlashOn(0x05);	// ClipMode cursor
-			} else { 
-				if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
+		if ( run!=1 ) {
+			Bdisp_AllClr_VRAM();
+			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
+			buffer2[8]='\0';
+			if (dumpflg==2)	sprintf(buffer,"==%-8s==%s",buffer2, CB_INT?" INT mode":" Double");
+			else 			sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
+			locate (1,1); Print( (unsigned char*)buffer );
+			if ( ClipStartPtr>=0 ) {
+				Fkey_dispN( 0, "COPY ");
+				Fkey_dispN( 1, "CUT ");
+			} else {
+				ClipEndPtr   = -1 ;		// ClipMode cancel
+				Fkey_dispN( 0, "TOP ");
+				Fkey_dispN( 1, "BTM");
+				Fkey_dispR( 2, "CMD");
+				if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
+				Fkey_dispR( 4, "CHAR");
+				Fkey_dispN( 5, "EXE");
 			}
-			CursorStyle=Cursor_GetFlashStyle();
-			if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
-			if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
-			if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
-			if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
-			if (key < 0x7F00)	if (run!=1) GetKey(&key);
-		} else
-								if (run!=1) GetKey(&key);
-								
+			switch (dumpflg) {
+				case 2: 		// Opcode
+						DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &cx, &cy, ClipStartPtr, ClipEndPtr);
+						break;
+				case 4: 		// hex dump
+						DumpMix( SrcBase, offset );
+						break;
+				case 16:		// Ascii dump
+						DumpAsc( SrcBase, offset );
+						break;
+				default:
+						break;
+			}
+			Bdisp_PutDisp_DD();
+
+
+			locate(cx,cy);
+			if ( (dumpflg==2) || (dumpflg==4) ) {
+				Cursor_SetFlashMode(1);			// cursor flashing on
+				if (Cursor_GetFlashStyle()<0x6) {
+					if ( ClipStartPtr>=0 ) 	Cursor_SetFlashOn(0x05);	// ClipMode cursor
+				} else { 
+					if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
+				}
+				CursorStyle=Cursor_GetFlashStyle();
+				if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
+				if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
+				if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
+				if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
+				if (key < 0x7F00)	GetKey(&key);
+			} else
+									GetKey(&key);
+		}						
 		switch (dumpflg) {
 			case 4: 		// hex dump
 				if ( ( ( KEY_CHAR_0 <= key ) && ( key <= KEY_CHAR_9 ) ) ||

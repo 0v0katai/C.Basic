@@ -45,7 +45,7 @@ void Fkey_dispR(int n,char *buffer) {
 	Bdisp_DrawLineVRAM(n*21+2,7*8+6,n*21+18,7*8+6);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+7,n*21+17,7*8+7);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+ 2,7*8+7);
-	PrintMini(n*21+3,7*8+1     ,(unsigned char *)buffer, MINI_REV);
+	PrintMini(n*21+3,7*8+2     ,(unsigned char *)buffer, MINI_REV);
 	Bdisp_ClearLineVRAM(n*21+21,7*8+0,n*21+21,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+22,7*8+0,n*21+22,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+20,7*8+5,n*21+20,7*8+5);
