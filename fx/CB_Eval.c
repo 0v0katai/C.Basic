@@ -974,7 +974,7 @@ double fMOD( double x, double y ) {	// fMOD(x,y)
 double fIDIV( double x, double y ) {	// floor( floor(x) / floor(y) )
 	double result;
 	fDIVcheck( &x, &y );
-	return floor((x/y));
+	return fint((x/y));
 }
 double ffact( double x ) {
 	double tmp;

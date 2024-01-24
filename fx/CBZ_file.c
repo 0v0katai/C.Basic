@@ -3143,6 +3143,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 	}
   exit:
 	dest[dptr++]='\0';
+	dest[dptr++]='\0';
 	newsize = dptr +0x56;
 	HiddenRAM_freeProg( filebase );
   loop:
@@ -3201,6 +3202,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 		}
 	}
   exit:
+	dest[dptr++]='\0';
 	dest[dptr++]='\0';
 	size=dptr+0x56;
 	G1M_header( filebase, &size );	// G1M header set
@@ -3459,11 +3461,11 @@ int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
