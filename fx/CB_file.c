@@ -30,7 +30,7 @@
 typedef struct{
 	char filename[FILENAMEMAX];
 	char folder[FOLDERMAX];
-	unsigned long filesize;
+	unsigned short filesize;
 }Files;
 
 #define FavoritesMAX 7
@@ -191,7 +191,7 @@ void FavoritesFunc( int *index ) {
 			DeleteFavorites( i ) ;
 		}
 	} else {						//	add Favorites list
-		if ( files[0].filesize ) ErrorMSGstr1( "Favorites Full" );
+		if ( files[0].filesize ) ErrorMSGstr1( "Full Favorites" );
 		else
 		if ( YesNo( "Favorite-ADD ?" ) ) {
 			i=1;
@@ -800,7 +800,7 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer,
 
 	buffer[width]='\0';
 //	csrX=strlen((char*)buffer);
-	key=InputStrSub( x, y, width, 0, buffer, width, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	key=InputStrSub( x, y, width, 0, buffer, maxLen, SPC, rev_mode, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	return ( key );
 }
 
@@ -1116,15 +1116,22 @@ char * LoadPicture( int pictNo ){
 
 void DeleteFile(char *fname) {
 	FONTCHARACTER filename[50];
-	char sname[16];
-	int i,r;
+	int r;
 
 	CharToFont( fname, filename );
 
 	r = Bfile_DeleteFile( filename );
 	if( r < 0 ) { ErrorMSGfile( "Can't delete file", fname, r ); return ; }
 	FileListUpdate=1;
+}
 
+void DeleteFileFav(char *fname ) {
+	char sname[16];
+	int i;
+	
+	if ( YesNo( "Delete file?" ) == 0 ) return ;
+	DeleteFile( fname );
+	
 	SetShortName( sname, fname);		//
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
@@ -1136,12 +1143,6 @@ void DeleteFile(char *fname) {
 		DeleteFavorites( i ) ;
 	}
 
-}
-
-void DeleteFileFav(char *fname ) {
-	
-	if ( YesNo( "Delete file?" ) == 0 ) return ;
-	DeleteFile( fname );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1192,7 +1193,8 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		i++;
 	}
 	if ( i < FavoritesMAX ) { 		//	rename Favorites 
-		if ( Favoritesfiles[i].filesize ) strncpy( Favoritesfiles[i].filename, sname, FILENAMEMAX);
+		strncpy( Favoritesfiles[i].filename, sname,  FILENAMEMAX );	// rename name
+		strncpy( Favoritesfiles[i].folder,   folder,   FOLDERMAX );
 	}
 	
 	return 0;
@@ -1442,7 +1444,8 @@ void Setfoldername16( char *folder16, char *sname ) {
 	}
 	exit:
 	if ( def ) strncpy( folder16, folder, FOLDERMAX );
-	for (j=8;i<16;j++) {
+	if ( cptr != NULL ) { i=cptr-sname+1; }
+	for (j=8;j<16;j++) {
 		folder16[j]=sname[i]; if ( sname[i]==0 ) break;
 		i++;
 	}
@@ -1453,7 +1456,7 @@ void Getfolder( char *sname ) {
 	int i=0,j;
 	strncpy( tmpfolder, folder, FOLDERMAX );
 	Setfoldername16( folder16, sname ) ;
-	strncpy( folder, folder16, FOLDERMAX  );
+	strncpy( folder, folder16, FOLDERMAX-1 );
 	strncpy( sname, folder16+8, 9 );
 }
 
@@ -1805,7 +1808,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 }
 
 //----------------------------------------------------------------------------------------------
-//int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte

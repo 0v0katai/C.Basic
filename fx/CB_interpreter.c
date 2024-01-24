@@ -634,10 +634,10 @@ int CB_interpreter_sub( char *SRC ) {
 				dspflag=0;
 				break;
 				
-//			case 0xDD:	// Eng
-//				ENG=1-ENG;
-//				dspflag=0;
-//				break;
+			case 0xFFFFFFDD:	// Eng
+				ENG=1-ENG;
+				dspflag=0;
+				break;
 			case 0xFFFFFFD3:	// Rnd
 				CB_Rnd();
 				dspflagtmp=2;
