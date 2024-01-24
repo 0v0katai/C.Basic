@@ -1377,40 +1377,6 @@ int deleteFile( FONTCHARACTER *filename, int size ){
 	return 0;	// ok
 }
 
-/* store bytecode into file */
-int storeFile( const char *name, unsigned char* codes, int size )
-{
-	int handle;
-	FONTCHARACTER filename[FONTCHARACTER_MAX];
-	FONTCHARACTER filename2[FONTCHARACTER_MAX];
-	int r,s;
-	unsigned int freehigh,freelow;
-
-	/* disable, just for call "Bfile_FindFirst" */
-	FONTCHARACTER buffer[FONTCHARACTER_MAX];
-	FILE_INFO info;
-	/* end */
-
-	CharToFont( name, filename );
-	CharToFont( name, filename2 );
-	r = deleteFile( filename2, size ) ;
-	if ( r ) return r;
-
-	FileListUpdate=1;
-	handle = Bfile_CreateFile( filename, size );
-	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name, handle ); return 1 ; }
-	r = Bfile_CloseFile( handle );
-
-	handle = Bfile_OpenFile( filename, _OPENMODE_WRITE );
-	if( handle < 0 ) { ErrorMSG( "Can't open file", handle ); return 1 ; }
-	Bfile_WriteFile( handle, codes, size );
-	r = Bfile_CloseFile( handle );
-	if( r ) { ErrorMSG( "Close error", handle ); return 1 ; }
-
-	return 0 ;
-}
-
-
 int GetFileSize( const char *fname ) {
 	int handle;
 	FONTCHARACTER filename[FONTCHARACTER_MAX];
@@ -1432,6 +1398,43 @@ int GetFileSize( const char *fname ) {
 	r = Bfile_CloseFile( handle );
 	return size;
 }
+
+/* store bytecode into file */
+int storeFile( const char *name, unsigned char* codes, int size )
+{
+	int handle;
+	FONTCHARACTER filename[FONTCHARACTER_MAX];
+	FONTCHARACTER filename2[FONTCHARACTER_MAX];
+	int r,s,fsize;
+	unsigned int freehigh,freelow;
+
+	/* disable, just for call "Bfile_FindFirst" */
+	FONTCHARACTER buffer[FONTCHARACTER_MAX];
+	FILE_INFO info;
+	/* end */
+
+	CharToFont( name, filename );
+	CharToFont( name, filename2 );
+
+	FileListUpdate=1;
+	fsize = GetFileSize( name );
+	if ( ( fsize > size ) || ( fsize==0 ) || ( Is35E2==0 ) ) {	// delete & create file
+		r = deleteFile( filename2, size ) ;
+		if ( r ) return r;
+		handle = Bfile_CreateFile( filename, size );
+		if( handle < 0 ) { ErrorMSGfile( "Can't create file", (char*)name, handle ); return 1 ; }
+		r = Bfile_CloseFile( handle );
+	}
+
+	handle = Bfile_OpenFile( filename, _OPENMODE_WRITE );
+	if( handle < 0 ) { ErrorMSG( "Can't open file", handle ); return 1 ; }
+	Bfile_WriteFile( handle, codes, size );
+	r = Bfile_CloseFile( handle );
+	if( r ) { ErrorMSG( "Close error", handle ); return 1 ; }
+
+	return 0 ;
+}
+
 
 int ExistFile( char *fname, int replace ) {
 	int handle;
