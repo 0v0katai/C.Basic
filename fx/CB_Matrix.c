@@ -1994,28 +1994,84 @@ void CB_List2Mat( char *SRC ) {	// List>Mat( List 1, List 2,..) -> Mat Ans
 	dspflag = 3;
 }
 
-void CB_RanList( char *SRC ) {	// Ran#List( 50 ) -> List Ans
-	int c;
-	int reg,reg2;
-	int m,n;
-	int sizeA,sizeB;
+
+int CB_RanListsub( char *SRC ) {
+	int m;
 	int ElementSize=64;
-	int base=MatBase;
-	int execptr=ExecPtr;
-
-	m=CB_EvalInt( SRC ) ;
-	if ( m<1 ) { CB_Error(ArgumentERR); return ; } // Argument error
-
-	sizeA=m;
-	NewMatListAns( sizeA, 1, base, ElementSize );
-	if ( ErrorNo ) return ;
-	reg=CB_MatListAnsreg;
 	
-  	for ( m=base ; m<sizeA +base ; m++ ) WriteMatrix( reg, m, base, frand() );
+	m=CB_EvalInt( SRC ) ;
+	if ( m<1 ) { CB_Error(ArgumentERR); return -1; } // Argument error
+	NewMatListAns( m, 1, MatBase, ElementSize );
+	if ( ErrorNo ) return -1;
+	return CB_MatListAnsreg;
+}
+
+void CB_RanList( char *SRC ) {	// RanList#( 50 ) -> List Ans
+	int reg;
+	int m;
+	int sizeA;
+	int base=MatBase;
+
+	reg = CB_RanListsub( SRC );
+	if ( ErrorNo ) return ;
+  	for ( m=base ; m<MatAry[reg ].SizeA +base ; m++ ) WriteMatrix( reg, m, base, frand() );
 
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	dspflag = 4;
 }
+
+void CB_RanInt( char *SRC, int x, int y ) {	// RanIntNorm#( st, en [,n] ) -> List Ans
+	int reg;
+	int m;
+	int sizeA;
+	int base=MatBase;
+
+	reg = CB_RanListsub( SRC );
+	if ( ErrorNo ) return ;
+  	for ( m=base ; m<MatAry[reg ].SizeA +base ; m++ ) WriteMatrix( reg, m, base, frandIntint( x, y ) );
+	dspflag = 4;
+}
+
+double CB_RanNorm( char *SRC ) {	// RanNorm#( sd, mean [,n] ) -> List Ans
+	double sd,mean;
+	int reg;
+	int m;
+	int sizeA;
+	int ElementSize=64;
+	int base=MatBase;
+	
+	Get2Eval( SRC, &sd, &mean );
+	if ( SRC[ExecPtr] == ',' ) {
+		ExecPtr++;
+		reg = CB_RanListsub( SRC );
+		if ( ErrorNo ) return ;
+  		for ( m=base ; m<MatAry[reg ].SizeA +base ; m++ ) WriteMatrix( reg, m, base, fRanNorm( sd, mean ) );
+		dspflag = 4;
+	}
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return fRanNorm( sd, mean ) ;
+}
+
+double CB_RanBin( char *SRC ) {		// RanBin#( n, p [,m] ) -> List Ans
+	double n,p;
+	int reg;
+	int m;
+	int sizeA;
+	int ElementSize=64;
+	int base=MatBase;
+	
+	Get2Eval( SRC, &n, &p );
+	if ( SRC[ExecPtr] == ',' ) {
+		ExecPtr++;
+		reg = CB_RanListsub( SRC );
+		if ( ErrorNo ) return ;
+  		for ( m=base ; m<MatAry[reg ].SizeA +base ; m++ ) WriteMatrix( reg, m, base, fRanBin( n, p ) );
+		dspflag = 4;
+	}
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return fRanBin( n, p ) ;
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CB_ArgumentMat( char *SRC, int reg ) {	// Argument( Mat A, Mat B )	

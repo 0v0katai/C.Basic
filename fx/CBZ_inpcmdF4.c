@@ -80,6 +80,10 @@ void GetGenuineCmdF4( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_OPTN_PROB_RAND;CommandPage=0;break;
 			} break;
+		case CMD_OPTN_PROB_RAND:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F89;return;	// RanInt#(
+			} break;
 		case CMD_OPTN_NUM:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x00D3;return;	// Rnd

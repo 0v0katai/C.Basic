@@ -207,6 +207,26 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 						
+				case 0x3C :		// GCD(a,b)
+					result = ListEvalIntsubTop( SRC );
+					resultflag=dspflag;		// 2:result	3:Listresult
+					resultreg=CB_MatListAnsreg;
+					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					ExecPtr++;
+					result = EvalFxInt2( &fGCDint, &resultflag, &resultreg, result, ListEvalIntsubTop( SRC ) ) ;
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return result ;
+						
+				case 0x3D :		// LCM(a,b)
+					result = ListEvalIntsubTop( SRC );
+					resultflag=dspflag;		// 2:result	3:Listresult
+					resultreg=CB_MatListAnsreg;
+					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					ExecPtr++;
+					result = EvalFxInt2( &fLCMint, &resultflag, &resultreg, result, ListEvalIntsubTop( SRC ) ) ;
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return result ;
+						
 				case 0xFFFFFF85 :		// logab(a,b)
 					result = ListEvalIntsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
@@ -242,15 +262,13 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
 					y=NoListEvalIntsubTop( SRC );
+					if ( SRC[ExecPtr] == ',' ) {
+						ExecPtr++;
+						CB_RanInt( SRC, x, y );
+					}
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	//				if ( x>=y ) CB_Error(ArgumentERR);  // Argument error
-					if ( x>y ) { i=x; x=y; y=i; }
-					return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+					return frandIntint( x, y ) ;
 					
-				case 0xFFFFFF88 :		// RanList(n) ->ListAns
-					CB_RanList( SRC ) ;
-					return 4 ;
-						
 				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
 					if ( ErrorNo ) return ; // error
@@ -561,7 +579,10 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x40:	// Mat A[a,b]
 				case 0x51:	// List 1[a]
 				case 0x3A:	// MOD(a,b)
+				case 0x3C:	// GCD(a,b)
+				case 0x3D:	// LCM(a,b)
 				case 0xFFFFFF8F:	// Getkey
+				case 0xFFFFFF85:	// logab(a,b)
 				case 0xFFFFFF86:	// RndFix(n,digit)
 				case 0xFFFFFF87:	// RanInt#(st,en)
 				case 0xFFFFFFB3 :	// Not

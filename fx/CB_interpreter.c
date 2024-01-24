@@ -920,26 +920,52 @@ int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 
 void Skip_quot( char *SRC ){ // skip "..."
 	int c;
-	while (1){
-		c=SRC[ExecPtr++];
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-			case 0x22:	// "
-//			case 0x3A:	// <:>
-//			case 0x0C:	// dsps
-//			case 0x0D:	// <CR>
-				return ;
-				break;
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
+	c=SRC[ExecPtr-1];
+	if ( ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
+		while (1){
+			c=SRC[ExecPtr++];
+			switch ( c ) {
+				case 0x00:	// <EOF>
+					ExecPtr--;
+				case 0x22:	// "
+//				case 0x3A:	// <:>
+//				case 0x0C:	// dsps
+//				case 0x0D:	// <CR>
+					return ;
+					break;
+				case 0x7F:	// 
+				case 0xFFFFFFF7:	// 
+				case 0xFFFFFFF9:	// 
+				case 0xFFFFFFE5:	// 
+				case 0xFFFFFFE6:	// 
+				case 0xFFFFFFE7:	// 
+//				case 0xFFFFFFFF:	// 
+					ExecPtr++;
+					break;
+			}
+		}
+	} else {
+		while (1){
+			c=SRC[ExecPtr++];
+			switch ( c ) {
+				case 0x00:	// <EOF>
+					ExecPtr--;
+				case 0x22:	// "
+//				case 0x3A:	// <:>
+//				case 0x0C:	// dsps
+				case 0x0D:	// <CR>
+					return ;
+					break;
+				case 0x7F:	// 
+				case 0xFFFFFFF7:	// 
+				case 0xFFFFFFF9:	// 
+				case 0xFFFFFFE5:	// 
+				case 0xFFFFFFE6:	// 
+				case 0xFFFFFFE7:	// 
+//				case 0xFFFFFFFF:	// 
+					ExecPtr++;
+					break;
+			}
 		}
 	}
 }
