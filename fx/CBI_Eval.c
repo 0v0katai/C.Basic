@@ -179,7 +179,7 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	int base;
 	MatOprandInt1sub( SRC, reg, &(*dimA) );
 	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, DefaultElemetSize(), 10-MatBase, 1, MatBase );	// new matrix
+		DimMatrixSub( reg, DefaultElemetSize(), (*dimA)-1+MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 	base=MatAry[reg].Base;
@@ -785,10 +785,12 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			goto Matjmp;
 
 		case '{':	// { 1,2,3,4,5... }->List Ans
-			CB_List(SRC);
+//			CB_List(SRC);
+			dspflag=4;
 			return 0;
 		case '[':	// [ [0,1,2][2,3,4] ]->Mat Ans
-			CB_Matrix(SRC);
+//			CB_Matrix(SRC);
+			dspflag=3;
 			return 0;
 			
 		case 0xFFFFFF86 :	// sqr

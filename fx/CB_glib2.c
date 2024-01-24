@@ -892,7 +892,8 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, int *listdirect ) {
 			if ( c == 0xFFFFFF89 ) {	// +
 				if ( graph[ExecPtr] == '{' ) {
 					gp = ExecPtr +1;
-					Cplx_Evalsub1(graph);
+//					Cplx_Evalsub1(graph);
+					Cplx_ListEvalsubTop(graph);
 					c = graph[ExecPtr];
 					if ( ( c==',' ) || ( c==':' ) || ( c==')' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0x00 ) ) {
 						(*listdirect) = 1;
@@ -1092,7 +1093,7 @@ int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4o( unsigned int n ){ return n; }	// align +4byte

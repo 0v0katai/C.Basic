@@ -2522,24 +2522,35 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 			if ( EditListChar==1 ) {
 				string[0]=0xE5;	// Reverse L
 				string[1]=0xB7;	// 
-				string[2]='\0';
 			} else {
 				string[0]=0xFF;	// Bold L
 				string[1]=0xE0;	// 
-				string[2]='\0';
 			}
+			string[2]='\0';
+			return 0;
+		} else
+		if ( ( 0x7F6A<=opcode )&&( opcode<=0x7F6F ) ){	// List1-6
+			code = opcode -0x7F6A +'1' ;
+			if ( EditListChar==1 ) {
+				string[0]=0xE5;	// Reverse L
+				string[1]=0xB7;	// 
+			} else {
+				string[0]=0xFF;	// Bold L
+				string[1]=0xE0;	// 
+			}
+			string[2]=code;
+			string[3]='\0';
 			return 0;
 		} else
 		if ( opcode==0x7F40 ) {	// Mat
 			if ( EditListChar==1 ) {
 				string[0]=0xFF;	// Reverse M
 				string[1]=0xE2;	// 
-				string[2]='\0';
 			} else {
 				string[0]=0xFF;	// Bold M
 				string[1]=0xE1;	// 
-				string[2]='\0';
 			}
+			string[2]='\0';
 			return 0;
 		}
 	}
