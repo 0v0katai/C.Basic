@@ -982,6 +982,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char cont=1,stat;
 	char buffer[32];
 	char buffer2[32];
+	char buffer3[32];
 	char searchbuf[64]="";
 	char replacebuf[64]="";
 	unsigned char c;
@@ -1880,6 +1881,22 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else {
 					Fkey_Icon( FKeyNo6, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 				}
+
+				if (dumpflg==2) {
+						j=ProgfileMax[ProgNo]-SrcSize(filebase) ;
+						sprintf(buffer, "==%-8s==[%dfree]    ", buffer2, j);
+				} else 	{
+						sprintf(buffer, "==%-8s==%08X ", buffer2, SrcBase);
+				}
+				if ( (dumpflg!=2) || (ymin==2) ) {
+						locate (1,1); Print(    (unsigned char*)buffer );
+					if ( DebugMode >=1 ) // debug mode
+						Bdisp_AreaReverseVRAM(0, 0, 127,7);	// reverse top line 
+				}
+				if ( dumpflg == 2 ) {
+						locate((pcx-1+EDITpxNum)/6+1,cy); 
+				} else	locate(cx,cy);
+
 				GetKey_DisableMenu(&key);
 				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
 				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
