@@ -180,7 +180,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 		ExecPtr++;
 		return - Evalsub1( SRC );
 	}
-	if ( ( 'A'<=c )&&( c<='Z' ) || ( 'a'<=c )&&( c<='z' ) )  {
+	if ( ( 'A' <= c )&&( c <= 'Z' ) || ( 'a' <= c )&&( c <= 'z' ) )  {
 			reg=c-'A';
 			c=SRC[++ExecPtr];
 			if ( c=='%' ) { ExecPtr++; return REGINT[reg] ; }
@@ -221,15 +221,15 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 			if ( c == 0x40 ) {	// Mat A[a,b]
 				ExecPtr+=2;
 				c = SRC[ExecPtr];
-				if ( ( 'A'<=c )&&( c<='Z' ) ) {
+				if ( ( 'A' <= c )&&( c <= 'Z' ) ) {
 					reg=c-'A';
 					ExecPtr++ ;
 					if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
 					c = SRC[++ExecPtr];
 					if ( SRC[ExecPtr+1] == ',' ) {
 						ExecPtr++;
-						if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-							else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REG[c-'A'];
+						if  ( ( '1' <= c ) && ( c <= '9' ) ) dimA=c-'0';
+							else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimA=REG[c-'A'];
 					} else {
 						dimA=(EvalsubTop( SRC ));
 						if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -238,8 +238,8 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					c = SRC[++ExecPtr];
 					if ( SRC[ExecPtr+1] == ']' ) {
 						ExecPtr++;
-						if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-						else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REG[c-'A'];
+						if  ( ( '1' <= c ) && ( c <= '9' ) ) dimB=c-'0';
+						else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimB=REG[c-'A'];
 					} else {
 						dimB=(EvalsubTop( SRC ));
 						if ( SRC[ExecPtr] != ']' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -282,7 +282,9 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					return result ;
 			} else if ( c == 0x8F ) {	// Getkey
 					ExecPtr+=2;
-					result = CB_Getkey() ;
+					c = SRC[ExecPtr];
+					if ( c=='1' ) {	ExecPtr++ ; result = CB_Getkey1() ; }
+					else		  	result = CB_Getkey() ;
 					return result ;
 			} else if ( c == 0x86 ) {	// RndFix(n,digit)
 					ExecPtr+=2;
@@ -308,15 +310,15 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					if ( ( c!=0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr+=2;
 					c = SRC[ExecPtr];
-					if ( ( 'A'<=c )&&( c<='Z' ) ) {
+					if ( ( 'A' <= c )&&( c <= 'Z' ) ) {
 						reg=c-'A';
 						ExecPtr++ ;
 						if ( SRC[ExecPtr] != '[' ) CB_Error(SyntaxERR) ; // Syntax error 
 						c = SRC[++ExecPtr];
 						if ( SRC[ExecPtr+1] == ',' ) {
 							ExecPtr++;
-							if  ( ( '1'<= c ) && ( c<='9' ) ) dimA=c-'0';
-								else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimA=REG[c-'A'];
+							if  ( ( '1' <= c ) && ( c<='9' ) ) dimA=c-'0';
+								else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimA=REG[c-'A'];
 						} else {
 							dimA=(EvalsubTop( SRC ));
 							if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -325,8 +327,8 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 						c = SRC[++ExecPtr];
 						if ( SRC[ExecPtr+1] == ']' ) {
 							ExecPtr++;
-							if  ( ( '1'<= c ) && ( c<='9' ) ) dimB=c-'0';
-							else if  ( ( 'A'<= c ) && ( c<='z' ) ) dimB=REG[c-'A'];
+							if  ( ( '1' <= c ) && ( c <= '9' ) ) dimB=c-'0';
+							else if  ( ( 'A' <= c ) && ( c <= 'z' ) ) dimB=REG[c-'A'];
 						} else {
 							dimB=(EvalsubTop( SRC ));
 							if ( SRC[ExecPtr] != ']' ) CB_Error(SyntaxERR) ; // Syntax error 
@@ -428,30 +430,30 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 			return result ;
 		case 0x86 :	// sqr
 			ExecPtr++; result = sqrt( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x95 :	// log10
 			ExecPtr++; result = log10( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xB5 :	// 10^
 			ExecPtr++; result = pow(10, Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x85 :	// ln
 			ExecPtr++; result = log( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xA5 :	// expn
 			ExecPtr++; result = exp( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xA7 :	// Not
 			ExecPtr++; result = ! (int) ( Evalsub5( SRC ) );
 			return result ;
 		case 0x96 :	// cuberoot
 			ExecPtr++; result = pow( Evalsub5( SRC ), 1.0/3.0 );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x81 :	// sin
 			ExecPtr++;
@@ -466,7 +468,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					result = sin( Evalsub5( SRC )*PI/200. );
 					break;
 			}
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x82 :	// cos
 			ExecPtr++;
@@ -481,7 +483,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					result = cos( Evalsub5( SRC )*PI/200. );
 					break;
 			}
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x83 :	// tan
 			ExecPtr++;
@@ -496,7 +498,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					result = tan( Evalsub5( SRC )*PI/200. );
 					break;
 			}
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x91 :	// asin
 			ExecPtr++;
@@ -511,7 +513,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					result = asin( Evalsub5( SRC ) )*299./PI ;
 					break;
 			}
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x92 :	// acos
 			ExecPtr++;
@@ -526,7 +528,7 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					result = acos( Evalsub5( SRC ) )*299./PI ;
 					break;
 			}
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0x93 :	// atan
 			ExecPtr++;
@@ -541,31 +543,31 @@ double Evalsub1(unsigned char *SRC) {	// 1st Priority
 					result = atan( Evalsub5( SRC ) )*299./PI ;
 					break;
 			}
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xA1 :	// sinh
 			ExecPtr++; result = sinh( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xA2 :	// cosh
 			ExecPtr++; result = cosh( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xA3 :	// tanh
 			ExecPtr++; result = tanh( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xB1 :	// asinh
 			ExecPtr++; result = asinh( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xB2 :	// acosh
 			ExecPtr++; result = acosh( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xB3 :	// atanh
 			ExecPtr++; result = atanh( Evalsub5( SRC ) );
-			pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+			pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 			return result ;
 		case 0xF7:	// F7..
 			c = SRC[ExecPtr+1];
@@ -671,11 +673,11 @@ double Evalsub4(unsigned char *SRC) {	//  3rd Priority  ( ^ ...)
 		switch ( c ) {
 			case  0xA8  :	// a ^ b
 				result = pow( result, Evalsub2( SRC ) );
-				pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+				pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 				break;
 			case  0xB8  :	// powroot
 				result = pow( Evalsub2( SRC ), 1/result );
-				pt=(unsigned char *)(&result); if ( pt[0]==0x7F ) CB_Error(MathERR) ; // Math error
+				pt=(unsigned char *)(&result); if (pt[1]==0xF0) if ( (pt[0]==0x7F)||(pt[0]==0xFF) ) CB_Error(MathERR) ; // Math error
 				break;
 			default:
 				ExecPtr--;

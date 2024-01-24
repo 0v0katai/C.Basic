@@ -116,15 +116,13 @@ int DimMatrixSub( int reg, int ElementSize, int dimA, int dimB ) {
 		dptr = MatAry[reg] ;							// Matrix array ptr*
 	} else {
 		if ( MatAry[reg] != NULL ) 	free(MatAry[reg]);	// free
-		MatArySizeA[reg]=dimA;						// Matrix array size
-		MatArySizeB[reg]=dimB;						// Matrix array size
-		
-		MatAryElementSize[reg]=ElementSize;
 		dptr = malloc( dimA*dimB*ElementSize );
 		if( dptr == NULL ) { ErrorNo=NotEnoughMemoryERR; ErrorPtr=ExecPtr; return ErrorNo; }	// Not enough memory error
+		MatArySizeA[reg]=dimA;						// Matrix array size
+		MatArySizeB[reg]=dimB;						// Matrix array size
+		MatAryElementSize[reg]=ElementSize;			// Matrix array Elementsize
 		MatAry[reg] = dptr ;							// Matrix array ptr*
 	}
-
 	memset( dptr, 0, dimA*dimB*ElementSize );	// initialize
 
 	return 0;	// ok
@@ -234,6 +232,54 @@ void WriteMatrix( int reg, int dimA, int dimB, double value){
 			break;
 	}
 }
+int ReadMatrixInt( int reg, int dimA, int dimB){
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int value;
+	int mptr=(dimA)*MatArySizeB[reg]+dimB;
+	switch ( MatAryElementSize[reg] ) {
+		case 1:
+			MatAryC=(char*)MatAry[reg];
+			value = MatAryC[mptr]   ;			// Matrix array char
+			break;
+		case 2:
+			MatAryW=(short*)MatAry[reg];
+			value = MatAryW[mptr]   ;			// Matrix array word
+			break;
+		case 4:
+			MatAryI=(int*)MatAry[reg];
+			value = MatAryI[mptr]   ;			// Matrix array int
+			break;
+		case 8:
+			value = MatAry[reg][mptr];			// Matrix array double
+			break;
+	}
+	return value;
+}
+void WriteMatrixInt( int reg, int dimA, int dimB, int value){
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int mptr=(dimA)*MatArySizeB[reg]+dimB;
+	switch ( MatAryElementSize[reg] ) {
+		case 1:
+			MatAryC=(char*)MatAry[reg];
+			MatAryC[mptr] = (char)value ;			// Matrix array char
+			break;
+		case 2:
+			MatAryW=(short*)MatAry[reg];
+			MatAryW[mptr] = (short)value ;			// Matrix array word
+			break;
+		case 4:
+			MatAryI=(int*)MatAry[reg];
+			MatAryI[mptr] = (int)value ;			// Matrix array int
+			break;
+		case 8:
+			MatAry[reg][mptr] = (double)value ;			// Matrix array double
+			break;
+	}
+}
 //-----------------------------------------------------------------------------
 
 void EditMatrix(int reg){		// ----------- Edit Matrix
@@ -290,7 +336,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 			}
 		}
 		if ( ( seltopX ) )                PrintMini( 17,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
-		if ( ( seltopX==0 )&&( dimA>3 ) ) PrintMini(124,1,(unsigned char*)"\xE6\x91",MINI_OVER);	// ->
+		if ( ( seltopX==0 )&&( dimA>3 ) ) PrintMini(122,1,(unsigned char*)"\xE6\x91",MINI_OVER);	// ->
 
 		value=ReadMatrix( reg, selectY, selectX);
 		sprintG(buffer, value,21,RIGHT_ALIGN);

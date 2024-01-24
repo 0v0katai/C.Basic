@@ -49,6 +49,7 @@ extern int ErrorNo;
 #define NotEnoughMemoryERR 42
 #define StringTooLongERR 43
 #define NoMatrixArrayERR 44
+#define ArraySizeERR 45
 
 //------------------------------------------------------------------------------
 void ERROR(char *buffer) ;

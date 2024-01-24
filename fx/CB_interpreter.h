@@ -204,7 +204,7 @@ void RclPict( int pictNo );
 void CB_StoPict( unsigned char *SRC ) ; //	StoPict
 void CB_RclPict( unsigned char *SRC ) ; //	RclPict
 
-void CB_MatCalc( unsigned char *SRC ,int *dspflag ) ; //	Mat A -> Mat B  etc
+void CB_MatCalc( unsigned char *SRC ) ; //	Mat A -> Mat B  etc
 
 int CB_SearchProg( unsigned char *name ) ; //	Prog search
 void CB_Prog( unsigned char *SRC ) ; //	Prog "..."

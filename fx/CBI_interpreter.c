@@ -398,7 +398,7 @@ void CBint_For( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *St
 	if ( c == 0x0E ) {	// ->
 		ExecPtr++;
 		c=SRC[ExecPtr];
-		if ( ( 'A' <= c ) && ( c <='z' ) ) {
+		if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		StackForVar[*StackForPtr]=c-'A';
 		CBint_Store(SRC);
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -443,7 +443,7 @@ void CBint_Next( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *S
 	}
 }
 //-----------------------------------------------------------------------------
-/*
+
 void CBint_Dsz( unsigned char *SRC ) { //	Dsz
 	unsigned int c;
 	int reg,mptr;
@@ -451,11 +451,19 @@ void CBint_Dsz( unsigned char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		REGINT[reg] --;
-		CBint_CurrentValue = REGINT[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='#' ) {
+			ExecPtr++;
+			REG[reg] --;
+			CBint_CurrentValue = REG[reg] ;
+		} else {
+			if ( c=='%' ) ExecPtr++;
+			REGINT[reg] --;
+			CBint_CurrentValue = REGINT[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
@@ -491,16 +499,17 @@ void CBint_Dsz( unsigned char *SRC ) { //	Dsz
 	c=SRC[ExecPtr++];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		if ( CBint_CurrentValue ) return ;
-		else {
+		else { ExecPtr++;
 			Skip_block(SRC);
 		}
 	} else if ( c==0x0C ) {  // dsps
+		ExecPtr++;
 		CB_Disps( SRC ,2);
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr-1; return; }	// Syntax error
+	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 }
 
 void CBint_Isz( unsigned char *SRC ) { //	Isz
@@ -510,11 +519,19 @@ void CBint_Isz( unsigned char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
-		REGINT[reg] ++ ;
-		CBint_CurrentValue = REGINT[reg] ;
+		c=SRC[ExecPtr];
+		if ( c=='#' ) {
+			ExecPtr++;
+			REG[reg] ++;
+			CBint_CurrentValue = REG[reg] ;
+		} else {
+			if ( c=='%' ) ExecPtr++;
+			REGINT[reg] ++;
+			CBint_CurrentValue = REGINT[reg] ;
+		}
 	} else 
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
@@ -550,18 +567,19 @@ void CBint_Isz( unsigned char *SRC ) { //	Isz
 	c=SRC[ExecPtr++];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		if ( CBint_CurrentValue ) return ;
-		else {
+		else { ExecPtr++;
 			Skip_block(SRC);
 		}
 	} else if ( c==0x0C ) {  // dsps
+		ExecPtr++;
 		CB_Disps( SRC ,2);
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
 		}
-	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr-1; return; }	// Syntax error
+	} else { ErrorNo=SyntaxERR; ErrorPtr=ExecPtr; return; }	// Syntax error
 }
-*/
+
 //----------------------------------------------------------------------------------------------
 
 void CBint_PxlOprand( unsigned char *SRC, int *py, int *px) {
@@ -618,7 +636,7 @@ int CBint_BinaryEval( unsigned char *SRC ) {
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		src = REGINT[reg] ;
@@ -652,7 +670,7 @@ int CBint_BinaryEval( unsigned char *SRC ) {
 	opPtr=ExecPtr;
 	op=SRC[ExecPtr++];	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		dst = REGINT[reg] ;
@@ -725,7 +743,7 @@ int CBint_UnaryEval( unsigned char *SRC ) {
 	int*	MatAryI;
 	
 	c=SRC[ExecPtr];
-	if ( ( 'A' <= c ) && ( c <='z' ) ) {
+	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		reg=c-'A';
 		return REGINT[reg] ;

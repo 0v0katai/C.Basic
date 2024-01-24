@@ -108,6 +108,9 @@ void CB_ErrMsg(int ErrNo) {
 		case NoMatrixArrayERR:
 			ERROR("No Matrix array");
 			break;
+		case ArraySizeERR:
+			ERROR("Illegal Ary size");
+			break;
 		default:
 			break;
 	}

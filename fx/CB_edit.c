@@ -340,7 +340,7 @@ void PrevLinePhy( unsigned char *buffer, int *ofst, int *ofst_y ) {
 }
 
 int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPtr, int *cx, int *cy, int ClipStartPtr, int ClipEndPtr) {
-	unsigned char tmpbuf[18];
+	unsigned char tmpbuf[18],*tmpb;
 	int i,len,x=1,y=0,xmax=21,cont=1,rev;
 	unsigned short opcode;
 	unsigned char  c=1;
@@ -354,15 +354,18 @@ int PrintOpcodeLine1(int csry, int n, unsigned char *buffer, int ofst, int csrPt
 		CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
 		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
+		tmpb=tmpbuf;
 		while ( i < len ) {
 			if ( y == n ) {
 				if ( rev )
-						CB_PrintRevC(x,csry, (unsigned char*)(tmpbuf+i) ) ;
-				else	CB_PrintC(   x,csry, (unsigned char*)(tmpbuf+i) ) ;
+						CB_PrintRevC(x,csry, (unsigned char*)(tmpb+i) ) ;
+				else	CB_PrintC(   x,csry, (unsigned char*)(tmpb+i) ) ;
 //				Bdisp_PutDisp_DD();
 			}
 			x++;
 			if ( ( x > xmax ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) { (y)++; x=1; }
+			c=tmpb[i];
+			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) tmpb++;
 			i++;
 		}
 		if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) break ; 
@@ -647,7 +650,8 @@ unsigned short oplistVARS[]={
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
-		0xF94B,	// DotP
+		0xF73F,	// DotG(
+		0xF94B,	// DotP(
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -985,8 +989,8 @@ unsigned short oplistCMD[]={
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
 		0xFFFF,	// 				-
-		0xFFFF,	// 				-
-		0xF94B,	// DotP
+		0xF73F,	// DotG(
+		0xF94B,	// DotP(
 		0xFFFF,	// 				-
 		0xFFFF,	// 				-
 //		0xF797,	// StoV-Win

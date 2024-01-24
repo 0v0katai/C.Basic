@@ -477,6 +477,48 @@ int CB_OpcodeToStr( unsigned short opcode, unsigned char *string  ) {
 		string[0]=0xFF;
 		string[1]=opcode & 0xFF;
 		string[2]='\0';
+	} else
+	if ( opcode == 0x7F87 ) {
+		string[0]='R';
+		string[1]='a';
+		string[2]='n';
+		string[3]='I';
+		string[4]='n';
+		string[5]='t';
+		string[6]='#';
+		string[7]='(';
+		string[8]='\0';
+	} else
+	if ( opcode == 0x7F3A ) {
+		string[0]='M';
+		string[1]='O';
+		string[2]='D';
+		string[3]='(';
+		string[4]='\0';
+	} else
+	if ( opcode == 0x7FB4 ) {
+		string[0]=' ';
+		string[1]='X';
+		string[2]='o';
+		string[3]='r';
+		string[4]=' ';
+		string[5]='\0';
+	} else
+	if ( opcode == 0xF94B ) {
+		string[0]='D';
+		string[1]='o';
+		string[2]='t';
+		string[3]='P';
+		string[4]='(';
+		string[5]='\0';
+	} else
+	if ( opcode == 0xF73F ) {
+		string[0]='D';
+		string[1]='o';
+		string[2]='t';
+		string[3]='G';
+		string[4]='(';
+		string[5]='\0';
 	} else {
 		return OpcodeToStr( opcode, string ) ; // SYSCALL
 	}
@@ -603,7 +645,7 @@ void DeleteOpcode1( unsigned char *buffer, int Maxstrlen, int *ptr){
 
 //----------------------------------------------------------------------------------------------
 int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int ptrX, int *csrX, int rev_mode, char SPC) {
-	unsigned char tmpbuf[18];
+	unsigned char tmpbuf[18],*tmpb;
 	char spcbuf[2];
 	int i,len,xmax=x+width;
 	unsigned short opcode=1;
@@ -617,12 +659,15 @@ int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int pt
 		len = CB_MB_ElementCount( tmpbuf ) ;				// SYSCALL
 		i=0;
 		if ( x+len > xmax ) break;
+		tmpb=tmpbuf;
 		while ( i < len ) {
 			if ( x < xmax ) {
-				if ( rev_mode ) CB_PrintRevC( x,y, (unsigned char*)(tmpbuf+i) ) ;
-					else        CB_PrintC(    x,y, (unsigned char*)(tmpbuf+i) ) ;
+				if ( rev_mode ) CB_PrintRevC( x,y, (unsigned char*)(tmpb+i) ) ;
+					else        CB_PrintC(    x,y, (unsigned char*)(tmpb+i) ) ;
 				x++ ;
 			}
+			c=tmpb[i];
+			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) tmpb++;
 			i++ ;
 		}
 	}
