@@ -25,6 +25,7 @@
 #include "CB_glib2.h"
 #include "CB_interpreter.h"
 #include "CB_Eval.h"
+#include "CB_Time.h"
 
 #include "CBI_Eval.h"
 #include "CBI_interpreter.h"
@@ -260,6 +261,10 @@ void CBint_Store( char *SRC ){	// ->
 				Xdot = CBint_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
 		}
+	} else
+	if ( c=='%' ) {
+		SetRtc( CBint_CurrentValue );
+		CB_TicksAdjust=RTC_GetTicks()-CBint_CurrentValue;	// 
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
