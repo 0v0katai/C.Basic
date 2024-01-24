@@ -275,6 +275,7 @@ int CB_interpreter_sub( char *SRC ) {
 							if (CB_INT==0)	CB_CurrentValue.real = EvalsubTop( SRC );
 							else			CB_CurrentValue      = Cplx_EvalsubTop( SRC );
 							dspflagtmp=dspflag;
+							if ( EvalEndCheck( SRC[ExecPtr] ) == 0 ) CB_Error(SyntaxERR) ; // Syntax error 
 						}
 						if ( GosubNestN > 0 ) { 
 							ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
@@ -548,10 +549,6 @@ int CB_interpreter_sub( char *SRC ) {
 //						dspflag=0;
 						break;
 
-					case 0x05:	// >DMS
-					case 0x06:	// >a+bi
-					case 0x07:	// >r_theta
-						break;
 					case 0x08:	// Real
 						ComplexMode = 0;
 						dspflag=0;
@@ -689,16 +686,16 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_ResetExecTicks();
 				dspflagtmp=2;
 //				if ( BreakPtr > 0 ) break;
-				c=SRC[ExecPtr++];
-				if ( c == 0x0E ) {		// ->
-					if (CB_INT==1)	CBint_Store(SRC); else CB_Store(SRC);
-				}
-				else ExecPtr--;
+//				c=SRC[ExecPtr++];
+//				if ( c == 0x0E ) {		// ->
+//					if (CB_INT==1)	CBint_Store(SRC); else CB_Store(SRC);
+//				}
+//				else ExecPtr--;
 				break;
 			case 0x0C:	// disps
 				if ( CB_Disps(SRC, dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
 				CB_ResetExecTicks();
-				c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
+//				c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
 				break;
 		
 			default:
@@ -722,11 +719,22 @@ int CB_interpreter_sub( char *SRC ) {
 						else			dspflagtmp=Cplx_ListEvalsubTopAns(SRC);	// List calc	dspflag; //	2:nomal  3:mat  4:list
 					}
 				}
-				break;
+				c=SRC[ExecPtr]; 
+				if (c==0x0E) goto inext1;
+				if (c==0x13) goto inext2;
+				if ( (c==':')||(c==0x0D) ) goto inext3;
+				if ( (c==0x0C)||(c==0x00) ) goto inext3;
+				if ( c==0xFFFFFFF9 ) {
+					c=SRC[ExecPtr+1];
+					if ( (0x05<=c)&&(c<=0x07) ) { ExecPtr+=2; goto inext3; }	// >DMS // >a+bi // >r_theta
+				}
+				CB_Error(SyntaxERR) ; // Syntax error 
+				goto inext3;
 		}
 		c=SRC[ExecPtr];
-		while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
+//		while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
 		if ( c == 0x0E ) { 
+		  inext1:
 			ExecPtr++;
 			if (CB_INT==1)	CBint_Store(SRC);	// ->
 			else		CB_Store(SRC);		// ->
@@ -734,6 +742,7 @@ int CB_interpreter_sub( char *SRC ) {
 			c=SRC[ExecPtr];
 		}
 		if ( c == 0x13 ) {					// =>
+		  inext2:
 			ExecPtr++;
 			dspflag=dspflagtmp2;
 			dspflagtmp=0;
@@ -748,6 +757,7 @@ int CB_interpreter_sub( char *SRC ) {
 				if ( CB_CurrentValue.real == 0 ) Skip_block(SRC); 	// false
 			}
 		}
+	  inext3:
 		if ( ( 0 < dspflagtmp ) && ( dspflagtmp < 0x10 ) ) {
 			if (CB_INT==1) regint_Ans=CBint_CurrentValue ;
 			else		   reg_Ans   =CB_CurrentValue    ;
@@ -2148,11 +2158,11 @@ void CB_Store( char *SRC ){	// ->
 		c = SRC[ExecPtr+1] ; 
 		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
 			ExecPtr+=2;
-			CB_PokeSub( SRC, CB_CurrentValue.real, EvalsubTop( SRC ) );
+			CB_PokeSub( SRC, CB_CurrentValue, EvalsubTop( SRC ) );
 		} else goto exitj;
 	} else
 	if ( c=='*' ) { ExecPtr++;
-			CB_PokeSub( SRC, CB_CurrentValue.real, Evalsub1( SRC ) );
+			CB_PokeSub( SRC, CB_CurrentValue, Evalsub1( SRC ) );
 	} else
 	if ( c=='%' ) { ExecPtr++;
 		StoreTicks:
@@ -2816,17 +2826,24 @@ void  CB_Input( char *SRC ){
 	switch ( flag ) {
 		case 0:	// ? -> A value
 			if ( option ) {
-				CB_CurrentValue = InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
+				InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0), 0 );	// zero not disp
 			} else {
 				CB_CurrentValue = InputNumC_CB( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
 			}
+			ExecPtr++;
+		  vinp:
 			ErrorNo=0; // error cancel
 			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
 			CBint_CurrentValue = CB_CurrentValue.real ;
+			if ( flagint ) {
+				CBint_Store( SRC );
+				break;
+			}
+			CB_Store( SRC );
 			break;
 		case 1:	// ?A value
 			if ( option ) {
-				CB_CurrentValue = InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
+				CB_CurrentValue = InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, DefaultValue, 1 );	// zero disp
 			} else {
 				buffer2[0]='\0';
 				Cplx_sprintGR2( buffer, buffer2, DefaultValue, 22-CursorX, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
@@ -2838,14 +2855,7 @@ void  CB_Input( char *SRC ){
 				Scrl_Y();
 				CB_CurrentValue = InputNumC_CB1( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
 			}
-			ErrorNo=0; // error cancel
-			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
-			CBint_CurrentValue = CB_CurrentValue.real ;
-			if ( flagint ) {
-				CBint_Store( SRC );
-			} else {
-				CB_Store( SRC );
-			}
+			goto vinp;
 			break;
 		case 2:	// ? -> str 
 			CB_CurrentStr=CB_StrBuffer;

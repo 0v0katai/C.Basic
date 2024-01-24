@@ -116,9 +116,10 @@ int CB_RowSize( char *SRC );	// RowSize( Mat A )
 int CB_MatBase( char *SRC );	// MatBase( Mat A )
 
 //-----------------------------------------------------------------------------
-double CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f
+int CheckAdrsAlignError( int wsize, int adrs );
+//double CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f
 int CB_PeekInt( char *SRC, int adrs ) ;	// Peek(123456).w
-void CB_PokeSub( char *SRC, double data, int adrs ) ;	// Poke(123456).f
+//void CB_PokeSub( char *SRC, double data, int adrs ) ;	// Poke(123456).f
 void CB_PokeSubInt( char *SRC, int data, int adrs ) ;	// Poke(123456).w
 void CB_Poke( char *SRC ) ;
 int CB_Call( char *SRC ) ;

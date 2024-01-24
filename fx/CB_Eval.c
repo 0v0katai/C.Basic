@@ -1222,7 +1222,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFFF5 :		// IsExist(
 					return  CB_IsExist( SRC ,0 );
 				case 0xFFFFFFF6 :		// Peek(
-					return  CB_Peek( SRC, EvalsubTop( SRC ) );
+					return  CB_Peek( SRC, EvalsubTop( SRC ) ).real;
 				case 0xFFFFFFF8 :		// VarPtr(
 					return  CB_VarPtr( SRC );
 				case 0xFFFFFFFA :		// ProgPtr(
@@ -1340,7 +1340,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		case '%' :	// 1/128 Ticks
 			return CB_Ticks( SRC );	// 
 		case '*' :	// peek
-			return CB_Peek( SRC, Evalsub1( SRC ) );	// 
+			return CB_Peek( SRC, Evalsub1( SRC ) ).real;	// 
 //		case '@' :	// Mat @A
 //			ExecPtr--;
 //			goto Matjmp;
@@ -1944,7 +1944,7 @@ double Eval2(char *SRC, int *ptr) {		// Eval temp mat
 	ExecPtr= *ptr;
 	CB_StrBufferCNT=0;			// Quot String buffer clear
 	result = EvalsubTop( SRC );
-//	if ( ExecPtr < oplen ) CB_Error(SyntaxERR) ; // Syntax error 
+	if ( ( EvalEndCheck( SRC[ExecPtr] ) == 0 ) && ( ExecPtr < oplen ) ) CB_Error(SyntaxERR) ; // Syntax error 
 	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
 	*ptr=ExecPtr;
 	ExecPtr=execptr;

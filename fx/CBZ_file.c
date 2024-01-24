@@ -2304,7 +2304,7 @@ typedef struct {
 	buffer[ 24] =CB_RecoverSetup;	buffer[24+1]=ENG;				buffer[ 26] =EditExtFont;		buffer[26+1]=Grid;
 	bufshort[15]=Axes;												bufshort[14]=CB_Round.MODE;
 	bufshort[17]=Label;												buffer[ 32] =MaxMemMode;		buffer[32+1]=CB_Round.DIGIT-1;
-	bufshort[19]=Derivative;										bufshort[18]=DefaultWaitcount;
+	buffer[ 38] = 0;				buffer[38+1]=Derivative;		bufshort[18]=DefaultWaitcount;
 	bufshort[21]=S_L_Style;											bufshort[20]=CommandInputMethod;
 	buffer[ 46] =ComplexMode;		buffer[46+1]=Angle;				buffer[ 44]=EnableExtFont;		buffer[44+1]=ForceG1Msave;
 	bufshort[25]=BreakCheckDefault;									bufshort[24]=StorageMode;
@@ -2405,7 +2405,7 @@ void LoadConfig1(){
 		CB_RecoverSetup=buffer[24];			ENG           =buffer[24+1];	EditExtFont    =buffer[ 26];		Grid         =buffer[26+1];
 		Axes          =bufshort[15];        								CB_Round.MODE  =bufshort[14];
 		Label         =bufshort[17];        								MaxMemMode     =buffer[ 32];		CB_Round.DIGIT=buffer[32+1]+1;
-		Derivative    =bufshort[19];        								DefaultWaitcount=bufshort[18];
+											Derivative    =buffer[38+1];	DefaultWaitcount=bufshort[18];
 		S_L_Style     =bufshort[21];        								CommandInputMethod=bufshort[20];
 		ComplexMode   =buffer[46];			Angle         =buffer[46+1];	EnableExtFont  =buffer[ 44];		ForceG1Msave   =buffer[44+1];
 		BreakCheckDefault=bufshort[25];        								StorageMode    =bufshort[24];
@@ -2703,7 +2703,7 @@ int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
@@ -2745,6 +2745,7 @@ int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2777,7 +2778,6 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

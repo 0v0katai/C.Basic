@@ -85,10 +85,10 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 	int		*iptr;
 	double	*dptr;
 	int i;
-	int matsize;
+	int matsize,mats;
 	if ( ( ElementSize!= 1 )&&( ElementSize!= 2 )&&( ElementSize!= 3 )&&( ElementSize!= 4 )&&( ElementSize!= 5 )&&( ElementSize!= 8 )&&( ElementSize!= 16 )&&( ElementSize!= 32 )&&( ElementSize!= 64 )&&( ElementSize!= 128 ) ) { CB_Error(ElementSizeERR); return 0; }	// Illegal Element size
 	if ( ( 2==ElementSize )||( ElementSize==3 )||( ElementSize==5 ) ) { 		// 1 bit Vram array
-		if ( ( m != 128 ) || ( n != 64 ) ) { CB_Error(ArraySizeERR); return; }	// Illegal Ary size
+		if ( ( m != 128 ) || ( n != 64 ) ) { CB_Error(ArraySizeERR); return 0; }	// Illegal Ary size
 		switch ( ElementSize ) {
 			case 2:
 				MatAry[reg].Adrs        = (double*)(PictAry[0]);	// Matrix array ptr*  VRAM
@@ -107,7 +107,7 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 		MatAry[reg].Base        = 0;						// Matrix array base
 		return 0;
 	}
-	if ( ( m<1 ) || ( n<1 ) ) { CB_Error(ArgumentERR); return ErrorNo; }	// Argument error
+	if ( ( m<1 ) || ( n<1 ) ) { CB_Error(ArgumentERR); return 0; }	// Argument error
 	if ( ElementSize==4 ) {	// 4 bit matrix
 			matsize=( ((m-1)>>1)+1 )*n;
 	} else 
@@ -116,6 +116,7 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 	} else {	// 1 bit matrix
 			matsize=( ((m-1)>>3)+1 )*n;
 	}
+	mats = matsize;
 	matsize = (matsize+7) & 0xFFFFFFF8;	// 8byte align
 	if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].Maxbyte >= matsize ) && ( MatAry[reg].ElementSize!=2 ) ) { // already exist
 		if ( adrs )	MatAry[reg].Adrs = (double *)adrs ;		// Matrix array ptr*
@@ -127,9 +128,10 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 		if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );	// free
 		if ( adrs ) {
 			dptr = (double *)adrs ;
+			if ( CheckAdrsAlignError( ElementSize, (int)adrs ) ) { CB_Error(AlignmentERR); return 0; } // Address Alignment error
 		} else {
 			dptr = (double*)HiddenRAM_mallocMat( matsize );
-			if( dptr == NULL ) { CB_Error(NotEnoughMemoryERR); return ErrorNo; }	// Not enough memory error
+			if( dptr == NULL ) { CB_Error(NotEnoughMemoryERR); return 0; }	// Not enough memory error
 		}
 		MatAry[reg].SizeA       = m;						// Matrix array size
 		MatAry[reg].SizeB       = n;						// Matrix array size
@@ -138,13 +140,13 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 		MatAry[reg].Maxbyte     = matsize;					// Matrix array max byte
 		MatAry[reg].Base        = base;						// Matrix array base
 	}
-	return 0;	// ok
+	return mats;	// ok
 }
 
 int DimMatrixSub( int reg, int ElementSize, int m, int n , int base ) {	// 1-
-	int r=DimMatrixSubNoinit( reg, ElementSize, m, n , base, 0 );
-	if ( r==0 ) memset( (char*)MatAry[reg].Adrs, 0, MatAry[reg].Maxbyte  );	// initialize
-	return r;
+	int mats = DimMatrixSubNoinit( reg, ElementSize, m, n , base, 0 );
+	if ( mats ) memset( (char*)MatAry[reg].Adrs, 0, mats  );	// initialize
+	return mats;
 }
 
 int MatElementPlus( int reg, int m, int n ) {	// 1-
@@ -1540,9 +1542,9 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				key=SetDimension(reg, &dimA, &dimB, &ElementSize, &base, listdsp );
 				if ( key==KEY_CTRL_EXIT ) break;
 				if ( MatAry[reg].SizeA == 0 ) {
-					if ( DimMatrixSub(reg, ElementSize, dimA, dimB, base ) ) CB_ErrMsg(ErrorNo);
+					if ( DimMatrixSub(reg, ElementSize, dimA, dimB, base )==0 ) CB_ErrMsg(ErrorNo);
 				} else {
-					if ( DimMatrixSubNoinit(reg, ElementSize, dimA, dimB, base, 0 ) ) CB_ErrMsg(ErrorNo);
+					if ( DimMatrixSubNoinit(reg, ElementSize, dimA, dimB, base, 0 )==0 ) CB_ErrMsg(ErrorNo);
 				}
 				HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 			  edmat:

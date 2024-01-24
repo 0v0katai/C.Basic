@@ -211,11 +211,11 @@ extern  char *GVRAM;
 #define TYPE_Do_LpWhile			3
 #define TYPE_Switch_Case		4
 
-typedef struct {		// 6 bytes
+typedef struct {		// 10 bytes
 	char	CNT;
 	char	TOP;
-	unsigned short	Ptr[IfCntMax];
-	unsigned short	Adrs[IfCntMax];
+	int		Ptr[IfCntMax];
+	int		Adrs[IfCntMax];
 } CchIf;
 
 typedef struct {		// 34 bytes
@@ -235,7 +235,7 @@ typedef struct {		// 10 bytes
 	int	DoAdrs[StackDoMax];
 } StkWhileDo;
 
-typedef struct {		// 8 bytes
+typedef struct {		// 10 bytes
 	char	Ptr;
 	char	flag[StackSwitchMax];
 	int		EndAdrs[StackSwitchMax];

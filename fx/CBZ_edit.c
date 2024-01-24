@@ -859,6 +859,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int ClipStartPtr = -1 ;
 	int ClipEndPtr   = -1 ;
 	char alphalock = 0 ;
+	char alphalock_bk ;
 	char SearchMode=0;
 	int ContinuousSelect=0;
 	char DebugMenuSw=0;
@@ -1064,7 +1065,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			}
 		}
 		
-		if ( CommandInputMethod ) DispGenuineCmdMenu();
+		if ( CommandInputMethod ) { DispGenuineCmdMenu();
+			if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) {
+				Fkey_dispN( FKeyNo4, "VWin");
+				sprintf(buffer, "%d",  ProgfileMax[ProgNo]-SrcSize(filebase) );
+				Fkey_dispN( FKeyNo5, buffer);
+				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
+			}
+		}
 		if ( ( mini == 2 ) || ( mini == 4 ) )  ML_rectangle( 0, 0, 127, 55, 0, 0, 2);	// reverse
 //		Bdisp_PutDisp_DD();
 
@@ -1159,10 +1167,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( SearchMode ) break;;
 					alphalock = 0 ;
 					break;
-//			case KEY_CTRL_ALPHA:
-//					if ( alphalock ) alphalock = 0 ;
-//					ClipStartPtr = -1 ;		// ClipMode cancel
-//					break;
+			case KEY_CTRL_ALPHA:
+					if ( alphalock ) alphalock = 0 ;
+					ClipStartPtr = -1 ;		// ClipMode cancel
+					break;
 			case KEY_CTRL_EXIT:
 					while ( KeyCheckEXIT() ) ;
 					if ( SearchMode ) {
@@ -1221,7 +1229,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						}
 					}
 					key=0;
-			F1j:		alphalock = 0 ;
+			F1j:	alphalock = 0 ;
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					break;
 			case KEY_CTRL_F2:
@@ -1332,8 +1340,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							StrMid( searchbuf, ClipBuffer, 1, 64 ); 
 							SearchMode = SearchForText(  SrcBase, searchbuf, &csrPtr, replacebuf ) ;
 						} else {
-							if ( CommandType ) GetGenuineCmdF4( &key );
-							else {
+							if ( CommandType ) {
+								if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) {
+									SetViewWindow();
+									SaveFavorites();
+								} else GetGenuineCmdF4( &key );
+							} else {
 								if ( DebugMenuSw ) {		// ====== Debug Mode ======
 											cont=0;
 											ExecPtr=csrPtr;
@@ -1376,8 +1388,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //							PrevLinePhyN( cy, SrcBase, &offset, &offset_y );		// csrY adjust
 							UpdateLineNum=1;
 						} else {
-							if ( CommandType ) { GetGenuineCmdF5( &key );
-								if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); key=0; CommandType=0; }
+							if ( CommandType ) {
+								if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) goto listdump;
+								else { 
+									GetGenuineCmdF5( &key );
+									if ( key == KEY_CTRL_F5 ) { selectSetup=SetupG(selectSetup); key=0; CommandType=0; }
+								}
 							} else {
 								if ( DebugMenuSw ) {		// ====== Debug Mode ======
 									if ( DebugScreen )  DebugScreen=0; else DebugScreen=1;	// swap list <---> screen
@@ -1417,8 +1433,13 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									PrevLinePhyN( ymax, SrcBase, &offset, &offset_y );
 								}
 						} else {
-							if ( CommandType ) { GetGenuineCmdF6( &key ); goto F6j; }
-							else {
+							if ( CommandType ) {
+								if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) {
+									ScreenModeEdit=1-ScreenModeEdit;
+									RestoreScreenModeEdit();
+									if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
+								} else { GetGenuineCmdF6( &key ); goto F6j; }
+							} else {
 								if ( JumpMenuSw ) {		// ====== Jump Mode
 									NextLinePhyN( PageUpDownNum*ymax, SrcBase, &offset, &offset_y );	// Skip Down
 									csrPtr=OpcodeLinePtr( offset_y, SrcBase, offset);
@@ -1620,19 +1641,24 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				if ( SearchMode ) break;;
 				ShiftF6loop:
 				DebugScreen = 0;
+				alphalock_bk = alphalock;
 				alphalock = 0 ;
 				if ( CommandInputMethod ) { 
 					Menu_SHIFT_MENU();
 				} else {
-					FkeyClear( FKeyNo4 );
+//					FkeyClear( FKeyNo4 );
+					sprintf(buffer, "%d",  ProgfileMax[ProgNo]-SrcSize(filebase) );
+					Fkey_dispN( FKeyNo4, buffer);
 				}
 				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
 				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
 				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
-//				if ( dumpflg==2 ) Fkey_dispN( FKeyNo5, "Dump"); else Fkey_dispN( FKeyNo5, "List");
-				sprintf(buffer, "%d",  ProgfileMax[ProgNo]-SrcSize(filebase) );
-				Fkey_dispN( FKeyNo5, buffer);
-				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
+				if ( lowercase  ) Fkey_dispN_aA( FKeyNo5, "A<>a"); else Fkey_dispN_Aa( FKeyNo5, "A<>a");
+				if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
+					Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
+				} else {
+					Fkey_Icon( FKeyNo6, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
+				}
 				GetKey_DisableMenu(&key);
 				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
 				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
@@ -1643,6 +1669,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_QUIT:
 //							key = KEY_CTRL_EXIT;
 //							ClipStartPtr = -1 ;		// ClipMode cancel
+							CommandType=0; CommandPage=0;
 							cont=0;
 							break;
 							
@@ -1717,31 +1744,41 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								CommandType=CMD_SHIFT_SKTCH; CommandPage=0;
 								key=0;
 								ClipStartPtr = -1 ;			// ClipMode cancel
+							} else {
+							  listdump:
+								switch (dumpflg) {
+									case 2: 		// Opcode
+										dumpflg=4;
+										break;
+									case 4: 		// hex dump
+										dumpflg=2;
+									default:
+										break;
+								}
+								offset=csrPtr;
+								offset_y=0;
+								cx=6; cy=2;
 							}
 							break;
 					case KEY_CTRL_F5:	//
-							switch (dumpflg) {
-								case 2: 		// Opcode
-									dumpflg=4;
-									break;
-								case 4: 		// hex dump
-									dumpflg=2;
-								default:
-									break;
-							}
-							offset=csrPtr;
-							offset_y=0;
-							cx=6; cy=2;
+							lowercase=1-lowercase;
+							if ( alphalock_bk ) { alphalock = 1; PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key); PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key); }
+							if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F6:	// G<>T
-							Cursor_SetFlashMode(0); 			// cursor flashing off
-							MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
-							ScreenModeEdit=1-ScreenModeEdit;
-							RestoreScreenModeEdit();
-							if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
-							if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
+							if ( ( 1 <= DebugMode ) && ( DebugMode <=3 ) ) {		// ====== Debug Mode ======
+							  chgGT:
+								Cursor_SetFlashMode(0); 			// cursor flashing off
+								ScreenModeEdit=1-ScreenModeEdit;
+								RestoreScreenModeEdit();
+								if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
+								if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
+							} else {
+								key=SelectChar( &ContinuousSelect);
+								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+							}
 							break;
 					case KEY_CTRL_CLIP:
 							ClipStartPtr=csrPtr;
