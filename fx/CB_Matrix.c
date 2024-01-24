@@ -13,6 +13,7 @@
 #include "CB_glib2.h"
 #include "CB_Eval.h"
 #include "CB_interpreter.h"
+#include "CBI_interpreter.h"
 #include "CB_file.h"
 #include "CB_edit.h"
 #include "CB_error.h"
@@ -772,5 +773,190 @@ int SetMatrix(int select){		// ----------- Set Matrix
 		}
 	}
 	return select;
+}
+
+//-----------------------------------------------------------------------------
+// CB entry Matrix 
+//-----------------------------------------------------------------------------
+void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB ) { 
+	int c,d;
+	int ElementSize=8;
+	c =SRC[ExecPtr];
+	d =SRC[ExecPtr+1];
+	if ( ( c != 0x7F ) || ( d !=0x40 ) ) { CB_Error(SyntaxERR); return; }  // no Mat  Syntax error
+	ExecPtr+=2;
+	c =SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+		ExecPtr++;
+		*reg=c-'A';
+		if ( SRC[ExecPtr]=='.' ) {
+			c =SRC[++ExecPtr]; 
+			if ( ( c=='B' ) || ( c=='b' ) ) { ExecPtr++; ElementSize=1; }
+			if ( ( c=='W' ) || ( c=='w' ) ) { ExecPtr++; ElementSize=2; }
+			if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; ElementSize=4; }
+			if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; ElementSize=8; }
+			DimMatrixSub( *reg, ElementSize, dimA, dimB );
+		}
+		else {
+			DimMatrix( *reg, dimA, dimB );
+		}
+	} else { CB_Error(SyntaxERR); return; }  // Syntax error
+}
+
+void CB_MatrixInit( char *SRC ) { //	{n,m}->Dim Mat A[.B][.W][.L][.F]
+	int c,d;
+	int dimA,dimB,i;
+	int reg;
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	int ElementSize;
+	
+	if (CB_INT)	dimA=(EvalIntsubTop( SRC )); else dimA=(EvalsubTop( SRC ));
+
+	c=SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	if (CB_INT)	dimB=(EvalIntsubTop( SRC )); else dimB=(EvalsubTop( SRC ));
+
+	c=SRC[ExecPtr];
+	if ( c != '}' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	c=SRC[ExecPtr];
+	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	c =SRC[ExecPtr];
+	d =SRC[ExecPtr+1];
+	if ( ( c != 0x7F ) || ( d !=0x46 ) ) { CB_Error(SyntaxERR); return; }  // no Dim  Syntax error
+	ExecPtr+=2;
+	
+	CB_MatrixInitsub( SRC, &reg, dimA, dimB );
+}
+
+//-----------------------------------------------------------------------------
+void CB_MatrixInit2( char *SRC ) { //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
+	int c,d;
+	int dimA,dimB,i;
+	int reg;
+	int exptr=ExecPtr,exptr2;
+	char	*cptr;
+	short	*wptr;
+	int		*iptr;
+	double	*dptr;
+	int ElementSize;
+	double data;
+	int m,n;
+	
+	c=SRC[ExecPtr];
+	if ( c != '[' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	n=1;
+	while ( 1 ) {
+		if (CB_INT)	data=(EvalIntsubTop( SRC )); else data=(EvalsubTop( SRC ));
+		c=SRC[ExecPtr];
+		if ( c == ']' ) break;
+		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
+		n++;
+	}
+	dimB=n;
+	ExecPtr++;
+	c=SRC[ExecPtr];
+	m=1;
+	if ( c != ']' ) { 
+		while ( 1 ) {
+			c=SRC[ExecPtr];
+			if ( c != '[' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+			ExecPtr++;
+			n=1;
+			while ( 1 ) {
+				if (CB_INT)	data=(EvalIntsubTop( SRC )); else data=(EvalsubTop( SRC ));
+				c=SRC[ExecPtr];
+				if ( c == ']' ) break;
+				if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+				ExecPtr++;
+				n++;
+			}
+			if ( n != dimB ) { CB_Error(DimensionERR); return; }  // Dimension error
+			m++;
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( c == ']' ) break;
+		}
+	}
+	dimA=m;
+	ExecPtr++;
+
+	c=SRC[ExecPtr];
+	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+
+	CB_MatrixInitsub( SRC, &reg, dimA, dimB );
+	if ( ErrorNo ) return ;
+
+	exptr2=ExecPtr;
+	ExecPtr=exptr;
+	m=0; n=0;
+	while ( m < dimA ) {
+		ExecPtr++;
+		n=0;
+		while ( n < dimB ) {
+			if (CB_INT)	WriteMatrixInt( reg, m, n, EvalIntsubTop( SRC ));
+			else 		   WriteMatrix( reg, m, n, EvalsubTop( SRC ));
+			ExecPtr++;
+			n++;
+		}
+		m++;
+	}
+	ExecPtr=exptr2;
+}
+
+//-----------------------------------------------------------------------------
+
+void CB_ClrMat( char *SRC ) { //	ClrMat A
+	int c =SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+		ExecPtr++;
+		DeleteMatrix( c-'A' );
+	}
+}
+
+void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
+	int c,d;
+	int dimA,dimB,i;
+	int reg,reg2;
+	double	*dptr, *dptr2;
+	
+	c =SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+		ExecPtr++;
+		reg=c-'A';
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+
+	c =SRC[ExecPtr];
+	if ( c == 0x0E ) {	// ->
+		ExecPtr++;
+		c =SRC[ExecPtr];
+		if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		ExecPtr+=2;
+		c =SRC[ExecPtr];
+		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+			ExecPtr++;
+			reg2=c-'A';
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+
+		if ( ( MatAryElementSize[reg] == MatAryElementSize[reg2] ) && 
+			 ( MatArySizeA[reg] == MatArySizeA[reg2] ) &&
+			 ( MatArySizeB[reg] == MatArySizeB[reg2] ) ) {
+			memcpy( MatAry[reg2], MatAry[reg], MatAryElementSize[reg]*MatArySizeA[reg]*MatArySizeB[reg] ) ;
+			dspflag=0;
+		} else { CB_Error(DimensionERR); return; }	// Dimension error
+	} else {
+		ExecPtr-=3;
+		dspflag=2;
+		if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
+		else		CB_CurrentValue    = EvalsubTop( SRC );
+	}
 }
 

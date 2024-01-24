@@ -154,7 +154,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			ProgfileAdrs[i]=0;
 		}
 		for (i=PictMax; i>=1; i--) {			// memory free
-			ptr=PictAry[i];
+			ptr=(char*)PictAry[i];
 			if ( ptr != NULL ) free(ptr);
 			PictAry[i]=0;
 		}

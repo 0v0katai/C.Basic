@@ -1173,11 +1173,11 @@ int CB_BreakStop() {
 	Contflag=1;	// enable Continue
 	key=EditRun(2);	// Program listing & edit
 	Contflag=0;	// disable Continue
-	
-	CB_RestoreTextVRAM();	// Resotre Text screen
-	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
 
 	if ( key == KEY_CTRL_EXIT  ) { BreakPtr=-999; return BreakPtr; }
+
+	CB_RestoreTextVRAM();	// Resotre Text screen
+	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen
 //	Bdisp_PutDisp_DD();
 	Bdisp_PutDisp_DD_DrawBusy();
 	return 0;
