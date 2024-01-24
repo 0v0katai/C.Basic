@@ -237,7 +237,7 @@ int StrInv( char *str1, char *str2 ) {	// mirror$(str2) -> str1
 	int opcode;
 	int opptr1,opptr2;
 	slen=StrLen( str2 ,&oplen );
-	if ( slen < 2 ) return;
+	if ( slen < 1 ) return;
 	opptr1=0;
 	opptr2=StrOpcodePtr( str2, slen ); 		// strptr -> opptr2
 	for (i=0; i<slen; i++ ) {
@@ -341,6 +341,61 @@ int StrCenter( char *str1, char *str2, int max, char *str3 ){	// StrCenter(str2,
 	} else {
 		StrMid( str1, str2, 1, max );
 	}
+}
+
+int StrBase( char *str1, char *str2, int base1, int base2 ) {	// Strbase( str1.base1->str2.base2
+//	char basestr[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz<theta><pi>";
+	char basestr[65];
+//	char tmpbuf[128];
+	int i,j,slen,oplen;
+	int c,d;
+	double dec,bnum;
+	if ( (base1<0) || (base2<0) || (base1>64) || (base2>64) ) return 0;
+
+	j=0;
+	for (i='0'; i<='9'; i++) basestr[j++]=i;
+	for (i='A'; i<='Z'; i++) basestr[j++]=i;
+	for (i='a'; i<='z'; i++) basestr[j++]=i;
+	basestr[j++]=0xCE;
+	basestr[j++]=0xD0;
+									// base1 -> decimal
+	i=strlen( str2 );
+	dec=0; bnum=1;
+	while ( i ) {
+		c=str2[--i];
+		if ( ( '0' <= c ) && ( c <= '9' ) ) d=c-'0';
+		else
+		if ( ( 'A' <= c ) && ( c <= 'Z' ) ) d=c-'A'+10;
+		else
+		if ( ( 'a' <= c ) && ( c <= 'z' ) ) d=c-'a'+36;
+		else
+		if ( c == 0xFFFFFFCE )  d=62;
+		else
+		if ( c == 0xFFFFFFD0 )  d=63;
+		else break;
+		dec += bnum*d;
+		bnum *= base1;
+	};
+
+									// decimal -> base2
+	if ( dec == 0 ) {
+		j=1;
+		bnum = base2;
+	} else {
+		bnum=1; j=0;
+		while ( bnum <= dec ) {
+			bnum *= base2;
+			j++;
+		} 
+	}
+	for ( i=0; i<j; i++ ) {
+		bnum /= base2;
+		c = dec / bnum;
+		dec -= c*bnum;
+		str1[i]=basestr[c];
+	}
+	str1[i]='\0';
+	return 1;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -487,7 +542,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 		else
 		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
 		else
-		if ( ( 0x34 <= c ) && ( c <= 0x47 ) ) return c;
+		if ( ( 0x34 <= c ) && ( c <= 0x48 ) ) return c;
 		else
 		if ( c == 0x1B ) return c;	// fn
 	} else
@@ -624,6 +679,10 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 		case 0x47:	// Bin(
 			ExecPtr+=2;
 			(*maxlen)=CB_Bin( SRC );
+			return CB_CurrentStr;
+		case 0x48:	// StrBase(
+			ExecPtr+=2;
+			(*maxlen)=CB_StrBase( SRC );
 			return CB_CurrentStr;
 		default:
 			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
@@ -1217,7 +1276,7 @@ int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
 	return CB_StrBufferMax-1;
 }
 
-int CB_EvalToStr( char *SRC ){		// Str(
+int CB_EvalToStr( char *SRC ){		// Str( n 
 	double value = CB_EvalDbl( SRC );
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	sprintGR(CB_CurrentStr, value, CB_StrBufferMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
@@ -1246,6 +1305,27 @@ int CB_Bin( char *SRC ){		// Bin(
 	if (value) { while ( (tmp&0x80000000)==0 ) { tmp=tmp<<1; n--; } } else n=1;
 	if ( n<1 ) n=1;
 	NumToBin( CB_CurrentStr, (unsigned int)value, n);
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return CB_StrBufferMax-1;
+}
+
+int CB_StrBase( char *SRC ){		// StrBase( Str1,base1,base2 )->str2
+	int n;
+	int maxoplen;
+	char *buffer;
+	int base1=10,base2=10;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return ;  // error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	base1 = CB_EvalInt( SRC );	//
+	if ( (base1<2) || (base1>64) ) { CB_Error(ArgumentERR); }  // Argument error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	base2 = CB_EvalInt( SRC );	//
+	if ( (base2<2) || (base2>64) ) { CB_Error(ArgumentERR); }  // Argument error
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	StrBase( CB_CurrentStr, buffer, base1, base2);
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }

@@ -839,6 +839,9 @@ const short oplistPRGM[]={
 		0xF943,	// Sprintf(
 		0xF944,	// StrChar(
 		0xF945,	// StrCenter(
+		0xF946,	// Hex(
+		0xF947,	// Bin(
+		0xF948,	// StrBase(
 		0xF940,	// Str(
 		0x5C,	// 
 		0x24,	// $
@@ -1274,7 +1277,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF947,	// Bin(
 		0xF940,	// Str(
 		0xF943,	// Sprintf(
-		0x23,	// #
+		0xF948,	// StrBase(
 		0x25,	// %	
 
 //											20	EX
@@ -1844,6 +1847,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF945, "StrCenter(" }, 
 	{ 0xF946, "Hex(" }, 
 	{ 0xF947, "Bin(" }, 
+	{ 0xF948, "StrBase(" }, 
 	{ 0xF94F, "Wait " }, 
 	{ 0xF9C0, "_ClrVram" },
 	{ 0xF9C1, "_ClrScreen" },

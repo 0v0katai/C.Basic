@@ -512,6 +512,8 @@ void Graph_Draw(){
 	int i;
 	double p_x=Previous_X;
 	double p_y=Previous_Y;
+	int style=S_L_Style;
+	if ( tmp_Style >= 0 ) style=tmp_Style;
 	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	regX   = Xmin-Xdot;
 	for ( i=0; i<=128; i++) {
@@ -526,7 +528,7 @@ void Graph_Draw(){
 			Plot_X=regX;
 			Plot_Y=regY;
 			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
-				Line( S_L_Default , 1, 0);	// No error check
+				Line( style , 1, 0);	// No error check
 			}
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 		}
@@ -751,6 +753,8 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 	int base=0,base2=0;
 	int c;
 	int at1st;
+	int style=S_L_Style;
+	if ( tmp_Style >= 0 ) style=tmp_Style;
 	if ( xlistreg==0 ) sizeA =1; else { sizeA =MatAry[xlistreg].SizeA; base =MatAry[xlistreg].Base; }
 	if ( ylistreg==0 ) sizeA2=1; else { sizeA2=MatAry[ylistreg].SizeA; base2=MatAry[ylistreg].Base; }
 	if ( base != base2 ) { CB_Error(ArgumentERR); return ; } // Argument error
@@ -780,7 +784,7 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 			Plot_X=regX;
 			Plot_Y=regY;
 			if ( DrawType == 0 ) {	// 1:Plot	// 0:connect
-				Line( S_L_Default , 1, 0);	// No error check
+				Line( style , 1, 0);	// No error check
 			}
 //			Bdisp_PutDisp_DD();
 			regT+=TThetaptch;

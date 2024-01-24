@@ -844,7 +844,7 @@ const char ConvListF900[][17]={
 "StrCenter(",			// F945
 "Hex(",					// F946
 "Bin(",					// F947
-"@F948",			// F948
+"StrBase(",				// F948
 "@F949",			// F949
 "CrossP(",			// F94A		// ver.2.04~
 "DotP(",			// F94B

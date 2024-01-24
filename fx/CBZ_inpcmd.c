@@ -236,7 +236,7 @@ void DispGenuineCmdMenu(){
 				case 1:
 					Fkey_dspRB( FKeyNo1, "Char");
 					Fkey_dspRB( FKeyNo2, "Centr");
-					Fkey_dspRB( FKeyNo3, "Str(");		// Str(
+					Fkey_dspRB( FKeyNo3, "Base");		// StrBase(
 					Fkey_dspRB( FKeyNo4, "Hex(");
 					Fkey_dspRB( FKeyNo5, "Bin(");
 //					FkeyClear( FKeyNo5 );

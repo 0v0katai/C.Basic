@@ -678,11 +678,11 @@ int CB_interpreter_sub( char *SRC ) {
 				
 			case 0xFFFFFFF9:	// F9
 				c=SRC[ExecPtr++];
-				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) ) { CB_ML_command( SRC, c ); break; }
+				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) && ( c != 0xFFFFFFC6 ) ) { CB_ML_command( SRC, c ); break; }
 				else
 				if ( ( 0x34 <= c ) && ( c <= 0x37 ) )  goto strjp;
 				else
-				if ( ( 0x39 <= c ) && ( c <= 0x47 ) )  goto strjp;
+				if ( ( 0x39 <= c ) && ( c <= 0x48 ) )  goto strjp;
 				switch ( c ) {
 					case 0x30:	// StrJoin(
 //					case 0x34:	// StrLeft(
