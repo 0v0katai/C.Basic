@@ -115,14 +115,14 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 	}
 }
 //-----------------------------------------------------------------------------
-int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
-int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
+//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
 	if  ( ( '0'<=c )&&( c<='9' ) ) return c-'0';
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) return LocalInt[c-'A'][0] ;
-	if ( c == 0xFFFFFFC0 ) return 28;		// Ans
+	if ( c == 0xFFFFFFC0 ) return LocalInt[28][0];		// Ans
 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) return LocalInt[c-0xFFFFFFCD+26][0] ;	// <r> or Theta
 	CB_Error(SyntaxERR);
 	return -1 ; 	// Syntax error

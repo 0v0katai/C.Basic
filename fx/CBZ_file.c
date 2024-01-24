@@ -2507,8 +2507,6 @@ void LoadConfig1(){
 									// load config & memory
 		ExtendPict    =buffer[ 12];			UseHiddenRAM  =buffer[12+1];	ExtendList     =buffer[ 14];		CB_INTDefault=buffer[14+1];
 		RefreshCtrl   =bufshort[8];											EditListChar   =buffer[ 18];		DrawType     =buffer[18+1];
-		CB_INTDefault =bufshort[ 7];										UseHiddenRAM   =bufshort[6];
-		DrawType      =bufshort[ 9];        								RefreshCtrl    =bufshort[8];
 		ForceReturnMode=buffer[22];			Coord         =buffer[22+1];	CB_fx5800P     =buffer[ 20];		Refreshtime   =buffer[20+1];
 		CB_RecoverSetup=buffer[24];			ENG           =buffer[24+1];	EditExtFont    =buffer[ 26];		Grid         =buffer[26+1];
 		Axes          =bufshort[15];        								CB_Round.MODE  =bufshort[14];
@@ -2806,12 +2804,12 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
