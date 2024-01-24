@@ -984,9 +984,6 @@ double Evalsub7(char *SRC) {	//  7th Priority
 		c = SRC[ExecPtr];
 		switch ( c ) {
 			case '(' :
-				ExecPtr++; result *= EvalsubTop( SRC );
-				if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-				break;
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
 			case 0xFFFFFFB6 :	// frac

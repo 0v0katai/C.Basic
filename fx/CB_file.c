@@ -56,6 +56,8 @@ unsigned int SelectFile (char *filename)
 	Bdisp_AllClr_DDVRAM();
 	while( 1 ){
 		if ( FileListUpdate  ) {
+			MSG1("File Reading.....");
+//			Bdisp_PutDisp_DD_DrawBusy();
 			size = ReadFile( folder );
 			qsort( files, size, sizeof(Files), FileCmp );
 		}
@@ -904,6 +906,7 @@ void ConvertToOpcode( char *filebase, char *sname, int editsize){
 	int textsize;
 
 	MSG1("Text Converting..");
+//	Bdisp_PutDisp_DD_DrawBusy();
 //	MSG1("Wait a moment");
 	textsize=strlen(filebase);
 	memcpy( filebase+editsize, filebase, textsize);
@@ -1490,6 +1493,7 @@ void ConvertToText( char *fname ){
 	int buffersize;
 
 	MSG1("Wait a moment...");
+//	Bdisp_PutDisp_DD_DrawBusy();
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file -> G1M
 		if ( LoadProgfile( fname, EditMaxfree ) ) return ; // error

@@ -49,7 +49,7 @@ void PxlChg_VRAM(int py, int px);
 
 void LinesubSetPoint(int px, int py, int mode) ;
 void Linesub(int px1, int py1, int px2, int py2, int style, int mode) ;
-void Line(int style, int mode);
+void Line(int style, int mode, int errorcheck );
 void F_Line(double x1, double y1, double x2, double y2, int style, int mode);
 void Vertical(double x ,int style, int mode);
 void Horizontal(double y, int style, int mode);
