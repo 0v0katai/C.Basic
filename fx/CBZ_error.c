@@ -30,7 +30,7 @@ void ERROR(char *buffer) {
 
 	Bdisp_PutDisp_DD();
 
-	while(KeyCheckAC());
+	WaitKeyAC();
 	KeyRecover(); 
 	while ( 1 ) {
 		GetKey(&key);

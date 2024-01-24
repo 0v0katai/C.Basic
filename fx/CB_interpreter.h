@@ -297,8 +297,8 @@ void Scrl_Y();
 void CB_ChangeViewWindow() ;
 int CB_ChangeGraphicMode( char *SRC ) ;
 
-void CB_Dsz( char *SRC ) ; //	Dsz
-void CB_Isz( char *SRC ) ; //	Isz
+void CB_Dsz( char *SRC, CurrentStk *CurrentStruct ) ; //	Dsz
+void CB_Isz( char *SRC, CurrentStk *CurrentStruct ) ; //	Isz
 void CB_Store( char *SRC );	// ->
 void CB_Input( char *SRC );
 int CB_Fix( char *SRC );

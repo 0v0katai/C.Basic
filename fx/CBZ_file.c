@@ -1353,7 +1353,7 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 	if (key==KEY_CTRL_F2) { strcpy( ext, "g1m" ); goto loop; }	// g1m
 //	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
-	if ( (key==KEY_CTRL_EXIT)||(key==KEY_CTRL_QUIT) ) { while ( KeyCheckEXIT() ) ; return 1; }
+	if ( (key==KEY_CTRL_EXIT)||(key==KEY_CTRL_QUIT) ) { WaitKeyEXIT(); return 1; }
 	Getfolder( buffer );
 	return 0; // ok
 }
@@ -1373,7 +1373,7 @@ int InputFilename( char * buffer, char* msg) {		//
 	} while ( (key==KEY_CTRL_F1)||(key==KEY_CTRL_F2)||(key==KEY_CTRL_F3) );
 //	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
-	if (key==KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; return 1; }
+	if (key==KEY_CTRL_EXIT) { WaitKeyEXIT(); return 1; }
 	Getfolder( buffer );
 	return 0; // ok
 }
@@ -1488,7 +1488,7 @@ int InputPassname( int y, char* inputpassname, char *msg) {		// password input
 	FkeyClear( FKeyNo3 );
 	key=InputStrFilename( 2, y+1, 8, 8, inputpassname ) ;
 	if (key==KEY_CTRL_AC) return 1;
-	if (key==KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; return 1; }
+	if (key==KEY_CTRL_EXIT) { WaitKeyEXIT(); return 1; }
 	return 0; // ok
 }
 
@@ -1539,7 +1539,7 @@ int InputFilenamePassname( char *filebase, char *basname, char* msg) {		//
 	FkeyClear( FKeyNo3 );
 	key=InputStrFilename( 2, 2, 8, 8, basname ) ;
 	if (key==KEY_CTRL_AC) return 1;
-	if (key==KEY_CTRL_EXIT) { while ( KeyCheckEXIT() ) ; return 1; }
+	if (key==KEY_CTRL_EXIT) { WaitKeyEXIT(); return 1; }
 	if (key==KEY_CTRL_F1) {	// password input
 		if ( SetPassWord( 3, filebase, basname, "Password?" ) ) return 1 ; // cancel
 	}
@@ -3493,6 +3493,21 @@ int CB_BatteryStatus( char *SRC ){
 	return r;
 }
 
+//----------------------------------------------------------------------------------------------
+
+void WaitKeyAC(){
+	while ( KeyScanDown(KEYSC_AC) ) ;
+}
+void WaitKeyEXIT(){
+	while ( KeyScanDown(KEYSC_EXIT) ) ;
+}
+void WaitKeyF1(){
+	while ( KeyScanDown(KEYSC_F1) ) ;
+}
+void WaitKeyEXE(){
+	while ( KeyScanDown(KEYSC_EXE) ) ;
+}
+
 //---------------------------------------------------------------------------------------------- align dummy
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
@@ -3504,14 +3519,14 @@ int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
