@@ -1,15 +1,14 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
-extern short CB_INTDefault;	// default mode  0:normal  1: integer mode
-extern short CB_INT;		// current mode  0:normal  1: integer mode
+extern char CB_INTDefault;	// default mode  0:normal  1: integer mode
 
-extern short	DrawType  ;	// 0:connect  1:Plot
-extern short	Coord     ;	// 0:off 1:on
-extern short	Grid      ;	// 0:off 1:on
-extern short	Axes      ;	// 0:off 1:on
-extern short	Label     ;	// 0:off 1:on
-extern short	Derivative     ;	// 0:off 1:on
+extern char	DrawType  ;	// 0:connect  1:Plot
+extern char	Coord     ;	// 0:off 1:on
+extern char	Grid      ;	// 0:off 1:on
+extern char	Axes      ;	// 0:off 1:on
+extern char	Label     ;	// 0:off 1:on
+extern char	Derivative     ;	// 0:off 1:on
 
 #define S_L_Normal   0
 #define S_L_Thick    1
@@ -17,9 +16,9 @@ extern short	Derivative     ;	// 0:off 1:on
 #define S_L_Dot      3
 #define S_L_Default  -1
 
-extern short S_L_Style;		// set line style 
-extern short tmp_Style;		// set line style 
-extern short Angle;			// 0:deg  1:rad  2:grad
+extern char S_L_Style;		// set line style 
+extern char tmp_Style;		// set line style 
+extern char Angle;			// 0:deg  1:rad  2:grad
 
 extern double Previous_X ;	// Plot Previous X
 extern double Previous_Y ;	// Plot Previous Y
@@ -28,7 +27,10 @@ extern int Previous_PY   ;	// Plot Previous PY
 extern double Plot_X     ;	// Plot Current X
 extern double Plot_Y     ;	// Plot Current Y
 
-extern short TimeDsp;
+extern char BreakCheck;	// Break Stop on/off
+
+extern char TimeDsp;
+extern char MatXYmode;
 
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
@@ -83,10 +85,10 @@ extern	double Yfct;
 extern double	traceAry[130];		// Graph trace array
 
 #define GraphStrMAX 64
-extern unsigned char *GraphY;
-extern unsigned char GraphY1[];
-extern unsigned char GraphY2[];
-extern unsigned char GraphY3[];
+extern char *GraphY;
+extern char GraphY1[];
+extern char GraphY2[];
+extern char GraphY3[];
 
 #define PI 3.1415926535897932
 
@@ -97,41 +99,64 @@ extern char		MatAryElementSize[MatAryMax];		// Matrix array word size
 extern double *MatAry[MatAryMax];			// Matrix array ptr*
 
 //------------------------------------------------------------------------------
-extern short ScreenMode;	//  0:Text  1:Graphic
-extern short UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
+extern int	CB_TicksStart;
+extern int	CB_TicksEnd;
 
-extern short CursorX;	// text cursor X
-extern short CursorY;	// text cursor X
-
+extern int CB_INT;		// current mode  0:normal  1: integer mode
 extern int ExecPtr;
 extern int BreakPtr;
+
+extern int ScreenMode;	//  0:Text  1:Graphic
+extern int UseGraphic;	// use Graph  ( no use :0    plot:1   graph:2   cls:3   other:99
+extern int dspflag;
+
+extern int CursorX;	// text cursor X
+extern int CursorY;	// text cursor X
+
+#define ProgMax 10
+extern char ProgEntryN;		// how many subroutin
+extern char ProgNo;			// current Prog No
+extern char *ProgfileAdrs[ProgMax+1];
+extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
+extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 
 extern char   CB_CurrentStr[128];	//
 extern double CB_CurrentValue;	// Ans
 
-extern short CB_round;	// round mode    0:normal  1:Fix  2:Sci
-extern short CB_fix;
-extern short CB_sci;
-
-#define ProgMax 10
-extern short ProgEntryN;		// how many subroutin
-extern short ProgNo;			// current Prog No
-extern unsigned char *ProgfileAdrs[ProgMax+1];
-extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
-extern short ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
-
-#define StackGotoMax 10+26+6+26+1
+//------------------------------------------------------------------------------
+#define StackGotoMax 10+26+6+26+2
+#define IfCntMax 16
 #define StackForMax 8
 #define StackWhileMax 8
 #define StackDoMax 8
 
-extern int	CB_TicksStart;
-extern int	CB_TicksEnd;
+typedef struct {
+	int	CNT;
+	short	Ptr[IfCntMax];
+	short	Adrs[IfCntMax];
+} CchIf;
 
-extern short BreakCheck;	// Break Stop on/off
+typedef struct {
+	int	Ptr;
+	short	Adrs[StackForMax];
+	short	Var[StackForMax];
+	int	IntEnd[StackForMax];
+	int	IntStep[StackForMax];
+	double End[StackForMax];
+	double Step[StackForMax];
+} StkFor;
 
-extern short dspflag;
-extern short MatXYmode;
+typedef struct {
+	short	WhilePtr;
+	short	DoPtr;
+	short	WhileAdrs[StackWhileMax];
+	short	DoAdrs[StackDoMax];
+} StkWhileDo;
+
+typedef struct {
+	int	CNT;
+	char	loop[28];
+} CurrentStk;
 
 //------------------------------------------------------------------------------
 void CB_SaveTextVRAM() ;
@@ -143,75 +168,18 @@ void CB_RestoreGraphVRAM() ;
 void CB_SelectGraphVRAM() ;
 void CB_SelectGraphDD() ;
 void Scrl_Y();
-void CB_Cls( unsigned char *SRC );
-void CB_ClrText( unsigned char *SRC );
-void CB_ClrGraph( unsigned char *SRC );
-int RangeErrorCK( unsigned char *SRC ) ;
+void CB_Cls( char *SRC );
+void CB_ClrText( char *SRC );
+void CB_ClrGraph( char *SRC );
+int RangeErrorCK( char *SRC ) ;
 
-int CB_Fix( unsigned char *SRC );
-int CB_Sci( unsigned char *SRC );
-int CB_Norm( unsigned char *SRC );
-void CB_Rnd();
+void Skip_quot( char *SRC ); // skip "..."
+void Skip_rem( char *SRC );	// skip '...
 
-
-void CB_ClrMat( unsigned char *SRC ) ; //	ClrMat A
-int  CB_Input( unsigned char *SRC );
-int GetQuotOpcode(unsigned char *SRC, unsigned char *buffer, int Maxlen) ;
-void GetQuotStr(unsigned char *SRC, unsigned char *buffer, int Maxlen ) ;
-void GetLocateStr(unsigned char *SRC, unsigned char *buffer, int Maxlen ) ;
-void CB_Quot( unsigned char *SRC );		// "" ""
-void PrintDone() ;
-void CB_Done();
 void PlotXYtoPrevPXY() ;
 void PlotPreviousPXY() ;
 void PlotCurrentXY();
-unsigned int GWait( int exit_cancel ) ;
 
-void Skip_quot( unsigned char *SRC ); // skip "..."
-void Skip_block( unsigned char *SRC );
-void Skip_rem( unsigned char *SRC );	// skip '...
-void CB_Lbl( unsigned char *SRC, int *StackGotoAdrs );
-int Search_Lbl( unsigned char *SRC, unsigned int lc );
-void CB_Goto( unsigned char *SRC, int *StackGotoAdrs);
-int Search_IfEnd( unsigned char *SRC );
-int Search_ElseIfend( unsigned char *SRC );
-int Search_Next( unsigned char *SRC );
-int Search_WhileEnd( unsigned char *SRC );
-int Search_LpWhile( unsigned char *SRC );
-void CB_Break( unsigned char *SRC, int *StackForPtr, int *StackWhilePtr, int *StackDoPtr, int *CurrentStructCNT, int *CurrentStructloop ) ;
-
-void CB_GridOff() ;
-void CB_GridOn() ;
-void CB_AxesOff() ;
-void CB_AxesOn() ;
-void CB_CoordOff() ;
-void CB_CoordOn() ;
-void CB_LabelOff() ;
-void CB_LabelOn() ;
-
-void CB_S_L_Normal() ; //	S-L-Normal
-void CB_S_L_Thick() ; //	S-L-Thick
-void CB_S_L_Broken() ; //	S-L-Broken
-void CB_S_L_Dot() ; //	S-L-Dot
-void CB_SketchNormal() ; //	SketchNormal
-void CB_SketchThick() ; //	SketchThick
-void CB_SketchBroken() ; //	SketchBroken
-void CB_SketchDot() ; //	SketchDot
-
-void GetGraphStr(  unsigned char *SRC ) ;
-void CB_DrawGraph(  unsigned char *SRC );
-void CB_GraphY( unsigned char *SRC );
-
-int StoPict( int pictNo );
-void RclPict( int pictNo );
-void CB_StoPict( unsigned char *SRC ) ; //	StoPict
-void CB_RclPict( unsigned char *SRC ) ; //	RclPict
-
-void CB_MatCalc( unsigned char *SRC ) ; //	Mat A -> Mat B  etc
-
-int CB_SearchProg( unsigned char *name ) ; //	Prog search
-void CB_Prog( unsigned char *SRC ) ; //	Prog "..."
-
-int CB_interpreter( unsigned char *SRC) ;
+int CB_interpreter( char *SRC) ;
 
 void CB_test() ;

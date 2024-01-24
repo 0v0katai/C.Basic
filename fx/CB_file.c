@@ -501,7 +501,7 @@ void ErrorMSGfile( char *buffer, char *name){
 
 //----------------------------------------------------------------------------------------------
 /* load file to buffer */
-unsigned char * loadFile( const char *name , int editMax)
+char * loadFile( const char *name , int editMax)
 {
 	int handle;
 	FONTCHARACTER filename[50];
@@ -532,7 +532,7 @@ unsigned char * loadFile( const char *name , int editMax)
 	strcat( buffer, " " ); // for some reasons about the preprocessor...
 
 	Bfile_CloseFile( handle );
-	return (unsigned char *)buffer;
+	return buffer;
 }
 
 
@@ -613,7 +613,7 @@ int ExistG1M( const char *sname )
 
 //----------------------------------------------------------------------------------------------
 
-unsigned int InputStrFilename(int x, int y, int width, unsigned char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
+unsigned int InputStrFilename(int x, int y, int width, char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
 
@@ -623,13 +623,13 @@ unsigned int InputStrFilename(int x, int y, int width, unsigned char* buffer, ch
 	return ( key );
 }
 
-unsigned int InputFilename( char * buffer, char* msg) {		// 
+int InputFilename( char * buffer, char* msg) {		// 
 	unsigned int key;
 	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(3);
 	locate(3,3); Print((unsigned char *)msg);
 	locate(3,4); Print((unsigned char *)" [        ]");
-	key=InputStrFilename( 5, 4, 8, (unsigned char *)buffer, ' ', REV_OFF ) ;
+	key=InputStrFilename( 5, 4, 8, buffer, ' ', REV_OFF ) ;
 	RestoreDisp(SAVEDISP_PAGE1);
 	if (key==KEY_CTRL_AC) return 1;
 	if (key==KEY_CTRL_EXIT) return 1;
@@ -637,9 +637,9 @@ unsigned int InputFilename( char * buffer, char* msg) {		//
 }
 
 
-void filenameToBas( unsigned char *filebase, char *filename) {
-	unsigned char *nameptr;
-	unsigned char c;
+void filenameToBas( char *filebase, char *filename) {
+	char *nameptr;
+	int c;
 	int i;
 	nameptr=filebase+0x3C;
 	for (i=0;i<8;i++) nameptr[i]='\0';
@@ -651,9 +651,9 @@ void filenameToBas( unsigned char *filebase, char *filename) {
 	}
 }
 
-void BasTofilename8( unsigned char *filebase, char *sname) {
-	unsigned char *nameptr;
-	unsigned char c;
+void BasTofilename8( char *filebase, char *sname) {
+	char *nameptr;
+	int c;
 	int i;
 	nameptr=filebase+0x3C;
 	i=0;
@@ -667,7 +667,7 @@ void BasTofilename8( unsigned char *filebase, char *sname) {
 	sname[i]='\0';
 }
 
-void G1M_header( unsigned char *filebase ,int *size ) {
+void G1M_header( char *filebase ,int *size ) {
 	(*size) = (*size + 3 ) & 0xFFFFFFFC ; // file size 4byte align adjust
 	SetSrcSize( filebase, *size );
 	filebase[0x00]=0xAA;			// G1M header set
@@ -706,18 +706,17 @@ void G1M_header( unsigned char *filebase ,int *size ) {
 
 
 int LoadProgfile( char *name ) {
-	unsigned char *filebase;
+	char *filebase;
 	int fsize,size;
 	filebase = loadFile( name , EditMaxfree );
 	if ( filebase == NULL ) { ErrorMSGfile( "Not enough memory", name ); return 1 ; }
 
-	fsize=0xFFFF-(filebase[0x12]*256+filebase[0x13]);
+	fsize=0xFFFF-((filebase[0x12]&0xFF)*256+(filebase[0x13]&0xFF));
 	size=SrcSize( filebase ) ;
 	if ( ( fsize != size ) || ( filebase[0x20] != 'P' )|| ( filebase[0x21] != 'R' ) ){ ErrorMSG( "Not support file", fsize );
 		 return 1;
 	}
 	
-	CB_PreProcess( filebase  + 0x56 );
 	ProgEntryN=0;						// Main program
 	ProgfileAdrs[ProgEntryN]= filebase;
 	ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxfree ;
@@ -731,7 +730,7 @@ int LoadProgfile( char *name ) {
 	return 0;
 }
 
-int SaveG1M( unsigned char * filebase ){
+int SaveG1M( char *filebase ){
 	char fname[32],basname[16];
 	int size,i;
 
@@ -745,11 +744,11 @@ int SaveG1M( unsigned char * filebase ){
 	filebase[size+3]=0x00;
 	G1M_header( filebase, &size );		// G1M header set
 	
-	return storeFile( fname, filebase, size );	// 0:ok
+	return storeFile( fname, (unsigned char*)filebase, size );	// 0:ok
 }
 
 int SaveProgfile( int progNo ){
-	unsigned char *filebase;
+	char *filebase;
 	char fname[32],basname[16],msg[32];
 	int size,i;
 	
@@ -764,7 +763,7 @@ int SaveProgfile( int progNo ){
 	return SaveG1M( filebase );
 }
 
-int SavePicture( unsigned char *filebase, int pictNo ){
+int SavePicture( char *filebase, int pictNo ){
 	int handle;
 	FONTCHARACTER filename[50];
 	FONTCHARACTER buffer[50];
@@ -831,8 +830,8 @@ int SavePicture( unsigned char *filebase, int pictNo ){
 	return r ;
 }
 
-unsigned char * LoadPicture( int pictNo ){
-	unsigned char *filebase,*pict;
+char * LoadPicture( int pictNo ){
+	char *filebase,*pict;
 	char fname[32],pictname[16];
 	int i;
  	unsigned char c,d;
@@ -888,7 +887,7 @@ void DeleteFileFav(char *sname ) {
 
 //----------------------------------------------------------------------------------------------
 int RenameFile( char *sname ) {
-	unsigned char *filebase;
+	char *filebase;
 	char fname[32],basname[16],msg[32];
 	int size,i,j;
 
@@ -1191,7 +1190,7 @@ void LoadConfig(){
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int NewProg(){
-	unsigned char *filebase;
+	char *filebase;
 	char fname[32],basname[16],msg[32];
 	int size,i;
 	
@@ -1204,7 +1203,7 @@ int NewProg(){
 	}
 	
 	size=NewMax;
-	filebase = (unsigned char *)malloc( size*sizeof(char)+4 );
+	filebase = (char *)malloc( size*sizeof(char)+4 );
 	memset( filebase, 0x77,             size*sizeof(char)+4 );
 	if( filebase == NULL ) {
 		ErrorMSG( "Out of memory",-1);
@@ -1244,12 +1243,12 @@ int NewProg(){
 }
 
 //----------------------------------------------------------------------------------------------
-void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
-	unsigned int c=1;
-	unsigned char buffer[32]="";
+void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
+	int c=1;
+	char buffer[32]="";
 	char filename[32];
-	unsigned char *src;
-	unsigned char *StackProgSRC;
+	char *src;
+	char *StackProgSRC;
 	int StackProgPtr;
 	unsigned int key=0;
 	int srcPrg;
@@ -1268,7 +1267,13 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 			case 0x3A:	// <:>
 			case 0x0D:	// <CR>
 				break;
-			case 0xED:	// Prog "..."
+			case 0x27:	// ' rem
+				Skip_rem(SRC);
+				break;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0xFFFFFFED:	// Prog "..."
 				ExecPtr++;	// " skip
 				GetQuotOpcode(SRC, buffer, 32);	// Prog name
 //				locate( 1, 2); PrintLine(" ",21);						//
@@ -1290,19 +1295,18 @@ void CB_ProgEntry( unsigned char *SRC ) { //	Prog "..." into memory
 						ProgEntryN++;
 						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Memory error
 						StackProgPtr = ExecPtr;
-						CB_PreProcess( src + 0x56 );
 						CB_ProgEntry( src + 0x56  );		//
 						ExecPtr = StackProgPtr ;
 					}
 				}
 				break;
-			case 0xF7:	// 
 			case 0x7F:	// 
-			case 0xF9:	// 
-			case 0xE5:	// 
-			case 0xE6:	// 
-			case 0xE7:	// 
-			case 0xFF:	//
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	//
 				ExecPtr++;
 				break;
 			default:

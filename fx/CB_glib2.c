@@ -92,7 +92,7 @@ void DrawGCSR( int x, int y )
 //--------------------------------------------------------------
 
 int PictSelectNum2( char*msg ) {		// 
-	unsigned char buffer[32];
+	char buffer[32];
 	unsigned int key;
 	int n;
 
@@ -174,7 +174,7 @@ unsigned int Pict() {
 unsigned int Plot()
 {
 	int cont=1;
-	unsigned char buffer[21];
+	char buffer[21];
 	unsigned int key;
 	int retcode=0;
 	int px1,py1;
@@ -291,7 +291,7 @@ void FkeyGraph(){
 //--------------------------------------------------------------
 unsigned int ZoomXY() {
 	int cont=1;
-	unsigned char buffer[21];
+	char buffer[21];
 	unsigned int key;
 	int retcode=0;
 	
@@ -394,7 +394,7 @@ unsigned int Zoom_sub(unsigned int key){
 //----------------------------------------------------------------------------------------------
 unsigned int Trace(int *index ) {
 	int cont=1;
-	unsigned char buffer[21];
+	char buffer[21];
 	unsigned int key;
 	double dydx;
 	
@@ -501,7 +501,7 @@ unsigned int Trace(int *index ) {
 }
 
 //----------------------------------------------------------------------------------------------
-double Graph_Eval( unsigned char *SRC) {		// Eval Graph
+double Graph_Eval( char *SRC) {		// Eval Graph
 	double result;
 	int execptr=ExecPtr;
     ExecPtr = 0;
@@ -518,7 +518,7 @@ void Graph_Draw(){
 	regX   = Xmin-Xdot;
 	for ( i=0; i<=128; i++) {
 		//-----------------------------
-		traceAry[i]=Graph_Eval((unsigned char *)GraphY);		// function
+		traceAry[i]=Graph_Eval(GraphY);		// function
 		if ( ErrorPtr ) return ;
 		//-----------------------------
 		if ( fabs(traceAry[i])*1e10<Ydot ) traceAry[i]=0;	// zero adjust

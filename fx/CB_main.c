@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.71.00 
+ Casio Basic Interpreter (& Compiler) ver 0.80.00 
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -23,14 +23,14 @@
 #include "CB_sample.h"
 
 //----------------------------------------------------------------------------------------------
-int LoadFileSDK( unsigned char *src ) {
+int LoadFileSDK( char *src ) {
 	int size,i;
-	unsigned char *buffer;
+	char *buffer;
 
 	if ( src[0]=='\0' ) return 0 ;
 	size=(src[0x47]&0xFF)*256+(src[0x48]&0xFF)+0x4C;
 	locate( 1, 1);
-	buffer = (unsigned char *)malloc( size*sizeof(char)+EditMaxfree +4 );
+	buffer = (char *)malloc( size*sizeof(char)+EditMaxfree +4 );
 	memset( buffer, 0x00,             size*sizeof(char)+EditMaxfree +4 );
 	if ( buffer == NULL )  { CB_ErrMsg(MemoryERR); return 1 ; }
 
@@ -40,7 +40,6 @@ int LoadFileSDK( unsigned char *src ) {
 	ProgfileMax[ProgEntryN]= SrcSize( buffer ) +EditMaxfree ;
 	ProgfileEdit[ProgEntryN]= 1;
 	ProgEntryN++;
-	CB_PreProcess( buffer + 0x56 );
 
 	return 0 ;
 }
@@ -63,7 +62,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 {
 	unsigned int key;
 	char buffer[32];
-	unsigned char *ptr,*stat;
+	char *ptr,*stat;
 	int i,reg,run=0;
 
 	char filename[50];

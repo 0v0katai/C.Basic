@@ -37,24 +37,21 @@ extern int  REGINT[59];
 extern int CBint_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
-int MatOprandInt( unsigned char *SRC, int *reg);
-void CBint_Store( unsigned char *SRC );
-int  CBint_Input( unsigned char *SRC );
-void CBint_Locate( unsigned char *SRC );
-void CBint_Text( unsigned char *SRC, int *dspflag ) ; //	Text
-void CBint_For( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *StackForVar, int *StackForEndint, int *StackForStepint, int *CurrentStructCNT, int *CurrentStructloop);
-void CBint_Next( unsigned char *SRC ,int *StackForPtr, int *StackForAdrs, int *StackForVar, int *StackForEndint, int *StackForStepint, int *CurrentStructCNT, int *CurrentStructloop );
-void CBint_Dsz( unsigned char *SRC ) ; //	Dsz
-void CBint_Isz( unsigned char *SRC ) ; //	Isz
+int MatOprandInt( char *SRC, int *reg);
+void CBint_Store( char *SRC );
+void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
+void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
+void CBint_Dsz( char *SRC ) ; //	Dsz
+void CBint_Isz( char *SRC ) ; //	Isz
 
-void CBint_PxlOprand( unsigned char *SRC, int *py, int *px) ;
-void CBint_PxlOn( unsigned char *SRC ) ; //	PxlOn
-void CBint_PxlOff( unsigned char *SRC ) ; //	PxlOff
-void CBint_PxlChg( unsigned char *SRC ) ; //	PxlChg
+void CBint_PxlOprand( char *SRC, int *py, int *px) ;
+void CBint_PxlOn( char *SRC ) ; //	PxlOn
+void CBint_PxlOff( char *SRC ) ; //	PxlOff
+void CBint_PxlChg( char *SRC ) ; //	PxlChg
 
-int CBint_BinaryEval( unsigned char *SRC ) ;
-int CBint_UnaryEval( unsigned char *SRC ) ;
+int CBint_BinaryEval( char *SRC ) ;
+int CBint_UnaryEval( char *SRC ) ;
 
-int CBint_interpreter( unsigned char *SRC) ;
+int CBint_interpreter( char *SRC) ;
 
 void CBint_test() ;

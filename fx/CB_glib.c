@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series     v0.42
+ Casio Basic RUNTIME library for fx-9860G series     v0.80
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -59,13 +59,13 @@ void Bdisp_PutDisp_DD_DrawBusy_skip() {
 		Bdisp_PutDisp_DD_DrawBusy();
 	}
 }
-void Bdisp_PutDisp_DD_DrawBusy_through( unsigned char * SRC ) {
+void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
 	unsigned char c;
 	if ( SRC[ExecPtr++] == ':' ) return ;
 	ExecPtr--;
 	Bdisp_PutDisp_DD_DrawBusy();
 }
-void Bdisp_PutDisp_DD_DrawBusy_skip_through( unsigned char * SRC ) {
+void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) {
 	unsigned char c;
 	if ( SRC[ExecPtr++] == ':' ) return ;
 	ExecPtr--;

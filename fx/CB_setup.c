@@ -32,7 +32,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"            v0.74" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.80 " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -203,7 +203,7 @@ unsigned int MathKey( unsigned int  key) {
 
 
 int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no change  -1 : change
-	unsigned char buffer[32];
+	char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int select=0;
@@ -229,43 +229,43 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 
 		if ( scrl <=0 ) {
 			locate( 1, 2-scrl); Print((unsigned char*)"Xmin  :");
-			sprintG(buffer,Xmin,  10,LEFT_ALIGN); locate( 8, 2-scrl); Print(buffer);
+			sprintG(buffer,Xmin,  10,LEFT_ALIGN); locate( 8, 2-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl <=1 ) {
 			locate( 1, 3-scrl); Print((unsigned char*)" max  :");
-			sprintG(buffer,Xmax,  10,LEFT_ALIGN); locate( 8, 3-scrl); Print(buffer);
+			sprintG(buffer,Xmax,  10,LEFT_ALIGN); locate( 8, 3-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl <=2 ) {
 			locate( 1, 4-scrl); Print((unsigned char*)" scale:");
-			sprintG(buffer,Xscl,10,LEFT_ALIGN); locate( 8, 4-scrl); Print(buffer);
+			sprintG(buffer,Xscl,10,LEFT_ALIGN); locate( 8, 4-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl <=3 ) {
 			locate( 1, 5-scrl); Print((unsigned char*)" dot  :");
-			sprintG(buffer,Xdot,  10,LEFT_ALIGN); locate( 8, 5-scrl); Print(buffer);
+			sprintG(buffer,Xdot,  10,LEFT_ALIGN); locate( 8, 5-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl <=4 ) {
 			locate( 1, 6-scrl); Print((unsigned char*)"Ymin  :");
-			sprintG(buffer,Ymin,  10,LEFT_ALIGN); locate( 8, 6-scrl); Print(buffer);
+			sprintG(buffer,Ymin,  10,LEFT_ALIGN); locate( 8, 6-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl <=5 ) {
 			locate( 1, 7-scrl); Print((unsigned char*)" max  :");
-			sprintG(buffer,Ymax,  10,LEFT_ALIGN); locate( 8, 7-scrl); Print(buffer);
+			sprintG(buffer,Ymax,  10,LEFT_ALIGN); locate( 8, 7-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl >=1 ) {
 			locate( 1, 8-scrl); Print((unsigned char*)" scale:");
-			sprintG(buffer,Yscl,10,LEFT_ALIGN); locate( 8, 8-scrl); Print(buffer);
+			sprintG(buffer,Yscl,10,LEFT_ALIGN); locate( 8, 8-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl >=2 ) {
 			locate( 1, 9-scrl); Print((unsigned char*)"Temin :");
-			sprintG(buffer,TThetamin,  10,LEFT_ALIGN); locate( 8, 9-scrl); Print(buffer);
+			sprintG(buffer,TThetamin,  10,LEFT_ALIGN); locate( 8, 9-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl >=3 ) {
 			locate( 1, 10-scrl); Print((unsigned char*)"  max :");
-			sprintG(buffer,TThetamax,  10,LEFT_ALIGN); locate( 8, 10-scrl); Print(buffer);
+			sprintG(buffer,TThetamax,  10,LEFT_ALIGN); locate( 8, 10-scrl); Print((unsigned char*)buffer);
 		}
 		if ( scrl >=4 ) {
 			locate( 1, 11-scrl); Print((unsigned char*)"  ptch:");
-			sprintG(buffer,TThetaptch,  10,LEFT_ALIGN); locate( 8, 11-scrl); Print(buffer);
+			sprintG(buffer,TThetaptch,  10,LEFT_ALIGN); locate( 8, 11-scrl); Print((unsigned char*)buffer);
 		}
 
 		y = select-scrl+1;
@@ -427,7 +427,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 
 //-----------------------------------------------------------------------------
 void SetFactor(){
-	unsigned char buffer[32];
+	char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int select=0;
@@ -439,9 +439,9 @@ void SetFactor(){
 	while (cont) {
 		locate(3,3); Print((unsigned char *)"Factor");
 		locate(3,4); Print((unsigned char *) "Xfact:           ");
-		sprintG(buffer,Xfct,  10,LEFT_ALIGN); locate( 9, 4); Print(buffer);
+		sprintG(buffer,Xfct,  10,LEFT_ALIGN); locate( 9, 4); Print((unsigned char*)buffer);
 		locate(3,5); Print((unsigned char *) "Yfact:           ");
-		sprintG(buffer,Yfct,  10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
+		sprintG(buffer,Yfct,  10,LEFT_ALIGN); locate( 9, 5); Print((unsigned char*)buffer);
 
 		y = select + 3 ;
 		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
@@ -506,7 +506,7 @@ void SetFactor(){
 
 //-----------------------------------------------------------------------------
 void InitVar( double value, int VarMode, int vartop ) {
-	unsigned char buffer[32];
+	char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int i,reg;
@@ -516,7 +516,7 @@ void InitVar( double value, int VarMode, int vartop ) {
 	while (cont) {
 		locate( 3,3); Print((unsigned char *)"Init All Variable");
 		locate( 3,5); Print((unsigned char *)"value:           ");
-		sprintG(buffer,value,  10,LEFT_ALIGN); locate( 9, 5); Print(buffer);
+		sprintG(buffer,value,  10,LEFT_ALIGN); locate( 9, 5); Print((unsigned char*)buffer);
 		locate(1,8); PrintLine((unsigned char *)" ",21);
 		locate(1,8); if ( VarMode ) Print((unsigned char*)"(int)"); else Print((unsigned char*)"(double)");
 //		Bdisp_PutDisp_DD();
@@ -552,7 +552,7 @@ void InitVar( double value, int VarMode, int vartop ) {
 
 
 int SetVar(int select){		// ----------- Set Variable
-	unsigned char buffer[32];
+	char buffer[32];
 	unsigned int key;
 	int	cont=1;
 	int scrl=0;
@@ -578,12 +578,12 @@ int SetVar(int select){		// ----------- Set Variable
 			buffer[0]='A'+seltop+i+small;
 			buffer[1]='=';
 			buffer[2]='\0';
-			locate(1,1+i); Print(buffer);
+			locate(1,1+i); Print((unsigned char*)buffer);
 			if ( VarMode )
 				sprintG(buffer, (double)REGINT[seltop+i+small], 19,LEFT_ALIGN);
 			else
 				sprintG(buffer, REG[seltop+i+small], 19,LEFT_ALIGN);
-			locate(3,1+i); Print(buffer);
+			locate(3,1+i); Print((unsigned char*)buffer);
 		}
 		Fkey_dispN( 0, "A<>a");
 		Fkey_dispN( 1, "Init");
@@ -702,7 +702,7 @@ int SetupG(int select){		// ----------- Setup
     char *display[] ={"Nrm","Fix","Sci"};
     char *mode[]    ={"Double","Int"};
     char *Matmode[]    ={"[m,n]","[X,Y]"};
-	unsigned char buffer[22];
+	char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int scrl=select-6;
@@ -754,7 +754,7 @@ int SetupG(int select){		// ----------- Setup
 			locate(14, 9-scrl); Print((unsigned char*)display[CB_Round.MODE]);
 			buffer[0]='\0';
 			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
-			locate(17, 9-scrl); Print(buffer);
+			locate(17, 9-scrl); Print((unsigned char*)buffer);
 			locate(19, 9-scrl); 
 			if (ENG) Print((unsigned char*)"/E");
 		}
