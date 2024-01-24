@@ -65,5 +65,3 @@ int CB_Sprintf( char *SRC ) ;	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 
 int CB_StrDMS( char *SRC ) ;
 
-void CB_Fkey( char *SRC) ;
-

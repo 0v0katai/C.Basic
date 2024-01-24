@@ -313,3 +313,4 @@ void CB_DotPut( char *SRC );	// DotPut(Mat B[x,y], px1,py1, px2,py2)
 void CB_DotTrim( char *SRC );	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 void CB_DotLife( char *SRC ) ;
 
+void CB_FkeyMenu( char *SRC) ;

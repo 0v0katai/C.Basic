@@ -755,10 +755,10 @@ int SelectNum4( int n ) {		//
 	PopUpWin(3);
 	locate( 3,3); Print((unsigned char *)"Select Number");
 	locate( 3,3); Print((unsigned char *)"RefrshTime n/128s");
-	locate( 6,5); Print((unsigned char *)"[2~128]:");
+	locate( 6,5); Print((unsigned char *)"[1~128]:");
 	while (1) {
 		n=InputNumD(14, 5, 3, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
-		if ( (2<=n)&&(n<=128) ) break;
+		if ( (1<=n)&&(n<=128) ) break;
 		n=n0;
 	}
 	return n ; // ok
@@ -774,7 +774,7 @@ int SetupG(int select){		// ----------- Setup
     char *Matmode[]    ={"[m,n]","[X,Y]"};
     char *Matbase[]    ={"0","1"};
     char *Pictmode[]    ={"S.Mem","Heap"};
-    char *DDmode[]    ={"off","Grp","All"};
+    char *DDmode[]    ={"off","Grph","All"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
@@ -883,8 +883,8 @@ int SetupG(int select){		// ----------- Setup
 			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 20
 			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
-			sprintf((char*)buffer,"%3d/128s",Refreshtime+1);
-			if ( RefreshCtrl ) PrintMini(16*6,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
+			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
+			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 21
@@ -955,7 +955,7 @@ int SetupG(int select){		// ----------- Setup
 				break;
 			case 20: // Refresh Ctrl DD Mode
 				Fkey_dispN( 0, "off ");
-				Fkey_dispN( 1, "Gra ");
+				Fkey_dispN( 1, "Grph");
 				Fkey_dispN( 2, "All ");
 				if ( RefreshCtrl ) Fkey_dispN( 3, "time");
 				break;
@@ -1188,7 +1188,7 @@ int SetupG(int select){		// ----------- Setup
 						PageUpDownNum = PageUpDownNumDefault ;
 						break;
 					case 20: // Refresh Ctrl DD Mode
-						if ( RefreshCtrl ) Refreshtime=SelectNum4(Refreshtime+1)-1;
+						if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
 						break;
 					default:
 						break;

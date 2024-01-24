@@ -34,15 +34,6 @@
 //----------------------------------------------------------------------------------------------
 //		Interpreter
 //----------------------------------------------------------------------------------------------
-int RangeErrorCKint( char *SRC ) {
-	if ( UseGraphic == 0 ) {
-		if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
-		Bdisp_AllClr_VRAM();
-		GraphAxesGrid();
-	}
-	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { ErrorNo=RangeERR; PrevOpcode( SRC, &ExecPtr ); ErrorPtr=ExecPtr; return ErrorNo; }	// Range error
-	return 0;
-}
 //----------------------------------------------------------------------------------------------
 void CBint_Store( char *SRC ){	// ->
 	int	en,i,j;
@@ -398,6 +389,20 @@ void CBint_Isz( char *SRC ) { //	Isz
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 }
 
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+/*
+int RangeErrorCKint( char *SRC ) {
+	if ( UseGraphic == 0 ) {
+		if ( ScreenMode == 0 ) CB_SelectGraphVRAM();	// Select Graphic Screen
+		Bdisp_AllClr_VRAM();
+		GraphAxesGrid();
+	}
+	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { ErrorNo=RangeERR; PrevOpcode( SRC, &ExecPtr ); ErrorPtr=ExecPtr; return ErrorNo; }	// Range error
+	return 0;
+}
+*/
 //----------------------------------------------------------------------------------------------
 
 void CBint_PxlOprand( char *SRC, int *py, int *px) {
