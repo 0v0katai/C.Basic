@@ -1106,6 +1106,9 @@ remloop:
 							defaultStrArySize=Eval_atoi( SRC, c );
 						}
 					}
+				  DelStrBuffer:
+					DeleteMatrix( reg );
+					DeleteMatrix( Mattmp_StrBuffer );
 				}
 			} else
 			if ( c==0x1B ) {	// fn
@@ -1120,6 +1123,7 @@ remloop:
 							defaultFnArySize=Eval_atoi( SRC, c );
 						}
 					}
+					goto DelStrBuffer;
 				}
 			} else { ExecPtr++;  c=SRC[ExecPtr++]; }
 		} else
@@ -1154,6 +1158,7 @@ remloop:
 							defaultGraphArySize=Eval_atoi( SRC, c );
 						}
 					}
+					goto DelStrBuffer;
 				}
 			} else
 			if ( c==0x40 ) {	// Mat 0  : base 0
@@ -2352,7 +2357,7 @@ void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) { //	Prog "...
 		}
 	}
 
-	if ( ErrorNo == StackERR ) { ErrorPtr=ExecPtr; }
+	if ( ErrorNo == StackERR ) { ErrorPtr=ExecPtr;  }
 }
 
 void CB_Gosub( char *SRC, int *StackGotoAdrs, int *StackGosubAdrs ){ //	Gosub N
@@ -2622,6 +2627,9 @@ int CB_interpreter( char *SRC ) {
 	defaultStrAry=26;	// <r>
 	defaultFnAry=57;		// z
 	defaultGraphAry=27;		// Theta
+	DeleteMatrix( Mattmp_StrBuffer );
+	DeleteMatrix( Mattmp_traceAry );
+	if ( MaxMemMode ) DeleteMatrix( Mattmp_ClipBuffer );
 	
 	CB_MatListAnsreg=27;	//	ListAns init
 	Bdisp_PutDisp_DD_DrawBusy();
@@ -2660,8 +2668,7 @@ int CB_interpreter( char *SRC ) {
 		ComplexMode = bk_ComplexMode;
 	}
 	KeyRecover(); 
-//	if ( ErrorNo ) { CB_ErrMsg( ErrorNo ); }
-//	if ( ErrorNo==StackERR ) CB_ErrMsg(StackERR);
+	if ( ErrorNo==StackERR ) CB_ErrMsg(StackERR);
 	return stat;
 }
 
@@ -2713,7 +2720,7 @@ void  CB_Input( char *SRC ){
 		if ( c!=',' ) {	
 			c=CB_IsStr( SRC, ExecPtr );
 			if ( c ) {	// string
-				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+				CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
 			} else { CB_Error(ArgumentERR); return ; } // Argument error
 			spcchr[0]=buffer[0];
 			spcchr[1]=buffer[1];
@@ -2922,7 +2929,7 @@ void  CB_Input( char *SRC ){
 			goto vinp;
 			break;
 		case 2:	// ? -> str 
-			CB_CurrentStr=CB_StrBuffer;
+			CB_CurrentStr=buffer;
 			CB_CurrentStr[0]='\0';
 	Inpj1:	if ( option == 0 ) CursorX=1;
 			key=InputStr( CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);

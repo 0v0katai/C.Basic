@@ -121,12 +121,13 @@ int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int ad
 	mats = matsize;
 	matsize = (matsize+7) & 0xFFFFFFF8;	// 8byte align
 	if ( ( MatAry[reg].Adrs != NULL ) && ( abs(MatAry[reg].Maxbyte) >= matsize ) && ( MatAry[reg].ElementSize!=2 ) ) { // already exist
-		if ( adrs )	MatAry[reg].Adrs = (double *)adrs ;		// Matrix array ptr*
+		if ( adrs )	goto newmat;
 		MatAry[reg].SizeA       = m;						// Matrix array size
 		MatAry[reg].SizeB       = n;						// Matrix array size
 		MatAry[reg].ElementSize = ElementSize;				// Matrix array Elementsize
 		MatAry[reg].Base        = base;						// Matrix array base
 	} else {
+	  newmat:
 		if ( ( MatAry[reg].Adrs != NULL ) && ( MatAry[reg].ElementSize != 2 ) ) HiddenRAM_freeMat( reg );	// free
 		if ( adrs ) {
 			dptr = (double *)adrs ;
@@ -745,11 +746,15 @@ void MatNumToExpBuf( complex value, int bit ){	// value -> ExpBuffer
 	}
 }
 
-void List2Clip( int reg, char *buffer , int max, int bit ) {	// 
+char* NewClipBuffer( int *size );
+
+void List2Clip( int reg, int bit ) {	// 
 	int i,j,dimA,dimB,x,y;
 	int base=MatAry[reg].Base;
 	int ElementSize=MatAry[reg].ElementSize;
 	int ptr=0;
+	int max;
+	char *buffer;
 	if ( MatXYmode ) {
 		dimB=MatAry[reg].SizeA-1+base;	//	X,Y
 		dimA=MatAry[reg].SizeB-1+base;
@@ -757,6 +762,8 @@ void List2Clip( int reg, char *buffer , int max, int bit ) {	//
 		dimA=MatAry[reg].SizeA-1+base;	//	m,n
 		dimB=MatAry[reg].SizeB-1+base;
 	}
+	max = -1;
+	buffer = NewClipBuffer( &max );	// max size
 
 	buffer[ptr++]='{';
 	y=base;
@@ -775,15 +782,18 @@ void List2Clip( int reg, char *buffer , int max, int bit ) {	//
 	}
 	ptr--;
 	buffer[ptr++]='}';
-	buffer[ptr]='\0';
+	buffer[ptr++]='\0';
+	NewClipBuffer( &ptr );	// adjust size
 	ErrorMSGstr1("List to Clip Ok!");
 }
 
-void Mat2Clip( int reg, char *buffer , int max, int bit ) {	// 
+void Mat2Clip( int reg, int bit ) {	// 
 	int i,j,dimA,dimB,x,y;
 	int base=MatAry[reg].Base;
 	int ElementSize=MatAry[reg].ElementSize;
 	int ptr=0;
+	int max;
+	char *buffer;
 	if ( MatXYmode ) {
 		dimB=MatAry[reg].SizeA-1+base;	//	X,Y
 		dimA=MatAry[reg].SizeB-1+base;
@@ -791,6 +801,8 @@ void Mat2Clip( int reg, char *buffer , int max, int bit ) {	//
 		dimA=MatAry[reg].SizeA-1+base;	//	m,n
 		dimB=MatAry[reg].SizeB-1+base;
 	}
+	max = -1;
+	buffer = NewClipBuffer( &max );	// max size
 
 	buffer[ptr++]='[';
 //	buffer[ptr++]=0x0D;
@@ -815,7 +827,8 @@ void Mat2Clip( int reg, char *buffer , int max, int bit ) {	//
 	}
 	ptr--;
 	buffer[ptr++]=']';
-	buffer[ptr]='\0';
+	buffer[ptr++]='\0';
+	NewClipBuffer( &ptr );	// adjust size
 	ErrorMSGstr1("Mat to Clip Ok!");
 }
 
@@ -830,7 +843,7 @@ int SkipSpcCRsub( char *buf, int *ptr ) {
 	return buf[(*ptr)];
 }
 
-void Clip2List( char *buffer, int reg ) { //	{1.2,3,4,5,6}->List
+void Clip2List( int reg ) { //	{1.2,3,4,5,6}->List
 	int c,d;
 	int dimA,dimB,i;
 	int exptr,exptr2;
@@ -840,6 +853,7 @@ void Clip2List( char *buffer, int reg ) { //	{1.2,3,4,5,6}->List
 	int ElementSize;
 	int ptr=0;
 	int dimA2,dimB2;
+	char *buffer=ClipBuffer;
 	
 	c=SkipSpcCRsub(buffer,&ptr);
 	if ( c != '{' ) return ;
@@ -887,7 +901,7 @@ void Clip2List( char *buffer, int reg ) { //	{1.2,3,4,5,6}->List
 	}
 }
 
-void Clip2Mat( char *buffer, int reg ) { //	[[1.2,3][4,5,6]]->Mat
+void Clip2Mat( int reg ) { //	[[1.2,3][4,5,6]]->Mat
 	int c,d;
 	int dimA,dimB,i;
 	int exptr,exptr2;
@@ -897,9 +911,10 @@ void Clip2Mat( char *buffer, int reg ) { //	[[1.2,3][4,5,6]]->Mat
 	int ElementSize;
 	int ptr=0;
 	int dimA2,dimB2;
+	char *buffer=ClipBuffer;
 	
 	c=SkipSpcCRsub(buffer,&ptr);
-	if ( c == '{' ) { Clip2List( buffer, reg ); return ; }
+	if ( c == '{' ) { Clip2List( reg ); return ; }
 	if ( c != '[' ) return ;
 	ptr++;
 	SkipSpcCRsub(buffer,&ptr);
@@ -1447,13 +1462,14 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				MatDotEditCursorSetFlashMode( 0 );
 				switch ( key ) {			
 					case KEY_CTRL_CLIP:
-						if ( list==1 ) List2Clip( reg, ClipBuffer, ClipMax-16, bit );
-						else		Mat2Clip(  reg, ClipBuffer, ClipMax-16, bit );
+						if ( list==1 ) List2Clip( reg, bit );
+						else           Mat2Clip(  reg, bit );
 						break;
 					case KEY_CTRL_PASTE:
-						if ( ClipBuffer == NULL ) break;
-						if ( list==1 ) Clip2List( ClipBuffer, reg );
-						else		Clip2Mat(  ClipBuffer, reg );
+						if ( ClipBuffer ) {
+							if ( list==1 ) Clip2List( reg );
+							else           Clip2Mat(  reg );
+						}
 						break;
 					default:
 						break;
@@ -1529,9 +1545,9 @@ int SetMatrix(int select){		// ----------- Set Matrix
 						j=SetVarCharMat( buffer, reg); 
 						Print((unsigned char*)"Lst ");
 					} else  { 
-						k=k+1; if ( reg<58 ) k-=3;
-						if ( ListFilePtr ) reg = k-1+ListFilePtr;
-						sprintf( buffer,"L%d",k);
+						if ( reg<58 ) k-=3;
+						if ( ListFilePtr ) reg = k+ListFilePtr;
+						sprintf( buffer,"L%d",k+1);
 						locate( 1, 1+i); Print((unsigned char*)buffer);
 						if ( MatAry[reg].name[0] !='\0' ) {
 							sprintf( buffer,"%s",MatAry[reg].name);
@@ -1588,7 +1604,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 				} else  {
 					Fkey_dispN( FKeyNo5, "Lst:");
 				}
-				if ( ListFilePtr==0 ) reg=LstRegData[k]; else reg = k+ListFilePtr;
+				reg=LstRegData[k]; if ( ListFilePtr ) if ( ( reg<26 ) || ( 28<reg ) ) reg = k -(reg<58)*3 +ListFilePtr;
 				break;
 			case 2: // Vct
 				Fkey_dispN( FKeyNo5, "Vct:");
@@ -1652,7 +1668,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 							if ( key == KEY_CTRL_EXIT ) break;
 							ListFileNo  = i;
 							CB_ListNo2Ptr( ListFileNo );
-							if ( ListFilePtr==0 ) reg=LstRegData[k]; else reg = k+ListFilePtr;
+							reg=LstRegData[k]; if ( ListFilePtr ) if ( ( reg<26 ) || ( 28<reg ) ) reg = k -(reg<58)*3 +ListFilePtr;
 						} else {
 							i=SelectNum1( "List", listselect ,1, ExtListMax, &key);
 							if ( key == KEY_CTRL_EXIT ) break;

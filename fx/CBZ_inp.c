@@ -206,42 +206,54 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 void sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round
 	sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, 0);
 }
+void sprintGi( char* buffer, double num, int width, int align_mode) {
+	sprintGRSi( buffer, num, width, align_mode, Norm, 15, 1);	// imag
+}
+void sprintG( char* buffer, double num, int width, int align_mode) {
+	sprintGRS(buffer, num, width, align_mode, Norm, 15 ); // + round
+}
 
-void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
+void sprintGRSiE( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit, int cplx ) { // + round +ENG
 	double fabsnum;
-	unsigned char c,d=0;
+	unsigned char c=0,d=0;
+	int r;
 	if ( ENG==1 ) { // ENG mode
 		fabsnum=fabs(num);
 		if ( ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
-			width-- ; 
 			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
 			else if ( fabsnum >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
 			else if ( fabsnum >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
 			else if ( fabsnum >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
 			else if ( fabsnum >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
 			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
-			else if ( fabsnum >= 1    ) {             c=' ';  }
+			else if ( fabsnum >= 1    ) { if ( cplx==0 ) c=' ';  }
 			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
 			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
 			else if ( fabsnum >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
 			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
 			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
-			sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
+			width-- ; 
+			sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, cplx );
 			width=strlen((char*)buffer);
-			buffer[width++]=c;
-			buffer[width++]=d;
+			if ( ( cplx ) && ( buffer[width-1] == 0x50 ) && c ) { 
+				width-=2;
+				buffer[width++]=c;
+				if ( d ) buffer[width++]=d;
+				buffer[width++]=0x7f;	// (i)
+				buffer[width++]=0x50;	// (i)
+			} else {
+				buffer[width++]=c;
+				buffer[width++]=d;
+			}
 			buffer[width]='\0';
 			return ;
 		}
 	}
-	sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
+	sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, cplx );
 }
 
-void sprintG( char* buffer, double num, int width, int align_mode) {
-	sprintGRS(buffer, num, width, align_mode, Norm, 15 ); // + round
-}
-void sprintGi( char* buffer, double num, int width, int align_mode) {
-	sprintGRSi( buffer, num, width, align_mode, Norm, 15, 1);	// imag
+void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
+	sprintGRSiE( buffer, num, width, align_mode, round_mode, round_digit, 0); // + round +ENG
 }
 
 void Cplx_sprintGR1s( char* buffer, complex num, int width, int align_mode, int round_mode, int round_digit, int cut ) { // + round  ENG  + i
@@ -255,16 +267,15 @@ void Cplx_sprintGR1s( char* buffer, complex num, int width, int align_mode, int 
 	else {
 		if ( ComplexMode == 2 ) { // r_theta
 			r = fpolr( a, b);
-//			if ( r==0 ) { sprintGR( buffer, a, width, align_mode, round_mode, round_digit); return; }	// zero
 			t = fpolt( a, b);
 			if ( ErrorNo ) ErrorNo=0;
-			sprintGRSi( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
-			sprintGRSi( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
+			sprintGRSiE( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
+			sprintGRSiE( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
 			strcat(buffer, bufferR );	// /_
 			strcat(buffer, buffer2 );
 		} else {	// a+bi
-			sprintGRSi( buffer,  a, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
-			sprintGRSi( buffer2, b, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+			sprintGRSiE( buffer,  a, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+			sprintGRSiE( buffer2, b, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
 			if ( a==0 ) { buffer[0]='\0'; 
 				if ( buffer2[0]==0xFFFFFF99 ) buffer2[0]=0x87;	// (-)sign
 				if ( buffer2[0]==0xFFFFFF89 ) { strcat( buffer, buffer2+1 ); goto next; }
@@ -304,10 +315,10 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 		Cplx_sprintGR1( buffer, num, width, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
 	} else {
-		sprintGRSi( buffer, num.real, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+		sprintGRSiE( buffer, num.real, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
 		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
 		rlen = StrLen( buffer2, &oplen );
-		if ( num.imag ) sprintGRSi( buffer, num.imag, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+		if ( num.imag ) sprintGRSiE( buffer, num.imag, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
 		else buffer[0]='\0';
 		OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
 		ilen = StrLen( buffer3, &oplen );
@@ -325,9 +336,9 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 			iwidth = width - rwidth;
 		}
 	  next:
-		sprintGRSi( buffer, num.real, rwidth, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+		sprintGRSiE( buffer, num.real, rwidth, LEFT_ALIGN, round_mode, round_digit, 0);	// real
 		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
-		if ( num.imag ) sprintGRSi( buffer, num.imag, iwidth, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+		if ( num.imag ) sprintGRSiE( buffer, num.imag, iwidth, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
 		else buffer[0]='\0';
 		OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
 		if ( ( num.real==0 ) && ( num.imag!=0 ) ) {
@@ -368,8 +379,8 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 			r = fpolr( a, b);
 			t = fpolt( a, b);
 			if ( ErrorNo ) ErrorNo=0;
-			sprintGRSi( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
-			sprintGRSi( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
+			sprintGRSiE( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
+			sprintGRSiE( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
 			buffer3[0]='\0';
 			strcat(buffer3, bufferR );	// /_
 			strcat(buffer3, buffer2 );
@@ -380,8 +391,8 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 			strcat(buffer3, buffer2 );
 			
 		} else {		// a+bi
-			if ( a!=0 )	sprintGRSi( buffer,  a, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
-			if ( b!=0 ) sprintGRSi( buffer2, b, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+			if ( a!=0 )	sprintGRSiE( buffer,  a, width, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+			if ( b!=0 ) sprintGRSiE( buffer2, b, width, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
 			else buffer2[0]='\0';
 
 			if ( buffer2[0]==0xFFFFFF89 ) buffer2[0]='+';
@@ -2609,11 +2620,13 @@ void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr){
 }
 
 //---------------------------------------------------------------------------------------------
+char* NewClipBuffer( int *size );
+
 void EditPaste1( char *srcbase, char *Buffer, int *ptr, int maxlength ){
 	int len,i,j,clipPtr;
 	int opcode;
+	if ( ( Buffer== 0 ) || ( Buffer[0] =='\0' ) ) return ;	// no clip data
 
-	if ( Buffer[0]=='\0' ) return ;	// no clip data
 	len=strlenOp(Buffer);
 	if ( (*ptr)+len > maxlength ) {
 		i= (*ptr)+len - maxlength ;
@@ -2627,24 +2640,23 @@ void EditPaste1( char *srcbase, char *Buffer, int *ptr, int maxlength ){
 	(*ptr)=(*ptr)+len;
 }
 
-void EditCopy1( char *srcbase, char *Buffer, int ptr, int startp, int endp ){
+void EditCopy1( char *srcbase, int ptr, int startp, int endp ){
 	int len,i,j;
+	char *Buffer;
 	
 	PrevOpcode( srcbase, &endp ); if ( startp>endp ) return;
 	i=OpcodeLen( GetOpcode(srcbase, endp ) );
 	len=(endp)-(startp)+i;
 	if ( len <=0 ) return;
-//	if ( len > ClipMax ) {
-//		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
-//		CB_ErrMsg(ErrorNo);
-//		return ;
-//	}
+	Buffer=NewClipBuffer(&len);
+	if ( Buffer== 0 ) return ;	// no clip data
 	for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i+startp];	// copy to Buffer
 	Buffer[i]='\0';
 }
 
-void EditCutDel1( char *srcbase, char *Buffer, int *ptr, int startp, int endp, int del, int maxlength ){	// del:1 delete
+void EditCutDel1( char *srcbase, int *ptr, int startp, int endp, int del, int maxlength ){	// del:1 delete
 	int len,i,flag=0;
+	char *Buffer;
 
 	if ( startp>endp ) { i=startp; startp=endp; endp=i; flag=1; }
 	PrevOpcode( srcbase, &endp ); if ( startp>endp ) return;
@@ -2652,11 +2664,8 @@ void EditCutDel1( char *srcbase, char *Buffer, int *ptr, int startp, int endp, i
 	len=(endp)-(startp)+i;
 	if ( len <=0 ) return;
 	if ( del == 0 ) {
-//		if ( len > ClipMax ) {
-//			ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
-//			CB_ErrMsg(ErrorNo);
-//			return ;
-//		}
+		Buffer=NewClipBuffer(&len);
+		if ( Buffer== 0 ) return ;	// no clip data
 		for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i+startp];	// copy to Buffer
 		Buffer[i]='\0';
 	}
@@ -2715,7 +2724,7 @@ short selectPRGM=0;
 char lowercase=0;
 
 int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel, int fn_cancel) {
-	char buffer2[CB_StrBufferMax];
+	char buffer2[256];
 	char buf[22];
 	char fnbuf[16*8];
 	unsigned int key=0;
@@ -2882,7 +2891,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 				if ( ClipStartPtr >= 0 ) {
 					if ( ClipEndPtr < 0 ) goto F1j;
 					if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-					EditCopy1( buffer, ClipBuffer, ptrX, ClipStartPtr, ClipEndPtr );
+					EditCopy1( buffer, ptrX, ClipStartPtr, ClipEndPtr );
 				} else 
 				if ( CommandType ) GetGenuineCmdF1( &key );
 				else if ( length ) cont= fn_cancel;
@@ -2895,7 +2904,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 				if ( ClipStartPtr >= 0 ) {
 					if ( ClipEndPtr < 0 ) goto F2j;
 					if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-					EditCutDel1( buffer, ClipBuffer, &ptrX, ClipStartPtr, ClipEndPtr, 0, MaxStrlen );	// cut
+					EditCutDel1( buffer, &ptrX, ClipStartPtr, ClipEndPtr, 0, MaxStrlen );	// cut
 				} else
 				if ( CommandType ) GetGenuineCmdF2( &key );
 				else if ( length ) cont= fn_cancel;
@@ -2909,7 +2918,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 				  F3del:					// clip delete
 					if ( ClipEndPtr < 0 ) goto F3j;
 					if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-					EditCutDel1( buffer, ClipBuffer, &ptrX, ClipStartPtr, ClipEndPtr, 1, MaxStrlen );	// delete
+					EditCutDel1( buffer, &ptrX, ClipStartPtr, ClipEndPtr, 1, MaxStrlen );	// delete
 				} else 
 				if ( CommandType ) GetGenuineCmdF3( &key );
 				else {
@@ -3342,4 +3351,4 @@ int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte

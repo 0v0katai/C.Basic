@@ -10,7 +10,7 @@ char   *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 char   defaultStrAry=26;	// <r>
 short  defaultStrAryN=127;
-short  defaultStrArySize=255+1;
+int    defaultStrArySize=255+1;	// =CB_StrBufferMax
 
 char   defaultFnAry=57;		// z
 char   defaultFnAryN=127;
@@ -22,8 +22,8 @@ short  defaultGraphArySize=255+1;
 
 char	dummychar1;
 char	dummychar2;
-char	dummychar3;
-char	dummychar4;
+//char	dummychar3;
+//char	dummychar4;
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int StrGetOpcode( char *SRC, int ptr ){
@@ -183,7 +183,7 @@ int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size ){	// strptr:1
 int	StrRepl( char *str1, char *buffer, char *srcstr, char *repstr, int ptr, int maxlen ){	// ptr:1-
 	int srclen,replen,bufptr=1;
 	int oplen,r;
-	char tmp[CB_StrBufferMax];
+	char tmp[256];
 	
 	srclen=StrLen( srcstr, &oplen );
 	replen=StrLen( repstr, &oplen );
@@ -242,7 +242,7 @@ int StrInv( char *str1, char *str2 ) {	// mirror$(str2) -> str1
 	int opcode;
 	int opptr1,opptr2;
 	slen=StrLen( str2 ,&oplen );
-	if ( slen < 1 ) return;
+	if ( slen < 1 ) return 0;
 	opptr1=0;
 	opptr2=StrOpcodePtr( str2, slen ); 		// strptr -> opptr2
 	for (i=0; i<slen; i++ ) {
@@ -251,6 +251,7 @@ int StrInv( char *str1, char *str2 ) {	// mirror$(str2) -> str1
 		StrPutOpcodeInc( str1, &opptr1, opcode ) ;
 	}
 	str1[opptr1]='\0';
+	return opptr1;
 }
 
 int StrRotate( char *str1, char *str2, int n ) {	// Rotate$("1234567",  2) -> "3456712"
@@ -294,7 +295,7 @@ int StrLwr( char *str1, char *str2 ) {		// Lwr$(str2, n) -> str1
 	int opcode;
 	int opptr1,opptr2;
 	slen=StrLen( str2 ,&oplen );
-	if ( slen < 1 ) return;
+	if ( slen < 1 ) return 0;
 	opptr1=0;
 	opptr2=0;
 	for (i=0; i<slen; i++ ) {
@@ -303,13 +304,14 @@ int StrLwr( char *str1, char *str2 ) {		// Lwr$(str2, n) -> str1
 		StrPutOpcodeInc( str1, &opptr1, opcode ) ;
 	}
 	str1[opptr1]='\0';
+	return opptr1;
 }
 int StrUpr( char *str1, char *str2 ) {		// Upr$(str2, n) -> str1
 	int i,slen,oplen;
 	int opcode;
 	int opptr1,opptr2;
 	slen=StrLen( str2 ,&oplen );
-	if ( slen < 1 ) return;
+	if ( slen < 1 ) return 0;
 	opptr1=0;
 	opptr2=0;
 	for (i=0; i<slen; i++ ) {
@@ -318,6 +320,7 @@ int StrUpr( char *str1, char *str2 ) {		// Upr$(str2, n) -> str1
 		StrPutOpcodeInc( str1, &opptr1, opcode ) ;
 	}
 	str1[opptr1]='\0';
+	return opptr1;
 }
 
 int StrChar( char *str1, char *str2, int n ){	// StrChar(str2,n)->str1
@@ -333,11 +336,12 @@ int StrChar( char *str1, char *str2, int n ){	// StrChar(str2,n)->str1
 	}
 	exit:
 	str1[opptr1]='\0';
+	return opptr1;
 }
 
 int StrCenter( char *str1, char *str2, int max, char *str3 ){	// StrCenter(str2,max,str3)->str1
-	char buffer[CB_StrBufferMax];
-	char buffer2[CB_StrBufferMax];
+	char buffer[256];
+	char buffer2[256];
 	int n,slen,oplen;
 	slen=StrLen( str2 ,&oplen );
 	StrRight( buffer2, str2, slen );
@@ -353,6 +357,7 @@ int StrCenter( char *str1, char *str2, int max, char *str3 ){	// StrCenter(str2,
 	} else {
 		StrMid( str1, buffer2, 1, max );
 	}
+	return max;
 }
 
 int StrBase( char *str1, char *str2, int base1, int base2 ) {	// Strbase( str1.base1->str2.base2
@@ -517,7 +522,6 @@ void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) {
 //----------------------------------------------------------------------------------------------
 // Casio Basic
 //----------------------------------------------------------------------------------------------
-
 int CB_IsStr( char *SRC, int execptr ) {
 	int c=SRC[execptr];
 	if ( c == 0x22 ) {	// String
@@ -546,8 +550,17 @@ int CB_IsStr( char *SRC, int execptr ) {
 }
 
 char* NewStrBuffer(){
-	if ( CB_StrBufferCNT > CB_StrBufferCNTMax-1 ) { CB_Error(MemoryERR); return NULL; }	// Memory error
-	return CB_StrBuffer+ (CB_StrBufferCNT++)*CB_StrBufferMax;
+	int reg = Mattmp_StrBuffer;	//	StrBuffer
+	if ( MatAry[reg].SizeA == 0 ) {
+		CB_StrBufferCNT=1;			// 1:CurrentStr		2~4:tmpStrBbuffer
+		DimMatrixSub( reg, 8, CB_StrBufferCNTMax, CB_StrBufferMax, 1 );	// byte matrix
+	} else { 
+		CB_StrBufferCNT++;
+		MatElementPlus( reg, CB_StrBufferCNT, CB_StrBufferMax );	// matrix +
+	}
+	if ( ErrorNo ) { CB_StrBuffer=0; CB_Error(MemoryERR); return NULL; }	// Memory error
+	CB_StrBuffer = (char*)MatAry[reg].Adrs;
+	return (char *)MatrixPtr( reg, CB_StrBufferCNT, 1 );
 }
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 	int dimA,dimB;
@@ -556,9 +569,9 @@ char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
 	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
 	dimB = aryMax;
 	if ( MatAry[reg].SizeA == 0 ) {
-		DimMatrixSub( reg, 8, dimA, dimB, MatBase );	// byte matrix
+		DimMatrixSub( reg, 8, dimA, dimB, 1 );	// byte matrix
 	} else { 
-		MatElementPlus( reg, dimA, dimB );				// matrix +
+		if ( MatAry[reg].SizeA < dimA ) MatElementPlus( reg, dimA, dimB );				// matrix +
 	}
 	if ( ErrorNo ) return 0; // error
 	dimB=MatAry[reg].Base;
@@ -582,7 +595,6 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			break;
 		case 2:	// $Mat
 			ExecPtr++;
-//			if ( ( SRC[ExecPtr] == 0x7F ) && ( SRC[ExecPtr+1] == 0x40 ) ) ExecPtr+=2;	// skip 'Mat '
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 			if ( ErrorNo ) return 0 ;			// error
 			buffer=MatrixPtr( reg, dimA, dimB );
@@ -883,7 +895,7 @@ void ClrLine5800P( int CsrX ){
 	if ( CB_fx5800P == 0 ) locate(CsrX,CursorY); PrintLine((unsigned char*)" ",21);
 }
 void CB_StrPrint( char *SRC , int csrX ) {
-	char buffer[CB_StrBufferMax];
+	char buffer[256];
 	int c,d,i=0;
 	int px,code;
 	int extAnkfont=0x100;
@@ -895,7 +907,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		CB_StorStr( SRC );
 		dspflag=0;
 	} else {			// display str
-		OpcodeStringToAsciiString( buffer, CB_CurrentStr, CB_StrBufferMax-1 );
+		OpcodeStringToAsciiString( buffer, CB_CurrentStr, 256-1 );
 		CB_SelectTextVRAM();	// Select Text Screen
 		if ( ( CursorX >1 ) ) Scrl_Y();
 		CursorX+=csrX; px=0;
@@ -973,7 +985,7 @@ int CB_StrSrc( char *SRC ) {
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	slen=StrLen( CB_CurrentStr ,&maxoplen);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	buffer2  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
@@ -1261,6 +1273,7 @@ int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	regintX = tmpintX;
 	return result;
 }
+
 //----------------------------------------------------------------------------------------------
 int CB_StrJoin( char *SRC ) {
 	int maxoplen;
@@ -1391,7 +1404,7 @@ int CB_StrRotate( char *SRC ) {	// StrRotate( str1 [,n] )
 	return CB_StrBufferMax-1;
 }
 
-int CB_ExpToStr( char *SRC ) {	//  Exp->Str
+int CB_ExpToStr( char *SRC ) {	//  Exp->Str(
 	int maxoplen;
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
@@ -1470,6 +1483,7 @@ int CB_EvalToStr( char *SRC ){		// ToStr( n
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
+
 int CB_Hex( char *SRC ){		// Hex(
 	int n,tmp;
 	int value = CB_EvalInt( SRC );
@@ -1524,11 +1538,11 @@ int CB_StrRepl( char *SRC ){	// StrRepl( Str1,Str2,Str3[,n])->str4
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	slen=StrLen( CB_CurrentStr ,&maxoplen);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	srcstr  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	repstr  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
@@ -1695,7 +1709,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 int	StrSplit( char *str1, char *buffer, char *srcstr, int ptr, int maxlen ){	// ptr:1-	->MatAns
 	int buflen,srclen,bufptr,ptrorg=ptr,byteptr,bytebufptr,bytesrclen;
 	int oplen,r,max=0,i;
-	char tmp[CB_StrBufferMax];
+	char tmp[256];
 	int dimA,dimB,base=1,element=8;
 	
 	buflen=StrLen( buffer, &oplen );	// multi byte length
@@ -1743,7 +1757,7 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	slen=StrLen( CB_CurrentStr ,&maxoplen);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	srcstr  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error

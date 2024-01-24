@@ -1401,7 +1401,7 @@ int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
 	*orgflag=0; if ( c == '@' ) { ExecPtr++; *orgflag=1; }
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, cstr, CB_StrBufferMax-1 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, cstr, 256-1 );		// String -> buffer	return 
 		GetOpcodeLen( cstr, 0, &opcode );
 	} else {	// expression
 		opcode = CB_EvalInt( SRC );
@@ -1430,7 +1430,7 @@ int CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	int width=6,height=8;
 	char vbuf[16*8];
 	char *vram=(char*)PictAry[0];
-	unsigned char cstr[CB_StrBufferMax];
+	unsigned char cstr[256];
 	int orgflag;
 
 	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
@@ -1473,7 +1473,7 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 	int width=6,height=6;
 	char vbuf[16*8];
 	char *vram=(char*)PictAry[0]+384*24*2;
-	unsigned char cstr[CB_StrBufferMax];
+	unsigned char cstr[256];
 	int orgflag;
 
 	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
@@ -1515,7 +1515,7 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 char* CB_SetFontSub( char *SRC, int *reg, int mini ) {
 	int CharNo;
 	int width,height;
-	unsigned char cstr[CB_StrBufferMax];
+	unsigned char cstr[256];
 	int orgflag;
 	char *fontptr;
 

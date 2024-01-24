@@ -115,11 +115,30 @@ int EndOfSrc( char *SRC, int ptr ) {
 }
 
 //---------------------------------------------------------------------------------------------
+char* NewClipBuffer( int *size ){	// size:-1  max
+	int free;
+	int reg = Mattmp_ClipBuffer;	//	ClipBuffer
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) return ClipBuffer;
+	free = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr;
+	if ( *size<0 ) *size=free;
+	if ( free < *size ) {
+		ErrorNo=NotEnoughMemoryERR;		// Memory error
+		CB_ErrMsg(ErrorNo);
+		return NULL;
+	}
+	if ( MatAry[reg].SizeA == 0 ) {
+		DimMatrixSub( reg, 8, *size, 1, 0 );	// byte matrix
+	} else {
+		DimMatrixSubNoinit( reg, 8, *size, 1, 0, 0 );
+	}
+	ClipBuffer = (char *)MatAry[reg].Adrs;
+	return ClipBuffer;
+}
+
 void EditPaste( char *filebase, char *Buffer, int *ptr ){
 	int len,i,j;
 	char *srcbase;
-
-	if ( Buffer[0]=='\0' ) return ;	// no clip data
+	if ( ( Buffer== 0 ) || ( Buffer[0] =='\0' ) ) return ;	// no clip data
 		
 	len=strlenOp(Buffer);
 	if ( len <=0 ) return;
@@ -140,39 +159,34 @@ void EditPaste( char *filebase, char *Buffer, int *ptr ){
 	(*ptr)=(*ptr)+len;
 }
 
-void EditCopy( char *filebase, char *Buffer, int ptr, int startp, int endp ){
+void EditCopy( char *filebase, int ptr, int startp, int endp ){
 	int len,i,j;
 	char *srcbase;
+	char *Buffer;
 
 	PrevOpcode( filebase+0x56, &endp ); if ( startp>endp ) return;
 	i=OpcodeLen( GetOpcode(filebase+0x56, endp) );
 	len=(endp)-(startp)+i;
 	if ( len <=0 ) return;
-	if ( len > ClipMax ) {
-		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
-		CB_ErrMsg(ErrorNo);
-		return ;
-	}
-	
+	Buffer=NewClipBuffer(&len);
+	if ( Buffer== 0 ) return ;	// no clip data
 	srcbase=filebase+0x56+(startp);
 	for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i];	// copy to Buffer
 	Buffer[i]='\0';
 }
 
-void EditCutDel( char *filebase, char *Buffer, int *ptr, int startp, int endp, int del ){	// del:1 delete
+void EditCutDel( char *filebase, int *ptr, int startp, int endp, int del ){	// del:1 delete
 	int len,i;
 	char *srcbase;
+	char *Buffer;
 
 	PrevOpcode( filebase+0x56, &endp ); if ( startp>endp ) return;
 	i=OpcodeLen( GetOpcode(filebase+0x56, endp) );
 	len=(endp)-(startp)+i;
 	if ( len <=0 ) return;
 	if ( del == 0 ) {
-		if ( len > ClipMax ) {
-			ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
-			CB_ErrMsg(ErrorNo);
-			return ;
-		}
+		Buffer=NewClipBuffer(&len);
+		if ( Buffer== 0 ) return ;	// no clip data
 		srcbase=filebase+0x56+(startp);
 		for ( i=0; i<len; i++ ) Buffer[i]=srcbase[i];	// copy to Buffer
 		Buffer[i]='\0';
@@ -1208,7 +1222,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( ClipStartPtr >= 0 ) {
 							if ( ClipEndPtr < 0 ) goto F1j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCopy( filebase, ClipBuffer, csrPtr, ClipStartPtr, ClipEndPtr );
+							EditCopy( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
 							UpdateLineNum=1;
 						} else {
 							if ( CommandType ) { GetGenuineCmdF1( &key ); goto F1j; }
@@ -1248,7 +1262,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( SearchMode >= 2 ) {	// replace one
 							i = strlenOp(searchbuf);
 							csrPtr+=i;
-							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
+							EditCutDel( filebase, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
 							EditPaste( filebase, replacebuf, &csrPtr);	// insert
 							UpdateLineNum=1;
 							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
@@ -1259,7 +1273,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( ClipStartPtr >= 0 ) {
 							if ( ClipEndPtr < 0 ) goto F2j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCutDel( filebase, ClipBuffer, &csrPtr, ClipStartPtr, ClipEndPtr, 0 );	// cut
+							EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 0 );	// cut
 							UpdateLineNum=1;
 						} else {
 							if ( CommandType ) { GetGenuineCmdF2( &key ); goto F2j; }
@@ -1307,7 +1321,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						  F3del:					// clip delete
 							if ( ClipEndPtr < 0 ) goto F3j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCutDel( filebase, ClipBuffer, &csrPtr, ClipStartPtr, ClipEndPtr, 1 );	// delete
+							EditCutDel( filebase, &csrPtr, ClipStartPtr, ClipEndPtr, 1 );	// delete
 							UpdateLineNum=1;
 						} else {
 							if ( CommandType ) GetGenuineCmdF3( &key );
@@ -1352,7 +1366,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( ClipStartPtr >= 0 ) {	// Clip -> Search for text
 							if ( ClipEndPtr < 0 ) goto F4j;
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
-							EditCopy( filebase, ClipBuffer, csrPtr, ClipStartPtr, ClipEndPtr );
+							EditCopy( filebase, csrPtr, ClipStartPtr, ClipEndPtr );
 							ClipBuffer[64]='\0';
 							StrMid( searchbuf, ClipBuffer, 1, 64 ); 
 							SearchMode = SearchForText(  SrcBase, searchbuf, &csrPtr, replacebuf ) ;
@@ -1391,7 +1405,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						while ( KeyScanDownAC() == 0 ) {
 							i = strlenOp(searchbuf);
 							csrPtr+=i;
-							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
+							EditCutDel( filebase, &csrPtr, csrPtr-i, csrPtr, 1 );	// delete
 							EditPaste( filebase, replacebuf, &csrPtr);	// insert
 							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
 							if ( i==0 ) { SearchMode=0; break; }
@@ -1992,8 +2006,7 @@ int CB_BreakStop() {
 	int scrmode=ScreenMode;
 	int dbgmode= ( ( DisableDebugMode == 0 ) || ( ForceDebugMode ) ) ;
 
-	if ( BreakPtr == -9999) return BreakPtr;	// stack error
-//	if ( ErrorNo == StackERR ) { BreakPtr=-999; return BreakPtr; }	// stack error
+	if ( ErrorNo == StackERR ) { BreakPtr=-999; return BreakPtr; }	// stack error
 
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	Bdisp_PutDisp_DD();
@@ -2010,7 +2023,6 @@ int CB_BreakStop() {
 		CB_ErrMsg( ErrorNo );
 		BreakPtr=-999;
 		ExecPtr=ErrorPtr;
-		if ( ErrorNo == StackERR ) { BreakPtr=-9999; return BreakPtr; }	// stack error
 		DebugScreen = 0;
 		ErrorNo=0;
 		if ( dbgmode ) DebugMode=2;	// enable debug mode

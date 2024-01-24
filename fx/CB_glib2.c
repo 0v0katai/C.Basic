@@ -486,6 +486,15 @@ unsigned int Trace(int *index ) {
 }
 
 //----------------------------------------------------------------------------------------------
+double* NewTraceAry(){
+	int reg = Mattmp_traceAry;	//	traceAry
+	if ( MatAry[reg].SizeA == 0 ) {
+		DimMatrixSub( reg, 64, 130, 1, 0 );	// double matrix
+		if ( ErrorNo ) { CB_Error(MemoryERR); return NULL; }	// Memory error
+	}
+	return (double*)MatAry[reg].Adrs;
+}
+
 /*
 void Graph_Draw(){	//
 	int i;
@@ -591,6 +600,8 @@ void Graph_Draw(){	//	EE:Graph Y= F0:Graph Y>  F1:Graph Y<  F2:Graph Y>=  F3:Gra
 	if ( tmp_Style >= 0 ) style=tmp_Style;
 	regX.real   = Xmin-Xdot;
 	
+	traceAry = NewTraceAry();
+
 	for ( i=0; i<=127; i++) {
 		//-----------------------------
 		ty=CB_EvalStrDBL(GraphY,1);		// function

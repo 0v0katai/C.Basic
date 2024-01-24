@@ -120,8 +120,8 @@ void CB_PopUpWin( char *SRC ){	// PopUpWin(
 }
 */
 int CB_PopUpWin( char *SRC ){	// PopUpWin(
-	char buffer[CB_StrBufferMax];
-	char buffer2[CB_StrBufferMax];
+	char buffer[64];
+	char buffer2[64];
 	int c,n,result=1;
 	n=CB_EvalInt( SRC );
 	switch ( n ) {
@@ -147,7 +147,7 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 			c=SRC[++ExecPtr];
 			c=CB_IsStr( SRC, ExecPtr );
 			if ( c ) {	// string
-				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+				CB_GetLocateStr( SRC, buffer, 64-1 );		// String -> buffer	return 
 			} else {	// expression
 				{ CB_Error(SyntaxERR); return; }	// Syntax error
 			}
@@ -158,7 +158,7 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 				c=SRC[++ExecPtr];
 				c=CB_IsStr( SRC, ExecPtr );
 				if ( c ) {	// string
-					CB_GetLocateStr( SRC, buffer2, CB_StrBufferMax-1 );		// String -> buffer	return 
+					CB_GetLocateStr( SRC, buffer2, 64-1 );		// String -> buffer	return 
 				} else {	// expression
 					{ CB_Error(SyntaxERR); return; }	// Syntax error
 				}
@@ -171,7 +171,7 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 			c=SRC[++ExecPtr];
 			c=CB_IsStr( SRC, ExecPtr );
 			if ( c ) {	// string
-				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+				CB_GetLocateStr( SRC, buffer, 64-1 );		// String -> buffer	return 
 			} else {	// expression
 				{ CB_Error(SyntaxERR); return; }	// Syntax error
 			}
@@ -182,7 +182,7 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 				c=SRC[++ExecPtr];
 				c=CB_IsStr( SRC, ExecPtr );
 				if ( c ) {	// string
-					CB_GetLocateStr( SRC, buffer2, CB_StrBufferMax-1 );		// String -> buffer	return 
+					CB_GetLocateStr( SRC, buffer2, 64-1 );		// String -> buffer	return 
 				} else {	// expression
 					{ CB_Error(SyntaxERR); return; }	// Syntax error
 				}
@@ -274,7 +274,7 @@ int CB_LocateMode( char *SRC) {
 }
 
 void CB_Locate( char *SRC ){
-	char buffer[CB_StrBufferMax];
+	char buffer[256];
 	int c;
 	int lx,ly;
 	double value;
@@ -297,7 +297,7 @@ void CB_Locate( char *SRC ){
 	
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
 	} else {	// expression
 		value = CB_EvalDbl( SRC );
 		sprintGR(buffer, value, 22-lx,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
@@ -473,7 +473,7 @@ int CB_TextOprand( char *SRC, int *py, int *px) {
 }
 void CB_Text( char *SRC ) { //	Text
 	unsigned int key;
-	char buffer[CB_StrBufferMax];
+	char buffer[256];
 	int c;
 	int px,py,d;
 	double value;
@@ -489,7 +489,7 @@ void CB_Text( char *SRC ) { //	Text
 	c=SRC[++ExecPtr];
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
 	} else {	// expression
 		d=(128-px)/4;
 		if (d>24) d=24;	// digit max
@@ -516,7 +516,7 @@ void CB_Text( char *SRC ) { //	Text
 }
 //-----------------------------------------------------------------------------
 void CB_LocateYX( char *SRC ){
-	char buffer[CB_StrBufferMax];
+	char buffer[256];
 	int c;
 	int px,py,d;
 	double value;
@@ -532,7 +532,7 @@ void CB_LocateYX( char *SRC ){
 	ExecPtr++;
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
 	} else {	// expression
 		d=(128-px)/6;
 		if (d>21) d=21;	// digit max
@@ -824,12 +824,18 @@ void RclPict( int pictNo, int errorcheck){	//
 			RclPictSmem(pictNo, 0x4C );	// S.mem
 		} else {
 			RclPictMCS( pictNo, errorcheck); // MCS
+			if ( ErrorNo == MemoryERR ) { 	// Memory error
+				ErrorNo=0;
+				RclPictSmem(pictNo, 0x4C );	// S.mem
+				if ( ErrorNo == 0 ) {
+					StoPict( pictNo );
+				}
+			}
 		}
 		if ( errorcheck ) return;
 		ErrorNo=0;
 		return;
 	}
-	
 	pict = PictAry[pictNo];	//  heap mode
 	if ( pict == NULL ) {	//  not exist : read smem
 		pict2=(unsigned char *)LoadPicture( pictNo );
@@ -841,15 +847,15 @@ void RclPict( int pictNo, int errorcheck){	//
 		pict = HiddenRAM_mallocPict(pictNo) ;						// Pict array ptr*
 		if ( pict != NULL ) {
 			PictAry[pictNo] = pict;			//  heap mode pict
-			memset( pict, 0, 1024 );
 			i=SrcSize( (char*)pict2 ); 
-			memcpy( pict, pict2+0x4C, i );
+			memcpy( pict, pict2+0x4C, 1024 );
+			if ( i<1024 ) memset( pict+i, 0, 1024-i );
 			WriteVram( pict );
-			HiddenRAM_freeProg(pict2);
+//			HiddenRAM_freeProg(pict2);
 			return;
 		} else {
 			WriteVram( pict2+0x4C );
-			HiddenRAM_freeProg(pict2);
+//			HiddenRAM_freeProg(pict2);
 			return ;
 		}
 	}
@@ -1699,7 +1705,7 @@ unsigned int GWait( int exit_cancel ) {
 
 
 int CB_Disp( char *SRC ){		// Disp "A=",A
-	char buffer[CB_StrBufferMax];
+	char buffer[128];
 	char buffer2[64];
 	int c;
 	complex value;
@@ -1714,7 +1720,7 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 		CB_StrBufferCNT=0;			// String buffer clear
 		c=CB_IsStr( SRC, ExecPtr );
 		if ( c ) {	// string
-			CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+			CB_GetLocateStr( SRC, buffer, 128-1 );		// String -> buffer	return 
 		} else {	// expression
 			value = CB_Cplx_EvalDbl( SRC );
 			Cplx_sprintGR2SRC( SRC, buffer, buffer2, value, 22-CursorX );
@@ -1947,7 +1953,7 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...
 	int c,i,j,n;
 	unsigned int key;
-	char buffer[CB_StrBufferMax];
+	char buffer[128];
 	char TitleName[40];
 	char BranchName[10][34];
 	int  Branch[10];
@@ -1962,7 +1968,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 	
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
-		CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+		CB_GetLocateStr( SRC, buffer, 128-1 );		// String -> buffer	return 
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 	StrMid( TitleName, buffer, 1, 19 );
 
@@ -1975,7 +1981,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 		CB_StrBufferCNT=0;			// String buffer clear
 		c=CB_IsStr( SRC, ExecPtr );
 		if ( c ) {	// string
-			CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+			CB_GetLocateStr( SRC, buffer, 128-1 );		// String -> buffer	return 
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
 		StrMid( &BranchName[n][0], buffer, 1, 16 );
 		c=SRC[ExecPtr];

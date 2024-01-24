@@ -57,7 +57,7 @@ int OS_Version(){
 //---------------------------------------------------------------------------------------------
 void * HiddenRAM(void){	// Check HiddenRAM 
 	volatile unsigned int *NorRAM=(volatile unsigned int*)0xA8000000;	// Nomarl RAM TOP (no cache area)
-	volatile unsigned int *HidRAM=(volatile unsigned int*)0x88040000;	// Hidden RAM TOP (cashe area)
+	volatile unsigned int *HidRAM=(volatile unsigned int*)0x88040000;	// Hidden RAM TOP (cache area)
 	int a,b;
 	int K55=0x55555555;
 	int KAA=0xAAAAAAAA;
@@ -172,7 +172,6 @@ int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 }
 
 void HiddenRAM_ExtFontAryInit() {
-	HiddenRAM_Top = (char *)ClipBuffer+ ClipMax;	// Heap RAM TOP
 	if ( EnableExtFont ) {
 		ExtAnkFontFX     =(unsigned char *)HiddenRAM_Top ;				// Ext Ascii font
 		ExtAnkFontFXmini =(unsigned char *)(ExtAnkFontFX     + 96*8) ;	// Ext Ascii font
@@ -195,14 +194,15 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 	Mattmpreg=MatAryMax-1;
 	ExtListMax=MatAryMax-33;
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {		// hidden RAM init
+		ClipBuffer  = (char *)((char*)AliasVarCodeLbl+ sizeof(ALIAS_VAR)*ALIASVARMAXLBL );
 		EditMaxfree = EDITMAXFREE2;
 		EditMaxProg = EDITMAXPROG2;
 		NewMax      = NEWMAX2;
 		ClipMax     = CLIPMAX2;
-		HiddenRAM_ExtFontAryInit();
 		HiddenRAM_Top         = (char*)0x88040000+16+256;			// Hidden RAM TOP
 		HiddenRAM_End         = (char*)0x88080000-PICTBACKSPACE;	// Hidden RAM END
 		HiddenRAM_ProgNextPtr = HiddenRAM_Top;						// Hidden RAM Prog next ptr
+		HiddenRAM_ExtFontAryInit();
 		OplistRecentFreq=(toplistrecentfreq *)(HIDDENRAM_TOP+16);
 		OplistRecent    =(short *)(HIDDENRAM_TOP+16+128);
 		if ( HiddenRAM_MatAryRestore() ) return ;			// hidden RAM ready
@@ -210,7 +210,10 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 		MatAry = (matary *)HiddenRAM_MatTopPtr;
 		HiddenRAM_MatAryStore();
 		InitOpcodeRecent();
+		ClipBuffer[0]='\0';
 	} else {		// use heap RAM
+		HiddenRAM_Top    = (char *)((char*)AliasVarCodeLbl+ sizeof(ALIAS_VAR)*ALIASVARMAXLBL );
+		ClipBuffer  = 0 ;		//
 		EditMaxfree = EDITMAXFREE;
 		EditMaxProg = EDITMAXPROG;
 		NewMax      = NEWMAX;
