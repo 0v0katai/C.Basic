@@ -2046,6 +2046,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F5A, "RowSize(" }, 
 	{ 0x7F5B, "MatBase(" }, 
 	{ 0x7F5C, "ListCmp(" }, 
+	{ 0x7F5E, "RGB(" }, 
 	{ 0x7F5F, "Ticks" }, 
 	{ 0x7F9F, "KeyRow(" }, 
 	{ 0x7FB4, " Xor " }, 		// SDK emu not support
@@ -2116,6 +2117,8 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF948, "StrBase(" }, 
 	{ 0xF949, "StrRepl(" }, 
 	{ 0xF94F, "Wait " }, 
+	{ 0xF99C, "White " },
+	{ 0xF9BE, "Back-Color " },
 	{ 0xF9C0, "_ClrVram" },
 	{ 0xF9C1, "_ClrScreen" },
 	{ 0xF9C2, "_DispVram" },
@@ -2731,16 +2734,22 @@ double InputNumD_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, 
 double InputNumD_CB_sub(int x, int y, int width, int MaxStrlen, int ptrX, char* SPC, int REV, double defaultNum ) {		//  Basic Input sub
 	unsigned int key;
 	double result;
-	key=InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+	int csrX;
+	key=InputStrSub( x, y, width, ptrX, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
-	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) return (defaultNum);
+	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) {
+	  exit:
+		PrintOpcode(x, y, ExpBuffer, width, 0, 0, &csrX, REV , " ");
+		return (defaultNum);
+	}
 	result = Eval( ExpBuffer );
 	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
-		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
 		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
-		if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE  ) return (defaultNum);
+		if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE  ) goto exit;
 		result = Eval( ExpBuffer );
 	}
+	PrintOpcode(x, y, ExpBuffer, width, 0, 0, &csrX, REV , " ");
 	return result; // value ok
 }
 double InputNumD_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input 1
@@ -2749,7 +2758,8 @@ double InputNumD_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV,
 }
 
 double InputNumD_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, double defaultNum) {		//  Basic Input 2
-	sprintGR(ExpBuffer, defaultNum, ExpMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+	if ( defaultNum==0 ) ExpBuffer[0]='\0';
+	else sprintGR(ExpBuffer, defaultNum, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 	return InputNumD_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
 }
 //---------------------------------------------------------------------------------------------- align dummy

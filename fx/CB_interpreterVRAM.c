@@ -124,12 +124,83 @@ void CB_RefreshTime( char *SRC ){	// Bdisp_PutDisp_DD() Refresh time
 	else 
 	{ CB_Error(ArgumentERR); return; }	// Argument error
 }
+/*
 void CB_PopUpWin( char *SRC ){	// PopUpWin(
 	int n;
 	n=CB_EvalInt( SRC );
 	if ( ( n<1 ) || ( n>5 ) ) { CB_Error(ArgumentERR); return; }	// Argument error
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	PopUpWin(n); 
+}
+*/
+int CB_PopUpWin( char *SRC ){	// PopUpWin(
+	char buffer[CB_StrBufferMax];
+	char buffer2[CB_StrBufferMax];
+	int c,n,result=1;
+	n=CB_EvalInt( SRC );
+	switch ( n ) {
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+			PopUpWin(n); 	// required pop
+			break;
+		case 10:	// YesNo
+			c=SRC[ExecPtr];
+			if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			c=SRC[++ExecPtr];
+			c=CB_IsStr( SRC, ExecPtr );
+			if ( c ) {	// string
+				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+			} else {	// expression
+				{ CB_Error(SyntaxERR); return; }	// Syntax error
+			}
+			c=SRC[ExecPtr];
+			if ( c != ',' ) { 
+				result=YesNo2sub(buffer,""); 
+			} else {
+				c=SRC[++ExecPtr];
+				c=CB_IsStr( SRC, ExecPtr );
+				if ( c ) {	// string
+					CB_GetLocateStr( SRC, buffer2, CB_StrBufferMax-1 );		// String -> buffer	return 
+				} else {	// expression
+					{ CB_Error(SyntaxERR); return; }	// Syntax error
+				}
+				result=YesNo2sub(buffer, buffer2); 
+			}
+			break;
+		case 11:	// exit
+			c=SRC[ExecPtr];
+			if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			c=SRC[++ExecPtr];
+			c=CB_IsStr( SRC, ExecPtr );
+			if ( c ) {	// string
+				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+			} else {	// expression
+				{ CB_Error(SyntaxERR); return; }	// Syntax error
+			}
+			c=SRC[ExecPtr];
+			if ( c != ',' ) { 
+				OkMSGstr2(buffer,""); 
+			} else {
+				c=SRC[++ExecPtr];
+				c=CB_IsStr( SRC, ExecPtr );
+				if ( c ) {	// string
+					CB_GetLocateStr( SRC, buffer2, CB_StrBufferMax-1 );		// String -> buffer	return 
+				} else {	// expression
+					{ CB_Error(SyntaxERR); return; }	// Syntax error
+				}
+				OkMSGstr2(buffer, buffer2); 
+			}
+			break;
+		default:
+			{ CB_Error(ArgumentERR); return; }	// Argument error
+			break;
+	}
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return result;
 }
 
 void Scrl_Y(){
@@ -1759,13 +1830,22 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 	char buffer[9];
 	int c;
 	int n;
+	int IconNo;
 
 	n=CB_EvalInt( SRC );
 	if ( ( n<1 )||(n>6) ) { CB_Error(ArgumentERR); return; }	// Argumenterror
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
-	CB_GetLocateStr( SRC, buffer, 8 );		// String -> buffer	return 
+
+	c=CB_IsStr( SRC, ExecPtr );
+	if ( c ) {	// string
+		CB_GetLocateStr( SRC, buffer, 8 );		// String -> buffer	return 
+	} else {	// expression
+		IconNo = CB_EvalInt( SRC );
+		Fkey_Icon( n-1, IconNo);
+		goto exit;
+	}
 	c=SRC[ExecPtr];
 	if ( c != ',' )	 {
 //		if ( RangeErrorCK( SRC ) ) return;
@@ -1801,8 +1881,10 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 				break;
 		}
 	}
+	exit:
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
+//	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
+	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
 
 //----------------------------------------------------------------------------------------------

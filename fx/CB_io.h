@@ -77,6 +77,8 @@ void ErrorADRS(char*, int );
 void MSG1(char*);
 void MSG2(char*, char*);
 void MSGpop(void);
+int YesNo2sub( char*buffer, char*buffer2);
+void OkMSGstr2(char*buffer,char*buffer2);
 
 void ProgressBarPopUp( char *buffer, char *buffer2 ) ;
 void ProgressBar(int current, int max) ;

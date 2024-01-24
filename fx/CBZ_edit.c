@@ -131,6 +131,7 @@ void EditPaste( char *filebase, char *Buffer, int *ptr ){
 	if ( Buffer[0]=='\0' ) return ;	// no clip data
 		
 	len=strlenOp(Buffer);
+	if ( len <=0 ) return;
 	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
 		ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
 		CB_ErrMsg(ErrorNo);
@@ -152,8 +153,10 @@ void EditCopy( char *filebase, char *Buffer, int ptr, int startp, int endp ){
 	int len,i,j;
 	char *srcbase;
 
-	i=OpcodeLen( GetOpcode(filebase+0x56, ptr) );
+	PrevOpcode( filebase+0x56, &endp ); if ( startp>endp ) return;
+	i=OpcodeLen( GetOpcode(filebase+0x56, endp) );
 	len=(endp)-(startp)+i;
+	if ( len <=0 ) return;
 	if ( len > ClipMax ) {
 		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
 		CB_ErrMsg(ErrorNo);
@@ -169,8 +172,10 @@ void EditCutDel( char *filebase, char *Buffer, int *ptr, int startp, int endp, i
 	int len,i;
 	char *srcbase;
 
-	i=OpcodeLen( GetOpcode(filebase+0x56, *ptr) );
+	PrevOpcode( filebase+0x56, &endp ); if ( startp>endp ) return;
+	i=OpcodeLen( GetOpcode(filebase+0x56, endp) );
 	len=(endp)-(startp)+i;
+	if ( len <=0 ) return;
 	if ( del == 0 ) {
 		if ( len > ClipMax ) {
 			ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
@@ -186,7 +191,7 @@ void EditCutDel( char *filebase, char *Buffer, int *ptr, int startp, int endp, i
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
 	ProgfileEdit[ProgNo]=1;	// edit program
 
-	(*ptr)-=(endp-startp);
+	(*ptr)=(startp);
 }
 
 //---------------------------------------------------------------------------------------------
@@ -256,14 +261,15 @@ int OpcodeStrLenBufpx(char *buffer, int ofst) {
 	char tmpbuf[18];
 	int slen;
 	int opcode = GetOpcode( buffer, ofst );
+	int mini=(EditFontSize & 0x0F);
 	if ( opcode=='\0' ) return 0;
 	if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) {
-		if ( (EditFontSize & 0x0F) == 0 ) return 6;
+		if ( mini == 0 ) return 6;
 		else return 5;	// minifont
 	}
 	CB_OpcodeToStr( opcode, tmpbuf ) ;		// SYSCALL
 	slen = CB_MB_ElementCount( tmpbuf ) ;	// SYSCALL
-	if ( (EditFontSize & 0x0F) == 0 ) return slen*6;
+	if ( mini == 0 ) return slen*6;
 //	MiniCursorflag=0;		// mini cursor initialize
 	return CB_PrintMiniLengthStr( (unsigned char*)tmpbuf );	// minifont
 }
@@ -508,7 +514,7 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 	if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 	while ( 1 ) {
 		CurrentLine=EditLineNum+(*NumOfset);
-		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst <= ClipEndPtr ) ) rev=1;
+		rev=0; if ( ( ClipStartPtr >= 0 ) && ( ClipStartPtr <= ofst ) && ( ofst < ClipEndPtr ) ) rev=1;
 		if ( y == (*n) )if (ofst==csrPtr) { *pcx=px; *cy=(*csry); CurrentLineNum=CurrentLine; }
 		opcode = GetOpcode( buffer, ofst );
 		if ( opcode=='\0' ) break;
@@ -532,8 +538,6 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 				} else { c=px+EDITpxNum; d=((*csry)-1)*6+2;
 					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV  ) ;
 					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER ) ;
-					MiniCursorflag=0;		// mini cursor initialize
-					MiniCursorFlashing();
 				}
 				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; }
 				if ( ( opcode==0x0D ) ) { Numflag=0; (*NumOfset)++; }
@@ -547,7 +551,7 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 				if ( ( px > EDITpxMAX ) ) { (y)++; px=1; }
 			}
 			c=(char)*tmpb & 0xFF;
-			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) { tmpb++; i++; }
+			if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) { tmpb++; }
 			tmpb++; i++;
 		}
 		if ( ( opcode==0x0C ) || ( opcode==0x0D ) ) break ;
@@ -792,6 +796,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char DebugMenuSw=0;
 	char JumpMenuSw=0;
 	int ymin,ymax,ymaxpos;
+	int mini;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -833,7 +838,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		
 	KeyRecover();
 	while ( cont ) {
-		if ( (EditFontSize & 0x0F) ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
+		mini=(EditFontSize & 0x0F);
+		if ( mini ) { ymax=8; ymaxpos=9; } else { ymax=6; ymaxpos=7; }
 		if ( EditTopLine  ) { ymin=1; ymax++; } else { ymin=2; }
 		if ( EditFontSize & 0xF0 ) EDITpxNum=12; else EDITpxNum=0;
 		EDITpxMAX=123-EDITpxNum;
@@ -859,6 +865,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		if ( ( DebugScreen == 0 ) && ( run != 1 ) ) {
    			
 			Bdisp_AllClr_VRAM();
+			if ( mini ) {
+				MiniCursorflag=0;		// mini cursor initialize
+				MiniCursorFlashing();
+			}
 			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 			buffer2[8]='\0';
 			if (dumpflg==2) {
@@ -971,7 +981,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		}
 		
 		if ( CommandInputMethod ) DispGenuineCmdMenu();
-		if ( ( (EditFontSize & 0x0F) == 2 ) || ( (EditFontSize & 0x0F) == 4 ) )  ML_rectangle( 0, 0, 127, 55, 0, 0, 2);	// reverse
+		if ( ( mini == 2 ) || ( mini == 4 ) )  ML_rectangle( 0, 0, 127, 55, 0, 0, 2);	// reverse
 //		Bdisp_PutDisp_DD();
 
 		if ( run != 1 ) {
@@ -992,7 +1002,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else { 
 					if ( ClipStartPtr>=0 )	Cursor_SetFlashOn(0x0B);	// ClipMode cursor
 				}
-				if ( (EditFontSize & 0x0F) ) {
+				if ( mini ) {
 					Cursor_SetFlashMode(0); 			// cursor flashing off
 					MiniCursorX=pcx-1+EDITpxNum;
 					MiniCursorY=(cy-1)*6+2;
@@ -1067,6 +1077,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					ClipStartPtr = -1 ;		// ClipMode cancel
 //					break;
 			case KEY_CTRL_EXIT:
+					while ( KeyCheckEXIT() ) ;
 					if ( SearchMode ) {
 						SearchMode=0;		//	Search mode cancel
 					} else {
@@ -1101,6 +1112,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									ExecPtr=csrPtr;
 									BreakPtr=0;
 									DebugMode=1;		// cont mode
+									while ( KeyCheckF1() ) ;
 								} else {
 									if ( JumpMenuSw ) {		// ====== Jump Mode
 										csrPtr=0;
@@ -1606,7 +1618,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 							ScreenModeEdit=1-ScreenModeEdit;
 							RestoreScreenModeEdit();
-							if ( (EditFontSize & 0x0F) ) GetKey_DisableMenu(&key); else GetKey(&key);
+							if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
 							if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
 							break;
 					case KEY_CTRL_CLIP:
@@ -1615,6 +1627,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case KEY_CTRL_PASTE:
 							EditPaste( filebase, ClipBuffer, &csrPtr);
+							offset=csrPtr;
+							offset_y=0;
+							PrevLinePhyN( 6, SrcBase, &offset, &offset_y );
 							UpdateLineNum=1;
 							key=0;
 							break;
@@ -1634,7 +1649,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_INS:
-							if ( (EditFontSize & 0x0F) ) {
+							if ( mini ) {
 //								CursorStyle=Cursor_GetFlashStyle();
 								if ( CursorStyle >= 0x6 )	CursorStyle-=0x6;		//  -> insert mode
 								else 						CursorStyle+=0x6;		//  -> overwrite mode
@@ -1801,7 +1816,15 @@ int CB_BreakStop() {
 			if ( key == KEY_CTRL_AC    ) break ;
 			if ( key == KEY_CTRL_RIGHT ) break ;
 			if ( key == KEY_CTRL_LEFT  ) break ;
-			if ( ( key == KEY_CTRL_F1 ) || ( key == KEY_CTRL_EXE ) ) { DebugMode=0; BreakPtr=0; goto cont; }
+			if ( key == KEY_CTRL_F1  ) { 
+				while ( KeyCheckF1() ) ;
+				goto cont0;
+			}
+			if ( key == KEY_CTRL_EXE ) { 
+				while ( KeyCheckEXE() ) ;
+			  cont0:
+				DebugMode=0; BreakPtr=0; goto cont;
+			}
 		}
 		if ( dbgmode  ) DebugMode=2;	// enable debug mode
 		DebugScreen = 0;
@@ -1820,6 +1843,7 @@ int CB_BreakStop() {
 		return BreakPtr;
 	}
 	cont:
+	KeyRecover(); 
 	if ( DebugMode == 1 ) DebugMode=0;
 	CB_RestoreTextVRAM();	// Resotre Text screen
 	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen

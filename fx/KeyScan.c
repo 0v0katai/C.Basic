@@ -222,7 +222,7 @@ int KeyCheckEXIT() {		// [EXIT]
 	short unused = 0;
 
 	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 4 ) && (kcode2 == 8 ) ) flag0=1; // [EXE] is down
+		if ( ( kcode1 == 4 ) && (kcode2 == 8 ) ) flag0=1; // [EXIT] is down
 	}
 	return flag0;
 }
@@ -240,7 +240,16 @@ int KeyCheckCHAR4() {		// [4]
 	short unused = 0;
 
 	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 7 ) && (kcode2 == 4 ) ) flag0=1; // [SHIFT] is down
+		if ( ( kcode1 == 7 ) && (kcode2 == 4 ) ) flag0=1; // [4] is down
+	}
+	return flag0;
+}
+int KeyCheckF1() {		// [F1]
+	int kcode1 = 0, kcode2 = 0, flag0 = 0;
+	short unused = 0;
+
+	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
+		if ( ( kcode1 == 7 ) && (kcode2 == 10 ) ) flag0=1; // [F1] is down
 	}
 	return flag0;
 }

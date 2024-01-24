@@ -132,6 +132,7 @@ int GetKey_DisableMenu( unsigned int *key ) ;
 int KeyCheckAC();
 int KeyCheckEXE();
 int KeyCheckEXIT();
+int KeyCheckF1() ;		// [F1]
 
 int CB_Getkey();
 int CB_Getkey0();

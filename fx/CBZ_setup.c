@@ -40,7 +40,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.64\xE6\x41";
+const char VerMSG[]="C.Basic  v1.65\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -869,15 +869,15 @@ int SelectNum4( int n ) {		//
 
 //--------------------------------------------------------------
 
-#define SETUP_DrawType		0
-#define SETUP_Coord			1
-#define SETUP_Grid			2
-#define SETUP_Axes			3
-#define SETUP_Label			4
-#define SETUP_Derivative	5
-#define SETUP_Background	6
-#define SETUP_Sketch		7
-#define SETUP_Angle			8
+#define SETUP_Angle			0
+#define SETUP_DrawType		1
+#define SETUP_Coord			2
+#define SETUP_Grid			3
+#define SETUP_Axes			4
+#define SETUP_Label			5
+#define SETUP_Derivative	6
+#define SETUP_Background	7
+#define SETUP_Sketch		8
 #define SETUP_Display		9
 #define SETUP_CMDINPUT		10
 #define SETUP_EditTopLine	11
@@ -956,42 +956,42 @@ int SetupG(int select){		// ----------- Setup
 		
 		cnt=1;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Draw Type   :");		// 0
+			locate( 1, cnt-scrl); Print((unsigned char*)"Angle       :");		// 0
+			locate(14, cnt-scrl); Print((unsigned char*)degrad[Angle]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Print((unsigned char*)"Draw Type   :");		// 1
 			locate(14, cnt-scrl); Print((unsigned char*)draw[(int)DrawType]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Coord:      :");		// 1
+			locate( 1, cnt-scrl); Print((unsigned char*)"Coord:      :");		// 2
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Coord]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Grid        :");		// 2
+			locate( 1, cnt-scrl); Print((unsigned char*)"Grid        :");		// 3
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Grid]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Axes        :");		// 3
+			locate( 1, cnt-scrl); Print((unsigned char*)"Axes        :");		// 4
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Axes]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Label       :");		// 4
+			locate( 1, cnt-scrl); Print((unsigned char*)"Label       :");		// 5
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Label]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Derivative  :");		// 5
+			locate( 1, cnt-scrl); Print((unsigned char*)"Derivative  :");		// 6
 			locate(14, cnt-scrl); Print((unsigned char*)onoff[Derivative]);
 		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Background  :");		// 6
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1, cnt-scrl); Print((unsigned char*)"Background  :");		// 7
 			if ( BG_Pict_No == 0 )	sprintf((char*)buffer,"None");
 			else					sprintf((char*)buffer,"Pict%d",BG_Pict_No);
 			locate(14,cnt-scrl); Print((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Sketch Line :");		// 7
+			locate( 1, cnt-scrl); Print((unsigned char*)"Sketch Line :");		// 8
 			locate(14, cnt-scrl); Print((unsigned char*)style[S_L_Style]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Angle       :");		// 8
-			locate(14, cnt-scrl); Print((unsigned char*)degrad[Angle]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1, cnt-scrl); Print((unsigned char*)"Display     :");		// 9
@@ -1286,6 +1286,14 @@ int SetupG(int select){		// ----------- Setup
 				if ( select > (listmax) ) {select=0; scrl=0;}
 				if ((select - scrl) > 6 ) scrl+=1;
 				if ( scrl > (listmax) ) scrl=(listmax)-6;
+				break;
+			case KEY_CTRL_LEFT:
+				select=0;
+				scrl=0;
+				break;
+			case KEY_CTRL_RIGHT:
+				select=(listmax);
+				scrl=select-6;
 				break;
 				
 			case KEY_CTRL_F1:

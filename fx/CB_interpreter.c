@@ -294,9 +294,10 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x0C:	// Return
 						c=SRC[ExecPtr];
-						if ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
+						if ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) { 
 							if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
 							else		CB_CurrentValue    = EvalsubTop( SRC );
+							dspflagtmp=dspflag;
 						}
 						if ( GosubNestN > 0 ) { 
 							ExecPtr=StackGosubAdrs[--GosubNestN] ; break; } //	 return from subroutin 
@@ -424,10 +425,10 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_Poke(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFF2:	// PopUpWin(
-						CB_PopUpWin(SRC);
-						dspflag=0;
-						break;
+//					case 0xFFFFFFF2:	// PopUpWin(
+//						CB_PopUpWin(SRC);
+//						dspflag=0;
+//						break;
 					case 0x3D:			// DotTirm(
 						CB_DotTrim(SRC);
 						dspflag=0;
@@ -604,7 +605,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0x27:	// ' rem
 				if ( SRC[ExecPtr] == '/' ) { ExecPtr++; break; }	// '/ execute only C.Basic 
 				CB_Rem(SRC, &CacheRem );
-				dspflag=0;
+//				dspflag=0;
 				break;
 			case 0xFFFFFFED:	// Prog "..."
 				CB_Prog(SRC, localvarInt, localvarDbl );
@@ -615,6 +616,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs );
 		jpgsb:	if ( BreakPtr > 0 ) return BreakPtr;
 //				dspflag=0;
+				dspflagtmp=dspflag;
 				break;
 			case 0xFFFFFFD1:	// Cls
 				CB_Cls(SRC);
@@ -1358,13 +1360,14 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 			ExecPtr++;
 			expbuf=ExecPtr;
 			reg=RegVarAliasEx(SRC);
-			if ( reg>=0 ) { ExecPtr=expbuf;
+			if ( reg>=0 ) {
+				c=SRC[ExecPtr];
+				if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				StackFor->Var[StackFor->Ptr]=LocalInt[reg];
+				ExecPtr=expbuf;
 				CBint_Store(SRC);
 			} else { CB_Error(SyntaxERR); return; }	// Syntax error
 		}
-		c=SRC[ExecPtr];
-		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
 		StackFor->IntEnd[StackFor->Ptr] = EvalIntsubTop( SRC );
 		c=SRC[ExecPtr];
@@ -1394,13 +1397,14 @@ void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 			ExecPtr++;
 			expbuf=ExecPtr;
 			reg=RegVarAliasEx(SRC);
-			if ( reg>=0 ) { ExecPtr=expbuf;
+			if ( reg>=0 ) {
+				c=SRC[ExecPtr];
+				if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 				StackFor->Var[StackFor->Ptr]=(int*)LocalDbl[reg];
+				ExecPtr=expbuf;
 				CB_Store(SRC);
 			} else { CB_Error(SyntaxERR); return; }	// Syntax error
 		}
-		c=SRC[ExecPtr];
-		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
 		StackFor->End[StackFor->Ptr] = EvalsubTop( SRC );
 		c=SRC[ExecPtr];
@@ -2583,7 +2587,11 @@ void  CB_Input( char *SRC ){
 
 	switch ( flag ) {
 		case 0:	// ? -> A value
-			CB_CurrentValue = InputNumD_CB( CursorX, CursorY, width, length, spcchr, rev, 0 );
+			if ( option ) {
+				CB_CurrentValue = InputNumD_CB2( CursorX, CursorY, width, length, spcchr, rev, 0 );
+			} else {
+				CB_CurrentValue = InputNumD_CB( CursorX, CursorY, width, length, spcchr, rev, 0 );
+			}
 			ErrorNo=0; // error cancel
 			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
 			CBint_CurrentValue = CB_CurrentValue ;

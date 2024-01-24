@@ -767,7 +767,7 @@ double fpowroot( double x, double y ) {	// powroot(x,y)
 	return x;
 }
 
-double fDIVcheck( double *x, double *y ) {	//
+void fDIVcheck( double *x, double *y ) {	//
 	double tmp,tmp2,result;
 	(*x)  = floor( (*x) +.5);
 	(*y) = floor( (*y) +.5);
@@ -1207,6 +1207,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return  ScreenMode;
 				case 0xFFFFFFFE:	// BackLight
 					return	BackLight(-1);
+				case 0xFFFFFFF2:	// PopUpWin(
+					return CB_PopUpWin(SRC);
 				default:
 					ExecPtr--;	// error
 					break;
