@@ -479,24 +479,24 @@ int CB_GetColor( char *SRC ){
 	return -1;
 }
 
-//void CB_PlotLineColor( char *SRC ){
-//	CB_GetColor( SRC );
-//}
-//void CB_BackColor( char *SRC ){
-//	int c=SRC[ExecPtr];
-//	if ( c=='@' ) {
-//		ExecPtr++;
-//		CB_GetColor( SRC );
-//	} else {
-//		CB_GetColor( SRC );
-//	} 
-//}
-//void CB_TransparentColor( char *SRC ){
-//	int color;
-//	int c=SRC[ExecPtr];
-//	if ( ( c==':' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0 ) ) {
-//	} else {
-//		CB_GetColor( SRC );
-//	}
-//}
+void CB_PlotLineColor( char *SRC ){
+	CB_GetColor( SRC );
+}
+void CB_BackColor( char *SRC ){
+	int c=SRC[ExecPtr];
+	if ( c=='@' ) {
+		ExecPtr++;
+		CB_GetColor( SRC );
+	} else {
+		CB_GetColor( SRC );
+	} 
+}
+void CB_TransparentColor( char *SRC ){
+	int color;
+	int c=SRC[ExecPtr];
+	if ( ( c==':' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0 ) ) {
+	} else {
+		CB_GetColor( SRC );
+	}
+}
 

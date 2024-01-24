@@ -447,6 +447,13 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					return CB_System( SRC );
 				case 0xFFFFFFDF :				// Version
 					return CB_Version();		//
+
+//				case 0xFFFFFF90 :				// F Result
+				case 0xFFFFFF91 :				// F Start
+				case 0xFFFFFF92 :				// F End
+				case 0xFFFFFF93 :				// F pitch
+					return REGf[c-0xFFFFFF90];
+
 				default:
 					ExecPtr--;	// error
 					break;

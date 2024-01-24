@@ -115,7 +115,7 @@ char * CB_SaveLoadOprand( char *SRC , int *reg, int *matsize ) ;
 void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname ) ;
 char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) ;
 void CB_Save( char *SRC ) ; //	Save "TEST",Mat A[1,3]
-void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3] 
+void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3]
 void CB_Delete( char *SRC ) ;	// Delete "ABC.bin"[,Q]
 
 void Setfoldername16( char *folder16, char *sname ) ;
@@ -143,12 +143,13 @@ void G1M_Basic_header( char *filebase ) ;
 int CB_PreProcessIndent( char *filebase, int progno ) ; //
 void CB_PostProcessIndentRemove( char *filebase ) ; //
 
+void LoadConfig1data( int n ) ;	// config data ->List Ans
 //-----------------------------------------------------------------------------
 int DecodeBmp2Vram( char *filebase, int px, int py );	//	bmp -> vram
 char * LoadBmp( char *filebase );
 int SaveBmp( char *filebase, char *sname, int width, int height );
 void CB_BmpSave( char *SRC ) ; //	BmpSave "TEST"[,x][,y][,x2][,y2][,Q]
-void CB_BmpLoad( char *SRC ) ; //	BmpLoad("TEST" [, Ptr])->Mat A[1,3] 
+void CB_BmpLoad( char *SRC ) ; //	BmpLoad("TEST" [, Ptr])->Mat A[1,3]
 
 //------------------------------------------------------------------------- MCS
 int MCS_ReadFileList() ;	// MSC file list -> files

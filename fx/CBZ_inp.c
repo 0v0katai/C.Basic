@@ -3128,15 +3128,24 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 		}
 
 		if ( key == 0x1F91B ) { 	// Graph Y Store
-			CB_StoreString( 1, ClipBuffer );
+			i=CommandType;
+			CB_StoreString( 1, buffer );
+			CommandType=i;
+			SaveDisp(SAVEDISP_PAGE1);
 			key=0;
 		}
 		if ( key == 0x2F91B ) { 	// Graph Y Recall
+			i=CommandType;
 			string = CB_RecallString( 1 );
+			CommandType=i;
+			SaveDisp(SAVEDISP_PAGE1);
 			goto pastestring;
 		}
 		if ( key == 0x4F91B ) { 	// Graph Y See
-			string = CB_SeeString( 1, &selectStr, ClipBuffer );
+			i=CommandType;
+			string = CB_SeeString( 1, &selectStr, buffer );
+			CommandType=i;
+			SaveDisp(SAVEDISP_PAGE1);
 		  pastestring:
 			if ( string != NULL ) {
 				EditPaste1( buffer, string, &ptrX, MaxStrlen );
@@ -3228,7 +3237,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 				if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
 				if ( hex_mode && ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) ) key+=('a'-'A');
 //				if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
-				if ( ( key == KEY_CTRL_XTT ) )   key='X'; // ^
+				if ( ( key == KEY_CTRL_XTT ) )   key=XTTKey( key ); 	// 'X' or <r> or <Theta> or T
 			  codeok:
 				if (ClipStartPtr>=0) { 
 					ClipStartPtr = -1 ;		// ClipMode cancel			
@@ -3398,6 +3407,300 @@ complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV
 	if ( ( dispzero==0 ) && ( Cplx_fcmpEQ_0( defaultNum ).real ) ) ExpBuffer[0]='\0';
 	else Cplx_sprintGR1s(ExpBuffer, defaultNum, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT ,0 );
 	return InputNumC_CB_sub( x, y, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
+}
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+void  CB_Input( char *SRC ){
+	unsigned int key;
+	int c;
+	complex DefaultValue={0,0};
+	int flag=0,flagint=0;
+	int reg,bptr,mptr;
+	int dimA,dimB,base;
+	char buffer[256];
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int		width=255,length=ExpMax-1,option=0,rev=REV_OFF;
+	char	spcchr[]={0x20,0,0};
+	char buffer2[64];
+	int aryN,aryS;
+	char *StrFnPtr;
+
+	KeyRecover();
+	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
+	CB_ChangeTextMode( SRC ) ;
+//	CB_SelectTextDD();	// Select Text Screen
+	if ( CursorX==22 ) CursorX=1;
+	if ( CursorX==23 ) Scrl_Y();
+	
+	c=SRC[ExecPtr];
+	if ( c=='(' ) {	// ?option([csrX][,csrY][,width][,spcchr][,length][,R])
+		c=SRC[++ExecPtr];
+		if ( ( c==')' ) || ( c==0x0E ) ) goto optionexit;
+		if ( c!=',' ) {
+			CursorX=CB_EvalInt( SRC ); if ( ( CursorX<1 ) || ( 21<CursorX ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {
+			CursorY=CB_EvalInt( SRC ); if ( ( CursorY<1 ) || (  8<CursorY ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {
+			width=CB_EvalInt( SRC ); if ( ( width<1 ) || (  21<width ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {	
+			c=CB_IsStr( SRC, ExecPtr );
+			if ( c ) {	// string
+				CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
+			} else { CB_Error(ArgumentERR); return ; } // Argument error
+			spcchr[0]=buffer[0];
+			spcchr[1]=buffer[1];
+			spcchr[2]=buffer[2];
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {
+			length=CB_EvalInt( SRC ); if ( ( length<1 ) || ( ExpMax-1<length ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=')' ) {	
+			if ( ( c=='R' ) || ( c=='r' ) ) { // reverse
+				ExecPtr++;
+				rev=REV_ON;
+			}
+		}
+	  optionexit:
+		option=1;
+		if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	} else {
+		locate( CursorX, CursorY); Print((unsigned char*)"?");
+		Scrl_Y();
+	}
+	
+	c=SRC[ExecPtr];
+	bptr=ExecPtr;
+	reg=RegVar(c);
+	if ( c==0x0E ) {	// ->
+		flag=0;
+		if ( CB_IsStr( SRC, ExecPtr+1 ) ) flag=2;
+	} else 
+	if ( reg>=0 ) {
+	  regj:
+		flag=1;
+		c=SRC[ExecPtr+1];
+		if (CB_INT==1) {
+			if ( c=='#' ) {
+				DefaultValue = LocalDbl[reg][0] ;
+			} else { flagint=1; 
+				if ( c=='[' ) {
+					ExecPtr+=2;
+					MatOprandInt2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else
+				if ( ( '0'<=c )&&( c<='9' ) ) {
+					ExecPtr++;
+					dimA=c-'0';
+					MatOprand1num( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = Int2Cplx( LocalInt[reg][0] );
+			}
+		} else {
+			if ( c=='%' ) { flagint=1; 
+				DefaultValue = Int2Cplx( LocalInt[reg][0] );
+			} else {
+				if ( c=='[' ) {
+					ExecPtr+=2;
+					MatOprand2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else
+				if ( ( '0'<=c )&&( c<='9' ) ) {
+					ExecPtr++;
+					dimA=c-'0';
+					MatOprand1num( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = LocalDbl[reg][0] ;
+			}
+		}
+	} else
+	if ( c==0x7F ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
+			MatrixOprand( SRC, &reg, &dimA, &dimB );
+		Matrix:
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+				return ;
+			}
+			DefaultValue = Cplx_ReadMatrix( reg, dimA, dimB);
+			ExecPtr=bptr;
+		} else if ( ( 0xFFFFFF91 <= c ) && ( c <= 0xFFFFFF93 ) ) {	// F Start~F pitch
+				ExecPtr+=2;
+				DefaultValue.real = REGf[c-0xFFFFFF90] ;
+		} else if ( c == 0x00 ) {	// Xmin
+				DefaultValue.real = Xmin ;
+		} else if ( c == 0x01 ) {	// Xmax
+				DefaultValue.real = Xmax ;
+		} else if ( c == 0x02 ) {	// Xscl
+				DefaultValue.real = Xscl ;
+		} else if ( c == 0x04 ) {	// Ymin
+				DefaultValue.real = Ymin ;
+		} else if ( c == 0x05 ) {	// Ymax
+				DefaultValue.real = Ymax ;
+		} else if ( c == 0x06) {	// Yscl
+				DefaultValue.real = Yscl ;
+		} else if ( c == 0x08) {	// Thetamin
+				DefaultValue.real  = TThetamin ;
+		} else if ( c == 0x09) {	// Thetamax
+				DefaultValue.real  = TThetamax ;
+		} else if ( c == 0x0A) {	// Thetaptch
+				DefaultValue.real  = TThetaptch ;
+		} else if ( c == 0x0B ) {	// Xfct
+				DefaultValue.real = Xfct ;
+		} else if ( c == 0x0C ) {	// Yfct
+				DefaultValue.real = Yfct ;
+		} else if ( c == 0xFFFFFFF0 ) {	// GraphY
+			reg =defaultGraphAry;
+			aryN=defaultGraphAryN;
+			aryS=defaultGraphArySize;
+		  	c=6;		// +offset
+			goto strj;
+		} else {
+			goto exitj;
+		}
+		flag=1;
+	} else
+	if ( c==0xFFFFFFF9 ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( c == 0x3F ) {	// Str 1-20
+			reg =defaultStrAry;
+			aryN=defaultStrAryN;
+			aryS=defaultStrArySize;
+		  strj0:
+		  	c=0;
+		  strj:
+			ExecPtr+=2;
+			StrFnPtr = GetStrYFnPtr( SRC, reg, aryN+1-MatBase, aryS ) +c;
+			if ( ErrorNo ) return ;			// error
+			flag=3;
+			ExecPtr=bptr;
+		} else
+		if ( c == 0x1B ) {	// fn
+			reg=defaultFnAry;
+			aryN=defaultFnAryN;
+			aryS=defaultFnArySize;
+			goto strj0;
+		} else
+		if ( c == 0x41 ) {	// DATE
+			ExecPtr+=2;
+			flag=4;
+			ExecPtr=bptr;
+		} else
+		if ( c == 0x42 ) {	// TIME
+			ExecPtr+=2;
+			flag=5;
+			ExecPtr=bptr;
+		} else
+		if ( c == 0x21 ) {	// Xdot
+				DefaultValue.real = Xdot ;
+				flag=1;
+		} else goto exitj;
+	} else
+	if ( c=='$' ) {
+		ExecPtr++;
+		MatrixOprand( SRC, &reg, &dimA, &dimB );
+		if ( ErrorNo ) return ; // error
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+		if ( MatAry[reg].ElementSize != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
+		flag=3;
+		ExecPtr=bptr;
+	} else {
+	  exitj:
+		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
+		CB_Error(SyntaxERR); return; }	// Syntax error
+
+	switch ( flag ) {
+		case 0:	// ? -> A value
+			if ( option ) {
+				CB_CurrentValue = InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0), 0 );	// zero not disp
+			} else {
+				CB_CurrentValue = InputNumC_CB(  CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
+			}
+			ExecPtr++;
+			if ( CB_INT==1 ) flagint=1;
+		  vinp:
+			ErrorNo=0; // error cancel
+			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return ; }
+			CBint_CurrentValue = CB_CurrentValue.real ;
+			if ( flagint ) {
+				CBint_Store( SRC );
+				break;
+			}
+			CB_Store( SRC );
+			break;
+		case 1:	// ?A value
+			if ( option ) {
+				CB_CurrentValue = InputNumC_CB2( CursorX, CursorY, width, length, spcchr, rev, DefaultValue, 1 );	// zero disp
+			} else {
+				buffer2[0]='\0';
+				Cplx_sprintGR2( buffer, buffer2, DefaultValue, 22-CursorX, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+				locate( CursorX, CursorY); Print((unsigned char*)buffer);
+				if ( buffer2[0] != '\0' ){
+					Scrl_Y();
+					locate( CursorX, CursorY); Print((unsigned char*)buffer2);
+				}
+				Scrl_Y();
+				CB_CurrentValue = InputNumC_CB1( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
+			}
+			goto vinp;
+			break;
+		case 2:	// ? -> str 
+			CB_CurrentStr=buffer;
+			CB_CurrentStr[0]='\0';
+	Inpj1:	if ( option == 0 ) CursorX=1;
+			key=InputStr( CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
+			ErrorNo=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return ; }
+			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
+			CB_StorStr( SRC );
+			break;
+		case 3:	// ?$Mat  ?Str1-20
+			CB_CurrentStr=buffer;
+//			OpcodeStringToAsciiString(buffer, StrFnPtr, 255);
+			strncpy( buffer,  StrFnPtr, 255);
+			if ( width > MatAry[reg].SizeB-1 ) width=MatAry[reg].SizeB-1;
+			key=InputStr( CursorX, CursorY, width,  CB_CurrentStr, length, spcchr, rev);
+			ErrorNo=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return ; }
+			CB_StorStr( SRC );
+			break;
+		case 4:	// ?DATE
+			CB_DateToStr();
+			CB_CurrentStr[10]='\0';	// week cancel
+	Inpj2:
+//			CB_Print(CursorX, CursorY, (unsigned char*)CB_CurrentStr);
+//			Scrl_Y();
+			goto Inpj1;
+			break;
+		case 5:	// ?TIME
+			CB_TimeToStr();
+			goto Inpj2;
+			break;
+	}
+	if ( option == 0 ) Scrl_Y();
+	Bdisp_PutDisp_DD_DrawBusy();
+	return ;
 }
 //---------------------------------------------------------------------------------------------- align dummy
 int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte

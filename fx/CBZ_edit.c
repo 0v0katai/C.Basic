@@ -2153,16 +2153,21 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		}
 
 		if ( key == 0x1F91B ) { 	// Graph Y Store
+			i=CommandType;
 			CB_StoreString( 1, ClipBuffer );
+			CommandType=i;
 			key=0;
 		}
 		if ( key == 0x2F91B ) { 	// Graph Y Recall
+			i=CommandType;
 			string = CB_RecallString( 1 );
 			goto pastestring;
 		}
 		if ( key == 0x4F91B ) { 	// Graph Y See
+			i=CommandType;
 			string = CB_SeeString( 1, &selectStr, ClipBuffer );
 		  pastestring:
+			CommandType=i;
 			if ( string != NULL ) {
 				EditPaste( filebase, string, &csrPtr, &Undo );
 				UpdateLineNum=1;
@@ -2243,7 +2248,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						ClipStartPtr = -1 ;		// ClipMode cancel			
 				} else {
 //					if ( key == KEY_CHAR_POW )   key='^';
-					if ( key == KEY_CTRL_XTT  )   key='X'; // 
+					if ( key == KEY_CTRL_XTT  )  key=XTTKey( key ); 	// 'X' or <r> or <Theta> or T
 					
 					help_code=key;
 					do {

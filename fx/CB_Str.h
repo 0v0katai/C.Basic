@@ -13,12 +13,12 @@ extern short  defaultStrAryN;
 extern int    defaultStrArySize;	// =CB_StrBufferMax
 
 extern char   defaultFnAry;
-extern char   defaultFnAryN;
-extern short  defaultFnArySize;
+extern short  defaultFnAryN;
+extern int    defaultFnArySize;
 
 extern char   defaultGraphAry;
-extern char   defaultGraphAryN;
-extern short  defaultGraphArySize;
+extern short  defaultGraphAryN;
+extern int    defaultGraphArySize;
 //-----------------------------------------------------------------------------
 
 int StrSrc( char *SrcBase, char *searchstr, int *csrptr, int size);
@@ -49,8 +49,9 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) ;
 char* GetStrYFnPtrSub( int reg, int dimA, int dimB ) ;
 int CB_IsStr( char *SRC, int execptr ) ;
-char* CB_GetOpStr1( char *SRC ,int *maxlen ) ;		// String -> buffer	return
+int CB_IsStr_noYFn( char *SRC, int execptr ) ;
 char* CB_GetOpStr( char *SRC, int *maxoplen ) ;	// Get opcode String
+char* CB_GetOpStr_noYFn( char *SRC, int *maxoplen ) ;	// Get opcode String 
 double CB_EvalStrDBL( char *buffer, int calcflag ); //
 double CB_EvalStr( char *SRC, int calcflag) ;		// Eval str -> complex
 complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ); //

@@ -50,6 +50,7 @@ void GetGenuineCmdF3( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF943;return;	// Sprintf(
 				case 1: (*code)=0xF948;return;	// StrBase(
+				case 2: (*code)=0xF949;return;	// StrRepl(
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {
@@ -154,6 +155,10 @@ void GetGenuineCmdF3( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7FF2;return;	// GRAPHXt
 			} break;
+		case CMD_VARS_TABL:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F93;return;	// F pitch
+			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF941;return;	// DATE
@@ -230,6 +235,29 @@ void GetGenuineCmdF3( unsigned int *code ){
 		case CMD_MENU_MAT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F43;return;	// *Row+
+			} break;
+		case CMD_MENU_GRPH:
+			switch ( CommandPage ) {
+				case 0: CommandType=CMD_MENU_GRPH_TYPE;CommandPage=0;break;
+			} break;
+		case CMD_MENU_GRPH_TYPE:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF765;return;	// ParamType
+				case 1:  (*code)=0xF76C;return;	// Y>=Type
+				case 2:  (*code)=0xF76E;return;	// X>=Type
+			} break;
+		case CMD_MENU_GRPH_STYL:
+		case CMD_MENU_TABL_STYL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF72D;return;	// BrokenThickG
+			} break;
+		case CMD_MENU_TABL:
+			switch ( CommandPage ) {
+				case 0: CommandType=CMD_MENU_TABL_TYPE;CommandPage=0;break;
+			} break;
+		case CMD_MENU_TABL_TYPE:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF765;return;	// ParamType
 			} break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {

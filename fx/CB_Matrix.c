@@ -1024,6 +1024,8 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 	int strdisp=0;
 	int dotedit=0;
 	int list=0;
+	int toolflag=0;
+
 	if ( reg >= 0x1000 ) { 
 		if ( reg >=0x2000 ) {
 			list=2;
@@ -1537,6 +1539,9 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 						goto ToDotEdit;
 					case KEY_CTRL_F3:	// str edit
 						goto ToStrDisp;
+					case KEY_CTRL_F4:	// tool
+						toolflag=1;
+						break;
 					case KEY_CTRL_F5:	// bin
 						goto ToBin;
 					case KEY_CTRL_F6:	// hex
