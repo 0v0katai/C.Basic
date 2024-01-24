@@ -1116,6 +1116,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						}											//
 
 						CB_Help( help_code, cy>(ymax/2+1) );	// help display
+						KeyRecover();
 						help_code = 0;
 					
 						break;
@@ -1903,8 +1904,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else	locate(cx,cy);
 
 				GetKey_DisableMenu(&key);
-				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
 				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
+//				if ( key==0 ) if ( KeyCheckCHAR4() ) key=KEY_CHAR_4;
+				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
+				if ( key==0 ) if ( KeyCheckCHAR5() ) key=KEY_CHAR_5;
 				KeyRecover();
 				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				switch (key) {
@@ -2085,6 +2088,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							sprintf(buffer,"%d",CB_KeyCodeCnvt( key ) );
 							EditPaste( filebase, buffer, &csrPtr, &Undo );
 							key=0;
+							break;
+					case KEY_CHAR_4:
+					case KEY_CHAR_5:
+					case KEY_CHAR_6:
+							key=CB_Catalog();
 							break;
 					default:
 						break;

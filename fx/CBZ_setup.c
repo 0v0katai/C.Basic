@@ -29,8 +29,8 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.46\xE6\x41";
-#define VERSION 246
+const char VerMSG[]="C.Basic  v2.47\xE6\x41";
+#define VERSION 247
 
 //---------------------------------------------------------------------------------------------
 void GetMemFreeStr10( char *buffer );
@@ -52,7 +52,7 @@ void VerDispSub( int flag ) {
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2023" );
 
-	PrintMini(13*6+2, 2*8+1, (unsigned char*)"build 03 ", MINI_OVER );
+	PrintMini(13*6+2, 2*8+1, (unsigned char*)"build 01 ", MINI_OVER );
 	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
@@ -759,8 +759,17 @@ void InitVar( complex value, int VarMode, int small) {
 	}
 }
 
-void SetVarSel(int VarMode, int y) {
-	Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
+//void SetVarSel(int VarMode, int y) {
+//	Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
+//	locate(1,8); PrintLine((unsigned char *)" ",21);
+//	locate(1,8); SetVarDsp(VarMode);
+//}
+void SetVarSel(int VarMode, int y, int miniflag ) {
+	if ( miniflag )	{
+		Bdisp_AreaReverseVRAM(0, y*6, 127, y*6+6);	// reverse select line
+	} else {
+		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
+	}
 	locate(1,8); PrintLine((unsigned char *)" ",21);
 	locate(1,8); SetVarDsp(VarMode);
 }
@@ -938,10 +947,17 @@ int SetVar(int select){		// ----------- Set Variable
 	int selectreplay=-1;
 	int opNum=25+3,lnum;
 	int small=0;
+	int ynum;
+	int yk;
+	int wx;
+	int miniflag=(EditFontSize & 0x07);
 	complex value={0,0};
 	int bk_CB_INT=CB_INT;
 	int VarMode=CB_INT;	// 0:double or complex  1:int
 	int hex=0;	// 0:normal  1:hex
+
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 
 	if ( VarMode==2 ) VarMode=0;	// complex ->double
 	Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -953,16 +969,17 @@ int SetVar(int select){		// ----------- Set Variable
 	select-=small;
 
 	while (cont) {
+		if ( miniflag ) { ynum=9; yk=18/3; wx=32/3; } else { ynum=7; yk=24/3; wx=22/3; }
 		Bdisp_AllClr_VRAM();
 
 		opNum=25+3;
 		if ( small==58 ) { opNum=IsExtVar-57;}
-		if ( opNum < 6 ) lnum=opNum; else lnum=6;
+		if ( opNum < ynum-1 ) lnum=opNum; else lnum=ynum-1;
 		if (  select<seltop ) seltop = select;
 		if ( (select-seltop) > lnum ) seltop = select-lnum;
 		if ( (opNum -seltop) < lnum ) seltop = opNum -lnum;
 
-		for ( i=0; i<7; i++ ) {
+		for ( i=0; i<ynum; i++ ) {
 			k=seltop+i+small;
 			if ( ( small==58 ) && ( k > IsExtVar+1 ) ) break;	// ext   Var
 
@@ -970,18 +987,26 @@ int SetVar(int select){		// ----------- Set Variable
 			else
 			if ( ( small==58 ) && ( k > IsExtVar ) ) k=28;	// ext   Var  Ans
 			x=SetVarCharStr( buffer, VarMode, k);
-			CB_Print( 1, 1+i, (unsigned char*)buffer);
+			if ( miniflag ) {
+				PrintMini(    (1-1)*12/3, i*yk+1, (unsigned char*)buffer, MINI_OVER ) ;
+//				CB_PrintMini( (1-1)*12/3, i*yk+1, (unsigned char*)buffer, MINI_OVER  | (0x100*EditExtFont) ) ;
+			} else {
+				CB_Print( 1, 1+i, (unsigned char*)buffer);
+			}
 
-			if ( VarMode ) {
-				locate(x, 1+i);		// int
+			if ( VarMode ) {	// int
 				if ( hex )	sprintf(buffer,"0x%08X        ",(int)LocalInt[k][0]);
 					else	sprintG(buffer, (double)LocalInt[k][0], 18,LEFT_ALIGN);
-			} else {
-				locate(x, 1+i);		// dbl
+			} else {			// dbl
 				if ( hex )	SetVarDblToHex( buffer, LocalDbl[k][0].real );
 				else Cplx_sprintGR1cutlim( buffer, LocalDbl[k][0], 22-x,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 			}
-			Print((unsigned char*)buffer);
+			if ( miniflag ) {
+				PrintMini( (x-1)*12/3+2, i*yk+1, (unsigned char*)buffer, MINI_OVER ) ;
+//				CB_PrintMini( (x-1)*12/3, i*yk+1, (unsigned char*)buffer, MINI_OVER  | (0x100*EditExtFont) ) ;
+			} else {
+				locate(x, 1+i); Print((unsigned char*)buffer);
+			}
 		}
 //		Fkey_Icon( FKeyNo1, 775 );	//	Fkey_dispN( FKeyNo1, "A<>a");
 		if ( small ==  0  ) Fkey_Icon( FKeyNo1, 775 );	//	Fkey_dispN( FKeyNo1, "A <> a");
@@ -1008,7 +1033,11 @@ int SetVar(int select){		// ----------- Set Variable
 		}
 
 		y = (select-seltop) ;
-		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
+		if ( miniflag )	{
+			Bdisp_AreaReverseVRAM(0, y*6, 127, y*6+6);	// reverse select line
+		} else {
+			Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
+		}
 		Bdisp_PutDisp_DD();
 
 		k=select;
@@ -1021,8 +1050,12 @@ int SetVar(int select){		// ----------- Set Variable
 		GetKey( &key );
 		switch (key) {
 			case KEY_CTRL_OPTN:
+				miniflag=1;
+				goto VARSjp;
 			case KEY_CTRL_VARS:
+				miniflag=0;
 //				if ( small == 58  ) {	// extended variable
+				  VARSjp:
 					FkeyClearAll();
 					sprintf(buffer,"Alias_Var:%2d    Ext_Var:%2d",IsExtVar-57, AliasVarMAX+1 );
 //					CB_PrintMini( 16*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OVER);
@@ -1089,15 +1122,17 @@ int SetVar(int select){		// ----------- Set Variable
 				break;
 
 			case KEY_CTRL_RIGHT:
-				SetVarSel(VarMode,y);
+				SetVarSel(VarMode, y, miniflag);
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
 				selectreplay = select;
 				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
 					if ( VarMode )
-						LocalInt[k][0]= InputNumC_fullhex( x, y, 18, Int2Cplx(LocalInt[k][0]), hex).real;
+						if ( miniflag )	LocalInt[k][0]= InputNumC_fullhex_mini( (x-1)*4+1, (y-1)*6+1, 31, Int2Cplx(LocalInt[k][0]), hex, miniflag).real;
+						else			LocalInt[k][0]= InputNumC_fullhex( x, y, 18, Int2Cplx(LocalInt[k][0]), hex).real;
 					else
-						LocalDbl[k][0]= InputNumC_fullhex( x, y, 19, LocalDbl[k][0], hex);
+						if ( miniflag )	LocalDbl[k][0]= InputNumC_fullhex_mini( (x-1)*4+1, (y-1)*6+1, 31, LocalDbl[k][0], hex, miniflag);
+						else			LocalDbl[k][0]= InputNumC_fullhex( x, y, 19, LocalDbl[k][0], hex);
 				} else {
 						selectreplay = -1; // replay cancel
 				}
@@ -1105,15 +1140,17 @@ int SetVar(int select){		// ----------- Set Variable
 
 			case KEY_CTRL_LEFT:
 				if (selectreplay<0) { PutKey( KEY_CTRL_RIGHT, 1 ); PutKey( KEY_CTRL_DOWN, 1 ); break; }
-				SetVarSel(VarMode,y);
+				SetVarSel(VarMode, y, miniflag);
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
 				selectreplay = select;
 				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
 					if ( VarMode )
-						LocalInt[k][0]= InputNumD_replay( x, y, 18, (double)LocalInt[k][0]);
+						if ( miniflag )	LocalInt[k][0]= InputNumD_replay_mini( (x-1)*4+1, (y-1)*6+1, 31, (double)LocalInt[k][0], miniflag);
+						else			LocalInt[k][0]= InputNumD_replay( x, y, 18, (double)LocalInt[k][0]);
 					else
-						LocalDbl[k][0]= InputNumC_replay( x, y, 19, LocalDbl[k][0]);
+						if ( miniflag )	LocalDbl[k][0]= InputNumC_replay_mini( (x-1)*4+1, (y-1)*6+1, 31, LocalDbl[k][0], miniflag);
+						else			LocalDbl[k][0]= InputNumC_replay( x, y, 19, LocalDbl[k][0]);
 				} else {
 						selectreplay = -1; // replay cancel
 				}
@@ -1123,15 +1160,17 @@ int SetVar(int select){		// ----------- Set Variable
 		}
 		key=MathKey( key );
 		if ( key ) {
-				SetVarSel(VarMode,y);
+				SetVarSel(VarMode, y, miniflag);
 				x=SetVarCharStr( buffer, VarMode, k);
 				y++;
 				selectreplay = select;
 				if ( ( 0 <= select ) && ( select <=opNum ) ) {	// regA to regZ
 					if ( VarMode )
-						LocalInt[k][0]= InputNumD_Char( x, y, 18, (double)LocalInt[k][0], key);
+						if ( miniflag )	LocalInt[k][0]= InputNumD_Char_mini( (x-1)*4+1, (y-1)*6+1, 31, (double)LocalInt[k][0], key, miniflag);
+						else			LocalInt[k][0]= InputNumD_Char( x, y, 18, (double)LocalInt[k][0], key);
 					else
-						LocalDbl[k][0]= InputNumC_Char( x, y, 19, LocalDbl[k][0], key);
+						if ( miniflag )	LocalDbl[k][0]= InputNumC_Char_mini( (x-1)*4+1, (y-1)*6+1, 31, LocalDbl[k][0], key, miniflag);
+						else			LocalDbl[k][0]= InputNumC_Char( x, y, 19, LocalDbl[k][0], key);
 				} else {
 						selectreplay = -1; // replay cancel
 				}
@@ -1601,6 +1640,12 @@ int SetupG(int select, int limit){		// ----------- Setup
 				Fkey_Icon( FKeyNo2, 125 );	//	Fkey_dispN( FKeyNo2, "a+bi");
 				Fkey_Icon( FKeyNo3, 126 );	//	Fkey_dispN( FKeyNo3, "r_theta");
 				break;
+			case SETUP_HidnRamInit: // HiddenRAMInit
+				if ( ( UseHiddenRAM == 0 ) || (Is35E2 != 0 ) ) {
+					Fkey_dispN( FKeyNo1, "---" );
+					Fkey_dispN( FKeyNo2, "---" );
+					break;
+				}
 			case SETUP_Coord: // Coord
 			case SETUP_Grid: // Grid
 			case SETUP_Axes: // Axes
@@ -1613,7 +1658,6 @@ int SetupG(int select, int limit){		// ----------- Setup
 			case SETUP_EditLineNum: // Line number (edit)
 			case SETUP_MaxMemMode: // Maximam Memory mode
 			case SETUP_UseHidnRam: // UseHiddenRAM
-			case SETUP_HidnRamInit: // HiddenRAMInit
 			case SETUP_DisableDebugMode: // DisableDebugMode
 			case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
 			case SETUP_BreakStop: // BreakCheck
@@ -1947,6 +1991,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						if ( Is35E2 ) break;
 //						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM &= 0x0F;	// on
 						HiddenRAM_MatAryClear();
@@ -2164,6 +2209,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+						if ( Is35E2 ) break;
 //						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM |= 0x10;	// off
 						HiddenRAM_MatAryInit();

@@ -382,6 +382,7 @@ int CB_GetRGB( char *SRC, int mode );	// GetRGB/HSV/HsL() -> ListAns
 
 void CB_GraphFunc( char *SRC, int c ) ;
 
+int ToUpperC( int c );
 //-----------------------------------------------------------------------------
 #define MAXNAMELEN 8
 

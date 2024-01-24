@@ -272,12 +272,20 @@ int CB_ChangeTextMode( char *SRC ) {
 
 int CB_LocateMode( char *SRC) {
 	int c=SRC[ExecPtr];
+	int mode;
 	if ( c != ',' ) return 0;	// normal
 	ExecPtr++;	
 	c=SRC[ExecPtr++];
 	if ( ( c == 'N' ) || ( c == 'n' ) ) return 0;	// normal
 	else
 	if ( ( c == 'R' ) || ( c == 'r' ) ) return 1;	// reverse
+	else 
+	if ( c == '(' ) {
+		mode = CB_EvalInt( SRC );
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( mode ) mode = 1;
+		return mode;
+	}
 	ExecPtr--; CB_Error(SyntaxERR); return;   // Syntax error
 }
 
@@ -527,13 +535,20 @@ void CB_Text( char *SRC ) { //	Text
 	else {
 		ExecPtr++;	
 		c=SRC[ExecPtr++];
-		if ( ( c == 'N' ) || ( c == 'n' ) )  mode=MINI_OVER;	// Normal
+		if ( ( c == 'N' ) || ( c == 'n' ) )  mode=MINI_OVER;	// Normal	0x10
 		else
-		if ( ( c == 'R' ) || ( c == 'r' ) )  mode=MINI_REV;	// Reverse
+		if ( ( c == 'R' ) || ( c == 'r' ) )  mode=MINI_REV;		// Reverse	0x12
 		else
-		if ( ( c == 'O' ) || ( c == 'o' ) )  mode=MINI_OR;	// Or
+		if ( ( c == 'O' ) || ( c == 'o' ) )  mode=MINI_OR;		// Or		0x11
 		else
-		if ( ( c == 'V' ) || ( c == 'v' ) )  mode=MINI_REVOR;	// reVerse or
+		if ( ( c == 'V' ) || ( c == 'v' ) )  mode=MINI_REVOR;	// reV or	0x13
+		else 
+		if ( c == '(' ) {
+			mode = CB_EvalInt( SRC );
+			if ( abs( mode ) > 3 ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
+			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+			mode = mode + 0x10;			
+		}
 		else { ExecPtr--; CB_Error(SyntaxERR); return; }  // Syntax error
 	}
 	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode | 0x100 );		// ext
@@ -593,6 +608,7 @@ void CB_ViewWindow( char *SRC ) { //	ViewWindow
 
 int CB_SetPointMode( char *SRC) {
 	int c=SRC[ExecPtr];
+	int mode;
 	if ( c != ',' ) return 1;
 	ExecPtr++;	
 	c=SRC[ExecPtr++];
@@ -601,7 +617,14 @@ int CB_SetPointMode( char *SRC) {
 	if ( ( c == 'X' ) || ( c == 'x' ) )  return 2;	// Xor
 	else
 	if ( ( c == 'P' ) || ( c == 'p' ) )  return 1;	// setPoint
-	ExecPtr--; CB_Error(SyntaxERR); return;   // Syntax error
+	else 
+	if ( c == '(' ) {
+		mode = CB_EvalInt( SRC );
+		if ( abs( mode ) > 2 ) { CB_Error(OutOfDomainERR); return 0 ; } // Out of Domain error
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		return mode ;
+	}
+	ExecPtr--; CB_Error(SyntaxERR); return 0;   // Syntax error
 }
 
 void CB_FLine( char *SRC) { //	F-Line
@@ -1953,6 +1976,7 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 	int extend=0;
 	int cls=0;
 	int mask=0;
+	int s;
 
 	n=CB_EvalInt( SRC );
 	if ( ( n<1 )||(n>6) ) { CB_Error(ArgumentERR); return; }	// Argumenterror
@@ -1979,16 +2003,33 @@ void CB_FkeyMenu( char *SRC) {		// FkeyMenu(6,"ABC",R)
 		for( i=0; i<8; i++ ) {
 			c=SRC[ExecPtr];
 			if ( (c==0x00)||(c==',')||(c==':')||(c==0x0D)||(c==0x0C) ) break;
-			else if ( ( c=='R' ) || ( c=='r' ) ) { ExecPtr++; r='R'; }
-			else if ( ( c=='S' ) || ( c=='s' ) ) { ExecPtr++; r='S'; }
-			else if ( ( c=='I' ) || ( c=='i' ) ) { ExecPtr++; r='I'; }
+			else if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; cls =1; }
 			else if ( ( c=='N' ) || ( c=='n' ) ) { ExecPtr++; r='N'; }
-			else if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; (ofset) |= 0x10;}
+			else if ( ( c=='R' ) || ( c=='r' ) ) { ExecPtr++; r='R'; }
+			else if ( ( c=='I' ) || ( c=='i' ) ) { ExecPtr++; r='I'; }
+			else if ( ( c=='S' ) || ( c=='s' ) ) { ExecPtr++; r='S'; }
 			else if ( ( c=='U' ) || ( c=='u' ) ) { ExecPtr++; (ofset) |= 1;}
+			else if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; (ofset) |= 0x10;}
 			else if ( ( c=='M' ) || ( c=='M' ) ) { ExecPtr++; mask=1; }
 			else if ( ( c=='m' ) || ( c=='m' ) ) { ExecPtr++; mask=2; }
-			else if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; cls =1; }
 			else if ( ( c=='T' ) || ( c=='t' ) ) { ExecPtr++; UseGraphic=0; CB_SelectTextVRAM(); }	// Select Text Screen
+			else if ( c=='(' ) {
+				ExecPtr++;
+				s=CB_EvalInt(SRC);
+				if ( abs(s) > 511 ) { CB_Error(ArgumentERR); return; }	// Argumenterror
+				if ( s == 0 ) { cls =1;}			// 'C'
+				if ( ( s & 15 ) == 1 ) { r='N'; }	// 'N'
+				if ( ( s & 15 ) == 2 ) { r='R'; }	// 'R'
+				if ( ( s & 15 ) == 3 ) { r='I'; }	// 'I'
+				if ( ( s & 15 ) == 4 ) { r='S'; }	// 'S'
+				if ( s & 16 ) { (ofset) |= 1;}		// 'U'
+				if ( s & 32 ) {(ofset) |= 0x10; }	// 'L'
+				if ( s & 64 ) { mask=1; }			// 'M'
+				if ( s &128)  { mask=2; }			// 'm'
+				if ( s &256)  { UseGraphic=0; CB_SelectTextVRAM(); }			// 'T'
+				c=SRC[ExecPtr];
+				if ( c==')' ) ExecPtr++;
+			}
 		}
 		if ( c==',' ) {
 				c=SRC[++ExecPtr];

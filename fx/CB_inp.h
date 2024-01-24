@@ -174,6 +174,7 @@ int SelectOpcode5800P( int flag ) ;
 
 int GetOpcodeLen( char *SRC, int ptr, int *opcode );
 int OpcodeLen( int opcode );
+int OpcodeLen2( char *SRC ) ;
 int OpcodeStrlen(int c);
 int OpcodeStrLenBuf(char *SRC, int offset) ;
 int GetOpcode( char *SRC, int ptr );
@@ -193,6 +194,7 @@ extern short selectCMD;
 extern short selectOPTN;
 extern short selectVARS;
 extern short selectPRGM;
+extern short selectCATALOG;
 extern char lowercase;
 
 void PutAlphamode1( int CursorStyle );
@@ -209,9 +211,21 @@ void sprintG( char* buffer, double num, int width, int align_mode);
 double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_mode, int float_mode, int exp_mode, unsigned  *key);
 unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char* SPC, int rev_mode) ;		// ABCDEF0123456789.(-)exp
 
+//double InputNumD_full(int x, int y, int width, double defaultNum) ;
+//double InputNumD_Char(int x, int y, int width, double defaultNum, int code) ;		//  1st char key in
+//double InputNumD_replay(int x, int y, int width, double defaultNum) ;		//  replay expression
+
+double InputNumD_fullsub(int x, int y, int width, double defaultNum ) ;
+double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) ;
 double InputNumD_full(int x, int y, int width, double defaultNum) ;
-double InputNumD_Char(int x, int y, int width, double defaultNum, int code) ;		//  1st char key in
-double InputNumD_replay(int x, int y, int width, double defaultNum) ;		//  replay expression
+double InputNumD_Char(int x, int y, int width, double defaultNum, int code) ;
+double InputNumD_replay(int x, int y, int width, double defaultNum) ;
+
+double InputNumD_fullsub_mini(int x, int y, int width, double defaultNum, int miniflag ) ;
+double InputNumD_fullhex_mini(int x, int y, int width, double defaultNum, int hex, int miniflag) ;
+double InputNumD_full_mini(int x, int y, int width, double defaultNum, int miniflag) ;
+double InputNumD_Char_mini(int x, int y, int width, double defaultNum, int code, int miniflag) ;
+double InputNumD_replay_mini(int x, int y, int width, double defaultNum, int miniflag) ;
 
 extern int CommandType;
 extern char CommandPage;
@@ -227,6 +241,7 @@ void GetGenuineCmdF4( unsigned int *code );
 void GetGenuineCmdF5( unsigned int *code );
 void GetGenuineCmdF6( unsigned int *code );
 
+int CB_Catalog();
 //-------------------------------------------------------------
 #define OpRecentFreqMax 32
 #define OpRecentMax 32
