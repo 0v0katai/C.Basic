@@ -502,6 +502,12 @@ int CB_interpreter_sub( char *SRC ) {
 						if ( dspflagtmp ) goto Evalexit2;
 						break;
 					case 0x51:	// List
+					case 0x6A:	// List1
+					case 0x6B:	// List2
+					case 0x6C:	// List3
+					case 0x6D:	// List4
+					case 0x6E:	// List5
+					case 0x6F:	// List6
 						dspflagtmp=CB_ListCalc(SRC);
 						if ( dspflagtmp ) goto Evalexit2;
 						break;
@@ -517,6 +523,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x44 :				// Row+ A,2,3
 						CB_MatRowPlus( SRC );
 						break;
+						
 					case 0x34 :				// Red
 					case 0x35 :				// Blue
 					case 0x36 :				// Green
@@ -2218,7 +2225,7 @@ void CB_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	int dimdim=0;
 	
-	int c=SRC[ExecPtr];
+	int c=SRC[ExecPtr],d;
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
 		ExecPtr++;
@@ -2279,7 +2286,7 @@ void CB_Store( char *SRC ){	// ->
 			ExecPtr+=2;
 			reg=VctRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 			goto Matrix0;
-		} else if ( c == 0x51 ) {	// List
+		} else if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List or List1~List6
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
 		  Listj:
@@ -2292,15 +2299,17 @@ void CB_Store( char *SRC ){	// ->
 				MatOprand1( SRC, reg, &dimA, &dimB);
 				goto Matrix2;
 			}
-		} else if ( (0x6A<=c) && (c<=0x6F) ) {	// List1~List6
-			ExecPtr+=2;
-			reg=c+(58-0x6A);
-			goto Listj;
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
-				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x46 ) ) { ExecPtr+=2; dimdim=1; }	// {24,18}->dim dim
-				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// n -> Dim List
+				c = SRC[ExecPtr];
+				d = SRC[ExecPtr+1];
+				if ( ( c==0x7F ) && ( d==0x46 ) ) {	// {24,18}->dim dim
+					ExecPtr+=2; dimdim=1; 
+					c = SRC[ExecPtr];
+					d = SRC[ExecPtr+1];
+					}
+				if ( ( c==0x7F ) && ( ( d==0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) {	// n -> Dim List
 					ExecPtr+=2;
 					if ( CB_CurrentValue.real )  		// 15->Dim List 1
 							CB_ListInitsub( SRC, &reg, CB_CurrentValue.real, 0, dimdim );
@@ -2309,7 +2318,7 @@ void CB_Store( char *SRC ){	// ->
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				} else
-				if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// {10,5} -> Dim Mat A  -> Dim Vct A
+				if ( ( c==0x7F ) && ( ( d==0x40 ) || ( d==0xFFFFFF84 ) ) ) {	// {10,5} -> Dim Mat A  -> Dim Vct A
 					CB_MatrixInit( SRC, dimdim );
 					return ;
 				} else {
@@ -2321,6 +2330,7 @@ void CB_Store( char *SRC ){	// ->
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				}
+				
 		} else if ( c == 0x5F ) {	// Ticks
 				ExecPtr+=2;
 				goto StoreTicks;
@@ -2946,7 +2956,7 @@ void  CB_Input( char *SRC ){
 	} else
 	if ( c==0x7F ) {
 		c = SRC[ExecPtr+1] ; 
-		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( c == 0x51 ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
+		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error

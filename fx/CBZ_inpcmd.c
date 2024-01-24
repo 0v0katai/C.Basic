@@ -438,8 +438,10 @@ void DispGenuineCmdMenu(){
 			switch ( CommandPage ) {
 				case 0:
 					Fkey_Icon( FKeyNo1, 149 );	//	Fkey_dspRB( FKeyNo1, " X !");
-					FkeyClear( FKeyNo2 );
-					FkeyClear( FKeyNo3 );
+//					FkeyClear( FKeyNo2 );
+//					FkeyClear( FKeyNo3 );
+					Fkey_Icon( FKeyNo2, 150 );	//	Fkey_dspRB( FKeyNo2, "nPr");
+					Fkey_Icon( FKeyNo3, 151 );	//	Fkey_dspRB( FKeyNo3, "nCr");
 					Fkey_Icon( FKeyNo4, 345 );	//	Fkey_dispR( FKeyNo4, "RAND");
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );

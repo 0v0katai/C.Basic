@@ -889,6 +889,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char JumpMenuSw=0;
 	int ymin,ymax,ymaxpos;
 	int mini;
+	int help_code=0;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -985,7 +986,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							BdispSetPointVRAM2( 127, y  , 2);		//
 							BdispSetPointVRAM2( 127, y+1, 2);		//
 						}											//
-						
+
+						CB_Help( help_code, cy>(ymax/2+1) );	// help display
+						help_code = 0;
 						break;
 				case 4: 		// hex dump
 						i = csrPtr-offset;
@@ -1981,6 +1984,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
 					alphalock = 0 ;
 					alphastatus = 0;
+					help_code=key;
 					key=0;
 					SearchMode=0;
 					DebugScreen = 0;
@@ -2008,6 +2012,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					}
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
 					if ( alphalock == 0 ) alphastatus = 0;
+					help_code=key;
 					key=0;
 					SearchMode=0;
 					DebugScreen = 0;

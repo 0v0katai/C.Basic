@@ -132,16 +132,15 @@ int MatrixOprandreg( char *SRC, int *reg) {	// 0-
 				*reg=VctRegVar( SRC );
 				return 1;
 			case 0x51:			// 'List '
-				ExecPtr+=2;
-				*reg=ListRegVar( SRC );
-				return 1;
 			case 0x6A :		// List1
 			case 0x6B :		// List2
 			case 0x6C :		// List3
 			case 0x6D :		// List4
 			case 0x6E :		// List5
 			case 0x6F :		// List6
-				*reg=d+(58-0x6A); return 1;
+				ExecPtr+=2;
+				*reg=ListRegVar( SRC );
+				return 1;
 			default:
 				break;
 		}
@@ -427,6 +426,8 @@ int SearchListname( char *SRC ) {
 int ListRegVar( char *SRC ) {	// return reg no
 	int c;
 	int	reg;
+	c=SRC[ExecPtr-1];
+	if ( (0x6A<=c)&&(c<=0x6F) ) { reg=c+(1-0x6A); goto jp1; }	// List1~List6
 	c=SRC[ExecPtr++];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		if (CB_INT==1) reg=LocalInt[c-'A'][0] ; else reg=LocalDbl[c-'A'][0].real ;
@@ -536,12 +537,12 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 
 //----------------------------------------------------------------------------------------------
 int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
@@ -984,6 +985,30 @@ double ffact( double x ) {
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
+double f_nPr( double n, double r ) {
+	double x,tmp;
+	n = floor( n );
+	r = floor( r );
+	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
+	x = 1;
+	tmp = n;
+	while ( tmp > n-r ) { x *= tmp; tmp--; }
+	CheckMathERR(&x); // Math error ?
+	return x;
+}
+double f_nCr( double n, double r ) {
+	double x,tmp;
+	n = floor( n );
+	r = floor( r );
+	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
+	x = 1;
+	tmp = 1;
+	while ( tmp <= r ) { x /= tmp; tmp++; }
+	tmp = n;
+	while ( tmp > n-r ) { x *= tmp; tmp--; }
+	CheckMathERR(&x); // Math error ?
+	return floor( x +.05 );
+}
 double frand() {
 	return (double)rand()/(double)(RAND_MAX+1.0);
 }
@@ -1112,7 +1137,7 @@ double RoundSci( double x, double digit){
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4ee( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4ee( unsigned int n ){ return n ; }	// align +4byte
 int EvalObjectAlignE4ff( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
@@ -1248,6 +1273,12 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					goto Matrix1;
 					
 				case 0x51 :		// List 1~26
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					reg=ListRegVar( SRC );
 				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
@@ -1259,15 +1290,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 							CopyMatList2Ans( reg );
 					}
 					return ReadMatrix( reg, dimA, dimB);
-					
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-					reg=c+(58-0x6A); goto Listj;
-						
+											
 				case 0x3A :				// MOD(a,b)
 					Get2Eval( SRC, &tmp, &tmp2);
 					return fMOD(tmp,tmp2);
@@ -1647,7 +1670,7 @@ double DmsToDec( char *SRC, double h ) {	// 12"34"56 -> 12.5822222
 //-----------------------------------------------------------------------------
 //int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
 //int EvalObjectAlignE4hh( unsigned int n ){ return n+n; }	// align +6byte
-int EvalObjectAlignE4ii( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4ii( unsigned int n ){ return n ; }	// align +4byte
 int EvalObjectAlignE4jj( unsigned int n ){ return n ; }	// align +4byte
 //-----------------------------------------------------------------------------
 
@@ -1834,6 +1857,12 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x59 :			// RowSize( Mat A )
 				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					result *= Evalsub4( SRC ) ;
 					break;
 				default:
@@ -1954,6 +1983,12 @@ double Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						return result;
 						break;
 				}
+				break;
+			case 0xFFFFFF88 :		// nPr
+				result = f_nPr( result, Evalsub7( SRC ) );
+				break;
+			case 0xFFFFFF98 :		// nCr
+				result = f_nCr( result, Evalsub7( SRC ) );
 				break;
 			case ' ':	// Skip Space
 				break;

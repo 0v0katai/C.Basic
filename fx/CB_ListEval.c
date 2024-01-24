@@ -239,6 +239,12 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					goto Matrix1;	
 					
 				case 0x51 :		// List 1~26
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					reg=ListRegVar( SRC );
 				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
@@ -251,14 +257,6 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					}
 					return ReadMatrix( reg, dimA, dimB);
 					
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-					reg=c+(58-0x6A); goto Listj;
-						
 				case 0x3A :		// MOD(a,b)
 					result = ListEvalsubTop( SRC );
 					resultflag=dspflag;		// 2:result	3:Listresult
@@ -857,6 +855,12 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x59 :			// RowSize( Mat A )
 				case 0x5A :			// ColSize( Mat A )
 				case 0x5B :			// MatBase( Mat A )
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
 					break;
 				default:
@@ -984,6 +988,12 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 						return result;
 						break;
 				}
+				break;
+			case 0xFFFFFF88 :		// nPr
+				result = EvalFxDbl2( &f_nPr, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
+				break;
+			case 0xFFFFFF98 :		// nCr
+				result = EvalFxDbl2( &f_nCr, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
 				break;
 			case ' ':	// Skip Space
 				break;
@@ -1166,6 +1176,7 @@ int ListEvalsubTopAns(char *SRC) {	//
 	int resultreg,tmpreg;
 
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
+	ErrorNo = 0;
 	result = ListEvalsubTop( SRC );
 	resultreg=CB_MatListAnsreg;
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return result; } // Argument error

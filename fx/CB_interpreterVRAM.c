@@ -2108,6 +2108,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 		ExecPtr++;
 		StackGotoAdrs[label]=ExecPtr;
 	} else  ExecPtr = ptr ;
+	CB_ResetExecTicks();
 }
 
 //----------------------------------------------------------------------------------------------
@@ -2119,7 +2120,7 @@ double IntegralStart,IntegralEnd;
 void CB_ClrGraphStat(){
 	int c;
 	for ( c=0; c<GRAPHMAX; c++ ) GraphStat[c].en = 0;
-	GraphPtr=0;	// reset
+	GraphPtr=-1;	// reset
 }
 
 void CB_DrawGraph(  char *SRC ){
@@ -2164,6 +2165,7 @@ void GraphYOprand( char *SRC ){	// Graph Y=sin x + cos x
 }
 void CB_GraphY( char *SRC ){
 	int len;
+	GraphPtr++; if ( GraphPtr >= GRAPHMAX ) CB_ClrGraphStat();	// reset
 	GraphStat[GraphPtr].type = SRC[ExecPtr-1];
 	if ( SRC[ExecPtr] == '"' ) {
 		CB_Str( SRC );				// graph text print
@@ -2181,11 +2183,10 @@ void CB_GraphY( char *SRC ){
 	}
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	len=strlen(CB_CurrentStr); if ( len >= GRAPHLENMAX ) len=GRAPHLENMAX;
-	memcpy( GraphStat[GraphPtr].gstr, CB_CurrentStr, len );
+	memcpy( GraphStat[GraphPtr].gstr, CB_CurrentStr, len+1 );
 	GraphY=(char *)GraphStat[GraphPtr].gstr;
 	if ( tmp_Style >= 0 ) GraphStat[GraphPtr].style = tmp_Style; else GraphStat[GraphPtr].style = S_L_Style;
 	GraphStat[GraphPtr].en = 1;
-	GraphPtr++; if ( GraphPtr >= GRAPHMAX ) GraphPtr=0;	// reset
 	Graph_Draw();
 }
 
@@ -2216,6 +2217,7 @@ void GraphXOprand( char *SRC ){	// Graph X=sin x + cos x
 }
 void CB_GraphX( char *SRC ){
 	int len;
+	GraphPtr++; if ( GraphPtr >= GRAPHMAX ) CB_ClrGraphStat();	// reset
 	GraphStat[GraphPtr].type = SRC[ExecPtr-1];
 	if ( SRC[ExecPtr] == '"' ) {
 		CB_Str( SRC );				// graph text print
@@ -2225,11 +2227,10 @@ void CB_GraphX( char *SRC ){
 	if ( ErrorNo ) return ;  // error
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	len=strlen(CB_CurrentStr); if ( len >= GRAPHLENMAX ) len=GRAPHLENMAX;
-	memcpy( GraphStat[GraphPtr].gstr, CB_CurrentStr, len );
+	memcpy( GraphStat[GraphPtr].gstr, CB_CurrentStr, len+1 );
 	GraphY=(char *)GraphStat[GraphPtr].gstr;
 	if ( tmp_Style >= 0 ) GraphStat[GraphPtr].style = tmp_Style; else GraphStat[GraphPtr].style = S_L_Style;
 	GraphStat[GraphPtr].en = 1;
-	GraphPtr++; if ( GraphPtr >= GRAPHMAX ) GraphPtr=0;	// reset
 	Graph_Draw_X();
 }
 
@@ -2304,17 +2305,13 @@ int GetListNo( char *SRC ) {
 	c=SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( c==0x7F ) {
-		if ( d==0x51 ) {	// List
+		if ( ( d == 0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) {	// List
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
 			if ( ListFilePtr ) {
 				reg -= ListFilePtr;
 				if ( reg<26 ) reg+=58; else reg+=32;
 			}
-		} else
-		if ( (0x6A<=d) && (d<=0x6F) ) {	// List1 ~ List6
-			ExecPtr+=2;
-			reg = d+(58-0x6A);
 		}
 	}
 	return reg;

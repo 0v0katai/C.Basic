@@ -146,7 +146,7 @@ void GetGenuineCmdF4( unsigned int *code ){
 			} break;
 		case CMD_SHIFT_SKTCH_GRPH:
 			switch ( CommandPage ) {
-				case 0: (*code)=0x00F5;return;	// Graph X=
+				case 0: (*code)=0xF762;return;	// Graph X=
 				case 1: (*code)=0x00F3;return;	// Graph Y<=
 				case 2: (*code)=0xF92F;return;	// Graph X<=
 			} break;

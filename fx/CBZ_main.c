@@ -62,6 +62,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	PictAry[0]=GetVRAMAddress();
 
 	CB_AliasVarClr();
+	
+	LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -81,6 +83,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		
 		DeleteStrBuffer();
 		DeletePictPtr();
+
+		HelpText = NULL;
 		
 		if ( MaxMemMode ) HiddenRAM_freeProg(HiddenRAM_Top);		// Prog memory init	
 		key =( SelectFile( filename ) ) ;

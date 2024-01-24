@@ -23,7 +23,7 @@ void CBint_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	int dimdim=0;
 	
-	int c=SRC[ExecPtr];
+	int c=SRC[ExecPtr],d;
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
 		ExecPtr++;
@@ -84,7 +84,7 @@ void CBint_Store( char *SRC ){	// ->
 			ExecPtr+=2;
 			reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 			goto Matrix0;
-		} else if ( c == 0x51 ) {	// List
+		} else if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List or List1~List6
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
 		  Listj:
@@ -97,24 +97,26 @@ void CBint_Store( char *SRC ){	// ->
 				MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
 				goto Matrix2;
 			}
-		} else if ( (0x6A<=c) && (c<=0x6F) ) {	// List1~List6
-			ExecPtr+=2;
-			reg=c+(58-0x6A);
-			goto Listj;
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
-				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x46 ) ) { ExecPtr+=2; dimdim=1; }	// {24,18}->dim dim
-				if ( ( SRC[ExecPtr]==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// n -> Dim List
+				c = SRC[ExecPtr];
+				d = SRC[ExecPtr+1];
+				if ( ( c==0x7F ) && ( d==0x46 ) ) {	// {24,18}->dim dim
+					ExecPtr+=2; dimdim=1; 
+					c = SRC[ExecPtr];
+					d = SRC[ExecPtr+1];
+					}
+				if ( ( c==0x7F ) && ( ( d==0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) {	// n -> Dim List
 					ExecPtr+=2;
-					if ( CBint_CurrentValue ) 			// 15->Dim List 1
-							CB_ListInitsub( SRC,  &reg, CBint_CurrentValue, 0, dimdim  );
-					else {								//  0->Dim List 1
+					if ( CBint_CurrentValue )  		// 15->Dim List 1
+							CB_ListInitsub( SRC, &reg, CBint_CurrentValue, 0, dimdim );
+					else {							//  0->Dim List 1
 						reg=ListRegVar( SRC );
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				} else
-				if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// {10,5} -> Dim Mat A   -> Dim Vct A
+				if ( ( c==0x7F ) && ( ( d==0x40 ) || ( d==0xFFFFFF84 ) ) ) {	// {10,5} -> Dim Mat A  -> Dim Vct A
 					CB_MatrixInit( SRC, dimdim );
 					return ;
 				} else {

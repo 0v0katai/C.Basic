@@ -49,6 +49,8 @@ complex Cplx_fexp( complex z ) ;
 complex Cplx_fcuberoot( complex z ) ;
 complex Cplx_fsqu( complex z ) ;
 complex Cplx_ffact( complex z ) ;
+complex Cplx_f_nPr( complex n, complex r ) ;
+complex Cplx_f_nCr( complex n, complex r ) ;
 complex Cplx_frecip( complex z ) ;	// ^(-1) RECIP
 complex Cplx_ffemto( complex z ) ;	// femto
 complex Cplx_fpico( complex z ) ;	// pico

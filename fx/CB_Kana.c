@@ -1646,7 +1646,7 @@ int LoadExtFontKana_sub( char* name, char *font, int line ){		// LFONTK.bmp -> f
 	char buf[32],buf2[32];
 
 	if ( name[0]=='/' ) FilePtr = CB_LoadSub( name, 0, &size, "bmp" ) ;
-	else	FilePtr = Load1st2nd( name, "Font", "bmp" );
+	else	FilePtr = Load1st2nd( name, "FONT", "bmp" );
 	if ( ErrorNo == CantFindFileERR ) ErrorNo=0; 	// Cancel CantFindFileERR
 	if ( FilePtr == NULL ) return 0;
 
@@ -1680,7 +1680,7 @@ int LoadExtFontKanaMini_sub( char* name, char *font, int line ){			// MFONTK.bmp
 	char buf[32],buf2[32];
 
 	if ( name[0]=='/' ) FilePtr = CB_LoadSub( name, 0, &size, "bmp" ) ;
-	else	FilePtr = Load1st2nd( name, "Font", "bmp" );
+	else	FilePtr = Load1st2nd( name, "FONT", "bmp" );
 	if ( ErrorNo == CantFindFileERR ) ErrorNo=0; 	// Cancel CantFindFileERR
 	if ( FilePtr == NULL ) return 0;
 
@@ -1708,7 +1708,7 @@ int LoadExtFontKanaMini_sub( char* name, char *font, int line ){			// MFONTK.bmp
 	return 1;
 }
 
-const char fontfolderFX[][8]={"","/Font/"};
+const char fontfolderFX[][8]={"","/FONT/"};
 
 void LoadExtFontKanafolder( int flag, char* sname, int folder, int no ){		// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 	char sname2[32];

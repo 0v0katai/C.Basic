@@ -520,13 +520,13 @@ complex Cplx_fMOD( complex x, complex y ) {	// fMOD(x,y)
 }
 
 complex Cplx_ffact( complex z ) {
-	double tmp;
-	tmp = floor( z.real );
-	if ( ( tmp < 0 ) || ( 170 < tmp ) || ( z.imag != 0 ) ) { CB_Error(MathERR) ; return Int2Cplx(0); } // Math error
-	z.real = 1;
-	while ( tmp > 0 ) { z.real *= tmp; tmp--; }
-	CheckMathERR(&z.real); // Math error ?
-	return z;
+	return  Dbl2Cplx( ffact( z.real ) );
+}
+complex Cplx_f_nPr( complex n, complex r ) {
+	return  Dbl2Cplx( f_nPr( n.real, r.real ) );
+}
+complex Cplx_f_nCr( complex n, complex r ) {
+	return  Dbl2Cplx( f_nCr( n.real, r.real ) );
 }
 complex Cplx_frand() {
 	return Dbl2Cplx( frand() );
@@ -741,6 +741,12 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					goto Matrix1;
 
 				case 0x51 :		// List 1~26
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					reg=ListRegVar( SRC );
 				  Listj:
 					if ( SRC[ExecPtr] == '[' ) {
@@ -756,14 +762,6 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 				case 0x50 :		// i
 					result.imag = 1;
 					return result;
-					
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-					reg=c+(58-0x6A); goto Listj;
 						
 				case 0x3A :				// MOD(a,b)
 					Cplx_Get2Eval( SRC, &tmp, &tmp2);
@@ -1310,6 +1308,12 @@ complex Cplx_Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x23 :				// Conjg
 				case 0x24 :				// ReP
 				case 0x25 :				// ImP
+				case 0x6A :		// List1
+				case 0x6B :		// List2
+				case 0x6C :		// List3
+				case 0x6D :		// List4
+				case 0x6E :		// List5
+				case 0x6F :		// List6
 					result = Cplx_fMUL( result, Cplx_Evalsub4( SRC ) );
 					break;
 				default:
@@ -1407,12 +1411,12 @@ complex Cplx_Evalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-//			case 0xFFFFFF88 :		// nPr
-//				result = Cplx_fnPr( result, Cplx_Evalsub7( SRC ) );
-//				break;
-//			case 0xFFFFFF98 :		// nCr
-//				result = Cplx_fnCr( result, Cplx_Evalsub7( SRC ) );
-//				break;
+			case 0xFFFFFF88 :		// nPr
+				result = Cplx_f_nPr( result, Cplx_Evalsub7( SRC ) );
+				break;
+			case 0xFFFFFF98 :		// nCr
+				result = Cplx_f_nCr( result, Cplx_Evalsub7( SRC ) );
+				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {

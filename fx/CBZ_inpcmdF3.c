@@ -91,6 +91,10 @@ void GetGenuineCmdF3( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x00A3;return;	// tanh
 			} break;
+		case CMD_OPTN_PROB:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x0098;return;	// nCr
+			} break;
 		case CMD_OPTN_PROB_RAND:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F8A;return;	// RanNorm#(
