@@ -17,7 +17,8 @@
 //----------------------------------------------------------------------------------------------
 //char ClipBuffer[ClipMax];
 char *ClipBuffer;
-int Contflag=0;	// Continue mode    0:disable  1:enable
+char Contflag=0;	// Continue mode    0:disable  1:enable   2:step
+char ScreenModeEdit=0;
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
@@ -570,7 +571,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	int alphalock = 0 ;
 	int SearchMode=0;
 	int ContinuousSelect=0;
-	int scrmode=ScreenMode;
 
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -597,7 +597,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	csrPtr = offset;
 	for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
 	
-	if ( run==1 ) { ProgNo=0; ExecPtr=0; key=KEY_CTRL_F6; }	// direct run
+	if ( run == 1 ) { ProgNo=0; ExecPtr=0; key=KEY_CTRL_F6; }	// direct run
 	
 //	Cursor_SetFlashMode(1);			// cursor flashing on
 	if (Cursor_GetFlashStyle()<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
@@ -607,13 +607,17 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		ErrorNo=0;
 		FileBase = ProgfileAdrs[ProgNo];
 		SrcBase  = FileBase+0x56;
-		if ( run!=1 ) {
+		if ( run != 1 ) {
 			Bdisp_AllClr_VRAM();
 			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 			buffer2[8]='\0';
 			if (dumpflg==2)	sprintf(buffer,"==%-8s==%s",buffer2, CB_INTDefault?" [INT%] ":" [Double]");
 			else 			sprintf(buffer,"==%-8s==%08X",buffer2, ProgfileAdrs[ProgNo]);
-			locate (1,1); Print( (unsigned char*)buffer );
+			
+			locate (1,1); Print(    (unsigned char*)buffer );
+			if ( Contflag >=1 ) // debug mode
+				Bdisp_AreaReverseVRAM(0, 0, 127,7);	// reverse select line 
+				
 			if (SearchMode ) {
 					Fkey_dispN( 0, "SRC ");
 			} else {
@@ -622,12 +626,21 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					Fkey_dispN( 1, "CUT ");
 				} else {
 					ClipEndPtr   = -1 ;		// ClipMode cancel
-					Fkey_dispN( 0, "TOP ");
-					Fkey_dispN( 1, "BTM");
-					Fkey_dispR( 2, "CMD");
-					if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
-					Fkey_dispR( 4, "CHAR");
-					if ( Contflag ) Fkey_dispN( 5, "Cont"); else Fkey_dispN( 5, "EXE");
+					if ( Contflag >=1 ) {  // debug mode
+						Fkey_dispN( 0, "Cont");
+						Fkey_dispN( 1, "Step");
+						Fkey_dispR( 2, "CMD");
+						if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
+						Fkey_dispR( 4, "CHAR");
+						Fkey_dispN( 5, "Swap");
+					} else {	// normal mode
+						Fkey_dispN( 0, "TOP ");
+						Fkey_dispN( 1, "BTM");
+						Fkey_dispR( 2, "CMD");
+						if ( lowercase  ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
+						Fkey_dispR( 4, "CHAR");
+						Fkey_dispN( 5, "EXE");
+					}
 				}
 			}
 			switch (dumpflg) {
@@ -737,18 +750,25 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 							EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
 						} else {
-							offset=0;
-							offset_y=0;
-							csrPtr=0;
-							switch (dumpflg) {
-								case 2: 		// Opcode
-									break;
-								case 4: 		// hex dump
-								case 16:		// Ascii dump
-									cx=6; cy=2;
-									break;
-								default:
-									break;
+							if ( Contflag ) {		// ====== continue mode ======
+								cont=0;
+								ExecPtr=csrPtr;
+								BreakPtr=0;
+								Contflag=1;		// cont mode
+							} else {
+								offset=0;
+								offset_y=0;
+								csrPtr=0;
+								switch (dumpflg) {
+									case 2: 		// Opcode
+										break;
+									case 4: 		// hex dump
+									case 16:		// Ascii dump
+										cx=6; cy=2;
+										break;
+									default:
+										break;
+								}
 							}
 						}
 					}
@@ -763,19 +783,26 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
 						EditCut( FileBase, &csrPtr, ClipStartPtr, ClipEndPtr );
 					} else {
-						offset=EndOfSrc( SrcBase, offset );
-						csrPtr=offset;
-						offset_y=0;
-						switch (dumpflg) {
-							case 2: 		// Opcode
-								for ( i=0; i<6; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
-								break;
-							case 4: 		// hex dump
-							case 16:		// Ascii dump
-								cx=6; cy=2;
-								break;
-							default:
-								break;
+						if ( Contflag ) {		// ====== continue mode ======
+								cont=0;
+								ExecPtr=csrPtr;
+								BreakPtr=-1;
+								Contflag=2;		// step mode
+						} else {
+							offset=EndOfSrc( SrcBase, offset );
+							csrPtr=offset;
+							offset_y=0;
+							switch (dumpflg) {
+								case 2: 		// Opcode
+									for ( i=0; i<6; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
+									break;
+								case 4: 		// hex dump
+								case 16:		// Ascii dump
+									cx=6; cy=2;
+									break;
+								default:
+									break;
+							}
 						}
 					}
 					key=0;
@@ -808,11 +835,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								for ( i=0; i<7; i++ ) PrevLinePhy( SrcBase, &offset, &offset_y );
 							}
 					} else {
-						if ( Contflag ) {						// ====== continue mode ======
-							cont=0;
-							ExecPtr=csrPtr;
-							BreakPtr=0;
+						if ( ( Contflag==1 ) || ( Contflag==2 ) ) {			// ====== continue mode ======
+							Cursor_SetFlashMode(0); 		// cursor flashing off
+							if ( ScreenModeEdit  ) CB_RestoreGraphVRAM();	// Resotre Graphic screen
+							else			CB_RestoreTextVRAM();	// Resotre Text screen
+							GetKey(&key);
+							if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
 						} else {
+							if ( Contflag == 3 ) { Contflag=2; BreakPtr=-1; } else BreakPtr=0;
 							ProgEntryN=1;
 							MSG1("Wait a moment");
 							CB_ProgEntry( SrcBase ) ;		// sub program search
@@ -990,7 +1020,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				
 			case KEY_CTRL_SHIFT:
 				if ( SearchMode ) break;;
-				F6loop:
+				ShiftF6loop:
 				alphalock = 0 ;
 				Fkey_dispR( 0, "Var");
 				Fkey_dispR( 1, "Mat");
@@ -1103,11 +1133,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							
 					case KEY_CTRL_F6:	// G<>T
 							Cursor_SetFlashMode(0); 		// cursor flashing off
-							if ( scrmode  ) CB_RestoreGraphVRAM();	// Resotre Graphic screen
-							else			CB_RestoreTextVRAM();	// Resotre Text screen
-							scrmode=1-scrmode;
+							ScreenModeEdit=1-ScreenModeEdit;
+							if ( ScreenModeEdit  )  CB_RestoreGraphVRAM();	// Resotre Graphic screen
+							else					CB_RestoreTextVRAM();	// Resotre Text screen
 							GetKey(&key);
-							if ( key == KEY_CTRL_SHIFT) goto F6loop;
+							if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
 							break;
 					case KEY_CTRL_CLIP:
 							ClipStartPtr=csrPtr;
@@ -1230,27 +1260,33 @@ int CB_BreakStop() {
 	CB_SelectGraphVRAM();	// Select Graphic screen
 	CB_SelectTextDD();	// Select Text Screen
 //	SaveDisp(SAVEDISP_PAGE1);
-	PopUpWin(4);
-	locate(9,3); Print((unsigned char *)"Break");
-	locate(6,5); Print((unsigned char *) "Press:[EXIT]");
-	Bdisp_PutDisp_DD();
-	
-	KeyRecover(); 
-	while ( KeyCheckAC() ) ;
-	while ( 1 ) {
-		GetKey(&key);
-		if ( key == KEY_CTRL_EXIT  ) break ;
-		if ( key == KEY_CTRL_AC    ) break ;
-		if ( key == KEY_CTRL_RIGHT ) break ;
-		if ( key == KEY_CTRL_LEFT  ) break ;
-	}
-//	RestoreDisp(SAVEDISP_PAGE1);
-//	Bdisp_PutDisp_DD();
-	Contflag=1;	// enable Continue
-	key=EditRun(2);	// Program listing & edit
-	Contflag=0;	// disable Continue
 
-	if ( key == KEY_CTRL_EXIT  ) { BreakPtr=-999; return BreakPtr; }
+	if ( Contflag < 2 ) {
+		PopUpWin(4);
+		locate(9,3); Print((unsigned char *)"Break");
+		locate(6,5); Print((unsigned char *) "Press:[EXIT]");
+		Bdisp_PutDisp_DD();
+		
+		KeyRecover(); 
+		while ( KeyCheckAC() ) ;
+		while ( 1 ) {
+			GetKey(&key);
+			if ( key == KEY_CTRL_EXIT  ) break ;
+			if ( key == KEY_CTRL_AC    ) break ;
+			if ( key == KEY_CTRL_RIGHT ) break ;
+			if ( key == KEY_CTRL_LEFT  ) break ;
+		}
+	//	RestoreDisp(SAVEDISP_PAGE1);
+	//	Bdisp_PutDisp_DD();
+		Contflag=1;	// enable Continue
+	} else {	// Step mode
+		BreakPtr=ExecPtr;	// set breakptr
+	}
+	ScreenModeEdit=scrmode;
+	key=EditRun(2);	// Program listing & edit
+	if ( ( ErrorNo ) || ( Contflag == 1 ) ) Contflag=0;	// disable Continue
+
+	if ( key == KEY_CTRL_EXIT  ) { BreakPtr=-999; Contflag=0; return BreakPtr; }
 
 	CB_RestoreTextVRAM();	// Resotre Text screen
 	if ( scrmode  ) CB_SelectGraphVRAM();	// Select Graphic screen

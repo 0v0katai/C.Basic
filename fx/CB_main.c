@@ -1,9 +1,9 @@
 /*
 ===============================================================================
 
- Casio Basic Interpreter (& Compiler) ver 0.97 
+ Casio Basic Interpreter (& Compiler) ver 0.99 
 
- copyright(c)2015 by sentaro21
+ copyright(c)2015/2016 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
@@ -110,12 +110,16 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			case KEY_CTRL_EXE:
 			case FileCMD_RUN:
 				Contflag=0;
-				ExecPtr=0;
+		runjp:	ExecPtr=0;
 				i=LoadProgfile( filename, EditMaxfree ) ;
 				if ( i==0 )	EditRun(1);			// Program run
 				else
 				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
 				SaveConfig();
+				break;
+			case FileCMD_DebugRUN:
+				Contflag=3; // step mode
+				goto runjp;
 				break;
 			case FileCMD_EDIT:
 				Contflag=0;

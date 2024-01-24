@@ -5,6 +5,14 @@ extern char  *CB_CurrentStr2;	//
 #define CB_StrBufferMax 128
 extern char   CB_StrBufferCNT;
 extern char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//
+
+extern char   defaultStrAry;
+extern char   defaultStrAryN;
+extern char   defaultStrArySize;
+
+extern char   defaultGraphAry;
+extern char   defaultGraphAryN;
+extern char   defaultGraphArySize;
 //-----------------------------------------------------------------------------
 
 int StrSrc( char *SrcBase, char *searchstr, int *csrptr, int size);

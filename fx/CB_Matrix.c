@@ -30,10 +30,143 @@ char	MatAryElementSize[MatAryMax];		// Matrix array Element size
 double *MatAry[MatAryMax];					// Matrix array ptr*
 
 double MatDefaultValue=0;
+//-----------------------------------------------------------------------------
+//int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
+//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+int ReadMatrixInt( int reg, int dimA, int dimB){	// 0-
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int value;
+	switch ( MatAryElementSize[reg] ) {
+		case  2:		// Vram
+			dimA++; dimB++;
+		case  1:
+			MatAryC=(char*)MatAry[reg];			// Matrix array 1 bit
+			return ( MatAryC[dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			return MatAryC[dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array char
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			return MatAryW[dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array word
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			return MatAryI[dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array int
+		case 64:
+			return MatAry[reg][dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array doubl
+	}
+}
+void WriteMatrixInt( int reg, int dimA, int dimB, int value){	// 0-
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int tmp;
+	int mptr;
+//	if ( ( (dimA) < 0 ) || ( MatArySizeA[(reg)] <= (dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+//	if ( ( (dimB) < 0 ) || ( MatArySizeB[(reg)] <= (dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	switch ( MatAryElementSize[reg] ) {
+		case  2:	// Vram
+			dimA++; dimB++;
+		case  1:
+			MatAryC=(char*)MatAry[reg];					// Matrix array 1 bit
+			tmp=( 128>>(dimA&7) );
+			mptr=dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3);
+			if ( value ) 	MatAryC[mptr] |= tmp ;
+			else	 		MatAryC[mptr] &= ~tmp ;
+			break;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			MatAryC[dimA*MatArySizeB[reg]+dimB] = (char)value ;	// Matrix array char
+			break;
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			MatAryW[dimA*MatArySizeB[reg]+dimB] = (short)value ;	// Matrix array word
+			break;
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			MatAryI[dimA*MatArySizeB[reg]+dimB] = (int)value ;		// Matrix array int
+			break;
+		case 64:
+			MatAry[reg][dimA*MatArySizeB[reg]+dimB]  = (double)value ;	// Matrix array double
+			break;
+	}
+}
 
 //-----------------------------------------------------------------------------
 //int MatrixObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+double ReadMatrix( int reg, int dimA, int dimB){	// 0-
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	double value;
+	switch ( MatAryElementSize[reg] ) {
+		case 64:
+			return MatAry[reg][dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array doubl
+		case  2:		// Vram
+			dimA++; dimB++;
+		case  1:
+			MatAryC=(char*)MatAry[reg];			// Matrix array 1 bit
+			return ( MatAryC[dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3)] & ( 128>>(dimA&7) ) ) != 0 ;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			return MatAryC[dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array char
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			return MatAryW[dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array word
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			return MatAryI[dimA*MatArySizeB[(reg)]+dimB] ;			// Matrix array int
+	}
+}
+
+void WriteMatrix( int reg, int dimA, int dimB, double value){	// 0-
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int tmp;
+	int mptr;
+//	if ( ( (dimA) < 0 ) || ( MatArySizeA[(reg)] <= (dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+//	if ( ( (dimB) < 0 ) || ( MatArySizeB[(reg)] <= (dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	switch ( MatAryElementSize[reg] ) {
+		case 64:
+			MatAry[reg][dimA*MatArySizeB[reg]+dimB]  = (double)value ;	// Matrix array double
+			break;
+		case  2:	// Vram
+			dimA++; dimB++;
+		case  1:
+			MatAryC=(char*)MatAry[reg];					// Matrix array 1 bit
+			tmp=( 128>>(dimA&7) );
+			mptr=dimB*(((MatArySizeA[reg]-1)>>3)+1)+((dimA)>>3);
+			if ( value ) 	MatAryC[mptr] |= tmp ;
+			else	 		MatAryC[mptr] &= ~tmp ;
+			break;
+		case  8:
+			MatAryC=(char*)MatAry[reg];
+			MatAryC[dimA*MatArySizeB[reg]+dimB] = (char)value ;	// Matrix array char
+			break;
+		case 16:
+			MatAryW=(short*)MatAry[reg];
+			MatAryW[dimA*MatArySizeB[reg]+dimB] = (short)value ;	// Matrix array word
+			break;
+		case 32:
+			MatAryI=(int*)MatAry[reg];
+			MatAryI[dimA*MatArySizeB[reg]+dimB] = (int)value ;		// Matrix array int
+			break;
+	}
+}
+
+//-----------------------------------------------------------------------------
+//int MatrixObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
