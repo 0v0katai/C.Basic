@@ -2937,7 +2937,7 @@ void LoadConfig(){
 //------------------------------------------------------------------------------/Indent
 
 void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
-	int c,flag=0;
+	int c,flag=((*ptr)==1);
 	c=SRC[(*ptr)-2];
 	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) flag=1;	// "   "
 	while (1){
@@ -3015,7 +3015,7 @@ int PP_Search_CR_SPACE(char *SRC ){
 }
 
 int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
-	int c,flag=0,d=0;
+	int c,d=0,flag=((*sptr)==1);
 	c=SRC[(*sptr)-2];
 	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) flag=1;	// "   "
 	if ( SRC[(*sptr)-1] == 0x27 ) { d=1; flag=0; }
@@ -3551,9 +3551,9 @@ int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
