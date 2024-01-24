@@ -505,15 +505,15 @@ int SearchForText( unsigned char *SrcBase, unsigned char *searchstr, int *csrptr
 	locate(1,1); Print((unsigned char *)"Search For Text");
 	locate(1,3); Print((unsigned char*)"---------------------");
 	locate(1,5); Print((unsigned char*)"---------------------");
+
 	Bdisp_PutDisp_DD();
-	
+		
 	KeyRecover(); 
-	searchstr[0]='\0';
 	do {
-		key= InputStrSub( 1, 4, 21, 0, searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+		key= InputStrSub( 1, 4, 21, strlenOp(searchstr), searchstr, 63, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( key == KEY_CTRL_AC ) ;	// AC
 	if ( key == KEY_CTRL_EXIT ) return 0;	// exit
-	
+
 	while ( i==0 ) {	//  not found loop
 		csrp=*csrptr;
 		i=SearchOpcode( SrcBase, searchstr, &csrp);
@@ -758,7 +758,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					break;
 			case KEY_CTRL_F5:
 					if ( SearchMode ) break;;
-					Cursor_SetFlashMode(0); 		// cursor flashing off
 					key=SelectChar();
 					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
 					ClipStartPtr = -1 ;		// ClipMode cancel
@@ -940,7 +939,6 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			case KEY_CTRL_SHIFT:
 				if ( SearchMode ) break;;
 				alphalock = 0 ;
-				ClipStartPtr = -1 ;		// ClipMode cancel
 				Fkey_dispR( 0, "Var");
 				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
@@ -951,6 +949,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				switch (key) {
 					case KEY_CTRL_EXIT:
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 							
 					case KEY_CTRL_PAGEUP:
@@ -967,6 +966,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 							}
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_PAGEDOWN:
 							offset=EndOfSrc( SrcBase, offset );
@@ -983,31 +983,28 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									break;
 							}
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 
 					case KEY_CTRL_SETUP:
-							Cursor_SetFlashMode(0); 		// cursor flashing off
 							selectSetup=SetupG(selectSetup);
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 					case KEY_CTRL_F1:
 						if ( SearchMode ) break;;
-							Cursor_SetFlashMode(0); 		// cursor flashing off
 							selectVar=SetVar(selectVar);		// A - 
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 					case KEY_CTRL_F2:
 						if ( SearchMode ) break;;
-							Cursor_SetFlashMode(0); 		// cursor flashing off
 							selectMatrix=SetMatrix(selectMatrix);		//
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
 							break;
 					case KEY_CTRL_F3:
 						if ( SearchMode ) break;;
-							Cursor_SetFlashMode(0); 		// cursor flashing off
 							SetViewWindow();
 							key=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel
@@ -1029,9 +1026,18 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							offset=csrPtr;
 							cx=6; cy=2;
 							key=0;
+							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
 					case KEY_CTRL_F6:	// Search for text
-							i=SearchForText(  SrcBase, searchbuf, &csrPtr) ;
+							if ( ClipEndPtr >= 0 ) {
+								if ( ClipEndPtr < ClipStartPtr ) { i=ClipStartPtr; ClipStartPtr=ClipEndPtr; ClipEndPtr=i; }
+								EditCopy( FileBase, csrPtr, ClipStartPtr, ClipEndPtr );
+								ClipBuffer[63]='\0';
+								i=SearchForText(  SrcBase, ClipBuffer, &csrPtr) ;
+							} else {
+								searchbuf[0]='\0';
+								i=SearchForText(  SrcBase, searchbuf, &csrPtr) ;
+							}
 							if ( i ) SearchMode=1; 
 							else	 SearchMode=0;
 							ClipStartPtr = -1 ;			// ClipMode cancel

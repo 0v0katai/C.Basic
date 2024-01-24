@@ -1236,7 +1236,7 @@ int NewProg(){
 
 	ProgEntryN=0;						// new Main program
 	ProgfileAdrs[ProgEntryN]= filebase;
-	ProgfileMax[ProgEntryN]= SrcSize( filebase ) ;
+	ProgfileMax[ProgEntryN]= SrcSize( filebase ) + NewMax ;
 	ProgfileEdit[ProgEntryN]= 1;
 	ProgNo=0;
 	ExecPtr=0;

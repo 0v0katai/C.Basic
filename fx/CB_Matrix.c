@@ -476,7 +476,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 	int i,j,dimA,dimB,x,y;
 	int selectX=0, selectY=0;
 	double value;
-	int ElementSize=DimMatrixDefaultElementSize( reg );
+	int ElementSize=MatAryElementSize[ reg ];
 	int dx,MaxX,MaxDX,MaxDY;
 	
 	if (MatArySizeA[reg]==0) return;
@@ -667,6 +667,8 @@ int SetMatrix(int select){		// ----------- Set Matrix
 	int i,j,y,len;
 	int opNum=25;
 	int dimA,dimB,ElementSize;
+
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 
 	while (cont) {
 		Bdisp_AllClr_VRAM();

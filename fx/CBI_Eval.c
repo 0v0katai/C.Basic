@@ -41,6 +41,7 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	double*	MatAryF;
 
 	c = SRC[ExecPtr];
 	if ( c == '(') {
@@ -186,22 +187,23 @@ int EvalIntsub1(unsigned char *SRC) {	// 1st Priority
 						c = SRC[++ExecPtr];
 						if ( ErrorNo ) return 0 ;
 						if ( c == ')' ) ExecPtr++ ;
-						dimA--; dimB--;
+						x=dimA-1; y=dimB-1; i=MatArySizeB[reg];
 						switch ( MatAryElementSize[reg] ) {
-							case 4:														// Matrix array int
-								MatAryI=(int*)MatAry[reg];
-								return  MatAryI[(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAryI[(dimA-1)*MatArySizeB[reg]+dimB] + MatAryI[(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAryI[(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAryI[(dimA+1)*MatArySizeB[reg]+dimB] + MatAryI[(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAryI[(dimA)*MatArySizeB[reg]+dimB-1] + MatAryI[(dimA)*MatArySizeB[reg]+dimB+1] ;
-								break;
 							case 1:														// Matrix array char
 								MatAryC=(char*)MatAry[reg];
-								return MatAryC[(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAryC[(dimA-1)*MatArySizeB[reg]+dimB] + MatAryC[(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAryC[(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAryC[(dimA+1)*MatArySizeB[reg]+dimB] + MatAryC[(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAryC[(dimA)*MatArySizeB[reg]+dimB-1] + MatAryC[(dimA)*MatArySizeB[reg]+dimB+1] ;
+								return  MatAryC[(x-1)*i+y-1] + MatAryC[(x-1)*i+y] + MatAryC[(x-1)*i+y+1] + MatAryC[(x+1)*i+y-1] + MatAryC[(x+1)*i+y] + MatAryC[(x+1)*i+y+1] + MatAryC[(x)*i+y-1] + MatAryC[(x)*i+y+1] ;
 								break;
 							case 2:														// Matrix array word
 								MatAryW=(short*)MatAry[reg];
-								return  MatAryW[(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAryW[(dimA-1)*MatArySizeB[reg]+dimB] + MatAryW[(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAryW[(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAryW[(dimA+1)*MatArySizeB[reg]+dimB] + MatAryW[(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAryW[(dimA)*MatArySizeB[reg]+dimB-1] + MatAryW[(dimA)*MatArySizeB[reg]+dimB+1] ;
+								return  MatAryW[(x-1)*i+y-1] + MatAryW[(x-1)*i+y] + MatAryW[(x-1)*i+y+1] + MatAryW[(x+1)*i+y-1] + MatAryW[(x+1)*i+y] + MatAryW[(x+1)*i+y+1] + MatAryW[(x)*i+y-1] + MatAryW[(x)*i+y+1] ;
+								break;
+							case 4:														// Matrix array int
+								MatAryI=(int*)MatAry[reg];
+								return  MatAryI[(x-1)*i+y-1] + MatAryI[(x-1)*i+y] + MatAryI[(x-1)*i+y+1] + MatAryI[(x+1)*i+y-1] + MatAryI[(x+1)*i+y] + MatAryI[(x+1)*i+y+1] + MatAryI[(x)*i+y-1] + MatAryI[(x)*i+y+1] ;
 								break;
 							case 8:														// Matrix array doubl
-								return MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB-1] + MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB] + MatAry[reg][(dimA-1)*MatArySizeB[reg]+dimB+1] + MatAry[reg][(dimA+1)*MatArySizeB[reg]+dimB-1] + MatAry[reg][(dimA+1)*MatArySizeB[reg]+dimB] + MatAry[reg][(dimA+1)*MatArySizeB[reg]+dimB+1] + MatAry[reg][(dimA)*MatArySizeB[reg]+dimB-1] + MatAry[reg][(dimA)*MatArySizeB[reg]+dimB+1];
+								MatAryF=(char*)MatAry[reg];
+								return  MatAryF[(x-1)*i+y-1] + MatAryF[(x-1)*i+y] + MatAryF[(x-1)*i+y+1] + MatAryF[(x+1)*i+y-1] + MatAryF[(x+1)*i+y] + MatAryF[(x+1)*i+y+1] + MatAryF[(x)*i+y-1] + MatAryF[(x)*i+y+1] ;
 								break;
 						}
 					}
