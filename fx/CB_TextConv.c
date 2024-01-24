@@ -481,9 +481,9 @@ const char ConvList7F00[][16]={
 "IsExist(",				// 7FF5
 "Peek(", 				// 7FF6
 "", 				// 7FF7
-"", 				// 7FF8
+"VarPtr(", 				// 7FF8
 "", 				// 7FF9
-"", 				// 7FFA
+"ProgPtr(", 				// 7FFA
 "SSb",				// 7FFB
 "SSab", 			// 7FFC
 "MSb",				// 7FFD
@@ -752,9 +752,9 @@ const char ConvListF700[][17]={
 "Local ",				// F7F1
 "@F7F2",			// F7F2
 "@F7F3",			// F7F3
-"@F7F4",			// F7F4
-"Call(",			// F7F5
-"Poke(",			// F7F6
+"SysCall ",				// F7F4
+"Call ",				// F7F5
+"Poke ",				// F7F6
 "",					// F7F7
 "@F7F8",			// F7F8
 "RefrshCtrl ",			// F7F9
@@ -833,10 +833,10 @@ const char ConvListF900[][17]={
 "StrInv(",			// F93B
 "StrShift(",		// F93C
 "StrRotate(",		// F93D
-"@F93E",			// F93E
+"Sprintf(",			// F93E
 "Str ",				// F93F
 
-"@F940",			// F940
+"Str(",				// F940
 "@F941",			// F941
 "@F942",			// F942
 "@F943",			// F943

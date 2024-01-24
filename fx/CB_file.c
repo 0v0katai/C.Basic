@@ -1055,7 +1055,7 @@ int InputFilenamePassname( char *filebase, char *basname, char* msg) {		//
 	filebase[0x55]=0x01;	// pass ok (C.basic)
 	return 0; // ok
 }
-
+/*
 void NewPassWord( char *fname ){	// New Password command
 	char *filebase;
 	int fsize,size;
@@ -1064,7 +1064,30 @@ void NewPassWord( char *fname ){	// New Password command
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".g1m") != 0 ) return ;	// not g1mfile
 	filebase = loadFile( fname , 0 );
-	if ( filebase == NULL ) return ;
+//	if ( filebase == NULL ) return ;
+	if ( CheckG1M( filebase ) ) goto exit; // not support g1m
+	G1MHeaderTobasname8( filebase, basname);
+	InputPassPrintbasnamefile( basname, "Program Name");
+	if ( filebase[0x4C] == 0 ) { // new password
+		if ( SetPassWord( 3, filebase, basname, "Set Password" ) ) goto exit; // cancel
+	} else { // unlock password
+		if ( CheckPassWordmsg( filebase , "Unlock password" ) ) goto exit; // cancel
+		memset( filebase+0x4C, 0, 8);	// clear password
+	}
+	if ( SaveBasG1M( filebase ) ==0 ) ErrorMSGstr1("    Complete!");
+	exit:
+	free( filebase );
+}
+*/
+void NewPassWord( char *fname ){	// New Password command
+	char *filebase;
+	int fsize,size;
+	char sname[16],basname[16];
+
+	SetShortName( sname, fname);
+	if ( strcmp( sname + strlen(sname) - 4, ".g1m") != 0 ) return ;	// not g1mfile
+	if ( LoadProgfile( fname, 0 ) ) return ; // error
+	filebase = ProgfileAdrs[0];
 	if ( CheckG1M( filebase ) ) return ; // not support g1m
 	G1MHeaderTobasname8( filebase, basname);
 	InputPassPrintbasnamefile( basname, "Program Name");
@@ -1074,8 +1097,7 @@ void NewPassWord( char *fname ){	// New Password command
 		if ( CheckPassWordmsg( filebase , "Unlock password" ) ) return ; // cancel
 		memset( filebase+0x4C, 0, 8);	// clear password
 	}
-	SaveBasG1M( filebase );
-	ErrorMSGstr1("    Complete!");
+	if ( SaveBasG1M( filebase ) ==0 ) ErrorMSGstr1("    Complete!");
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1116,26 +1138,26 @@ int LoadProgfile( char *fname, int editsize ) {
 	SetShortName( sname, fname);
 	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
 			filebase = loadFile( fname , editsize + EditMaxfree);
-			if ( filebase == NULL ) return 1;
+//			if ( filebase == NULL ) return 1;
 			textsize=strlen(filebase);
 			if ( editsize ) ConvertToOpcode( filebase, sname, editsize + EditMaxfree);		// text file -> G1M file
 			progsize = textsize +  editsize ;
 	} else {	// G1M file
 			filebase = loadFile( fname , editsize );
-			if ( filebase == NULL ) return 1;
-			if ( CheckG1M( filebase ) ) return 1; // not support g1m
+//			if ( filebase == NULL ) return 1;
+			if ( CheckG1M( filebase ) ) { free( filebase ); return 1; } // not support g1m
 			progsize = SrcSize( filebase ) + editsize ;
 	}
 
 	ProgEntryN=0;						// Main program
-	ProgfileAdrs[ProgEntryN]= filebase;
-	ProgfileEdit[ProgEntryN]= 0;
-	ProgfileMax[ProgEntryN]= progsize;
+	ProgfileAdrs[0]= filebase;
+	ProgfileMax[0]= progsize;
+	ProgfileEdit[0]= 0;
 	ProgNo=0;
 	ExecPtr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
-
-	return 0;
+	
+	return 0; // ok
 }
 
 int SaveG1M( char *filebase ){
@@ -1225,9 +1247,9 @@ int NewProg(){
 	basname8ToG1MHeader( filebase, basname);
 
 	ProgEntryN=0;						// new Main program
-	ProgfileAdrs[ProgEntryN]= filebase;
-	ProgfileMax[ProgEntryN]= SrcSize( filebase ) + NewMax ;
-	ProgfileEdit[ProgEntryN]= 1;
+	ProgfileAdrs[0]= filebase;
+	ProgfileMax[0]= SrcSize( filebase ) + NewMax ;
+	ProgfileEdit[0]= 1;
 	ProgNo=0;
 	ExecPtr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
@@ -1473,9 +1495,9 @@ void SaveConfig(){
 	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=UseHiddenRAM;
 	bufshort[ 9]=DrawType;			bufshort[ 8]=RefreshCtrl;
 	bufshort[11]=Coord;				bufshort[10]=Refreshtime;
-	bufshort[13]=Grid;				bufshort[12]=0;
-	bufshort[15]=Axes;				bufshort[14]=0;
-	bufshort[17]=Label;				bufshort[16]=0;
+	bufshort[13]=Grid;				bufshort[12]=ENG;
+	bufshort[15]=Axes;				bufshort[14]=CB_Round.MODE;
+	bufshort[17]=Label;				bufshort[16]=CB_Round.DIGIT-1;
 	bufshort[19]=Derivative;		bufshort[18]=0;
 	bufshort[21]=S_L_Style;			bufshort[20]=0;
 	bufshort[23]=Angle;				bufshort[22]=0;
@@ -1557,9 +1579,9 @@ void LoadConfig(){
 		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =bufshort[6];
 		DrawType      =bufshort[ 9];        RefreshCtrl   =bufshort[8];
 		Coord         =bufshort[11];        Refreshtime   =bufshort[10];
-		Grid          =bufshort[13];        
-		Axes          =bufshort[15];        
-		Label         =bufshort[17];        
+		Grid          =bufshort[13];        ENG           =bufshort[12];
+		Axes          =bufshort[15];        CB_Round.MODE =bufshort[14];
+		Label         =bufshort[17];        CB_Round.DIGIT=bufshort[16]+1;
 		Derivative    =bufshort[19];        
 		S_L_Style     =bufshort[21];        
 		Angle         =bufshort[23];        
@@ -1893,7 +1915,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	int c=1;
 	char buffer[32]="",folder16[21],bufferb[32];
 	char filename[32];
-	char *src;
+	char *filebase;
 	char *StackProgSRC;
 	int StackProgPtr;
 	unsigned int key=0;
@@ -1934,27 +1956,28 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 				if ( srcPrg < 0 ) { 				// undefined Prog
 					Getfolder( buffer );
 					SetFullfilenameExt( filename, (char*)buffer, "g1m" );
-					src = loadFile( filename ,EditMaxProg );
-					strncpy( src+0x3C-8, folder16, 8);		// set folder to header
+					filebase = loadFile( filename ,EditMaxProg );
+					strncpy( filebase+0x3C-8, folder16, 8);		// set folder to header
 					Restorefolder();
 //					locate( 1, 3); Print(filename);						//
 //					locate( 1, 4); PrintLine(" ",21);					//
-//					sprintf(buffer,"ptr=%08X",src);						//
+//					sprintf(buffer,"ptr=%08X",filebase);						//
 //					locate( 1, 4); Print(buffer); GetKey(&key);			//
 					if ( ErrorNo ) {
 						ErrorPtr=ExecPtr;
 						ProgNo=progno;
 						ErrorProg=ProgNo;
+						if ( filebase != NULL ) free( filebase );
 						return;
 					}
-					if ( src != NULL ) {
-						ProgfileAdrs[ProgEntryN]= src;
-						ProgfileMax[ProgEntryN]= SrcSize( src ) +EditMaxProg ;
+					if ( filebase != NULL ) {
+						ProgfileAdrs[ProgEntryN]= filebase;
+						ProgfileMax[ProgEntryN]= SrcSize( filebase ) +EditMaxProg ;
 						ProgfileEdit[ProgEntryN]= 0;
 						ProgEntryN++;
 						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Too Many Prog error
 						StackProgPtr = ExecPtr;
-						CB_ProgEntry( src + 0x56  );		//
+						CB_ProgEntry( filebase + 0x56  );		//
 						if ( ErrorNo == IfWithoutIfEndERR ) return ;
 						ExecPtr = StackProgPtr ;
 //						if ( ErrorNo ) { 
@@ -1988,9 +2011,9 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 //---------------------------------------------------------------------------------------------- align dummy
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
@@ -2006,24 +2029,24 @@ int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-
-//void FavoritesDowndummy( int *index ) {
-//	int tmp;
-//	char tmpname[FILENAMEMAX];
-//	char tmpfolder[FOLDERMAX];
-//	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-//	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-//	tmp=files[(*index)+1].filesize;
-//	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-//	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-//	files[(*index)+1].filesize=files[(*index)].filesize;
-//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-//	files[(*index)].filesize=tmp;
-//	(*index)++;
-//	SaveFavorites();
-//}
 /*
+void FavoritesDowndummy( int *index ) {
+	int tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+1].filesize=files[(*index)].filesize;
+	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+	files[(*index)].filesize=tmp;
+	(*index)++;
+	SaveFavorites();
+}
+
 void FavoritesDowndummy2( int *index ) {
 	int tmp;
 	char tmpname[FILENAMEMAX];
@@ -2039,5 +2062,22 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	(*index)++;
 	SaveFavorites();
+}
+
+void FavoritesDowndummy3( int *index ) {
+	int tmp;
+	char tmpname[FILENAMEMAX];
+	char tmpfolder[FOLDERMAX];
+	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
+	tmp=files[(*index)+1].filesize;
+	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
+//	files[(*index)+1].filesize=files[(*index)].filesize;
+//	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
+//	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
+//	files[(*index)].filesize=tmp;
+//	(*index)++;
+//	SaveFavorites();
 }
 */

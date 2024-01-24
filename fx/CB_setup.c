@@ -38,7 +38,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"          v0.99p " );
+	locate( 3, 4 ); Print( (unsigned char*)"          v0.99q " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
 	GetKey(&key);
@@ -567,6 +567,14 @@ void SetVarSel(int VarMode, int y) {
 	locate(1,8); SetVarDsp(VarMode);
 }
 
+void SetVarDblToHex( char * buffer, double n ) {
+	if ( ( (n-floor(n))==0 ) && ( -2147483648. <= n ) && ( n <= 2147483647. ) ) {
+		sprintf(buffer,"0x%08X        ",(int)n);
+	} else {
+		sprintG(buffer, n,      18,LEFT_ALIGN);
+	}
+}
+
 int SetVar(int select){		// ----------- Set Variable
 	char buffer[32];
 	unsigned int key;
@@ -579,6 +587,7 @@ int SetVar(int select){		// ----------- Set Variable
 	int small=0;
 	double value=0;
 	int VarMode=CB_INT;	// 0:double  1:int
+	int hex=0;	// 0:normal  1:hex
 
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 
@@ -617,19 +626,30 @@ int SetVar(int select){		// ----------- Set Variable
 			locate(1,1+i); Print((unsigned char*)buffer);
 
 			if ( VarMode ) {
-				locate(4 ,1+i);
-				if ( small )	sprintG(buffer, (double)LocalInt[seltop+i][0], 18,LEFT_ALIGN);
-				else			sprintG(buffer, (double)REGINT[seltop+i],   18,LEFT_ALIGN);
+				locate(4 ,1+i);		// int
+				if ( small ) {
+					if ( hex )	sprintf(buffer,"0x%08X        ",(int)LocalInt[seltop+i][0]);
+						else	sprintG(buffer, (double)LocalInt[seltop+i][0], 18,LEFT_ALIGN);
+				} else {
+					if ( hex )	sprintf(buffer,"0x%08X        ",(int)REGINT[seltop+i]);
+						else	sprintG(buffer, (double)REGINT[seltop+i],   18,LEFT_ALIGN);
+					}
 			} else {
-				locate(3 ,1+i);
-				if ( small )	sprintG(buffer, (double)LocalDbl[seltop+i][0], 18,LEFT_ALIGN);
-				else			sprintG(buffer, (double)REG[seltop+i],      18,LEFT_ALIGN);
+				locate(3 ,1+i);		// dbl
+				if ( small ) {
+					if ( hex )	SetVarDblToHex( buffer, LocalDbl[seltop+i][0] );
+						else	sprintG(buffer, (double)LocalDbl[seltop+i][0], 18,LEFT_ALIGN);
+				} else {
+					if ( hex )	SetVarDblToHex( buffer, REG[seltop+i] );
+						else	sprintG(buffer, (double)REG[seltop+i],      18,LEFT_ALIGN);
+				}
 			}
 			Print((unsigned char*)buffer);
 		}
 		Fkey_dispN( 0, "A<>a");
 		Fkey_dispN( 1, "Init");
 		if ( VarMode ) Fkey_dispN_aA( 2, "D<>I"); else Fkey_dispN_Aa( 2, "D<>I");
+		if ( hex ) Fkey_dispN( 5, "\xE6\x91\x44\x65\x63"); else Fkey_dispN( 5, "\xE6\x91Hex");
 
 		locate(12,8); SetVarDsp(VarMode);
 
@@ -653,6 +673,9 @@ int SetVar(int select){		// ----------- Set Variable
 			case KEY_CTRL_F3:
 				VarMode=1-VarMode;
 				break;
+			case KEY_CTRL_F6:
+				hex=1-hex;
+				break;
 			case KEY_CTRL_UP:
 				select--;
 				if ( select < 0 ) select = opNum;
@@ -670,11 +693,11 @@ int SetVar(int select){		// ----------- Set Variable
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						if ( small )	LocalInt[select][0]= InputNumD_full( 4, y, 18, (double)LocalInt[select][0]);
-						else			REGINT[select]  = InputNumD_full( 4, y, 18, (double)REGINT[select]);
+						if ( small )	LocalInt[select][0]= InputNumD_fullhex( 4, y, 18, (double)LocalInt[select][0], hex);
+						else			REGINT[select]  = InputNumD_fullhex( 4, y, 18, (double)REGINT[select], hex);
 					else
-						if ( small )	LocalDbl[select][0]= InputNumD_full( 3, y, 19, (double)LocalDbl[select][0]);
-						else			REG[select]     = InputNumD_full( 3, y, 19, (double)REG[select]);
+						if ( small )	LocalDbl[select][0]= InputNumD_fullhex( 3, y, 19, (double)LocalDbl[select][0], hex);
+						else			REG[select]     = InputNumD_fullhex( 3, y, 19, (double)REG[select], hex);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -770,6 +793,7 @@ int SetupG(int select){		// ----------- Setup
     char *style[]   ={"Normal","Thick","Broken","Dot"};
     char *degrad[]  ={"Deg","Rad","Grad"};
     char *display[] ={"Nrm","Fix","Sci"};
+    char *ENGmode[] ={"  ","/E","  ","/3"};
     char *mode[]    ={"Dbl#","Int%"};
     char *Matmode[]    ={"[m,n]","[X,Y]"};
     char *Matbase[]    ={"0","1"};
@@ -830,7 +854,7 @@ int SetupG(int select){		// ----------- Setup
 			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
 			locate(17, cnt-scrl); Print((unsigned char*)buffer);
 			locate(19, cnt-scrl); 
-			if (ENG) Print((unsigned char*)"/E");
+			Print((unsigned char*)ENGmode[ENG]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 9
@@ -1176,7 +1200,9 @@ int SetupG(int select){		// ----------- Setup
 						S_L_Style = 3 ; 
 						break;
 					case 8: // Display
-						ENG=1-ENG;
+						ENG++;
+						if ( ENG>3 ) ENG=0;
+						if ( ENG>1 ) ENG=3;
 						break;
 					case 13: // Key Repeat First Count *ms
 						KeyRepeatFirstCount = 20 ;

@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME Eval library for fx-9860G series      v0.80
+ Casio Basic RUNTIME Eval library for fx-9860G series      v0.99
 
 ===============================================================================
 */
@@ -12,6 +12,8 @@
 extern char ExpBuffer[];
 //-----------------------------------------------------------------------------
 void CheckMathERR( double *result ) ;
+double InputNumD_fullsub(int x, int y, int width, double defaultNum ) ;
+double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) ;
 double InputNumD_full(int x, int y, int width, double defaultNum) ;
 double InputNumD_Char(int x, int y, int width, double defaultNum, char code) ;
 double InputNumD_replay(int x, int y, int width, double defaultNum) ;

@@ -654,6 +654,15 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						
 						break;
 				case 4: 		// hex dump
+						i = csrPtr-offset;
+						if ( ( i <  0 ) || ( i > 23 ) ) {
+							offset=csrPtr; cx=6; cy=2;
+						} else {
+							if ( (cx!=7) && (cx!=10) && (cx!=13) && (cx!=16) ) { 
+								cx = (i&3)*3+6;
+								cy = (i/4)+2;
+							}
+						}
 						DumpMix( SrcBase, offset );
 						break;
 //				case 16:		// Ascii dump
@@ -761,13 +770,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								d = SrcBase[ptr];
 								d = (d&0x0F) + n*16;
 								SrcBase[ptr] = d;
+								cx++;
 						} else {				// lower nibbe
 								ptr = (offset)+((cy-2)*4+(cx-6)/3) ;
 								d = SrcBase[ptr];
 								d = (d&0xF0) + n;
 								SrcBase[ptr] = d;
+								key=KEY_CTRL_RIGHT;
 						}
-						key=KEY_CTRL_RIGHT;
 				}
 				break;
 //			case 2: 		// Opcode
@@ -1001,11 +1011,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( (cx==1)&&(cy==2) ) PrevLinePhy( SrcBase, &offset, &offset_y );
 							break;
 					case 4: 		// hex dump
-							cx--; 
-							if ( ( cx==8 ) || ( cx==11 ) || (cx==14) ) cx--;
+							if ( (cx!=7) && (cx!=10) && (cx!=13) && (cx!=16) ) { cx-=2; csrPtr--; }
+							cx--;
 							if ( cx<6 ) {
-									cy--; cx=16;
-									if ( cy<2 ) { (offset)-=4; cy=2; }
+									cy--;
+									if ( cy<2 ) { (offset)-=4; }
 							}
 							break;
 					default:
@@ -1023,11 +1033,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( SrcBase[csrPtr] != 0x00 ) NextOpcode( SrcBase, &csrPtr );
 							break;
 					case 4: 		// hex dump
-							cx++;
-							if ( ( cx==8 ) || ( cx==11 ) || (cx==14) ) cx++;
+							csrPtr++;
+							if ( (cx==6) || (cx== 9) || (cx==12) || (cx==15) )  cx+=3; else cx+=2;
 							if ( cx>16 ) {
-									cy++; cx=6;
-									if ( cy>7 ) { (offset)+=4; cx=6; cy=7; }
+									cy++;
+									if ( cy>7 ) { (offset)+=4; }
 							}
 							break;
 					default:
@@ -1075,8 +1085,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case 4: 		// hex dump
 							cy--;
+							csrPtr-=4;
 							if ( cy<2 ) { (offset)-=4; cy=2; }
-							if ( (cx==7) || (cx==10) || (cx==13) ) cx--;
+//							if ( (cx==7) || (cx==10) || (cx==13) ) cx--;
 							break;
 					default:
 							break;
@@ -1118,8 +1129,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case 4: 		// hex dump
 							cy++;
+							csrPtr+=4;
 							if ( cy>7 ) { (offset)+=4; cy=7; }
-							if ( (cx==7) || (cx==10) || (cx==13) ) cx--;
+//							if ( (cx==7) || (cx==10) || (cx==13) ) cx--;
 							break;
 					default:
 							break;
@@ -1349,7 +1361,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					SearchMode=0;
 				}
 			}
+		} else
+		if ( dumpflg==4 ) {
+				key=0;
 		}
+
 	}
 	edit_exit:
 	Cursor_SetFlashMode(0); 		// cursor flashing off

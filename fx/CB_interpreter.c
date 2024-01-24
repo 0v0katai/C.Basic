@@ -139,7 +139,7 @@ CchRem	CacheRem;
 void ClrCahche();
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
 //int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
@@ -195,7 +195,7 @@ int CB_interpreter_sub( char *SRC ) {
 		CB_StrBufferCNT=0;			// Quot String buffer clear
 		if ( ErrorNo || BreakPtr ) { 
 			if ( CB_BreakStop() ) return -7 ;
-			if ( SRC[ExecPtr] == 0x0C ) ExecPtr++; // disps
+			if ( SRC[ExecPtr] == 0x0C ) if ( ErrorNo==0 ) ExecPtr++; // disps
 			ClrCahche();
 		}
 		c=SRC[ExecPtr++];
@@ -491,14 +491,18 @@ int CB_interpreter_sub( char *SRC ) {
 						Skip_block(SRC);
 						dspflag=0;
 						break;
-//					case 0xFFFFFFF5:	// Call
-//						CB_Call(SRC);
-//						dspflag=0;
-//						break;
-//					case 0xFFFFFFF6:	// Poke
-//						CB_Poke(SRC);
-//						dspflag=0;
-//						break;
+					case 0xFFFFFFF4:	// SysCall r4,r5,r6,r7
+						CB_SysCall(SRC);
+						dspflag=0;
+						break;
+					case 0xFFFFFFF5:	// Call adrs,r5,r6,r7
+						CB_Call(SRC);
+						dspflag=0;
+						break;
+					case 0xFFFFFFF6:	// Poke
+						CB_Poke(SRC);
+						dspflag=0;
+						break;
 					case 0xFFFFFFF9:	// RefreshCtrl
 						CB_RefreshCtrl(SRC);
 						dspflag=0;
@@ -544,10 +548,7 @@ int CB_interpreter_sub( char *SRC ) {
 						cont=0; 
 						break;
 					default:
-						ExecPtr-=2;
-						dspflagtmp=2;
-						if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
-						else		CB_CurrentValue    = EvalsubTop( SRC );
+						goto Evalexit2;
 				}
 				break;
 				
@@ -573,10 +574,7 @@ int CB_interpreter_sub( char *SRC ) {
 //						dspflag=0;
 //						break;
 					default:
-						ExecPtr-=2;
-						dspflagtmp=2;
-						if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
-						else		CB_CurrentValue    = EvalsubTop( SRC );
+						goto Evalexit2;
 				}
 				break;
 				
@@ -595,6 +593,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x3D:	// StrRotate(
 					case 0x3E:	// Sprintf(
 					case 0x3F:	// Str
+					case 0x40:	// Str(
 					strjp:
 						ExecPtr-=2;
 						CB_Str(SRC) ;
@@ -609,6 +608,7 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x0B:	// EngOn
 						ENG=1;
+						if ( SRC[ExecPtr]=='3' ) { ExecPtr++; ENG=3; } // 3 digit separate
 						dspflag=0;
 						break;
 					case 0x0C:	// EngOff
@@ -620,10 +620,9 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						break;
 					default:
+						Evalexit2:
 						ExecPtr-=2;
-						dspflagtmp=2;
-						if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
-						else		CB_CurrentValue    = EvalsubTop( SRC );
+						goto Evalexit;
 				}
 				break;
 				
@@ -671,7 +670,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case 0xFFFFFFDD:	// Eng
-				ENG=1-ENG;
+				if ( ENG ) ENG=0; else ENG=1;
 				dspflag=0;
 				break;
 			case 0xFFFFFFD3:	// Rnd
@@ -711,7 +710,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Str(SRC) ;
 				dspflag=1;
 				break;
-			case 0x3F:	// ?
+			case '?':	// ?
 				CB_Input(SRC);
 				CB_TicksStart=RTC_GetTicks();	// 
 				dspflagtmp=2;
@@ -722,7 +721,7 @@ int CB_interpreter_sub( char *SRC ) {
 				}
 				else ExecPtr--;
 				break;
-			case 0x7B:	// { m.n }->Dim Mat A
+			case '{':	// { m.n }->Dim Mat A
 				CB_MatrixInit(SRC);
 				dspflag=0;
 				break;
@@ -738,6 +737,7 @@ int CB_interpreter_sub( char *SRC ) {
 		
 			default:
 				ExecPtr--;
+				Evalexit:
 				dspflagtmp=2;
 				if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
 				else		CB_CurrentValue    = EvalsubTop( SRC );
@@ -1783,7 +1783,17 @@ void CB_Store( char *SRC ){	// ->
 		} else if ( c == 0x0C ) {	// Yfct
 				ExecPtr+=2;
 				Yfct = CB_CurrentValue ;
-		}
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else
+	if ( c==0xFFFFFFF7 ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
+			ExecPtr+=2;
+			CB_PokeSub( SRC, CB_CurrentValue, EvalsubTop( SRC ) );
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else
+	if ( c=='*' ) { ExecPtr++;
+			CB_PokeSub( SRC, CB_CurrentValue, Evalsub1( SRC ) );
 	} else
 	if ( c=='%' ) { ExecPtr++;
 		StoreTicks:
@@ -2202,7 +2212,7 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAligncf( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
