@@ -50,6 +50,7 @@ static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 Files Favoritesfiles[FavoritesMAX];
 char	FileListUpdate=1;
+int redrawsubfolder=0;
 
 unsigned int SelectFile (char *filename)
 {
@@ -81,6 +82,7 @@ unsigned int SelectFile (char *filename)
 			strcpy( folder, files[index].filename );
 			index = 0;
 			FileListUpdate = 1 ;
+			redrawsubfolder=0;
 		} else {										//file
 			strcpy( name,   files[index].filename );
 			if ( strcmp( files[index].folder  ,  folder ) != 0 ) FileListUpdate=1;
@@ -131,7 +133,8 @@ static int ReadFile( char *folder )
 	
 /*				Get Name & Size			*/
 	i = FavoritesMAX ;
-	files = (Files *)malloc( size*sizeof(Files) );
+	files = (Files *)HiddenRAM();
+	if ( files == NULL ) files = (Files *)malloc( size*sizeof(Files) );
 	memset( files, 0, size*sizeof(Files) );
 
 	r =	Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
@@ -248,7 +251,7 @@ void FavoritesDown( int *index ) {
 unsigned int Explorer( int size, char *folder )
 {
 	int cont=1;
-	int top, redraw;
+	int top;
 	int i,j,k,s,tmp;
 	unsigned int key;
 	int FavCount=0;
@@ -256,6 +259,8 @@ unsigned int Explorer( int size, char *folder )
 	int filemode=0;
 	char *str;
 	int nofile=0;
+	int Isfolder=0;
+	char buffer[32];
 	
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -293,7 +298,10 @@ unsigned int Explorer( int size, char *folder )
 		for( i=0; i<FavoritesMAX; i++){			//	count Favorites list
 			if ( files[i].filesize ) FavCount++;
 		}
-		StartLine=FavoritesMAX - FavCount; if ( FavCount == 0 ) StartLine++;
+		StartLine=FavoritesMAX - FavCount; 
+		if ( FavCount == 0 ) StartLine++; else {
+			if ( redrawsubfolder==0 ) if ( strlen(folder) ) { index=FavoritesMAX +1; top=index-1; redrawsubfolder=1; }
+		}
 
 		Bdisp_AllClr_VRAM();
 		switch ( filemode ) {
@@ -318,7 +326,7 @@ unsigned int Explorer( int size, char *folder )
 				break;
 		}
 		locate(1, 1);Print((unsigned char*)"File List  [        ]");
-		locate(13, 1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"Root");
+		locate(13,1);Print( strlen(folder) ? (unsigned char*)folder : (unsigned char*)"/");	// root
 		if( size < 1+FavoritesMAX+1 ){
 			locate( 8, 4 );
 			Print( (unsigned char*)"No Data" );
@@ -326,6 +334,7 @@ unsigned int Explorer( int size, char *folder )
 		}
 		else{
 			char buf[22],buf2[22];
+			relist:
 			if( index < StartLine )
 				index = StartLine;
 			if( top > index )
@@ -347,24 +356,39 @@ unsigned int Explorer( int size, char *folder )
 					sprintf( buf, " [%s]", files[i + top].filename );
 				} else {
 					strncpy( buf2, files[i + top].filename, FILENAMEMAX );
-					j=strlen(files[i + top].filename);
-					if (j<4) j=4;
+					j=strlen(files[i + top].filename); if (j<4) j=4;
 					k=files[i + top].filesize;
 					if ( buf2[j-3]=='g' ) {
 						buf2[j-4]='\0';
-						k -= 0x38;
+						k -= 0x38;	// file size adjust G1M
 					}
-					sprintf( buf, " %-12s:%6u ", buf2, k );
+					sprintf( buf, " %-12s :%5u ", buf2, k );
+
+					if ( strcmp( files[i+top].folder, folder ) != 0 )
+					if ( i+top < FavoritesMAX ) {
+						j=strlen(files[i + top].folder) ;
+						if (j>5) j=5;
+						if ( j ) strncpy( buf2, files[i + top].folder, j); 
+						buf2[j++]='/'; buf2[j]=0;
+						strncpy( buf, files[i + top].filename, FILENAMEMAX );
+						j=strlen(files[i + top].filename); if (j<4) j=4;
+						if ( buf[j-3]=='g' ) buf[j-4]='\0';
+						strcat(buf2,buf); buf2[14]=0;
+						sprintf( buf, "%-14s:%5u ", buf2, k );
+					}						
 				}
-//				if( i + top < StartLine ) if ( strcmp( Favoritesfiles[i + top].folder, folder ) != 0 ) buf[0]='/';
 				locate( 1, i + 2 ); Print( (unsigned char*)buf );
 			}
+
 			Bdisp_AreaReverseVRAM( 0, (index-top+1)*8 , 127, (index-top+2)*8-1 );
 			if( top > 0 )
 				PrintXY( 120, 8, (unsigned char*)"\xE6\x92", top == index );
 			if( top + N_LINE < size  )
 				PrintXY( 120, N_LINE*8, (unsigned char*)"\xE6\x93" , top + N_LINE - 1 == index );
 		}
+
+		if ( files[index].filesize == 0xFFFF ) Isfolder=1;
+		
 		GetKey(&key);
 		if ( KEY_CTRL_XTT  == key ) key='A';
 		if ( KEY_CHAR_LOG  == key ) key='B';
@@ -433,6 +457,7 @@ unsigned int Explorer( int size, char *folder )
 				cont =0 ;
 				break;
 			case KEY_CTRL_F2:	// edit
+				if ( Isfolder ) break;
 				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
@@ -445,6 +470,7 @@ unsigned int Explorer( int size, char *folder )
 				cont =0 ;
 				break;
 			case KEY_CTRL_F3:	// New file
+				if ( Isfolder ) break;
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_NEW;
@@ -456,6 +482,7 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F4:	// Copy file
+				if ( Isfolder ) break;
 				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
@@ -470,6 +497,7 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F5:	// delete file
+				if ( Isfolder ) break;
 				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
@@ -489,7 +517,6 @@ unsigned int Explorer( int size, char *folder )
 				FavoritesFunc( &index );
 				break;
 			case KEY_CTRL_F6:		// ------- change function
-				if ( nofile ) break;
 				filemode = 1-filemode ;
 				break;
 			
@@ -509,6 +536,7 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_dispR( 2, "V-W");
 				Fkey_Clear( 3 );
 				Fkey_Clear( 4 );
+				sprintf( buffer, "[%d]", size-FavoritesMAX-1); PrintMini(12*6, 7*8+2, buffer , MINI_OVER);  // number of file 
 //				Fkey_dispN_aA( 3, "Fv.\xE6\x92");
 //				Fkey_dispN_aA( 4, "Fv.\xE6\x93");
 				Fkey_dispN( 5, "Debg");
@@ -538,10 +566,8 @@ unsigned int Explorer( int size, char *folder )
 //					case KEY_CTRL_F4:	//
 //					case KEY_CTRL_F5:	//
 					case KEY_CTRL_F6:
+							if ( Isfolder ) break;
 							if ( nofile ) break;
-//							VerDisp();
-//							redraw = 1;
-//							FavoritesFunc( &index );
 							key=FileCMD_DebugRUN;
 							cont =0 ;
 							break;
@@ -559,7 +585,6 @@ unsigned int Explorer( int size, char *folder )
 							break;
 					case KEY_CHAR_ASIN:
 							if ( CB_INTDefault ) CBint_test(); else CB_test();
-							redraw = 1;
 							break;
 							
 					default:
@@ -1018,7 +1043,7 @@ int SaveProgfile( int progNo ){
 	strncpy( renamefolder, folder, FOLDERMAX);
 	
 	strncpy( tmpfolder, folder, FOLDERMAX );
-	strncpy( folder, filebase+0x3C-8, FOLDERMAX );
+	strncpy( folder, filebase+0x3C-8, 8 );
 	G1M_Basic_header( filebase );	// G1M Basic header set
 	r=SaveG1M( filebase );
 	
