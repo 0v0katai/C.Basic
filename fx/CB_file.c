@@ -39,6 +39,7 @@ static int FileCmp( const void *p1, const void *p2 );
 
 static int size=0;
 static char folder[FILENAMEMAX] = "", name[FILENAMEMAX];
+static char rename[FILENAMEMAX] = "";
 Files Favoritesfiles[FavoritesMAX];
 char	FavoritesSize=-1;
 char	FileListUpdate=1;
@@ -53,7 +54,6 @@ unsigned int SelectFile (char *filename)
 			size = ReadFile( folder );
 			qsort( files, size, sizeof(Files), FileCmp );
 		}
-		
 		key = Explorer( size, folder ) ;
 		if ( key == KEY_CTRL_F3 ) break ;	// new file
 		if ( key == KEY_CHAR_POWROOT ) break ;	// sdk built in file
@@ -163,10 +163,12 @@ unsigned int Explorer( int size, char *folder )
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
+	top = index ;
+	
 	if ( FileListUpdate ) {
 		FavCount=0;
 		j=FavoritesMAX-1;
-		for( i=FavoritesMAX-1; i>=0; i--){			//	set favorites list
+		for( i=FavoritesMAX-1; i>=0; i--){		//	set favorites list
 			files[i].filesize=0;
 			k=0;
 			while ( k < FavoritesMAX ) {	// file matching search
@@ -190,10 +192,18 @@ unsigned int Explorer( int size, char *folder )
 				}
 			}
 		}
-		files[FavoritesMAX].filesize = 0xFFFF;	// separator
+		files[FavoritesMAX].filesize = 0xFFFE;	// separator
+		
+		if ( ( rename[0] != '\0' ) && ( index > FavCount) ){
+			for ( k=FavCount; k<size; k++ ) {
+				if ( files[k].filesize != -1 ) {
+					if ( strncmp( files[k].filename,  rename,  strlen(files[k].filename)-4 ) == 0 ) index=k; // rename name matching
+				}
+			}
+		}
 	}
 	FileListUpdate = 0 ;
-	top = index ;
+	rename[0] = '\0';
 
 	while( cont )
 	{
@@ -233,7 +243,7 @@ unsigned int Explorer( int size, char *folder )
 				if( files[i + top].filesize == 0 ) {
 					sprintf( buf, "---------------------");
 				} else
-				if ( files[i + top].filesize == 0xFFFF ) {
+				if ( files[i + top].filesize == 0xFFFE ) {
 					sprintf( buf, "------Favorites------");
 				} else
 				if( files[i + top].filesize == -1 ) {
@@ -283,7 +293,7 @@ unsigned int Explorer( int size, char *folder )
 		if ( ( 'A' <= key ) && ( key <= 'Z' ) ) {
 			i=FavoritesMAX;
 			while ( i<size ) {
-				if ( files[i].filesize ==- 1 ) i++;
+				if ( files[i].filesize == -1 ) i++;
 				else if ( files[i].filename[0]==key ) {
 						index = i;
 						top = index;
@@ -296,13 +306,13 @@ unsigned int Explorer( int size, char *folder )
 				do {
 					if( --index < StartLine  )
 						index = size - 1;
-				} while ( files[index].filesize == 0xFFFF ) ;
+				} while ( files[index].filesize == 0xFFFE ) ;
 				break;
 			case KEY_CTRL_DOWN:
 				do {
 					if( ++index > size - 1 )
 						index = StartLine ;
-				} while ( files[index].filesize == 0xFFFF ) ;
+				} while ( files[index].filesize == 0xFFFE ) ;
 				break;
 			case KEY_CTRL_EXE:
 			case KEY_CTRL_F1:	// run
@@ -802,6 +812,7 @@ int SaveProgfile( int progNo ){
 	filename8ToSname( filebase, basname);
 	if ( ExistG1M( basname ) ==0 ) if ( YesNo( "Overwrite OK?" ) == 0 ) goto loop;
 
+	strncpy( rename, basname, FILENAMEMAX);
 	return SaveG1M( filebase );
 }
 
@@ -940,6 +951,8 @@ int RenameFile( char *sname ) {
 	if ( SaveG1M( filebase ) == 0 ) DeleteFile( sname ) ;
 	else return 1;
 
+	strncpy( rename, basname, FILENAMEMAX);
+	
 	i=0;
 	while ( i < FavoritesMAX ) {	// file matching search
 		if ( strcmp( name,  Favoritesfiles[i].filename )== 0 ) break; // not matching
@@ -955,119 +968,7 @@ int RenameFile( char *sname ) {
 }
 
 //----------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------strage memory version
 #define ConfigMAX 1000
-/*
-void SaveConfigS(){
-	char fname[]="\\\\"ROOT"\\CBASIC.cnf";
-	unsigned char buffer[ConfigMAX];
-	unsigned char *sbuf;
-	int    *bufint=(int*)buffer;
-	double *bufdbl=(double*)buffer;
-	int size,i,r;
-	
-	memset( buffer, 0x00, ConfigMAX );
-	buffer[ 0]='C';
-	buffer[ 1]='B';
-	buffer[ 2]='.';
-	buffer[ 3]='c';
-	buffer[ 4]='o';
-	buffer[ 5]='n';
-	buffer[ 6]='f';
-	buffer[ 7]='i';
-	buffer[ 8]='g';
-	buffer[ 9]='0';
-	buffer[10]='6';
-	buffer[11]='0';
-
-	bufint[ 3]=CB_INTDefault;
-	bufint[ 4]=DrawType;
-	bufint[ 5]=Coord;
-	bufint[ 6]=Grid;
-	bufint[ 7]=Axes;
-	bufint[ 8]=Label;
-	bufint[ 9]=Derivative;
-	bufint[10]=S_L_Style;
-	bufint[11]=Angle;
-	bufint[12]=BreakCheck;
-	bufint[13]=TimeDsp;
-	bufint[14]=MatXYmode;
-	bufint[15]=0;
-
-	bufdbl[ 8]=Xfct;
-	bufdbl[ 9]=Yfct;
-	for ( i=10; i< 10+58 ; i++ ) bufdbl[i]=REG[i-10];
-	for ( i=68; i< 68+11 ; i++ ) bufdbl[i]=REGv[i-68];
-	for ( i=160; i< 160+58 ; i++ ) bufint[i]=REGINT[i-160];
-
-	sbuf=buffer+220*4;
-	
-	strncpy( (char*)sbuf, folder, FILENAMEMAX);
-	sbuf+=FILENAMEMAX;
-	for ( i=0; i<FavoritesMAX; i++ ) {
-		strncpy( (char*)sbuf, Favoritesfiles[i].filename, FILENAMEMAX);
-		sbuf+=FILENAMEMAX;
-	}
-	r=storeFile( fname, buffer, ConfigMAX );	// 0:ok
-}
-
-void LoadConfigS(){
-	char fname[]="\\\\"ROOT"\\CBASIC.cnf";
-	unsigned char *buffer;
-	unsigned char *sbuf;
-	int    *bufint;
-	double *bufdbl;
-	int size,i;
-	
-	if ( ExistFile( fname ) ) return ; // no config file
-	
-	buffer = loadFile( fname ,0);					//
-	bufint=(int*)buffer;
-	bufdbl=(double*)buffer;
-	
-	if ( ( buffer[ 0]=='C' ) &&	// file check
-		 ( buffer[ 1]=='B' ) &&
-		 ( buffer[ 2]=='.' ) &&
-		 ( buffer[ 3]=='c' ) &&
-		 ( buffer[ 4]=='o' ) &&
-		 ( buffer[ 5]=='n' ) &&
-		 ( buffer[ 6]=='f' ) &&
-		 ( buffer[ 7]=='i' ) &&
-		 ( buffer[ 8]=='g' ) &&
-		 ( buffer[ 9]=='0' ) &&
-		 ( buffer[10]=='6' ) &&
-		 ( buffer[11]=='0' ) ) {
-		
-		CB_INTDefault =bufint[ 3];
-		DrawType  =bufint[ 4];	// load config & memory
-		Coord     =bufint[ 5];
-		Grid      =bufint[ 6];
-		Axes      =bufint[ 7];
-		Label     =bufint[ 8];
-		Derivative=bufint[ 9];
-		S_L_Style =bufint[10];
-		Angle     =bufint[11];
-		BreakCheck=bufint[12];
-		TimeDsp   =bufint[13];
-		MatXYmode =bufint[14];
-
-		Xfct=bufdbl[ 8];
-		Yfct=bufdbl[ 9];
-		for ( i=10; i< 10+58 ; i++ ) REG[i-10] =bufdbl[i];
-		for ( i=68; i< 68+11 ; i++ ) REGv[i-68]=bufdbl[i];
-		for ( i=160; i< 160+58 ; i++ ) REGINT[i-160]=bufint[i];
-
-		sbuf=buffer+220*4;
-
-		strncpy( folder, (char*)sbuf, FILENAMEMAX);
-		sbuf+=FILENAMEMAX;
-		for ( i=0; i<FavoritesMAX; i++ ) {
-			strncpy( Favoritesfiles[i].filename, (char*)sbuf, FILENAMEMAX);
-			sbuf+=FILENAMEMAX;
-		}
-	}
-}
-*/
 //--------------------------------------------------------------
 
 void SaveFavorites(){

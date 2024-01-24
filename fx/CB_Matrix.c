@@ -421,6 +421,31 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){
 	return key;
 }
 //-----------------------------------------------------------------------------
+
+void InitMatSub( int reg, double value ){
+	int i,j;
+	int dimA,dimB;
+	dimA=MatArySizeA[reg]-1;
+	dimB=MatArySizeB[reg]-1;
+	for (j=0; j<=dimB; j++ ) {
+		for (i=0; i<=dimA; i++ ) {
+			WriteMatrix( reg, i, j, value);
+		}
+	}
+}
+
+void InitMatIntSub( int reg, int value ){
+	int i,j;
+	int dimA,dimB;
+	dimA=MatArySizeA[reg]-1;
+	dimB=MatArySizeB[reg]-1;
+	for (j=0; j<=dimB; j++ ) {
+		for (i=0; i<=dimA; i++ ) {
+			WriteMatrixInt( reg, i, j, value);
+		}
+	}
+}
+
 double InitMatrix( int reg, double value ,int ElementSize ) {
 	char buffer[32];
 	unsigned int key;
@@ -459,34 +484,52 @@ double InitMatrix( int reg, double value ,int ElementSize ) {
 		}
 	}
 
-	if ( YesNo("Initialize Ok?") ) {
-			dimA=MatArySizeA[reg]-1;
-			dimB=MatArySizeB[reg]-1;
-			MatAryElementSize[reg];
-			for (j=0; j<=dimB; j++ ) {
-				for (i=0; i<=dimA; i++ ) {
-					WriteMatrix( reg, i, j, value);
-				}
-			}
-	}
+	if ( YesNo("Initialize Ok?") ) InitMatSub( reg,value);
+
 	return value;
 }
 
 //-----------------------------------------------------------------------------
 
-void CharToBit8( char *buffer, int n ) {
-	int i,k=128;
-	n&=0xFF;
-	for (i=0;i<8;i++){
-		
-		if ( n>=k ) {
-			buffer[i]='1';
-			n-=k;
-		} else
-			buffer[i]='0';
+void NumToBin( char *buffer, unsigned int n, int digit) {
+	unsigned int i,j,k=pow(2,(digit-1));
+	char bins[]="01";
+	n &= (k*2-1);
+	for (i=0;i<digit;i++){
+		j=n/k;
+		buffer[i]=bins[j];
+		n=n-k*j;
 		k/=2;
 	}
-	buffer[8]='\0';
+	buffer[digit]='\0';
+}
+
+void NumToHex( char *buffer, unsigned int n, int digit) {
+	unsigned int i,j,k=pow(16,(digit-1));
+	char hexs[]="0123456789ABCDEF";
+	n &= (k*16-1);
+	for (i=0;i<digit;i++){
+		j=n/k;
+		buffer[i]=hexs[j];
+		n=n-k*j;
+		k/=16;
+	}
+	buffer[digit]='\0';
+}
+void DNumToHex( char *buffer, double x, int digit) {
+	char buffer2[20];
+	unsigned int i;
+	unsigned int n[2];
+	unsigned char *dptr;
+	unsigned char *iptr;
+	dptr=(unsigned char *)(&x);
+	iptr=(unsigned char *)(&n);
+	for (i=0; i<8; i++ ) iptr[i]=dptr[i];
+	NumToHex( buffer2, n[0], 8);
+	for (i=0; i<8; i++ )  buffer[i]=buffer2[i];
+	NumToHex( buffer2, n[1], 8);
+	for (i=0; i<8; i++ ) buffer[i+8]=buffer2[i];
+	buffer[digit]='\0';
 }
 
 
@@ -500,7 +543,7 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 	double value;
 	int ElementSize=MatAryElementSize[ reg ];
 	int dx,MaxX,MaxDX,MaxDY;
-	int bit=0;
+	int bit=0;	// 0:normal  1:bin  16~64:hex
 	
 	if (MatArySizeA[reg]==0) return;
 
@@ -519,15 +562,46 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 			MaxDX=6; if (MaxDX>dimA) MaxDX=dimA;
 			dx=18;
 			MaxX=5;
-			if ( bit ) {
+			if ( bit==1 ) {
 				MaxDX=3; if (MaxDX>dimA) MaxDX=dimA;
 				dx=36;
 				MaxX=2;
 			}
-		} else {
+		} else
+		if ( ElementSize == 2 ) {
 			MaxDX=4; if (MaxDX>dimA) MaxDX=dimA;
 			dx=27;
 			MaxX=3;
+			if ( bit==2 ) {
+				MaxDX=0;
+				dx=69;
+				MaxX=0;
+			}
+			if ( bit==16 ) {
+				MaxDX=5; if (MaxDX>dimA) MaxDX=dimA;
+				dx=22;
+				MaxX=4;
+			}
+		} else
+		if ( ElementSize == 4 ) {
+			MaxDX=4; if (MaxDX>dimA) MaxDX=dimA;
+			dx=27;
+			MaxX=3;
+			if ( bit==32 ) {
+				MaxDX=3; if (MaxDX>dimA) MaxDX=dimA;
+				dx=36;
+				MaxX=2;
+			}
+		} else
+		if ( ElementSize == 8 ) {
+			MaxDX=4; if (MaxDX>dimA) MaxDX=dimA;
+			dx=27;
+			MaxX=3;
+			if ( bit==64 ) {
+				MaxDX=0;
+				dx=69;
+				MaxX=0;
+			}
 		}
 		
 		Bdisp_AllClr_VRAM();
@@ -573,11 +647,30 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				if ( ((seltopY+y)<=dimB) && ((seltopX+x)<=dimA) ) {
 					if ( MatXYmode ) value=ReadMatrix( reg, seltopX+x, seltopY+y);
 					else			 value=ReadMatrix( reg, seltopY+y, seltopX+x);
-					if ( MaxX==3 )	sprintG(buffer, value, 6,RIGHT_ALIGN);
-					else
-					if ( MaxX==2 )	CharToBit8(buffer, value);
-					else 			sprintG(buffer, value, 4,RIGHT_ALIGN);
-					PrintMini(x*dx+23-MaxX,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					
+					if ( ( bit==0 ) && ( MaxX==3 ) ) {	sprintG(buffer, value, 6,RIGHT_ALIGN);
+								PrintMini(x*dx+20,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					} else 
+					if ( bit== 1 ) {	NumToBin(buffer, value, 8);
+								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					} else 
+					if ( bit== 2 ) {	NumToBin(buffer, value, 16);
+								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					} else 
+					if ( bit== 8 ) {	NumToHex(buffer, value, 2);
+								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					} else 
+					if ( bit==16 ) {	NumToHex(buffer, value, 4);
+								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					} else 
+					if ( bit==32 ) {	NumToHex(buffer, value, 8);
+								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					} else 
+					if ( bit==64 ) {	DNumToHex(buffer, value, 16);
+								PrintMini(x*dx+21,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					} else { 	sprintG(buffer, value, 4,RIGHT_ALIGN);
+								PrintMini(x*dx+23-MaxX,y*8+10,(unsigned char*)buffer,MINI_OVER);
+					}
 //					Bdisp_PutDisp_DD();
 				}
 			}
@@ -643,8 +736,16 @@ void EditMatrix(int reg){		// ----------- Edit Matrix
 				i=selectX; selectX=selectY; selectY=i;
 				i=seltopX; seltopX=seltopY; seltopY=i;
 				break;
-			case KEY_CTRL_F6:
-				if ( ElementSize == 1 ) bit=1-bit;
+			case KEY_CTRL_F5:	// bin
+				if ( ElementSize <= 2 ) {
+					 if ( ( bit==0 ) || ( bit>=9 ) ) bit=1+( ElementSize == 2 ); else bit=0;
+				} else bit=0;
+				break;
+			case KEY_CTRL_F6:	// hex
+				if ( ElementSize == 1 ) if ( ( bit==0 ) || ( bit==1 ) ) bit= 8; else bit=0;
+				if ( ElementSize == 2 ) if ( ( bit==0 ) || ( bit==1 ) ) bit=16; else bit=0;
+				if ( ElementSize == 4 ) if ( ( bit==0 ) || ( bit==1 ) ) bit=32; else bit=0;
+				if ( ElementSize == 8 ) if ( ( bit==0 ) || ( bit==1 ) ) bit=64; else bit=0;
 				break;
 			case KEY_CTRL_UP:
 				selectY--;
@@ -1001,6 +1102,32 @@ void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 		if (CB_INT)	CBint_CurrentValue = EvalIntsubTop( SRC );
 		else		CB_CurrentValue    = EvalsubTop( SRC );
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CB_MatFill( char *SRC ) { //	Fill(value, Mat A)
+	int c,d;
+	int dimA,dimB,i;
+	int reg;
+	double	*dptr, *dptr2;
+	double value;
+	
+	if (CB_INT)	value=(EvalIntsubTop( SRC )); else value=(EvalsubTop( SRC ));
+	c =SRC[ExecPtr];
+	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	c =SRC[++ExecPtr];
+	if ( ( c != 0x7F ) || ( SRC[ExecPtr+1]!=0x40 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	ExecPtr+=2;
+	c =SRC[ExecPtr];
+	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
+		ExecPtr++;
+		reg=c-'A';
+		if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	c =SRC[ExecPtr];
+	if ( c == ')' ) ExecPtr++;
+	
+	InitMatSub( reg,value);
 }
 
 //-----------------------------------------------------------------------------

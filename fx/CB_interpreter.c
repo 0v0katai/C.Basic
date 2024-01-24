@@ -1153,6 +1153,9 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x40:	// Mat
 						CB_MatCalc(SRC);
 						break;
+					case 0x47:	// Fill(
+						CB_MatFill(SRC);
+						break;
 					default:
 						ExecPtr-=2;
 						dspflagtmp=2;
@@ -1486,7 +1489,7 @@ void CB_Isz( char *SRC ) { //	Isz
 //----------------------------------------------------------------------------------------------
 
 void CB_Store( char *SRC ){	// ->
-	int	st,en,i;
+	int	st,en,i,j;
 	int dimA,dimB,reg;
 	int mptr;
 	char*	MatAryC;
@@ -1525,32 +1528,8 @@ void CB_Store( char *SRC ){	// ->
 			mptr=MatOprand( SRC, &reg);
 			if ( ErrorNo ) return ; // error
 			if ( mptr==-2 ) {	// Mat A
-				dimA=MatArySizeA[reg];
-				dimB=MatArySizeB[reg];
-				switch ( MatAryElementSize[reg] ) {
-					case 8:						// Matrix array double
-						for (i=0; i<dimB*dimA; i++)
-							MatAry[reg][i] = CB_CurrentValue;
-						break;
-					case 4:						// Matrix array int
-						MatAryI=(int*)MatAry[reg];
-						for (i=0; i<dimB*dimA; i++)
-							MatAryI[i] = CB_CurrentValue;
-						break;
-					case 1:						// Matrix array char
-						MatAryC=(char*)MatAry[reg];
-						for (i=0; i<dimB*dimA; i++)
-							MatAryC[i] = CB_CurrentValue;
-						break;
-					case 2:						// Matrix array word
-						MatAryW=(short*)MatAry[reg];
-						for (i=0; i<dimB*dimA; i++)
-							MatAryW[i] = CB_CurrentValue;
-						break;
-					default:
-						CB_Error(NoMatrixArrayERR); // No Matrix Array error
-						break;
-				}
+				if ( MatArySizeA[reg] == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+				InitMatSub( reg, CB_CurrentValue);
 			} else {	// Mat A[a,b]
 				switch ( MatAryElementSize[reg] ) {
 					case 8:						// Matrix array double

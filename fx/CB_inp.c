@@ -367,6 +367,7 @@ const short oplistOPTN[]={
 		0x7F3A,	// MOD(
 		0x7F46,	// Dim
 		0x7F40,	// Mat	
+		0x7F47,	// Fill(
 
 		0x7FB0,	// And
 		0x7FB1,	// Or
@@ -790,10 +791,10 @@ const short oplistCMD[]={
 		0xF709,	// WhileEnd		6
 		0xF70A,	// Do			7
 		0xF70B,	// LpWhile		8
-		0xFFFF,	// 				-
-		0x7FE9,	// CellSum(
 		0x7F46,	// Dim	
 		0x7F40,	// Mat	
+		0x7F47,	// Fill(
+		0x7FE9,	// CellSum(
 
 		
 		0xF70D,	// Break		1
