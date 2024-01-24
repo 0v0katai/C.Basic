@@ -904,9 +904,9 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F4:	// Copy file
-				if ( Isfolder ) break;
 				switch ( filemode ) {
 					case 0:
+						if ( Isfolder ) break;
 						if ( nofile ) break;
 						key=FileCMD_COPY;
 						cont =0 ;
@@ -922,9 +922,9 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F5:	// delete file
-				if ( nofile ) break;
 				switch ( filemode ) {
 					case 0:
+						if ( nofile ) break;
 						if ( Isfolder )	{
 							if ( DeleteFolder(files[index].filename, 1) == 0 ) cont =0 ;	// ok
 							key=FileCMD_DELDIR;
