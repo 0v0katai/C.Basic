@@ -540,6 +540,10 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 	return n ; // ok
 }
 
+void RestoreScreenModeEdit(){
+	if ( ScreenModeEdit )	CB_RestoreGraphVRAM();	// Resotre Graphic screen
+	else					CB_RestoreTextVRAM();	// Resotre Text screen
+}
 
 unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char *filebase,*SrcBase;
@@ -676,8 +680,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		
 		if ( DebugScreen ) {	// screen debug mode
 //				Cursor_SetFlashMode(0); 		// cursor flashing off
-				if ( ScreenModeEdit )	CB_RestoreGraphVRAM();	// Resotre Graphic screen
-				else					CB_RestoreTextVRAM();	// Resotre Text screen
+				RestoreScreenModeEdit();
 		}
 		
 		if ( ( DebugScreen != 1 ) && ( run != 1 ) ) {
@@ -778,6 +781,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								SrcBase[ptr] = d;
 								key=KEY_CTRL_RIGHT;
 						}
+						DebugScreen = 0;
 				}
 				break;
 //			case 2: 		// Opcode
@@ -1255,8 +1259,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_F6:	// G<>T
 							Cursor_SetFlashMode(0); 		// cursor flashing off
 							ScreenModeEdit=1-ScreenModeEdit;
-							if ( ScreenModeEdit  )  CB_RestoreGraphVRAM();	// Resotre Graphic screen
-							else					CB_RestoreTextVRAM();	// Resotre Text screen
+							RestoreScreenModeEdit();
 							GetKey(&key);
 							if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
 							break;
@@ -1335,9 +1338,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						InsertOpcode( filebase, csrPtr, key );
 					}
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
-					key=0;
 					alphalock = 0 ;
+					key=0;
 					SearchMode=0;
+					DebugScreen = 0;
 					break;
 				default:
 					break;
@@ -1359,6 +1363,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
 					key=0;
 					SearchMode=0;
+					DebugScreen = 0;
 				}
 			}
 		} else
@@ -1370,6 +1375,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	edit_exit:
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
+	RestoreScreenModeEdit();
 	return key;
 }
 
@@ -1441,9 +1447,9 @@ int CB_BreakStop() {
 
 //----------------------------------------------------------------------------------------------
 int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

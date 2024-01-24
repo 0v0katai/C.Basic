@@ -705,7 +705,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Input(SRC);
 				CB_TicksStart=RTC_GetTicks();	// 
 				dspflagtmp=2;
-				if ( BreakPtr ) break;
+				if ( BreakPtr > 0 ) break;
 				c=SRC[ExecPtr++];
 				if ( c == 0x0E ) {		// ->
 					if (CB_INT)	CBint_Store(SRC); else CB_Store(SRC);
@@ -1962,7 +1962,7 @@ int  CB_Input( char *SRC ){
 		case 0:	// value
 			CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
 			ErrorNo=0; // error cancel
-			if ( BreakPtr ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
+			if ( BreakPtr > 0 ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			break;
 		case 1:	// value
@@ -1971,7 +1971,7 @@ int  CB_Input( char *SRC ){
 			Scrl_Y();
 			CB_CurrentValue = InputNumD_CB1( 1, CursorY, 21, DefaultValue );
 			ErrorNo=0; // error cancel
-			if ( BreakPtr ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
+			if ( BreakPtr > 0 ) { BreakPtr--; ExecPtr=BreakPtr; return 0; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			if ( flagint ) {
 				CBint_Store( SRC );
@@ -2204,6 +2204,6 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAligncf( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
