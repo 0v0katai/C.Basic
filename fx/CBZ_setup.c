@@ -29,7 +29,7 @@ int selectMatrix=0;
 
 int StackPtr;
 
-const char VerMSG[]="C.Basic  v2.40\xE6\x41";
+const char VerMSG[]="C.Basic  v2.41\xE6\x41";
 #define VERSION 240
 
 //---------------------------------------------------------------------------------------------

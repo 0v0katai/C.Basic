@@ -92,6 +92,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			} break;
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
+				case 1: (*code)=0x008D;return;	// Integral
 				case 2: (*code)=0x7FBD;return;	// Rmdr
 			} break;
 		case CMD_OPTN_HYP:

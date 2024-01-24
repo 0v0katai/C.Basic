@@ -128,6 +128,9 @@ int RegVarAliasEx( char *SRC ) ;
 
 int CB_IsError( char *SRC ); //	IsError (...)
 
+double CB_Integral( char *SRC );	// Integral( FX, start, end, tol )
+double CB_Differ( char *SRC );	// Differ( FX, tol )
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void NewMatListAns( int dimA, int dimB, int base, int element );
@@ -160,4 +163,9 @@ int ListEvalsubTopAns(char *SRC) ;	//
 
 int CB_SigmaInt( char *SRC ) ; //	Sigma(X^2,X,1.10)
 
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+double CB_Integral( char *SRC );	// Integral( FX, start, end, sci )
+double CB_Differ( char *SRC );	// Differ( FX, start, end, sci )
 

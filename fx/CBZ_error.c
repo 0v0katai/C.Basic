@@ -189,6 +189,9 @@ void CB_ErrMsg(int ErrNo) {
 //			ERROR("Alignment ERR");
 			ERROR("Address Align ERR");
 			break;
+		case NotAccuracyERR:
+			ERROR("Not met Accuracy");
+			break;
 		case TryWithoutExceptERR:
 			ERROR("Try w/o Except  ");
 			break;

@@ -1439,6 +1439,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					CB_Mat2List( SRC );;
 					return 0;
 					
+				case 0x26 :				// dx/dy
+					return CB_Differ( SRC );
+					
 				case 0xFFFFFFCF :				// System(
 					return CB_System( SRC );
 				case 0xFFFFFFDF :				// Version
@@ -1567,6 +1570,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			return  acosh( Evalsub5( SRC ) );
 		case 0xFFFFFFB3 :	// atanh
 			return  atanh( Evalsub5( SRC ) );
+			
+		case 0xFFFFFF8D :	// integral
+			return  CB_Integral( SRC );
 			
 		case 0xFFFFFF80 :	// Pol( x, y ) -> r=List Ans[1] , Theta=List Ans[2]
 			tmp=EvalsubTop( SRC );
@@ -1819,7 +1825,8 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			 ( c == 0xFFFFFFCE ) || // Theta
 			 ( c == 0xFFFFFFD0 ) || // const_PI
 			 ( c == 0xFFFFFFC0 ) || // Ans
-			 ( c == 0xFFFFFFC1 )) { // Ran#
+			 ( c == 0xFFFFFFC1 ) || // Ran#
+			 ( c == 0xFFFFFF8D )) { // integral
 				result *= Evalsub4( SRC ) ;
 		} else if ( c == 0x7F ) { // 7F..
 			c = SRC[ExecPtr+1];
@@ -1870,6 +1877,7 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				case 0x6D :		// List4
 				case 0x6E :		// List5
 				case 0x6F :		// List6
+				case 0x26 :				// dx/dy
 					result *= Evalsub4( SRC ) ;
 					break;
 				default:
