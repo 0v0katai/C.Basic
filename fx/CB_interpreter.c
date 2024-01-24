@@ -1642,22 +1642,25 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 		expbuf=ExecPtr;
 		reg=RegVarAliasEx(SRC);
 		if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		if ( SRC[ExecPtr] == '#' ) { CB_CurrentValue.real = CBint_CurrentValue; goto forDBL; }
+	  forINT:
 		ExecPtr=expbuf;
 		CurrentStruct->Var[CurrentStruct->ForPtr]=LocalInt[reg];
 		CBint_Store(SRC);
 		c=SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
-		CurrentStruct->IntEnd[CurrentStruct->ForPtr] = EvalIntsubTop( SRC );
+		CurrentStruct->IntEnd[CurrentStruct->ForPtr] = CB_EvalInt( SRC );
 		c=SRC[ExecPtr];
 		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
-			CurrentStruct->IntStep[CurrentStruct->ForPtr] = EvalIntsubTop( SRC );
+			CurrentStruct->IntStep[CurrentStruct->ForPtr] = CB_EvalInt( SRC );
 		} else {
 			CurrentStruct->IntStep[CurrentStruct->ForPtr] = 1;
 		}
 		
 		CurrentStruct->NextAdrs[CurrentStruct->ForPtr] = 0;
+		CurrentStruct->ForType[CurrentStruct->ForPtr]  = 1;	// int mode
 		
 		if ( CurrentStruct->IntStep[CurrentStruct->ForPtr] > 0 ) { 	// step +
 			if ( CBint_CurrentValue > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) {  // for next cancel
@@ -1674,29 +1677,32 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 
 	} else {			//					------------ Double mode
 		CB_CurrentValue.real = EvalsubTopReal( SRC );
-		CB_CurrentValue.imag = 0;
 		c=SRC[ExecPtr];
 		if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }	// Syntax error	// ->
 		ExecPtr++;
 		expbuf=ExecPtr;
 		reg=RegVarAliasEx(SRC);
 		if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		if ( SRC[ExecPtr] == '%' ) { CBint_CurrentValue = CB_CurrentValue.real; goto forINT; }
+	 forDBL:
 		ExecPtr=expbuf;
 		CurrentStruct->Var[CurrentStruct->ForPtr]=(int*)LocalDbl[reg];
+		CB_CurrentValue.imag = 0;
 		CB_Store(SRC);
 		c=SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
-		CurrentStruct->End[CurrentStruct->ForPtr] = EvalsubTopReal( SRC );
+		CurrentStruct->End[CurrentStruct->ForPtr] = CB_EvalDbl( SRC );
 		c=SRC[ExecPtr];
 		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
-			CurrentStruct->Step[CurrentStruct->ForPtr] = EvalsubTopReal( SRC );
+			CurrentStruct->Step[CurrentStruct->ForPtr] = CB_EvalDbl( SRC );
 		} else {
 			CurrentStruct->Step[CurrentStruct->ForPtr] = 1;
 		}
 		
 		CurrentStruct->NextAdrs[CurrentStruct->ForPtr] = 0;
+		CurrentStruct->ForType[CurrentStruct->ForPtr]  = 0;	// dbl mode
 		
 		if ( CurrentStruct->Step[CurrentStruct->ForPtr] > 0 ) { 	// step +
 			if ( CB_CurrentValue.real > CurrentStruct->End[CurrentStruct->ForPtr] ) { // for next cancel
@@ -1729,7 +1735,7 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 	if ( CurrentStruct->ForPtr <= 0 ) { return; } // Next without for through (no error)
 	CurrentStruct->ForPtr--;
 	CurrentStruct->CNT--;
-	if (CB_INT==1) {		//					------------ INT mode
+	if (CurrentStruct->ForType[CurrentStruct->ForPtr]) {		//					------------ INT mode
 		stepint = CurrentStruct->IntStep[CurrentStruct->ForPtr];
 		iptr=CurrentStruct->Var[CurrentStruct->ForPtr];
 		(*iptr) += stepint;
@@ -1766,8 +1772,8 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 //----------------------------------------------------------------------------------------------
 //int ObjectAligni4( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAligni6a( unsigned int n ){ return n+n; }	// align +6byte
-//int ObjectAligni4b( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAligni4c( unsigned int n ){ return n; }	// align +4byte
+int ObjectAligni4b( unsigned int n ){ return n; }	// align +4byte
+int ObjectAligni4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int Search_WhileEnd( char *SRC ){
