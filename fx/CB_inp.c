@@ -82,7 +82,7 @@ const short CharKANA[]= {
 short *oplist=CharMATH;
 int CharPtr=0;
 
-int SelectChar( int *ContinuousSelect ) {
+unsigned int SelectChar( int *ContinuousSelect ) {
 
 	int cont=1, x,y,cx,cy,ptr,scrl=0;
 	unsigned int key;
@@ -1035,10 +1035,10 @@ const short oplistCMD[]={
 		0xF7E0,	// DotLife(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
-		0xF7E3,	// LocateYX
-		0x7F5F,	// Ticks
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
+		0xF7E3,	// LocateYX
+		0xF7FE,	// BackLight
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
 		0xF793,	// StoPict

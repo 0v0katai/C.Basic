@@ -36,7 +36,7 @@ char ExpBuffer[ExpMax+1];
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //int MatrixObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandSub( int c ) {
@@ -733,7 +733,6 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFFD:	//  Eval(
 			return CB_EvalStr(SRC);
 		default:
-			ExecPtr--;	// error
 			break;
 	}
 	ExecPtr--;

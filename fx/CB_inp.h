@@ -33,7 +33,7 @@ extern const short oplistPRGM[];
 extern const short oplistVARS[];
 extern const short oplistCMD[];
 
-int SelectChar( int *ContinuousSelect ) ;
+unsigned int SelectChar( int *ContinuousSelect ) ;
 int SelectOpcode( short *oplist, int *select) ;
 int SelectOpcode5800P( short *oplist, int *select) ;
 

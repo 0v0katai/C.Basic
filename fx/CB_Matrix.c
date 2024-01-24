@@ -1141,7 +1141,7 @@ int ElementSizeSelect( char *SRC, int reg ) {
 		if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; ElementSize=64; }
 	}
 	else {
-		ElementSize = DimMatrixDefaultElementSize( reg ) ;
+		ElementSize = DimMatrixDefaultElementSize( reg ) +0x100 ;
 	}
 	return ElementSize;
 }
@@ -1156,7 +1156,7 @@ void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize
 	if ( ( 'A' <= c ) && ( c <= 'z' ) ) {
 		ExecPtr++;
 		*reg=c-'A';
-		if ( ElementSize<1 ) ElementSize=ElementSizeSelect( SRC, *reg );
+		if ( ElementSize<1 ) ElementSize=ElementSizeSelect( SRC, *reg ) & 0xFF;
 		DimMatrixSub( *reg, ElementSize, dimA, dimB );
 	} else { CB_Error(SyntaxERR); return; }  // Syntax error
 }
@@ -1437,7 +1437,7 @@ void CB_MatCalc( char *SRC ) { //	Mat A -> Mat B  etc
 		} else { CB_Error(SyntaxERR); return; }	// Syntax error
 		if ( dim ) { 		// Mat A -> Dim Mat B[.w]
 			ElementSize =MatAryElementSize[reg];
-			ElementSize2=ElementSizeSelect( SRC, reg2 );
+			ElementSize2=ElementSizeSelect( SRC, reg2 ) & 0xFF;
 			if ( ( ElementSize == 2 ) || ( ElementSize2 == 2 ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
 			if ( ElementSize == ElementSize2 ) return;
 			dimA =MatArySizeA[reg];

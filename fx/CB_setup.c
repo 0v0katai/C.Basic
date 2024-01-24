@@ -35,7 +35,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.99a" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.99b" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
 	GetKey(&key);
@@ -966,6 +966,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case 17: // CB mode
 						CB_INTDefault = 0 ; // normal
+						CB_INT = CB_INTDefault;
 						break;
 					default:
 						break;
@@ -1030,6 +1031,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case 17: // CB mode
 						CB_INTDefault = 1 ; // int
+						CB_INT = CB_INTDefault;
 						break;
 					default:
 						break;
