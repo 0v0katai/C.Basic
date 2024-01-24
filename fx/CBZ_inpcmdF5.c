@@ -17,7 +17,8 @@ void GetGenuineCmdF5( unsigned int *code ){
 		case CMD_PRGM_CTL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7F1;return;	// Local
-				case 1: (*code)=0xF95F;return;	// IsError(
+				case 1: (*code)=0xF739;return;	// TryEnd
+//				case 1: (*code)=0xF95F;return;	// IsError(
 			} break;
 		case CMD_PRGM_JUMP:
 			switch ( CommandPage ) {

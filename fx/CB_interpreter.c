@@ -183,6 +183,7 @@ int CB_interpreter_sub( char *SRC ) {
 		if ( ErrorNo || BreakPtr ) { 
 			if ( BreakPtr == -8 ) goto iend;
 			if ( CB_BreakStop() ) return -7 ;
+			if ( ( BreakPtr ==  0 ) && ( TryFlag ) ) goto except;
 			if ( SRC[ExecPtr] == 0x0C ) if ( ( ErrorNo==0 ) && ( DebugMode==0 ) ) ExecPtr++; // disps
 			ClrCahche();
 		}
@@ -382,11 +383,11 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFF0:	// DotShape(
-						CB_DotShape(SRC);
-						dspflag=0;
-						UseGraphic=9;
-						break;
+//					case 0xFFFFFFF0:	// DotShape(
+//						CB_DotShape(SRC);
+//						dspflag=0;
+//						UseGraphic=9;
+//						break;
 					case 0xFFFFFFFC:	// PutDispDD
 						CB_PutDispDD(SRC);
 						dspflag=0;
@@ -470,6 +471,18 @@ int CB_interpreter_sub( char *SRC ) {
 						ExecPtr-=2;
 						CB_Error(ThenWithoutIfERR); // not Then error 
 						break;
+						
+					case 0x37:	// Try
+						CB_Try();
+						break;
+					case 0x38:	// Except
+					  except:
+						CB_Except( SRC );
+						break;
+					case 0x39:	// TryEnd
+						CB_TryEnd();
+						break;
+
 					case 0x17:	// ACBreak
 						if ( ( SRC[ExecPtr]==0xFFFFFFF7 ) && ( SRC[ExecPtr+1]==0x0E ) ) {	// ACBreak Stop;
 							ExecPtr+=2;
@@ -988,13 +1001,13 @@ void InitLocalVar() {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
@@ -2814,7 +2827,7 @@ int CB_interpreter( char *SRC ) {
 	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
 
 	CB_ClrGraphStat();
-
+	
 	CB_TicksAdjust = 0 ;	// 
 	CB_HiTicksAdjust = 0 ;	// 
 	CB_ResetExecTicks();

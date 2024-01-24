@@ -528,9 +528,9 @@ const char ConvListF700[][17]={
 "SinReg ",			// F734
 "Logistic",			// F735
 "LogisticReg ",		// F736
-"@F737",			// F737
-"@F738",			// F738
-"@F739",			// F739
+"Try ",					// F737
+"Except ",				// F738
+"TryEnd",				// F739
 "Pie",				// F73A
 "DotPut(",				// F73B
 "Bar",				// F73C
@@ -1364,7 +1364,7 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 	strncpy( text, cbasicstr,18);	// header
 	while ( cont ) {
 	  tokenloop:
-		code = GetOpcode( srcbase, ofst ) ;
+	    code = GetOpcode( srcbase, ofst ) ;
 		if ( code == 0 ) break;
 
 		if ( ( code == 0x0D ) && ( flag == 0x27 ) ) flag=0;	// ' end
@@ -1453,10 +1453,8 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 		
 		if ( code == 0x0C ) { // Disps
 			flag=0;
-//			if ( GetOpcode( srcbase, ofst ) != 0x0D ) {;
 				text[textofst++] ='\r';
 				text[textofst++] ='\n';
-//			}
 		}
 		if ( textofst > maxsize-16 ) return -1; // text buffer overflow
 	}
@@ -1783,8 +1781,10 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 			if ( c==0 ) goto extvar;
 			c=codecnv0000( srcbase, text, &ofst, &textofst ) ;	// 0x0001 - 0x002F
 			if ( c==0 ) {
-				if ( ( text[textofst]==0x0D ) && ( text[textofst+1]==0x0A ) ) { 	// 0x0D 0x0A
-					textofst+=2;
+				if ( srcbase[ofst-1] == 0x0C ) {	// Disps
+					if ( ( text[textofst]==0x0D ) && ( text[textofst+1]==0x0A ) ) { 	// 0x0D 0x0A
+						textofst+=2;
+					}
 				}
 				if ( flag_ == 0 ) goto tokenloop;
 				d = text[textofst];

@@ -280,6 +280,7 @@ void CB_Case( char *SRC, CurrentStk *CurrentStruct ) ;
 void CB_Default( char *SRC, CurrentStk *CurrentStruct ) ;
 void CB_SwitchEnd( char *SRC, CurrentStk *CurrentStruct ) ;
 void CB_Break( char *SRC, CurrentStk *CurrentStruct ) ;
+void Search_IfEnd( char *SRC );
 
 void CB_SaveTextVRAM() ;
 void CB_RestoreTextVRAM() ;

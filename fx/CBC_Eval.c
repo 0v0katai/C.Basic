@@ -1065,8 +1065,8 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					return CB_Cplx_EvalStr(SRC, 0 );
 				case 0x50:	// StrAsc(
 					return Int2Cplx( CB_StrAsc( SRC ) );
-				case 0x5F:	// IsError(
-					return Int2Cplx( CB_IsError(SRC) );
+//				case 0x5F:	// IsError(
+//					return Int2Cplx( CB_IsError(SRC) );
 				case 0x60:	// GetFont(
 					return Int2Cplx( CB_GetFont(SRC) );
 				case 0x62:	// GetFontMini(

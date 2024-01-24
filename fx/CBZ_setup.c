@@ -27,8 +27,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.99\xE6\x41";
-#define VERSION 199
+const char VerMSG[]="C.Basic  v2.00\xE6\x41";
+#define VERSION 200
 
 //---------------------------------------------------------------------------------------------
 
@@ -67,6 +67,9 @@ int CB_System( char *SRC ) {	// System( n )
 	int r;
 	int c = SRC[ExecPtr];
 	switch ( CB_EvalInt( SRC ) ) {
+		case -9: 
+			r=TryFlag; if ( r>1 ) r--;
+			break;
 		case -5: 
 			r=GetMemFree();
 			break;

@@ -13,6 +13,8 @@ void ERROR(char *buffer) {
 	unsigned int key;
 	char buf[22];
 
+	if ( TryFlag ) return ;
+	
 	CB_SelectTextDD();	// Select Text Screen
 	SaveDisp(SAVEDISP_PAGE1);
 
@@ -185,6 +187,12 @@ void CB_ErrMsg(int ErrNo) {
 			break;
 		case NonRealERR:
 			ERROR("Non-Real ERROR");
+			break;
+		case TryWithoutExceptERR:
+			ERROR("Try w/out Except");
+			break;
+		case ExcpetWithoutTryERR:
+			ERROR("Except w/out Try");
 			break;
 			
 		default:

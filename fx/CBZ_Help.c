@@ -244,3 +244,87 @@ void CB_Help( int opcode, int yposflg ) {
 	Bdisp_PutDisp_DD();
 }
 
+
+//----------------------------------------------------------------------------------------------
+//	Try~Except~TryEnd
+//----------------------------------------------------------------------------------------------
+char TryFlag;
+
+int Search_ExceptTryEnd( char *SRC ){
+	int c;
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+				return  0;
+			case 0x22:	// "
+				Skip_quot(SRC);
+				break;
+			case 0x27:	// ' rem
+				Skip_rem(SRC);
+				break;
+			case 0xFFFFFFF7:	// 
+				c=SRC[ExecPtr++];
+				if ( c == 0x38 ) return  c;	// Except
+				else
+				if ( c == 0x39 ) return  c;	// TryEnd
+				break ;
+			case 0x7F:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+//			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+		}
+	}
+	return 0;
+}
+
+
+void CB_Try() {
+	TryFlag = 1;	// enable Try~Except~TryEnd
+}
+void CB_TryEnd() {
+	TryFlag = 0;	// disable Try~Except~TryEnd
+}
+
+void CB_Except( char*SRC ) {
+	int c;
+	int n,r;
+	int ErrNo=ErrorNo;
+	if ( TryFlag > 1 ) {	// exit
+		TryFlag = 0;	// disable Try~Except~TryEnd
+	  exitlp:
+  		r = Search_ExceptTryEnd( SRC ) ;
+		if ( r == 0x39 ) return;	// TryEnd
+		if ( r == 0 ) return;	// end of program
+		goto exitlp;
+	}
+	if ( TryFlag == 0 ) { CB_Error(ExcpetWithoutTryERR); return; } //  Excpet Without Try ERR
+
+  loop:
+  	r = Search_ExceptTryEnd( SRC ) ;
+	if ( r == 0 ) { CB_Error(TryWithoutExceptERR); return; } //  Try Without Except ERR
+	else
+	if ( r == 0x38 ) {	// Except
+		ErrorNo = 0;
+		c=SRC[ExecPtr];
+		if ( ( c == ':' ) || ( c == 0x0D ) ) n = 0; else  n = CB_EvalInt( SRC );
+		if ( ErrorNo ) { TryFlag = 0; return; }
+		if ( ( 0 < n ) && ( ErrNo != n ) ) goto loop;
+		if ( TryFlag == 2 ) goto loop;
+		TryFlag += ErrNo;	// complete Except  TryFlag=ErrorNo+1
+		ErrNo = 0;
+	}
+	else
+	if ( r == 0x39 ) {	// TryEnd
+		TryFlag = 0;	// disable Try~Except~TryEnd
+		ErrorNo = ErrNo;
+		return;	// TryEnd
+	}
+	else goto loop;
+}
+

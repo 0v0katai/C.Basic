@@ -80,6 +80,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		ForceReturn=0;
 		
 		InitLocalVar();		// init Local variable
+		CB_TryEnd();		// clear TryFlag
 		
 		DeleteStrBuffer();
 		DeletePictPtr();
