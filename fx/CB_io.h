@@ -76,9 +76,11 @@ void Fkey_dispN_ext(int ,char *, int ofset, int extend);
 void Fkey_dispR_ext(int ,char *, int ofset, int extend);
 void Fkey_dispRB_ext(int ,char *, int ofset, int extend);
 void Fkey_dispRS_ext(int ,char *, int ofset, int extend);
+void Fkey_dispRS(int n,char *buf ) ;	// black select
 void PrintMiniXY(int X, int Y, char*buf, int mode, int xlength ) ;	// xlength : 19 fkeyicon
 void FkeyMask(int n) ;
-
+void FkeyMaskm(int n, int m) ;
+void Fkey_dispRR(int n,char *buf) ;
 
 void Hex8PrintXY(int , int , char *, unsigned int );
 void Hex4PrintXY(int , int , char *, unsigned int );

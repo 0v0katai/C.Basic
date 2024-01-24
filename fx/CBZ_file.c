@@ -3781,7 +3781,6 @@ void FavoritesDowndummy5( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy6( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3798,6 +3797,7 @@ void FavoritesDowndummy6( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy7( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

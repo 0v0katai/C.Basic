@@ -52,7 +52,7 @@ void VerDispSub( int flag ) {
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2020" );
 
-	PrintMini(13*6+2, 2*8+1, (unsigned char*)" build 13", MINI_OVER );
+	PrintMini(13*6+2, 2*8+1, (unsigned char*)" build 16", MINI_OVER );
 	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
@@ -764,8 +764,15 @@ int SetVarCharMat( char *buffer, int c ) {
 		buffer[ptr++]='n';
 		buffer[ptr++]='s';
 	} else
-	if ( c >= 84 ) {
+	if ( ( 84 <= c ) && ( c <= 109 ) ) {		// vct
 		buffer[ptr++]='A'+c-84;
+	} else 
+//	if ( ( 58 <= c ) && ( c <= 83 ) ) {		// List
+//		buffer[ptr++]='A'+c-84;
+//	} else 
+	if ( c >= 110 ) {
+		sprintf( buffer+ptr, "%d", c-57 );
+		ptr = strlen(buffer);
 	} else {
 		buffer[ptr++]='A'+c;
 	}
@@ -1245,7 +1252,7 @@ int SetupG(int select, int limit){		// ----------- Setup
     const char *ENGmode[]     ={"  ","/E","  ","/3"};
     const char *CMDinput[]    ={"C.Basic","Standard","CB5800","Std5800"};
     const char *CharSize[]    ={"Standard","Mini","Mini Rev","Mini_","Mini_Rev"};
-    const char *Matmode[]     ={"[m,n]","[X,Y]"};
+    const char *Matmode[]     ={"[m,n]","[x,y]"};
     const char *Matbase[]     ={"0","1"};
     const char *Pictmode[]    ={"S.Mem","Heap","Both","Main Mem"};
     const char *PictmodeSD[]  ={"SDcard ","Heap","Both","Main Mem"};
@@ -1592,8 +1599,8 @@ int SetupG(int select, int limit){		// ----------- Setup
 				Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispN( FKeyNo4, "Init");
 				break;
 			case SETUP_MatDspmode: // Mat display mode
-				Fkey_dispN( FKeyNo1, "m.n ");
-				Fkey_dispN( FKeyNo2, "X,Y ");
+				Fkey_dispN( FKeyNo1, "m,n ");
+				Fkey_dispN( FKeyNo2, "x,y ");
 				break;
 			case SETUP_Matrixbase: // Mat base
 				Fkey_dispN( FKeyNo1, " 0 ");
