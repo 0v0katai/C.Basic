@@ -19,6 +19,7 @@ char * HiddenRAM_MatTopPtr  =(char*)HIDDENRAM_END;				// Hidden RAM Mat top ptr
 
 char IsSH3;	//	3:SH3   4:SH4
 char Is35E2=0;	//
+char IsEmu=0;
 
 /*
 ----------------------------------------

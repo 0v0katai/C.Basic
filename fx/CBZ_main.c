@@ -36,7 +36,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	HeapRAM = (char *)malloc( MAXHEAP );		// 47KB C.Basic area (program & Mat)
 	if ( HeapRAM == NULL )  { Abort(); }
-	
+
+	Emu_check();
 	IsSH3=CPU_check();
 	if ( HiddenRAM() == NULL ) {	;	// Check HiddenRAM
 		ExtendList   = 0;

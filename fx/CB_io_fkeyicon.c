@@ -64,7 +64,9 @@ void Fkey_Icon(int n, int IconNo){
 		case 1111: pBitmap=FKEYICON_1111;break;	// DotP
 		case 1112: pBitmap=FKEYICON_1112;break;	// VCT
 		default:
+			if ( ( OS_Version() < 1.05 ) && ( 1017 <= IconNo ) ) IconNo = 0;
 			if ( ( OS_Version() < 200 ) && ( 1044 <= IconNo ) ) IconNo = 0;
+			if ( ( OS_Version() == 200 ) && ( 1101 <= IconNo ) ) IconNo = 0;
 			GetFKeyIconPointer( IconNo, (unsigned char *)&pBitmap );	// 
 	}
 	DisplayFKeyIcon( n, pBitmap );			// 

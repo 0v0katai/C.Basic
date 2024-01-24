@@ -1685,10 +1685,7 @@ int SaveG1M( char *filebase ){
 
 	SetFullfilenameExt( fname, basname, "g1m" );
 
-	size = SrcSize(filebase);
-	filebase[size+1]=0x00;
-	filebase[size+2]=0x00;
-	filebase[size+3]=0x00;
+	size = FixSrcSize(filebase)+0x56;
 	G1M_header( filebase, &size );		// G1M header set
 	
 	return storeFile( fname, (unsigned char*)filebase, size );	// 0:ok
@@ -3130,8 +3127,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 		}
 	}
   exit:
-	dest[dptr++]='\0';
-	dest[dptr++]='\0';
+	dest[dptr]='\0';
 	newsize = dptr +0x56;
 	HiddenRAM_freeProg( filebase );
   loop:
@@ -3189,8 +3185,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 		}
 	}
   exit:
-	dest[dptr++]='\0';
-	dest[dptr++]='\0';
+	dest[dptr]='\0';
 	size=dptr+0x56;
 	G1M_header( filebase, &size );	// G1M header set
 }
@@ -3472,6 +3467,7 @@ int GetBatteryStatus( int battery, int*firstlevel, int*secondlevel ){
 
 int GetMainBatteryVoltage( int battery ) {
 	int firstlevel, secondlevel;
+	if ( IsEmu ) return 500;
 	return GetBatteryStatus( battery, &firstlevel, &secondlevel );
 }
 
@@ -3494,6 +3490,14 @@ int CB_BatteryStatus( char *SRC ){
 }
 
 //----------------------------------------------------------------------------------------------
+int Emu_check() {
+	int i,t,s=RTC_GetTicks();
+	for(i=0;i<140;i++){
+		Bdisp_PutDisp_DD();
+	}
+	t=RTC_GetTicks()-s;
+	if ( t<6) IsEmu=1;
+}
 
 void WaitKeyAC(){
 	while ( KeyScanDown(KEYSC_AC) ) ;
@@ -3517,8 +3521,8 @@ int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
@@ -3581,6 +3585,7 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -3597,7 +3602,6 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

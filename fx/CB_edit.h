@@ -24,6 +24,7 @@ extern short EditLineNum;
 extern char  UpdateLineNum;
 
 int SrcSize( char *src ) ;
+int FixSrcSize( char *filebase ) ;
 
 unsigned int EditRun(int run);
 int CB_BreakStop() ;

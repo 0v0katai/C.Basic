@@ -151,11 +151,7 @@ int MCS_SaveG1M( char *filebase ) {	// g1m file -> MCS
 	char basname[16];
 
 	G1MHeaderTobasname8( filebase, basname);
-	size = SrcSize(filebase);
-	filebase[size+1]=0x00;
-	filebase[size+2]=0x00;
-	filebase[size+3]=0x00;
-	size -= 0x56;
+	size = FixSrcSize(filebase);
 	r = MCS_Save( filebase, (char*)MCSdir_system, basname, size, 0xC7 ) ;	// g1m file -> MCS
 	return r;
 }
