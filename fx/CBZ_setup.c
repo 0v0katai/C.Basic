@@ -42,7 +42,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.71\xE6\x41";
+const char VerMSG[]="C.Basic  v1.72\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -638,7 +638,8 @@ int SetVarChar( char *buffer, int c ) {
 	char buffer2[32];
 	int i=CmpAliasVar( c );
 	if ( i>=0 ) {	// 	Alias variable
-		if ( alias_code=AliasVarCode[i].alias == 0x4040 ) {	// _ABCD
+		alias_code=AliasVarCode[i].alias ;
+		if ( alias_code == 0x4040 ) {	// _ABCD
 			len=AliasVarCode[i].len;
 			memcpy( buffer, AliasVarCode[i].name, len);
 			buffer[len]='\0';
