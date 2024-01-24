@@ -1,4 +1,7 @@
 //-----------------------------------------------------------------------------
+#define Bdisp_SetPoint_VRAM  BdispSetPointVRAM2
+void BdispSetPointVRAM2( int px, int py, int mode);
+//-----------------------------------------------------------------------------
 double MOD(double numer, double denom);
 
 void Text(int y, int x, unsigned char*str);

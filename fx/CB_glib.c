@@ -45,6 +45,7 @@ void DrawBusy()		// BusyInd=0: running indicator off,  BusyInd=1: on
     Bdisp_WriteGraph_DD(&Gbsy); 		// drawing only display driver
 }
 */
+
 //-----------------------------------------------------------------------------
 int skip_count=0;
 
@@ -80,19 +81,7 @@ double MOD(double numer, double denom) {
 void Text(int y, int x, unsigned char*str) {
 	PrintMini(  x, y, str,MINI_OVER);
 }
-
 //----------------------------------------------------------------------------------------------
-int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(x,y)
-	if ( ( Xdot == 0 ) || ( Ydot == 0 ) || ( Xmax == Xmin ) || ( Ymax == Ymin ) ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return ErrorNo ; }	// Range error
-	*px =   1 + ( (x-Xmin)/Xdot + 0.5 ) ;
-//	if ( Xmax >  Xmin )		*px =       (x-Xmin)/Xdot  +1.5 ;
-//	if ( Xmax <  Xmin )		*px = 126 - (x-Xmax)/-Xdot +1.49999999999999 ;
-	*py =  63 - ( (y-Ymin)/Ydot - 0.49999999999999 ) ;
-//	if ( Ymax >  Ymin )		*py =  62 - (y-Ymin)/Ydot  +1.49999999999999 ;
-//	if ( Ymax <  Ymin )		*py =       (y-Ymax)/-Ydot +1.5 ;
-	if ( (*px<1) || (*px>127) || (*py<1) || (*py> 63) ) { return -1; }	// 
-	return 0;
-}
 void PXYtoVW(int px, int py, double *x, double *y){	// pixel(x,y) -> ViewWwindow(x,y)
 //	if ( Xmax == Xmin )		*x = Xmin ;
 	*x = (    px-1)*Xdot  + Xmin ;
@@ -105,7 +94,38 @@ void PXYtoVW(int px, int py, double *x, double *y){	// pixel(x,y) -> ViewWwindow
 //	if ( fabs(*x)*1e10 < xdot ) *x=0;	// zero adjust
 //	if ( fabs(*y)*1e10 < ydot ) *y=0;	// zero adjust
 }
+int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(x,y)
+	if ( ( Xdot == 0 ) || ( Ydot == 0 ) || ( Xmax == Xmin ) || ( Ymax == Ymin ) ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return ErrorNo ; }	// Range error
+	*px =   1 + ( (x-Xmin)/Xdot + 0.5 ) ;
+//	if ( Xmax >  Xmin )		*px =       (x-Xmin)/Xdot  +1.5 ;
+//	if ( Xmax <  Xmin )		*px = 126 - (x-Xmax)/-Xdot +1.49999999999999 ;
+	*py =  63 - ( (y-Ymin)/Ydot - 0.49999999999999 ) ;
+//	if ( Ymax >  Ymin )		*py =  62 - (y-Ymin)/Ydot  +1.49999999999999 ;
+//	if ( Ymax <  Ymin )		*py =       (y-Ymax)/-Ydot +1.5 ;
+	if ( (*px<1) || (*px>127) || (*py<1) || (*py> 63) ) { return -1; }	// 
+	return 0;
+}
 
+//-----------------------------------------------------------------------------
+void BdispSetPointVRAM2( int px, int py, int mode){
+	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
+	int m=px&0x7,d;
+	char dot[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+	switch ( mode ) {
+		case 0:	// Clear
+			*VRAM &= ~dot[m];
+			break;
+		case 1:	// set
+			*VRAM |= dot[m];
+			break;
+		case 2:	// xor
+			*VRAM ^= dot[m];
+			
+			break;
+	}
+}
+
+//-----------------------------------------------------------------------------
 void PlotGrid(double x, double y){
 	int px,py;
 	if ( ( x==0 ) && ( y==0 ) ) return;
@@ -337,23 +357,24 @@ int PxlTest(int py, int px) {
 	return	Bdisp_GetPoint_VRAM(px, py);
 }
 void PxlChg_VRAM(int py, int px){
-	if (Bdisp_GetPoint_VRAM(px, py)) 
-		Bdisp_SetPoint_VRAM(px, py, 0);
-	else
-		Bdisp_SetPoint_VRAM(px, py, 1);
+//	if (Bdisp_GetPoint_VRAM(px, py)) 
+//		Bdisp_SetPoint_VRAM(px, py, 0);
+//	else
+//		Bdisp_SetPoint_VRAM(px, py, 1);
+	BdispSetPointVRAM2(px, py, 2);
 	PXYtoVW(px, py, &regX, &regY);
 }
 
 //------------------------------------------------------------------------------ LINE
 void LinesubSetPoint(int px, int py, int mode) {
 	if ( ( px <   1 ) || ( px > 127 ) || ( py <   1 ) || ( py >  63 ) ) return;
-	if ( mode == 2 ) {
-		if (Bdisp_GetPoint_VRAM(px, py)) 
-			Bdisp_SetPoint_VRAM(px, py, 0);
-		else
-			Bdisp_SetPoint_VRAM(px, py, 1);
-	} else
-	Bdisp_SetPoint_VRAM(px, py, mode);
+//	if ( mode == 2 ) {
+//		if (Bdisp_GetPoint_VRAM(px, py)) 
+//			Bdisp_SetPoint_VRAM(px, py, 0);
+//		else
+//			Bdisp_SetPoint_VRAM(px, py, 1);
+//	} else
+	BdispSetPointVRAM2(px, py, mode);
 }
 void LinesubSetPointThick(int px, int py, int mode) {
 		LinesubSetPoint(px  , py  , mode);
