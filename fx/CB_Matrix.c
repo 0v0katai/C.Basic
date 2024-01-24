@@ -845,8 +845,8 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				locate(1,8); PrintLine((unsigned char *)" ",21);
 				locate(1,8); MatAryElementSizePrint( ElementSize ) ;
 				if ( ( strdisp ) && ( ElementSize > 2 ) )  {
-					if ( MatXYmode==0 )	key=InputStr( 1, 7, (MatAry[reg].SizeB-selectX)*ElementSize/8-1,  MatrixPtr(reg, selectY+base, selectX+base), ' ', REV_OFF);
-					else				key=InputStr( 1, 7, (MatAry[reg].SizeA-selectY)*ElementSize/8-1,  MatrixPtr(reg, selectX+base, selectY+base), ' ', REV_OFF);
+					if ( MatXYmode==0 )	key=InputStr( 1, 7, (MatAry[reg].SizeB-selectX)*ElementSize/8-1,  MatrixPtr(reg, selectY+base, selectX+base), (MatAry[reg].SizeB-selectX)*ElementSize/8-1, ' ', REV_OFF);
+					else				key=InputStr( 1, 7, (MatAry[reg].SizeA-selectY)*ElementSize/8-1,  MatrixPtr(reg, selectX+base, selectY+base), (MatAry[reg].SizeA-selectY)*ElementSize/8-1, ' ', REV_OFF);
 				} else {
 					if ( MatXYmode ) {
 						if ( ( selectX <= dimA ) && ( selectY <= dimB ) ) {

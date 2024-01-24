@@ -86,14 +86,7 @@ double fRanNorm( double sd, double mean) ;	// RanNorm#
 double fRanBin( double n, double p) ;	// RanBin#
 
 double Eval_atof(char *SRC, int c) ;
-double InputNumD_fullsub(int x, int y, int width, double defaultNum ) ;
-double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) ;
-double InputNumD_full(int x, int y, int width, double defaultNum) ;
-double InputNumD_Char(int x, int y, int width, double defaultNum, char code) ;
-double InputNumD_replay(int x, int y, int width, double defaultNum) ;
-double InputNumD_CB(int x, int y, int width, double defaultNum) ;
-double InputNumD_CB1(int x, int y, int width, double defaultNum) ;
-double InputNumD_CB2(int x, int y, int width, double defaultNum) ;
+
 double Eval(char *SRC);
 double Evalsub1(char *SRC);
 double Evalsub2(char *SRC);

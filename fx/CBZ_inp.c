@@ -15,7 +15,9 @@
 #include "CB_io.h"
 #include "CB_Kana.h"
 #include "CB_interpreter.h"
+#include "CB_Eval.h"
 #include "CB_setup.h"
+#include "CB_error.h"
 
 //----------------------------------------------------------------------------------------------
 //int inpObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
@@ -2337,16 +2339,100 @@ double InputNumD(int x, int y, int width, double defaultNum, char SPC, int rev_m
 	return atof( (char*)buffer );
 }
 
-unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
+unsigned int InputStr(int x, int y, int width,  char* buffer, int MaxStrlen, char SPC, int rev_mode) {		// ABCDEF0123456789.(-)exp
 	int csrX=0;
 	unsigned int key;
 	
 	buffer[width]='\0';
 	csrX=strlenOp(buffer);
-	key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
+	key= InputStrSub( x, y, width, csrX, buffer, MaxStrlen, SPC, rev_mode, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	return ( key );
 }
 
+//----------------------------------------------------------------------------------------------
+double InputNumD_sub(int x, int y, int width, int ptrX, double defaultNum) {		//  1st char key in
+	unsigned int key;
+	double result;
+	key= InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
+	result = Eval( ExpBuffer );
+	while ( ErrorNo ) {	// error loop
+		key= InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
+		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
+		result = Eval( ExpBuffer );
+	}
+	CB_CurrentValue = result ;
+	return result; // value ok
+}
+double InputNumD_fullsub(int x, int y, int width, double defaultNum ) {		// full number display
+	return InputNumD_sub(x, y, width, 0, defaultNum );
+}
+double InputNumD_full(int x, int y, int width, double defaultNum) {		// full number display
+	int eng=ENG;
+	if (ENG==3) ENG=0;
+	sprintG(ExpBuffer, defaultNum, ExpMax-1, LEFT_ALIGN);
+	ENG=eng;
+	return InputNumD_sub(x, y, width, 0, defaultNum );
+}
+double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) {		// full number display hex
+	if ( hex ) {
+		if ( ( (defaultNum-floor(defaultNum))==0 ) && ( -2147483648. <= defaultNum ) && ( defaultNum <= 2147483647. ) ) {
+			sprintf(ExpBuffer,"0x%08X",(int)defaultNum);
+			return InputNumD_sub(x, y, width, 0, defaultNum);
+		}
+	}
+	return InputNumD_full(x, y, width, defaultNum);
+}
+
+double InputNumD_Char(int x, int y, int width, double defaultNum, char code) {		//  1st char key in
+	ExpBuffer[0]=code;
+	ExpBuffer[1]='\0';
+	return InputNumD_sub( x, y, width, 1, defaultNum);
+}
+
+double InputNumD_replay(int x, int y, int width, double defaultNum) {		//  replay expression
+	return InputNumD_sub( x, y, width, strlenOp((char*)ExpBuffer), defaultNum);
+}
+
+//-----------------------------------------------------------------------------
+double InputNumD_CB(int x, int y, int width, int SPC, int REV, double defaultNum) {		//  Basic Input
+	unsigned int key;
+	double result;
+	ExpBuffer[0]='\0';
+	key=InputStrSub( x, y, width, 0, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
+	result = Eval( ExpBuffer );
+	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
+		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
+		result = Eval( ExpBuffer );
+	}
+	return result; // value ok
+}
+double InputNumD_CB_sub(int x, int y, int width, int ptrX, int SPC, int REV, double defaultNum ) {		//  Basic Input sub
+	unsigned int key;
+	double result;
+	key=InputStrSub( x, y, width, ptrX, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+	if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
+	if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE ) return (defaultNum);
+	result = Eval( ExpBuffer );
+	while ( ErrorNo || (ExpBuffer[0]=='\0') ) {	// error loop
+		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, ExpMax-1, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON );
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return 0; }
+		if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE  ) return (defaultNum);
+		result = Eval( ExpBuffer );
+	}
+	return result; // value ok
+}
+double InputNumD_CB1(int x, int y, int width, int SPC, int REV, double defaultNum) {		//  Basic Input 1
+	ExpBuffer[0]='\0';
+	return InputNumD_CB_sub( x, y, width, 0, SPC, REV, defaultNum);
+}
+
+double InputNumD_CB2(int x, int y, int width, int SPC, int REV, double defaultNum) {		//  Basic Input 2
+	sprintGR(ExpBuffer, defaultNum, ExpMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+	return InputNumD_CB_sub( x, y, width, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum);
+}
 //---------------------------------------------------------------------------------------------- align dummy
 //int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte

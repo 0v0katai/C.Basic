@@ -221,7 +221,7 @@ void CB_Locate( char *SRC ){
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;
 	ly = CB_EvalInt( SRC );
-	if ( ( ly < 1 ) || ( ly > 7 ) ) { CB_Error(ArgumentERR); return; }	// Argument error
+	if ( ( ly < 1 ) || ( ly > 8 ) ) { CB_Error(ArgumentERR); return; }	// Argument error
 	c=SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr++;

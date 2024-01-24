@@ -156,10 +156,12 @@ int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(
 //-----------------------------------------------------------------------------
 void PlotGrid(double x, double y){
 	int px,py;
-	if ( ( x==0 ) && ( y==0 ) ) return;
-	if ( VWtoPXY( x,y, &px, &py) ) return;
-	if ( (px<MatBase) || (px>127) ) return ;
-	if ( (py<MatBase) || (py> 63) ) return ;
+//	if ( ( x==0 ) && ( y==0 ) ) return;
+	VWtoPXY( x,y, &px, &py);
+	if ( px<MatBase ) px=MatBase;
+	if ( py<MatBase ) py=MatBase;
+	if (px>127) px=127;
+	if (py> 63) py= 63;
 	Bdisp_SetPoint_VRAM( px, py, 1);
 }
 
@@ -798,5 +800,13 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 }
 
 //----------------------------------------------------------------------------------------------
-//int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG2( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG3( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG4( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG5( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG6( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG7( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG8( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlignG9( unsigned int n ){ return n; }	// align +4byte
 
