@@ -18,5 +18,6 @@ int SetViewWindwo(void);
 void SetFactor();
 int SetVar(int select);
 int SetupG(int select);
+int SetVarChar( char *buffer, int c ) ;
 
 //------------------------------------------------------------------------------

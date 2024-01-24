@@ -22,10 +22,20 @@ double InputNumD_CB1(int x, int y, int width, double defaultNum) ;
 double InputNumD_CB2(int x, int y, int width, double defaultNum) ;
 double Eval(char *SRC);
 double Evalsub1(char *SRC);
+double Evalsub2(char *SRC);
+double Evalsub3(char *SRC);
+double Evalsub4(char *SRC);
 double Evalsub5(char *SRC);
 double Evalsub6(char *SRC);
 double Evalsub7(char *SRC);
+double Evalsub8(char *SRC);
+double Evalsub9(char *SRC);
+double Evalsub10(char *SRC);
+double Evalsub11(char *SRC);
+double Evalsub12(char *SRC);
 double Evalsub13(char *SRC);
 double EvalsubTop(char *SRC);
 double CB_EvalDbl( char *SRC ) ;
+int RegVar( int c ) ;
+int ListRegVar( char *SRC, int c ) ;	// return reg no
 
