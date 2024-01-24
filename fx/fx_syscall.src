@@ -55,6 +55,7 @@
 
  .EXPORT _GetFKeyIconPointer
  .EXPORT _DisplayFKeyIcon
+ .EXPORT _GUI_ProgressBar
 
  .EXPORT _Calljmp
  .EXPORT _SysCalljmp
@@ -344,6 +345,11 @@ _DisplayFKeyIcon:
 	jmp @r1
 	nop
 
+_GUI_ProgressBar:
+	mov.l SYSCALL,r1
+	mov.l #H'1A9,r0
+	jmp @r1
+	nop
 
 ;int Calljmp( int r4, int r5, int r6, int r7, int adrs );
 

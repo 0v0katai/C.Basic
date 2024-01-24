@@ -5,22 +5,26 @@
 #include <fxlib.h>
 #include "fx_syscall.h"
 
+#include "CB_interpreter.h"
 #include "CB_io.h"
+#include "CB_error.h"
 #include "CB_Kana.h"
 #include "CB_Matrix.h"
 #include "CB_glib.h"
 #include "KeyScan.h"
+#include "MonochromeLib.h"
 
 struct st_round CB_Round = { Norm , 1} ; // Round
 char ENG=0;	// ENG flag  1:ENG  3:3digit separate
-char UseHiddenRAM=0;
+
+char UseHiddenRAM=0;	//	0x11 :HiddenRAMInit off
 char IsHiddenRAM=0;
 
-char * HiddenRAM_Top =(char*)0x88040000+16;	// Hidden RAM TOP
-char * HiddenRAM_End =(char*)0x88080000-1024;	// Hidden RAM END
+char * HiddenRAM_Top =(char*)0x88040000+16+20480;	// Hidden RAM TOP
+char * HiddenRAM_End =(char*)0x88080000-1024-128;	// Hidden RAM END
 
-char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16;	// Hidden RAM Prog next ptr
-char * HiddenRAM_MatTopPtr =(char*)0x88080000-1024;	// Hidden RAM Mat top ptr
+char * HiddenRAM_ProgNextPtr=(char*)0x88040000+16+20480;	// Hidden RAM Prog next ptr
+char * HiddenRAM_MatTopPtr =(char*)0x88080000-1024-128;	// Hidden RAM Mat top ptr
 
 char IsSH3;	//	3:SH3   4:SH4
 
@@ -242,6 +246,25 @@ void MSGpop(void){
 
 
 //---------------------------------------------------------------------------------------------
+
+void ProgressBarPopUp( char *buffer, char *buffer2 ) {
+		SaveDisp(SAVEDISP_PAGE1);
+		PopUpWin(5);
+		locate(3,2); Print((unsigned char *)buffer);
+		locate(3,3); Print((unsigned char *)buffer2);
+		ML_rectangle( 17, 32, 106, 40, 1, 1, 0);
+}
+
+void ProgressBar(int current, int max) {
+	int i;
+	unsigned int t=RTC_GetTicks();
+	if ( abs(t-skip_count)>4 ) { skip_count=t;		// default 128/4=32  1/32s
+		GUI_ProgressBar( current, max);
+		Bdisp_PutDisp_DD();
+	}
+}
+
+//---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 int CPU_check(void) {					// SH3:1 SH4A:0
 	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) ;
@@ -310,6 +333,28 @@ void * HiddenRAM_mallocMat( size_t size ){
 	}
 }
 
+unsigned char * GetheapPict(){
+	unsigned char *pict;
+	if ( PictbaseCount >= PictbaseCountMAX ) {
+		if ( PictbasePtr < PictbaseMAX ) Pictbase[++PictbasePtr] = (unsigned char *) malloc( 1024 * PictbaseMAX +4 );
+		else { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
+		if( Pictbase[PictbasePtr] == NULL ) { CB_Error(NotEnoughMemoryERR); return NULL; }	// Not enough memory error
+		PictbaseCount=0;
+	}
+	pict = Pictbase[PictbasePtr] + 1024 * PictbaseCount;
+	PictbaseCount++;
+	return pict;
+}
+unsigned char *  HiddenRAM_mallocPict( int pictNo ){
+	char *  ptr;
+	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
+		ptr = HiddenRAM_Top-20480+1024*(pictNo-1);
+		return (unsigned char *)ptr;
+	} else {
+		return GetheapPict();
+	}
+}
+
 void HiddenRAM_freeProg( void *ptr ){
 	if ( (int)ptr < (int)HiddenRAM_Top ) free( ptr );
 	else 
@@ -324,8 +369,7 @@ void HiddenRAM_freeMat( int reg ){
 	}
 }
 
-
-const char MatAryCheckStr[]="###CBasic##";
+const char MatAryCheckStr[]="##CBasic15#";
 
 void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
 	int *iptr1=(int*)(HiddenRAM_Top-4);
@@ -334,6 +378,7 @@ void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
 		memcpy( HiddenRAM_Top-16, MatAryCheckStr, sizeof(MatAryCheckStr) );
 		memcpy( HiddenRAM_End,    MatAryCheckStr, sizeof(MatAryCheckStr) );
 		memcpy( HiddenRAM_End+16, MatAry, sizeof(MatAry) );
+		memcpy( HiddenRAM_End+16+1024, PictAry, sizeof(PictAry) );
 		iptr1[0]=(int)HiddenRAM_MatTopPtr;
 		iptr2[0]=(int)HiddenRAM_MatTopPtr;
 	}
@@ -346,6 +391,7 @@ void HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) && ( iptr1[0]==iptr2[0] ) ){
 		if ( ( strcmp(HiddenRAM_Top-16, MatAryCheckStr) == 0 ) && ( strcmp(HiddenRAM_End, MatAryCheckStr) == 0 ) ) {
 			memcpy( MatAry, HiddenRAM_End+16, sizeof(MatAry) );
+			memcpy( PictAry, HiddenRAM_End+16+1024, sizeof(PictAry) );
 			HiddenRAM_MatTopPtr=(char*)iptr1[0];
 		}
 	}

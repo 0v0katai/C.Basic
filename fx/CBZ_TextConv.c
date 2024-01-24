@@ -1661,12 +1661,18 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 	char flag=0;	// ' "
 	char flag_=0;	// '_'
 	char quotflag=0;	// ""  no <CR>
+	int	maxtextsize=strlen(text)-1;
+	int progressofst=0;
 
 	srcbase=filebase+0x56;
 	if ( strncmp( text, cbasicstr, 18 ) == 0 ) textofst+=18;
 	
 	while ( cont ) {
 	  tokenloop:
+		if ( textofst > progressofst ) {
+			ProgressBar( textofst, maxtextsize ) ;	// ProgressBar 
+			progressofst+=maxtextsize/64;
+		}
 		if ( ofst > maxsize )  break;
 		c = text[textofst];
 		if ( ( flag_ ) && ( c=='_' ) ) c = text[++textofst];	// '_' skip

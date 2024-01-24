@@ -56,7 +56,7 @@ char ACBreak=1;		// AC Break on/off
 
 char TimeDsp=0;		// Execution Time Display  0:off 1:on
 char MatXYmode=0;		// 0: normal  1:reverse
-char PictMode=1;	// StoPict/RclPict  StrageMem:0  heap:1
+char PictMode=1;	// StoPict/RclPict  StrageMem:0  heap:1  both:2
 char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
 
 char CommandInputMethod=1;	//	0:C.Basic  1:Genuine
@@ -67,8 +67,10 @@ char  Refreshtime=2;	// Refresh time  (Refreshtime+1)/128s
 short DefaultWaitcount=0;	// wait control
 short Waitcount=0;	// current wait control
 
-double Previous_X=1e308 ;	// Plot Previous X
-double Previous_Y=1e308 ;	// Plot Previous Y
+double Previous_X=1e308 ;	// Line Previous X
+double Previous_Y=1e308 ;	// Line Previous Y
+double Previous_X2=1e308 ;	// Line Previous X2
+double Previous_Y2=1e308 ;	// Line Previous Y2
 int    Previous_PX=-1   ;	// Plot Previous PX
 int    Previous_PY=-1   ;	// Plot Previous PY
 double Plot_X    =1e308 ;	// Plot Current X
@@ -161,7 +163,7 @@ char VWinflag[6];				// VWin flag
 
 int CB_interpreter_sub( char *SRC ) {
 	char cont=1;
-	char dspflagtmp=0;
+	int dspflagtmp=0;
 	int c,j;
 	int excptr;
 
@@ -2579,8 +2581,8 @@ int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

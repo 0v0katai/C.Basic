@@ -20,8 +20,10 @@ extern char S_L_Style;		// set line style
 extern char tmp_Style;		// set line style 
 extern char Angle;			// 0:deg  1:rad  2:grad
 
-extern double Previous_X ;	// Plot Previous X
-extern double Previous_Y ;	// Plot Previous Y
+extern double Previous_X ;	// Line Previous X
+extern double Previous_Y ;	// Line Previous Y
+extern double Previous_X2 ;	// Line Previous X2
+extern double Previous_Y2 ;	// Line Previous Y2
 extern int Previous_PX   ;	// Plot Previous PX
 extern int Previous_PY   ;	// Plot Previous PY
 extern double Plot_X     ;	// Plot Current X

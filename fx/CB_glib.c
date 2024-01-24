@@ -722,6 +722,8 @@ void Line(int style, int mode, int errorcheck ) {
 	j = VWtoPXY(     Plot_X,     Plot_Y, &px2, &py2) ;
 	Previous_X = Plot_X;
 	Previous_Y = Plot_Y;
+	Previous_X2= Plot_X;
+	Previous_Y2= Plot_Y;
 	Previous_PX = px2;
 	Previous_PY = py2;
 	if ( errorcheck ) {

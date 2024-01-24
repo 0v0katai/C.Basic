@@ -510,6 +510,8 @@ unsigned int Trace(int *index ) {
 
 void Graph_Draw(){
 	int i;
+	double p_x=Previous_X;
+	double p_y=Previous_Y;
 	GraphAxesGrid( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 	regX   = Xmin-Xdot;
 	for ( i=0; i<=128; i++) {
@@ -531,6 +533,8 @@ void Graph_Draw(){
 		regX += Xdot;
 	}
 	regintX=regX; regintY=regY;
+	Previous_X=p_x;
+	Previous_Y=p_y;
 	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
 void Graph_reDraw(){
@@ -741,6 +745,8 @@ double GraphXYEval( char *buffer ) {
 void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 2)
 	double tmpT=regT;
 	double tmpX,tmpY;
+	double p_x=Previous_X;
+	double p_y=Previous_Y;
 	int sizeA,sizeA2;
 	int base=0,base2=0;
 	int c;
@@ -780,6 +786,8 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 			regT+=TThetaptch;
 		}
 	}
+	Previous_X=p_x;
+	Previous_Y=p_y;
 	regintX=regX; regintY=regY;
 	regT=tmpT;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
@@ -826,6 +834,8 @@ void DrawStat_PlotOn_VRAM(double x, double y, int Type){
 
 void DrawStat(){	// DrawStat
 	double tmpX,tmpY;
+	double p_x=Previous_X;
+	double p_y=Previous_Y;
 	int sizeA,sizeA2;
 	int base=0,base2=0;
 	int c,No=0;
@@ -863,6 +873,8 @@ void DrawStat(){	// DrawStat
 		}
 	}
 //	regintX=regX; regintY=regY;
+	Previous_X=p_x;
+	Previous_Y=p_y;
 	regX=tmpX; regY=tmpY;
 //	SaveDisp(SAVEDISP_PAGE1);	// ------ SaveDisp1
 }
