@@ -2098,7 +2098,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 
 	RestoreDisp(SAVEDISP_PAGE1);	//
 	
-	if ( BreakPtr ) return ;
+	if ( ( DebugMode == 0 ) && ( BreakPtr ) ) return ;
 	
 	label=Branch[select];
 	
