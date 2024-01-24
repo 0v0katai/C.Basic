@@ -391,6 +391,7 @@ const short oplistInp[]={
 //----------------------------------------------------------------------------------------------
 
 const short oplistOPTN[]={
+		0x8C,	// dms
 		0x23,	// #
 //		0x24,	// $
 		0x25,	// %
@@ -427,9 +428,6 @@ const short oplistOPTN[]={
 //		0x86,	// sqrt
 //		0x95,	// log
 
-		0xDA,	// Deg
-		0xDB,	// Rad
-		0xDC,	// Grad
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
@@ -471,6 +469,15 @@ const short oplistOPTN[]={
 //		0x0FD,	// Eval(
 //		0x0FA,	// Gosub
 		0x7FE9,	// CellSum(
+		
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0x9C,	// deg
+		0xAC,	// rad
+		0xBC,	// grad
+//		0x8C,	// dms
+		0xF905,	// >DMS
 		0x7F5F,	// Ticks
 		0};
 							
@@ -960,9 +967,9 @@ const short oplistCMD[]={
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
 		0XF921,	// Xdot
-		0xDA,	// Deg
-		0xDB,	// Rad
-		0xDC,	// Grad
+		0x5C,	// 
+		0x23,	// #
+		0x25,	// %
 
 		0x97,	// Abs
 		0xA6,	// Int
@@ -990,6 +997,19 @@ const short oplistCMD[]={
 		0x23,	// #
 		0x25,	// %
 
+		0x9C,	// deg
+		0xAC,	// rad
+		0xBC,	// grad
+		0xF905,	// >DMS
+		0x8C,	// dms
+		0xFFFF,	// 				-
+		0xDA,	// Deg
+		0xDB,	// Rad
+		0xDC,	// Grad
+		0xFFFF,	// 				-
+		0x23,	// #
+		0x25,	// %	
+		
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -1044,6 +1064,7 @@ const short oplistCMD[]={
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 //		0xF79F,	// RclCapt
+
 		0};
 
 
@@ -1882,7 +1903,7 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_
 }
 
 //----------------------------------------------------------------------------------------------
-int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+//int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

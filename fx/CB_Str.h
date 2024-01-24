@@ -62,3 +62,5 @@ int CB_StrInv( char *SRC ) ;
 int CB_StrShift( char *SRC ) ;
 int CB_StrRotate( char *SRC ) ;
 int CB_Sprintf( char *SRC ) ;	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
+
+int CB_StrDMS( char *SRC ) ;
