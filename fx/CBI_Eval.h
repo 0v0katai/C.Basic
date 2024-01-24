@@ -26,4 +26,5 @@ int EvalIntsub5(char *SRC);
 int EvalIntsub6(char *SRC);
 int EvalIntsub7(char *SRC);
 int EvalIntsubTop(char *SRC);
+int CB_EvalInt( char *SRC ) ;
 

@@ -73,6 +73,9 @@ void CB_ErrMsg(int ErrNo) {
 		case RangeERR:
 			ERROR("Range ERROR");
 			break;
+		case TooMuchData:
+			ERROR("Too Much Data");
+			break;
 		case NextWithoutForERR:
 			ERROR("Next without For");
 			break;

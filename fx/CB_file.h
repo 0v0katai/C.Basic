@@ -43,3 +43,6 @@ void CB_ProgEntry( char *SRC ) ; //	Prog "..." into memory
 void SaveFavorites();
 void SaveConfig();
 void LoadConfig();
+
+void CB_Save( char *SRC ) ; //	Save "TEST",Mat A[1,3]
+void CB_Load( char *SRC ) ; //	Load ("TEST" [, Ptr])->Mat A[1,3] 

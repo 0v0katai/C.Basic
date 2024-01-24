@@ -37,7 +37,8 @@ extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
-extern double  REG[59];
+extern double  REG[26];
+extern double  REGsmall[26];
 extern double  REGv[11];
 
 #define regA REG[ 0]
@@ -84,6 +85,10 @@ extern double  REGv[11];
 extern	double Xfct;
 extern	double Yfct;
 
+
+extern	double 	*LocalDbl;		// local var ptr
+extern	int		*LocalInt;		// local var ptr
+
 extern double	traceAry[130];		// Graph trace array
 
 #define GraphStrMAX 64
@@ -96,6 +101,39 @@ extern char GraphY3[];
 
 #define PictMax 20
 extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
+
+//------------------------------------------------------------------------------
+extern int  REGINT[26];
+extern int  REGINTsmall[26];
+
+#define regintA REGINT[ 0]
+#define regintB REGINT[ 1]
+#define regintC REGINT[ 2]
+#define regintD REGINT[ 3]
+#define regintE REGINT[ 4]
+#define regintF REGINT[ 5]
+#define regintG REGINT[ 6]
+#define regintH REGINT[ 7]
+#define regintI REGINT[ 8]
+#define regintJ REGINT[ 9]
+#define regintK REGINT[10]
+#define regintL REGINT[11]
+#define regintM REGINT[12]
+#define regintN REGINT[13]
+#define regintO REGINT[14]
+#define regintP REGINT[15]
+#define regintQ REGINT[16]
+#define regintR REGINT[17]
+#define regintS REGINT[18]
+#define regintT REGINT[19]
+#define regintU REGINT[20]
+#define regintV REGINT[21]
+#define regintW REGINT[22]
+#define regintX REGINT[23]
+#define regintY REGINT[24]
+#define regintZ REGINT[25]
+
+extern int CBint_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
 extern int	CB_TicksStart;
@@ -124,12 +162,13 @@ extern char   CB_CurrentStr[128];	//
 extern double CB_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
-#define StackGotoMax 10+26+6+26+2
-#define IfCntMax 32
+#define StackGotoMax 10+26
+#define StackGosubMax 4
+#define IfCntMax 16
 #define RemCntMax 32
-#define StackForMax 8
-#define StackWhileMax 8
-#define StackDoMax 8
+#define StackForMax 5
+#define StackWhileMax 5
+#define StackDoMax 5
 #define StackSwitchMax 4
 
 typedef struct {
@@ -145,8 +184,8 @@ typedef struct {
 } CchRem;
 
 typedef struct {
-	int		Ptr;
-	short	Var[StackForMax];
+	short	Ptr;
+	int		*Var[StackForMax];
 	short	Adrs[StackForMax];
 	int	IntEnd[StackForMax];
 	int	IntStep[StackForMax];
@@ -170,15 +209,19 @@ typedef struct {
 
 typedef struct {
 	int		CNT;
-	char	TYPE[28];
+	char	TYPE[12];
 } CurrentStk;
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 #define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
+//------------------------------------------------------------------------------
 
 int CB_interpreter( char *SRC) ;
 int CB_interpreter_sub( char *SRC ) ;
-void CB_Prog( char *SRC ) ; //	Prog "..."
+void CB_Prog( char *SRC, int *localvarInt, double *localvarDbl ) ; //	Prog "..."
+void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ); //	Gosub N
+double CB_EvalStr( char *SRC) ;		// Eval str -> double
+int CBint_EvalStr( char *SRC) ;		// Eval str -> int
 
 void Skip_quot( char *SRC ); // skip "..."
 void Skip_block( char *SRC );

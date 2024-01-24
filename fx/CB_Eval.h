@@ -26,4 +26,5 @@ double Evalsub6(char *SRC);
 double Evalsub7(char *SRC);
 double Evalsub13(char *SRC);
 double EvalsubTop(char *SRC);
+double CB_EvalDbl( char *SRC ) ;
 

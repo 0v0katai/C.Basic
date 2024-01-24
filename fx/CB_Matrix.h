@@ -11,6 +11,9 @@ double ReadMatrix( int reg, int dimA, int dimB);
 void WriteMatrixint( int reg, int dimA, int dimB, int value);
 void WriteMatrix( int reg, int dimA, int dimB, double value);
 
+char *  MatrixPtr( int reg, int m, int n );
+int	MatrixSize( int reg, int m, int m ) ;
+
 int DimMatrixDefaultElementSize( int reg ) ;
 int DimMatrixSub( int reg, int ElementSize, int m, int n ) ;
 int DimMatrix( int reg, int m, int n ) ;
@@ -30,9 +33,11 @@ void CB_MatCalc( char *SRC ) ; //	Mat A -> Mat B  etc
 void CB_MatFill( char *SRC ) ; //	Fill(value, Mat A)
 void CB_MatTrn( char *SRC ) ; //	Trn Mat A
 
-int MatOprand(    char *SRC, int reg );
-int MatOprandInt( char *SRC, int reg );
+
+//int MatOprand(    char *SRC, int reg );
+//int MatOprandInt( char *SRC, int reg );
 void MatOprand2(    char *SRC, int reg, int *dimA, int *dimB );
 void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB );
+int  MatrixOprand( char *SRC, int *reg, int *dimA, int *dimB );
 
 int Cellsum( int reg, int x, int y );

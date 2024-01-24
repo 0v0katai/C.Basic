@@ -35,7 +35,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.93a" );
+	locate( 3, 4 ); Print( (unsigned char*)"           v0.94 " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -511,7 +511,7 @@ void SetFactor(){
 void SetVarDsp(int VarMode) {
 	if ( VarMode ) Print((unsigned char*)"[int%]"); else Print((unsigned char*)"[double]");
 }
-void InitVar( double value, int VarMode, int vartop ) {
+void InitVar( double value, int VarMode, int small) {
 	char buffer[32];
 	unsigned int key;
 	int	cont=1;
@@ -549,9 +549,11 @@ void InitVar( double value, int VarMode, int vartop ) {
 
 	if ( YesNo("Initialize Ok?") ) {
 		if ( VarMode ) {
-			for ( i=vartop; i<vartop+26; i++) REGINT[i]=value;
+			if ( small ) for ( i=0; i<26; i++) LocalInt[i]=value;
+			else		 for ( i=0; i<26; i++) REGINT[i]=value;
 		} else {
-			for ( i=vartop; i<vartop+26; i++) REG[i]=value;
+			if ( small ) for ( i=0; i<26; i++) LocalDbl[i]=value;
+			else		 for ( i=0; i<26; i++) REG[i]=value;
 		}
 	}
 }
@@ -599,10 +601,12 @@ int SetVar(int select){		// ----------- Set Variable
 			locate(1,1+i); Print((unsigned char*)buffer);
 			if ( VarMode ) {
 				locate(4 ,1+i);
-				sprintG(buffer, (double)REGINT[seltop+i+small], 18,LEFT_ALIGN);
+				if ( small )	sprintG(buffer, (double)LocalInt[seltop+i], 18,LEFT_ALIGN);
+				else			sprintG(buffer, (double)REGINT[seltop+i],   18,LEFT_ALIGN);
 			} else {
 				locate(3 ,1+i);
-				sprintG(buffer, REG[seltop+i+small], 19,LEFT_ALIGN);
+				if ( small )	sprintG(buffer, (double)LocalDbl[seltop+i], 18,LEFT_ALIGN);
+				else			sprintG(buffer, (double)REG[seltop+i],      18,LEFT_ALIGN);
 			}
 			Print((unsigned char*)buffer);
 		}
@@ -649,9 +653,11 @@ int SetVar(int select){		// ----------- Set Variable
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						REGINT[select+small]= InputNumD_full( 4, y, 18, (double)REGINT[select+small]);
+						if ( small )	LocalInt[select]= InputNumD_full( 4, y, 18, (double)LocalInt[select]);
+						else			REGINT[select]  = InputNumD_full( 4, y, 18, (double)REGINT[select]);
 					else
-						REG[select+small]   = InputNumD_full( 3, y, 19, REG[select+small]);
+						if ( small )	LocalDbl[select]= InputNumD_full( 3, y, 19, (double)LocalDbl[select]);
+						else			REG[select]     = InputNumD_full( 3, y, 19, (double)REG[select]);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -664,9 +670,11 @@ int SetVar(int select){		// ----------- Set Variable
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						REGINT[select+small]= InputNumD_replay( 4, y, 18, (double)REGINT[select+small]);
+						if ( small )	LocalInt[select]= InputNumD_replay( 4, y, 18, (double)LocalInt[select]);
+						else			REGINT[select]  = InputNumD_replay( 4, y, 18, (double)REGINT[select]);
 					else
-						REG[select+small]= InputNumD_replay( 3, y, 19, REG[select+small]);
+						if ( small )	LocalDbl[select]= InputNumD_replay( 3, y, 19, (double)LocalDbl[select]);
+						else			REG[select]     = InputNumD_replay( 3, y, 19, (double)REG[select]);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}
@@ -681,9 +689,11 @@ int SetVar(int select){		// ----------- Set Variable
 				selectreplay = select; 
 				if ( ( 0 <= select ) && ( select <=25 ) ) {	// regA to regZ
 					if ( VarMode ) 
-						REGINT[select+small]= InputNumD_Char( 4, y, 18, (double)REGINT[select+small], key);
+						if ( small )	LocalInt[select]= InputNumD_Char( 4, y, 18, (double)LocalInt[select], key);
+						else			REGINT[select]  = InputNumD_Char( 4, y, 18, (double)REGINT[select], key);
 					else
-						REG[select+small]   = InputNumD_Char( 3, y, 19, REG[select+small], key);
+						if ( small )	LocalDbl[select]= InputNumD_Char( 3, y, 19, (double)LocalDbl[select], key);
+						else			REG[select]     = InputNumD_Char( 3, y, 19, (double)REG[select], key);
 				} else {
 						selectreplay = -1; // replay cancel 
 				}

@@ -3,6 +3,7 @@
 #include "string.h"
 
 #include "CB_io.h"
+#include "KeyScan.h"
 
 struct st_round CB_Round = { Norm , 1} ; // Round
 int ENG=0;	// ENG flag
@@ -161,6 +162,7 @@ int YesNo( char*buffer){
 	locate(3,5); Print((unsigned char *) "   No :[F6]");
 //	Bdisp_PutDisp_DD();
 
+	KeyRecover(); 
 	while ( 1 ) {
 		GetKey(&key);	
 		if ( key == KEY_CTRL_F1  ) break ;
@@ -187,6 +189,7 @@ int YesNo2( char*buffer, char*buffer2){
 	locate(3,6); Print((unsigned char *) "   No :[F6]");
 //	Bdisp_PutDisp_DD();
 
+	KeyRecover(); 
 	while ( 1 ) {
 		GetKey(&key);	
 		if ( key == KEY_CTRL_F1  ) break ;

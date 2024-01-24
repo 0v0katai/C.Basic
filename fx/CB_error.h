@@ -60,6 +60,8 @@ extern int ErrorNo;
 #define SwitchWithoutSwitchEndERR 52
 #define SwitchEndWithoutSwitchERR 53
 
+#define FileERR 100
+
 //------------------------------------------------------------------------------
 void ERROR(char *buffer) ;
 void CB_ErrMsg(int ErrNo) ;
