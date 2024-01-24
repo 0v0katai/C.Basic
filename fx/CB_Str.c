@@ -793,7 +793,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 				if ( ErrorNo ) return 0; // error
 			}
 			CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;
-			memcpy( CB_CurrentStr, MatAry[reg].name, 8);
+			memcpy( CB_CurrentStr, MatAry[reg].name, 9);
 			return CB_CurrentStr;
 		default:
 			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
@@ -882,7 +882,7 @@ void StorStrList0( char *SRC ) {	// "String" -> List n[0]	->List "ABS"   ->List 
 		DimMatrixSub( reg, DefaultElemetSize(), 1, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
-	memcpy( MatAry[reg].name, CB_CurrentStr, 8);
+	memcpy( MatAry[reg].name, CB_CurrentStr, 9);
 }
 
 void StorDATE( char *buffer ) {	// "2017/01/17" -> DATE

@@ -2967,6 +2967,7 @@ void PP_Search_CR_SPACE_Skip_comment(char *SRC, int *ptr){
 		}
 	}
 }
+
 int PP_Search_CR_SPACE(char *SRC ){
 	int c;
 	int ptr=0;
@@ -2979,7 +2980,7 @@ int PP_Search_CR_SPACE(char *SRC ){
 			case 0x22:	// "
 				PP_Search_CR_SPACE_Skip_quot(SRC, &ptr);
 				break ;
-			case 0x27:	// "
+			case 0x27:	// '
 				PP_Search_CR_SPACE_Skip_comment(SRC, &ptr);
 				break ;
 			case 0x0C:	// <Disps>
@@ -3001,18 +3002,21 @@ int PP_Search_CR_SPACE(char *SRC ){
 }
 
 int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
-	int c,flag=0;
+	int c,flag=0,d=0;
 	c=SRC[(*sptr)-2];
 	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) flag=1;	// "   "
+	if ( SRC[(*sptr)-1] == 0x27 ) { d=1; flag=0; }
 	while (1){
 		c=SRC[(*sptr)++];
 		dest[(*dptr)++]=c;
 		switch ( c ) {
 			case 0x0D:	// <CR>
+				if ( d ) return 0;
 				if ( flag ) break;
 				return c;
-			case 0x00:	// <EOF>
 			case 0x22:	// "
+				if ( d ) break;
+			case 0x00:	// <EOF>
 				return 0;
 			case 0x0000007F:	// 
 			case 0xFFFFFFE5:	// 
@@ -3160,6 +3164,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 			case 0x00:	// <EOF>
 				goto exit;
 			case 0x22:	// "
+			case 0x27:	// '
 				PP_Indent_Skip_quot(SRC, dest, &sptr, &dptr);
 				break;
 			case ' ':	// <SPC>
@@ -3526,15 +3531,15 @@ int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
