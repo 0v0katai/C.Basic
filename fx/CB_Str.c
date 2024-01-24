@@ -734,7 +734,7 @@ char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String
 	if ( ErrorNo ) return 0;	// error
 	c=SRC[ExecPtr];
 	if ( c != 0xFFFFFF89 ) { // non +
-		if ( c == ')' ) ExecPtr++;	
+//		if ( c == ')' ) ExecPtr++;	
 		return CB_CurrentStr; //
 	}
 	CB_StrAddBuffer=NewStrBuffer(); if ( ErrorNo ) return 0;
@@ -748,7 +748,7 @@ char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String
 		c=SRC[ExecPtr];
 		if ( c != 0xFFFFFF89 ) break ; // +
 	}
-	if ( c == ')' ) ExecPtr++;	
+//	if ( c == ')' ) ExecPtr++;	
 	return CB_StrAddBuffer;
 }
 
@@ -1004,6 +1004,18 @@ int CB_StrSrc( char *SRC ) {
 	if ( sptr > slen ) sptr=slen;
 	if ( StrSrc( buffer, buffer2, &sptr, CB_StrBufferMax-1 ) ==0 ) return 0 ; // no found
 	return sptr;
+}
+
+int CB_StrAsc( char *SRC ) {	// StrAsc("A")  -> 0x41
+	int i,maxoplen;
+	int	buffercnt=CB_StrBufferCNT;
+	char *buffer;
+	buffer = CB_GetOpStr( SRC, &maxoplen );
+	if ( ErrorNo ) return 0;  // error
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( buffer[0]==0x5C ) // Backslash
+			buffer[0]=buffer[1];
+	return StrGetOpcode( buffer, 0 );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1266,7 +1278,7 @@ int CB_StrRotate( char *SRC ) {	// StrRotate( str1 [,n] )
 	return CB_StrBufferMax-1;
 }
 
-int CB_ExpToStr( char *SRC ) {	//  Exp->Str(
+int CB_ExpToStr( char *SRC ) {	//  Exp->Str
 	int maxoplen;
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
@@ -1275,6 +1287,7 @@ int CB_ExpToStr( char *SRC ) {	//  Exp->Str(
 	ExecPtr++;
 	CB_CurrentStr = buffer;
 	CB_StorStr( SRC );
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return 1;
 }
 

@@ -22,6 +22,7 @@
 #include "CBI_interpreter.h"
 #include "CB_error.h"
 #include "fx_syscall.h"
+#include "fxCG_Registers.h"
 
 char Transfermode=1;		// 0:binmode  1:normal
 
@@ -125,7 +126,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	int c,result,maxoplen;
 	int reg,dimA, dimB,ElementSize,m,n;
 	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {	// variable
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
@@ -147,7 +148,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
-		if ( ( 'A'<=c )&&( c<='z' ) ) { reg=c-'A'; ExecPtr++; } 
+		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
@@ -334,4 +335,101 @@ void CB_Receive38k( char *SRC ){		// Receive38k
 	}
 	if ( r==3 ) CB_Error(ComNotOpenERR);
 	if ( r ) CB_Error(ReceiveERR);
+}
+
+
+
+//---------------------------------------------------------------------------------------------
+// direct 3pin access		from INSIGHT.CPP
+
+void CMT_Delay_micros( int n ) {
+	int PortCR = P7305_SERIAL_DIRECT_PORTCR;
+	volatile unsigned short SerialPortMode0;
+	unsigned int SerialPortCR;
+	int i,j;
+	volatile int t=0;
+	SerialPortCR = PortCR;
+//	for ( i=0; i<n; i++ ) for ( j=0; j<1; j++ ) SerialPortMode0 = *(unsigned short*)SerialPortCR;
+	for ( i=0; i<n; i++ ) for ( j=0; j<1; j++ ) t+=RTC_GetTicks();
+}
+
+
+void Direct3Pin_out( int micro, int time  ){
+unsigned int SerialPortDR, SerialPortCR;
+unsigned short SerialPortMask, SerialPortMode, SerialPortMode0, SerialPortMode1;
+unsigned char SerialPortOut, SerialPortIn;
+unsigned int iresult, iDelay, i;
+unsigned char hb[15];
+int PortCR = P7305_SERIAL_DIRECT_PORTCR;
+	
+// open the outer gate
+	*(unsigned short*)P11CR = ( *(unsigned short*)P11CR & ~P11CR_ENABLE_SERIAL_MASK) | P11CR_ENABLE_SERIAL;
+	*(unsigned char*)P11DR = *(unsigned char*)P11DR | P11DR_ENABLE_SERIAL;
+	
+// direct serial port
+	SerialPortCR = PortCR;
+	if ( PortCR == P7305_SERIAL_DIRECT_PORTCR ){
+		SerialPortDR = P7305_SERIAL_DIRECT_PORTDR;
+		
+		// serial transmit pin
+		// the following assignments have been determined experimetally and by deduction
+		// 
+		SerialPortOut  = 1 << P7305_SERIAL_TXD_BIT;
+		SerialPortIn = 1 << P7305_SERIAL_RXD_BIT;
+		SerialPortMask = ( 0x0003 << (P7305_SERIAL_TXD_BIT*2) ) | ( 0x0003 << (P7305_SERIAL_RXD_BIT*2) );
+		SerialPortMode = ( 0x0001 << (P7305_SERIAL_TXD_BIT*2) ) | ( 0x0002 << (P7305_SERIAL_RXD_BIT*2) );
+		iDelay = 10;
+	}else if ( PortCR == P7305_ALT_SERIAL_DIRECT_PORTCR ){
+		SerialPortDR = P7305_ALT_SERIAL_DIRECT_PORTDR;
+		SerialPortOut = 1 << P7305_ALT_SERIAL_TXD_BIT;
+		SerialPortIn  = 1 << P7305_ALT_SERIAL_RXD_BIT;
+		SerialPortMask = ( 0x0003 << (P7305_ALT_SERIAL_TXD_BIT*2) ) | ( 0x0003 << (P7305_ALT_SERIAL_RXD_BIT*2) );
+		SerialPortMode = ( 0x0001 << (P7305_ALT_SERIAL_TXD_BIT*2) ) | ( 0x0002 << (P7305_ALT_SERIAL_RXD_BIT*2) );
+		
+		SerialPortOut = 0xFF;
+		SerialPortIn  = 0xFF;
+		SerialPortMask = 0xFFFF;
+		SerialPortMode = 0x5555;	// all to out
+		SerialPortMode = 0xAAAA;	// all to in
+		iDelay = 1000;
+	}else{
+		return;
+	}
+	
+	// save the actual content (for debug purposes only)
+	SerialPortMode0 = *(unsigned short*)SerialPortCR;
+	*(unsigned short*)SerialPortCR = (SerialPortMode0 & (~SerialPortMask)) | SerialPortMode;
+
+	// the following loop gives a sharp edged symmetric square wave of about 17 kHz.
+//	iresult = 5000000 / iDelay;
+//	iresult = 500;
+	micro >>=1;
+	while (time-- > 0 ){
+		CMT_Delay_micros( micro );
+//		for ( i=0; i<waitcount; i++ ) WaitTimer32768() ;
+		*(unsigned char*)SerialPortDR = *(unsigned char*)SerialPortDR & (~SerialPortOut);
+		CMT_Delay_micros( micro );
+//		for ( i=0; i<waitcount; i++ ) WaitTimer32768() ;
+		*(unsigned char*)SerialPortDR = *(unsigned char*)SerialPortDR | SerialPortOut;
+	}
+	SerialPortMode1 = *(unsigned short*)SerialPortCR; // for debug purposes only
+	*(unsigned short*)SerialPortCR = SerialPortMode0;
+	
+// close the outer gate
+	*(unsigned char*)P11DR = (*(unsigned char*)P11DR & ~P11DR_ENABLE_SERIAL) | 0x08;
+	*(unsigned short*)P11CR = *(unsigned short*)P11CR | P11CR_ENABLE_SERIAL_MASK;
+}
+//------------------------------------------------------------------------------
+void CB_Beep( char *SRC ){
+	int r,a=1000, n=500;
+	int microsecond, ntime;
+	int c=SRC[ExecPtr];
+	if ( ( c==':' )||( c==0x0D )||( c==0x0C )||( c==0 ) ) goto next;
+	a=CB_EvalInt( SRC );
+	CB_GetOprand_int1( SRC, &n);
+	if ( ( a<=0 ) || ( n<=0 ) || ( n>10000 ) ) {  CB_Error(ArgumentERR); return ; } // Argument error
+  next:
+	microsecond=1000000/a/8;
+	ntime=n*a/1000;
+	Direct3Pin_out( microsecond, ntime );
 }

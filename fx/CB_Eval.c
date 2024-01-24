@@ -175,7 +175,7 @@ void MatOprand1num( char *SRC, int reg, int *dimA, int *dimB ){	// A0,A1,b3,c9 e
 	base=MatAry[reg].Base;
 	(*dimB)=base;
 	if ( ( (*dimA) < (*dimB) ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { 
-		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// Mat element +
+		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, MatAry[reg].SizeB );	// Mat element +
 		else
 		{ CB_Error(DimensionERR); return ; }	// Dimension error
 	}
@@ -207,8 +207,8 @@ int GetVarName( char *SRC, int *ptr, char *name, int *len ){
 			}
 		}
 	} else return 0;	// not var name
-	name[(*len)]='\0';
 	(*len)=i;
+	name[(*len)]='\0';
 	return 1;	// ok
 }
 
@@ -244,7 +244,7 @@ int RegVarAliasEx( char *SRC ) {	//
 		if ( ( IsExtVar > VARMAXSIZE ) || ( AliasVarMAX > ALIASVARMAX ) ) { CB_Error(TooManyVarERR); return -1 ; } // Too Many Var ERR
 		AliasVarCode[AliasVarMAX].org  =IsExtVar;
 		AliasVarCode[AliasVarMAX].alias=0x4040;	// @@
-		if ( len > 8 ) len=8;
+		if ( len > MAXNAMELEN ) len=MAXNAMELEN;
 		AliasVarCode[AliasVarMAX].len=len;
 		memcpy( &AliasVarCode[AliasVarMAX].name[0], name, len );
 		return IsExtVar;	// New Var !
@@ -411,7 +411,7 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) {
 //		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// List element +
 //		else 
-		if ( (MatAry[reg].SizeA+1)==((*dimA)-1+base) ) MatElementPlus( reg, (*dimA)-1+base, 1 );	// List element +
+		if ( (MatAry[reg].SizeA+1)==((*dimA)-1+base) ) MatElementPlus( reg, (*dimA)-1+base, MatAry[reg].SizeB );	// List element +
 		else
 		{ CB_Error(DimensionERR); return ; }	// Dimension error
 	}
@@ -1375,6 +1375,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return CB_StrSrc( SRC );
 				case 0x38:	// Exp(
 					return CB_EvalStr(SRC, 0 );
+				case 0x50:	// StrAsc(
+					return CB_StrAsc( SRC );
 				case 0x21:	// Xdot
 					return Xdot;
 				case 0x1B :		// fn str

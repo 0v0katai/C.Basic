@@ -48,12 +48,13 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF931;return;	// StrLen(
 				case 1: (*code)=0xF935;return;	// StrRight(
-				case 2: (*code)=0xF931;return;	// StrLwr(
+				case 2: (*code)=0xF93A;return;	// StrLwr(
 			} break;
 		case CMD_PRGM_EXSTR:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF940;return;	// Str(
 				case 1: (*code)=0xF945;return;	// StrCenter(
+				case 2: (*code)=0xF950;return;	// StrAsc(
 			} break;
 		case CMD_PRGM_EXEC:
 			switch ( CommandPage ) {
@@ -128,7 +129,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			} break;
 		case CMD_OPTN_EXT:
 			switch ( CommandPage ) {
-				case 0: (*code)='~';return;	// '~'
+				case 0: (*code)='_';return;	// '_'
 			} break;
 
 		case CMD_VARS:		//	------------------------------------------------------------VARS_F2
@@ -208,6 +209,7 @@ void GetGenuineCmdF2( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9D6;return;	// _Bmp8
 				case 1: (*code)=0xF9DC;return;	// BmpLoad
+				case 2: (*code)=0xF961;return;	// GetFont
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F2

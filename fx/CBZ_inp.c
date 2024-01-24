@@ -1087,6 +1087,7 @@ const short oplistPRGM[]={
 		0xF947,	// Bin(
 		0xF948,	// StrBase(
 		0xF940,	// ToStr(
+		0xF950,	// StrAsc(
 		0x5C,	// 
 		0x24,	// $
 		0};
@@ -1557,7 +1558,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF945,	// StrCenter(
 		0xF949,	// StrRepl(	
 		0xF94D,	// StrSplit(	
-		0x5C,	// 
+		0xF950,	// StrAsc(
 		0x24,	// $
 		0x23,	// #
 		0x25,	// %
@@ -2169,6 +2170,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF949, "StrRepl(" }, 
 	{ 0xF94D, "StrSplit(" }, 
 	{ 0xF94F, "Wait " }, 
+	{ 0xF950, "StrAsc(" }, 
 	{ 0xF960, "GetFont(" }, 
 	{ 0xF961, "SetFont " }, 
 	{ 0xF962, "GetFontMini(" }, 

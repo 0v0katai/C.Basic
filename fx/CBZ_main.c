@@ -81,6 +81,9 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	
 	PictAry[0]=GetVRAMAddress();
 
+	InitLocalVar();		// init Local variable
+	CB_AliasVarClr();
+
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
@@ -88,8 +91,6 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			for (j=0; j<26; j++)	ProgLocalVar[i][j]=-1;
 		}
 
-		InitLocalVar();		// init Local variable
-		CB_AliasVarClr();
 		ExecPtr=0;	
 		DebugMode=0;
 		DebugScreen=0;
