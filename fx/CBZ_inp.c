@@ -1828,7 +1828,9 @@ int CB_Catalog(void) {
 				case KEY_CTRL_MENU:
 				case KEY_CTRL_F5:
 					key=SelectOpcodeRecent( CMDLIST_RECENT );
-					return key;
+					if ( key ) return key;
+					goto loop;
+					break;
 					
 				case KEY_CTRL_QUIT:
 				case KEY_CTRL_EXIT:

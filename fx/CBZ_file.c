@@ -62,7 +62,8 @@ void SetFullfilenameNoExtFolder( char *filename, char *dir, char *sname ) {
 	sprintf( filename, "\\\\%s\\%s\\%s", root[StorageMode], dir, sname);
 }
 void SetFullfilenameNoExtsub( char *filename, char *dir, char *sname ) {
-	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+//	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+	if ( ( strlen(dir) == 0 ) )
 		SetFullfilenameNoExtNoFolder( filename, sname ) ;
 	else
 		SetFullfilenameNoExtFolder( filename, dir, sname ) ;
@@ -78,7 +79,8 @@ void SetFullfilenameExtFolder( char *filename, char *dir, char *sname, char *ext
 	sprintf( filename, "\\\\%s\\%s\\%s.%s", root[StorageMode], dir, sname, extname );
 }
 void SetFullfilenameExtsub( char *filename, char *dir, char *sname, char *extname ) {
-	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+//	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+	if ( ( strlen(dir) == 0 ) )
 		SetFullfilenameExtNoFolder( filename, sname, extname );
 	else
 		SetFullfilenameExtFolder( filename, dir, sname, extname );
@@ -814,7 +816,8 @@ unsigned int Explorer( int size, char *folder )
 				}
 			}
 
-			Bdisp_AreaReverseVRAM( 0, (index-top+1)*yk+1 , 127-8*miniflag, (index-top+2)*yk+1-(miniflag==0) );
+			Bdisp_AreaReverseVRAM( 0, (index-top+1)*yk+(miniflag!=0) , 127-8*miniflag, (index-top+2)*yk+1-(miniflag==0)*2 );
+//			Bdisp_AreaReverseVRAM( 0, (index-top+1)*8 , 127, (index-top+2)*8-1 );
 			if( top > StartLine ) {
 				if ( miniflag ) {
 					PrintMini( 121, 8, (unsigned char*)"\xE6\x92", MINI_OVER ) ;
