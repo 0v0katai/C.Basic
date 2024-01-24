@@ -174,12 +174,24 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	}
 	base=MatAry[reg].Base;
 	(*dimB)=base;
-	if ( ( (*dimA) < base+9 ) && ( MatAry[reg].SizeA-1+base < (*dimA) ) ) MatElementPlus( reg, (*dimA)-1+base, MatAry[reg].SizeB-1+base );	// List element+
-	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
+	if ( ( (*dimA) < base ) || ( MatAry[reg].SizeA-1+base < (*dimA) ) ) {
+//		if ( MatAry[reg].SizeA < 10-base ) MatElementPlus( reg, 10-base, 1 );	// List element +
+//		else 
+		if ( (MatAry[reg].SizeA+1)==((*dimA)-1+base) ) MatElementPlus( reg, (*dimA)-1+base, 1 );	// List element +
+		else
+		{ CB_Error(DimensionERR); return ; }	// Dimension error
+	}
 	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 }
 //-----------------------------------------------------------------------------
+//int EvalIntObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
+int EvalIntObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
+int EvalIntObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
+
 int fintint( int x ) {
 	return x;
 }
@@ -254,7 +266,7 @@ int fXORint( int x, int y ) {	// x xor y
 	return x ^ y;
 }
 int fNotint( int x ) {	// Not x
-	return !x;
+	return ~x;
 }
 int fANDint_logic( int x, int y ) {	// x && y
 	return x && y;
@@ -319,6 +331,8 @@ int fMODint( int x, int y ) {	// fMODint(x,y)
 	}
 	return result ;
 }
+//-----------------------------------------------------------------------------
+int EvalIntObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int CB_EvalInt( char *SRC ) {

@@ -25,7 +25,7 @@ int EvalFxInt( FXPTR fxptr, int result ) {
 	int i,j;
 	int base;
 	int resultreg=CB_MatListAnsreg;
-	if ( dspflag == 4 ) {	// Listresult
+	if ( dspflag >= 3 ) {	// Listresult
 		base=MatAry[resultreg].Base;
 		for (i=base; i<MatAry[resultreg].SizeA+base; i++ ) {
 			for (j=base; j<MatAry[resultreg].SizeB+base; j++ ) {
@@ -45,9 +45,9 @@ int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int 
 	int i,j;
 	int base;
 	int tmpreg=CB_MatListAnsreg;
-	if ( dspflag == 4 ) {	// Listtmp
+	if ( dspflag >= 3 ) {	// Listtmp
 		base=MatAry[tmpreg].Base;
-		if ( *resultflag == 4 ) {
+		if ( *resultflag >= 3 ) {
 			if ( CheckAnsMatList(*resultreg) ) return 0;	// Not same List error
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
 				for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
@@ -68,7 +68,7 @@ int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int 
 			*resultreg=tmpreg;
 		}
 	} else {	// tmp
-		if ( *resultflag == 4 ) { // 4:Listresult
+		if ( *resultflag >= 3 ) { // 4:Listresult
 			base=MatAry[*resultreg].Base;
 			for (i=base; i<MatAry[*resultreg].SizeA+base; i++ ) {
 				for (j=base; j<MatAry[*resultreg].SizeB+base; j++ ) {
