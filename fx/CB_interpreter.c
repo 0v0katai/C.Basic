@@ -2649,8 +2649,7 @@ void CB_AliasVarClr(){
 	}
 }
 
-int CB_CheckAliasVar( char *SRC, int *del ) {
-	int c=SRC[ExecPtr];
+int CB_CheckAliasVar( int c, int *del ) {
 	if ( c=='_' ) { CB_Error(SyntaxERR); return 1; }	// Syntax error
 	if ( c==0xFFFFFF99 ) *del=1; // -
 	return 0;
@@ -2663,7 +2662,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD	// (delete) Alias -A=_
 	char name[32+1];
 	if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// 	Alias Mat A=ƒ¿  or Mat A=_ABCD / Vct
 		ExecPtr+=2;
-		if ( CB_CheckAliasVar( SRC, &del ) ) return ;	// Syntax error
+		c=SRC[ExecPtr];
+		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
 		reg=RegVar(c);
 		org_reg=reg;
 		if ( reg>=0 ) {
@@ -2708,7 +2708,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD	// (delete) Alias -A=_
 	} else 
 	if ( ( SRC[ExecPtr]==0xFFFFFFE2 ) ) {	// 	Alias Lbl A=ƒ¿  or Lbl A=_ABCD
 		ExecPtr++;
-		if ( CB_CheckAliasVar( SRC, &del ) ) return ;	// Syntax error
+		c=SRC[ExecPtr];
+//		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
 		reg=RegVar(c);
 		org_reg=reg;
 		if ( reg>=0 ) {
@@ -2751,7 +2752,8 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD	// (delete) Alias -A=_
 			}
 		}
 	} else {						// Alias A=ƒ¿  or A=_ABCD
-		if ( CB_CheckAliasVar( SRC, &del ) ) return ;	// Syntax error
+		c=SRC[ExecPtr];
+		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
 		reg=RegVar(c);
 		org_reg=reg;
 		if ( reg>=0 ) {
@@ -3180,9 +3182,9 @@ void  CB_Input( char *SRC ){
 	return ;
 }
 //----------------------------------------------------------------------------------------------
-//int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
