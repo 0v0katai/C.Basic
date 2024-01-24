@@ -1,9 +1,9 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series  v0.90
+ Casio Basic RUNTIME library for fx-9860G series  v1.00
 
- copyright(c)2015 by sentaro21
+ copyright(c)2015/2016/2017 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
@@ -28,6 +28,7 @@
 
 #include "CBI_Eval.h"
 #include "CBI_interpreter.h"
+#include "CB_MonochromeLib.h"
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> int
 //----------------------------------------------------------------------------------------------
@@ -358,9 +359,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			c=SRC[ExecPtr];
 			if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0] ; }
 			else
-			if ( c=='[' ) goto Matrix;
+			if ( c=='[' )  { reg+=('a'-'A'); goto Matrix; }
 			else
-			if ( ( '0'<=c )&&( c<='9' ) ) {
+			if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
 				Matrix1:
 					ExecPtr++;
 					dimA=c-'0';
@@ -477,6 +478,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeB;
+			} else if ( c == 0x5B ) {	// MatBase( Mat A )
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatAry[reg].Base;
 			} else ExecPtr--;	// error
 			break;
 			
@@ -561,6 +566,12 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			break;
 		case 0xFFFFFFF9:	// F9..
 			c = SRC[ExecPtr++];
+			if ( c == 0x56 ) {	// M_PixelTest(
+					return CB_ML_PixelTest( SRC );
+			} else
+//			if ( c == 0x53 ) {	// M_Contrast(
+//					return CB_ML_GetContrast( SRC );
+//			} else
 			if ( c == 0x31 ) {	// StrLen(
 					return CB_StrLen( SRC );
 			} else

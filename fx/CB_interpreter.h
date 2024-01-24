@@ -290,6 +290,7 @@ void CB_Horizontal( char *SRC ) ; //	Horizontal
 void CB_Plot( char *SRC ) ; //	Plot
 void CB_PlotSub( char *SRC, int mode ); //	mode  1:PlotOn  0:PlotOff  2:PlotChg
 void CB_Circle( char *SRC ) ; //	Circle
+void CB_PxlSub( char *SRC, int mode ) ; //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 
 void CB_DrawGraph(  char *SRC );
 void CB_GraphY( char *SRC );
@@ -301,6 +302,7 @@ void CB_LocateYX( char *SRC );
 void CB_Text( char *SRC ) ; //	Text
 void CB_ReadGraph( char *SRC );	// ReadGraph(px1,py1, px2,py2)->Mat C
 void CB_WriteGraph( char *SRC );	// WriteGraph x,y,wx,wy,Mat A ([2,2]),modify,kind
+void CB_RectSub( char *SRC , int RectMode ) ; // RectMode  0:Rect  1:RectFill
 void CB_Rect( char *SRC ) ; 	// Rect x1,y1,x2,y2,mode 
 void CB_FillRect( char *SRC ) ; // FillRect x1,y1,x2,y2,mode 
 void CB_DotShape( char *SRC ) ; // DotShape (x1,y1,x2,y2,typ,mode1,mode2,pattern1,pattern2)

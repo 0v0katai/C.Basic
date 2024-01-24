@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.2                                       */
+/*   inp Library  ver 1.3                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -20,40 +20,6 @@
 //int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
-/*
-double round( double x, int n ) {
-	unsigned char row[9];
-	int tmp,exp;
-	int i,j,bt;
-	double result;
-	unsigned char *ptr;
-
-	ptr=(unsigned char *)(&x);
-	for (i=0;i<8;i++) row[i]=ptr[i];
-
-	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
-	exp=tmp-1023; // 
-	if ( ( 0 > exp ) || ( exp > 51 ) ) result = x;
-	else {
-		tmp=52-exp;
-		i=7; j=0; bt=0xFE;
-		while ( tmp ) {
-			if (tmp>7) {
-				 tmp-=8; row[i]=0; i--;
-			} else {
-				row[i]&=bt;
-				bt=bt<<1;
-				j++;
-				tmp--;
-			}
-		}
-		ptr=(unsigned char *)(&result);
-		for (i=0;i<8;i++) ptr[i]=row[i];
-	}
-	return ( result ); 
-}
-*/
-
 
 double Round( double num, int round_mode, int digit){
 	int minus=0,exp,ex2;
@@ -695,6 +661,7 @@ const short oplistOPTN[]={
 		0x7F58,	// ElemSize(
 		0x7F59,	// ColSize(
 		0x7F5A,	// RowSize(
+		0x7F5B,	// MatBase(
 		0x7FE9,	// CellSum(
 
 		0xFFFF,	// 				-
@@ -806,6 +773,7 @@ const short oplistPRGM[]={
 		0x7FFA,	// ProgPtr(
 		
 		0xFFFF,	// 				-
+		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
 		0xF932,	// StrCmp(
@@ -820,9 +788,8 @@ const short oplistPRGM[]={
 		0xF93B,	// StrInv(
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
-		0xF93E,	// Sprintf(
+		0xF943,	// Sprintf(
 		0xF940,	// Str(
-		0xF93F,	// Str
 		0};
 		
 const short oplistVARS[]={
@@ -901,7 +868,7 @@ const short oplistVARS[]={
 		0xF7E8,	// ReadGraph(
 		0xF7E9,	// WriteGraph(
 		0xF73E,	// DotGet(
-		0xF94B,	// DotPut(
+		0xF73B,	// DotPut(
 		0xF73D,	// DotTrim(
 		0xF7E0,	// DotLife(
 		0xF7F0,	// DotShape(
@@ -913,6 +880,32 @@ const short oplistVARS[]={
 		0xF7FE,	// BackLight
 		0xF7F8,	// RefreshCtrl
 		0xF7FA,	// RefreshTime
+		
+		0xFFFF,	// 				-
+		0xF9C0, // _ClrVRAM
+		0xF9C1,	// _ClrScreen
+		0xF9C2,	// _DispVRAM
+		0xF9C5,	// _Point 
+		0xF9C4,	// _Pixel 
+		0xF9C6,	// _PixelTest(
+		0xF9C7,	// _Line 
+		0xF9CA,	// _Rect 
+		0xF9C8,	// _Horizontal
+		0xF9C9,	// _Vertical
+		0xF9CB,	// _Polygon
+		0xF9CC, // _Fporgon 
+		
+		0xF9CD,	// _Circle
+		0xF9CE,	// _Fcircle 
+		0xF9CF,	// _Elips 
+		0xF9D0,	// _Felips 
+		0xF9D1,	// _ElipsInRct 
+		0xF9D2,	// _FelipsInRct 
+		0xF9D3,	// _Hscroll
+		0xF9D4,	// _Vscroll 
+		0xF9D5,	// _Bmp 
+		0xF9D6,	// _Bmp8
+		0xF9D7,	// _Bmp16
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -1354,7 +1347,7 @@ const short oplistCMD[]={
 		0xF93B,	// StrInv(
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
-		0xF93E,	// Sprintf(
+		0xF943,	// Sprintf(
 		0xF940,	// Str(
 		0x24,	// $
 		0x23,	// #
@@ -1365,17 +1358,17 @@ const short oplistCMD[]={
 		0x7F58,	// ElemSize(
 		0x7F59,	// ColSize(
 		0x7F5A,	// RowSize(
+		0x7F5B,	// MatBase(
 		0x7F41,	// Trn 
 		0x7F47,	// Fill(
 		0xF941,	// DATE
 		0xF942,	// TIME
 		0x7F5F,	// Ticks
-		0x7E,	// ~
 		0x23,	// #
 		0x25,	// %	
 		
 		0xF73E,	// DotGet(
-		0xF94B,	// DotPut(
+		0xF73B,	// DotPut(
 		0xF73D,	// DotTrim(
 		0xF7E0,	// DotLife(
 		0xF7E1,	// Rect(
@@ -1411,6 +1404,32 @@ const short oplistCMD[]={
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
 		0x23,	// #
+		0x25,	// %
+		
+		0xF9C0, // _ClrVRAM
+		0xF9C1,	// _ClrScreen
+		0xF9C2,	// _DispVRAM
+		0xF9C5,	// _Point 
+		0xF9C4,	// _Pixel 
+		0xF9C6,	// _PixelTest(
+		0xF9C7,	// _Line 
+		0xF9CA,	// _Rect 
+		0xF9C8,	// _Horizontal
+		0xF9C9,	// _Vertical
+		0xF9CB,	// _Polygon
+		0xF9CC, // _Fporgon 
+		
+		0xF9CD,	// _Circle
+		0xF9CE,	// _Fcircle 
+		0xF9CF,	// _Elips 
+		0xF9D0,	// _Felips 
+		0xF9D1,	// _ElipsInRct 
+		0xF9D2,	// _FelipsInRct 
+		0xF9D3,	// _Hscroll
+		0xF9D4,	// _Vscroll 
+		0xF9D5,	// _Bmp 
+		0xF9D6,	// _Bmp8
+		0xF9D7,	// _Bmp16
 		0x25,	// %
 		
 		
@@ -1589,7 +1608,7 @@ int PrevLine( char *SRC, int *offset ){
 
 typedef struct {
 	short code;
-	char str[12];
+	char str[14];
 } topcodes;
 
 const topcodes OpCodeStrList[] = {
@@ -1598,6 +1617,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F58, "ElemSize(" }, 
 	{ 0x7F59, "ColSize(" }, 
 	{ 0x7F5A, "RowSize(" }, 
+	{ 0x7F5B, "MatBase(" }, 
 	{ 0x7F5F, "Ticks" }, 
 	{ 0x7FB4, " Xor " }, 
 	{ 0x7FF5, "IsExist(" }, 
@@ -1606,6 +1626,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7FF8, "VarPtr(" }, 
 	{ 0xF70C, "Return " }, 
 	{ 0xF717, "ACBreak" }, 
+	{ 0xF73B, "DotPut(" }, 
 	{ 0xF73D, "DotTrim(" }, 
 	{ 0xF73E, "DotGet(" }, 
 	{ 0xF7E0, "DotLife(" }, 
@@ -1647,12 +1668,34 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF93B, "StrInv(" }, 
 	{ 0xF93C, "StrShift(" }, 
 	{ 0xF93D, "StrRotate(" }, 
-	{ 0xF93E, "Sprintf(" }, 
 	{ 0xF93F, "Str " }, 
 	{ 0xF940, "Str(" }, 
 	{ 0xF941, "DATE" }, 
 	{ 0xF942, "TIME" }, 
-	{ 0xF94B, "DotPut(" }, 
+	{ 0xF943, "Sprintf(" }, 
+	{ 0xF9C0, "_ClrVram" },
+	{ 0xF9C1, "_ClrScreen" },
+	{ 0xF9C2, "_DispVram" },
+	{ 0xF9C4, "_Pixel " },
+	{ 0xF9C5, "_Point " },
+	{ 0xF9C6, "_PixelTest(" },
+	{ 0xF9C7, "_Line " },
+	{ 0xF9C8, "_Horizontal " },
+	{ 0xF9C9, "_Vertical " },
+	{ 0xF9CA, "_Rectangle " },
+	{ 0xF9CB, "_Polygon " },
+	{ 0xF9CC, "_FillPolygon " },
+	{ 0xF9CD, "_Circle " },
+	{ 0xF9CE, "_FillCircle " },
+	{ 0xF9CF, "_Elips " },
+	{ 0xF9D0, "_FillElips " },
+	{ 0xF9D1, "_ElipsInRct " },
+	{ 0xF9D2, "_FElipsInRct " },
+	{ 0xF9D3, "_Hscroll " },
+	{ 0xF9D4, "_Vscroll " },
+	{ 0xF9D5, "_Bmp " },
+	{ 0xF9D6, "_Bmp8 " },
+	{ 0xF9D7, "_Bmp16 " },
 	{ 0x00FA, "Gosub "},
 	{ 0, "" }
 };

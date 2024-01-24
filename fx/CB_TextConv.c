@@ -311,10 +311,10 @@ const char ConvList7F00[][16]={
 "Ref ", 			// 7F55
 "Rref ",			// 7F56
 "Conv", 			// 7F57
-"@7F58",			// 7F58
-"@7F59",			// 7F59
-"@7F5A",			// 7F5A
-"@7F5B",			// 7F5B
+"ElemSize(",			// 7F58
+"ColSize(",				// 7F59
+"RowSize(",				// 7F5A
+"MatBase(",				// 7F5B
 "@7F5C",			// 7F5C
 "@7F5D",			// 7F5D
 "@7F5E",			// 7F5E
@@ -358,7 +358,7 @@ const char ConvList7F00[][16]={
 "@7F81",			// 7F81
 "@7F82",			// 7F82
 "@7F83",			// 7F83
-"@7F84",			// 7F84
+"Vct ",				// 7F84		// ver.2.04~
 "logab(",			// 7F85
 "RndFix(",			// 7F86
 "RanInt#(", 		// 7F87
@@ -417,8 +417,8 @@ const char ConvList7F00[][16]={
 "Sigmaan+2",		// 7FB9
 "Sigmabn+2",		// 7FBA
 "Sigmacn+2",		// 7FBB
-"Int/ ",			// 7FBC
-"Rmdr ",			// 7FBD
+" Int/ ",			// 7FBC
+" Rmdr ",			// 7FBD
 "Fa",				// 7FBE
 "@7FBF",			// 7FBF
 					
@@ -555,7 +555,7 @@ const char ConvListF700[][17]={
 "@F738",			// F738
 "@F739",			// F739
 "Pie",				// F73A
-"@F73B",			// F73B
+"DotPut(",				// F73B
 "Bar",				// F73C
 "DotTrim(",				// F73D
 "DotGet(",				// F73E
@@ -813,7 +813,7 @@ const char ConvListF900[][17]={
 "None",				// F928
 "StickLength",		// F929
 "StickHoriz",		// F92A
-"IneqTypeUnion",	// F92B
+"IneqTypeUnion",	// F92B		// IneqTypeOr (fx-9860GII)
 "Graph X>",			// F92C
 "Graph X<",			// F92D
 "Graph X>=",		// F92E
@@ -833,21 +833,21 @@ const char ConvListF900[][17]={
 "StrInv(",			// F93B
 "StrShift(",		// F93C
 "StrRotate(",		// F93D
-"Sprintf(",				// F93E
-"Str ",				// F93F
+"ClrVct ",			// F93E		//  ver.2.04~
+"Str ",					// F93F
 
 "Str(",					// F940
 "DATE",					// F941
 "TIME",					// F942
-"@F943",			// F943
+"Sprintf(",				// F943
 "@F944",			// F944
 "@F945",			// F945
 "@F946",			// F946
 "@F947",			// F947
 "@F948",			// F948
 "@F949",			// F949
-"@F94A",			// F94A
-"DotPut(",				// F94B
+"CrossP(",			// F94A		// ver.2.04~
+"DotP(",			// F94B
 "@F94C",			// F94C
 "@F94D",			// F94D
 "@F94E",			// F94E
@@ -864,10 +864,10 @@ const char ConvListF900[][17]={
 "@F958",			// F958
 "@F959",			// F959
 "@F95A",			// F95A
-"@F95B",			// F95B
+"Norm(",			// F95B		// ver.2.04~
 "@F95C",			// F95C
 "@F95D",			// F95D
-"@F95E",			// F95E
+"UnitV(",			// F95E		// ver.2.04~
 "@F95F",			// F95F
 
 "@F960",			// F960
@@ -883,7 +883,7 @@ const char ConvListF900[][17]={
 "@F96A",			// F96A
 "@F96B",			// F96B
 "@F96C",			// F96C
-"@F96D",			// F96D
+"Angle(",			// F96D		// ver.2.04~
 "@F96E",			// F96E
 "@F96F",			// F96F
 
@@ -972,31 +972,31 @@ const char ConvListF900[][17]={
 "@F9BE",			// F9BE
 "@F9BF",			// F9BF
 
-"@F9C0",			// F9C0
-"@F9C1",			// F9C1
-"@F9C2",			// F9C2
-"@F9C3",			// F9C3
-"@F9C4",			// F9C4
-"@F9C5",			// F9C5
-"@F9C6",			// F9C6
-"@F9C7",			// F9C7
-"@F9C8",			// F9C8
-"@F9C9",			// F9C9
-"@F9CA",			// F9CA
-"@F9CB",			// F9CB
-"@F9CC",			// F9CC
-"@F9CD",			// F9CD
-"@F9CE",			// F9CE
-"@F9CF",			// F9CF
+"_ClrVram",				// F9C0
+"_ClrScreen",			// F9C1
+"_DispVram",			// F9C2
+"_Contrast ",			// F9C3
+"_Pixel ",				// F9C4
+"_Point ",				// F9C5
+"_PixelTest(",			// F9C6
+"_Line ",				// F9C7
+"_Horizontal ",			// F9C8
+"_Vertical ",			// F9C9
+"_Rectangle ",			// F9CA
+"_Polygon ",			// F9CB
+"_FillPolygon ",		// F9CC
+"_Circle ",				// F9CD
+"_FillCircle ",			// F9CE
+"_Elips ",				// F9CF
 
-"@F9D0",			// F9D0
-"@F9D1",			// F9D1
-"@F9D2",			// F9D2
-"@F9D3",			// F9D3
-"@F9D4",			// F9D4
-"@F9D5",			// F9D5
-"@F9D6",			// F9D6
-"@F9D7",			// F9D7
+"_FillElips ",				// F9D0
+"_ElipsInRct ",			// F9D1
+"_FElipsInRct ",		// F9D2
+"_Hscroll ",			// F9D3
+"_Vscroll ",			// F9D4
+"_Bmp ",				// F9D5
+"_Bmp8 ",				// F9D6
+"_Bmp16 ",				// F9D7
 "@F9D8",			// F9D8
 "@F9D9",			// F9D9
 "@F9DA",			// F9DA

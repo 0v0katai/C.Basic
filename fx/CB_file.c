@@ -335,7 +335,8 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_DISPN( 5," \xE6\x9E ");
 				break;
 			case 1:
-				Fkey_dispN( 0,"Text");
+				strcpy(buffer,files[index].filename);
+				if ( (strcmp(buffer + strlen(buffer) - 4, ".g1m") == 0 ) ) Fkey_dispN( 0,">txt"); else Fkey_dispN( 0,">g1m");
 				Fkey_dispR( 1,"REN");
 //				Fkey_Clear( 2 );
 //				Fkey_Clear( 3 );
@@ -468,7 +469,10 @@ unsigned int Explorer( int size, char *folder )
 				} while ( files[index].filesize == FOLDER_SEPALATOR ) ;
 				break;
 			case KEY_CTRL_EXE:
-				if ( filemode != 0 ) break;
+//				if ( filemode != 0 ) break;
+				key=FileCMD_RUN;
+				cont =0 ;
+				break;
 			case KEY_CTRL_F1:	// run
 				if ( nofile ) break;
 				switch ( filemode ) {
@@ -1130,6 +1134,9 @@ int LoadProgfile( char *fname, int editsize ) {
 	ProgNo=0;
 	ExecPtr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
+
+	PP_ReplaceCode( filebase + 0x56 );	//
+	ExecPtr=0;
 	
 	return 0; // ok
 }
@@ -1862,7 +1869,7 @@ int PP_Search_IfEnd( char *SRC ){
 				} else
 				if ( c == 0x03 ) return 1 ;	// IfEnd
 				break ;
-			case 0x7F:	// 
+			case 0x0000007F:	// 
 			case 0xFFFFFFF9:	// 
 			case 0xFFFFFFE5:	// 
 			case 0xFFFFFFE6:	// 
@@ -1874,11 +1881,45 @@ int PP_Search_IfEnd( char *SRC ){
 	}
 	return 0;
 }
+void PP_ReplaceCode( char *SRC ){
+	int c,i;
+	while (1){
+		c=SRC[ExecPtr++];
+		switch ( c ) {
+			case 0x00:	// <EOF>
+				ExecPtr--;
+				return ;
+			case 0x0000007F:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				ExecPtr++;
+				break;
+			case 0xFFFFFFF7:	// 
+				c=SRC[ExecPtr++];
+				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
+				else
+				if ( c==0x4F ) SRC[ExecPtr-1]=0x3D;	// DotTrim(  F74F -> F73D
+				break;
+			case 0xFFFFFFF9:	// 
+				c=SRC[ExecPtr++];
+				if ( c==0x4B ) { 
+					SRC[ExecPtr-2]=0xFFFFFFF7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
+				else
+				if ( c==0x3E ) SRC[ExecPtr-1]=0x43;	// Sprintf(  F93E -> F943
+				break;				
+		}
+	}
+	return ;
+}
 
 void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
 	int c=1,i;
 	int execptr=ExecPtr;
 
+	ExecPtr=0;
+	PP_ReplaceCode( SRC );
 	ErrorNo=0;
 	ExecPtr=0;
 	if ( CheckIfEnd ) PP_Search_IfEnd(SRC);
@@ -1992,27 +2033,28 @@ int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
 
+/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2045,5 +2087,4 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 */

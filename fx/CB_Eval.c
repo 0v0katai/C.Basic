@@ -1,9 +1,9 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series  v0.90
+ Casio Basic RUNTIME library for fx-9860G series  v1.00
 
- copyright(c)2015 by sentaro21
+ copyright(c)2015/2016/2017 by sentaro21
  e-mail sentaro21@pm.matrix.jp
 
 ===============================================================================
@@ -26,6 +26,7 @@
 #include "CB_error.h"
 #include "CB_Matrix.h"
 #include "CB_Str.h"
+#include "CB_MonochromeLib.h"
 
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> double
@@ -324,47 +325,6 @@ double EvalsubTop( char *SRC ) {	// eval 1
 //int EvalObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
-/*
-int lastrandom=0x12345678;
-unsigned int random( int seed  ){
-    if (seed) lastrandom=seed;
-    lastrandom = ( 0x41C64E6D*lastrandom ) + 0x3039; // + RTC_GetTicks();
-    return ( ( lastrandom >> 16 ) & 0xFFFF );
-}
-*/
-
-/*
-#define floor2 floor2
-double floor2( double x ) {
-	double result;
-	unsigned char *row;
-	int tmp,exp;
-	int i,j,bt;
-	unsigned char *ptr;
-
-	ptr=(unsigned char *)(&x);
-	row=(unsigned char *)(&result);
-	result=x;
-
-	tmp= ( (row[0]&0x7f)<<4 ) + ( (row[1]&0xf0)>>4 ) ;
-	exp=tmp-1023; // 
-	if ( ( 0 <= exp ) && ( exp <= 51 ) ) {
-		tmp=52-exp;
-		i=7; j=0; bt=0xFE;
-		while ( tmp ) {
-			if (tmp>7) {
-				 tmp-=8; row[i]=0; i--;
-			} else {
-				row[i]&=bt;
-				bt=bt<<1;
-				j++;
-				tmp--;
-			}
-		}
-	}
-	return ( result ); 
-}
-*/
 
 double frac( double x ) {
 	double sign=1,tmp,d;
@@ -487,7 +447,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 		result = - Evalsub1( SRC );
 		return result;
 	}
-	if ( ( 'A' <= c )&&( c <= 'Z' ) )  {
+	if ( ( 'A'<=c )&&( c<='Z' ) )  {
 			reg=c-'A';
 			c=SRC[ExecPtr];
 			if ( c=='%' ) { ExecPtr++; return REGINT[reg] ; }
@@ -500,14 +460,14 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			if ( c=='#' ) { ExecPtr++; return REG[reg] ; }
 			if ( CB_INT) return REGINT[reg] ; else return REG[reg] ;
 	}
-	if ( ( 'a' <= c )&&( c <= 'z' ) )  {
+	if ( ( 'a'<=c )&&( c<='z' ) )  {
 			reg=c-'a';
 			c=SRC[ExecPtr];
 			if ( c=='%' ) { ExecPtr++; return LocalInt[reg][0] ; }
 			else
-			if ( c=='[' ) goto Matrix;
+			if ( c=='[' ) { reg+=('a'-'A'); goto Matrix; }
 			else
-			if ( ( '0'<=c )&&( c<='9' ) ) {
+			if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
 				Matrix1:
 					ExecPtr++;
 					dimA=c-'0';
@@ -595,7 +555,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			} else if ( c == 0xFFFFFFF0 ) {	// GraphY
 					reg=defaultGraphAry;
 					dimA=CB_EvalInt( SRC );;
-					if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+					if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
 					result=CB_EvalStrDBL( MatrixPtr( reg, dimA, 1 ) );
 					return result ;
 					
@@ -637,6 +597,10 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					MatrixOprandreg( SRC, &reg );
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return MatAry[reg].SizeB;
+			} else if ( c == 0x5B ) {	// MatBase( Mat A )
+					MatrixOprandreg( SRC, &reg );
+					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					return MatAry[reg].Base;
 			} else ExecPtr--;	// error
 			break;
 			
@@ -838,6 +802,12 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			return result ;
 		case 0xFFFFFFF9:	// F9..
 			c = SRC[ExecPtr++];
+			if ( c == 0x56 ) {	// M_PixelTest(
+					return CB_ML_PixelTest( SRC );
+			} else
+//			if ( c == 0x53 ) {	// M_Contrast(
+//					return CB_ML_GetContrast( SRC );
+//			} else
 			if ( c == 0x31 ) {	// StrLen(
 					return CB_StrLen( SRC );
 			} else
@@ -1255,121 +1225,6 @@ double EvalsubTop14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 }
 */
 
-
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-/*
-double CB_BinaryEval( char *SRC ) {	// eval 2
-	int c,op;
-	int reg,mptr,opPtr;
-	int dimA,dimB;
-	double src,dst;
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	
-	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='%' ) {
-			ExecPtr++;
-			src = REGINT[reg] ;
-		} else {
-			if ( c=='#' ) ExecPtr++;
-			src = REG[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-			MatrixOprand( SRC, &reg, &dimA, &dimB );
-			if ( ErrorNo ) return ; // error
-			src = ReadMatrix( reg, dimA, dimB );
-	} else  src = Evalsub1(SRC);
-
-	opPtr=ExecPtr;
-	op=SRC[ExecPtr++];	
-	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='%' ) {
-			ExecPtr++;
-			dst = REGINT[reg] ;
-		} else {
-			if ( c=='#' ) ExecPtr++;
-			dst = REG[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-			MatrixOprand( SRC, &reg, &dimA, &dimB );
-			if ( ErrorNo ) return ; // error
-			dst = ReadMatrix( reg, dimA, dimB );
-	} else  dst = Evalsub1(SRC);
-
-//	ExecPtr++;
-	switch ( op ) {
-			case 0xFFFFFF89 :		// +
-				return src + dst;
-			case 0xFFFFFF99 :		// -
-				return src - dst;
-			case 0xFFFFFFA9 :		// ~
-				return src * dst;
-			case 0xFFFFFFB9 :		// €
-				if ( dst == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				return src / dst;
-			case '=' :	// =
-				return src == dst;
-			case '>' :	// >
-				return src >  dst;
-			case '<' :	// <
-				return src <  dst;
-			case 0x11 :	// !=
-				return src != dst;
-			case 0x12 :	// >=
-				return src >= dst;
-			case 0x10 :	// <=
-				return src <= dst;
-			case 0xFFFFFFB0 :	// And
-				return (int)src & (int)dst;
-			case 0xFFFFFFB1 :	// Or
-				return (int)src | (int)dst;
-			default:
-				{ ErrorNo=SyntaxERR; ErrorPtr=opPtr; return; }  // Syntax error
-				break;
-	}
-}
-
-double CB_UnaryEval( char *SRC ) {	// eval 1
-	int c,op;
-	int reg,mptr,opPtr;
-	int dimA,dimB;
-	double src,dst;
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	
-	c=SRC[ExecPtr];
-	if ( ( 'A'<=c )&&( c<='z' ) ) {
-		ExecPtr++;
-		reg=c-'A';
-		c=SRC[ExecPtr];
-		if ( c=='%' ) {
-			ExecPtr++;
-			return REGINT[reg] ;
-		} else {
-			if ( c=='#' ) ExecPtr++;
-			return REG[reg] ;
-		}
-	} else 
-	if ( c==0x7F ) {
-			MatrixOprand( SRC, &reg, &dimA, &dimB );
-			if ( ErrorNo ) return ; // error
-			return ReadMatrix( reg, dimA, dimB );
-	} else  return Evalsub1(SRC);
-}
-*/
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

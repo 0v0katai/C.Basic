@@ -32,6 +32,7 @@
 #include "CBI_interpreter.h"
 #include "CB_error.h"
 #include "fx_syscall.h"
+#include "CB_MonochromeLib.h"
 
 //-----------------------------------------------------------------------------
 // Casio Basic inside
@@ -438,6 +439,11 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_DotLife(SRC);
 						dspflag=0;
 						break;
+					case 0x3B:			// DotPut(Z,x,y)
+						CB_DotPut(SRC);
+						dspflag=0;
+						UseGraphic=99;
+						break;
 					case 0xFFFFFFE1:	// Rect
 						CB_Rect(SRC);
 						dspflag=0;
@@ -571,30 +577,33 @@ int CB_interpreter_sub( char *SRC ) {
 				
 			case 0xFFFFFFF9:	// F9
 				c=SRC[ExecPtr++];
+				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) ) { CB_ML_command( SRC, c ); break; }
+				else
+				if ( ( 0x34 <= c ) && ( c <= 0x37 ) )  goto strjp;
+				else
+				if ( ( 0x39 <= c ) && ( c <= 0x43 ) )  goto strjp;
 				switch ( c ) {
 					case 0x30:	// StrJoin(
-					case 0x34:	// StrLeft(
-					case 0x35:	// StrRight(
-					case 0x36:	// StrMid(
-					case 0x37:	// Exp->Str(
-					case 0x39:	// StrUpr(
-					case 0x3A:	// StrLwr(
-					case 0x3B:	// StrInv(
-					case 0x3C:	// StrShift(
-					case 0x3D:	// StrRotate(
-					case 0x3E:	// Sprintf(
-					case 0x3F:	// Str
-					case 0x40:	// Str(
-					case 0x41:	// DATE
-					case 0x42:	// TIME
+//					case 0x34:	// StrLeft(
+//					case 0x35:	// StrRight(
+//					case 0x36:	// StrMid(
+//					case 0x37:	// Exp->Str(
+//					case 0x39:	// StrUpr(
+//					case 0x3A:	// StrLwr(
+//					case 0x3B:	// StrInv(
+//					case 0x3C:	// StrShift(
+//					case 0x3D:	// StrRotate(
+//					case 0x3F:	// Str
+//					case 0x40:	// Str(
+//					case 0x41:	// DATE
+//					case 0x42:	// TIME
+//					case 0x43:	// Sprintf(
 					strjp:
 						ExecPtr-=2;
 						CB_Str(SRC) ;
 						dspflag=0;
 						break;
-					case 0x4B:	// DotPut(Z,x,y)
-						CB_DotPut(SRC);
-						break;
+
 					case 0x05:	// >DMS
 						dspflag=1;
 						CB_StrDMS(SRC);
@@ -813,8 +822,8 @@ int CB_interpreter( char *SRC ) {
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_quot( char *SRC ){ // skip "..."
@@ -1560,13 +1569,13 @@ void CB_Dsz( char *SRC ) { //	Dsz
 			CB_CurrentValue = LocalInt[reg][0] ;
 		} else
 		if ( c=='[' ) { 
-			ExecPtr++;
+			ExecPtr++; reg+=('a'-'A');
 			MatOprand2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else
 		if ( ( '0'<=c )&&( c<='9' ) ) {
 			ExecPtr++;
-			dimA=c-'0';
+			dimA=c-'0'; reg+=('a'-'A');
 			MatOprand1( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
@@ -1647,13 +1656,13 @@ void CB_Isz( char *SRC ) { //	Isz
 			CB_CurrentValue = LocalInt[reg][0] ;
 		} else
 		if ( c=='[' ) { 
-			ExecPtr++;
-			MatOprand2( SRC, reg, &dimA, &dimB );
+			ExecPtr++; reg+=('a'-'A');
+			MatOprand2( SRC, reg , &dimA, &dimB );
 			goto Matrix;
 		} else
 		if ( ( '0'<=c )&&( c<='9' ) ) {
 			ExecPtr++;
-			dimA=c-'0';
+			dimA=c-'0'; reg+=('a'-'A');
 			MatOprand1( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
@@ -1752,9 +1761,9 @@ void CB_Store( char *SRC ){	// ->
 			c=SRC[ExecPtr];
 			if ( c=='%' ) { ExecPtr++;  LocalInt[reg][0] = CB_CurrentValue ; }
 			else
-			if ( c=='[' ) goto Matrix;
+			if ( c=='[' ) { reg+=('a'-'A'); goto Matrix; }
 			else
-			if ( ( '0'<=c )&&( c<='9' ) ) {
+			if ( ( '0'<=c )&&( c<='9' ) ) { reg+=('a'-'A');
 				ExecPtr++;
 				dimA=c-'0';
 				MatOprand1( SRC, reg, &dimA, &dimB );
@@ -1931,13 +1940,13 @@ int  CB_Input( char *SRC ){
 				DefaultValue = LocalDbl[reg][0] ;
 			} else { flagint=1; 
 				if ( c=='[' ) {
-					ExecPtr+=2;
+					ExecPtr+=2; reg+=('a'-'A');
 					MatOprandInt2( SRC, reg, &dimA, &dimB );
 					goto Matrix;
 				} else
 				if ( ( '0'<=c )&&( c<='9' ) ) {
 					ExecPtr++;
-					dimA=c-'0';
+					dimA=c-'0'; reg+=('a'-'A');
 					MatOprand1( SRC, reg, &dimA, &dimB );
 					goto Matrix;
 				} else DefaultValue = LocalInt[reg][0] ;
@@ -1947,13 +1956,13 @@ int  CB_Input( char *SRC ){
 				DefaultValue = LocalInt[reg][0] ;
 			} else {
 				if ( c=='[' ) {
-					ExecPtr+=2;
+					ExecPtr+=2; reg+=('a'-'A');
 					MatOprand2( SRC, reg, &dimA, &dimB );
 					goto Matrix;
 				} else
 				if ( ( '0'<=c )&&( c<='9' ) ) {
 					ExecPtr++;
-					dimA=c-'0';
+					dimA=c-'0'; reg+=('a'-'A');
 					MatOprand1( SRC, reg, &dimA, &dimB );
 					goto Matrix;
 				} else DefaultValue = LocalDbl[reg][0] ;
@@ -2001,7 +2010,7 @@ int  CB_Input( char *SRC ){
 			reg=defaultGraphAry;
 			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
 			dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-			if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+			if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 			dimB=1;
 			flag=3;
 			ExecPtr=bptr;
@@ -2014,7 +2023,7 @@ int  CB_Input( char *SRC ){
 			reg=defaultStrAry;
 			if ( MatAry[reg].SizeA == 0 ) { CB_Error(MemoryERR); return 0; }	// Memory error
 			dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-			if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
+			if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 			dimB=1;
 			flag=3;
 			ExecPtr=bptr;
@@ -2301,8 +2310,9 @@ void CB_Gosub( char *SRC, short *StackGotoAdrs, short *StackGosubAdrs ){ //	Gosu
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
