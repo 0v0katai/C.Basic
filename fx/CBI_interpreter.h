@@ -37,7 +37,6 @@ extern int  REGINT[59];
 extern int CBint_CurrentValue;	// Ans
 
 //------------------------------------------------------------------------------
-int MatOprandInt( char *SRC, int *reg);
 void CBint_Store( char *SRC );
 void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );
 void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct );

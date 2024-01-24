@@ -26,6 +26,31 @@
 #include "CBI_interpreter.h"
 #include "CB_error.h"
 
+//-----------------------------------------------------------------------------
+void BdispSetPointVRAM2( int px, int py, int mode){
+	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
+	int m=(128>>(px&0x7));
+	switch ( mode ) {
+		case 0:	// Clear
+			*VRAM &= ~m;
+			break;
+		case 1:	// set
+			*VRAM |= m ;
+			break;
+		case 2:	// xor
+			*VRAM ^= m ;
+			
+			break;
+	}
+}
+//-----------------------------------------------------------------------------
+int BdispGetPointVRAM2( int px, int py){
+	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
+	int m=(128>>(px&0x7));
+	if ( ( (*VRAM) & m ) == 0 ) return 0; 
+	return 1;
+}
+
 //------------------------------------------------------------------------------
 /*
 void DrawBusy()		// BusyInd=0: running indicator off,  BusyInd=1: on
@@ -47,7 +72,7 @@ void DrawBusy()		// BusyInd=0: running indicator off,  BusyInd=1: on
 */
 
 //-----------------------------------------------------------------------------
-int skip_count=0;
+unsigned int skip_count=0;
 
 void Bdisp_PutDisp_DD_DrawBusy() {
 	Bdisp_PutDisp_DD();
@@ -55,7 +80,7 @@ void Bdisp_PutDisp_DD_DrawBusy() {
 //	DrawBusy();
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip() {
-	int t=RTC_GetTicks();
+	unsigned int t=RTC_GetTicks();
 	if ( abs(t-skip_count)>2 ) { skip_count=t;
 		Bdisp_PutDisp_DD_DrawBusy();
 	}
@@ -104,34 +129,6 @@ int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(
 //	if ( Ymax <  Ymin )		*py =       (y-Ymax)/-Ydot +1.5 ;
 	if ( (*px<1) || (*px>127) || (*py<1) || (*py> 63) ) { return -1; }	// 
 	return 0;
-}
-
-//-----------------------------------------------------------------------------
-void BdispSetPointVRAM2( int px, int py, int mode){
-	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
-	int m=px&0x7;
-	char dot[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
-	switch ( mode ) {
-		case 0:	// Clear
-			*VRAM &= ~dot[m];
-			break;
-		case 1:	// set
-			*VRAM |= dot[m];
-			break;
-		case 2:	// xor
-			*VRAM ^= dot[m];
-			
-			break;
-	}
-}
-//-----------------------------------------------------------------------------
-int BdispGetPointVRAM2( int px, int py){
-	unsigned char *VRAM=PictAry[0]+(px>>3)+(py<<4);
-	int m=px&0x7;
-	char dot[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
-
-	if ( ( (*VRAM) & (dot[m]) ) == 0 ) return 0; 
-	return 1;
 }
 
 //-----------------------------------------------------------------------------
