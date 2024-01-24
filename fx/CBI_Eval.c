@@ -178,8 +178,7 @@ void MatOprandInt2( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
   L2:	(*dimB) = (EvalIntsubTop( SRC ));
 	}
 	if ( ( (*dimB) < base ) || ( MatAry[reg].SizeB-1+base < (*dimB) ) ) { CB_Error(DimensionERR); return ; }	// Dimension error
-	if ( SRC[ExecPtr] != ']' ) { CB_Error(SyntaxERR); return ; }	// Syntax error
-	ExecPtr++ ;
+	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 }
 
 //-----------------------------------------------------------------------------

@@ -443,7 +443,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 		else
 		if ( ( 0x34 <= c ) && ( c <= 0x37 ) ) return c;
 		else
-		if ( ( 0x39 <= c ) && ( c <= 0x40 ) ) return c;
+		if ( ( 0x39 <= c ) && ( c <= 0x42 ) ) return c;
 	} else
 	if ( c == 0x7F ) {
 		c=SRC[execptr+1];
@@ -540,6 +540,14 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			ExecPtr+=2;
 			(*maxlen)=CB_EvalToStr( SRC );
 			return CB_CurrentStr;
+		case 0x41:	// DATE
+			ExecPtr+=2;
+			(*maxlen)=CB_DateToStr();
+			return CB_CurrentStr;
+		case 0x42:	// TIME
+			ExecPtr+=2;
+			(*maxlen)=CB_TimeToStr();
+			return CB_CurrentStr;
 		default:
 			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
 	}
@@ -574,7 +582,7 @@ char* CB_GetOpStr( char *SRC, int *maxoplen  ) {	// Get opcode String
 }
 
 //----------------------------------------------------------------------------------------------
-void StorStrMat( char *SRC ) {	// ->&Mat A
+void StorStrMat( char *SRC ) {	// "String" -> &Mat A
 	int reg,dimA,dimB;
 	char *MatAryC;
 	MatrixOprand( SRC, &reg, &dimA, &dimB );
@@ -585,7 +593,7 @@ void StorStrMat( char *SRC ) {	// ->&Mat A
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
-void StorStrStr( char *SRC ) {	// ->Sto 1-20
+void StorStrStr( char *SRC ) {	// "String" -> Sto 1-20
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultStrAry;
@@ -599,7 +607,7 @@ void StorStrStr( char *SRC ) {	// ->Sto 1-20
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
-void StorStrGraphY( char *SRC ) {	// GraphY 1-5
+void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultGraphAry;
@@ -613,6 +621,50 @@ void StorStrGraphY( char *SRC ) {	// GraphY 1-5
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
+void StorDATE( char *buffer ) {	// "2017/01/17" -> DATE
+	int a,hour,min,sec;
+	unsigned char datestr[8];
+//	if ( ( buffer[4] != '/' ) || ( buffer[7] != '/' ) ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	a = GetTime();
+	hour  = ( a >> 16 ) & 0xFF ;
+	min   = ( a >>  8 ) & 0xFF ;
+	sec   = ( a       ) & 0xFF ;
+	datestr[0]=((buffer[0]-'0')<<4) + buffer[1]-'0';	// year1
+	datestr[1]=((buffer[2]-'0')<<4) + buffer[3]-'0';	// year1
+	datestr[2]=((buffer[5]-'0')<<4) + buffer[6]-'0';	// min
+	datestr[3]=((buffer[8]-'0')<<4) + buffer[9]-'0';	// sec
+	datestr[4]=hour;
+	datestr[5]=min;
+	datestr[6]=sec;
+	datestr[7]=0;
+
+	RTC_SetDateTime( datestr ) ;
+	CB_TicksStart=RTC_GetTicks();	// init
+}
+
+void StorTIME( char *buffer ) {	// "23:59:59" -> TIME
+	int a,year1,year2,month,day;
+	unsigned char timestr[8];
+//	if ( ( buffer[2] != ':' ) || ( buffer[5] != ':' ) ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	a = GetDate();
+	year1 = ( a >> 24 ) & 0xFF ;
+	year2 = ( a >> 16 ) & 0xFF ;
+	month = ( a >>  8 ) & 0xFF ;
+	day   = ( a       ) & 0xFF ;
+	timestr[0]=year1;
+	timestr[1]=year2;
+	timestr[2]=month;
+	timestr[3]=day;
+	timestr[4]=((buffer[0]-'0')<<4) + buffer[1]-'0';	// hour
+	timestr[5]=((buffer[3]-'0')<<4) + buffer[4]-'0';	// min
+	timestr[6]=((buffer[6]-'0')<<4) + buffer[7]-'0';	// sec
+	timestr[7]=0;
+
+	RTC_SetDateTime( timestr ) ;
+	CB_TicksStart=RTC_GetTicks();	// init
+}
+
+
 void CB_StorStr( char *SRC ) {
 	int c;
 	c=CB_IsStr( SRC, ExecPtr );
@@ -624,6 +676,14 @@ void CB_StorStr( char *SRC ) {
 		case 0x3F:	// Str 1-20
 			ExecPtr+=2;
 			StorStrStr( SRC ) ;
+			break;
+		case 0x41:	// DATE
+			ExecPtr+=2;
+			StorDATE( CB_CurrentStr ) ;
+			break;
+		case 0x42:	// TIME
+			ExecPtr+=2;
+			StorTIME( CB_CurrentStr ) ;
 			break;
 		case 0xFFFFFFF0:	// GraphY
 			ExecPtr+=2;
@@ -939,9 +999,19 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 			type[i]=2;
 		} else {	// expression
 			c=SRC[ExecPtr];
-			if ( c=='#' ) { ExecPtr++; type[i]=0; dblval[i]=EvalsubTop( SRC ); }
-			else 
-			if ( c=='%' ) { ExecPtr++; type[i]=1; intval[i]=CB_EvalInt( SRC ); }
+			if ( CB_INT ) { 
+				if ( c=='#' ) { type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
+				else {
+				if ( c=='%' ) ExecPtr++;
+				type[i]=1; intval[i]=CB_EvalInt( SRC );
+				}
+			} else	{
+				if ( c=='%' ) { ExecPtr++; type[i]=1; intval[i]=CB_EvalInt( SRC ); }
+				else {
+				if ( c=='#' ) ExecPtr++;
+				type[i]=0; dblval[i]=CB_EvalDbl( SRC );
+				}
+			}
 		}
 		c=SRC[ExecPtr];
 		if ( c != ',' ) break;
@@ -1054,6 +1124,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 }
 
 
+//----------------------------------------------------------------------------------------------
 int CB_StrDMS( char *SRC ) {
 	double a,b,c,d;
 	int i=0,j=3,f=1;
@@ -1094,6 +1165,85 @@ int CB_StrDMS( char *SRC ) {
 	CB_StrPrint(SRC, 23-(10+i+j) );
 }
 
+int DateToStr( char *buffer) {	// "2017/01/17 TUE"
+	int a, y1,y2,y3,y4, m1,m2, d1,d2;
+	char weekStr[7][4]={"SAT","SUN","MON","TUE","WED","THU","FRI"};
+	int	y,m,d,w,C,Y,r;
+
+	a = GetDate();
+	y1 = ( a >> 28 ) & 0xF ;
+	y2 = ( a >> 24 ) & 0xF ;
+	y3 = ( a >> 20 ) & 0xF ;
+	y4 = ( a >> 16 ) & 0xF ;
+	m1 = ( a >> 12 ) & 0xF ;
+	m2 = ( a >>  8 ) & 0xF ;
+	d1 = ( a >>  4 ) & 0xF ;
+	d2 =   a         & 0xF ;
+
+	y = y1*1000+y2*100+y3*10+y4;	// days of the week calculation (Zeller's congruence)
+	m = m1*10+m2;
+	d = d1*10+d2;
+	if ( m<=2 ) { m+=12; y--; }
+	
+	C = y / 100;
+	Y = y % 100 ;
+	if ( y > 1582 ) r=5*C+(C/4); else r=6*C+5;
+	w = ( d + (26*(m+1))/10 + Y + (Y/4) + r ) % 7;
+	
+	buffer[0]=y1+'0';
+	buffer[1]=y2+'0';
+	buffer[2]=y3+'0';
+	buffer[3]=y4+'0';
+	buffer[4]='/';
+	buffer[5]=m1+'0';
+	buffer[6]=m2+'0';
+	buffer[7]='/';
+	buffer[8]=d1+'0';
+	buffer[9]=d2+'0';
+	buffer[10]=' ';
+	buffer[11]=weekStr[w][0];
+	buffer[12]=weekStr[w][1];
+	buffer[13]=weekStr[w][2];
+	buffer[14]='\0';
+
+	return 14;
+}
+
+int TimeToStr( char *buffer ) {	// "23:59:59"
+	int a, h1,h2,  m1,m2, s1,s2;
+	
+	a = GetTime();
+	h1 = ( a >> 20 ) & 0xF ;
+	h2 = ( a >> 16 ) & 0xF ;
+	m1 = ( a >> 12 ) & 0xF ;
+	m2 = ( a >>  8 ) & 0xF ;
+	s1 = ( a >>  4 ) & 0xF ;
+	s2 =   a         & 0xF ;
+
+	buffer[0]=h1+'0';
+	buffer[1]=h2+'0';
+	buffer[2]=':';
+	buffer[3]=m1+'0';
+	buffer[4]=m2+'0';
+	buffer[5]=':';
+	buffer[6]=s1+'0';
+	buffer[7]=s2+'0';
+	buffer[8]='\0';
+
+	return 8 ;
+}
+
+int CB_DateToStr() {	// "2017/01/17 TUE"
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	DateToStr( CB_CurrentStr );
+	return CB_StrBufferMax-1;
+}
+
+int CB_TimeToStr() {	// "23:59:59"
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	TimeToStr( CB_CurrentStr );
+	return CB_StrBufferMax-1;
+}
 
 
 //----------------------------------------------------------------------------------------------

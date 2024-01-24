@@ -2,9 +2,11 @@
 
  .SECTION P,CODE
  .EXPORT _RTC_GetTicks
+ .EXPORT _RTC_SetDateTime
  .EXPORT _PutKey
  .EXPORT _Keyboard_ClrBuffer
- .EXPORT _CatalogDialog
+ .EXPORT _Keyboard_GetKeyWait
+; .EXPORT _CatalogDialog
  .EXPORT _HourGlass
  .EXPORT _Cursor_SetPosition
  .EXPORT _Cursor_SetFlashStyle
@@ -60,6 +62,12 @@ _RTC_GetTicks:
 	jmp @r1
 	nop
 
+_RTC_SetDateTime:
+	mov.l SYSCALL,r1
+	mov.l #H'23E,r0
+	jmp @r1
+	nop
+
 _PutKey:
 	mov.l SYSCALL,r1
 	mov.l #H'910,r0
@@ -72,11 +80,17 @@ _Keyboard_ClrBuffer:
 	jmp @r1
 	nop
 
-_CatalogDialog:
+_Keyboard_GetKeyWait:
 	mov.l SYSCALL,r1
-	mov.l #H'AE8,r0
+	mov.l #H'247,r0
 	jmp @r1
 	nop
+
+;_CatalogDialog:
+;	mov.l SYSCALL,r1
+;	mov.l #H'AE8,r0
+;	jmp @r1
+;	nop
 
 _HourGlass:
 	mov.l SYSCALL,r1

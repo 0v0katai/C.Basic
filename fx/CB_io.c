@@ -366,13 +366,13 @@ void MSGpop(void){
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int IObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int IObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int IObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int IObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

@@ -585,6 +585,8 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x3E:	// Sprintf(
 					case 0x3F:	// Str
 					case 0x40:	// Str(
+					case 0x41:	// DATE
+					case 0x42:	// TIME
 					strjp:
 						ExecPtr-=2;
 						CB_Str(SRC) ;
@@ -702,7 +704,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case '?':	// ?
 				CB_Input(SRC);
-				CB_TicksStart=RTC_GetTicks();	// 
+				CB_TicksStart=RTC_GetTicks();	// init
 				dspflagtmp=2;
 //				if ( BreakPtr > 0 ) break;
 				c=SRC[ExecPtr++];
@@ -721,7 +723,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case 0x0C:	// disps
 				if ( CB_Disps(SRC,dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
-				CB_TicksStart=RTC_GetTicks();	// 
+				CB_TicksStart=RTC_GetTicks();	// init
 				c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
 				break;
 		
@@ -805,13 +807,13 @@ int CB_interpreter( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
@@ -1843,7 +1845,7 @@ int  CB_Input( char *SRC ){
 	if ( c==0x0E ) {	// ->
 		flag=0;
 		c=CB_IsStr( SRC, ExecPtr+1 );
-		if ( ( c==2 ) || ( c==0x3F ) ) flag=2;
+		if ( ( c==2 ) || ( c==0x3F ) || ( c==0x41 ) || ( c==0x42 ) ) flag=2;
 	} else
 	if ( ( 'A' <= c ) && ( c <= 'Z' ) ) {
 		flag=1;
@@ -1956,6 +1958,16 @@ int  CB_Input( char *SRC ){
 			flag=3;
 			ExecPtr=bptr;
 		} else
+		if ( c == 0x41 ) {	// DATE
+			ExecPtr+=2;
+			flag=4;
+			ExecPtr=bptr;
+		} else
+		if ( c == 0x42 ) {	// TIME
+			ExecPtr+=2;
+			flag=5;
+			ExecPtr=bptr;
+		} else
 		if ( c == 0x21 ) {	// Xdot
 				DefaultValue = Xdot ;
 				flag=1;
@@ -1972,13 +1984,13 @@ int  CB_Input( char *SRC ){
 	} else { CB_Error(SyntaxERR); return; }	// Syntax error
 
 	switch ( flag ) {
-		case 0:	// value
+		case 0:	// ? -> A value
 			CB_CurrentValue = InputNumD_CB( 1, CursorY, 21, 0 );
 			ErrorNo=0; // error cancel
 			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; return 0; }
 			CBint_CurrentValue = CB_CurrentValue ;
 			break;
-		case 1:	// value
+		case 1:	// ?A value
 			sprintGR(buffer, DefaultValue, 22-CursorX,RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
 			locate( CursorX, CursorY); Print((unsigned char*)buffer);
 			Scrl_Y();
@@ -1995,7 +2007,7 @@ int  CB_Input( char *SRC ){
 		case 2:	// ? -> str 
 			CB_CurrentStr=CB_StrBuffer[0];
 			CB_CurrentStr[0]='\0';
-			key=InputStr( 1, CursorY, CB_StrBufferMax-1,  CB_CurrentStr, ' ', REV_OFF);
+	Inpj1:	key=InputStr( 1, CursorY, CB_StrBufferMax-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
 			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return 0; }
 			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
@@ -2004,13 +2016,24 @@ int  CB_Input( char *SRC ){
 		case 3:	// ?&Mat  ?Str1-20
 			MatAryC=MatrixPtr( reg, dimA, dimB );
 			OpcodeStringToAsciiString(buffer, MatAryC, 31);
+			CB_CurrentStr=MatAryC;
 			CB_Print(CursorX, CursorY, (unsigned char*)buffer);
 			Scrl_Y();
-			CB_CurrentStr=MatAryC;
 			key=InputStr( 1, CursorY, MatAry[reg].SizeB-1,  CB_CurrentStr, ' ', REV_OFF);
 			ErrorNo=0; // error cancel
 			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  return 0; }
 			CB_StorStr( SRC );
+			break;
+		case 4:	// ?DATE
+			CB_DateToStr();
+			CB_CurrentStr[10]='\0';	// week cancel
+	Inpj2:	CB_Print(CursorX, CursorY, (unsigned char*)CB_CurrentStr);
+			Scrl_Y();
+			goto Inpj1;
+			break;
+		case 5:	// ?TIME
+			CB_TimeToStr();
+			goto Inpj2;
 			break;
 	}
 	Scrl_Y();
