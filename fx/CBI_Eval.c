@@ -427,6 +427,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					
 			} else if ( c == 0xFFFFFFF5 ) {	// IsExist(
 					return  CB_IsExist( SRC );
+//			} else if ( c == 0xFFFFFFF6 ) {	// Peek
+//					return  CB_Peek(SRC);
 			} else if ( c == 0x00 ) {	// Xmin
 					return Xmin;
 			} else if ( c == 0x01 ) {	// Xmax
@@ -514,6 +516,9 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result = Bdisp_GetPoint_VRAM(x, y) ;			// 
 					return result ;
+			} else
+			if ( c == 0xFFFFFFFB ) {	// Screen
+					return  ScreenMode;
 			} else
 			if ( c == 0xFFFFFFFE ) {	// BackLight
 				return	BackLight(-1);

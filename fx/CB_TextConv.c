@@ -479,7 +479,7 @@ const char ConvList7F00[][16]={
 "GraphYt",			// 7FF3
 "GraphX",			// 7FF4
 "IsExist(",				// 7FF5
-"", 				// 7FF6
+"Peek(", 				// 7FF6
 "", 				// 7FF7
 "", 				// 7FF8
 "", 				// 7FF9
@@ -753,13 +753,13 @@ const char ConvListF700[][17]={
 "@F7F2",			// F7F2
 "@F7F3",			// F7F3
 "@F7F4",			// F7F4
-"@F7F5",			// F7F5
-"@F7F6",			// F7F6
+"Call(",			// F7F5
+"Poke(",			// F7F6
 "",					// F7F7
 "@F7F8",			// F7F8
 "",					// F7F9
 "@F7FA",			// F7FA
-"@F7FB",			// F7FB
+"Screen",				// F7FB
 "PutDispDD",			// F7FC
 "FkeyMenu(",			// F7FD
 "BackLight ",			// F7FE

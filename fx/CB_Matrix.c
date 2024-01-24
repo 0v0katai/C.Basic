@@ -1516,6 +1516,79 @@ void CB_MatTrn( char *SRC ) { //	Trn Mat A
 }
 
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+/*
+int WordSizeSelect( char *SRC ) {
+	int c,d;
+	int WordSize=8;
+	c =SRC[ExecPtr];
+	if ( c=='.' ) {
+		c =SRC[++ExecPtr];
+		if ( ( c=='B' ) || ( c=='b' ) ) { ExecPtr++; WordSize= 8; }
+		if ( ( c=='W' ) || ( c=='w' ) ) { ExecPtr++; WordSize=16; }
+		if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; WordSize=32; }
+		if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; WordSize=64; }
+	}
+	return WordSize;
+}
+
+int CB_Peek( char *SRC ) {	// Peek(123456).w
+	int adrs=CB_EvalInt( SRC );
+	int wsize;
+	char *cptr;
+	short *sptr;
+	int *iptr;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	wsize=WordSizeSelect( SRC );
+	switch ( wsize ) {
+		case 32:
+			iptr=(int *)adrs;
+			return *iptr;
+		case 16:
+			sptr=(short *)adrs;
+			return *sptr;
+		default:
+			cptr=(char *)adrs;
+			return *cptr;
+	}
+}
+
+void CB_Poke( char *SRC ) {	// Poke(123456,88).w
+	int adrs=CB_EvalInt( SRC );
+	int data;
+	int wsize;
+	char *cptr;
+	short *sptr;
+	int *iptr;
+	if ( SRC[ExecPtr]==',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	ExecPtr++;
+	data=CB_EvalInt( SRC );
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	wsize=WordSizeSelect( SRC );
+	switch ( wsize ) {
+		case 32:
+			iptr=(int *)adrs;
+			*iptr=data;
+			break;
+		case 16:
+			sptr=(short *)adrs;
+			*sptr=data;
+			break;
+		default:
+			cptr=(char *)adrs;
+			*cptr=data;
+			break;
+	}
+}
+
+int CB_Call( char *SRC ) {	// Call(adrs,p1,p2,p3,p4)
+	int adrs=CB_EvalInt( SRC );
+	int *ptr;		
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	return 1;
+}
+*/
+//-----------------------------------------------------------------------------
 //int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------

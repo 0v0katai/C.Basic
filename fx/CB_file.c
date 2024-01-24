@@ -1297,7 +1297,7 @@ void SaveConfig(){
 	buffer[10]='9';
 	buffer[11]='n';
 
-	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=1-UseHiddenRAM;
+	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=UseHiddenRAM;
 	bufshort[ 9]=DrawType;			bufshort[ 8]=0;
 	bufshort[11]=Coord;				bufshort[10]=0;
 	bufshort[13]=Grid;				bufshort[12]=0;
@@ -1381,7 +1381,7 @@ void LoadConfig(){
 		 ( buffer[10]=='9' ) &&
 		 ( buffer[11]=='n' ) ) {
 									// load config & memory
-		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =1-bufshort[6];
+		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =bufshort[6];
 		DrawType      =bufshort[ 9];        
 		Coord         =bufshort[11];        
 		Grid          =bufshort[13];        
@@ -1853,8 +1853,8 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 
 //----------------------------------------------------------------------------------------------
 int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

@@ -480,6 +480,18 @@ int CB_interpreter_sub( char *SRC ) {
 						Skip_block(SRC);
 						dspflag=0;
 						break;
+//					case 0xFFFFFFF5:	// Call
+//						CB_Call(SRC);
+//						dspflag=0;
+//						break;
+//					case 0xFFFFFFF6:	// Poke
+//						CB_Poke(SRC);
+//						dspflag=0;
+//						break;
+					case 0xFFFFFFFB:	// Screen
+						CB_Screen(SRC);
+						dspflag=0;
+						break;
 					case 0xFFFFFFFC:	// PutDispDD
 						Bdisp_PutDisp_DD_DrawBusy();
 						dspflag=0;
@@ -535,8 +547,8 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_MatFill(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFE8:	// Dummy
-						goto strjp;
+//					case 0xFFFFFFE8:	// Dummy
+//						goto strjp;
 //					case 0x51:	// List
 //						dspflagtmp=CB_ListCalc(SRC);
 //						dspflag=0;
@@ -562,7 +574,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x3B:	// StrInv(
 					case 0x3C:	// StrShift(
 					case 0x3D:	// StrRotate(
-					case 0x3E:	// ToStr(
+//					case 0x3E:	// ToStr(
 					case 0x3F:	// Str
 					strjp:
 						ExecPtr-=2;
@@ -2223,9 +2235,33 @@ void CB_SelectGraphVRAM() {
 //	RestoreDisp(SAVEDISP_PAGE2);		// ------ RestoreDisp3 Graphic screen (NG: damage CATALOG key )
 	ScreenMode=1;	// Graphic mode
 }
-void CB_SelectGraphDD() {
-	CB_SelectGraphVRAM();
-	Bdisp_PutDisp_DD();
+//void CB_SelectGraphDD() {
+//	CB_SelectGraphVRAM();
+//	Bdisp_PutDisp_DD();
+//}
+
+void CB_Screen( char *SRC ){
+	int c;
+	c=SRC[ExecPtr++];
+	if ( c == '.' ) { c=SRC[ExecPtr++];
+		if ( ( c=='G' ) || ( c=='g' ) ) { CB_SelectGraphVRAM(); return; }	// Select Graphic Screen
+		if ( ( c=='T' ) || ( c=='t' ) ) { CB_SelectTextVRAM();  return; }	// Select Text Screen
+		{ ExecPtr--; CB_Error(SyntaxERR); return; }	// Syntax error
+	} else 
+	if ( ( c==0 ) || ( c==0x0D ) || ( c==0x0C ) || ( c==':' ) ) {
+			if ( ScreenMode == 0 )  { CB_SelectGraphVRAM(); return; }	// Select Graphic Screen
+			else					{ CB_SelectTextVRAM();  return; }	// Select Text Screen
+
+	} else { ExecPtr--;
+		switch ( CB_EvalInt( SRC ) ) {
+			case 0:
+				CB_SelectTextVRAM();	// Select Text Screen
+				break;
+			case 1:
+				CB_SelectGraphVRAM();	// Select Graphic Screen
+				break;
+		}
+	}
 }
 
 void Scrl_Y(){

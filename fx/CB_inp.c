@@ -549,6 +549,10 @@ const short oplistPRGM[]={
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
 		
+//		0xF7F5,	// Call
+//		0x7FF6,	// Peek(
+//		0xF7F6,	// Poke 
+		
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
 		0xF932,	// StrCmp(
@@ -565,6 +569,7 @@ const short oplistPRGM[]={
 		0xF93D,	// StrRotate(
 		0xF93E,	// Sprintf(
 		0xF93F,	// Str
+		
 		0};
 		
 const short oplistVARS[]={
@@ -638,6 +643,7 @@ const short oplistVARS[]={
 		0xF7E9,	// WriteGraph(
 		0xF7E1,	// Rect(
 		0xF7E2,	// FillRect(
+		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
 		0xF7FD, // FKey(
 		0xF7FE,	// BackLight
@@ -901,7 +907,6 @@ const short oplistCMD[]={
 		0x7F41,	// Trn 
 		0x7F47,	// Fill(
 		0x7FE9,	// CellSum(
-//		0x7F40,	// Mat	
 
 		
 		0xF70D,	// Break		1
@@ -940,8 +945,8 @@ const short oplistCMD[]={
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
 		0xF7FD, // FKey(
+		0xF7FB,	// Screen
 		0xF7FC,	// PutDispDD
-		0x25,	// %
 
 
 		0xF78C,	// SketchNormal
@@ -1260,6 +1265,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F5F, "Ticks" }, 
 	{ 0x7FB4, " Xor " }, 
 	{ 0x7FF5, "IsExist(" }, 
+//	{ 0x7FF6, "Peek(" }, 
 	{ 0xF717, "ACBreak" }, 
 	{ 0xF73F, "DotGet(" }, 
 	{ 0xF74F, "DotTrim(" }, 
@@ -1278,6 +1284,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7EF, "Load(" }, 
 	{ 0xF7F0, "DotShape(" }, 
 	{ 0xF7F1, "Local " }, 
+//	{ 0xF7F5, "Call " }, 
+//	{ 0xF7F6, "Poke(" }, 
+	{ 0xF7FB, "Screen" }, 
 	{ 0xF7FC, "PutDispDD" }, 
 	{ 0xF7FD, "FKeyMenu(" }, 
 	{ 0xF7FE, "BackLight " }, 

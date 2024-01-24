@@ -587,6 +587,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					
 			} else if ( c == 0xFFFFFFF5 ) {	// IsExist(
 					return  CB_IsExist( SRC );
+//			} else if ( c == 0xFFFFFFF6 ) {	// Peek
+//					return  CB_Peek( SRC );
 			} else if ( c == 0x00 ) {	// Xmin
 					return Xmin;
 			} else if ( c == 0x01 ) {	// Xmax
@@ -652,6 +654,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result = PxlTest(y, x) ;			// 
 					return result ;
+			} else
+			if ( c == 0xFFFFFFFB ) {	// Screen
+					return  ScreenMode;
 			} else
 			if ( c == 0xFFFFFFFE ) {	// BackLight
 				return	BackLight(-1);
@@ -845,7 +850,7 @@ double DmsToDec( char *SRC, double h ) {
 }
 //-----------------------------------------------------------------------------
 int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
