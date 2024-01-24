@@ -478,7 +478,7 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 //-----------------------------------------------------------------------------
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int c;
-	int quotflag=0;
+	int quotflag=( ExecPtr==1 );
 	int ptr=0;
 	c=SRC[ExecPtr-2];
 	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) || ( c==0xFFFFFF89 ) ) quotflag=1;
@@ -2016,8 +2016,8 @@ int CB_TimeToStr() {	// "23:59:59"
 
 
 //----------------------------------------------------------------------------------------------
-int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
