@@ -30,8 +30,8 @@ extern char IsSH3;	//	1:SH3   0:SH4
 #define FKeyNo6	5
 
 //-----------------------------------------------------------------------------
-
 int CPU_check(void);
+int OS_Version();
 void * HiddenRAM(void);
 void * HiddenRAM_mallocMat( size_t size );
 void * HiddenRAM_mallocProg( size_t size );
@@ -65,6 +65,7 @@ void Fkey_dispR(int ,char *);
 void Fkey_DISPN(int ,char *);
 void Fkey_DISPR(int ,char *);
 void FkeyClear(int );
+void FkeyClearAll();
 void Fkey_Icon(int n, int IconNo);
 void Fkey_dispN_Aa(int n, char *buffer) ;
 void Fkey_dispN_aA(int n, char *buffer) ;

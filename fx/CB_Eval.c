@@ -341,6 +341,22 @@ int MatRegVar( char *SRC ) {	//
 	ExecPtr = exptr;
 	return -1;
 }
+
+int SearchListname( char *SRC ) {
+	int reg,j;
+	char name[10];
+	CB_GetQuotOpcode( SRC, name, 9 );
+	for( reg=58; reg<MatAryMax; reg++ ) {	// List 1 ~ 26  53...
+		for( j=0; j<8; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
+		if ( j>=8 ) return reg;	// matching!
+	}
+	for( reg=32; reg<=57; reg++ ) {	// List 27 ~ 52
+		for( j=0; j<8; j++ ) if ( name[j] != MatAry[reg].name[j] ) break;
+		if ( j>=8 ) return reg;	// matching!
+	}
+	return -1;	// not matching!
+}
+
 int ListRegVar( char *SRC ) {	// return reg no
 	int c;
 	int	reg;
@@ -356,6 +372,7 @@ int ListRegVar( char *SRC ) {	// return reg no
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++ ;	// 
 		goto jp0;
 	}
+	if ( c=='"' ) return SearchListname( SRC );
 	ExecPtr--;
 	reg=Eval_atoi( SRC, c );
   jp0:
@@ -467,7 +484,7 @@ int CB_EvalCheckZero( char *SRC ) {
 	int judge;
 	if (CB_INT==1) judge  = CB_EvalInt( SRC ) ;
 	else
-	if (CB_INT==0) judge  = CB_EvalDbl( SRC ) ;
+	if (CB_INT==0) judge  = CB_EvalDbl( SRC ) !=0;
 	else		   judge  = CB_Cplx_EvalDblCheckZero( SRC ) ;
 	return judge;
 }
@@ -1042,7 +1059,7 @@ double Eval_atof(char *SRC, int c) {
 		} else { 	// 123456
 			if ( c == '0' ) {
 				d = SRC[ExecPtr+1];
-				if ( (  d=='x' ) || ( d=='X' ) || (  d=='b' ) || ( d=='B' ) ) return Eval_atoi( SRC, c );
+				if ( (  'B'<=d ) && ( d<='x' ) ) return Eval_atoi( SRC, c );
 			}
 			c=Eval_atofNumMult(SRC, c, &mantissa);	// 123456
 			if ( c == '.'  ) {

@@ -310,6 +310,7 @@ int CB_KeyCodeCnvt( unsigned int key ) {			// CasioBasic Getkey SDK compatible
 			break;
 		case KEY_CHAR_PMINUS:
 		case KEY_CHAR_ANS:
+		case 30070:	// ALPHA+(-)
 			code=41;
 			break;
 		case KEY_CTRL_EXE:
@@ -380,6 +381,7 @@ int CB_KeyCodeCnvt( unsigned int key ) {			// CasioBasic Getkey SDK compatible
 			break;
 		case KEY_CTRL_DEL:
 		case KEY_CTRL_INS:
+		case 30045:		// KEY_CTRL_UNDO:
 			code=44;
 			break;
 		case KEY_CTRL_AC:

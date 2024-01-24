@@ -907,7 +907,7 @@ int SelectOpcodeRecent( int listselect ) {
 	} else {
 		j=OplistRecentFreq[select].code;
 	}
-	return j;
+	return j & 0xFFFF;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1053,7 +1053,7 @@ int SelectOpcode( int listselect, int flag ) {
 		RestoreDisp(SAVEDISP_PAGE1);
 	}
 	Bdisp_PutDisp_DD();
-	return oplist[(*select)];
+	return oplist[(*select)] & 0xFFFF;
 }
 
 //--------------------------------------------------------------------------
@@ -1136,6 +1136,16 @@ const short oplistOPTN[]={
 		0xB1,	// arcsinh
 		0xB2,	// arccosh
 		0xB3,	// arctanh
+
+		0xFFFF,	// 				-
+		0x7F22,	// Arg 
+		0x7F23,	// Conjg 
+		0x7F24,	// ReP 
+		0x7F25,	// ImP 
+		0x7F54,	// Angle
+//		0x7F55,	// Ref 
+//		0x7F56,	// Rref 
+//		0x7F57,	// Conv
 
 		0xFFFF,	// 				-
 		0x01,	// femto
@@ -1438,6 +1448,8 @@ const short oplistVARS[]={
 		0xF9D2,	// _FelipsInRct 
 		0xF9D3,	// _Hscroll
 		0xF9D4,	// _Vscroll 
+
+		0xFFFF,	// 				-
 		0xF9D5,	// _Bmp 
 		0xF9D6,	// _Bmp8
 		0xF9D7,	// _Bmp16
@@ -1448,6 +1460,10 @@ const short oplistVARS[]={
 		0xF9D8,	// _Test
 		0xF9DB,	// BmpSave 
 		0xF9DC,	// BmpLoad(
+		0xF960,	// GetFont(
+		0xF961,	// GetFontMini(
+		0xF962,	// SetFont 
+		0xF963,	// SetFOntMini
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -1731,7 +1747,25 @@ const short oplistCMD[]={		// 5800P like
 		0x0B,	// Exa
 		0x25,	// %	
 
-//											19	STR
+//											19
+		0x7F22,	// Arg 
+		0x7F23,	// Conjg 
+		0x7F24,	// ReP 
+		0x7F25,	// ImP 
+//		0x7F54,	// Angle
+//		0x7F55,	// Ref 
+//		0x7F56,	// Rref 
+//		0x7F57,	// Conv
+		0xFFFF,	//
+		0xFFFF,	//
+		0xFFFF,	//
+		0xFFFF,	//
+		0xFFFF,	//
+		0xFFFF,	//
+		0x23,	// #
+		0x25,	// %	
+
+//											20	STR
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -1745,7 +1779,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 		
-//											20
+//											21
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
@@ -1759,7 +1793,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											21
+//											22
 		0xF940,	// Str(
 		0xF943,	// Sprintf(
 		0xF946,	// Hex(
@@ -1773,7 +1807,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											22	EX
+//											23	EX
 		0xF90F,	// AliasVar
 		0x7F5F,	// Ticks
 		0xF941,	// DATE
@@ -1887,8 +1921,8 @@ const short oplistCMD[]={		// 5800P like
 #define CMD_STD  0
 #define CMD_GR   8
 #define CMD_FN  14
-#define CMD_STR 19
-#define CMD_EX  22
+#define CMD_STR 20
+#define CMD_EX  23
 
 int SelectOpcode5800P( int flag ) {
 	short *select=&selectCMD;
@@ -2098,7 +2132,7 @@ int SelectOpcode5800P( int flag ) {
 //	Bdisp_PutDisp_DD();
 
 	i=oplist[(*select)+n]; if (i==0xFFFFFFFF ) i=0;
-	return i;
+	return i & 0xFFFF;
 }
 
 
@@ -2676,6 +2710,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 	int dspX;
 	int oplen,oplenL,oplenR;
 	int alphalock = 0 ;
+	char alphalock_bk ;
 	int ContinuousSelect=0;
 	int displaystatus=0;
 	int ClipStartPtr = -1 ;
@@ -2857,6 +2892,7 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				} else 
 				if ( CommandType ) GetGenuineCmdF3( &key );
 				else {
+//					if ( displaystatus ) if ( length ) cont=0;
 					if ( CommandInputMethod ) { 
 						CommandType=CMD_MENU; CommandPage=0;
 					} else {
@@ -2898,9 +2934,16 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 				break;
 				
 			case KEY_CTRL_SHIFT:
+				alphalock_bk = alphalock;
 				alphalock = 0 ;
+				FkeyClearAll();
 				if ( CommandInputMethod ) if ( displaystatus == 0 ) Menu_SHIFT_MENU();
+				if ( ( pallet_mode ) && ( alpha_mode ) ) {
+					if ( lowercase  ) Fkey_dispN_aA( FKeyNo5, "A<>a"); else Fkey_dispN_Aa( FKeyNo5, "A<>a");
+					Fkey_Icon( FKeyNo6, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
+				}
 				GetKey_DisableMenu(&key);
+				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
 				switch (key) {
 					case KEY_CTRL_QUIT:
 						goto inpexit;
@@ -2935,10 +2978,22 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 							}
 							break;
 							
-//					case KEY_CTRL_F5:
-//							break;
-//					case KEY_CTRL_F6:
-//							break;
+					case KEY_CTRL_F5:	// A<>a
+							if ( ( pallet_mode ) && ( alpha_mode ) ) {
+								lowercase=1-lowercase;
+								if ( alphalock_bk ) { alphalock = 1; PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key); PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key); }
+								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+							}
+							key=0;
+							break;
+							
+					case KEY_CTRL_F6:	// CHAR
+							if ( ( pallet_mode ) && ( alpha_mode ) ) {
+								key=SelectChar( &ContinuousSelect);
+								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
+							}
+							break;
+							
 					case KEY_CTRL_SETUP:
 							if ( displaystatus ) break;
 							if ( CommandInputMethod ) {
@@ -2956,6 +3011,16 @@ int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, 
 								key=SelectOpcode( CMDLIST_PRGM, 0 );
 								if ( ( pallet_mode ) && ( alpha_mode ) ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 							}
+							break;
+					case KEY_CHAR_3:
+							PopUpWin(1);
+							locate(3,4); Print((unsigned char*)"Hit Getkey Code");
+							KeyRecover();
+							GetKey_DisableMenu(&key);
+							MSGpop();
+							sprintf(buf,"%d",CB_KeyCodeCnvt( key ) );
+							EditPaste1( buffer, buf, &ptrX, MaxStrlen );
+							key=0;
 							break;
 					default:
 							break;

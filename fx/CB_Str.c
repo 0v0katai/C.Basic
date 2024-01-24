@@ -468,57 +468,35 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 //-----------------------------------------------------------------------------
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int c;
+	int quotflag=0;
 	int ptr=0;
 	c=SRC[ExecPtr-2];
-	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
-		while (1){
-			c = SRC[ExecPtr++];
-			buffer[ptr++]=c;
-			switch ( c ) {
-				case 0x00:	// <EOF>
-				case 0x22:	// "
-					buffer[--ptr]='\0' ;
-					return ptr;
-				case 0x5C:	//
-				case 0x7F:	// 
-				case 0xFFFFFFF7:	// 
-				case 0xFFFFFFF9:	// 
-				case 0xFFFFFFE5:	// 
-				case 0xFFFFFFE6:	// 
-				case 0xFFFFFFE7:	// 
-				case 0xFFFFFFFF:	// 
-					buffer[ptr++]=SRC[ExecPtr++];
-					break;
-				default:
-					break;
-			}
-			if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) quotflag=1;
+	while (1){
+		c = SRC[ExecPtr++];
+		buffer[ptr++]=c;
+		switch ( c ) {
+			case 0x0D:	// <CR>
+				if ( quotflag ) goto next;
+			case 0x00:	// <EOF>
+			case 0x22:	// "
+				buffer[--ptr]='\0' ;
+				return ptr;
+			case 0x5C:	//
+			case 0x7F:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
+				buffer[ptr++]=SRC[ExecPtr++];
+				break;
+			default:
+				break;
 		}
-	} else {
-		while (1){
-			c = SRC[ExecPtr++];
-			buffer[ptr++]=c;
-			switch ( c ) {
-				case 0x00:	// <EOF>
-				case 0x0D:	// <CR>
-				case 0x22:	// "
-					buffer[--ptr]='\0' ;
-					return ptr;
-				case 0x5C:	//
-				case 0x7F:	// 
-				case 0xFFFFFFF7:	// 
-				case 0xFFFFFFF9:	// 
-				case 0xFFFFFFE5:	// 
-				case 0xFFFFFFE6:	// 
-				case 0xFFFFFFE7:	// 
-				case 0xFFFFFFFF:	// 
-					buffer[ptr++]=SRC[ExecPtr++];
-					break;
-				default:
-					break;
-			}
-			if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
-		}
+	  next:
+		if ( ptr >= Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 	}
 	return ptr;
 }
@@ -802,6 +780,7 @@ void StorStrList0( char *SRC ) {	// "String" -> List n[0]
 		DimMatrixSub( reg, DefaultElemetSize(), 10-MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
+	memcpy( MatAry[reg].name, CB_CurrentStr, 8);
 }
 
 void StorDATE( char *buffer ) {	// "2017/01/17" -> DATE
@@ -999,9 +978,8 @@ int CB_StrAsc( char *SRC ) {	// StrAsc("A")  -> 0x41
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	if ( buffer[0]==0x5C ) // Backslash
-			buffer[0]=buffer[1];
-	return StrGetOpcode( buffer, 0 );
+	return GetOpcode( buffer, 0 );
+//	return StrGetOpcode( buffer, 0 );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1854,8 +1832,9 @@ int CB_TimeToStr() {	// "23:59:59"
 
 //----------------------------------------------------------------------------------------------
 int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

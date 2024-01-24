@@ -755,17 +755,18 @@ void WriteVram( unsigned char *pDATA ){
 	Bdisp_WriteGraph_VRAM(&Gpict);
 }
 
-void StoPictSmemSub( unsigned char *pict, int pictNo ){	//
+void StoPictSmemSub( unsigned char *pict, int pictNo, int offset ){	//
 	int i,stat;
-	for(i=1024+0x4c; i<2048+0x4c+2; i++) pict[i]=0;
-	stat=SavePicture( (char *)pict, pictNo );
+	for(i=1024+0x4C; i<2048+0x4C+2; i++) pict[i]=0;
+	if ( offset==0x50 ) stat=SaveCapture( (char *)pict, pictNo );
+	else				stat=SavePicture( (char *)pict, pictNo );
 	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
 }
 void StoPictSmem( int pictNo, int offset ){	//
 	unsigned char pict[2048+0x4C+4];
 	int i,stat;
 	ReadVram(pict+offset);
-	StoPictSmemSub( pict, pictNo );
+	StoPictSmemSub( pict, pictNo , offset );
 }
 
 void StoPictHeap2Smem( int pictNo ){	// heap Pict -> SMEM Pict
@@ -774,7 +775,7 @@ void StoPictHeap2Smem( int pictNo ){	// heap Pict -> SMEM Pict
 	pict2 = PictAry[pictNo];	//  heap mode
 	if ( pict2 != NULL ) { //
 		memcpy(pict+0x4C, pict2, 1024);
-		StoPictSmemSub( pict, pictNo );
+		StoPictSmemSub( pict, pictNo, 0x4C );
 	}
 }
 
@@ -791,7 +792,7 @@ void StoPict( int pictNo){
 	int i,stat;
 	unsigned char *pict;
 	
-	if ( PictMode == 0 ) { StoPictSmem(pictNo, 0x4C ); return; }	// strage memory mode
+	if ( ( PictMode == 0 )||( PictMode == 3 ) ) { StoPictSmem(pictNo, 0x4C ); return; }	// strage memory mode
 	
 	if ( PictAry[pictNo] == NULL ) { //
 		PictAry[pictNo] = HiddenRAM_mallocPict(pictNo) ;						// New Pict array ptr*
@@ -802,12 +803,25 @@ void StoPict( int pictNo){
 	if ( PictMode == 2 ) StoPictHeap2Smem( pictNo );	// heap Pict -> SMEM Pict
 }
 
+void RclPictMCS( int pictNo, int errorcheck){
+	unsigned char *pict;
+	int i,length;
+	pict = (unsigned char *)LoadPictureMCS( pictNo, &length );	// MCS
+	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
+	WriteVram( pict+0x4C );
+	if ( ( length>1024 ) || ( errorcheck ) ) WriteVram( pict+0x4C+1024 );
+}
+
 void RclPict( int pictNo, int errorcheck){
 	unsigned char *pict;
 	unsigned char *pict2;
 	int i;
-	if ( PictMode == 0 ) {	// strage memory mode
-		RclPictSmem(pictNo, 0x4C );	// Pict
+	if ( ( PictMode == 0 )||( PictMode == 3 ) ) {
+		if ( PictMode == 0 ) {	// strage memory mode
+			RclPictSmem(pictNo, 0x4C );	// S.mem
+		} else {
+			RclPictMCS( pictNo, errorcheck); // MCS
+		}
 		if ( errorcheck ) return;
 		ErrorNo=0;
 		return;
@@ -838,19 +852,19 @@ void RclPict( int pictNo, int errorcheck){
 }
 
 void StoCapt( int pictNo){
-	unsigned char *pict;
-	int i;
-	pict=(unsigned char *)LoadPicture( pictNo );
-	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
-	WriteVram( pict+0x50 );
-	HiddenRAM_freeProg(pict);
+	unsigned char pict[1024+0x50+4];
+	int i,stat;
+	ReadVram( pict+0x50 );
+	stat=SaveCapture( (char *)pict, pictNo );
+	if ( stat != 0 ) { CB_Error(MemoryERR); return; }	// Memory error
 }
-
 void RclCapt( int pictNo ){
 	unsigned char *pict;
-	unsigned char *pict2;
 	int i;
-	RclPictSmem(pictNo, 0x50 );	// Capt
+	pict=(unsigned char *)LoadCapture( pictNo );
+	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
+//	WriteVram( pict+0x50 );
+	RestoreVRAM( (char*)pict+0x50 );
 }
 
 void CB_StoPict( char *SRC ) { //	StoPict
@@ -864,7 +878,7 @@ void CB_StoPict( char *SRC ) { //	StoPict
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (20+ExtendPict<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	StoPict(n);
-	if ( ( f ) && ( PictMode == 1 ) ) {
+	if ( ( f ) && ( PictMode == 1 ) ) {	// heap mode -> S.mem mode -> heap mode
 		PictMode = 0 ;
 		StoPict(n);
 		PictMode=pictmode;
@@ -885,7 +899,7 @@ void CB_StoCapt( char *SRC ) { //	StoCapt
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (99<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	StoPictSmem(n, 0x50 );	// Capt
+	StoCapt(n);	// Capt
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 void CB_RclCapt( char *SRC ) { //	RclCapt
@@ -893,7 +907,7 @@ void CB_RclCapt( char *SRC ) { //	RclCapt
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	n=CB_EvalInt( SRC );
 	if ( (n<1) || (99<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
-	RclPictSmem(n, 0x50 );	// Capt
+	RclCapt(n);	// Capt
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
 
@@ -2285,8 +2299,8 @@ void CB_RclVWin( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

@@ -42,6 +42,12 @@ int CPU_check(void) {					// SH3:1 SH4A:0
 	return ! ( ( *(volatile unsigned short*)0xFFFFFF80 == 0 ) && ( *(volatile unsigned short*)0xFFFFFF84 == 0 ) ) ;
 }
 
+int OS_Version(){
+	int ver;
+	unsigned char version[16];
+	System_GetOSVersion( &version[0] );
+	return (version[1]-'0')*100 + (version[3]-'0')*10 + (version[4]-'0');
+}
 //---------------------------------------------------------------------------------------------
 void * HiddenRAM(void){	// Check HiddenRAM 
 	volatile unsigned int *NorRAM=(volatile unsigned int*)0xA8000000;	// Nomarl RAM TOP (no cache area)
@@ -114,6 +120,7 @@ void * memcpy2(void *dest, const void *src, size_t len){
 void HiddenRAM_freeMat( int reg ){
 	int ptr = (int)MatAry[reg].Adrs;
 	int	adrs, size = MatAry[reg].Maxbyte; 
+	if ( size <= 0 ) return ;
 	if ( (int)HiddenRAM_MatTopPtr == ptr ) goto plus;
 	else
 	if ( ( (int)HiddenRAM_MatTopPtr < ptr ) && ( ptr < (int)HiddenRAM_End ) ) {
