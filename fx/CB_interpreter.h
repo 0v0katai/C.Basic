@@ -410,6 +410,7 @@ typedef struct {
 } tdrawstat;
 extern	tdrawstat Sgraph[3];
 
+void CB_ClrGraphStat();
 void CB_S_Gph_init( int No ) ;	// S-Gph1 DrawOff,Scatter,List 1,List 2,1,Square
 void CB_S_Gph( char *SRC, int No ) ;
 void CB_S_WindAuto( char *SRC ) ;

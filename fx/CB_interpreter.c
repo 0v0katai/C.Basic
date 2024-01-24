@@ -352,11 +352,6 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0x62:			// Graph X=
-						CB_GraphX(SRC);
-						dspflag=0;
-						UseGraphic=9;
-						break;
 					case 0x18:			// ClrText
 						CB_ClrText(SRC);
 						dspflag=0;
@@ -538,7 +533,7 @@ int CB_interpreter_sub( char *SRC ) {
 				c=SRC[ExecPtr++];
 				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) && ( c != 0xFFFFFFC6 ) && ( c != 0xFFFFFFD8 ) ) { CB_ML_command( SRC, c ); break; }
 				else
-				if ( ( 0x38 != c ) && ( 0x34 <= c ) && ( c <= 0x49 ) )  goto strjp;
+				if ( ( 0x38 != c ) && ( 0x3E != c ) && ( 0x34 <= c ) && ( c <= 0x49 ) )  goto strjp;
 				else
 				if ( ( 0xFFFFFF9B <= c ) && ( c <= 0xFFFFFF9F ) ) break;	// color command   Black/(White)/Magenta/Cyan/Yellow
 				switch ( c ) {
@@ -797,9 +792,11 @@ int CB_interpreter_sub( char *SRC ) {
 		}
 	  inext3:
 		if ( ( 0 < dspflagtmp ) && ( dspflagtmp < 0x10 ) ) {
-			if (CB_INT==1) regint_Ans=CBint_CurrentValue ;
-			else		   reg_Ans   =CB_CurrentValue    ;
 			if ( dspflagtmp>=3 ) CopyMatList2AnsTop( CB_MatListAnsreg );	// MatListResult -> MatList Ans top
+			else {
+				if (CB_INT==1) regint_Ans=CBint_CurrentValue ;
+				else		   reg_Ans   =CB_CurrentValue    ;
+			}
 			
 		}
 		if ( dspflagtmp ) dspflag=dspflagtmp & 0x0F;
@@ -877,6 +874,11 @@ int CB_F7sub( char *SRC, int c ) {
 					case 0x7D:			// GridOn
 						Grid=1;
 						break;
+					case 0x62:			// Graph X=
+						CB_GraphX(SRC);
+						dspflag=0;
+						UseGraphic=9;
+						break;
 					case 0xFFFFFF93:	// StoPict
 						CB_StoPict(SRC);
 						UseGraphic=9;
@@ -948,6 +950,7 @@ int CB_F7sub( char *SRC, int c ) {
 						CB_Delete( SRC );
 						break;
 					default:
+						if ( ( 0xFFFFFFB8 <= c )&& ( c <= 0xFFFFFFBD ) ) { CB_ListFile(SRC); dspflag=0; break; }	// File1~File6
 						return 0;
 	}
 	return 1;
@@ -2320,15 +2323,17 @@ void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) { //	Prog "...
 	
 	stat=CB_interpreter_sub( SRC ) ;	// --- execute sub program
 
-	if ( DebugMode == 3 ) {		// step over
-		BreakPtr = BreakPtr_bk;
-	}
-	if ( DebugMode == 4 ) { DebugMode = 2;  BreakPtr = -1; }	// step out
-	
-	if ( stat ) {
-		if ( ( DebugMode == 0 ) && ( DisableDebugMode==0 ) && ( ErrorNo != StackERR ) ) BreakPtr = 0;
-		if ( ( ErrorNo ) && ( ErrorNo != StackERR ) )return ;			// error
-		else if ( BreakPtr > 0 ) return ;	// break
+	if ( BreakPtr != -8 ) {	// not Stop
+		if ( DebugMode == 3 ) {		// step over
+			BreakPtr = BreakPtr_bk;
+		}
+		if ( DebugMode == 4 ) { DebugMode = 2;  BreakPtr = -1; }	// step out
+		
+		if ( stat ) {
+			if ( ( DebugMode == 0 ) && ( DisableDebugMode==0 ) ) BreakPtr = 0;
+			if ( ( ErrorNo ) && ( ErrorNo != StackERR ) ) return ;		// error
+			else if ( BreakPtr > 0 ) return ;	// break
+		}
 	}
 
 	ProgEntryN--;
@@ -2615,7 +2620,7 @@ int CB_interpreter( char *SRC ) {
 	ListFilePtr = 0;	// List File Ptr
 
 	defaultStrAry=26;	// <r>
-	defaultFnAry=27;		// Theta
+	defaultFnAry=57;		// z
 	defaultGraphAry=27;		// Theta
 	
 	CB_MatListAnsreg=27;	//	ListAns init
@@ -2626,8 +2631,7 @@ int CB_interpreter( char *SRC ) {
 	DeleteMatListAnsAll();	// Ans init	
 	for ( c=0; c<3; c++ ) CB_S_Gph_init( c );
 
-	for ( c=0; c<GRAPHMAX; c++ ) GraphStat[c].en = 0;
-	GraphPtr=0;	// reset
+	CB_ClrGraphStat();
 
 	CB_TicksAdjust = 0 ;	// 
 	CB_HiTicksAdjust = 0 ;	// 
@@ -2958,13 +2962,15 @@ void  CB_Input( char *SRC ){
 }
 //----------------------------------------------------------------------------------------------
 int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.86\xE6\x41";
-#define VERSION 186
+const char VerMSG[]="C.Basic  v1.87\xE6\x41";
+#define VERSION 187
 
 //---------------------------------------------------------------------------------------------
 
@@ -176,6 +176,7 @@ void SetLineStyle() {
 void SetXdotYdot(){
 		Xdot  = (Xmax-Xmin)/(126.);
 		Ydot  = (Ymax-Ymin)/(62.);
+		CB_ClrGraphStat();
 }
 void SetVeiwWindowInit(){	// Initialize	return 0: no change  -1 : change
 		Xmin  =-6.3;

@@ -81,7 +81,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		CB_AliasVarClr();
 		
 		for (i=1; i<=PictMax; i++) {
-			if ( !( (UseHiddenRAM&0xF0) && ( UseHiddenRAM ) && ( IsHiddenRAM ) ) )
+//			if ( !( (UseHiddenRAM&0xF0) && ( UseHiddenRAM ) && ( IsHiddenRAM ) ) )
 			PictAry[i]=NULL;		// Pict ptr clear
 		}
 		

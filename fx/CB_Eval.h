@@ -34,6 +34,7 @@ double fpolr( double x, double y ) ;	// Pol(x,y) -> r
 double fpolt( double x, double y ) ;	// Pol(x,y) -> Theta
 double frecx( double r, double t ) ;	// Rec(r,Theta) -> x
 double frecy( double r, double t ) ;	// Rec(r,Theta) -> y
+double fintg( double x ) ;
 double fint( double x ) ;
 double fnot( double x ) ;
 double fsqrt( double x ) ;

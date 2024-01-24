@@ -7,7 +7,7 @@ extern char   CB_StrBufferCNT;
 extern char  *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 extern char   defaultStrAry;
-extern char   defaultStrAryN;
+extern short  defaultStrAryN;
 extern short  defaultStrArySize;
 
 extern char   defaultFnAry;
