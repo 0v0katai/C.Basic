@@ -762,8 +762,8 @@ int DumpOpcode( char *SrcBase, int *offset, int *offset_y, int csrPtr, int *pcx,
 	while ( 1 ) {
 		NumOfset=0;	// line number offset
 //		for ( y=ymin; y<8; y++ ) { locate(1,y); PrintLine((unsigned char*)" ",21); }
-//		ML_rectangle( 0, 8*(ymin-1), 127, 55, 0, 0, 0);
-		ML_clear_vram(); 
+		ML_rectangle( 0, 8*(ymin-1), 127, 55, 0, 0, 0);
+//		ML_clear_vram(); 
 		y=ymin; ofst=(*offset);
 		ofst2=ofst;
 		px=1; ynum=0;
@@ -1843,7 +1843,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				
 			case KEY_CTRL_SHIFT:
 				if ( ClipStartPtr > 0 ) {  ClipStartPtr = -1 ; 	// ClipMode cancel
+					if ( mini == 0 ) break;
 					DumpOpcode( SrcBase, &offset, &offset_y, csrPtr, &pcx, &cy, ClipStartPtr, ClipEndPtr);
+//					locate((pcx-1+EDITpxNum)/6+1,cy); 
 				 }
 				if ( SearchMode ) break;;
 				ShiftF6loop:
@@ -2230,9 +2232,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 //					alphastatus = 0;
 				}
 			}
-//		} else
-//		if ( dumpflg==4 ) {
-//				key=0;
+		} else
+		if ( dumpflg==4 ) {
+				key=0;
 		}
 
 	}
