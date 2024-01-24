@@ -12,6 +12,7 @@ char * LoadHelpfile( char *buffer ) {
 	int progno = ProgNo;
 	int storagemode = StorageMode;
 	int progEntryN;
+	int ProgEntryN_bk = ProgEntryN;
 
 	for (i=0; i<=ProgMax; i++) {			// memory free
 		if ( ProgfileAdrs[i] == NULL ) break;		// Prog
@@ -31,6 +32,7 @@ char * LoadHelpfile( char *buffer ) {
 		r=LoadProgfile( filename, progEntryN, 256, 0 ) ;	// enable convert
 		RestoreDisp(SAVEDISP_PAGE1);
 	}
+	ProgEntryN = ProgEntryN_bk;
 	Restorefolder();
 	StorageMode = storagemode;
 	ProgNo = progno;

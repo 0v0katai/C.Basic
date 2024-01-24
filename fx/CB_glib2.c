@@ -893,7 +893,7 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, int *listdirect ) {
 				if ( graph[ExecPtr] == '{' ) {
 					gp = ExecPtr +1;
 //					Cplx_Evalsub1(graph);
-					Cplx_ListEvalsubTop(graph);
+					Cplx_ListEvalsub1(graph);
 					c = graph[ExecPtr];
 					if ( ( c==',' ) || ( c==':' ) || ( c==')' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0x00 ) ) {
 						(*listdirect) = 1;

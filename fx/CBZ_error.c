@@ -73,8 +73,8 @@ void CB_ErrMsg(int ErrNo) {
 		case RangeERR:
 			ERROR(" Range ERROR");
 			break;
-		case TooMuchData:
-			ERROR(" Too Much Data");
+		case NonRealERR:
+			ERROR(" Non-Real ERROR");
 			break;
 		case ComERR:
 			ERROR(" Com ERROR");
@@ -85,6 +85,10 @@ void CB_ErrMsg(int ErrNo) {
 		case ReceiveERR:
 			ERROR(" Receive ERROR");
 			break;
+		case TooMuchData:
+			ERROR(" Too Much Data");
+			break;
+
 		case NextWithoutForERR:
 			ERROR("Next without For");
 			break;
@@ -92,16 +96,16 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR("For without Next");
 			break;
 		case WhileWithoutWhileEndERR:
-			ERROR("While withot WEnd");
+			ERROR("While w/o WEnd");
 			break;
 		case WhileEndWithoutWhileERR:
-			ERROR("WEnd withot While");
+			ERROR("WEnd w/o While");
 			break;
 		case LpWhileWithoutDoERR:
-			ERROR("LpWhile withot Do");
+			ERROR("LpWhile w/o Do");
 			break;
 		case DoWithoutLpWhileERR:
-			ERROR("Do withot LpWhile");
+			ERROR("Do w/o LpWhile");
 			break;
 		case NotLoopERR:
 			ERROR("Not Loop ERROR");
@@ -137,16 +141,16 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR("Then without If");
 			break;
 		case CaseWithoutSwitchERR:
-			ERROR("Case w/out Switch");
+			ERROR("Case w/o Switch  ");
 			break;
 		case DefaultWithoutSwitchERR:
-			ERROR("Default wo Switch");
+			ERROR("Default w/o Swtch");
 			break;
 		case SwitchWithoutSwitchEndERR:
-			ERROR("Without SwitchEnd");
+			ERROR("Switch w/o S.End ");
 			break;
 		case SwitchEndWithoutSwitchERR:
-			ERROR("Without Switch");
+			ERROR("S.End w/o Switch");
 			break;
 		case CantFindFileERR:
 			ERROR("Can't find file");
@@ -185,14 +189,11 @@ void CB_ErrMsg(int ErrNo) {
 //			ERROR("Alignment ERR");
 			ERROR("Address Align ERR");
 			break;
-		case NonRealERR:
-			ERROR("Non-Real ERROR");
-			break;
 		case TryWithoutExceptERR:
-			ERROR("Try w/out Except");
+			ERROR("Try w/o Except  ");
 			break;
 		case ExcpetWithoutTryERR:
-			ERROR("Except w/out Try");
+			ERROR("Except w/o Try ");
 			break;
 			
 		default:
