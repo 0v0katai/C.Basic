@@ -10,7 +10,7 @@ double MOD(double numer, double denom);
 void Text(int y, int x, unsigned char*str);
 
 //-----------------------------------------------------------------------------
-extern unsigned int skip_count;
+extern int skip_count;
 
 void DrawBusy();		// BusyInd=0: running indicator off,  BusyInd=1: on
 void Bdisp_PutDisp_DD_DrawBusy();

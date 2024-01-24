@@ -174,14 +174,14 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
 			ptr=ProgfileAdrs[i];
 			if ( ptr != NULL ) free(ptr);
-			ProgfileAdrs[i]=0;
+			ProgfileAdrs[i]=NULL;
 		}
 		for (i=PictMax; i>=1; i--) {			// memory free
 			ptr=(char*)PictAry[i];
 			if ( ptr != NULL ) free(ptr);
-			PictAry[i]=0;
+			PictAry[i]=NULL;
 		}
-		FileListfree();
+//		FileListfree();
 	}
 }
 

@@ -757,8 +757,8 @@ const char ConvListF700[][17]={
 "Poke(",			// F7F6
 "",					// F7F7
 "@F7F8",			// F7F8
-"",					// F7F9
-"@F7FA",			// F7FA
+"RefrshCtrl ",			// F7F9
+"RefrshTime ",			// F7FA
 "Screen",				// F7FB
 "PutDispDD",			// F7FC
 "FkeyMenu(",			// F7FD

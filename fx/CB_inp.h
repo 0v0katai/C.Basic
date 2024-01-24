@@ -54,6 +54,7 @@ extern int selectCMD;
 extern int selectOPTN;
 extern int selectVARS;
 extern int selectPRGM;
+extern char lowercase;
 
 void PutAlphamode1( int CursorStyle );
 int InputStrSub(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel );

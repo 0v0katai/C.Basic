@@ -38,7 +38,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"           v0.99n" );
+	locate( 3, 4 ); Print( (unsigned char*)"          v0.99o " );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2016" );
 	GetKey(&key);
@@ -749,6 +749,20 @@ int SelectNum3( int n ) {		//
 	}
 	return n ; // ok
 }
+int SelectNum4( int n ) {		// 
+	unsigned int key;
+	int n0=n;
+	PopUpWin(3);
+	locate( 3,3); Print((unsigned char *)"Select Number");
+	locate( 3,3); Print((unsigned char *)"RefrshTime n/128s");
+	locate( 6,5); Print((unsigned char *)"[2~128]:");
+	while (1) {
+		n=InputNumD(14, 5, 3, n, ' ', REV_OFF, FLOAT_OFF, EXP_OFF);		// 0123456789
+		if ( (2<=n)&&(n<=128) ) break;
+		n=n0;
+	}
+	return n ; // ok
+}
 
 int SetupG(int select){		// ----------- Setup 
     char *onoff[]   ={"off","on"};
@@ -760,12 +774,13 @@ int SetupG(int select){		// ----------- Setup
     char *Matmode[]    ={"[m,n]","[X,Y]"};
     char *Matbase[]    ={"0","1"};
     char *Pictmode[]    ={"S.Mem","Heap"};
+    char *DDmode[]    ={"off","Grp","All"};
 	char buffer[22];
 	unsigned int key;
 	int	cont=1;
 	int scrl=select-6;
 	int y,cnt;
-	int listmax=20;
+	int listmax=21;
 	
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
@@ -865,7 +880,14 @@ int SetupG(int select){		// ----------- Setup
 			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 20
+			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 20
+			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
+			buffer[0]='\0';
+			sprintf((char*)buffer,"%3d/128s",Refreshtime+1);
+			if ( RefreshCtrl ) PrintMini(16*6,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
+		} cnt++;
+		if ( ( scrl >=(cnt-7) ) && ( cnt-scrl > 0 ) ){
+			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 21
 			locate(14,cnt-scrl); Print((unsigned char*)mode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -931,7 +953,13 @@ int SetupG(int select){		// ----------- Setup
 				Fkey_dispN( 0, "MEM ");
 				Fkey_dispN( 1, "Heap");
 				break;
-			case 20: // Execute Mode
+			case 20: // Refresh Ctrl DD Mode
+				Fkey_dispN( 0, "off ");
+				Fkey_dispN( 1, "Gra ");
+				Fkey_dispN( 2, "All ");
+				if ( RefreshCtrl ) Fkey_dispN( 3, "time");
+				break;
+			case 21: // Execute Mode
 				Fkey_dispN( 0, "DBL ");
 				Fkey_dispN( 1, "Int ");
 				break;
@@ -1029,7 +1057,10 @@ int SetupG(int select){		// ----------- Setup
 					case 19: // ACBreak
 						ACBreak = 1 ; // on
 						break;
-					case 20: // CB mode
+					case 20: // Refresh Ctrl DD Mode
+						RefreshCtrl = 0 ; // off
+						break;
+					case 21: // CB mode
 						CB_INTDefault = 0 ; // normal
 						CB_INT = CB_INTDefault;
 						break;
@@ -1104,7 +1135,10 @@ int SetupG(int select){		// ----------- Setup
 					case 19: // ACBreak
 						ACBreak = 0 ; // off
 						break;
-					case 20: // CB mode
+					case 20: // Refresh Ctrl DD Mode
+						RefreshCtrl = 1 ; // graphics
+						break;
+					case 21: // CB mode
 						CB_INTDefault = 1 ; // int
 						CB_INT = CB_INTDefault;
 						break;
@@ -1128,6 +1162,9 @@ int SetupG(int select){		// ----------- Setup
 					case 15: // Roolup/down count init
 						PageUpDownNum = SelectNum3( PageUpDownNum );
 						break;
+					case 20: // Refresh Ctrl DD Mode
+						RefreshCtrl = 2 ; // graphics+text
+						break;
 					default:
 						break;
 				}
@@ -1149,6 +1186,9 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case 15: // Roolup/down count init
 						PageUpDownNum = PageUpDownNumDefault ;
+						break;
+					case 20: // Refresh Ctrl DD Mode
+						if ( RefreshCtrl ) Refreshtime=SelectNum4(Refreshtime+1)-1;
 						break;
 					default:
 						break;
