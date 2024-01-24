@@ -82,6 +82,15 @@ void CB_ErrMsg(int ErrNo) {
 		case TooMuchData:
 			ERROR(" Too Much Data");
 			break;
+		case ComERR:
+			ERROR(" Com ERROR");
+			break;
+		case TransmitERR:
+			ERROR(" Transmit ERROR");
+			break;
+		case ReceiveERR:
+			ERROR(" Receive ERROR");
+			break;
 		case NextWithoutForERR:
 			ERROR("Next without For");
 			break;
@@ -150,6 +159,15 @@ void CB_ErrMsg(int ErrNo) {
 			break;
 		case ElementSizeERR:
 			ERROR("Illegal Element");
+			break;
+		case AlreadyOpenERR:
+			ERROR("Already Open ERR");
+			break;
+		case ComNotOpenERR:
+			ERROR("Com Not Open ERR");
+			break;
+		case TypeMismatchERR:
+			ERROR("Type Mismatch ERR");
 			break;
 			
 		default:

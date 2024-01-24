@@ -168,7 +168,7 @@ int StrCmp( char *str1, char *str2 ) {	// str1==str0 ->0   str1>str2 ->1   str1<
 	return 0;
 }
 
-int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){
+int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){	// strptr:1-
 	int opbkup,csrptr;
 	int sptr,cptr;
 	int opcode=1,srccode;
@@ -198,7 +198,7 @@ int StrSrc( char *SrcBase, char *searchstr, int *strptr, int size){
 	{ (*strptr)=opbkup; return 0; }	// No search
 }
 
-int	StrRepl( char *str1, char *buffer, char *srcstr, char *repstr, int ptr, int maxlen ){
+int	StrRepl( char *str1, char *buffer, char *srcstr, char *repstr, int ptr, int maxlen ){	// ptr:1-
 	int srclen,replen,bufptr=1;
 	int oplen,r;
 	char tmp[CB_StrBufferMax];
@@ -235,8 +235,7 @@ void StrMid( char *str1, char *str2, int n, int m ) {	// mid$(str2,n,m) -> str1
 	int i,opptr1,opptr2,slen,oplen;
 	int opcode;
 	slen=StrLen( str2 ,&oplen );
-	if ( n < 1 )  { i=0; goto exit; }
-	if ( n > slen ) n=slen;
+	if ( ( n < 1 ) || ( n > slen ) ) { i=0; goto exit; }
 	if ( ( m <= 0 ) || ( m > slen-n ) ) m=slen-n+1;
 	
 	i=StrMidCopySub( str1, str2, oplen, n, m );
@@ -912,22 +911,32 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		ExecPtr++;
 		CB_StorStr( SRC );
 		dspflag=0;
-		if ( ErrorNo ) return ;  // error
 	} else {			// display str
 		OpcodeStringToAsciiString( buffer, CB_CurrentStr, CB_StrBufferMax-1 );
 		CB_SelectTextVRAM();	// Select Text Screen
-		if ( CursorX >1 ) Scrl_Y();
+		if ( ( CursorX >1 ) ) Scrl_Y();
 		CursorX+=csrX;
 		while ( buffer[i] ) {
+			if ( ( CursorX > 21 ) ) Scrl_Y();
 			CB_PrintC( CursorX, CursorY, (unsigned char*)buffer+i );
-			CursorX++; if ( ( CursorY < 7 ) && ( CursorX > 21 ) ) Scrl_Y();
+			CursorX++;
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) Scrl_Y();
 			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
 			i++;
+			Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		}
-//		if ( buffer[0]==NULL ) CursorX=22;
-		if ( ( CursorY < 7 ) && ( CursorX == 1 ) ) Scrl_Y();
+		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
+		if ( CursorX == 22 ) {
+			if ( CursorY < 7 ) {
+				Scrl_Y();
+				CursorX=22;
+				if ( SRC[ExecPtr] != '?' ) CursorX=23;
+			} else {	// CursorY == 7 
+				CursorX=23;
+			}
+		}
+		if ( ( buffer[0]==0 ) && ( SRC[ExecPtr] != '?' ) ) CursorX=23;
 		dspflag=1;
 		Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 	}

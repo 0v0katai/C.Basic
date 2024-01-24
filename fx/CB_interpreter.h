@@ -394,3 +394,11 @@ void StoVwin( int n ) ;
 void RclVwin( int n ) ;
 void CB_StoVWin( char *SRC ) ;
 void CB_RclVWin( char *SRC ) ;
+
+void CB_Send( char *SRC );				// Receive(
+void CB_Receive( char *SRC );			// OpenComport38k
+void CB_OpenComport38k( char *SRC );	// CloseComport38k
+void CB_CloseComport38k( char *SRC );	// Send38k
+void CB_Send38k( char *SRC );			// Send38k
+void CB_Receive38k( char *SRC );		// Receive38k
+

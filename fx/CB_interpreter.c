@@ -165,6 +165,7 @@ int CB_F7sub( char *SRC, int c ) ;
 int CB_interpreter_sub( char *SRC ) {
 	char cont=1;
 	int dspflagtmp=0;
+	int dspflagtmp2;
 	int c,j;
 	int excptr;
 
@@ -205,11 +206,12 @@ int CB_interpreter_sub( char *SRC ) {
 	
 	while (cont) {
 		dspflagtmp=0;
+		dspflagtmp2=dspflag;
 		CB_StrBufferCNT=0;			// Quot String buffer clear
 		if ( ErrorNo || BreakPtr ) { 
 			if ( BreakPtr == -8 ) goto iend;
 			if ( CB_BreakStop() ) return -7 ;
-			if ( SRC[ExecPtr] == 0x0C ) if ( ErrorNo==0 ) ExecPtr++; // disps
+			if ( SRC[ExecPtr] == 0x0C ) if ( ( ErrorNo==0 ) && ( DebugMode==0 ) ) ExecPtr++; // disps
 			ClrCahche();
 		}
 		c=SRC[ExecPtr++];
@@ -501,7 +503,7 @@ int CB_interpreter_sub( char *SRC ) {
 						BreakPtr=-8;	// program end
 						break;
 					default:
-						if ( ( ( 0x1C <= c ) && ( c <=0x7D ) ) || ( ( 0xFFFFFF8C <= c ) && ( c <=0xFFFFFFDF ) ) ) { 
+						if ( ( ( 0x11 <= c ) && ( c <=0x7D ) ) || ( ( 0xFFFFFF8C <= c ) && ( c <=0xFFFFFFDF ) ) ) { 
 							if ( CB_F7sub( SRC, c ) ) { dspflag=0; break; }
 						}
 						goto Evalexit2;
@@ -612,7 +614,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0xFFFFFFFA:	// Gosub
 				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs );
 		jpgsb:	if ( BreakPtr > 0 ) return BreakPtr;
-				dspflag=0;
+//				dspflag=0;
 				break;
 			case 0xFFFFFFD1:	// Cls
 				CB_Cls(SRC);
@@ -735,6 +737,7 @@ int CB_interpreter_sub( char *SRC ) {
 		}
 		if ( c == 0x13 ) {					// =>
 			ExecPtr++;
+			dspflag=dspflagtmp2;
 			dspflagtmp=0;
 			if (CB_INT)	{ if ( CBint_CurrentValue == 0 ) Skip_block(SRC); }		// false
 			else 		{ if ( CB_CurrentValue    == 0 ) Skip_block(SRC); }		// false
@@ -755,6 +758,24 @@ int CB_interpreter_sub( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 int CB_F7sub( char *SRC, int c ) {
 	switch ( c ) {
+					case 0x11:			// Send(
+						CB_Send( SRC );;
+						break;
+					case 0x12:			// Receive(
+						CB_Receive( SRC );;
+						break;
+					case 0x13:			// OpenComport38k
+						CB_OpenComport38k( SRC );;
+						break;
+					case 0x14:			// CloseComport38k
+						CB_CloseComport38k( SRC );;
+						break;
+					case 0x15:			// Send38k
+						CB_Send38k( SRC );;
+						break;
+					case 0x16:			// Receive38k
+						CB_Receive38k( SRC );;
+						break;
 					case 0x1C:			// S-L-Normal
 						S_L_Style = S_L_Normal;
 						break;
@@ -2360,6 +2381,7 @@ void  CB_Input( char *SRC ){
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	CB_SelectTextDD();	// Select Text Screen
 	if ( CursorX==22 ) CursorX=1;
+	if ( CursorX==23 ) Scrl_Y();
 	
 	c=SRC[ExecPtr];
 	if ( c=='(' ) {	// ?option([csrX][,csrY][,width][,spcchr][,R])

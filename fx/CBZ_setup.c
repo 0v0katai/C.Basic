@@ -40,7 +40,7 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.62\xE6\x41";
+const char VerMSG[]="C.Basic  v1.63\xE6\x41";
 
 //---------------------------------------------------------------------------------------------
 
@@ -1327,9 +1327,11 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
 						EditTopLine=1;
+						EditLineNum++;
 						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// Standard
+						UpdateLineNum=1;
 						break;
 					case SETUP_EditLineNum: // Line number (edit)
 						EditFontSize |= 0x10;	// on
@@ -1355,6 +1357,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( UseHiddenRAM ) UseHiddenRAM &= 0x0F;	// on
+						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_AutoDebugMode: // AutoDebugMode
 						AutoDebugMode = 0 ; // on
@@ -1474,6 +1477,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_EditTopLine: // Use Top of Line (edit)
 						EditTopLine=0;
+						EditLineNum--;
 						break;
 					case SETUP_EditFontSize: // Edit Char Size
 						EditFontSize &= 0xF0;	// Standard
@@ -1481,6 +1485,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_EditLineNum: // Line number (edit)
 						EditFontSize &= 0x0F;	// off (default)
+						UpdateLineNum=1;
 						break;
 					case SETUP_EditListChar:
 						EditListChar=1;		// 
@@ -1505,6 +1510,7 @@ int SetupG(int select){		// ----------- Setup
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( UseHiddenRAM ) UseHiddenRAM |= 0x10;	// off
+						HiddenRAM_MatAryInit();
 						break;
 					case SETUP_AutoDebugMode: // AutoDebugMode
 						AutoDebugMode = 1 ; // disable 

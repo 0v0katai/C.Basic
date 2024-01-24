@@ -35,7 +35,9 @@ void GetGenuineCmdF3( unsigned int *code ){
 			} break;
 		case CMD_PRGM_I_O:
 			switch ( CommandPage ) {
-				case 1: (*code)=0xF7EF;return;	// Load(
+				case 0: (*code)=0xF711;return;	// Send(
+				case 1: (*code)=0xF713;return;	// OpneComport38k
+				case 2: (*code)=0xF7EF;return;	// Load(
 			} break;
 		case CMD_PRGM_STR:
 			switch ( CommandPage ) {

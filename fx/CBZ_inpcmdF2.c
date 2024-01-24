@@ -41,7 +41,8 @@ void GetGenuineCmdF2( unsigned int *code ){
 		case CMD_PRGM_I_O:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F8F;return;	// Getkey
-				case 1: (*code)=0xF7EE;return;	// Save
+				case 1: (*code)=0xF716;return;	// Receive38k
+				case 2: (*code)=0xF7EE;return;	// Save
 			} break;
 		case CMD_PRGM_STR:
 			switch ( CommandPage ) {

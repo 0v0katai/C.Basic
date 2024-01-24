@@ -50,6 +50,30 @@
  .EXPORT _MCS_GetCapa
  .EXPORT _MCS_GetMainMemoryStart
 
+ .EXPORT _Serial_Open2
+ .EXPORT _Serial_Open_57600
+ .EXPORT _Serial_ResetAndDisable
+ .EXPORT _Serial_GetInterruptHandler
+ .EXPORT _Serial_SetInterruptHandler
+ .EXPORT _Serial_ReadOneByte
+ .EXPORT _Serial_ReadNBytes
+ .EXPORT _Serial_BufferedTransmitOneByte
+ .EXPORT _Serial_BufferedTransmitNBytes
+ .EXPORT _Serial_DirectTransmitOneByte
+ .EXPORT _Serial_GetReceivedBytesAvailable
+ .EXPORT _Serial_GetFreeTransmitSpace
+ .EXPORT _Serial_ClearReceiveBuffer
+ .EXPORT _Serial_ClearTransmitBuffer
+ .EXPORT _Serial_Open
+ .EXPORT _Serial_Close
+ .EXPORT _Serial_CallReceiveIntErrorResetHandler
+ .EXPORT _Serial_CallReceiveIntHandler
+ .EXPORT _Serial_CallTransmitIntErrorResetHandler
+ .EXPORT _Serial_CallTransmitIntHandler
+ .EXPORT _Serial_SpyNthByte
+ .EXPORT _Serial_GetStatus
+ .EXPORT _Serial_IsOpen
+
  .EXPORT _Bfile_RenameEntry
 
  .EXPORT _GetVRAMAddress
@@ -364,6 +388,139 @@ _DD_SetContrast:
 	mov.l #H'132,r0
 	jmp @r1
 	nop
+
+
+_Serial_Open2:
+	mov.l SYSCALL,r1
+	mov.l #H'02AB,r0
+	jmp @r1
+	nop
+_Serial_Open_57600:
+	mov.l SYSCALL,r1
+	mov.l #H'0285,r0
+	jmp @r1
+	nop
+_Serial_ResetAndDisable:
+	mov.l SYSCALL,r1
+	mov.l #H'0409,r0
+	jmp @r1
+	nop
+_Serial_GetInterruptHandler:
+	mov.l SYSCALL,r1
+	mov.l #H'040A,r0
+	jmp @r1
+	nop
+_Serial_SetInterruptHandler:
+	mov.l SYSCALL,r1
+	mov.l #H'040B,r0
+	jmp @r1
+	nop
+_Serial_ReadOneByte:
+	mov.l SYSCALL,r1
+	mov.l #H'040C,r0
+	jmp @r1
+	nop
+_Serial_ReadNBytes:
+	mov.l SYSCALL,r1
+	mov.l #H'040D,r0
+	jmp @r1
+	nop
+_Serial_BufferedTransmitOneByte:
+	mov.l SYSCALL,r1
+	mov.l #H'040E,r0
+	jmp @r1
+	nop
+
+_Serial_BufferedTransmitNBytes:
+	mov.l SYSCALL,r1
+	mov.l #H'040F,r0
+	jmp @r1
+	nop
+
+_Serial_DirectTransmitOneByte:
+	mov.l SYSCALL,r1
+	mov.l #H'0410,r0
+	jmp @r1
+	nop
+
+_Serial_GetReceivedBytesAvailable:
+	mov.l SYSCALL,r1
+	mov.l #H'0411,r0
+	jmp @r1
+	nop
+
+_Serial_GetFreeTransmitSpace:
+	mov.l SYSCALL,r1
+	mov.l #H'0412,r0
+	jmp @r1
+	nop
+
+_Serial_ClearReceiveBuffer:
+	mov.l SYSCALL,r1
+	mov.l #H'0413,r0
+	jmp @r1
+	nop
+
+_Serial_ClearTransmitBuffer:
+	mov.l SYSCALL,r1
+	mov.l #H'0414,r0
+	jmp @r1
+	nop
+
+_Serial_Open:
+	mov.l SYSCALL,r1
+	mov.l #H'0418,r0
+	jmp @r1
+	nop
+
+_Serial_Close:
+	mov.l SYSCALL,r1
+	mov.l #H'0419,r0
+	jmp @r1
+	nop
+
+_Serial_CallReceiveIntErrorResetHandler:
+	mov.l SYSCALL,r1
+	mov.l #H'041B,r0
+	jmp @r1
+	nop
+
+_Serial_CallReceiveIntHandler:
+	mov.l SYSCALL,r1
+	mov.l #H'041C,r0
+	jmp @r1
+	nop
+
+_Serial_CallTransmitIntErrorResetHandler:
+	mov.l SYSCALL,r1
+	mov.l #H'041D,r0
+	jmp @r1
+	nop
+
+_Serial_CallTransmitIntHandler:
+	mov.l SYSCALL,r1
+	mov.l #H'041E,r0
+	jmp @r1
+	nop
+
+_Serial_SpyNthByte:
+	mov.l SYSCALL,r1
+	mov.l #H'0422,r0
+	jmp @r1
+	nop
+
+_Serial_GetStatus:
+	mov.l SYSCALL,r1
+	mov.l #H'0423,r0
+	jmp @r1
+	nop
+
+_Serial_IsOpen:
+	mov.l SYSCALL,r1
+	mov.l #H'0425,r0
+	jmp @r1
+	nop
+
 
 ;int Calljmp( int r4, int r5, int r6, int r7, int adrs );
 

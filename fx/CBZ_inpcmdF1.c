@@ -40,7 +40,8 @@ void GetGenuineCmdF1( unsigned int *code ){
 		case CMD_PRGM_I_O:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF710;return;	// Locate
-				case 1: (*code)=0x7FF5;return;	// IsExist(
+				case 1: (*code)=0xF715;return;	// Send38K
+				case 2: (*code)=0x7FF5;return;	// IsExist(
 			} break;
 		case CMD_PRGM_STR:
 			switch ( CommandPage ) {
