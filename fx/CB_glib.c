@@ -383,11 +383,28 @@ void LinesubSetPoint(int px, int py, int mode) {
 //	} else
 	BdispSetPointVRAM2(px, py, mode);
 }
+
+int prev_px0=-1,prev_py0=-1;	// Prev Thick dot 
+int prev_px1=-1,prev_py1=-1;
+int prev_px2=-1,prev_py2=-1;
+int prev_px3=-1,prev_py3=-1;
+
 void LinesubSetPointThick(int px, int py, int mode) {
+	if ( mode == 2 ) {	// xor 
+		if ( ((prev_px0!=px  )||(prev_py0!=py  ))&&((prev_px1!=px  )||(prev_py1!=py  ))&&((prev_px2!=px  )||(prev_py2!=py  ))&&((prev_px3!=px  )||(prev_py3!=py  )) ) LinesubSetPoint(px  , py  , mode);
+		if ( ((prev_px0!=px  )||(prev_py0!=py-1))&&((prev_px1!=px  )||(prev_py1!=py-1))&&((prev_px2!=px  )||(prev_py2!=py-1))&&((prev_px3!=px  )||(prev_py3!=py-1)) ) LinesubSetPoint(px  , py-1, mode);
+		if ( ((prev_px0!=px-1)||(prev_py0!=py  ))&&((prev_px1!=px-1)||(prev_py1!=py  ))&&((prev_px2!=px-1)||(prev_py2!=py  ))&&((prev_px3!=px-1)||(prev_py3!=py  )) ) LinesubSetPoint(px-1, py  , mode);
+		if ( ((prev_px0!=px-1)||(prev_py0!=py-1))&&((prev_px1!=px-1)||(prev_py1!=py-1))&&((prev_px2!=px-1)||(prev_py2!=py-1))&&((prev_px3!=px-1)||(prev_py3!=py-1)) ) LinesubSetPoint(px-1, py-1, mode);
+		prev_px0=px  ; prev_py0=py;
+		prev_px1=px  ; prev_py1=py-1;
+		prev_px2=px-1; prev_py2=py;
+		prev_px3=px-1; prev_py3=py-1;
+	} else {
 		LinesubSetPoint(px  , py  , mode);
 		LinesubSetPoint(px  , py-1, mode);
 		LinesubSetPoint(px-1, py  , mode);
 		LinesubSetPoint(px-1, py-1, mode);
+	}
 }
 
 void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
@@ -397,6 +414,11 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 	int wx, wy; // width x,y
 	int Styleflag=1;
 	int tmp;
+
+	prev_px0=-1;	// Prev Thick dot clear
+	prev_px1=-1;
+	prev_px2=-1;
+	prev_px3=-1;
 
 	if (px1==px2) { dx= 0; wx=0; }
 	if (px1< px2) { dx= 1; wx=px2-px1; }
@@ -720,6 +742,10 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 	double	angle, k, x0,y0,x1,y1;
 	int px,py;
 	int	i,n;
+	prev_px0=-1;	// Prev Thick dot clear
+	prev_px1=-1;
+	prev_px2=-1;
+	prev_px3=-1;
 	if (style==S_L_Normal) { k=8; if ( ( r/Xdot )  > 20 ) k=6; }
 	if (style==S_L_Dot )   { k=4; if ( ( r/Xdot )  > 6  ) k=3; }
 	if (style==S_L_Thick)  k=4;
@@ -731,8 +757,8 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 		angle=PI*2*i/n;
 		Plot_X=cos(angle)*r+x;
 		Plot_Y=sin(angle)*r+y;
-		if ( VWtoPXY( Plot_X, Plot_Y, &px, &py) ==0 ) {
-			switch ( style ) {
+		if ( ( VWtoPXY( Plot_X, Plot_Y, &px, &py) ==0 ) && ( (prev_px0!=px)||(prev_py0!=py) ) ) {
+ 			switch ( style ) {
 				case S_L_Normal:
 				case S_L_Dot:
 					LinesubSetPoint(px, py, mode);
@@ -741,7 +767,8 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 				case S_L_Broken:
 					LinesubSetPointThick(px, py, mode);
 					break;
-			}
+				}
+			prev_px0=px  ; prev_py0=py;
 		}
 		if ( drawflag )	Bdisp_PutDisp_DD_DrawBusy_skip();
 	}
@@ -749,4 +776,7 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 	regY=Plot_Y;
 	regintX=regX; regintY=regY;
 }
+
+//----------------------------------------------------------------------------------------------
+int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
 
