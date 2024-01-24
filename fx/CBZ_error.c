@@ -143,7 +143,7 @@ void CB_ErrMsg(int ErrNo) {
 			ERROR("Then without If");
 			break;
 		case CaseWithoutSwitchERR:
-			ERROR("Case w.out Switch");
+			ERROR("Case w/out Switch");
 			break;
 		case DefaultWithoutSwitchERR:
 			ERROR("Default wo Switch");

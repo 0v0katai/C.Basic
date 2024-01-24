@@ -1727,6 +1727,17 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		textofst2=textofst;
 		ofst2    =ofst;
 		
+		if ( c == '0' ) {	// '	0X.... 0x... 0B.... 0b....
+			d = text[textofst+1];
+			if ( ( d=='X' )||( d=='x' )||( d=='B' )||( d=='b' ) ) {
+				srcbase[ofst++] = c;
+				textofst++;
+				len=64;
+				GetVarName( text, &textofst, srcbase+ofst, &len) ;
+				ofst+=len;
+				goto tokenloop;
+			}
+		}
 		c=codecnv7F00( srcbase, text, &ofst, &textofst ) ;	// 0x7F00 - 0x7FFF
 		if ( c==0 ) {
 		  extvar:
