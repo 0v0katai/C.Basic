@@ -62,8 +62,8 @@ unsigned int SelectFile (char *filename)
 			qsort( files, size, sizeof(Files), FileCmp );
 		}
 		key = Explorer( size, folder ) ;
-		if ( key == KEY_CTRL_F3 ) break ;	// new file
-		if ( key == KEY_CHAR_POWROOT ) break ;	// sdk built in file
+		if ( key == FileCMD_NEW  ) break ;	// new file
+		if ( key == FileCMD_Prog ) break ;	// sdk built in file
 
 		if ( key == KEY_CTRL_EXIT ) {			//to top of list
 			index = 0;
