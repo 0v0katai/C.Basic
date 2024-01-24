@@ -775,7 +775,7 @@ void CB_StoPict( char *SRC ) { //	StoPict
 		f=1;
 	}
 	n=CB_EvalInt( SRC );
-	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	if ( (n<1) || (20+ExtendPict<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	StoPict(n);
 	if ( ( f ) && ( PictMode == 1 ) ) {
 		PictMode = 0 ;
@@ -788,7 +788,7 @@ void CB_RclPict( char *SRC ) { //	RclPict
 	int n;
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	n=CB_EvalInt( SRC );
-	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	if ( (n<1) || (20+ExtendPict<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 	RclPict(n, 1);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through( SRC );
 }
@@ -800,7 +800,7 @@ void CB_BG_None( char *SRC ) { //	BG_None
 void CB_BG_Pict( char *SRC ) { //	BG_Pict
 	int n;
 	n=CB_EvalInt( SRC );
-	if ( (n<1) || (20<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
+	if ( (n<1) || (20+ExtendPict<n) ){ CB_Error(ArgumentERR); return; }	// Argument error
 //	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	BG_Pict_No=n;
 	if ( UseGraphic != 3 ) UseGraphic = 0;	// Cls or ViewWindow

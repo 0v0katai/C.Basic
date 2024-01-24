@@ -48,6 +48,15 @@
    ML_BMP_16_AND_CL
    ML_BMP_16_XOR_CL
 
+ML_BmpZoom
+   ML_BMP_OR_ZOOM
+   ML_BMP_AND_ZOOM
+   ML_BMP_XOR_ZOOM
+
+ML_BmpRotate
+   ML_BMP_OR_ROTATE
+   ML_BMP_AND_ROTATE
+   ML_BMP_XOR_ROTATE
 
 ===============================================================================
 */
@@ -214,18 +223,69 @@ void CB_GetOprand3VWxyy( char *SRC, int *px, int *py1, int *py2) {
 		*py2=CB_EvalInt( SRC );
 	}
 }
-void CB_GetOprand_MLcolor( char *SRC, int *color) {
-	*color=ML_BLACK;
-	if ( SRC[ExecPtr] != ',' ) return;
+
+int CB_GetOprand_MLwidth( char *SRC ) {
+	MLV_width=1;	// line width
+	if ( SRC[ExecPtr] != ',' ) return 0;
 	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) return;
-	*color=CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] == ',' ) return 1;
+	MLV_width=CB_EvalInt( SRC );
+	return 1;
 }
-void CB_GetOprand_MLrand( char *SRC ) {
+int CB_GetOprand_MLangle( char *SRC, int *start, int *end, int *n ) {
+	*start=0;
+	*end=360;
+	*n=0;
+	if ( SRC[ExecPtr] != ',' ) return 0;
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) goto jp;
+	*start=CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] != ',' ) return 1;
+  jp:
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) goto jp2;
+	*end=CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] != ',' ) return 1;
+  jp2:
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) goto jp;
+	*n=CB_EvalInt( SRC );
+	return 1;
+}
+
+int CB_GetOprand_percent( char *SRC ) {	// 0~100
 	double d;
 	int c;
+	int value=100;
+	if ( SRC[ExecPtr] != ',' ) return value;	// no rand oprand
+	ExecPtr++;
+	c=SRC[ExecPtr];
+	if ( c == ',' ) return value;
+	if ( c == '%') { ExecPtr++;
+		c=CB_EvalDbl( SRC );
+		if ( c <   0 ) c=0;
+		if ( c > 25600 ) c=25600;
+		value=c;
+	} else {
+		d=CB_EvalDbl( SRC );
+		if ( d < 0 ) d=0;
+		if ( d > 256 ) d=256;
+		value=d*100;
+	}
+	return value;
+}
+
+void CB_GetOprand_MLcolor( char *SRC, int *color) {
+	double d;
+	int c;
+	*color=ML_BLACK;
 	MLV_rand=(RAND_MAX+1);	//
-	if ( SRC[ExecPtr] != ',' ) return;
+	if ( SRC[ExecPtr] != ',' ) return;	// no oprand
+	ExecPtr++;
+	if ( SRC[ExecPtr] == ',' ) goto jp;
+	*color=CB_EvalInt( SRC );
+  jp:
+	if ( SRC[ExecPtr] != ',' ) return;	// no rand oprand
 	ExecPtr++;
 	c=SRC[ExecPtr];
 	if ( c == ',' ) return;
@@ -241,21 +301,12 @@ void CB_GetOprand_MLrand( char *SRC ) {
 		MLV_rand = d*(RAND_MAX+1);
 	}
 }
-void CB_GetOprand_MLwidth( char *SRC ) {
-	MLV_width=1;	// line width
-	if ( SRC[ExecPtr] != ',' ) return;
-	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) return;
-	MLV_width=CB_EvalInt( SRC );
-}
-
 //----------------------------------------------------------------------------------------------
 void CB_ML_Pixel( char *SRC ) { // ML_Pixel x, y, color
 	int x,y;
 	int color,rand;
 	CB_GetOprand2VW( SRC, &x, &y );
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_pixel( x, y, color);
 }
@@ -266,7 +317,6 @@ void CB_ML_Point( char *SRC ) { // ML_Point x, y, width, color
 	CB_GetOprand2VW( SRC, &x, &y );
 	CB_GetOprand_MLwidth( SRC );
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_point( x, y, MLV_width, color);
 }
@@ -285,7 +335,6 @@ void CB_ML_Line( char *SRC ) { // ML_Line x1, y1, x2, y2, color
 	int color;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
 	CB_GetOprand_MLwidth( SRC );
 	if ( ErrorNo ) return ;
 	ML_line( x1, y1, x2, y2, color);
@@ -296,7 +345,6 @@ void CB_ML_Horizontal( char *SRC ) { // ML_Horizontal y, x1, x2, color
 	int color;
 	CB_GetOprand3VWyxx( SRC, &y, &x1, &x2);
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_horizontal_line( y, x1, x2, color);
 }
@@ -306,7 +354,6 @@ void CB_ML_Vertical( char *SRC ) { // ML_Vertical x, y1, y2, color
 	int color;
 	CB_GetOprand3VWxyy( SRC, &x, &y1, &y2);
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	ML_vertical_line( x, y1, y2, color);
 }
@@ -317,15 +364,14 @@ void CB_ML_Rect( char *SRC ) { // ML_Rectangle x1,y1,x2,y2, border_width, border
 	int border_width;
 	int border_color;
 	int fill_color;
-	
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	border_width=CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
-	CB_GetOprand2( SRC, &border_color, &fill_color);
-	CB_GetOprand_MLrand( SRC );
+	border_color=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &fill_color );
 	if ( ErrorNo ) return ;
 	ML_rectangle( x1, y1, x2, y2, border_width, border_color, fill_color);
 }
@@ -334,8 +380,11 @@ void CB_ML_Polygon( char *SRC, int fill ) { // ML_Polygon &Mat X, &Mat Y, nb_ver
 	int ary_x,ary_y;
 	int nb_vertices;
 	int color;
-	CB_GetOprand4( SRC, &ary_x, &ary_y, &nb_vertices, &color );
-	CB_GetOprand_MLrand( SRC );
+	CB_GetOprand2( SRC, &ary_x, &ary_y );
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	nb_vertices=CB_EvalInt( SRC );
+	CB_GetOprand_MLcolor( SRC, &color);
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
 	else		ML_polygon( (int *)ary_x, (int *)ary_y, nb_vertices, color);
@@ -346,12 +395,17 @@ void CB_ML_Circle( char *SRC, int fill ) { // ML_Circle x, y, radius, color
 	int x,y;
 	int radius;
 	int color;
+	int Iswidth,Isangle,start,end, n;
 	CB_GetOprand3VWR( SRC, &x, &y, &radius);
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
+	Iswidth=CB_GetOprand_MLwidth( SRC );
+	Isangle=CB_GetOprand_MLangle( SRC, &start, &end, &n ) ;
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_circle( x, y, radius, color);
-	else		ML_circle( x, y, radius, color);
+	else {
+		if ( Iswidth || Isangle )	ML_circle2( x, y, radius, color, start, end, n );
+		else			ML_circle( x, y, radius, color);
+	}
 }
 
 //----------------------------------------------------------------------------------------------
@@ -362,7 +416,6 @@ void CB_ML_Ellipse( char *SRC, int fill ) { // ML_Ellipse x, y, radius1, radius2
 	int color;
 	CB_GetOprand4VWR( SRC, &x, &y, &radius1, &radius2);
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_ellipse( x, y, radius1, radius2, color);
 	else		ML_ellipse( x, y, radius1, radius2, color);
@@ -373,7 +426,6 @@ void CB_ML_EllipseInRect( char *SRC, int fill ) { // ML_EllipseInRect  x1, y1, x
 	int color;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
 	CB_GetOprand_MLcolor( SRC, &color);
-	CB_GetOprand_MLrand( SRC );
 	if ( ErrorNo ) return ;
 	if ( fill ) ML_filled_ellipse_in_rect( x1, y1, x2, y2, color);
 	else		ML_ellipse_in_rect( x1, y1, x2, y2, color);
@@ -560,25 +612,178 @@ void CB_ML_Bmp16( char *SRC ) { // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
 }
 
 //----------------------------------------------------------------------------------------------
+void CB_ML_BmpZoom( char *SRC ) { // ML_BmpZoom( &Mat A,  x, y, width, height, zoomwidth, zoomheight [,color][,rand])
+	int arry;
+	int x,y;
+	int width;
+	int height;
+	int color;
+	float zoomwidth, zoomheight;
+	
+	arry=CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	CB_GetOprand4( SRC, &x, &y, &width, &height );
+  	zoomwidth  = (float)CB_GetOprand_percent( SRC ) / (float)100 ;
+  	zoomheight = (float)CB_GetOprand_percent( SRC ) / (float)100 ;
+	CB_GetOprand_MLcolor( SRC, &color);
+	if ( ErrorNo ) return ;
+
+	ML_bmp_zoom( (unsigned char *)arry, x, y, width, height, zoomwidth,zoomheight, color);
+}
+void CB_ML_BmpRotate( char *SRC ) { // ML_BmpRotate( &Mat A,  x, y, width, height, angle [,color][,rand])
+	int arry;
+	int x,y;
+	int width;
+	int height;
+	int angle=0;
+	int color;
+	
+	arry=CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	CB_GetOprand4( SRC, &x, &y, &width, &height );
+	if ( SRC[ExecPtr] == ',' ) { 
+		ExecPtr++;
+		angle=-CB_EvalInt( SRC );
+	}
+	CB_GetOprand_MLcolor( SRC, &color);
+	if ( ErrorNo ) return ;
+
+	ML_bmp_rotate( (unsigned char *)arry, x, y, width, height, angle, color);
+}
+//----------------------------------------------------------------------------------------------
+/*
+void CB_ML_DrawMat( char *SRC ) { // ML_DrawMat( &Mat A, wx, wy,  x, y, width, height, ML_Color color)
+	int arry,wx,wy;
+	int x,y;
+	int width;
+	int height;
+	int angle=0;
+	int color;
+	
+	arry=CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	CB_GetOprand2( SRC, &width, &height );
+	CB_GetOprand4VWR( SRC, &x, &y, &width, &height);
+	CB_GetOprand_MLcolor( SRC, &color);
+	CB_ML_GetBmpMode( SRC, &mode1, &mode2 );
+	if ( ErrorNo ) return ;
+
+	ML_DrawMat( (unsigned char *)array, wx, wy,  x, y, width, height, color) ;
+}
+*/
+//-----------------------------------------------------------------------------------------MLtest
+
+int CB_MLTest_Point( char *SRC ) { // MLTest_Point x, y, width
+	int x,y;
+	CB_GetOprand2VW( SRC, &x, &y );
+	CB_GetOprand_MLwidth( SRC );
+	if ( ErrorNo ) return ;
+	return MLTest_point( x, y, MLV_width);
+}
+int CB_MLTest_Line( char *SRC ) { // MLTest_Line x1, y1, x2, y2
+	int x1,y1,x2,y2;
+	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
+	if ( ErrorNo ) return ;
+	return MLTest_line( x1, y1, x2, y2);
+}
+
+int CB_MLTest_Horizontal( char *SRC ) { // MLTest_Horizontal y, x1, x2
+	int y,x1,x2;
+	CB_GetOprand3VWyxx( SRC, &y, &x1, &x2);
+	if ( ErrorNo ) return ;
+	return MLTest_horizontal_line( y, x1, x2);
+}
+
+int CB_MLTest_Vertical( char *SRC ) { // MLTest_Vertical x, y1, y2
+	int x,y1,y2;
+	CB_GetOprand3VWxyy( SRC, &x, &y1, &y2);
+	if ( ErrorNo ) return ;
+	return MLTest_rectangle( x, y1, x, y2);
+}
+
+int CB_MLTest_Rect( char *SRC ) { // MLTest_Rectangle x1,y1,x2,y2
+	int x1,y1,x2,y2;
+	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
+	if ( ErrorNo ) return ;
+	return MLTest_rectangle( x1, y1, x2, y2);
+}
+
+int CB_MLTest_Polygon( char *SRC ) { // MLTest_Polygon &Mat X, &Mat Y, nb_vertices
+	int ary_x,ary_y;
+	int nb_vertices;
+	CB_GetOprand2( SRC, &ary_x, &ary_y );
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
+	nb_vertices=CB_EvalInt( SRC );
+	if ( ErrorNo ) return ;
+	return MLTest_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices);
+}
+
+int CB_MLTest_Circle( char *SRC ) { // MLTest_Circle x, y, radius
+	int x,y;
+	int radius;
+	CB_GetOprand3VWR( SRC, &x, &y, &radius);
+	if ( ErrorNo ) return ;
+	return MLTest_filled_circle( x, y, radius);
+}
+
+int CB_MLTest_Ellipse( char *SRC ) { // MLTest_Ellipse x, y, radius1, radius2
+	int x,y;
+	int radius1;
+	int radius2;
+	CB_GetOprand4VWR( SRC, &x, &y, &radius1, &radius2);
+	if ( ErrorNo ) return ;
+	return MLTest_filled_ellipse( x, y, radius1, radius2);
+}
+
+int CB_MLTest_EllipseInRect( char *SRC ) { // MLTest_EllipseInRect  x1, y1, x2, y2
+	int x1,y1,x2,y2;
+	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
+	if ( ErrorNo ) return ;
+	return MLTest_filled_ellipse_in_rect( x1, y1, x2, y2);
+}
+//----------------------------------------------------------------------------------------------
+int CB_MLTest( char *SRC) { // MLTest_command
+	int c;
+	c=SRC[ExecPtr];
+	if ( c != 0xFFFFFFF9 ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	ExecPtr++;
+	c=SRC[ExecPtr++];
+	switch ( c ) {
+		case 0xFFFFFFC5:	// _Point
+			return CB_MLTest_Point( SRC );
+		case 0xFFFFFFC7:	// _Line
+			return CB_MLTest_Line( SRC );
+		case 0xFFFFFFC8:	// _Horizontal
+			return CB_MLTest_Horizontal( SRC );
+		case 0xFFFFFFC9:	// _Vertical
+			return CB_MLTest_Vertical( SRC );
+		case 0xFFFFFFCA:	// _Rectangle
+			return CB_MLTest_Rect( SRC );
+		case 0xFFFFFFCB:	// _Polygon
+		case 0xFFFFFFCC:	// _FillPolygon
+			return CB_MLTest_Polygon( SRC );
+		case 0xFFFFFFCD:	// _Circle
+		case 0xFFFFFFCE:	// _FillCircle
+			return CB_MLTest_Circle( SRC );
+		case 0xFFFFFFCF:	// _Elips
+		case 0xFFFFFFD0:	// _FillElips
+			return CB_MLTest_Ellipse( SRC );
+		case 0xFFFFFFD1:	// _ElipsInRct
+		case 0xFFFFFFD2:	// _FElipsInRct
+			return CB_MLTest_EllipseInRect( SRC );
+	}
+	ExecPtr-=2;
+	{ CB_Error(SyntaxERR); return 0; }  // Syntax error
+}
+//----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
 void CB_ML_command( char *SRC, int c ) { // ML_command
 	switch ( c ) {
-			case 0xFFFFFFC0:	// _ClrVRAM
-//			CB_ML_ClrVRAM();
-			ML_clear_vram();
-			break;
-		case 0xFFFFFFC1:	// _ClrScreen
-//			CB_ML_ClrScreen();
-			ML_clear_screen();
-			break;
-		case 0xFFFFFFC2:	// _DispVRAM
-//			CB_ML_DispVRAM();
-			ML_display_vram();
-			break;
-		case 0xFFFFFFC3:	// _Contrast
-			CB_ML_SetContrast( SRC );
-			break;
 		case 0xFFFFFFC4:	// _Pixel
 			CB_ML_Pixel( SRC );
 			break;
@@ -621,12 +826,6 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 		case 0xFFFFFFD2:	// _FElipsInRct
 			CB_ML_EllipseInRect( SRC, 1 );
 			break;
-		case 0xFFFFFFD3:	// _Hscroll
-			CB_ML_H_Scroll( SRC );
-			break;
-		case 0xFFFFFFD4:	// _Vscroll
-			CB_ML_V_Scroll( SRC );
-			break;
 		case 0xFFFFFFD5:	// _Bmp
 			CB_ML_Bmp( SRC );
 			break;
@@ -636,12 +835,101 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 		case 0xFFFFFFD7:	// _Bmp16
 			CB_ML_Bmp16( SRC );
 			break;
+		case 0xFFFFFFD9:	// _BmpZoom
+			CB_ML_BmpZoom( SRC );
+			break;
+		case 0xFFFFFFDA:	// _BmpRotate
+			CB_ML_BmpRotate( SRC );
+			break;
+//		case 0xFFFFFFDB:	// _DrawMat
+//			CB_ML_DrawMat( SRC );
+//			break;
+			
+		case 0xFFFFFFC0:	// _ClrVRAM
+//			CB_ML_ClrVRAM();
+			ML_clear_vram();
+			break;
+		case 0xFFFFFFC1:	// _ClrScreen
+//			CB_ML_ClrScreen();
+			ML_clear_screen();
+			break;
+		case 0xFFFFFFC2:	// _DispVRAM
+//			CB_ML_DispVRAM();
+			ML_display_vram();
+			break;
+		case 0xFFFFFFC3:	// _Contrast
+			CB_ML_SetContrast( SRC );
+			break;
+		case 0xFFFFFFD3:	// _Hscroll
+			CB_ML_H_Scroll( SRC );
+			break;
+		case 0xFFFFFFD4:	// _Vscroll
+			CB_ML_V_Scroll( SRC );
+			break;
 	}
 }
 
+//----------------------------------------------------------------------------------------------
+const short sintable1024[91]={0,18,36,54,71,89,107,125,143,160,178,195,213,230,248,265,282,299,316,333,350,367,384,400,416,433,449,465,481,496,512,527,543,558,573,587,602,616,630,644,658,672,685,698,711,724,737,749,761,773,784,796,807,818,828,839,849,859,868,878,887,896,904,912,920,928,935,943,949,956,962,968,974,979,984,989,994,998,1002,1005,1008,1011,1014,1016,1018,1020,1022,1023,1023,1024,1024};
+
+int isin( int angle, int x ){
+	while( angle < 0 ) angle+=360;
+	if ( 360 < angle ) angle%=360;
+	if ( 180 < angle ) x=-x;
+	if ( (  90 < angle ) && ( angle <= 180 ) ) { angle=180-angle; }
+	else
+	if ( ( 180 < angle ) && ( angle <= 270 ) ) { angle-=180; }
+	else
+	if ( 270 < angle ) { angle=360-angle; }
+	return ((int)sintable1024[angle]*x+512) >>10;
+}
+int icos( int angle, int x ){
+	if ( angle < 0 ) angle=-angle;
+	angle-=90;
+	if ( angle < 0 ) angle+=360;
+	return isin( angle, x );
+}
+
+void ML_circle2(int x, int y, int radius, ML_Color color, int start, int end, int n ) {	// start:end  0~360
+	double	angle;
+	int plot_x, plot_y, plot2_x, plot2_y;
+	int	i,k,d,minus=1;
+	char rd[]={0,4,12,20,20,20,36,40,56,56,60};
+	int width = ( MLV_width );
+	int draw = DrawType;
+	if(radius < 0) return;
+//	if ( start==end ) { CB_Error(ArgumentERR); return; }  // Argument error
+	if ( start>end ) minus=-1;
+	k=710*radius/113; if ( radius<=10 ) k=rd[radius];
+	if ( n < 1 ) d=360/k*minus; else d=(end-start)/n;
+	if ( d==0 ) d=minus;
+	i=start;
+	plot2_x= isin(i,radius)+x;
+	plot2_y= icos(i,radius)+y;
+	i+=d;
+	if ( width )	ML_point(plot2_x, plot2_y, width, color);		// 1st plot
+	else			ML_pixel(plot2_x, plot2_y, color);
+	while ( 1 ) {
+		plot_x= isin(i,radius)+x;
+		plot_y= icos(i,radius)+y;
+		if ( ( plot_x != plot2_x ) || ( plot_y != plot2_y ) ) {
+			if ( draw==0 ) ML_line( plot2_x, plot2_y, plot_x, plot_y, color );	// connect
+			else {
+				if ( width )	ML_point(plot_x, plot_y, width, color);		// plot
+				else			ML_pixel(plot_x, plot_y, color);
+			}
+		}
+		if ( i == end ) break;
+		plot2_x=plot_x;
+		plot2_y=plot_y;
+		i+=d;
+		if ( minus>0 ) { if ( i>end ) i=end; } else { if ( i<end ) i=end; } 
+	} ;
+}
 
 //----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
 int MLObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int MLObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

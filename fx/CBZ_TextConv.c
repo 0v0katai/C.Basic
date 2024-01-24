@@ -315,7 +315,7 @@ const char ConvList7F00[][16]={
 "ColSize(",				// 7F59
 "RowSize(",				// 7F5A
 "MatBase(",				// 7F5B
-"@7F5C",			// 7F5C
+"ListCmp(",				// 7F5C
 "@7F5D",			// 7F5D
 "@7F5E",			// 7F5E
 "Ticks",				// 7F5F
@@ -997,9 +997,9 @@ const char ConvListF900[][17]={
 "_Bmp ",				// F9D5
 "_Bmp8 ",				// F9D6
 "_Bmp16 ",				// F9D7
-"@F9D8",			// F9D8
-"@F9D9",			// F9D9
-"@F9DA",			// F9DA
+"_Test",				// F9D8
+"_BmpZoom ",			// F9D9
+"_BmpRotate ",			// F9DA
 "@F9DB",			// F9DB
 "@F9DC",			// F9DC
 "@F9DD",			// F9DD

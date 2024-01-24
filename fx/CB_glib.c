@@ -461,53 +461,28 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
 					}
-				break;
-			}
+			} else
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
 						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
 					}
-				break;
-			} 
-			
+			} else
 			if (wx>=wy) {
-				if (dy>0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y++; }
+						j-=wy; if (j<0) { j+=i; y+=dy; }
 					}
-				}
-				if (dy<0) {
-					x=px1; y=py1; j=wx/2; i=wx;
-					while( wx>=0 ) {
-						LinesubSetPoint(x, y, mode);
-						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y--; }
-					}
-				}
-				
 			} else {
-				if (dx>0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x++; }
+						j-=wx; if (j<0) { j+=i; x+=dx; }
 					}
-				}
-				if (dx<0) {
-					x=px1; y=py1; j=wy/2; i=wy;
-					while( wy>=0 ) {
-						LinesubSetPoint(x, y, mode);
-						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x--; }
-					}
-				}
-				
 			}
 			break;
 		case S_L_Dot:		// ---------- Dot
@@ -519,8 +494,7 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 						wy--; y+=dy;
 						Styleflag = 1-Styleflag;
 					}
-				break;
-			}
+			} else
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
@@ -529,53 +503,25 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 						wx--; x+=dx;
 						Styleflag = 1-Styleflag;
 					}
-				break;
-			}
-			
+			} else
 			if (wx>wy) {
-				if (dy>0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						if (Styleflag)
 						LinesubSetPoint(x, y, mode);
 						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y++; }
+						j-=wy; if (j<0) { j+=i; y+=dy; }
 						Styleflag = 1-Styleflag;
 					}
-				}
-				if (dy<0) {
-					x=px1; y=py1; j=wx/2; i=wx;
-					while( wx>=0 ) {
-						if (Styleflag)
-						LinesubSetPoint(x, y, mode);
-						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y--; }
-						Styleflag = 1-Styleflag;
-					}
-				}
-				
 			} else {
-				if (dx>0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						if (Styleflag)
 						LinesubSetPoint(x, y, mode);
 						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x++; }
+						j-=wx; if (j<0) { j+=i; x+=dx; }
 						Styleflag = 1-Styleflag;
 					}
-				}
-				if (dx<0) {
-					x=px1; y=py1; j=wy/2; i=wy;
-					while( wy>=0 ) {
-						if (Styleflag)
-						LinesubSetPoint(x, y, mode);
-						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x--; }
-						Styleflag = 1-Styleflag;
-					}
-				}
-				
 			}
 			break;
 		case S_L_Thick:	// ---------- Thick
@@ -585,127 +531,63 @@ void Linesub(int px1, int py1, int px2, int py2, int style, int mode) {
 						LinesubSetPointThick(x, y, mode);;
 						wy--; y+=dy;
 					}
-				break;
-			}
+			} else
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
 						LinesubSetPointThick(x, y, mode);;
 						wx--; x+=dx;
 					}
-				break;
-			}
-			
+			} else
 			if (wx>=wy) {
-				if (dy>0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
 						LinesubSetPointThick(x, y, mode);;
 						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y++; }
+						j-=wy; if (j<0) { j+=i; y+=dy; }
 					}
-				}
-				if (dy<0) {
-					x=px1; y=py1; j=wx/2; i=wx;
-					while( wx>=0 ) {
-						LinesubSetPointThick(x, y, mode);;
-						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y--; }
-					}
-				}
-				
 			} else {
-				if (dx>0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
 						LinesubSetPointThick(x, y, mode);;
 						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x++; }
+						j-=wx; if (j<0) { j+=i; x+=dx; }
 					}
-				}
-				if (dx<0) {
-					x=px1; y=py1; j=wy/2; i=wy;
-					while( wy>=0 ) {
-						LinesubSetPointThick(x, y, mode);;
-						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x--; }
-					}
-				}
-				
 			}
 			break;
 		case S_L_Broken:	// ---------- Broken
 			if (wx==0) {	// vertical line
 					x=px1; y=py1;
 					while( wy>=0 ) {
-						if (Styleflag==1) {
-							LinesubSetPointThick(x, y, mode);;
-						}
+						if (Styleflag==1) LinesubSetPointThick(x, y, mode);
 						wy--; y+=dy;
 						Styleflag++; if (Styleflag>2) Styleflag=0;
 					}
-				break;
-			}
+			} else
 			if (wy==0) { // horizontal line
 					x=px1; y=py1;
 					while( wx>=0 ) {
-						if (Styleflag==1) {
-							LinesubSetPointThick(x, y, mode);;
-						}
+						if (Styleflag==1) LinesubSetPointThick(x, y, mode);
 						wx--; x+=dx;
 						Styleflag++; if (Styleflag>2) Styleflag=0;
 					}
-				break;
-			}
-			
+			} else
 			if (wx>=wy) {
-				if (dy>0) {
 					x=px1; y=py1; j=wx/2; i=wx;
 					while( wx>=0 ) {
-						if (Styleflag==1) {
-							LinesubSetPointThick(x, y, mode);;
-						}
+						if (Styleflag==1) LinesubSetPointThick(x, y, mode);
 						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y++; }
+						j-=wy; if (j<0) { j+=i; y+=dy; }
 						Styleflag++; if (Styleflag>2) Styleflag=0;
 					}
-				}
-				if (dy<0) {
-					x=px1; y=py1; j=wx/2; i=wx;
-					while( wx>=0 ) {
-						if (Styleflag==1) {
-							LinesubSetPointThick(x, y, mode);;
-						}
-						wx--; x+=dx;
-						j-=wy; if (j<0) { j+=i; y--; }
-						Styleflag++; if (Styleflag>2) Styleflag=0;
-					}
-				}
-				
 			} else {
-				if (dx>0) {
 					x=px1; y=py1; j=wy/2; i=wy;
 					while( wy>=0 ) {
-						if (Styleflag==1) {
-							LinesubSetPointThick(x, y, mode);;
-						}
+						if (Styleflag==1) LinesubSetPointThick(x, y, mode);
 						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x++; }
+						j-=wx; if (j<0) { j+=i; x+=dx; }
 						Styleflag++; if (Styleflag>2) Styleflag=0;
 					}
-				}
-				if (dx<0) {
-					x=px1; y=py1; j=wy/2; i=wy;
-					while( wy>=0 ) {
-						if (Styleflag==1) {
-							LinesubSetPointThick(x, y, mode);;
-						}
-						wy--; y+=dy;
-						j-=wx; if (j<0) { j+=i; x--; }
-						Styleflag++; if (Styleflag>2) Styleflag=0;
-					}
-				}
-				
 			}
 			break;
 		default:

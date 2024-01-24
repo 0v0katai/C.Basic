@@ -1,5 +1,5 @@
 #define LISTMAX 52
-#define MatAryMax 26+6+LISTMAX+1
+#define MATARY_MAX 26+6+LISTMAX+1
 //extern int	MatAryMaxbyte[MatAryMax];		// Matrix array max memory size
 //extern char	MatAryBase[MatAryMax]			// Matrix array base 0 or 1
 //extern char	MatAryElementSize[MatAryMax];	// Matrix array word size
@@ -16,7 +16,10 @@ typedef struct {		// 16 bytes
 	double *Adrs;
 } matary;
 
-extern matary MatAry[MatAryMax];
+extern int MatAryMax;
+extern matary *MatAry;
+extern short ExtListMax;		// List Max number
+extern short Mattmpreg;		//
 
 extern char	MatBaseDefault;
 extern char	MatBase;
@@ -81,6 +84,7 @@ void CB_Seq( char *SRC ) ; //	Seq(X^2,X,1.10,1)->List 1[.B][.W][.L][.F]
 int CB_ListCalc( char *SRC ) ; //	List 1 -> List 2  etc
 void CB_Argument( char *SRC ) ;	// Argument( List1, List2 )		Argument( Mat A, Mat B)
 void CB_SortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )
+int  CB_EvalSortAD( char *SRC, int flagAD) ;	// SortA( List 1 ) or 	// SortD( List 1 )  for Eval
 void CB_MatSwap( char *SRC ) ;		// Swap Mat A,2,3
 void CB_MatxRow( char *SRC ) ;		// *Row 5,A,2
 void CB_MatxRowPlus( char *SRC ) ;	// *Row+ 5,A,2,3
@@ -100,11 +104,18 @@ int CB_MeanInt( char *SRC ) ;	// Mean( List 1 )
 int CB_MedianInt( char *SRC ) ;	// Median( List 1, List 2 )
 int CB_SumInt( char *SRC ) ;	// Sum( List 1 )
 int CB_ProdInt( char *SRC ) ;	// Prod( List 1 )
+int CB_ListCmp( char *SRC ) ;	// ListCmp( List 1, List 2 )
 
 void CB_RanList( char *SRC ) ;	// RanList#( 50 ) -> List Ans
 void CB_RanInt( char *SRC, int x, int y ) ;	// RanIntNorm#( st, en [,n] ) -> List Ans
 double CB_RanNorm( char *SRC ) ;	// RanNorm#( sd, mean [,n] ) -> List Ans
 double CB_RanBin( char *SRC ) ;	// RanBin#( n, p [,m] ) -> List Ans
+
+int CB_Dim( char *SRC );		// Dim Mat or Dim List
+int CB_ElemSize( char *SRC );	// ElemSize( Mat A )
+int CB_ColSize( char *SRC );	// ColSize( Mat A )
+int CB_RowSize( char *SRC );	// RowSize( Mat A )
+int CB_MatBase( char *SRC );	// MatBase( Mat A )
 
 //-----------------------------------------------------------------------------
 double CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f

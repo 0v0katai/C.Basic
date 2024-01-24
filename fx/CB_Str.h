@@ -1,7 +1,7 @@
 extern char  *CB_CurrentStr;	//
 extern char  *CB_CurrentStr2;	//
 
-#define CB_StrBufferCNTMax 7
+#define CB_StrBufferCNTMax 10
 #define CB_StrBufferMax 256
 extern char   CB_StrBufferCNT;
 extern char   CB_StrBuffer[CB_StrBufferCNTMax][CB_StrBufferMax];	//

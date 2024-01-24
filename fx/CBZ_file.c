@@ -1901,9 +1901,67 @@ void SaveConfig(){
 	buffer[ 9]='9';
 	buffer[10]='9';
 	buffer[11]='n';
+/*
+typedef struct {
+	char  reserve01;		char  UseHiddenRAM;
+	char  reserve02;		char  CB_INTDefault;
+	short RefreshCtrl;
+	char  reserve03;		char  DrawType;
+	short Refreshtime;
+	char  reserve04;		char  Coord;
+	char  reserve05;		char  ENG;
+	char  reserve06;		char  Grid;
+	char  reserve07;		char  RoundMODE;
+	char  reserve08;		char  Axes;
+	char  reserve09;		char  RoundDIGIT;
+	char  reserve10;		char  Label;
+	short DefaultWaitcount;
+	char  reserve11;		char  Derivative;
+	char  reserve12;		char  CommandInputMethod;
+	char  reserve13;		char  S_L_Style;
+	char  reserve14;		char  ForceG1Msave;
+	char  reserve15;		char  Angle;
+	char  reserve16;		char  StorageMode;
+	char  reserve17;		char  BreakCheck;
+	short PageUpDownNum;
+	char  reserve18;		char  TimeDsp;
+	char  reserve19;		char  MatBaseDefault;
+	char  reserve20;		char  MatXYmode;
+	char  reserve21;		char  CheckIfEnd;
+	char  reserve22;		char  PictMode;
+} setupdata;
+
+	buffer[ 12+1]=UseHiddenRAM;			buffer[ 14+1]=CB_INTDefault;	
+	bufshort[ 16/2]=RefreshCtrl;		buffer[ 18+1]=DrawType;		
+	bufshort[ 20/2]=Refreshtime;		buffer[ 22+1]=Coord;			
+	buffer[ 24+1]=ENG;					buffer[ 26+1]=Grid;			
+	buffer[ 28+1]=CB_Round.MODE;		buffer[ 30+1]=Axes;			
+	buffer[ 32+1]=CB_Round.DIGIT-1;		buffer[ 34+1]=Label;			
+	bufshort[ 36/2]=DefaultWaitcount;	buffer[ 38+1]=Derivative;		
+	buffer[ 40+1]=CommandInputMethod;	buffer[ 42+1]=S_L_Style;		
+	buffer[ 44+1]=ForceG1Msave;			buffer[ 46+1]=Angle;			
+	buffer[ 48+1]=StorageMode;			buffer[ 50+1]=BreakCheck;		
+	bufshort[ 52/2]=PageUpDownNum;		buffer[ 54+1]=TimeDsp;		
+	buffer[ 56+1]=1-MatBaseDefault;		buffer[ 58+1]=MatXYmode;		
+	buffer[ 60+1]=CheckIfEnd;			buffer[ 62+1]=PictMode;		
 
 	bufshort[ 7]=CB_INTDefault;		bufshort[ 6]=UseHiddenRAM;
 	bufshort[ 9]=DrawType;			bufshort[ 8]=RefreshCtrl;
+	bufshort[11]=Coord;				bufshort[10]=Refreshtime;
+	bufshort[13]=Grid;				bufshort[12]=ENG;
+	bufshort[15]=Axes;				bufshort[14]=CB_Round.MODE;
+	bufshort[17]=Label;				bufshort[16]=CB_Round.DIGIT-1;
+	bufshort[19]=Derivative;		bufshort[18]=DefaultWaitcount;
+	bufshort[21]=S_L_Style;			bufshort[20]=CommandInputMethod;
+	bufshort[23]=Angle;				bufshort[22]=ForceG1Msave;
+	bufshort[25]=BreakCheck;		bufshort[24]=StorageMode;
+	bufshort[27]=TimeDsp;			bufshort[26]=PageUpDownNum;
+	bufshort[29]=MatXYmode;			bufshort[28]=1-MatBaseDefault;
+	bufshort[31]=PictMode;			bufshort[30]=CheckIfEnd;
+*/
+
+	buffer[ 12] =ExtendPict;		buffer[ 13]=UseHiddenRAM;		buffer[ 14]=ExtendList;		buffer[ 15]=CB_INTDefault;
+	bufshort[ 8]=RefreshCtrl;										buffer[ 18]=EditListChar;	buffer[ 19]=DrawType;
 	bufshort[11]=Coord;				bufshort[10]=Refreshtime;
 	bufshort[13]=Grid;				bufshort[12]=ENG;
 	bufshort[15]=Axes;				bufshort[14]=CB_Round.MODE;
@@ -1952,7 +2010,6 @@ void SaveConfig(){
 	state=Bfile_CloseFile(handle);
 	if (state<0)  {ErrorMSG("Close Error",state); return;}
 	
-	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 }
 
 
@@ -1992,6 +2049,8 @@ void LoadConfig(){
 		 ( buffer[10]=='9' ) &&
 		 ( buffer[11]=='n' ) ) {
 									// load config & memory
+		ExtendPict    =buffer[ 12];			UseHiddenRAM  =buffer[ 13];		ExtendList  =buffer[ 14];	CB_INTDefault=buffer[ 15];
+		RefreshCtrl   =bufshort[8];											EditListChar=buffer[ 18];	DrawType     =buffer[ 19];
 		CB_INTDefault =bufshort[ 7];		UseHiddenRAM  =bufshort[6];
 		DrawType      =bufshort[ 9];        RefreshCtrl   =bufshort[8];
 		Coord         =bufshort[11];        Refreshtime   =bufshort[10];
@@ -2248,41 +2307,41 @@ int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4S( unsigned int n ){ return n; }	// align +4byte

@@ -57,6 +57,7 @@ void GetGenuineCmdF5( unsigned int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F2C;return;	// Seq(
 				case 1: (*code)=0x7F49;return;	// Argument(
+				case 2: (*code)=0x7F5C;return;	// ListCmp(
 			} break;
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
@@ -127,10 +128,11 @@ void GetGenuineCmdF5( unsigned int *code ){
 			} break;
 		case CMD_SHIFT_SKTCH_ML:
 			switch ( CommandPage ) {
-				case 0: (*code)=0xF9C4;return;	// _Pixel 
+				case 0: (*code)=0xF9D8;return;	// _Test
 				case 1: (*code)=0xF9C9;return;	// _Vertical
-				case 2: (*code)=0xF9C3;return;	// _Contrast
+				case 2: (*code)=0xF9CE;return;	// _Fcircle 
 				case 4: (*code)=0xF9D7;return;	// _Bmp16
+				case 5: (*code)=0xF9C3;return;	// _Contrast
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F5

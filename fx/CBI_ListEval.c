@@ -45,7 +45,7 @@ int EvalFxInt2( FXPTR2 fxptr2, int *resultflag, int *resultreg, int result, int 
 	int i,j,k,sum;
 	int colA,rowB;
 	int base;
-	int tmpreg58=58+26;	// Mattmpreg
+	int tmpreg58=Mattmpreg;
 	int tmpreg=CB_MatListAnsreg;
 	if ( dspflag >= 3 ) {	// Listtmp
 		base=MatAry[tmpreg].Base;
@@ -154,7 +154,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 		return LocalInt[reg][0] ;
 	}
 	if ( ( '0'<=c )&&( c<='9' ) ) {
-		ExecPtr--; return  Eval_atod( SRC, c );
+		ExecPtr--; return  Eval_atoi( SRC, c );
 	}
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
@@ -243,19 +243,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 				case 0xFFFFFF9F :		// KeyRow(
 					return CB_KeyRow( SRC ) ; 
 				case 0xFFFFFF8F :		// Getkey
-					c = SRC[ExecPtr];
-					if ( ( '0'<=c )&&( c<='3' )) {	ExecPtr++ ;
-						switch ( c ) {
-							case '3':
-								result = CB_Getkey3( SRC ) ; 
-								break;
-							default:
-								result = CB_GetkeyN(c-'0') ;
-								break;
-						}
-						if ( result==34 ) if (BreakCheck) { BreakPtr=ExecPtr; KeyRecover(); } 
-					} else	result = CB_Getkey() ;
-					return 	result ;
+					return CB_GetkeyEntry( SRC );
 					
 				case 0xFFFFFF87 :		// RanInt#(st,en)
 					x=NoListEvalIntsubTop( SRC );
@@ -338,37 +326,21 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					return 3;
 				
 				case 0x46 :				// Dim
-					if ( SRC[ExecPtr]==0x7F ) {
-						if ( SRC[ExecPtr+1]==0x40 ) {	// Dim Mat
-							MatrixOprandreg( SRC, &reg );
-							WriteListAns2( MatAry[reg].SizeA, MatAry[reg].SizeB );
-							return MatAry[reg].SizeA;
-						} else
-						if ( SRC[ExecPtr+1]==0x51 ) {	// Dim List
-							MatrixOprandreg( SRC, &reg );
-							return MatAry[reg].SizeA;
-						}
-					} 
+					result=CB_Dim( SRC );
+					if ( result >= 0 ) return result;
 					ExecPtr--;	// error
 					break;
 				case 0x58 :				// ElemSize( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					i=MatAry[reg].ElementSize;
-					if (i <= 4 ) i=1;
-					return i;
+					return CB_ElemSize( SRC );
 				case 0x59 :				// ColSize( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAry[reg].SizeA;
+					return CB_ColSize( SRC );
 				case 0x5A :				// RowSize( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAry[reg].SizeB;
+					return CB_RowSize( SRC );
 				case 0x5B :				// MatBase( Mat A )
-					MatrixOprandreg( SRC, &reg );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-					return MatAry[reg].Base;
+					return CB_MatBase( SRC );
+					
+				case 0x5C :				// ListCmp( List 1, List 2)
+					return CB_ListCmp( SRC );
 					
 				case 0x4A :				// List>Mat( List 1, List 2,..) -> List 5
 					CB_List2Mat( SRC );
@@ -385,7 +357,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 			return PI ;
 		case 0xFFFFFFC1 :	// Ran#
 			c = SRC[ExecPtr];
-			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atod( SRC, c ) );
+			if ( ( '0'<=c )&&( c<='9' ) ) srand( Eval_atoi( SRC, c ) );
 			return rand();
 		case 0xFFFFFF97 :	// abs
 			return EvalFxInt( &fabsint, ListEvalIntsub5( SRC ) ) ; 
@@ -433,6 +405,10 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					result = PxlTest(y, x) ;			// 
 					return result ;
+				case 0xFFFFFFB0 :				// SortA( List 1)
+					return CB_EvalSortAD( SRC, 1 );
+				case 0xFFFFFFB1 :				// SortD( List 1)
+					return CB_EvalSortAD( SRC, 0 );
 				case 0xFFFFFFF4:	// SysCall(
 					return  CB_SysCall( SRC );
 				case 0xFFFFFFF5:	// Call(
@@ -456,6 +432,8 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 			switch ( c ) {
 				case 0xFFFFFFC6:	// M_PixelTest(
 					return CB_ML_PixelTest( SRC );
+				case 0xFFFFFFD8:	// M_Test
+					return CB_MLTest( SRC );
 //				case 0x53:	// M_Contrast(
 //					return CB_ML_GetContrast( SRC );
 				case 0x31:	// StrLen(

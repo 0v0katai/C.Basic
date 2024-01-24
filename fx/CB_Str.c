@@ -1065,7 +1065,7 @@ char* CB_GraphYStrSub( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnA
 	double result;
 	int dimA,dimB;
 	int base=MatAry[reg].Base;
-	dimA=Eval_atod( SRC, SRC[ExecPtr] );
+	dimA=Eval_atoi( SRC, SRC[ExecPtr] );
 	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(ArgumentERR); }  // Argument error
 	return MatrixPtr( reg, dimA, base );
 }

@@ -84,4 +84,8 @@ void CB_ML_Bmp8( char *SRC ) ; // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
 void CB_ML_Bmp16( char *SRC ) ; // ML_Bmp( &Mat A,  x, y [,O/A/X] [,C])
 
 //----------------------------------------------------------------------------------------------
+void CB_ML_BmpZoom( char *SRC ) ; // ML_BmpZoom( &Mat A,  x, y, width, height, zoomwidth, zoomheight  [,color][,rand])
+void CB_ML_BmpRotate( char *SRC ) ; // ML_BmpZoom( &Mat A,  x, y, width, height, angle  [,color][,rand])
+void CB_ML_DrawMat( char *SRC ) ; // ML_DrawMat( x, y, width, height, &Mat A,mx1,my1,mx2,my2, ML_Color color)
+int CB_MLTest( char *SRC) ; // MLTest_command
 void CB_ML_command( char *SRC, int c ) ; // ML_command

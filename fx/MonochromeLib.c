@@ -13,6 +13,8 @@
 
 #include "MonochromeLib.h"
 #include <stdlib.h>
+#include "fxlib.h"
+#include "mathf.h"
 
 #include "fx_syscall.h"
 
@@ -61,6 +63,8 @@
 	#define ML_BMP_16_OR_CL
 	#define ML_BMP_16_AND_CL
 	#define ML_BMP_16_XOR_CL
+	#define ML_BMP_ZOOM
+	#define ML_BMP_ROTATE
 #endif
 
 #ifdef ML_POLYGON
@@ -228,7 +232,7 @@ void ML_pixel(int x, int y, ML_Color color)
 			break;
 
 		case ML_RANDPX:
-			if ( MLV_rand >= rand() ) goto black;
+			if ( MLV_rand >= rand() ) goto black; else goto white;
 			break;
 			
 		case ML_22DOT10:
@@ -489,9 +493,11 @@ ML_Color ML_pixel_test(int x, int y)
 #endif
 
 #ifdef ML_LINE
+
 void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 {
 	int i, x, y, dx, dy, sx, sy, cumul;
+	int width = ( MLV_width );
 	x = x1;
 	y = y1;
 	dx = x2 - x1;
@@ -508,13 +514,13 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 		{
 			x += sx;
 			cumul += dy;
-			if(cumul >= dx)		// > dx  ->  >= dx	(modified)
+			if(cumul >= dx)			// > dx  ->  >= dx	(modified)
 			{
 				cumul -= dx;
 				y += sy;
 			}
-			if ( MLV_width > 1 ) 	ML_point(x, y, MLV_width, color);		// 	(modified)
-			else					ML_pixel(x, y, color);					// 	(modified)
+			if ( width > 1 ) 	ML_point(x, y, width, color);		// 	(modified)
+			else					ML_pixel(x, y, color);			// 	(modified)
 		}
 	}
 	else
@@ -524,16 +530,56 @@ void ML_line(int x1, int y1, int x2, int y2, ML_Color color)
 		{
 			y += sy;
 			cumul += dx;
-			if(cumul >= dy)		// > dy  ->  >= dy	(modified)
+			if(cumul >= dy)			// > dy  ->  >= dy	(modified)
 			{
 				cumul -= dy;
 				x += sx;
 			}
-			if ( MLV_width > 1 ) 	ML_point(x, y, MLV_width, color);		// 	(modified)
-			else					ML_pixel(x, y, color);					// 	(modified)
+			if ( width > 1 ) 	ML_point(x, y, width, color);		// 	(modified)
+			else					ML_pixel(x, y, color);			// 	(modified)
 		}
 	}
 }
+/*
+void ML_line(int px2, int py2, int px1, int py1, ML_Color color) {	// modified near to CasioBasic F-Line
+	int i, j;
+	int x, y;
+	int dx, dy; // delta x,y
+	int wx, wy; // width x,y
+	int width = ( MLV_width );
+
+	if (px1==px2) { dx= 0; wx=0; }
+	if (px1< px2) { dx= 1; wx=px2-px1; }
+	if (px1> px2) { dx=-1; wx=px1-px2;}
+	if (py1==py2) { dy= 0; wy=0; }
+	if (py1< py2) { dy= 1; wy=py2-py1; }
+	if (py1> py2) { dy=-1; wy=py1-py2; }
+
+	if (wx==0) {	// vertical line
+		ML_vertical_line( px1, py1, py2, color);
+	} else
+	if (wy==0) { // horizontal line
+		ML_horizontal_line( py1, px1, px2, color);
+	} else
+	if (wx>=wy) {
+		x=px1; y=py1; j=wx/2; i=wx;
+		while( wx>=0 ) {
+			if ( width > 1 ) 	ML_point(x, y, width, color);		// 	(modified)
+			else					ML_pixel(x, y, color);			// 	(modified)
+			wx--; x+=dx;
+			j-=wy; if (j<0) { j+=i; y+=dy; }
+		}
+	} else {
+		x=px1; y=py1; j=wy/2; i=wy;
+		while( wy>=0 ) {
+			if ( width > 1 ) 	ML_point(x, y, width, color);		// 	(modified)
+			else					ML_pixel(x, y, color);			// 	(modified)
+			wy--; y+=dy;
+			j-=wx; if (j<0) { j+=i; x+=dx; }
+		}
+	}
+}
+*/
 #endif
 
 #ifdef ML_HORIZONTAL_LINE
@@ -608,7 +654,8 @@ void ML_horizontal_line(int y, int x1, int x2, ML_Color color)
 		case ML_RANDPX:
 			for ( i=x1; i<=x2; i++ ) {
 //				if ( MLV_rand >= rand() ) ML_pixel(i, y, ML_BLACK );
-				if ( MLV_rand >= rand() ) vram[(y<<4)+(i>>3)] |= 128>>(i&7);
+				if ( MLV_rand >= rand() ) 	vram[(y<<4)+(i>>3)] |= 128>>(i&7);		// BLACK
+				else						vram[(y<<4)+(i>>3)] &= ~(128>>(i&7));	// WHITE
 			}
 			break;
 			
@@ -744,8 +791,8 @@ void ML_vertical_line(int x, int y1, int y2, ML_Color color)
 			
 		case ML_RANDPX:
 			for ( i=y1; i<=y2; i++ ) {
-//				if ( MLV_rand >= rand() ) ML_pixel(x, i, ML_BLACK );
-				if ( MLV_rand >= rand() ) vram[(i<<4)+(x>>3)] |= 128>>(x&7);
+				if ( MLV_rand >= rand() ) 	vram[(i<<4)+(x>>3)] |= 128>>(x&7);		// BLACK
+				else						vram[(i<<4)+(x>>3)] &= ~(128>>(x&7));	// WHITE
 			}
 			break;
 			
@@ -1006,6 +1053,7 @@ void ML_circle(int x, int y, int radius, ML_Color color)
 		}
 	}
 }
+
 #endif
 
 #ifdef ML_FILLED_CIRCLE
@@ -1711,3 +1759,403 @@ void ML_bmp_16_xor_cl(const unsigned short *bmp, int x, int y)
 }
 #endif
 
+#ifdef ML_BMP_ZOOM
+void ML_bmp_zoom(const unsigned char *bmp, int x, int y, int width, int height, float zoom_w, float zoom_h, ML_Color color)
+{
+    int i, j, iz, jz, width_z, height_z, nb_width, i3, bit, x_screen, pixel;
+    int zoom_w14, zoom_h14;
+    int begin_x, end_x, begin_y, end_y;
+    char* vram = ML_vram_adress();
+
+    if (!bmp) return;
+    if (zoom_h < 0) zoom_h = 0;
+    if (zoom_w < 0) zoom_w = 0;
+    zoom_w14 = zoom_w * 16384;
+    zoom_h14 = zoom_h * 16384;
+    width_z = width * zoom_w14 >> 14 ;
+    height_z = height * zoom_h14 >> 14;
+    nb_width = width + 7 >> 3;
+
+    if (x < 0) begin_x = -x;
+    else begin_x = 0;
+    if (x+width_z > 128) end_x = 128-x;
+    else end_x = width_z;
+    if (y < 0) begin_y = -y;
+    else begin_y = 0;
+    if (y+height_z > 64) end_y = 64-y;
+    else end_y = height_z;
+
+    for (iz=begin_x; iz<end_x; iz++)
+    {
+        i = (iz << 14) / zoom_w14;
+        i3 = i >> 3;
+        bit = 0x80 >> (i & 7);
+        x_screen = x+iz;
+
+        for (jz=begin_y; jz<end_y; jz++)
+        {
+            j = (jz << 14) / zoom_h14;
+            pixel = bmp[i3 + nb_width * j] & bit;
+
+			if (pixel != 0) {
+				vram[(y+jz<<4)+(x_screen>>3)] |= 128>>(x_screen&7);
+				switch(color)
+				{
+					case ML_BLACK:
+					  black:
+						vram[(y+jz<<4)+(x_screen>>3)] |= 128>>(x_screen&7);
+						break;
+					case ML_WHITE:
+					  white:
+						vram[(y+jz<<4)+(x_screen>>3)] &= ~(128>>(x_screen&7));
+						break;
+					case ML_XOR:
+					  xor:
+						vram[(y+jz<<4)+(x_screen>>3)] ^= 128>>(x_screen&7);
+						break;
+					default:
+						ML_pixel(x_screen, y+jz, color);
+					break;
+				}
+			}
+        }
+    }
+}
+#endif
+
+
+#ifdef ML_BMP_ROTATE
+void ML_bmp_rotate(const unsigned char *bmp, int x, int y, int width, int height, int angle, ML_Color color)
+{
+    int i, j, i3, dx, dy, ox, oy, xr, yr, nb_width, pixel, bit;
+    int cosinus, sinus;
+    char* vram = ML_vram_adress();
+
+    if (!bmp) return;
+    ox = x + width / 2;
+    oy = y + height / 2;
+    angle %= 360;
+    if (angle < 0) angle += 360;
+    if (angle == 0) {cosinus = 16384; sinus = 0;}
+    else if (angle == 90) {cosinus = 0; sinus = -16384;}
+    else if (angle == 180) {cosinus = -16384; sinus = 0;}
+    else if (angle == 270) {cosinus = 0; sinus = 16384;}
+    else
+    {
+        cosinus = cosf(-3.14 * angle / 180.0) * 16384;
+        sinus = sinf(-3.14 * angle / 180.0) * 16384;
+    }
+    nb_width = width + 7 >> 3;
+
+    for (i=0; i<width; i++)
+    {
+        bit = 0x80 >> (i & 7);
+        i3 = i >> 3;
+        dx = x + i - ox;
+        for (j=0; j<height; j++)
+        {
+            dy = y + j - oy;
+            xr = ox + (dx * cosinus - dy * sinus >> 14);
+            yr = oy + (dx * sinus + dy * cosinus >> 14);
+            if (!(xr < 0 || xr > 127 || yr < 0 || yr > 63))
+            {
+                pixel = bmp[i3 + nb_width * j] & bit;
+//              if (pixel != 0) vram[(yr<<4)+(xr>>3)] |= 128>>(xr&7);
+				if (pixel != 0) {
+					switch(color)
+					{
+						case ML_BLACK:
+						  black:
+							vram[(yr<<4)+(xr>>3)] |= 128>>(xr&7);
+							break;
+						case ML_WHITE:
+						  white:
+							vram[(yr<<4)+(xr>>3)] &= ~(128>>(xr&7));
+							break;
+						case ML_XOR:
+						  xor:
+							vram[(yr<<4)+(xr>>3)] ^= 128>>(xr&7);
+							break;
+						default:
+							ML_pixel(xr, yr, color);
+						break;
+					}
+				}
+                
+            }
+        }
+    }
+}
+#endif
+
+
+
+//------------------------------------------------------------------- MLtest
+/*
+ML_Color ML_pixel_test(int x, int y)
+{
+	char *vram, byte;
+	if(x&~127 || y&~63) return 0;
+	vram = ML_vram_adress();
+	byte = 1<<(7-(x&7));
+	return (vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
+	
+}
+*/
+int MLTest_point(int x, int y, int width )
+{
+	int count=0;
+	if(width < 1) return 0;
+	if(width == 1) count=ML_pixel_test(x, y);
+	else
+	{
+		int padding, pair;
+		padding = width>>1;
+		pair = !(width&1);
+		return MLTest_rectangle(x-padding+pair, y-padding+pair, x+padding, y+padding);
+	}
+}
+
+int MLTest_line(int x1, int y1, int x2, int y2)
+{
+	int i, x, y, dx, dy, sx, sy, cumul;
+	int byte,count=0;
+    char* vram = ML_vram_adress();
+	x = x1;
+	y = y1;
+	dx = x2 - x1;
+	dy = y2 - y1;
+	sx = sgn(dx);
+	sy = sgn(dy);
+	dx = abs(dx);
+	dy = abs(dy);
+	if(dx > dy)
+	{
+		cumul = dx / 2;
+		for(i=1 ; i<=dx ; i++)		// i<dx  ->  i<=dx	(modified)
+		{
+			x += sx;
+			cumul += dy;
+			if(cumul >= dx)			// > dx  ->  >= dx	(modified)
+			{
+				cumul -= dx;
+				y += sy;
+			}
+			byte = 1<<(7-(x&7));
+			count+=(vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
+		}
+	}
+	else
+	{
+		cumul = dy / 2;
+		for(i=1 ; i<=dy ; i++)		// i<dy  ->  i<=dy	(modified)
+		{
+			y += sy;
+			cumul += dx;
+			if(cumul >= dy)			// > dy  ->  >= dy	(modified)
+			{
+				cumul -= dy;
+				x += sx;
+			}
+			byte = 1<<(7-(x&7));
+			count+=(vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
+		}
+	}
+	return count;
+}
+
+int MLTest_horizontal_line(int y, int x1, int x2 )
+{
+    int i,x,count=0;
+	int byte;
+    char* vram = ML_vram_adress();
+    if(y&~63 || (x1<0 && x2<0) || (x1>127 && x2>127)) return 0;
+    if(x1 > x2)
+    {
+    	i = x1;
+    	x1 = x2;
+    	x2 = i;
+    }
+    if(x1 < 0) x1 = 0;
+    if(x2 > 127) x2 = 127;
+	for ( x=x1; x<=x2; x++) {
+		byte = 1<<(7-(x&7));
+		count+=(vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
+	}
+	return count;
+}
+
+int MLTest_rectangle(int x1, int y1, int x2, int y2 )
+{
+	int i,x,y,count=0;
+	int byte;
+    char* vram = ML_vram_adress();
+	if(x1 > x2)
+	{
+		i = x1;
+		x1 = x2;
+		x2 = i;
+	}
+	if(y1 > y2)
+	{
+		i = y1;
+		y1 = y2;
+		y2 = i;
+	}
+	if (  x1<0  ) x1=0;
+	if (  y1<0  ) y1=0;
+	if ( 127<x2 ) x2=127;
+	if (  63<y1 ) y2= 63;
+	
+	for ( y=y1; y<=y2; y++) {
+		for ( x=x1; x<=x2; x++) {
+			byte = 1<<(7-(x&7));
+			count+=(vram[(y<<4)+(x>>3)] & byte ? ML_BLACK : ML_WHITE);
+		}
+	}
+	return count;
+}
+
+int MLTest_filled_polygon(const int *x, const int *y, int nb_vertices )
+{
+	int i, j, dx, dy, ymin, ymax;
+	int count=0;
+	int *cut_in_line, nb_cut;
+	if(nb_vertices < 3) return 0;
+	cut_in_line = malloc(nb_vertices*sizeof(int));
+	if(!cut_in_line) return 0;
+	ymin = ymax = y[0];
+	for(i=1 ; i<nb_vertices ; i++)
+	{
+		if(y[i] < ymin) ymin = y[i];
+		if(y[i] > ymax) ymax = y[i];
+	}
+	for(i=ymin ; i<=ymax ; i++)
+	{
+		nb_cut = 0;
+		for(j=0 ; j<nb_vertices ; j++)
+		{
+			if((y[j]<=i && y[(j+1)%nb_vertices]>=i) || (y[j]>=i && y[(j+1)%nb_vertices]<=i))
+			{
+				dy = abs(y[j]-y[(j+1)%nb_vertices]);
+				if(dy)
+				{
+					dx = x[(j+1)%nb_vertices]-x[j];
+					cut_in_line[nb_cut] = x[j] + rnd(abs(i-y[j]+sgn(i-y[j])/2)*dx/dy);
+					nb_cut++;
+				}
+			}
+		}
+		ML_filled_polygon_quicksord(cut_in_line, 0, nb_cut-1);
+		j = 0;
+		while(j<nb_cut-2 && cut_in_line[j]==cut_in_line[j+1]) j++;
+		while(j < nb_cut)
+		{
+			if(j == nb_cut-1) count+=MLTest_horizontal_line(i, cut_in_line[j-1]+1, cut_in_line[j]);
+			else
+			{
+				dx = 1;
+				while(j+dx<nb_cut-1 && cut_in_line[j+dx]==cut_in_line[j+dx+1]) dx++;
+				count+=MLTest_horizontal_line(i, cut_in_line[j], cut_in_line[j+dx]);
+				j += dx;
+			}
+			j++;
+		}
+	}
+	free(cut_in_line);
+	return count;
+}
+
+int MLTest_filled_circle(int x, int y, int radius)
+{
+	int plot_x, plot_y, d,count=0;
+
+	if(radius < 0) return 0;
+	plot_x = 0;
+	plot_y = radius;
+	d = 1 - radius;
+
+	count+=MLTest_horizontal_line(y, x-plot_y, x+plot_y);
+	while(plot_y > plot_x)
+	{
+		if(d < 0)
+			d += 2*plot_x+3;
+		else {
+			d += 2*(plot_x-plot_y)+5;
+			plot_y--;
+			count+=MLTest_horizontal_line(y+plot_y+1, x-plot_x, x+plot_x);
+			count+=MLTest_horizontal_line(y-plot_y-1, x-plot_x, x+plot_x);
+		}
+		plot_x++;
+		if(plot_y >= plot_x)
+		{
+			count+=MLTest_horizontal_line(y+plot_x, x-plot_y, x+plot_y);
+			count+=MLTest_horizontal_line(y-plot_x, x-plot_y, x+plot_y);
+		}
+	}
+	return count;
+}
+
+int MLTest_filled_ellipse(int x, int y, int radius1, int radius2 )
+{
+	int count=0;
+	int plot_x, plot_y;
+	float d1, d2;
+	if(radius1 < 1 || radius2 < 1) return 0;
+	plot_x = 0;
+	plot_y = radius2;
+	d1 = radius2*radius2 - radius1*radius1*radius2 + radius1*radius1/4;
+	while(radius1*radius1*(plot_y-.5) > radius2*radius2*(plot_x+1))
+	{
+		if(d1 < 0)
+		{
+			d1 += radius2*radius2*(2*plot_x+3);
+			plot_x++;
+		} else {
+			d1 += radius2*radius2*(2*plot_x+3) + radius1*radius1*(-2*plot_y+2);
+			count+=MLTest_horizontal_line(y+plot_y, x-plot_x, x+plot_x);
+			count+=MLTest_horizontal_line(y-plot_y, x-plot_x, x+plot_x);
+			plot_x++;
+			plot_y--;
+		}
+	}
+	count+=MLTest_horizontal_line(y+plot_y, x-plot_x, x+plot_x);
+	count+=MLTest_horizontal_line(y-plot_y, x-plot_x, x+plot_x);
+	d2 = radius2*radius2*(plot_x+.5)*(plot_x+.5) + radius1*radius1*(plot_y-1)*(plot_y-1) - radius1*radius1*radius2*radius2;
+	while(plot_y > 0)
+	{
+		if(d2 < 0)
+		{
+			d2 += radius2*radius2*(2*plot_x+2) + radius1*radius1*(-2*plot_y+3);
+			plot_y--;
+			plot_x++;
+		} else {
+			d2 += radius1*radius1*(-2*plot_y+3);
+			plot_y--;
+		}
+		count+=MLTest_horizontal_line(y+plot_y, x-plot_x, x+plot_x);
+		if(plot_y > 0)
+			count+=MLTest_horizontal_line(y-plot_y, x-plot_x, x+plot_x);
+	}
+	return count;
+}
+
+int MLTest_filled_ellipse_in_rect(int x1, int y1, int x2, int y2)
+{
+	int radius1, radius2;
+	if(x1 > x2)
+	{
+		int tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
+	if(y1 > y2)
+	{
+		int tmp = y1;
+		y1 = y2;
+		y2 = tmp;
+	}
+	radius1 = (x2-x1)/2;
+	radius2 = (y2-y1)/2;
+	return MLTest_filled_ellipse(x1+radius1, y1+radius2, radius1, radius2);
+}

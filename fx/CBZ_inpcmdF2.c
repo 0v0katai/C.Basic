@@ -194,10 +194,11 @@ void GetGenuineCmdF2( unsigned int *code ){
 		case CMD_SHIFT_SKTCH_ML:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF9C1;return;	// _ClrScreen
-				case 1: (*code)=0xF9C7;return;	// _Line 
-				case 2: (*code)=0xF9CC;return;	// _Fporgon 
+				case 1: (*code)=0xF9C5;return;	// _Point 
+				case 2: (*code)=0xF9CB;return;	// _Polygon
 				case 3: (*code)=0xF9D0;return;	// _Felips 
 				case 4: (*code)=0xF9D4;return;	// _Vscroll 
+				case 5: (*code)=0xF9DA;return;	// _BmpRatate
 			} break;
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F2
