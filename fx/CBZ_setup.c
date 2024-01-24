@@ -52,7 +52,7 @@ void VerDispSub( int flag ) {
 	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 6 ); Print( (unsigned char*)"          (c)2020" );
 
-	PrintMini(13*6+2, 2*8+1, (unsigned char*)"build 17", MINI_OVER );
+	PrintMini(13*6+2, 2*8+1, (unsigned char*)"build 18", MINI_OVER );
 	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
@@ -1929,6 +1929,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
 						if ( IsHiddenRAM == 0 ) break;
+						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM = 1 ; // on
 						ExtendList=(6-1);
 						HiddenRAM_MatAryClear();
@@ -1936,6 +1937,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+//						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM &= 0x0F;	// on
 						HiddenRAM_MatAryClear();
 						break;
@@ -2143,6 +2145,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
+						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM = 0 ; // off
 						ExtendPict=0;
 						ExtendList=0;
@@ -2151,6 +2154,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
 						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+//						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM |= 0x10;	// off
 						HiddenRAM_MatAryInit();
 						break;
