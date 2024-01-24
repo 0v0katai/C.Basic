@@ -63,7 +63,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	CB_AliasVarClr();
 	
-	FileListUpdate=1;
+	ClearExtFontflag();
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {

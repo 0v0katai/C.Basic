@@ -17,15 +17,6 @@ unsigned char *ExtAnkFontFXmini;	// Ext Ank font mini
 unsigned char *ExtKanaFontFX;		// Ext Kana & Gaiji font
 unsigned char *ExtKanaFontFXmini;	// Ext Kana & Gaiji font mini
 
-void ClearExtFontflag() {
-	ExtCharAnkFX=0;				// 0:Normal 	1:Ext Ank  font FX
-	ExtCharKanaFX=0;			// 0:Normal 	1:Ext Kana  font FX
-	ExtCharGaijiFX=0;			// 0:Normal 	1:Ext Gaiji font FX
-	ExtCharAnkMiniFX=0;			// 0:Normal 	1:Ext Ank  font FX
-	ExtCharKanaMiniFX=0;		// 0:Normal 	1:Ext Kana  font FX
-	ExtCharGaijiMiniFX=0;		// 0:Normal 	1:Ext Gaiji font FX
-}
-
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
@@ -1394,10 +1385,23 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
 
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
+void ClearExtFontflag() {
+	ExtCharAnkFX=0;				// 0:Normal 	1:Ext Ank  font FX
+	ExtCharKanaFX=0;			// 0:Normal 	1:Ext Kana  font FX
+	ExtCharGaijiFX=0;			// 0:Normal 	1:Ext Gaiji font FX
+	ExtCharAnkMiniFX=0;			// 0:Normal 	1:Ext Ank  font FX
+	ExtCharKanaMiniFX=0;		// 0:Normal 	1:Ext Kana  font FX
+	ExtCharGaijiMiniFX=0;		// 0:Normal 	1:Ext Gaiji font FX
+	memcpy( (char*)ExtAnkFontFX,     (char*)Font00  +32*8,  96*8 );		// Ank Font copy   FX font 
+	memcpy( (char*)ExtAnkFontFXmini, (char*)Fontmini+32*8,  96*8 );		// Ank mini copy   FX font 
+	memcpy( (char*)ExtKanaFontFX,    (char*)KanaFont    ,  112*8 );		// Ank Font copy   FX font 
+	memcpy( (char*)ExtKanaFontFXmini,(char*)KanaFontmini,  112*8 );		// Ank mini copy   FX font 
+}
+
 void ReadExtFont(){
 	LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
-	LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 	LoadExtFontGaiji( 3, "", -1 );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+	LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 }
 
 int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
@@ -1412,9 +1416,9 @@ int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
 	} else {	// expression
 		opcode = CB_EvalInt( SRC );
 		if ( getmode == 0 ) {
-			if ( opcode == 0 ) { EnableExtFont=0; ClearExtFontflag(); return -2; }
+			if ( opcode == 0 ) { ClearExtFontflag(); return -2; }
 			if ( opcode == 1 ) { 
-				if (EnableExtFont==0) OkMSGstr2("Please Enable","Extfont by Setup");
+				if (EnableExtFont==0) OkMSGstr2("Please Enable","Extfont by Setup"); else ReadExtFont();
 				return -2;
 			 }
 		}
@@ -1722,8 +1726,6 @@ const char fontfolderFX[][8]={"","/FONT/"};
 void LoadExtFontKanafolder( int flag, char* sname, int folder, int no ){		// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 	char sname2[32];
 	strcpy( sname2, sname );
-	memcpy( ExtKanaFontFX, KanaFont, (32+64+3)*8 );				// kana copy
-	memcpy( ExtKanaFontFXmini, KanaFontmini, (32+64+3)*8 );		// kana mini copy
 	if ( EnableExtFont==0 ) return ;
 	if ( sname[0]=='\0' ) {
 			if ( ( no < 0 )||( 9 < no ) )	sprintf(sname2 ,"%sFONTK8L",   fontfolderFX[folder] );
@@ -1758,8 +1760,6 @@ void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no ){		// FO
 void LoadExtFontAnkfolder( int flag, char* sname, int folder, int no ){		// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
 	char sname2[32];
 	strcpy( sname2, sname );
-	memcpy( (char*)ExtAnkFontFX,     (char*)Font00  +32*8, (95)*8 );		// Ank Font copy   FX font 
-	memcpy( (char*)ExtAnkFontFXmini, (char*)Fontmini+32*8, (95)*8 );		// Ank mini copy   FX font 
 	if ( EnableExtFont==0 ) return ;
 	ExtCharAnkFX = 1;
 	ExtCharAnkMiniFX = 1;
