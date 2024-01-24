@@ -20,6 +20,7 @@
 #include "CB_error.h"
 #include "CB_setup.h"
 #include "CB_Matrix.h"
+#include "CB_Str.h"
 
 //------------------------------------------------------------------------------
 int GCursorflag = 1;	// GCursor Pixel ON:1 OFF:0
@@ -502,19 +503,6 @@ unsigned int Trace(int *index ) {
 }
 
 //----------------------------------------------------------------------------------------------
-double Graph_Eval( char *SRC) {		// Eval Graph
-	double result;
-	int execptr=ExecPtr;
-	int oplen=strlenOp( SRC );
-    ExecPtr = 0;
-    ErrorPtr= 0;
-	ErrorNo = 0;
-    result = EvalsubTop( SRC );
-	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
-    ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
-	return result;
-}
 
 void Graph_Draw(){
 	int i;
@@ -522,7 +510,7 @@ void Graph_Draw(){
 	regX   = Xmin-Xdot;
 	for ( i=0; i<=128; i++) {
 		//-----------------------------
-		traceAry[i]=Graph_Eval(GraphY);		// function
+		traceAry[i]=CB_EvalStrDBL(GraphY);		// function
 		if ( ErrorPtr ) return ;
 		//-----------------------------
 		if ( fabs(traceAry[i])*1e10<Ydot ) traceAry[i]=0;	// zero adjust

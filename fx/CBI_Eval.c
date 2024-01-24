@@ -431,8 +431,12 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					
 			} else if ( c == 0xFFFFFFF5 ) {	// IsExist(
 					return  CB_IsExist( SRC );
-//			} else if ( c == 0xFFFFFFF6 ) {	// Peek
-//					return  CB_Peek(SRC);
+			} else if ( c == 0xFFFFFFF6 ) {	// Peek
+					return  CB_PeekInt( SRC, EvalIntsubTop( SRC ) );
+			} else if ( c == 0xFFFFFFF8 ) {	// VarPtr(
+					return  CB_VarPtr( SRC );
+			} else if ( c == 0xFFFFFFFA ) {	// ProgPtr(
+					return  CB_ProgPtr( SRC );
 			} else if ( c == 0x00 ) {	// Xmin
 					return Xmin;
 			} else if ( c == 0x01 ) {	// Xmax
@@ -489,6 +493,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			return result ;
 		case '%' :	// 1/128 Ticks
 			return RTC_GetTicks()-CB_TicksAdjust;	// 
+		case '*' :	// peek
+			return CB_PeekInt( SRC, EvalIntsub1( SRC ) );	// 
 			
 		case 0xFFFFFF86 :	// sqr
 			tmp=EvalIntsub5( SRC ) ;
@@ -556,8 +562,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			break;
 		case 0xFFFFFFDD :	// Eng
 			return ENG ;
-		case 0xFFFFFFFD:	//  Eval(
-			return CBint_EvalStr(SRC);
+		case '&' :	// & VarPtr
+			return CB_VarPtr( SRC ) ;
 		default:
 			break;
 	}
@@ -569,6 +575,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	CB_Error(SyntaxERR) ; // Syntax error 
 	return 0 ;
 }
+//-----------------------------------------------------------------------------
+//int EvalIntObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+//int EvalIntObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
+//-----------------------------------------------------------------------------
 int EvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
 	int result,tmp;

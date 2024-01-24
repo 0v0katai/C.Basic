@@ -29,7 +29,6 @@ int StrUpr( char *str1, char *str2 ) ;		// Upr$(str2, n) -> str1
 int OpcodeCopy(char *buffer, char *SRC, int Maxlen) ;
 void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) ;	// Opcode String  ->  Ascii String
 
-
 //-----------------------------------------------------------------------------
 // Casio Basic
 //-----------------------------------------------------------------------------
@@ -38,6 +37,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 int CB_IsStr( char *SRC, int execptr ) ;
 char* CB_GetOpStr1( char *SRC ,int *maxlen) ;		// String -> buffer	return
 char* CB_GetOpStr( char *SRC, int *maxoplen  ) ;	// Get opcode String 
+double CB_EvalStrDBL( char *SRC); //
 double CB_EvalStr( char *SRC) ;		// Eval str -> double
 int CBint_EvalStr( char *SRC) ;		// Eval str -> int
 void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;
@@ -48,7 +48,6 @@ void CB_Str( char *SRC );		// "" ""
 int CB_StrCmp( char *SRC ) ;
 int CB_StrSrc( char *SRC ) ;
 int CB_StrLen( char *SRC ) ;
-void CB_Exp( char *SRC ) ;
 
 int CB_StrJoin( char *SRC ) ;
 int CB_StrLeft( char *SRC ) ;
@@ -62,6 +61,7 @@ int CB_StrInv( char *SRC ) ;
 int CB_StrShift( char *SRC ) ;
 int CB_StrRotate( char *SRC ) ;
 int CB_Sprintf( char *SRC ) ;	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
+int CB_EvalToStr( char *SRC ) ;
 
 int CB_StrDMS( char *SRC ) ;
 

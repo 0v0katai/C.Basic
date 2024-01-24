@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic interpreter for fx-9860G series    v0.50
+ Casio Basic interpreter for fx-9860G series    v0.99
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -156,7 +156,17 @@ void CBint_Store( char *SRC ){	// ->
 		} else if ( c == 0x0C ) {	// Yfct
 				ExecPtr+=2;
 				Yfct = CBint_CurrentValue ;
-		}
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else
+	if ( c==0xFFFFFFF7 ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
+			ExecPtr+=2;
+			CB_PokeSubInt( SRC, CBint_CurrentValue, EvalIntsubTop( SRC ) );
+		} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else
+	if ( c=='*' ) { ExecPtr++;
+			CB_PokeSubInt( SRC, CBint_CurrentValue, EvalIntsub1( SRC ) );
 	} else
 	if ( c=='%' ) { ExecPtr++;
 		StoreTicks:

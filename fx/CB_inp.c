@@ -402,9 +402,10 @@ const short oplistInp[]={
 const short oplistOPTN[]={
 		0x8C,	// dms
 		0x23,	// #
-//		0x24,	// $
+		0x24,	// $
 		0x25,	// %
 		0x26,	// &
+		0x2A,	// *
 //		0x27,	// '
 		0x97,	// Abs
 		0xA6,	// Int
@@ -549,9 +550,12 @@ const short oplistPRGM[]={
 		0xF7EE,	// Save
 		0xF7EF,	// Load(
 		
-//		0xF7F5,	// Call
-//		0x7FF6,	// Peek(
-//		0xF7F6,	// Poke 
+		0xF7F4,	// SysCall
+		0xF7F5,	// Call
+		0xF7F6,	// Poke 
+		0x7FF6,	// Peek(
+		0x7FF8,	// VarPtr(
+		0x7FFA,	// ProgPtr(
 		
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -568,6 +572,7 @@ const short oplistPRGM[]={
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
 		0xF93E,	// Sprintf(
+		0xF940,	// Str(
 		0xF93F,	// Str
 		
 		0};
@@ -866,8 +871,6 @@ const short oplistCMD[]={
 		0x7E,	// ~
 		0x23,	// #
 		0x25,	// %
-//		0x0C,	// dsps	
-//		0x3A,	// :	
 
 		0x3D,	// =			1
 		0x11,	// !=			2
@@ -986,7 +989,7 @@ const short oplistCMD[]={
 		0x7F0B,	// Xfct
 		0x7F0C,	// Yfct
 		0XF921,	// Xdot
-		0x5C,	// 
+		0x7E,	// ~
 		0x23,	// #
 		0x25,	// %
 
@@ -1042,6 +1045,19 @@ const short oplistCMD[]={
 		0x0B,	// Exa
 		0x5C,	// 
 
+		0xF7F4,	// SysCall
+		0xF7F5,	// Call
+		0xF7F6,	// Poke 
+		0x7FF6,	// Peek(
+		0x2A,	// *
+		0x26,	// &
+		0x7FF8,	// VarPtr(
+		0x7FFA,	// ProgPtr(
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %
+		
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -1050,8 +1066,8 @@ const short oplistCMD[]={
 		0xF934,	// StrLeft(
 		0xF935,	// StrRight(
 		0xF936,	// StrMid(
+		0x5C,	// 
 		0x24,	// $
-		0x26,	// &
 		0x23,	// #
 		0x25,	// %	
 		
@@ -1063,8 +1079,8 @@ const short oplistCMD[]={
 		0xF93C,	// StrShift(
 		0xF93D,	// StrRotate(
 		0xF93E,	// Sprintf(
-		0x24,	// $	
-		0x26,	// &
+		0xF940,	// Str(
+		0x24,	// $
 		0x23,	// #
 		0x25,	// %	
 
@@ -1267,7 +1283,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F5F, "Ticks" }, 
 	{ 0x7FB4, " Xor " }, 
 	{ 0x7FF5, "IsExist(" }, 
-//	{ 0x7FF6, "Peek(" }, 
+	{ 0x7FF6, "Peek(" }, 
+	{ 0x7FFA, "ProgPtr(" }, 
+	{ 0x7FF8, "VarPtr(" }, 
 	{ 0xF70C, "Return " }, 
 	{ 0xF717, "ACBreak" }, 
 	{ 0xF73F, "DotGet(" }, 
@@ -1287,8 +1305,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7EF, "Load(" }, 
 	{ 0xF7F0, "DotShape(" }, 
 	{ 0xF7F1, "Local " }, 
-//	{ 0xF7F5, "Call " }, 
-//	{ 0xF7F6, "Poke(" }, 
+	{ 0xF7F4, "SysCall " }, 
+	{ 0xF7F5, "Call " }, 
+	{ 0xF7F6, "Poke(" }, 
 	{ 0xF7F9, "RefrshCtrl " }, 
 	{ 0xF7FA, "RefrshTime " }, 
 	{ 0xF7FB, "Screen" }, 
@@ -1311,6 +1330,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF93D, "StrRotate(" }, 
 	{ 0xF93E, "Sprintf(" }, 
 	{ 0xF93F, "Str " }, 
+	{ 0xF940, "Str(" }, 
 	{ 0xF94B, "DotPut(" }, 
 	{ 0x00FA, "Gosub "},
 	{ 0, "" }
@@ -1776,6 +1796,7 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 	char *dptr,*eptr;
 	double dpoint=0.01;
 
+	if ( num < 0 ) minus=-1;
 	switch ( round_mode ) {
 		case Norm:
 			if ( round_digit==1 ) { dpoint=0.01;        digit=10; }
@@ -1783,12 +1804,11 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 			if ( round_digit==0 ) digit=16;
 //			if ( round_digit==2 ) { dpoint=0.000000001; digit=10; i=11; c='f'; break; }
 //			num = Round( num, round_mode, digit);
-			if ( num < 0 ) minus=-1;
 			fabsnum=fabs(num);
 		 	w=15; if ( w > width )  w=width;
 		 	pw=pow(10,w+minus);
 			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
-				w = floor((log10(fabsnum))) - minus + (15-digit);
+				w = floor((log10(fabsnum))) + (15-digit);
 				if ( digit >= width ) w= w+(digit-width);
 				i=14-w;
 				if ( i >= 18 ) i=18;
@@ -1848,6 +1868,21 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 		}
 	}
 
+	if ( ENG==3 )  {	// 3 digit separate
+		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
+		nptr=strchr(buffer,'.');
+		if ( nptr==NULL ) w=strlen(buffer)+minus; else w=nptr-buffer+minus;
+		if ( w < 4  ) goto align;
+		i=0; j=0;
+		if ( minus ) buffer[i++]=buffer2[j++];
+		do {
+			buffer[i++]=buffer2[j++];
+			w--;
+			if ( ( w==3 ) || ( w==6 )|| ( w==9 )|| ( w==12 )|| ( w==15 ) ) buffer[i++] = ',';
+		} while ( buffer2[j] ) ;
+		buffer[i]='\0';
+	}
+	align:
 	if ( align_mode == RIGHT_ALIGN ) {
 		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
 		w=strlen((char*)buffer2);
@@ -1881,22 +1916,24 @@ void sprintGRS( char* buffer, double num, int width, int align_mode, int round_m
 }
 
 void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) { // + round  ENG
+	double fabsnum;
 	unsigned char c,d=0;
-	if (ENG) { 
-		if ( ( 1e-15 <= num  ) && ( num < 1e21 ) ) {
+	if ( ENG==1 ) { // ENG mode
+		fabsnum=fabs(num);
+		if ( ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
 			width-- ; 
-			if      ( num >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
-			else if ( num >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
-			else if ( num >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
-			else if ( num >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
-			else if ( num >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
-			else if ( num >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
-			else if ( num >= 1    ) {             c=' ';  }
-			else if ( num >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
-			else if ( num >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
-			else if ( num >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
-			else if ( num >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
-			else if ( num >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
+			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
+			else if ( fabsnum >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
+			else if ( fabsnum >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
+			else if ( fabsnum >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
+			else if ( fabsnum >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
+			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
+			else if ( fabsnum >= 1    ) {             c=' ';  }
+			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
+			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
+			else if ( fabsnum >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
+			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
+			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
 			sprintGRS( buffer, num, width, align_mode, round_mode, round_digit);
 			width=strlen((char*)buffer);
 			buffer[width++]=c;
@@ -1939,7 +1976,7 @@ unsigned int InputStr(int x, int y, int width,  char* buffer, char SPC, int rev_
 }
 
 //----------------------------------------------------------------------------------------------
-//int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
+int inpObjectAlign4( unsigned int n ){ return n; }	// align +4byte
 //int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------

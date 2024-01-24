@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
 struct st_round {
-	int MODE;	//    mode :   0:normal  1:Fix   2: Sci
-	int DIGIT;	//    digits   0~15
+	char MODE;	//    mode :   0:normal  1:Fix   2: Sci
+	char DIGIT;	//    digits   0~15
 };
 
 extern struct st_round CB_Round;	// struct Round
-extern int ENG;	// ENG flag
+extern char ENG;	// ENG flag  1:ENG  3:3digit separate
 extern char UseHiddenRAM;		// 0: no use   1: use hiddenRAM
 extern char IsHiddenRAM;		// 0: hiddenRAM not exist   1: exist
 

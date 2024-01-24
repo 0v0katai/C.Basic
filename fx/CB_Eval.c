@@ -575,19 +575,20 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return result ;
 					
 			} else if ( c == 0xFFFFFFF0 ) {	// GraphY
-					reg='y'-'A';
-					dimA=SRC[ExecPtr++]-'0';
+					reg=defaultGraphAry;
+					dimA=CB_EvalInt( SRC );;
 					if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
-					ptr=ExecPtr;
-					ExecPtr= 0;
-					result= EvalsubTop( MatrixPtr( reg, dimA, 1 ) );
-					ExecPtr=ptr;
+					result=CB_EvalStrDBL( MatrixPtr( reg, dimA, 1 ) );
 					return result ;
 					
 			} else if ( c == 0xFFFFFFF5 ) {	// IsExist(
 					return  CB_IsExist( SRC );
-//			} else if ( c == 0xFFFFFFF6 ) {	// Peek
-//					return  CB_Peek( SRC );
+			} else if ( c == 0xFFFFFFF6 ) {	// Peek(
+					return  CB_Peek( SRC, EvalsubTop( SRC ) );
+			} else if ( c == 0xFFFFFFF8 ) {	// VarPtr(
+					return  CB_VarPtr( SRC );
+			} else if ( c == 0xFFFFFFFA ) {	// ProgPtr(
+					return  CB_ProgPtr( SRC );
 			} else if ( c == 0x00 ) {	// Xmin
 					return Xmin;
 			} else if ( c == 0x01 ) {	// Xmax
@@ -645,6 +646,9 @@ double Evalsub1(char *SRC) {	// 1st Priority
 
 		case '%' :	// 1/128 Ticks
 			return RTC_GetTicks()-CB_TicksAdjust;	// 
+		case '*' :	// peek
+			return CB_Peek( SRC, Evalsub1( SRC ) );	// 
+
 		case 0xFFFFFFF7:	// F7..
 			c = SRC[ExecPtr++];
 			if ( c == 0xFFFFFFAF ) {	// PxlTest(y,x)
@@ -823,8 +827,8 @@ double Evalsub1(char *SRC) {	// 1st Priority
 			break;
 		case 0xFFFFFFDD :	// Eng
 			return ENG ;
-		case 0xFFFFFFFD:	//  Eval(
-			return CB_EvalStr(SRC);
+		case '&' :	// & VarPtr
+			return CB_VarPtr( SRC ) ;
 		default:
 			break;
 	}
@@ -856,8 +860,8 @@ double DmsToDec( char *SRC, double h ) {
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
+//int EvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
+//int EvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
@@ -1350,10 +1354,9 @@ double Eval(char *SRC) {		// Eval temp
 	return result;
 }
 
-double InputNumD_full(int x, int y, int width, double defaultNum) {		// full number display
+double InputNumD_fullsub(int x, int y, int width, double defaultNum ) {		// full number display
 	unsigned int key;
 	double result;
-	sprintG(ExpBuffer, defaultNum, 30, LEFT_ALIGN);
 	key= InputStrSub( x, y, width, 0, ExpBuffer, 64, ' ', REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF) ;
 	if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 	result = Eval( ExpBuffer );
@@ -1364,6 +1367,22 @@ double InputNumD_full(int x, int y, int width, double defaultNum) {		// full num
 	}
 	CB_CurrentValue = result ;
 	return result; // value ok
+}
+double InputNumD_full(int x, int y, int width, double defaultNum) {		// full number display
+	int eng=ENG;
+	if (ENG==3) ENG=0;
+	sprintG(ExpBuffer, defaultNum, 30, LEFT_ALIGN);
+	ENG=eng;
+	return InputNumD_fullsub(x, y, width, defaultNum );
+}
+double InputNumD_fullhex(int x, int y, int width, double defaultNum, int hex) {		// full number display hex
+	if ( hex ) {
+		if ( ( (defaultNum-floor(defaultNum))==0 ) && ( -2147483648. <= defaultNum ) && ( defaultNum <= 2147483647. ) ) {
+			sprintf(ExpBuffer,"0x%08X",(int)defaultNum);
+			return InputNumD_fullsub(x, y, width, defaultNum);
+		}
+	}
+	return InputNumD_full(x, y, width, defaultNum);
 }
 
 double InputNumD_Char(int x, int y, int width, double defaultNum, char code) {		//  1st char key in

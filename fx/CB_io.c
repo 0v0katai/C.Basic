@@ -9,7 +9,7 @@
 #include "KeyScan.h"
 
 struct st_round CB_Round = { Norm , 1} ; // Round
-int ENG=0;	// ENG flag
+char ENG=0;	// ENG flag  1:ENG  3:3digit separate
 char UseHiddenRAM=0;
 char IsHiddenRAM=0;
 

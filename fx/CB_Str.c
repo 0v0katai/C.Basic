@@ -203,10 +203,7 @@ void StrMid( char *str1, char *str2, int n, int m ) {	// mid$(str2,n,m) -> str1
 	slen=StrLen( str2 ,&oplen );
 	if ( n < 1 ) n=1;
 	if ( n > slen ) n=slen;
-	if ( m == 0 ) 
-	if ( m > 0 ) {
-		if ( m > slen ) m=slen;
-	} else m = slen-n;
+	if ( ( m == 0 ) || ( m > slen-n ) ) m=slen-n+1;
 	
 	i=StrMidCopySub( str1, str2, oplen, n, m );
 	str1[i]='\0';
@@ -446,7 +443,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 		else
 		if ( ( 0x34 <= c ) && ( c <= 0x37 ) ) return c;
 		else
-		if ( ( 0x39 <= c ) && ( c <= 0x3F ) ) return c;
+		if ( ( 0x39 <= c ) && ( c <= 0x40 ) ) return c;
 	} else
 	if ( c == 0x7F ) {
 		c=SRC[execptr+1];
@@ -473,8 +470,9 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			CB_GetQuotOpcode( SRC, buffer, CB_StrBufferMax-1 );
 			(*maxlen)=CB_StrBufferMax-1;
 			break;
-		case 2:	// &Mat
+		case 2:	// $Mat
 			ExecPtr++;
+			if ( ( SRC[ExecPtr] == 0x7F ) && ( SRC[ExecPtr+1] == 0x40 ) ) ExecPtr+=2;	// skip 'Mat '
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 			if ( ErrorNo ) return 0 ;			// error
 			buffer=MatrixPtr( reg, dimA, dimB );
@@ -534,9 +532,13 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			ExecPtr+=2;
 			(*maxlen)=CB_StrRotate( SRC );
 			return CB_CurrentStr;
-		case 0x3E:	// ToStr(
+		case 0x3E:	// Sprintf(
 			ExecPtr+=2;
 			(*maxlen)=CB_Sprintf( SRC );
+			return CB_CurrentStr;
+		case 0x40:	// Str(
+			ExecPtr+=2;
+			(*maxlen)=CB_EvalToStr( SRC );
 			return CB_CurrentStr;
 		default:
 			{ CB_Error(SyntaxERR); return 0; }  // Syntax error
@@ -605,7 +607,7 @@ void StorStrGraphY( char *SRC ) {	// GraphY 1-5
 		DimMatrixSub( reg, 8, defaultGraphAryN, defaultGraphArySize, 1 );	// byte matrix
 		if ( ErrorNo ) return ;
 	}
-	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
+	dimA = CB_EvalInt( SRC );	// GraphY no : Mat s[n,len]
 	if ( ( dimA < 1 ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
 	MatAryC=MatrixPtr( reg, dimA, 1 );
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
@@ -713,31 +715,33 @@ int CB_StrSrc( char *SRC ) {
 	return sptr+1;
 }
 
-void CB_Exp( char *SRC ) {	// = CB_Eval()
-}
 //----------------------------------------------------------------------------------------------
+double CB_EvalStrDBL( char *SRC) {		// Eval str -> double
+	double result;
+	int execptr=ExecPtr;
+	int oplen=strlenOp( SRC );
+	if ( oplen == 0 ) return 0;
+    ExecPtr = 0;
+    ErrorPtr= 0;
+	ErrorNo = 0;
+    result = EvalsubTop( SRC );
+	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
+    ExecPtr=execptr;
+	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	return result;
+}
 
 double CB_EvalStr( char *SRC) {		// Eval str -> double
 	double result;
 	int c;
 	int maxoplen;
-	int execptr;
-	int oplen;
 	char *buffer;
 	
 	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
 	if ( ErrorNo ) return 0;  // error
+
+	result=CB_EvalStrDBL( SRC );
 	
-	oplen=strlenOp( buffer );
-	if ( oplen == 0 ) return 0;
-	execptr=ExecPtr;
-	ExecPtr= 0;
-	ErrorPtr= 0;
-	ErrorNo = 0;
-	result = EvalsubTop( buffer );
-	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
-	ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
 	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;
 	return result;
 }
@@ -757,8 +761,6 @@ int CBint_EvalStr( char *SRC) {		// Eval str -> int
 	if ( oplen == 0 ) return 0;
 	execptr=ExecPtr;
 	ExecPtr= 0;
-	ErrorPtr= 0;
-	ErrorNo = 0;
 	result = EvalIntsubTop( buffer );
 	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
 	ExecPtr=execptr;
@@ -904,6 +906,15 @@ int CB_ExpToStr( char *SRC ) {	//
 	CB_CurrentStr = buffer;
 	CB_StorStr( SRC );
 	return 1;
+}
+
+//----------------------------------------------------------------------------------------------
+int CB_EvalToStr( char *SRC ){		// Srt()
+	double value = CB_EvalDbl( SRC );
+	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
+	sprintGR(CB_CurrentStr, value, CB_StrBufferMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return CB_StrBufferMax-1;
 }
 
 int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)

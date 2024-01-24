@@ -62,6 +62,12 @@ int MatrixOprandreg( char *SRC, int *reg) ;
 int Cellsum( int reg, int x, int y );								// 0-
 
 //-----------------------------------------------------------------------------
-int CB_Peek( char *SRC ) ;
+double CB_Peek( char *SRC, int adrs ) ;	// Peek(123456).f
+int CB_PeekInt( char *SRC, int adrs ) ;	// Peek(123456).w
+void CB_PokeSub( char *SRC, double data, int adrs ) ;	// Poke(123456).f
+void CB_PokeSubInt( char *SRC, int data, int adrs ) ;	// Poke(123456).w
 void CB_Poke( char *SRC ) ;
-int CB_Call( char *SRC ) ;
+void CB_Call( char *SRC ) ;
+void CB_SysCall( char *SRC ) ;
+int CB_VarPtr( char *SRC ) ;
+int CB_ProgPtr( char *SRC ) ; //	ProgPtr(

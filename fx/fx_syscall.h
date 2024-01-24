@@ -81,3 +81,8 @@ typedef struct{
 } TShape;
 
 void Bdisp_ShapeToVRAM( TShape *p ); 
+
+//------------------------------------------------------- Call
+
+int Calljmp(    int r4, int r5, int r6, int r7, int adrs );
+int SysCalljmp( int r4, int r5, int r6, int r7, int no );
