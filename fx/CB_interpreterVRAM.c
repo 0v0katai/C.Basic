@@ -2176,15 +2176,18 @@ void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
 	int listreg1,listreg2;
 	int errflag=0;
 	double regTback=regT.real;
+	int regintTback=regintT;
 	
 	if ( CB_RangeErrorCK_ChangeGraphicMode( SRC ) ) return;	// Select Graphic Mode
 	
 	GraphX=SRC+ExecPtr;
 	regT.real=TThetamin;
+	regintT  =TThetamin;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	listreg1=CB_GraphXYEval( SRC );
 	regT.real=regTback;
-    ErrorPtr= 0;
+	regintT  =regintTback;
+	ErrorPtr= 0;
 	errflag=ErrorNo;	// error cancel
 
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -2192,9 +2195,11 @@ void CB_GraphXY( char *SRC ){	// GraphXY(X,Y)=( Xexp , Yexp )
 
 	GraphY=SRC+ExecPtr;
 	regT.real=TThetamin;
+	regintT  =TThetamin;
 	listreg2=CB_GraphXYEval( SRC );
 	regT.real=regTback;
-    ErrorPtr= 0;
+	regintT  =regintTback;
+	ErrorPtr= 0;
 	ErrorNo = 0;	// error cancel
 
 	Graph_Draw_XY_List( listreg1, listreg2 );
@@ -2345,7 +2350,7 @@ void CB_RclVWin( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

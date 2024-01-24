@@ -25,8 +25,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.83\xE6\x41";
-#define VERSION 183
+const char VerMSG[]="C.Basic  v1.84\xE6\x41";
+#define VERSION 184
 
 //---------------------------------------------------------------------------------------------
 
@@ -877,7 +877,7 @@ int SetVar(int select){		// ----------- Set Variable
 			} else {
 				locate(x, 1+i);		// dbl
 				if ( hex )	SetVarDblToHex( buffer, LocalDbl[k][0].real );
-				else Cplx_sprintGR1cutlim( buffer, LocalDbl[k][0], 19,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+				else Cplx_sprintGR1cutlim( buffer, LocalDbl[k][0], 22-x,LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 			}
 			Print((unsigned char*)buffer);
 		}

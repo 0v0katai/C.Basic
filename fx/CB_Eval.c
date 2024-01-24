@@ -507,7 +507,7 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 	int base;
 	MatOprand1sub( SRC, reg, &(*dimA) );
 	if ( MatAry[reg].SizeA == 0 ) { 
-		DimMatrixSub( reg, DefaultElemetSize(), 10-MatBase, 1, MatBase );	// new matrix
+		DimMatrixSub( reg, DefaultElemetSize(), (*dimA)-1+MatBase, 1, MatBase );	// new matrix
 		if ( ErrorNo ) return ; // error
 	}
 	base=MatAry[reg].Base;
@@ -524,7 +524,7 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 
 //----------------------------------------------------------------------------------------------
 int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
+//int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte

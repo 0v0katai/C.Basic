@@ -867,12 +867,12 @@ void DrawStat(){	// DrawStat
 
 //--------------------------------------------------------------
 //---------------------------------------------------------------------------------------------- align dummy
-int glib2ObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte

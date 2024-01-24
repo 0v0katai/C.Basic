@@ -1,6 +1,8 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
+#define BREAKCOUNT 100
+
 extern char CB_INTDefault;	// default mode  0:normal  1: integer mode
 
 extern char	DrawType  ;	// 0:connect  1:Plot
