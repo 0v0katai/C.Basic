@@ -9,15 +9,15 @@ char   CB_StrBufferCNT;
 char   *CB_StrBuffer;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 char   defaultStrAry=26;	// <r>
-char   defaultStrAryN=20;
+short  defaultStrAryN=127;
 short  defaultStrArySize=255+1;
 
-char   defaultFnAry=27;		// Theta
-char   defaultFnAryN=20;
+char   defaultFnAry=57;		// z
+char   defaultFnAryN=127;
 short  defaultFnArySize=255+1;
 
 char   defaultGraphAry=27;		// Theta
-char   defaultGraphAryN=20;
+char   defaultGraphAryN=127;
 short  defaultGraphArySize=255+1;
 
 char	dummychar1;
@@ -253,37 +253,42 @@ int StrInv( char *str1, char *str2 ) {	// mirror$(str2) -> str1
 	str1[opptr1]='\0';
 }
 
-int StrRotate( char *str1, char *str2, int n ) {	// Rotate$("1234567",  2) -> "6712345"
-	int i,j,opptr1,opptr2,slen,oplen;				// Rotate$("1234567", -2) -> "3456712"
+int StrRotate( char *str1, char *str2, int n ) {	// Rotate$("1234567",  2) -> "3456712"
+	int i,j,opptr1,opptr2,slen,oplen;				// Rotate$("1234567", -2) -> "6712345"
 	int opcode,m;
-	if ( n == 0 ) return;
 	slen=StrLen( str2 ,&oplen );
-	if ( n > 0 ) {
-		m=slen-n+1;
-		i=StrMidCopySub( str1, str2, oplen, m, n );
-		j=StrMidCopySub( str1+i, str2, oplen, 1, m-1 );
-	} else { n=-n;
+	if ( slen ) n= n % slen;
+	if ( n >= 0 ) {
 		m=slen-n;
 		i=StrMidCopySub( str1, str2, oplen, n+1, m );
 		j=StrMidCopySub( str1+i, str2, oplen, 1, n );
+	} else { n=-n;
+		m=slen-n+1;
+		i=StrMidCopySub( str1, str2, oplen, m, n );
+		j=StrMidCopySub( str1+i, str2, oplen, 1, m-1 );
 	}
 	str1[i+j]='\0';
+	return i+j;
 }
-
-int StrShift( char *str1, char *str2, int n ) {		// Shift$("1234567",  2) -> "34567"
-	int i,opptr1,opptr2,slen,oplen;					// Shift$("1234567", -2) -> "12345"
+int StrShift( char *str1, char *str2, int n ) {		// Shift$("1234567",  2) -> "34567  "
+	int i,opptr1,opptr2,slen,oplen;					// Shift$("1234567", -2) -> "  12345"
 	int opcode,m;
-	if ( n == 0 ) return;
 	slen=StrLen( str2 ,&oplen );
-	if ( n > 0 ) {
-		m=slen-n+1;
-		i=StrMidCopySub( str1, str2, oplen, n, m );	// =Right$
+	if ( n >= 0 ) {
+		if ( n > slen ) n= slen;
+		if ( i < slen ) i=StrMidCopySub( str1, str2, oplen, n+1, slen );	// =Right$
+		while (i<slen) { str1[i]=' '; i++; }
 	} else { n=-n;
+		if ( n > slen ) n= slen;
 		m=slen-n;
-		i=StrMidCopySub( str1, str2, oplen, 1, m );	// =Left$
+		i=0;
+		while (i<n) { str1[i]=' '; i++; }
+		if ( i < slen ) i=StrMidCopySub( str1, str2, oplen, 1, m );	// =Left$
 	}
 	str1[i]='\0';
+	return i;
 }
+
 int StrLwr( char *str1, char *str2 ) {		// Lwr$(str2, n) -> str1
 	int i,slen,oplen;
 	int opcode;
@@ -343,7 +348,7 @@ int StrCenter( char *str1, char *str2, int max, char *str3 ){	// StrCenter(str2,
 	StrJoin( buffer2, buffer, CB_StrBufferMax-1 ) ;
 	str1[0]='\0';
 	if ( n>=0 ) { 
-		StrRotate( buffer, buffer2, n );
+		StrRotate( buffer, buffer2, -n );
 		StrMid( str1, buffer, 1, max );
 	} else {
 		StrMid( str1, buffer2, 1, max );
@@ -471,7 +476,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int quotflag=0;
 	int ptr=0;
 	c=SRC[ExecPtr-2];
-	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) || ( c=='+' ) ) quotflag=1;
+	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) || ( c==0xFFFFFF89 ) ) quotflag=1;
 	while (1){
 		c = SRC[ExecPtr++];
 		buffer[ptr++]=c;
@@ -544,11 +549,28 @@ char* NewStrBuffer(){
 	if ( CB_StrBufferCNT > CB_StrBufferCNTMax-1 ) { CB_Error(MemoryERR); return NULL; }	// Memory error
 	return CB_StrBuffer+ (CB_StrBufferCNT++)*CB_StrBufferMax;
 }
+char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
+	int dimA,dimB;
+	char *buffer;
+	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
+	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+	dimB = aryMax;
+	if ( MatAry[reg].SizeA == 0 ) {
+		DimMatrixSub( reg, 8, dimA, dimB, MatBase );	// byte matrix
+	} else { 
+		MatElementPlus( reg, dimA, dimB );				// matrix +
+	}
+	if ( ErrorNo ) return 0; // error
+	dimB=MatAry[reg].Base;
+	buffer=MatrixPtr( reg, dimA, dimB );
+	return buffer;
+}
 
 char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 	int c,d,n;
 	int execptr,len,i=0;
 	int reg,dimA,dimB;
+	int aryN,aryMax;
 	char *buffer;
 
 	switch ( CB_IsStr( SRC, ExecPtr ) ) {
@@ -569,31 +591,20 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 		case 0x3F:	// Str 1-20
 			reg=defaultStrAry;
 			ExecPtr+=2;
-			if ( MatAry[reg].SizeA == 0 ) {
-				DimMatrixSub( reg, 8, defaultStrAryN+1-MatBase, defaultStrArySize, MatBase );	// byte matrix
-			}
-	str1:	if ( ErrorNo ) return ; // error
-			if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
-			if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
-			dimB=MatAry[reg].Base;
-			buffer=MatrixPtr( reg, dimA, dimB );
+			buffer = GetStrYFnPtr( SRC, reg, defaultStrAryN+1-MatBase, defaultStrArySize );
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0x1B:	// fn
 			reg=defaultFnAry;
 			ExecPtr+=2;
-			if ( MatAry[reg].SizeA == 0 ) {
-				DimMatrixSub( reg, 8, defaultFnAryN+1-MatBase, defaultFnArySize, MatBase );	// byte matrix
-			}
-			goto str1;
+			buffer = GetStrYFnPtr( SRC, reg, defaultFnAryN+1-MatBase, defaultFnArySize );
+			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0xFFFFFFF0:	// GraphY
 			reg=defaultGraphAry;
 			ExecPtr+=2;
-			if ( MatAry[reg].SizeA == 0 ) {
-				DimMatrixSub( reg, 8, defaultGraphAryN+1-MatBase, defaultGraphArySize, MatBase );	// byte matrix
-			}
-			goto str1;
+			buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN+1-MatBase, defaultGraphArySize );
+			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0x30:	// StrJoin(
 			ExecPtr+=2;
@@ -728,13 +739,8 @@ void StorStrStr( char *SRC ) {	// "String" -> Sto 1-20
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultStrAry;
-	if ( MatAry[reg].SizeA == 0 ) {
-		DimMatrixSub( reg, 8, defaultStrAryN+1-MatBase, defaultStrArySize, MatBase );	// byte matrix
-		if ( ErrorNo ) return ; // error
-	}
-	dimA = CB_EvalInt( SRC );	// str no : Mat s[n,len]
-	if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	MatAryC=MatrixPtr( reg, dimA, MatAry[reg].Base );
+	MatAryC = GetStrYFnPtr( SRC, reg, defaultStrAryN+1-MatBase, defaultStrArySize );
+	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
@@ -742,13 +748,8 @@ void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultGraphAry;
-	if ( MatAry[reg].SizeA == 0 ) {
-		DimMatrixSub( reg, 8, defaultGraphAryN+1-MatBase, defaultGraphArySize, MatBase );	// byte matrix
-		if ( ErrorNo ) return ;
-	}
-	dimA = CB_EvalInt( SRC );	// GraphY no : Mat y[n,len]
-	if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	MatAryC=MatrixPtr( reg, dimA, MatAry[reg].Base );
+	MatAryC = GetStrYFnPtr( SRC, reg, defaultGraphAryN+1-MatBase, defaultGraphArySize );
+	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
@@ -756,13 +757,8 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	int reg,dimA,dimB;
 	char *MatAryC;
 	reg=defaultFnAry;
-	if ( MatAry[reg].SizeA == 0 ) {
-		DimMatrixSub( reg, 8, defaultFnAryN+1-MatBase, defaultFnArySize, MatBase );	// byte matrix
-		if ( ErrorNo ) return ;
-	}
-	dimA = CB_EvalInt( SRC );	// fn no : Mat x[n,len]
-	if ( ( dimA < MatAry[reg].Base ) || ( dimA > MatAry[reg].SizeA ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	MatAryC=MatrixPtr( reg, dimA, MatAry[reg].Base );
+	MatAryC = GetStrYFnPtr( SRC, reg, defaultFnAryN+1-MatBase, defaultFnArySize );
+	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
@@ -988,7 +984,7 @@ int CB_StrSrc( char *SRC ) {
 	}
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( sptr < 1 ) sptr=1;
-	if ( sptr > slen ) sptr=slen;
+	if ( sptr > slen ) return 0; // no found
 	if ( StrSrc( buffer, buffer2, &sptr, CB_StrBufferMax-1 ) ==0 ) return 0 ; // no found
 	return sptr;
 }
@@ -1163,8 +1159,14 @@ char* CB_GraphYStrSub( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnA
 	int dimA,dimB;
 	int base=MatAry[reg].Base;
 	dimA=Eval_atoi( SRC, SRC[ExecPtr] );
-	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(ArgumentERR); }  // Argument error
+	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(MemoryERR); }  // Memory error
 	return MatrixPtr( reg, dimA, base );
+}
+void GraphFnEQ( char *SRC ){
+	int c=SRC[ExecPtr];
+	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
+		if ( SRC[ExecPtr+1] == '=' ) ExecPtr+=2;
+	}
 }
 double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	double result;
@@ -1173,6 +1175,7 @@ double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	if ( ErrorNo ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
+		GraphFnEQ( SRC );
 		regX.real = CB_EvalDbl(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
@@ -1187,6 +1190,7 @@ double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	if ( ErrorNo ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
+		GraphFnEQ( SRC );
 		regX.real = CB_EvalDbl(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
@@ -1202,6 +1206,7 @@ complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	if ( ErrorNo ) return Int2Cplx(0);
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
+		GraphFnEQ( SRC );
 		regX = CB_Cplx_EvalDbl(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
@@ -1216,6 +1221,7 @@ complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	if ( ErrorNo ) return Int2Cplx(0);
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
+		GraphFnEQ( SRC );
 		regX = CB_Cplx_EvalDbl(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
@@ -1231,7 +1237,8 @@ int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	if ( ErrorNo ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
-		regX.real = CB_EvalInt(SRC);
+		GraphFnEQ( SRC );
+		regintX = CB_EvalInt(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_EvalStrInt( ptr, calcflag );
@@ -1246,14 +1253,14 @@ int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	if ( calcflag == 0 ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
-		regX.real = CB_EvalInt(SRC);
+		GraphFnEQ( SRC );
+		regintX = CB_EvalInt(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_EvalStrInt2( ptr, calcflag );
 	regintX = tmpintX;
 	return result;
 }
-
 //----------------------------------------------------------------------------------------------
 int CB_StrJoin( char *SRC ) {
 	int maxoplen;
@@ -1315,10 +1322,11 @@ int CB_StrMid( char *SRC ) {	// StrMid( str1, n [,m] )
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		m = CB_EvalInt( SRC );	//
-	} else m=-1;
+	} else m=maxoplen;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	StrMid( CB_CurrentStr, buffer, n, m ) ;
+	if ( m > 0 ) StrMid( CB_CurrentStr, buffer, n, m ) ;
+	else	CB_CurrentStr[0]='\0';
 	return CB_StrBufferMax-1;
 }
 
@@ -1379,7 +1387,7 @@ int CB_StrRotate( char *SRC ) {	// StrRotate( str1 [,n] )
 	} else n = 1;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	StrRotate( CB_CurrentStr, buffer, -n ) ;
+	StrRotate( CB_CurrentStr, buffer, n ) ;
 	return CB_StrBufferMax-1;
 }
 
@@ -1916,7 +1924,7 @@ int CB_TimeToStr() {	// "23:59:59"
 int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
+//int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

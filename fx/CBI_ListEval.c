@@ -662,6 +662,11 @@ int ListEvalIntsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x21:	// Xdot
+				case 0x31:	// StrLen(
+				case 0x32:	// StrCmp(
+				case 0x33:	// StrSrc(
+				case 0x38:	// Exp(
+				case 0x4B:	// DotP(
 				result = EvalFxInt2( &fMULint, &resultflag, &resultreg, result, ListEvalIntsub4( SRC ) ) ;
 					break;
 				default:
@@ -697,6 +702,7 @@ int ListEvalIntsub7(char *SRC) {	//  7th Priority abbreviated multiplication typ
 		c = SRC[ExecPtr];
 		switch ( c ) {
 			case '(' :
+			case '{' :
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
 			case 0xFFFFFFB6 :	// frac

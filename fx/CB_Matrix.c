@@ -819,6 +819,11 @@ void Mat2Clip( int reg, char *buffer , int max, int bit ) {	//
 	ErrorMSGstr1("Mat to Clip Ok!");
 }
 
+int SkipSpcsub( char *buf, int *ptr ) {
+	int c=buf[(*ptr)];
+	while ( ( c==0x20 ) ) c=buf[++(*ptr)];	//  Skip SPACE
+	return buf[(*ptr)];
+}
 int SkipSpcCRsub( char *buf, int *ptr ) {
 	int c=buf[(*ptr)];
 	while ( ( c==0x20 ) || ( c==0x0D ) ) c=buf[++(*ptr)];	//  Skip SPACE or [CR]
@@ -1145,12 +1150,15 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 					j=SetVarCharVct( buffer, reg); buffer[j]='\0';
 					break;
 				case 1:	// List
+					if ( ( 26<=reg ) && ( reg<=28 ) ) {
+						j=SetVarChar( buffer, reg) ; buffer[j]='\0';
+					} else
 					if ( 32<=reg ) {
 						if ( reg>=58 ) i=reg-57;
 						else
 						if ( reg<=57 ) i=reg-5;
+						sprintf(buffer,"%d",i);
 					}
-					sprintf(buffer,"%d",i);
 					break;
 			}
 		} else {
@@ -1831,6 +1839,9 @@ void CB_MatrixInit( char *SRC, int dimdim ) { //	{n,m}->Dim Mat A[.B][.W][.L][.F
 
 //-----------------------------------------------------------------------------
 
+int SkipSpc( char *SRC ) {
+	return SkipSpcsub( SRC, &ExecPtr );
+}
 int SkipSpcCR( char *SRC ) {
 	return SkipSpcCRsub( SRC, &ExecPtr );
 }
@@ -2030,7 +2041,7 @@ void CB_ClrMat( char *SRC ) { //	ClrMat A
 }
 void CB_ClrVct( char *SRC ) { //	ClrVct A
 	int i;
-	int reg=MatRegVar(SRC);
+	int reg=VctRegVar(SRC);
 	if ( reg>=0 ) {
 		DeleteMatrix( reg );
 	} else { ErrorNo=0;	//
@@ -2678,7 +2689,7 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 	n=1;
 	while ( 1 ) {
 		data=CB_Cplx_EvalDbl( SRC );
-		c=SkipSpcCR(SRC);
+		c=SkipSpc(SRC);
 		if ( c != ',' ) break;
 		ExecPtr++;
 		SkipSpcCR(SRC);
@@ -2699,8 +2710,8 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 	while ( m < dimA+base ) {
 		if (CB_INT==1)	WriteMatrixInt( reg, m, n, EvalIntsubTop( SRC ));
 		else 		    Cplx_WriteMatrix( reg, m, n, Cplx_EvalsubTop( SRC ));
-		c=SkipSpcCR(SRC);
-		if ( c != ',' ) break;
+		c=SkipSpc(SRC);
+//		if ( c != ',' ) break;
 		ExecPtr++;	// "," skip
 		SkipSpcCR(SRC);
 		m++;
@@ -2896,7 +2907,7 @@ void CB_ArgumentMat( char *SRC, int reg ) {	// Argument( Mat A, Mat B )
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	
-	ListEvalsubTop(SRC);
+	Cplx_ListEvalsubTop(SRC);
 	if ( dspflag != 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
 	reg2 = CB_MatListAnsreg;
 
@@ -2939,7 +2950,7 @@ void CB_ArgumentList( char *SRC, int reg ) {	// Argument( List1, List2 )
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 	
-	ListEvalsubTop(SRC);
+	Cplx_ListEvalsubTop(SRC);
 	if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
 	reg2 = CB_MatListAnsreg;
 
@@ -2976,7 +2987,7 @@ void CB_Argument( char *SRC ) {	// Argument( List1, List2 )		Argument( Mat A, Ma
 	int ElementSize,ElementSize2;
 	int base,base2;
 	int c;
-	ListEvalsubTop(SRC);
+	Cplx_ListEvalsubTop(SRC);
 	reg = CB_MatListAnsreg;
 	if ( dspflag == 3 )  { CB_ArgumentMat(SRC, reg); return; }
 	if ( dspflag == 4 )  { CB_ArgumentList(SRC, reg); return; }
@@ -4747,7 +4758,9 @@ void CB_ListNo2Ptr( int n ){
 	}
 }
 void CB_ListFile( char *SRC ){
-	int n = CB_EvalInt( SRC );
+	int n, c = SRC[ExecPtr-1];
+	if ( ( 0xFFFFFFB8 <= c )&& ( c <= 0xFFFFFFBD ) ) { n = c-0xFFFFFFB7; }	// File1~File6
+	else n = CB_EvalInt( SRC );
 	if ( ( n<0 ) || ( ExtendList+1<n ) ) { CB_Error(ArgumentERR); return ; } // Argument error
 	ListFileNo = n;
 	n--;

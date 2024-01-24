@@ -805,15 +805,17 @@ void StoPict( int pictNo){
 }
 
 void RclPictMCS( int pictNo, int errorcheck){
+	char *vram=(char*)PictAry[0];
 	unsigned char *pict;
 	int i,length;
 	pict = (unsigned char *)LoadPictureMCS( pictNo, &length );	// MCS
 	if ( pict == NULL ) { CB_Error(MemoryERR); return; }	// Memory error
 	WriteVram( pict+0x4C );
+	if ( ( errorcheck == 0 ) && ( length<1024 ) ) memset( vram+length, 0, 1024-length );
 	if ( ( length>1024 ) || ( errorcheck ) ) WriteVram( pict+0x4C+1024 );
 }
 
-void RclPict( int pictNo, int errorcheck){
+void RclPict( int pictNo, int errorcheck){	// 
 	unsigned char *pict;
 	unsigned char *pict2;
 	int i;
@@ -839,7 +841,9 @@ void RclPict( int pictNo, int errorcheck){
 		pict = HiddenRAM_mallocPict(pictNo) ;						// Pict array ptr*
 		if ( pict != NULL ) {
 			PictAry[pictNo] = pict;			//  heap mode pict
-			memcpy(pict, pict2+0x4C, 1024 );
+			memset( pict, 0, 1024 );
+			i=SrcSize( (char*)pict2 ); 
+			memcpy( pict, pict2+0x4C, i );
 			WriteVram( pict );
 			HiddenRAM_freeProg(pict2);
 			return;
@@ -2101,6 +2105,12 @@ tgraphstat GraphStat[GRAPHMAX];
 int	GraphPtr;
 double IntegralStart,IntegralEnd;
 //----------------------------------------------------------------------------------------------
+void CB_ClrGraphStat(){
+	int c;
+	for ( c=0; c<GRAPHMAX; c++ ) GraphStat[c].en = 0;
+	GraphPtr=0;	// reset
+}
+
 void CB_DrawGraph(  char *SRC ){
 	int reg,dimA,base;
 	int i;
@@ -2219,10 +2229,10 @@ int CB_GraphXYEval( char *SRC ) {
 	int excptr=ExecPtr;
 	int Ansreg=CB_MatListAnsreg;
 	dspflag=0;
-	result=CB_EvalDbl( SRC );
+	result=CB_EvalDblReal( SRC );
 	if ( dspflag>=3 ) {
 		CB_MatListAnsreg=Ansreg;
-		ExecPtr=excptr; ListEvalsubTop(SRC);	// List calc
+		ExecPtr=excptr; Cplx_ListEvalsubTop(SRC);	// List calc
 		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
 		return CB_MatListAnsreg;	// List
 	}

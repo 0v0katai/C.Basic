@@ -276,7 +276,7 @@ complex Cplx_fabs( complex z ) {
 	if ( z.real==0 ) return Dbl2Cplx( fabs(z.imag) );
 	return Dbl2Cplx( sqrt( z.real*z.real + z.imag*z.imag ) );
 }
-complex Cplx_floor( complex z ) {	// intg
+complex Cplx_intg( complex z ) {	// intg
 	return Dbl2Cplx2( floor(z.real), floor( z.imag) );
 }
 complex Cplx_fint( complex z ) {	// int
@@ -512,7 +512,7 @@ complex Cplx_fDIV( complex x, complex y ) {	// x / y
 }
 complex Cplx_fIDIV( complex x, complex y ) {	// floor( (int)x / (int)y )
 	if ( (x.imag==0)&&(y.imag==0) ) return Dbl2Cplx( fIDIV(x.real, y.real) );
-	return Cplx_floor( Cplx_fDIV( Cplx_floor(x), Cplx_floor(y) ) );
+	return Cplx_intg( Cplx_fDIV( Cplx_intg(x), Cplx_intg(y) ) );
 }
 complex Cplx_fMOD( complex x, complex y ) {	// fMOD(x,y)
 	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
@@ -564,16 +564,16 @@ complex Cplx_fNot( complex x ) {	// Not x
 	return Int2Cplx( ~(int)x.real );
 }
 complex Cplx_fAND_logic( complex x, complex y ) {	// x && y
-	return Int2Cplx( (int)x.real && (int)y.real );
+	return Int2Cplx( x.real && y.real );
 }
 complex Cplx_fOR_logic( complex x, complex y ) {	// x || y
-	return Int2Cplx( (int)x.real || (int)y.real );
+	return Int2Cplx( x.real || y.real );
 }
 complex Cplx_fXOR_logic( complex x, complex y ) {	// x xor y
-	return Int2Cplx( ( (int)x.real!=0) ^ (y.real!=0) );
+	return Int2Cplx( ( x.real!=0) ^ (y.real!=0) );
 }
 complex Cplx_fNot_logic( complex x ) {	// Not x
-	return Int2Cplx( ( (int)x.real==0 ) && ( x.imag==0 ) );
+	return Int2Cplx( ( x.real==0 ) && ( x.imag==0 ) );
 }
 complex Cplx_fcmpEQ( complex x, complex y ) {	//  x == y
 	return Int2Cplx( ( x.real == y.real ) && ( x.imag == y.imag ) );
@@ -939,7 +939,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFA6 :	// int
 			return Cplx_fint( Cplx_Evalsub5( SRC ) );
 		case 0xFFFFFFDE :	// intg
-			return Cplx_floor( Cplx_Evalsub5( SRC ) );
+			return Cplx_intg( Cplx_Evalsub5( SRC ) );
 		case 0xFFFFFFB6 :	// frac
 			return Cplx_frac( Cplx_Evalsub5( SRC ) );
 		case  0xFFFFFFAB  :	//  ! Not
@@ -1330,6 +1330,11 @@ complex Cplx_Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x21:	// Xdot
+				case 0x31:	// StrLen(
+				case 0x32:	// StrCmp(
+				case 0x33:	// StrSrc(
+				case 0x38:	// Exp(
+				case 0x4B:	// DotP(
 					result = Cplx_fMUL( result, Cplx_Evalsub4( SRC ) );
 					break;
 				default:
@@ -1361,6 +1366,7 @@ complex Cplx_Evalsub7(char *SRC) {	//  7th Priority abbreviated multiplication t
 		c = SRC[ExecPtr];
 		switch ( c ) {
 			case '(' :
+			case '{' :
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
 			case 0xFFFFFFDE :	// intg

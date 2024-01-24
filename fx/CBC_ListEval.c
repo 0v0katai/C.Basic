@@ -404,7 +404,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 		case 0xFFFFFFA6 :	// int
 			return Cplx_EvalFxDbl( &Cplx_fint, Cplx_ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFFDE :	// intg
-			return Cplx_EvalFxDbl( &Cplx_floor, Cplx_ListEvalsub5( SRC ) ) ; 
+			return Cplx_EvalFxDbl( &Cplx_intg, Cplx_ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFFB6 :	// frac
 			return Cplx_EvalFxDbl( &Cplx_frac, Cplx_ListEvalsub5( SRC ) ) ; 
 		case 0xFFFFFFA7 :	// not
@@ -832,6 +832,11 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x21:	// Xdot
+				case 0x31:	// StrLen(
+				case 0x32:	// StrCmp(
+				case 0x33:	// StrSrc(
+				case 0x38:	// Exp(
+				case 0x4B:	// DotP(
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 					break;
 				default:
@@ -867,6 +872,7 @@ complex Cplx_ListEvalsub7(char *SRC) {	//  7th Priority abbreviated multiplicati
 		c = SRC[ExecPtr];
 		switch ( c ) {
 			case '(' :
+			case '{' :
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
 			case 0xFFFFFFDE :	// intg

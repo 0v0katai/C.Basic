@@ -234,7 +234,7 @@ int Bkey_GetKeyWait_sub( int kcode1, int kcode2 ) {		//
 }
 
 int KeyCheckAC() {		// [AC]
-//	if (IsSH3 ) return IsKeyDown(KEY_CTRL_AC);
+	if (IsSH3 ) return IsKeyDown(KEY_CTRL_AC);
 	return Bkey_GetKeyWait_sub( 1, 1 ); // [AC] is down
 }
 int KeyCheckEXE() {		// [EXE]
@@ -258,7 +258,8 @@ int KeyCheckCHAR4() {		// [4]
 int KeyCheckCHAR3() {		// [3]
 	if (IsSH3 ) return IsKeyDown(KEY_CHAR_3);
 //	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 3, 4 ); // [3] is down by slim
-	return Bkey_GetKeyWait_sub( 5, 3 ); // [3] is down
+//	return Bkey_GetKeyWait_sub( 5, 3 ); // [3] is down
+	return KeyScanDown(KEYSC_3); // [3] is down
 }
 int KeyCheckCHAR6() {		// [6]
 	if (IsSH3 ) return IsKeyDown(KEY_CHAR_6);

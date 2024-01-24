@@ -536,7 +536,7 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 
 //----------------------------------------------------------------------------------------------
 int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
@@ -668,15 +668,15 @@ double EvalsubTop( char *SRC ) {	// eval 1
 		c=SRC[++ExecPtr];
 		if ( c==0xFFFFFFB0 ) { // And
 			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result && (int)dst;
+			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (result) && (dst);
 		} else
 		if ( c==0xFFFFFFB1 ) { // Or
 			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result || (int)dst;
+			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (result) || (dst);
 		} else
 		if ( c==0xFFFFFFB4 ) { // Xor
 			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return ((int)result!=0) ^ ((int)dst!=0);
+			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (result!=0) ^ (dst!=0);
 		} else
 		if ( c==0xFFFFFFBC ) { // Int/
 			ExecPtr++; dst=Evalsub1(SRC);
@@ -718,6 +718,9 @@ double frac( double x ) {
 	tmp=x-floor(x);
 	return (floor(tmp*d+.5)/d*sign) ;
 }
+//double fintg( double x ) {
+//	return floor(x);
+//}
 double fint( double x ) {
 	if ( x >= 0 ) return floor(x);
 	return -floor(-x);
@@ -1849,6 +1852,11 @@ double Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x21:	// Xdot
+				case 0x31:	// StrLen(
+				case 0x32:	// StrCmp(
+				case 0x33:	// StrSrc(
+				case 0x38:	// Exp(
+				case 0x4B:	// DotP(
 					result *= Evalsub4( SRC ) ;
 					break;
 				default:
@@ -1880,6 +1888,7 @@ double Evalsub7(char *SRC) {	//  7th Priority abbreviated multiplication type A/
 		c = SRC[ExecPtr];
 		switch ( c ) {
 			case '(' :
+			case '{' :
 			case 0xFFFFFF97 :	// abs
 			case 0xFFFFFFA6 :	// int
 			case 0xFFFFFFDE :	// intg

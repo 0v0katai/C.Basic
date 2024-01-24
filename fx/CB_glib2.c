@@ -840,7 +840,7 @@ double GraphXYEval( char *buffer ) {
 	result=EvalsubTopReal( buffer );
 	if ( dspflag>=3 ) {
 		CB_MatListAnsreg=Ansreg;
-		ExecPtr=0; ListEvalsubTop( buffer );	// List calc
+		ExecPtr=0; Cplx_ListEvalsubTop( buffer );	// List calc
 		if ( dspflag != 4 ) { CB_Error(ArgumentERR); return ; } // Argument error
 		result=ReadMatrix( CB_MatListAnsreg, regT.real, MatAry[CB_MatListAnsreg].Base );
 	}
@@ -876,7 +876,7 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 			if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 			tmpX=GraphXYEval(GraphX);		// function
 			tmpY=GraphXYEval(GraphY);		// function
-			if ( ErrorPtr ) return ;
+			if ( ErrorNo ) return ;
 			//-----------------------------
 			if ( xlistreg )	regX.real=ReadMatrix( xlistreg, c, base );
 			else 			regX.real=tmpX;
@@ -983,7 +983,7 @@ void DrawStat(){	// DrawStat
 				Plot_X=regX.real;
 				Plot_Y=regY.real;
 				if ( Sgraph[No].GraphType == 1 ) {	// 1:xyLine
-					Line( S_L_Normal , 1, 0);	// error check
+					Line( S_L_Normal , 1, 0);	// No error check
 				}
 //				Bdisp_PutDisp_DD();
 			}

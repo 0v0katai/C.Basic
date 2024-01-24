@@ -1749,8 +1749,8 @@ char * LoadCapture( int pictNo ){
 	char pictname[16];
 	char *pict;
 	SetCAPTname( pictNo, pictname );
-	pict = MCS_LoadCAPT( pictname );
-//	pict = Load1st2nd( pictname, "Capt", "g1m" );
+	if ( PictMode == 3 ) pict = MCS_LoadCAPT( pictname );
+	else				 pict = Load1st2nd( pictname, "Capt", "g1m" );
 	return pict;
 }
 
@@ -2815,7 +2815,7 @@ int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
@@ -2828,9 +2828,9 @@ int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
@@ -2868,6 +2868,7 @@ void FavoritesDowndummy( int *index ) {
 	(*index)++;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy2( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2884,7 +2885,6 @@ void FavoritesDowndummy2( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummy3( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

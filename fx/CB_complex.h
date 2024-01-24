@@ -21,7 +21,7 @@ complex Cplx_facosh( complex z ) ;
 complex Cplx_fatanh( complex z ) ;
 complex Cplx_frac( complex z ) ;
 complex Cplx_fabs( complex z ) ;
-complex Cplx_floor( complex z ) ;	// intg
+complex Cplx_intg( complex z ) ;	// intg
 complex Cplx_fint( complex z ) ;	// int
 complex Cplx_fdegree( complex z ) ;	//	Rad,Grad ->Deg
 complex Cplx_finvdegree( complex z ) ;	//	Deg -> Rad,Grad
