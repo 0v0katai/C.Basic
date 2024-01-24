@@ -331,3 +331,172 @@ void CB_Except( char*SRC ) {
 	else goto loop;
 }
 
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+int CB_RGBlistsub( char *SRC, int*r, int*g, int*b ){
+	int reg;
+	int m,n;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int dspflagtmp=dspflag;
+	int execptr=ExecPtr;
+	ListEvalsubTop(SRC);
+	if ( dspflag <  3 )  { ExecPtr=execptr; return 1; } // List 1[0] etc
+	if ( dspflag != 4 )  { CB_Error(ArgumentERR); return 0; } // Argument error
+	reg = CB_MatListAnsreg;
+	base=MatAry[reg].Base;
+	m=base;
+	*r = ReadMatrix( reg, m++, base ) ;
+	*g = ReadMatrix( reg, m++, base ) ;
+	*b = ReadMatrix( reg, m  , base ) ;
+	DeleteMatListAns();
+	dspflag=dspflagtmp; 
+	return 4;	// List
+}
+
+unsigned short CB_RGB( char *SRC, int mode ) {	// n or (r,g,b)    return : color code	// mode 0:RGB  1:HSV 2:HSL
+	int reg;
+	int m,n;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int dspflagtmp=dspflag;
+	int r,g,b;
+	int h,s,v;
+	int	c=SRC[ExecPtr];
+	if ( c=='#' ) { 	// direct 16bit color #12345
+		ExecPtr++;
+		r = CB_EvalInt( SRC );
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		return r;
+	}
+	c=CB_RGBlistsub( SRC, &r, &g, &b );
+	if ( c==0 ) return 0;	// error
+	if ( mode == 0 ) {	// RGB
+		if ( c==4 ) goto exit;	// List
+		r=CB_EvalInt( SRC );
+//		if ( r<  0 ) r=  0;
+//		if ( r>255 ) r=255;
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		ExecPtr++;
+		g=CB_EvalInt( SRC );
+//		if ( g<  0 ) g=  0;
+//		if ( g>255 ) g=255;
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		ExecPtr++;
+		b=CB_EvalInt( SRC );
+//		if ( b<  0 ) b=  0;
+//		if ( b>255 ) b=255;
+	} else {		// HSV/HSL
+		if ( c==4 ) { h=r; s=g; v=b; goto exithsv; }	// List
+		h=CB_EvalInt( SRC );
+		if ( ( h<0 ) || ( h>359 ) ) h = h%360;
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		ExecPtr++;
+		s=CB_EvalInt( SRC );
+		if ( s<  0 ) s=  0;
+		if ( s>255 ) s=255;
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		ExecPtr++;
+		v=CB_EvalInt( SRC );
+		if ( v<  0 ) v=  0;
+		if ( v>255 ) v=255;
+//		if ( mode==1 ) 	hsv2rgb( h, s, v, &r, &g, &b);
+//		else			hsl2rgb( h, s, v, &r, &g, &b);
+	}
+	exithsv:
+  exit:
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	return 0;
+
+}
+
+int CB_GetColor( char *SRC ){
+	int	c=SRC[ExecPtr++];
+	switch ( c ) {
+			case 0x7F:	// 7F
+				c=SRC[ExecPtr++];
+				switch ( c ) {
+					case 0x34 :				// Red
+//						return 0xF800;	// Red
+						break;
+					case 0x35 :				// Blue
+//						return 0x001F;	// Blue
+						break;
+					case 0x36 :				// Green
+//						return 0x07E0;	// Green
+						break;
+					case 0x5E :				// RGB(
+						return CB_RGB( SRC, 0 );
+						break;
+					case 0x71 :				// HSV(
+						return CB_RGB( SRC, 1 );
+						break;
+					case 0x73 :				// HSL(
+						return CB_RGB( SRC, 2 );
+						break;
+					default:
+						ExecPtr-=2;
+						{ CB_Error(SyntaxERR); return -1; }	// syntax error
+						break;
+				}
+				break;
+			case 0xFFFFFFF9:	// F9
+				c=SRC[ExecPtr++];
+				switch ( c ) {
+					case 0xFFFFFF9B :			// Black
+//						return 0x0000;	// Black
+						break;
+					case 0xFFFFFF9C :			// White
+//						return 0xFFFF;	// White
+						break;
+					case 0xFFFFFF9D :			// Magenta
+//						return 0xF81F;	// Magenta
+						break;
+					case 0xFFFFFF9E :			// Cyan
+//						return 0x07FF;	// Cyan
+						break;
+					case 0xFFFFFF9F :			// Yellow
+//						return 0xFFE0;	// Yellow
+						break;
+					default:
+						ExecPtr-=2;
+						{ CB_Error(SyntaxERR); return -1; }	// syntax error
+						break;
+				}
+				break;
+			case '#':
+				return CB_EvalInt( SRC );
+				break;
+			default:
+				ExecPtr--;
+				{ CB_Error(SyntaxERR); return -1; }	// syntax error
+				break;
+		
+	}
+	return -1;
+}
+
+//void CB_PlotLineColor( char *SRC ){
+//	CB_GetColor( SRC );
+//}
+//void CB_BackColor( char *SRC ){
+//	int c=SRC[ExecPtr];
+//	if ( c=='@' ) {
+//		ExecPtr++;
+//		CB_GetColor( SRC );
+//	} else {
+//		CB_GetColor( SRC );
+//	} 
+//}
+//void CB_TransparentColor( char *SRC ){
+//	int color;
+//	int c=SRC[ExecPtr];
+//	if ( ( c==':' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0 ) ) {
+//	} else {
+//		CB_GetColor( SRC );
+//	}
+//}
+

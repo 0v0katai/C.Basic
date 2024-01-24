@@ -698,14 +698,12 @@ int CB_VarPtr( char *SRC ) {
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat or Vct
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
-		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
-		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
+		reg=MatRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 		Matrix0:
 		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
 			ExecPtr++;
-			MatOprand2( SRC, reg, &dimA, &dimB );	// Mat A[a,b]
+			if (CB_INT==1) MatOprandInt2( SRC, reg, &dimA, &dimB); else MatOprand2( SRC, reg, &dimA, &dimB);
 		Matrix2:	
 			if ( ErrorNo ) return 1 ; // error
 			result=(int)MatrixPtr( reg, dimA, dimB );
@@ -715,20 +713,17 @@ int CB_VarPtr( char *SRC ) {
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) {	// Vct
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
 		reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 		goto Matrix0;
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
 		reg=ListRegVar( SRC );
 		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
 			ExecPtr++;
-			MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
-			if ( ErrorNo ) return 1 ; // error
-			result=(int)MatrixPtr( reg, dimA, dimB );
+			if (CB_INT==1) MatOprandInt1( SRC, reg, &dimA, &dimB ); else MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
+			goto Matrix2;
 		} else {
 			result=(int)MatAry[reg].Adrs;	// List 1
 		}
