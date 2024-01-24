@@ -1365,7 +1365,7 @@ int CB_StrRotate( char *SRC ) {	// StrRotate( str1 [,n] )
 	} else n = 1;
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	StrRotate( CB_CurrentStr, buffer, n ) ;
+	StrRotate( CB_CurrentStr, buffer, -n ) ;
 	return CB_StrBufferMax-1;
 }
 

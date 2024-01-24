@@ -108,7 +108,7 @@ int EndOfSrc( char *SRC, int ptr ) {
 	endPtr=SrcEndPtr( filebase );
 	if (SRC < srcbase ) SRC=srcbase;
 	while ( SRC[ptr] ) {
-		if ( ptr >= endPtr ) return 0 ;
+		if ( ptr >= endPtr ) return endPtr ;
 		NextLine( SRC, &ptr );
 	}
 	return ptr;
