@@ -404,6 +404,8 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 					
+			} else if ( c == 0xFFFFFF9F ) {	// KeyRow(
+					return CB_KeyRow( SRC ) ; 
 			} else if ( c == 0xFFFFFF8F ) {	// Getkey
 					c = SRC[ExecPtr];
 					if ( ( '0'<=c )&&( c<='3' )) {	ExecPtr++ ;
@@ -887,6 +889,19 @@ int CB_Getkey3( char *SRC ) {
 	} while ( abs ( RTC_GetTicks()-CB_TicksAdjust - time2 ) < time1 ) ;
 	key=tmpkey;
 	return key;
+}
+
+int CB_KeyRow( char *SRC ) {		// Row Keyscan
+	int row;
+	row = CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+
+	if ( CPU_check() == 3 ) {
+		return ( CheckKeyRow(row) ) ;			//SH3
+	}
+	else {
+		return ( CheckKeyRow7305(row) ) ;		//SH4A
+	}
 }
 
 //----------------------------------------------------------------------------------------------

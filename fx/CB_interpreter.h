@@ -312,3 +312,5 @@ void CB_DotTrim( char *SRC );	// DotTrim(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 void CB_DotLife( char *SRC ) ;
 
 void CB_FkeyMenu( char *SRC) ;
+void CB_PopUpWin( char *SRC );	//
+void CB_Menu( char *SRC, short *StackGotoAdrs) ;		// Menu "title name","Branch name1",1,"Branch name2",2,"Branch name3",3,...

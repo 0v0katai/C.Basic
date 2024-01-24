@@ -202,64 +202,6 @@ void CBint_Store( char *SRC ){	// ->
 }
 
 //-----------------------------------------------------------------------------
-void CBint_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
-	int c;
-	CBint_CurrentValue = EvalIntsubTop( SRC );
-	c=SRC[ExecPtr];
-	if ( c == 0x0E ) {	// ->
-		ExecPtr++;
-		c=SRC[ExecPtr];
-		if ( ( 'A'<=c )&&( c<='Z' ) ) {
-			StackFor->Var[StackFor->Ptr]=&REGINT[c-'A'];
-			CBint_Store(SRC);
-		} else
-		if ( ( 'a'<=c )&&( c<='z' ) ) {
-			StackFor->Var[StackFor->Ptr]=LocalInt[c-'a'];
-			CBint_Store(SRC);
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-	}
-	if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
-	c=SRC[ExecPtr];
-	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
-	ExecPtr+=2;
-	StackFor->IntEnd[StackFor->Ptr] = EvalIntsubTop( SRC );
-	c=SRC[ExecPtr];
-	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
-		ExecPtr+=2;
-		StackFor->IntStep[StackFor->Ptr] = EvalIntsubTop( SRC );
-	} else {
-		StackFor->IntStep[StackFor->Ptr] = 1;
-	}
-	StackFor->Adrs[StackFor->Ptr] = ExecPtr;
-	StackFor->Ptr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-	CurrentStruct->CNT++;
-}
-void CBint_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
-	int step,end;
-	int i;
-	int *iptr;
-	if ( StackFor->Ptr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
-	StackFor->Ptr--;
-	CurrentStruct->CNT--;
-	step = StackFor->IntStep[StackFor->Ptr];
-	iptr=StackFor->Var[StackFor->Ptr];
-	*iptr += step;
-	if ( step > 0 ) { 	// step +
-		if ( *iptr > StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
-		ExecPtr = StackFor->Adrs[StackFor->Ptr];
-		(StackFor->Ptr)++;		// continue
-	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-	CurrentStruct->CNT++;
-	}
-	else {									// step -
-		if ( *iptr < StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
-		ExecPtr = StackFor->Adrs[StackFor->Ptr];
-		StackFor->Ptr++;		// continue
-	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-	CurrentStruct->CNT++;
-	}
-}
 //-----------------------------------------------------------------------------
 
 void CBint_Dsz( char *SRC ) { //	Dsz

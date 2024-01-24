@@ -213,10 +213,10 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_Goto(SRC, StackGotoAdrs );
 				break;
 			case 0xFFFFFFE8:	// Dsz
-				if (CB_INT) CBint_Dsz(SRC) ; else CB_Dsz(SRC) ;
+				CB_Dsz(SRC) ;
 				break;
 			case 0xFFFFFFE9:	// Isz
-				if (CB_INT) CBint_Isz(SRC) ; else CB_Isz(SRC) ;
+				CB_Isz(SRC) ;
 				break;
 			case 0xFFFFFFE2:	// Lbl
 				CB_Lbl(SRC, StackGotoAdrs );
@@ -237,13 +237,11 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x03:	// IfEnd
 						break;
 					case 0x04:	// For
-						if (CB_INT)	CBint_For(SRC, &StackFor, &CurrentStruct );
-						else		CB_For(SRC, &StackFor, &CurrentStruct );
+						CB_For(SRC, &StackFor, &CurrentStruct );
 //						ClrCahche();
 						break;
 					case 0x07:	// Next
-						if (CB_INT)	CBint_Next(SRC, &StackFor, &CurrentStruct );
-						else		CB_Next(SRC, &StackFor, &CurrentStruct );
+						CB_Next(SRC, &StackFor, &CurrentStruct );
 						break;
 					case 0x08:	// While
 						CB_While(SRC, &StackWhileDo, &CurrentStruct );
@@ -387,8 +385,8 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x19:			// ClrGraph
 						CB_ClrGraph(SRC);
+						UseGraphic=3;
 						dspflag=0;
-						UseGraphic=0;
 						break;
 					case 0x7A:			// GridOff
 						Grid=0;
@@ -484,6 +482,24 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=99;
 						break;
+					case 0xFFFFFFFC:	// PutDispDD
+						Bdisp_PutDisp_DD_DrawBusy();
+						dspflag=0;
+//						UseGraphic=99;
+						break;
+					case 0xFFFFFFFD:	// Fkeyfunc(
+						CB_FkeyMenu( SRC );
+						dspflag=0;
+//						UseGraphic=99;
+						break;
+					case 0xFFFFFFFB:	// Screen
+						CB_Screen(SRC);
+						dspflag=0;
+						break;
+					case 0xFFFFFFF2:	// PopUpWin(
+						CB_PopUpWin(SRC);
+						dspflag=0;
+						break;
 					case 0xFFFFFFEE:	// Save
 						CB_Save(SRC);
 						dspflag=0;
@@ -508,22 +524,12 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_RefreshTime(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFFB:	// Screen
-						CB_Screen(SRC);
-						dspflag=0;
-						break;
-					case 0xFFFFFFFC:	// PutDispDD
-						Bdisp_PutDisp_DD_DrawBusy();
-						dspflag=0;
-						UseGraphic=99;
-						break;
-					case 0xFFFFFFFD:	// Fkeyfunc(
-						CB_FkeyMenu( SRC );
-						dspflag=0;
-						UseGraphic=99;
-						break;
 					case 0xFFFFFFFE:	// BackLight
 						BackLight( CB_EvalInt( SRC ) );
+						dspflag=0;
+						break;
+					case 0xFFFFFF9E:	// Menu
+						CB_Menu( SRC, StackGotoAdrs );
 						dspflag=0;
 						break;
 					case 0x01:	// Then
@@ -564,8 +570,6 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_MatFill(SRC);
 						dspflag=0;
 						break;
-//					case 0xFFFFFFE8:	// Dummy
-//						goto strjp;
 //					case 0x51:	// List
 //						dspflagtmp=CB_ListCalc(SRC);
 //						dspflag=0;
@@ -646,7 +650,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0xFFFFFFD1:	// Cls
 				CB_Cls(SRC);
 				dspflag=0;
-				UseGraphic=0;
+				UseGraphic=3;
 				break;
 			case 0xFFFFFFE0:	// Plot
 				CB_Plot(SRC);
@@ -655,8 +659,8 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 			case 0xFFFFFFE1:	// Line
 				CB_Line(SRC);
-				dspflag=0;
 				UseGraphic=99;
+				dspflag=0;
 				break;
 			case 0xFFFFFFDA:	// Deg
 				Angle = 0;
@@ -731,7 +735,7 @@ int CB_interpreter_sub( char *SRC ) {
 				dspflag=0;
 				break;
 			case 0x0C:	// disps
-				if ( CB_Disps(SRC,dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
+				if ( CB_Disps(SRC, dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
 				CB_TicksStart=RTC_GetTicks();	// init
 				c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
 				break;
@@ -822,8 +826,8 @@ int CB_interpreter( char *SRC ) {
 //int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
+//int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_quot( char *SRC ){ // skip "..."
@@ -1191,60 +1195,119 @@ int Search_Next( char *SRC ){
 
 void CB_For( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
 	int c;
-	CB_CurrentValue = EvalsubTop( SRC );
-	c=SRC[ExecPtr];
-	if ( c == 0x0E ) {	// ->
-		ExecPtr++;
+	if (CB_INT) {		//					------------ INT mode
+		CBint_CurrentValue = EvalIntsubTop( SRC );
 		c=SRC[ExecPtr];
-		if ( ( 'A'<=c )&&( c<='Z' ) ) {
-			StackFor->Var[StackFor->Ptr]=(int*)&REG[c-'A'];
-			CB_Store(SRC);
-		} else
-		if ( ( 'a'<=c )&&( c<='z' ) ) {
-			StackFor->Var[StackFor->Ptr]=(int*)LocalDbl[c-'a'];
-			CB_Store(SRC);
-		} else { CB_Error(SyntaxERR); return; }	// Syntax error
-	}
-	if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
-	c=SRC[ExecPtr];
-	if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
-	ExecPtr+=2;
-	StackFor->End[StackFor->Ptr] = EvalsubTop( SRC );
-	c=SRC[ExecPtr];
-	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
+		if ( c == 0x0E ) {	// ->
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( ( 'A'<=c )&&( c<='Z' ) ) {
+				StackFor->Var[StackFor->Ptr]=&REGINT[c-'A'];
+				CBint_Store(SRC);
+			} else
+			if ( ( 'a'<=c )&&( c<='z' ) ) {
+				StackFor->Var[StackFor->Ptr]=LocalInt[c-'a'];
+				CBint_Store(SRC);
+			} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		}
+		if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
+		c=SRC[ExecPtr];
+		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
-		StackFor->Step[StackFor->Ptr] = EvalsubTop( SRC );
-	} else {
-		StackFor->Step[StackFor->Ptr] = 1;
+		StackFor->IntEnd[StackFor->Ptr] = EvalIntsubTop( SRC );
+		c=SRC[ExecPtr];
+		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
+			ExecPtr+=2;
+			StackFor->IntStep[StackFor->Ptr] = EvalIntsubTop( SRC );
+		} else {
+			StackFor->IntStep[StackFor->Ptr] = 1;
+		}
+		StackFor->Adrs[StackFor->Ptr] = ExecPtr;
+		StackFor->Ptr++;
+		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+		CurrentStruct->CNT++;
+	} else {			//					------------ Double mode
+		CB_CurrentValue = EvalsubTop( SRC );
+		c=SRC[ExecPtr];
+		if ( c == 0x0E ) {	// ->
+			ExecPtr++;
+			c=SRC[ExecPtr];
+			if ( ( 'A'<=c )&&( c<='Z' ) ) {
+				StackFor->Var[StackFor->Ptr]=(int*)&REG[c-'A'];
+				CB_Store(SRC);
+			} else
+			if ( ( 'a'<=c )&&( c<='z' ) ) {
+				StackFor->Var[StackFor->Ptr]=(int*)LocalDbl[c-'a'];
+				CB_Store(SRC);
+			} else { CB_Error(SyntaxERR); return; }	// Syntax error
+		}
+		if ( StackFor->Ptr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
+		c=SRC[ExecPtr];
+		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		ExecPtr+=2;
+		StackFor->End[StackFor->Ptr] = EvalsubTop( SRC );
+		c=SRC[ExecPtr];
+		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
+			ExecPtr+=2;
+			StackFor->Step[StackFor->Ptr] = EvalsubTop( SRC );
+		} else {
+			StackFor->Step[StackFor->Ptr] = 1;
+		}
+		StackFor->Adrs[StackFor->Ptr] = ExecPtr;
+		StackFor->Ptr++;
+		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+		CurrentStruct->CNT++;
 	}
-	StackFor->Adrs[StackFor->Ptr] = ExecPtr;
-	StackFor->Ptr++;
-	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-	CurrentStruct->CNT++;
 }
 
 void CB_Next( char *SRC ,StkFor *StackFor, CurrentStk *CurrentStruct ){
-	double step,end;
+	double step;
 	double *dptr;
-	if ( StackFor->Ptr <= 0 ) { CB_Error(NextWithoutForERR); return; } // Next without for error
-	StackFor->Ptr--;
-	CurrentStruct->CNT--;
-	step = StackFor->Step[StackFor->Ptr];
-	dptr=(double*)StackFor->Var[StackFor->Ptr];
-	(*dptr) += step;
-	if ( step > 0 ) { 	// step +
-		if ( (*dptr) > StackFor->End[StackFor->Ptr] ) return ; // exit
-		ExecPtr = StackFor->Adrs[StackFor->Ptr];
-		StackFor->Ptr++;		// continue
-	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-	CurrentStruct->CNT++;
-	}
-	else {									// step -
-		if ( (*dptr) < StackFor->End[StackFor->Ptr] ) return ; // exit
-		ExecPtr = StackFor->Adrs[StackFor->Ptr];
-		StackFor->Ptr++;		// continue
-	CurrentStruct->TYPE[CurrentStruct->CNT]=1;
-	CurrentStruct->CNT++;
+	int stepint;
+	int i;
+	int *iptr;
+	if (CB_INT) {		//					------------ INT mode
+		if ( StackFor->Ptr <= 0 ) { ErrorNo=NextWithoutForERR; ErrorPtr=ExecPtr; return; } // Next without for error
+		StackFor->Ptr--;
+		CurrentStruct->CNT--;
+		stepint = StackFor->IntStep[StackFor->Ptr];
+		iptr=StackFor->Var[StackFor->Ptr];
+		(*iptr) += stepint;
+		if ( stepint > 0 ) { 	// step +
+			if ( *iptr > StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
+			ExecPtr = StackFor->Adrs[StackFor->Ptr];
+			(StackFor->Ptr)++;		// continue
+		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+		CurrentStruct->CNT++;
+		}
+		else {									// step -
+			if ( *iptr < StackFor->IntEnd[StackFor->Ptr] ) return ; // exit
+			ExecPtr = StackFor->Adrs[StackFor->Ptr];
+			StackFor->Ptr++;		// continue
+		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+		CurrentStruct->CNT++;
+		}
+	} else {			//					------------ Double mode
+		if ( StackFor->Ptr <= 0 ) { CB_Error(NextWithoutForERR); ErrorPtr=ExecPtr; return; } // Next without for error
+		StackFor->Ptr--;
+		CurrentStruct->CNT--;
+		step = StackFor->Step[StackFor->Ptr];
+		dptr=(double*)StackFor->Var[StackFor->Ptr];
+		(*dptr) += step;
+		if ( step > 0 ) { 	// step +
+			if ( (*dptr) > StackFor->End[StackFor->Ptr] ) return ; // exit
+			ExecPtr = StackFor->Adrs[StackFor->Ptr];
+			StackFor->Ptr++;		// continue
+		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+		CurrentStruct->CNT++;
+		}
+		else {									// step -
+			if ( (*dptr) < StackFor->End[StackFor->Ptr] ) return ; // exit
+			ExecPtr = StackFor->Adrs[StackFor->Ptr];
+			StackFor->Ptr++;		// continue
+		CurrentStruct->TYPE[CurrentStruct->CNT]=1;
+		CurrentStruct->CNT++;
+		}
 	}
 }
 
@@ -1533,6 +1596,7 @@ void CB_Dsz( char *SRC ) { //	Dsz
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	if (CB_INT) { CBint_Dsz(SRC) ; return; }
 	c=SRC[ExecPtr];
 	if ( ( 'A'<=c )&&( c<='Z' ) ) {
 		ExecPtr++;
@@ -1620,6 +1684,7 @@ void CB_Isz( char *SRC ) { //	Isz
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
+	if (CB_INT) { CBint_Isz(SRC) ; return; }
 	c=SRC[ExecPtr];
 	if ( ( 'A'<=c )&&( c<='Z' ) ) {
 		ExecPtr++;

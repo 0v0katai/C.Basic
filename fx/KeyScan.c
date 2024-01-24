@@ -100,6 +100,8 @@ int KeyScanDown(int keyscan_code){
 
 //----------------------------------------------------------------------------------------------
 char Getkey_shift=0;
+short  Recent_rowcode=0;
+short  Recent_code=0;
 
 int BackLight( int n ){		// 0:off  1:on   2:xor
 	volatile unsigned char *adrs;
@@ -134,6 +136,14 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	row=1;
 	SH3= (*(volatile unsigned short*)0xFFFFFF80 != 0) ;
 	
+	if ( Recent_code ) {
+		if ( KeyScanDown(Recent_rowcode) ) return Recent_code ;
+		else {
+			Recent_rowcode=0;
+			Recent_code=0;
+		}
+	}
+
 	for ( row=1; row<10; row++) {
 		if (SH3) c=CheckKeyRow(row);  else  c=CheckKeyRow7305(row);
 		if ( c & 0x40 ) { code=70+row; break; }	//
@@ -143,6 +153,10 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 		if ( c & 0x04 ) { code=30+row; break; }	//
 		if ( c & 0x02 ) { code=20+row; break; }	//
 	}
+	
+	Recent_rowcode=(c<<4)+row;
+	Recent_code   =code;
+	
 	if ( KeyScanDown(KEYSC_AC) ) code=34;
 	
 //	if (SH3) {		//SH3
@@ -227,6 +241,7 @@ void KeyRecover() {
 	KeyCheckCHAR4();
 	Keyboard_ClrBuffer();
 	Getkey_shift=0;
+	Recent_code=0;
 //	Sleep(10);
 }
 
@@ -465,6 +480,7 @@ int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	int code;
 	
 	Getkey_shift=0;
+	Recent_code=0;
 	GetKey(&key);
 	return CB_KeyCodeCnvt( key ) ;
 }
@@ -484,6 +500,8 @@ int CB_GetkeyN( int n) {			// CasioBasic Getkey
 			return CB_Getkey1();
 		case 2:
 			return CB_Getkey2();
+		default:
+			return 0;
 	}
 }
 

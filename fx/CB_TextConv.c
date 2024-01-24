@@ -386,7 +386,7 @@ const char ConvList7F00[][16]={
 ">Simp",			// 7F9C
 "@7F9D",			// 7F9D
 "@7F9E",			// 7F9E
-"@7F9F",			// 7F9F
+"KeyRow(",				// 7F9F
 					
 "an ",				// 7FA0
 "an+1", 			// 7FA1
@@ -483,7 +483,7 @@ const char ConvList7F00[][16]={
 "", 				// 7FF7
 "VarPtr(", 				// 7FF8
 "", 				// 7FF9
-"ProgPtr(", 				// 7FFA
+"ProgPtr(", 			// 7FFA
 "SSb",				// 7FFB
 "SSab", 			// 7FFC
 "MSb",				// 7FFD
@@ -559,7 +559,7 @@ const char ConvListF700[][17]={
 "Bar",				// F73C
 "DotTrim(",				// F73D
 "DotGet(",				// F73E
-"DotG",				// F73F
+"DotG ",			// F73F
 
 "1-Variable ",		// F740
 "2-Variable ",		// F741
@@ -576,7 +576,7 @@ const char ConvListF700[][17]={
 "S-Gph3 ",			// F74C
 "Square",			// F74D
 "Cross",			// F74E
-"Dot",				// F74F
+"Dot ",				// F74F
 
 "Scatter",			// F750
 "xyLine",			// F751
@@ -735,7 +735,7 @@ const char ConvListF700[][17]={
 "Rect ",				// F7E1
 "FillRect ",			// F7E2
 "LocateYX ",			// F7E3
-"Disp ",			// F7E4
+"Disp ",				// F7E4
 "",					// F7E5
 "",					// F7E6
 "",					// F7E7
@@ -748,9 +748,9 @@ const char ConvListF700[][17]={
 "Save ",				// F7EE
 "Load(",				// F7EF
 
-"@FF70",			// F7F0
+"DotShape(",			// F7F0
 "Local ",				// F7F1
-"@F7F2",			// F7F2
+"PopUpWin(",			// F7F2
 "@F7F3",			// F7F3
 "SysCall(",				// F7F4
 "Call(",				// F7F5
@@ -1356,6 +1356,7 @@ const tcnvopcodes ConvOpCodeStrList[] = {
 	{ 0x00ED, "Prog"},
 
 	{ 0xF701, "Then" }, 
+	{ 0xF70C, "Return" },
 	{ 0xF70F, "ElseIf" }, 
 	{ 0xF702, "Else" }, 
 	{ 0xF700, "If" }, 
@@ -1363,6 +1364,7 @@ const tcnvopcodes ConvOpCodeStrList[] = {
 	{ 0xF7EC, "Default" }, 
 	{ 0xF7EE, "Save" }, 
 	{ 0x7F46, "Dim" },
+	{ 0xF74F, "Dot" },
 
 	{ 0, "" }
 };
@@ -1386,9 +1388,14 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 		code = GetOpcode( srcbase, ofst ) ;
 		if ( code == 0 ) break;
 
-		if ( ( code == 0x27 ) || ( code == 0x22 ) ) { // " '
-			if ( flag == code ) flag=0; else flag=code;
+		if ( code == 0x0D ) {
+			if ( flag == 0x27 )  flag=0;	// ' end
 		}
+		if ( code == 0x22 ) {	// "
+			if ( flag == 0x22 )  flag=0; // " end
+			else flag=code;	// "
+		}
+		if ( ( code == 0x27 ) && ( flag != 0x27 ) ) flag=code;	// '
 
 		if ( ( code != 0x21 ) && ( code != 0x2A ) && ( code != 0x2B ) && ( code != 0x2D ) && ( code != 0x2F ) && ( 0x20 <= code ) && ( code <= 0x7E ) ){
 				text[textofst++] = code;
@@ -1438,9 +1445,6 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			}
 		}
 		
-		if ( code == 0x0D ) { //
-			flag=0;
-		}
 		if ( code == 0x0C ) { //
 			flag=0;
 			if ( GetOpcode( srcbase, ofst ) != 0x0D ) {;
@@ -1644,8 +1648,16 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 		if ( ( flag_ ) && ( c=='_' ) ) c=text[++textofst];	// '_' skip
 		flag_=0; 
 		if ( c==0 ) break;
-		if ( ( c == 0x27 ) || ( c == 0x22 ) ) { // " '
-			if ( flag == c ) flag=0; else flag=c;
+		if ( ( c==0x0D ) && ( text[textofst+1]==0x0A ) ) { 	// 0x0D 0x0A
+			if ( flag == 0x27 ) { flag=0; }	// ' end
+			srcbase[ofst++] = c;
+			textofst++;
+			textofst++;
+			goto tokenloop;
+		}
+		if ( ( flag == 0x22 ) && ( c== 0x22 ) ) { flag=0; goto tokenskip; }	// " end
+		if ( ( c == 0x27 ) || ( c == 0x22 ) ) { // ' " 
+			flag=c;
 		}
 		if ( flag ) {
 			if ( c!='_' ) {

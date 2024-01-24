@@ -472,7 +472,7 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			break;
 		case 2:	// $Mat
 			ExecPtr++;
-			if ( ( SRC[ExecPtr] == 0x7F ) && ( SRC[ExecPtr+1] == 0x40 ) ) ExecPtr+=2;	// skip 'Mat '
+//			if ( ( SRC[ExecPtr] == 0x7F ) && ( SRC[ExecPtr+1] == 0x40 ) ) ExecPtr+=2;	// skip 'Mat '
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 			if ( ErrorNo ) return 0 ;			// error
 			buffer=MatrixPtr( reg, dimA, dimB );
