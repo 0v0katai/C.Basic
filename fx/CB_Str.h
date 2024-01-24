@@ -37,7 +37,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 int CB_IsStr( char *SRC, int execptr ) ;
 char* CB_GetOpStr1( char *SRC ,int *maxlen) ;		// String -> buffer	return
 char* CB_GetOpStr( char *SRC, int *maxoplen  ) ;	// Get opcode String 
-double CB_EvalStrDBL( char *SRC); //
+double CB_EvalStrDBL( char *buffer ); //
 double CB_EvalStr( char *SRC) ;		// Eval str -> double
 int CBint_EvalStr( char *SRC) ;		// Eval str -> int
 void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;

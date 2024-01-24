@@ -660,6 +660,12 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					result = PxlTest(y, x) ;			// 
 					return result ;
 			} else
+			if ( c == 0xFFFFFFF4 ) {	// SysCall(
+					return  CB_SysCall( SRC );
+			} else
+			if ( c == 0xFFFFFFF5 ) {	// Call(
+					return  CB_Call( SRC );
+			} else
 			if ( c == 0xFFFFFFF9 ) {	// RefreshTime
 					return  Refreshtime+1;
 			} else

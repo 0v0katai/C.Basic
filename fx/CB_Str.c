@@ -434,7 +434,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 	if ( c == 0x22 ) {	// String
 		return 1;
 	} else
-	if ( ( c=='$' ) || ( c=='&' ) ) {	// Mat String
+	if ( c=='$' ) {	// Mat String
 		return 2;
 	} else
 	if ( c == 0xFFFFFFF9 ) {	// Str
@@ -716,15 +716,15 @@ int CB_StrSrc( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-double CB_EvalStrDBL( char *SRC) {		// Eval str -> double
+double CB_EvalStrDBL( char *buffer) {		// Eval str -> double
 	double result;
 	int execptr=ExecPtr;
-	int oplen=strlenOp( SRC );
+	int oplen=strlenOp( buffer );
 	if ( oplen == 0 ) return 0;
     ExecPtr = 0;
     ErrorPtr= 0;
 	ErrorNo = 0;
-    result = EvalsubTop( SRC );
+    result = EvalsubTop( buffer );
 	if ( ExecPtr < oplen ) { ExecPtr=execptr; CB_Error(SyntaxERR) ; } // Syntax error 
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
@@ -740,7 +740,7 @@ double CB_EvalStr( char *SRC) {		// Eval str -> double
 	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return
 	if ( ErrorNo ) return 0;  // error
 
-	result=CB_EvalStrDBL( SRC );
+	result=CB_EvalStrDBL( buffer );
 	
 	c=SRC[ExecPtr]; if ( c==')' ) ExecPtr++;
 	return result;
