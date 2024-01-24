@@ -1402,7 +1402,18 @@ void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) {
 				break ;
 			case TYPE_Switch_Case:		// Switch
 				c = CurrentStruct->SwitchPtr-1;
-				if ( ( CurrentStruct->SwitchAdrs[c] < ExecPtr ) && ( ExecPtr < CurrentStruct->SwitchEndAdrs[c] ) ) return;
+				endp = CurrentStruct->SwitchEndAdrs[c];
+				if ( endp==0 ) {
+					execbuf = ExecPtr;
+					ExecPtr = CurrentStruct->SwitchAdrs[c];
+					if (  Search_SwitchEnd(SRC) == 0 ) endp=0x7FFFFFF;   // Switch without SwitchEnd
+					else {
+						endp = ExecPtr;
+						CurrentStruct->SwitchEndAdrs[c] = endp;
+					}
+					ExecPtr = execbuf;
+				}
+				if ( ( CurrentStruct->SwitchAdrs[c] < ExecPtr ) && ( ExecPtr < endp ) ) return;
 				CurrentStruct->SwitchPtr--;
 				break ;
 			default:
@@ -1959,6 +1970,7 @@ void CB_Switch( char *SRC, CurrentStk *CurrentStruct ,CchIf *Cache ) {
 //	if ( ( c!=0x0D ) && ( c!=':' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 //	ExecPtr++;
 	wPtr=ExecPtr;
+	CurrentStruct->SwitchAdrs[CurrentStruct->SwitchPtr] = ExecPtr;
 	
 	j=0; i=Cache->TOP;
 	while ( j<Cache->CNT ) {

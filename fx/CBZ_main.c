@@ -85,7 +85,9 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 		DeletePictPtr();
 
 		HelpText = NULL;
-		
+
+		if ( ExitDebugModeCheck ) ExitDebugModeCheck=3;
+
 		if ( MaxMemMode ) HiddenRAM_freeProg(HiddenRAM_Top);		// Prog memory init	
 		key =( SelectFile( filename ) ) ;
 		if ( MaxMemMode ) { 

@@ -27,8 +27,8 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-const char VerMSG[]="C.Basic  v1.97\xE6\x41";
-#define VERSION 197
+const char VerMSG[]="C.Basic  v1.98\xE6\x41";
+#define VERSION 198
 
 //---------------------------------------------------------------------------------------------
 
@@ -1325,7 +1325,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"ExitDM PopUp:");		// 26
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[ExitDebugModeCheck]);
+			locate(14,cnt-scrl); Print((unsigned char*)onoff[ExitDebugModeCheck&1]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 27

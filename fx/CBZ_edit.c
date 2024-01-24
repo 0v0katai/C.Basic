@@ -1225,8 +1225,14 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( DebugScreen ) { DebugScreen = 0; break; }
 							if ( ClipEndPtr < 0 ) {
 								if ( DebugMode >=1 ) {	// debug mode
-									if ( ( ExitDebugModeCheck==0 ) || ( YesNo( "Exit Debug mode ?" ) ) ) cont=0;
-								} else cont=0;
+									if ( (ExitDebugModeCheck&2) ) {
+										if ( YesNo( "Exit Debug mode ?" )==0 ) break;
+									}
+									ExitDebugModeCheck&=1; 
+									BreakPtr=-7;	// return to main program
+									if ( ProgEntryN == 0 ) ExecPtr=csrPtr;
+								} 
+								cont=0;
 							}
 						}
 					}
@@ -2048,6 +2054,7 @@ int CB_BreakStop() {
 	int scrmode=ScreenMode;
 	int dbgmode= ( ( DisableDebugMode == 0 ) || ( ForceDebugMode ) ) ;
 
+	if ( BreakPtr == -7 ) return BreakPtr;	// return to main program
 	if ( ErrorNo == StackERR ) { BreakPtr=-999; return BreakPtr; }	// stack error
 
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
@@ -2108,7 +2115,7 @@ int CB_BreakStop() {
 
 	if ( ( dbgmode == 0 ) ||  ( key == KEY_CTRL_EXIT ) ) { 
 		if ( ProgEntryN == 0 ) DebugMode=0;
-		BreakPtr=-999;
+		if ( BreakPtr != -7 ) BreakPtr=-999;
 		r = BreakPtr;
 	}
 	cont:
@@ -2128,8 +2135,8 @@ int CB_BreakStop() {
 
 //----------------------------------------------------------------------------------------------
 int eObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
+//int eObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 //int eObjectAlign4f( unsigned int n ){ return n; }	// align +4byte

@@ -1407,7 +1407,10 @@ int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
 		opcode = CB_EvalInt( SRC );
 		if ( getmode == 0 ) {
 			if ( opcode == 0 ) { EnableExtFont=0; ClearExtFontflag(); return -2; }
-			if ( opcode == 1 ) { EnableExtFont=1; return -2; } 
+			if ( opcode == 1 ) { 
+				if (EnableExtFont==0) OkMSGstr2("Please Enable","Extfont by Setup");
+				return -2;
+			 }
 		}
 		if ( opcode>0xFF ) { 
 			cstr[0]=(opcode>>8) & 0xFF;

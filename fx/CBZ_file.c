@@ -26,6 +26,19 @@ char AutoSaveMode=0;		//    1: Auto save ( not pop up )
 
 const char root[][5]={"fls0","crd0","fls0","crd0"};
 
+void SetFullfilenameNoExt( char *filename, char *sname ) {
+	if ( ( strlen(folder) == 0 ) || ( StorageMode & 2 ) )
+		sprintf( filename, "\\\\%s\\%s", root[StorageMode], sname);
+	else
+		sprintf( filename, "\\\\%s\\%s\\%s", root[StorageMode], folder, sname);
+}
+void SetFullfilenameExt( char *filename, char *sname, char *extname ) {
+	if ( ( strlen(folder) == 0 ) || ( StorageMode & 2 ) )
+		sprintf( filename, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
+	else
+		sprintf( filename, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
+}
+
 unsigned int SelectFile (char *filename)
 {
 	unsigned int key;
@@ -34,13 +47,12 @@ unsigned int SelectFile (char *filename)
 	Bdisp_AllClr_DDVRAM();
 	while( 1 ){
 		if ( FileListUpdate  ) {
+			ClearExtFontflag();
 			if ( EnableExtFont ) {
 				MSG2(VerMSG,"Font Reading.....");
 				LoadExtFontAnk(   3, "", -1 );			// FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
 				LoadExtFontKana(  3, "", -1 );			// FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 				LoadExtFontGaiji( 3, "", -1 );			// FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
-			} else {
-				ClearExtFontflag();
 			}
 			MSG2(VerMSG,"File Reading.....");
 			Bdisp_PutDisp_DD();
@@ -55,7 +67,7 @@ unsigned int SelectFile (char *filename)
 		if ( key == FileCMD_DELDIR ) break ;	// Delete Directory
 
 		if ( key == KEY_CTRL_EXIT ) {			//to top of list
-			FileListUpdate = 1;
+//			FileListUpdate = 1;
 			index = 0;
 		} else
 		if ( ( key == KEY_CTRL_QUIT ) || ( index == size ) ) {			//return to root
@@ -81,11 +93,7 @@ unsigned int SelectFile (char *filename)
 		SaveConfig();
 	}
 
-	if( strlen(folder) == 0 )
-		sprintf( filename, "\\\\%s\\%s", root[StorageMode], name );
-	else
-		sprintf( filename, "\\\\%s\\%s\\%s", root[StorageMode], folder, name );
-	
+	SetFullfilenameNoExt( filename, name );
 	return key ;
 }
 
@@ -109,8 +117,9 @@ void GetExtName( char *sname, char *ext ){	// sname -> sname.ext
 	if ( cptr!=NULL ) {
 		strncpy( ext, cptr+1, 3 );
 		*cptr='\0';
-	}
+	} else ext[0]='\0';
 	ext[3]='\0';
+	ToLower( ext );
 }
 
 static int IsFileNeeded( FONTCHARACTER *find_name )
@@ -118,7 +127,7 @@ static int IsFileNeeded( FONTCHARACTER *find_name )
 	char buffer[13];
 	char ext[5];
 	FontToChar(find_name, buffer);
-	ToLower(buffer);
+	if ( buffer[0]=='.' ) return 0;	//
 	GetExtName( buffer, ext );
 	if( strlen(folder) ) return 1;	// all of sub folder
 	return ( (strcmp(ext, "g3m") == 0) || (strcmp(ext, "g1m") == 0) || (strcmp(ext, "txt") == 0) || (strcmp(ext, "bmp") == 0) || (strcmp(ext, "bin") == 0) );
@@ -173,25 +182,21 @@ FONTCHARACTER * FilePath( char *sFolder, FONTCHARACTER *sFont )
 	return sFont;
 }
 
-void SetFullfilenameExt( char *filename, char *sname, char *extname ) {
-	if( strlen(folder) == 0 )
-		sprintf( filename, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
-	else
-		sprintf( filename, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname, extname );
-}
-
 void SetShortName( char *sname, char *filename) {	// fullpath filename -> short name
 	int c,i;
-	int ptr=0;
+	int ptr;
 	ptr=strlen(filename);
 	c=filename[--ptr];
-	while( c!='\\' ) c=filename[--ptr];	//
+	while ( c!='\\' ) {
+		c=filename[--ptr];	//
+		if ( ptr==0 ) break;
+	}
 	i=0;
 	while ( c ) {
 		c=filename[++ptr];
 		sname[i++]=c;
 	}
-	sname[i]='\0';
+//	sname[i]='\0';
 }
 
 void ErrorMSGfile( char *buffer, char *filename, int err){
@@ -393,36 +398,20 @@ int FavoritesFunc( int index ) {
 	}
 	return index;
 }
-void FavoritesUp( int *index ) {
+void FavoritesUpDown( int *index, int updw ) {	// up:-1	down:1
 	int tmp;
 	char tmpname[FILENAMEMAX];
 	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)-1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)-1].folder,   FOLDERMAX );
-	tmp=files[(*index)-1].filesize;
-	strncpy( files[(*index)-1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)-1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)-1].filesize=files[(*index)].filesize;
+	strncpy( tmpname,   files[(*index)+updw].filename, FILENAMEMAX );
+	strncpy( tmpfolder, files[(*index)+updw].folder,   FOLDERMAX );
+	tmp=files[(*index)+updw].filesize;
+	strncpy( files[(*index)+updw].filename, files[(*index)].filename, FILENAMEMAX );
+	strncpy( files[(*index)+updw].folder,   files[(*index)].folder,   FOLDERMAX );
+	files[(*index)+updw].filesize=files[(*index)].filesize;
 	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
 	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
 	files[(*index)].filesize=tmp;
-	(*index)--;
-	SaveFavorites();
-}
-void FavoritesDown( int *index ) {
-	int tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	files[(*index)].filesize=tmp;
-	(*index)++;
+	(*index)=(*index)+updw;
 	SaveFavorites();
 }
 
@@ -495,6 +484,23 @@ int CheckSD(){	// SD model  return : 1
 void check_basname( char *basname ) {
 	int c=basname[7]&0xFF;
 	if ( (c==0x7F)||(c==0xF7)||(c==0xF9)||(c==0xE5)||(c==0xE6)||(c==0xE7)||(c==0xFF) ) basname[7]='\0';
+}
+
+int Check_Favorite( char*folder, char *sname ) {
+	int i=0;
+	while ( i < FavoritesMAX ) {	// file matching search
+		if ( strcmp( Favoritesfiles[i].filename,  sname )== 0 ) 
+		if ( strcmp( Favoritesfiles[i].folder  ,  folder)== 0 ) break; // already favorite exist
+		i++;
+	}
+	return i;
+}
+
+void Check_Favorite_size( char*folder, char *sname, int newsize ) {
+	int i=Check_Favorite( folder, sname);	// file matching search
+	if ( i < FavoritesMAX ) { 		//	exist favorites list
+		Favoritesfiles[i].filesize = newsize;
+	}
 }
 
 unsigned int Explorer( int size, char *folder )
@@ -807,9 +813,7 @@ unsigned int Explorer( int size, char *folder )
 						cont =0 ;
 						break;
 					case 1:
-						if ( index <= StartLine ) break;
-						if ( index > FavoritesMAX-1 ) break;
-						FavoritesUp( &index );
+						goto fav_up;
 						break;
 				}
 				break;
@@ -826,10 +830,7 @@ unsigned int Explorer( int size, char *folder )
 						}
 						break;
 					case 1:
-						if ( Isfolder ) break;
-						if ( FavCount < 1 ) break;
-						if ( index >= FavoritesMAX-1 ) break;
-						FavoritesDown( &index );
+						goto fav_dw;
 						break;
 				}
 				break;
@@ -899,16 +900,18 @@ unsigned int Explorer( int size, char *folder )
 							cont =0 ;
 							break;
 					case KEY_CTRL_PAGEUP:	// up
+					  fav_up:
 							if ( nofile ) break;
 							if ( index <= StartLine ) break;
 							if ( index > FavoritesMAX-1 ) break;
-							FavoritesUp( &index );
+							FavoritesUpDown( &index, -1 );
 							break;
 					case KEY_CTRL_PAGEDOWN:	// down
+					  fav_dw:
 							if ( nofile ) break;
 							if ( FavCount < 1 ) break;
 							if ( index >= FavoritesMAX-1 ) break;
-							FavoritesDown( &index );
+							FavoritesUpDown( &index, 1 );
 							break;
 							
 					default:
@@ -929,6 +932,46 @@ unsigned int Explorer( int size, char *folder )
 
 
 //----------------------------------------------------------------------------------------------
+int alreadyExistedFile( FONTCHARACTER *filename, FONTCHARACTER *buffer ){
+	int handle;
+	FONTCHARACTER filename2[50];
+	int r,s;
+	/* disable, just for call "Bfile_FindFirst" */
+	FILE_INFO info;
+	/* end */
+	memcpy( (char*)filename2, (char*)filename, 50*2);
+	r = Bfile_FindFirst( filename2, &handle, buffer, &info );
+	s = Bfile_FindClose( handle );
+//	if( r == 0 ) { //already existed, delete it
+//		s=0; if ( folder != NULL ) s=strlen(folder)*2+2;
+//		memcpy( (char*)filename+14+s, (char*)buffer, (50-8)*2-s );	// replace filename
+//	}
+	return r;	// 0:already existed
+}
+
+int renameExistedFile( char *basname, char *ext ){
+	int handle;
+	FONTCHARACTER filename[50];
+	int r,s;
+	/* disable, just for call "Bfile_FindFirst" */
+	FONTCHARACTER buffer[50];
+	FILE_INFO info;
+	/* end */
+	char fname[50];
+
+	SetFullfilenameExt( fname, basname, ext );
+	if ( StorageMode & 2 ) {
+		SetShortName( basname, fname );
+		return 1;	// MCS
+	}
+	CharToFont( fname, filename );
+	r = alreadyExistedFile( filename, buffer );
+	if ( r ) return r ;
+	FontToChar( buffer, basname );
+//	GetExtName( basname, ext );
+	return r;	// 0:already existed
+}
+
 /* load file to buffer */
 char * loadFile( const char *name , int editMax, int disperror, int hiddenflag )
 {
@@ -936,7 +979,6 @@ char * loadFile( const char *name , int editMax, int disperror, int hiddenflag )
 	FONTCHARACTER filename[50];
 	int size;
 	char *buffer;
-
 
 	CharToFont( name, filename );
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
@@ -966,6 +1008,27 @@ char * loadFile( const char *name , int editMax, int disperror, int hiddenflag )
 	return buffer;
 }
 
+int deleteFile( FONTCHARACTER *filename, int size ){
+	int handle;
+	FONTCHARACTER filename2[50];
+	int r,s;
+	unsigned int freehigh,freelow;
+
+	/* disable, just for call "Bfile_FindFirst" */
+	FONTCHARACTER buffer[50];
+	FILE_INFO info;
+	/* end */
+
+	r = alreadyExistedFile( filename, buffer );
+	if( r == 0 ) { //already existed, delete it
+		GetMediaFree(&freehigh,&freelow);
+		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 2 ; }
+		r = Bfile_DeleteFile( filename );
+		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
+	}
+	return 0;	// ok
+}
+
 /* store bytecode into file */
 int storeFile( const char *name, unsigned char* codes, int size )
 {
@@ -980,14 +1043,9 @@ int storeFile( const char *name, unsigned char* codes, int size )
 	/* end */
 
 	CharToFont( name, filename );
-	r = Bfile_FindFirst( filename, &handle, buffer, &info );
-	s = Bfile_FindClose( handle );
-	if( r == 0 ) { //already existed, delete it
-		GetMediaFree(&freehigh,&freelow);
-		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 1 ; }
-		r = Bfile_DeleteFile( filename );
-		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
-	}
+	r = deleteFile( filename, size ) ;
+	if ( r ) return r;
+	
 	FileListUpdate=1;
 	handle = Bfile_CreateFile( filename, size );
 	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name, handle ); return 1 ; }
@@ -1025,10 +1083,10 @@ int GetFileSize( const char *fname ) {
 	return size;
 }
 
-/* file exist? */
-int ExistFile( const char *fname ) {
+int ExistFile( char *fname, int replace ) {
 	int handle;
 	FONTCHARACTER filename[50];
+	char sname[32];
 	int r,s;
 
 	/* disable, just for call "Bfile_FindFirst" */
@@ -1037,23 +1095,34 @@ int ExistFile( const char *fname ) {
 	/* end */
 
 	CharToFont( fname, filename );
-	r = Bfile_FindFirst( filename, &handle, buffer, &info );
-	s = Bfile_FindClose( handle );
+	r = alreadyExistedFile( filename, buffer );	// replace? filename
+	if ( ( replace==0 ) || ( r ) ) return r;	// not exist
+	FontToChar( buffer, sname );	// replace fname
+	SetFullfilenameNoExt( fname, sname );
 	return r; // r==0 existed 
 }
 
 /* G1M file exist? */
 int ExistG1M( const char *sname ) {
 	char fname[32];
+	int r;
 	SetFullfilenameExt( fname, sname, "g1m" );
 	if ( StorageMode & 2 ) return MCS_ExistFile( fname );
-	return ExistFile( fname ); // r==0 existed 
+	r = ExistFile( fname, 1 ); // r==0 existed 
+	if ( r==0 ) SetShortName( sname, fname);	// replace sname
+	return r;
 }
 int ExistG1Mext( const char *sname, char *ext ) {
 	char fname[32];
+	int r;
 	SetFullfilenameExt( fname, sname, ext );
 	if ( ext[0] == 'M' ) return MCS_ExistFile( fname );
-	return ExistFile( fname ); // r==0 existed 
+	r = ExistFile( fname, 1 ); // r==0 existed 
+	if ( r==0 ) { 
+		SetShortName( sname, fname);	// replace sname
+		GetExtName( sname, ext );
+	}
+	return r;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1070,10 +1139,18 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer 
 	int csrX=0;
 	unsigned int key=0;
 	int i;
+//	char srcstr[]=".";
+//	int ptr=1;
+	char *cptr;
 
 	buffer[width]='\0';
 	csrX=strlenOp((char*)buffer);
-  	do {
+//	i=StrSrc( buffer, srcstr, &ptr, 22 ); if ( i ) csrX=ptr-;
+	cptr=(char*)strstr((char*)buffer,".");
+	if ( cptr!=NULL ) {
+		csrX=(int)cptr-(int)buffer;
+	}
+	do {
 		key=InputStrSub_status( x, y, width, csrX, buffer, maxLen, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( (key!=KEY_CTRL_EXIT)&&(key!=KEY_CTRL_QUIT)&&(buffer[0]=='\0') ) ;
 	for( i=0; i<strlenOp((char*)buffer); i++ ) {	// kana cancel
@@ -1379,18 +1456,22 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	int textsize;
 	int progsize;
 	char CurrentFileMode;
+	char ext[8];
 
 	SetShortName( sname, fname);
+	SetShortName( basname, fname);
+	GetExtName( basname, ext );
+	renameExistedFile( basname, ext );	// replace? filename
+	GetExtName( basname, ext );
+	SetFullfilenameExt( fname, basname, ext );
 	if ( StorageMode & 2 ) {	// MCS mode
 			filebase = MCS_LoadG1M( fname , editsize, disperror, 1 );	// hidden ram
 			goto g1mload;
 	} else
-	if ( strcmp( sname + strlen(sname) - 4, ".txt") == 0 ) {	// text file
+	if ( strcmp( ext, "txt") == 0 ) {	// text file
 			filebase = loadFile( fname , editsize + EditMaxfree, disperror, 1 );	// hidden ram
 			if ( filebase == NULL ) return 1;
 			textsize=strlen(filebase);
-			strncpy( basname, sname, strlen(sname)-4);
-			basname[strlen(sname)-4]='\0';
 			if ( editsize ) {
 				ConvertToOpcode( filebase, basname, editsize + EditMaxfree);		// text file -> G1M file
 				strncpy( filebase+0x3C-8, folder, 8);		// set folder to G1M header
@@ -1489,7 +1570,7 @@ int SaveProgfile( int progNo ){
 		basname[8]='\0';
 		SetFullfilenameExt( fname, basname, "txt" );
 		if ( AutoSaveMode == 0 ) {
-			if ( ExistFile( fname ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
+			if ( ExistFile( fname, 0 ) ==0 ) if ( YesNoOverwrite() ) goto loop2;
 		}
 		sprintf(sname, "%s.txt", basname );
 		size = ProgfileMax[progNo] ;
@@ -1504,15 +1585,7 @@ int SaveProgfile( int progNo ){
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
 	
-	i=0;
-	while ( i < FavoritesMAX ) {	// file matching search
-		if ( strcmp( Favoritesfiles[i].filename,  sname )== 0 ) 
-		if ( strcmp( Favoritesfiles[i].folder  ,  folder)== 0 ) break; // already favorite exist
-		i++;
-	}
-	if ( i < FavoritesMAX ) { 		//	exist favorites list
-		Favoritesfiles[i].filesize = SrcSize(filebase);
-	}
+	Check_Favorite_size( folder, sname, SrcSize(filebase) ) ;	// favorite filesize update?
 
 	return r;
 }
@@ -1735,21 +1808,20 @@ int SaveCapture( char *filebase, int pictNo ){
 */
 }
 
-char * Load1st2nd( char *name, char *dir2nd, char *ext ){
+char * Load1st2nd( char *basname, char *dir2nd, char *ext ){
 	char *fileptr;
 	char fname[32];
 
-	if( strlen(folder) == 0 )		// current folder 1st
-		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], name, ext);
-	else
-		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, name, ext);
-		
+	renameExistedFile( basname, ext );	// replace? filename
+	GetExtName( basname, ext );
+	SetFullfilenameExt( fname, basname, ext );
+	
 	fileptr = loadFile( fname, 0, 0, 0 );					// no hidden load
 	HiddenRAM_freeProg( fileptr );
 	if ( fileptr  != NULL ) return fileptr;
 
 	ErrorNo=0;	// error cancel
-	sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], dir2nd, name, ext);	// Pict folder 2nd
+	sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], dir2nd, basname, ext);	// Pict folder 2nd
 	fileptr  = loadFile( fname, 0, 0, 0 );					// no hidden load
 	HiddenRAM_freeProg( fileptr );
 	return fileptr ;
@@ -1785,11 +1857,11 @@ void DeleteFile(char *fname) {
 
 	if ( StorageMode & 2 ) {
 		r = MCS_DeleteG1M( fname  );
+		if( r ) { ErrorMSGfile( "Can't delete MCS", fname, r ); return ; }
 	} else {
 		CharToFont( fname, filename );
-		r = Bfile_DeleteFile( filename );
+		r = deleteFile( filename, 0 ) ;
 	}
-	if( r ) { ErrorMSGfile( "Can't delete file", fname, r ); return ; }
 	FileListUpdate=1;
 }
 
@@ -1801,12 +1873,7 @@ void DeleteFileFav(char *fname, int yesno ) {
 	if ( yesno ) if ( YesNo2( sname,"Delete file?" ) == 0 ) return ;
 	DeleteFile( fname );
 	
-	i=0;
-	while ( i < FavoritesMAX ) {	// file matching search
-		if ( strcmp( Favoritesfiles[i].filename,  sname )== 0 ) 
-		if ( strcmp( Favoritesfiles[i].folder  ,  folder)== 0 ) break; // already favorite exist
-		i++;
-	}
+	i=Check_Favorite( folder, sname);	// file matching search
 	if ( i < FavoritesMAX ) { 		//	exist favorites list
 		DeleteFavorites( i ) ;
 	}
@@ -1856,32 +1923,21 @@ int MakeDirectory(){
 	strcpy( folder, name );
 	return 0;	// ok
 }
-/*
-int RenameDirectory( char * foldername ){
-	char newname[16];
-	char oldfolder[16];
-	char newfolder[16];
-	FONTCHARACTER buffer[50];
-	FONTCHARACTER buffer2[50];
-	int	r;
-	strncpy( newname, foldername, strlen(foldername));
-	if ( InputFilename( newname, "Rename Folder ?" ) ) return 1 ; // cancel
-	sprintf( oldfolder, "\\\\%s\\%s", root[StorageMode], foldername );
-	sprintf( newfolder, "\\\\%s\\%s", root[StorageMode], newname );
-	CharToFont( oldfolder, buffer );
-	CharToFont( newfolder, buffer2 );
-	r=Bfile_RenameEntry( buffer, buffer2 );
-	if( r < 0 ) { ErrorMSGfile( "Can't create folder", name, r ); return 1 ; }
-	FileListUpdate = 1 ;
-	return 0;	// ok
+
+void Rename_Favorite( char* folder, char* oldsname, char* newsname ){
+	int i=Check_Favorite( folder, oldsname);	// file matching search
+	if ( i < FavoritesMAX ) { 		//	rename Favorites 
+		strncpy( Favoritesfiles[i].filename, newsname,  FILENAMEMAX );	// rename name
+		strncpy( Favoritesfiles[i].folder,   folder,    FOLDERMAX );
+	}
 }
-*/
+
 //----------------------------------------------------------------------------------------------
 const char RenameCopy_msg[2][18]={"Rename File Name?" ,"Copy File Name?" };
 
 int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 copy
 	char *filebase;
-	char name[32],sname[16],sname2[16],basname[32];
+	char name[32],name2[32],sname[16],sname2[16],basname[32];
 	int size,i,j;
 	int bmp=0;
 	char ext[8],ext2[8];
@@ -1902,13 +1958,17 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		} else {
 			if ( InputFilenameG1MorG3M( basname, "Copy", ext ) ) return 1 ; // cancel
 		}
-		basname[8]='\0';
+//		basname[8]='\0';
 		SetFullfilenameExt( name, basname, ext );
 		if ( ( strcmp( name, fname)==0 ) && ( strcmp(ext,ext2)==0 ) ) return 0; // no rename
 		basname8ToG1MHeader( filebase, basname);
-		if ( ExistG1Mext( basname, ext ) ==0 ) if ( YesNoOverwritefile(name) ) return 1 ; // cancel
+		if ( ExistG1Mext( basname, ext ) ==0 ) {
+			if ( YesNoOverwritefile(name) ) return 1 ; // cancel
+			DeleteFile( fname ) ;	// (rename) delete original file
+		} else {
+			if ( select==0 ) DeleteFile( fname ) ;	// (rename) delete original file
+		}
 		if ( SaveBasG1MorG3M( filebase, ext ) == 0 ) { 
-			if ( select == 0 ) DeleteFile( fname ) ;	// (rename) delete original file
 		} else return 1;
 	  	FileListUpdate = 1;
 //		if ( ext[0] != ext2[0] ) { FileListUpdate = 0 ; return 1; }	// no refesh list
@@ -1920,13 +1980,18 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 		filebase=CB_LoadSub( basname, 0, &size, ext ) ;
 		if ( filebase ==NULL ) return 1 ; // error
 		if ( InputFilename( basname, RenameCopy_msg[select] ) ) return 1 ; // cancel
-		basname[8]='\0';
+		GetExtName( basname, ext );
 		SetFullfilenameExt( name, basname, ext );
 		if ( strcmp(name,fname)==0 ) return 0; // no copy
-		if ( ExistFile( name ) == 0 ) if ( YesNoOverwritefile(name) ) return 1 ; // cancel
-		if ( storeFile( name, (unsigned char*)filebase, size ) ) return 1;	// 1:error  0:ok
-		if ( select == 0 ) DeleteFile( fname ) ;	// (rename) delete original file
+		strcpy( name2, name );
+		if ( ExistFile( name2, 1 ) == 0 ) {
+			if ( YesNoOverwritefile(name) ) return 1 ; // cancel
+			DeleteFile( name2 ) ;	// (rename) delete original file
+		} else {
+			if ( select==0 ) DeleteFile( fname ) ;	// (rename) delete original file
+		}
 		FileListUpdate = 1 ;
+		if ( storeFile( name, (unsigned char*)filebase, size ) ) return 1;	// 1:error  0:ok
 	}
 
 //	for (j=0;j<FILENAMEMAX;j++) sname[j]='\0';
@@ -1934,45 +1999,14 @@ int RenameCopyFile( char *fname ,int select ) {	// select:0 rename  select:1 cop
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
 	
-	if ( select ) return 0;	// (copy)
+//	if ( select ) return 0;	// (copy)
 
-	i=0;
 	SetShortName( sname2, fname);	// orignal name
-	while ( i < FavoritesMAX ) {	// file matching search
-		if ( strcmp( folder,  Favoritesfiles[i].folder )== 0 ) 
-		if ( strcmp( sname2,  Favoritesfiles[i].filename )== 0 ) break; // not matching
-		i++;
-	}
-	if ( i < FavoritesMAX ) { 		//	rename Favorites 
-		strncpy( Favoritesfiles[i].filename, sname,  FILENAMEMAX );	// rename name
-		strncpy( Favoritesfiles[i].folder,   folder,   FOLDERMAX );
-	}
+	Rename_Favorite( folder, sname2, sname );
 	
 	return 0;
 }
-/*
-int RenameCopyFilesBmp( char *fname, char *ext,int select  ){	// bmp copy/rename
-	char *filebase;
-	char name[64],sname[64],basname[32];
-	int size,i,j;
 
-	strncpy( basname, fname, strlen(fname)-4);
-	basname[strlen(fname)-4]='\0';
-	filebase=CB_LoadSub( basname, 0, &size, ext ) ;
-	if ( filebase ==NULL ) return 1 ; // error
-	if ( InputFilename( basname, RenameCopy_msg[select] ) ) return 1 ; // cancel
-	SetFullfilenameExt( name, basname, ext );
-	if ( strcmp(name,fname)==0 ) return 0; // no copy
-	if ( ExistFile( name ) == 0 ) if ( YesNoOverwritefile(name) ) return 1 ; // cancel
-	if ( storeFile( name, (unsigned char*)filebase, size ) ) return 1;	// 1:error  0:ok
-	if ( select == 0 ) DeleteFile( fname ) ;	// (rename) delete original file
-	FileListUpdate = 1 ;
-	SetShortName( sname, name);		// rename name
-	strncpy( renamename, sname, FILENAMEMAX);
-	strncpy( renamefolder, folder, FOLDERMAX);
-	return 0;
-}
-*/
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 
@@ -2004,6 +2038,7 @@ void Setfoldername16( char *folder16, char *sname ) {
 		i++;
 	}
 }
+
 void Getfolder( char *sname ) {
 	char folder16[21];
 	char *cptr;
@@ -2013,23 +2048,19 @@ void Getfolder( char *sname ) {
 	strncpy( folder, folder16, FOLDERMAX-1 );
 	strncpy( sname, folder16+8, 9+4 );
 }
-
 void Restorefolder() {
 	strncpy( folder, tmpfolder, FOLDERMAX );
 }
 
-void SetFullfilenameBin( char *fname, char *sname, char *extname ) {
+void SetFullfilenameBin( char *fname, char *sname, char *ext ) {
 	char sname2[32];
-	char extname2[32];
+	char ext2[8];
 	char *cptr;
 	int i;
-	strncpy( sname2,   sname,   31 ); sname2[31]='\0';
-	strncpy( extname2, extname, 31 ); extname2[31]='\0';
-	GetExtName( sname2, extname2 );
-	if( strlen(folder) == 0 )
-		sprintf( fname, "\\\\%s\\%s.%s", root[StorageMode], sname2, extname2 );
-	else
-		sprintf( fname, "\\\\%s\\%s\\%s.%s", root[StorageMode], folder, sname2, extname2 );
+	strncpy( sname2, sname, 31 ); sname2[31]='\0';
+	GetExtName( sname2, ext2 );
+	if ( ext2[0]=='\0' ) strncpy( ext2, ext, 3 ); ext2[3]='\0';
+	SetFullfilenameExt( fname, sname2, ext2 );
 }
 
 int CB_FileList( char *ext ) {
@@ -2100,14 +2131,22 @@ char * CB_SaveLoadOprand( char *SRC , int *reg, int *matsize ) {
 }
 
 void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname ) {
+	char sname2[32];
 	char fname[32];
+	char fname2[32];
 	Getfolder( sname );
 	SetFullfilenameBin( fname, sname, extname );
-	if ( ExistFile( fname ) == 0 ) { // ==0 existed 
-		if ( check ) if ( YesNoOverwritefile(fname) ) goto exit; // cancel
-		Bdisp_PutDisp_DD();
+	strcpy( fname2, fname );
+	if ( ExistFile( fname2, 1 ) == 0 ) { // ==0 existed 
+		if ( check ) {
+			if ( YesNoOverwritefile(fname2) ) goto exit; // cancel
+			Bdisp_PutDisp_DD();
+		}
+		DeleteFileFav( fname2 , 0 );	// delete file
 	}
 	if ( storeFile( fname, (unsigned char*)FilePtr, size )!=0 ) CB_Error(FileERR);
+	SetShortName( sname2, fname);	//
+	Check_Favorite_size( folder, sname2, size ) ;	// favorite filesize update?
 	exit:
 	Restorefolder();
 }
@@ -2142,11 +2181,15 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {	// load to
 	int handle;
 	FONTCHARACTER filename[50];
 	char *buffer;
-
-	Getfolder( sname );
-	SetFullfilenameBin( fname, sname, extname );
-	CharToFont( fname, filename );
+	char ext[8];
 	
+	Getfolder( sname );
+	GetExtName( sname, ext );
+	if ( ext[0] == '\0' ) strcpy( ext, extname );
+	renameExistedFile( sname, ext );	// replace? filename
+	SetFullfilenameNoExt( fname, sname );
+	CharToFont( fname, filename );
+
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
 		CB_Error(CantFindFileERR);  goto exit;
@@ -2170,9 +2213,13 @@ void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extna
 	int handle;
 	FONTCHARACTER filename[50];
 	int fsize;
+	char ext[8];
 
 	Getfolder( sname );
-	SetFullfilenameBin( fname, sname, extname );
+	GetExtName( sname, ext );
+	if ( ext[0] == '\0' ) strcpy( ext, extname );
+	renameExistedFile( sname, ext );	// replace? filename
+	SetFullfilenameNoExt( fname, sname );
 	CharToFont( fname, filename );
 	
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
@@ -2188,7 +2235,7 @@ void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extna
 	Restorefolder();
 }
 void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3] 
-	char fname[32],sname[16];
+	char fname[32],sname[32];
 	int c,i,reg,matsize;
 	char* FilePtr;
 	char* matptr;
@@ -2217,13 +2264,12 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 }
 
 void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
-	char fname[32],sname[16];
+	char fname[32],sname[32];
+	char ext[8];
 	int c;
 	int yesno=0;
 
-//	c =SRC[ExecPtr];
-//	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+	CB_GetLocateStr(SRC, sname, 22); if ( ErrorNo ) return ;	// error
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
@@ -2232,7 +2278,10 @@ void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
 	if ( ErrorNo ) return ; // error
 
 	Getfolder( sname );
-	SetFullfilenameBin( fname, sname, "bin" );
+	GetExtName( sname, ext );
+	if ( ext[0] == '\0' ) strcpy( ext, "bin" );
+	renameExistedFile( sname, ext );	// replace? filename
+	SetFullfilenameNoExt( fname, sname );
 	DeleteFileFav( fname , yesno );	// with yesno
 	Restorefolder();
 }
@@ -2283,7 +2332,7 @@ void ConvertToText( char *fname ){
 		if ( textsize<0 ) { CB_ErrMsg(MemoryERR); return ; } // error
 		
 		SetFullfilenameExt( fname, basname, "txt" );
-		if ( ExistFile( fname ) == 0 ) { // ==0 existed 
+		if ( ExistFile( fname, 0 ) == 0 ) { // ==0 existed 
 			if ( YesNoOverwritefile(fname) ) { return ; } // cancel
 			Bdisp_PutDisp_DD();
 		}
@@ -2727,6 +2776,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	char buffer[32]="",folder16[21];
 	char fname[32],filename[32];
 	char sname[16],basname[16];
+	char ext[8];
 	char *filebase;
 	char *StackProgSRC;
 	int StackProgPtr;
@@ -2777,6 +2827,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 					}
 					if ( r== 0 ) {	// Prog load Ok
 						filebase=ProgfileAdrs[ProgEntryN];
+						strncpy( filebase+0x3C, basname, 8);		// set filename to g1m/g3m header
 						ProgEntryN++;
 						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Too Many Prog error
 						StackProgPtr = ExecPtr;
@@ -2827,21 +2878,21 @@ int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
@@ -2874,7 +2925,6 @@ int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
-/*
 void FavoritesDowndummy( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -2939,6 +2989,7 @@ void FavoritesDowndummy4( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy5( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

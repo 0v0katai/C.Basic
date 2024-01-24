@@ -201,12 +201,12 @@ extern  char *TVRAM;
 extern  char *GVRAM;
 //------------------------------------------------------------------------------
 #define StackGotoMax 10+26+2+6+26
-#define StackGosubMax 4
+#define StackGosubMax 16
 #define IfCntMax 32
-#define StackForMax 4
-#define StackWhileMax 6
-#define StackDoMax 6
-#define StackSwitchMax 4
+#define StackForMax 7
+#define StackWhileMax 7
+#define StackDoMax 7
+#define StackSwitchMax 7
 
 #define TYPE_For_Next 			1
 #define TYPE_While_WhileEnd		2
@@ -222,10 +222,10 @@ typedef struct {		// 10 bytes
 
 typedef struct {		// 34+4 bytes
 	char	CNT;
+	char	ForPtr;
 	char	TYPE[20];
 	char	GosubNest[20];
 	
-	char	ForPtr;
 	int	*Var[StackForMax];
 	int	ForAdrs[StackForMax];
 	int	NextAdrs[StackForMax];

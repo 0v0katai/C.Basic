@@ -168,7 +168,7 @@ void CB_Help( int opcode, int yposflg ) {
 
 //	HelpText = help0000;
 	if ( HelpText == NULL ) HelpText = LoadHelp()+0x56;
-	if ( HelpText == 0x56 ) return ;	// NULL
+	if ( HelpText == (char*)0x56 ) return ;	// NULL
 
 	Ptr = 0;
 	length = strlenOp( HelpText );
