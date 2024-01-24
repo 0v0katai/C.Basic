@@ -979,7 +979,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				Fkey_dispR( 1, "Mat");
 				Fkey_dispR( 2, "V-W");
 				Fkey_Clear( 3 );
-				if ( dumpflg==2 ) Fkey_dispN( 3, "Dump"); else Fkey_dispN( 3, "List");
+//				if ( Contflag >=1 ) {  // debug mode
+//					Fkey_dispN( 3, "Cont");
+//				} else {	// normal mode
+					if ( dumpflg==2 ) Fkey_dispN( 3, "Dump"); else Fkey_dispN( 3, "List");
+//				}
 				Fkey_dispR( 4, "SRC" );
 				Fkey_dispN( 5, "G<>T");
 				GetKey(&key);
@@ -1051,6 +1055,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 					case KEY_CTRL_F4:
 						if ( SearchMode ) break;;
+//						if ( Contflag >=1 ) {  // debug mode
+//								cont=0;
+//								ExecPtr=csrPtr;
+//								BreakPtr=0;
+//								Contflag=1;		// cont mode
+//						} else {
 							switch (dumpflg) {
 								case 2: 		// Opcode
 									dumpflg=4;
@@ -1066,6 +1076,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							offset=csrPtr;
 							offset_y=0;
 							cx=6; cy=2;
+//						}
 							key=0;
 							ClipStartPtr = -1 ;		// ClipMode cancel
 							break;
