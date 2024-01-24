@@ -2752,7 +2752,7 @@ short selectPRGM=0;
 char lowercase=0;
 
 int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel, int fn_cancel) {
-	char buffer2[256];
+	char buffer2[512];
 	char buf[22];
 	char fnbuf[16*8];
 	unsigned int key=0;
@@ -2779,7 +2779,7 @@ int InputStrSubC(int x, int y, int width, int ptrX, char* buffer, int MaxStrlen,
 	if ( x + width > 22 ) width=22-x;
 	csrwidth=width; if ( x + csrwidth > 20 ) csrwidth=21-x;
 
-	if ( MaxStrlen > 255 ) MaxStrlen = 255;
+	if ( MaxStrlen > 511) MaxStrlen = 511;
 	for(i=0; i<=MaxStrlen; i++) buffer2[i]=buffer[i]; // backup
 
 	CursorStyle=Cursor_GetFlashStyle();

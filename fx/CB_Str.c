@@ -710,7 +710,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 	} else
 	if ( c == 0x7F ) {
 		c=SRC[execptr+1];
-		if ( c == 0xFFFFFFF0 )  return c;	// GraphY
+		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
@@ -730,6 +730,7 @@ char* CB_GetOpStrSub( char *SRC ,int *maxlen, int c ) {		// String -> buffer	ret
 	int reg,dimA,dimB;
 	int aryN,aryMax;
 	char *buffer;
+	int type;
 
 	switch ( c ) {
 		case 1:	// """"
@@ -758,9 +759,27 @@ char* CB_GetOpStrSub( char *SRC ,int *maxlen, int c ) {		// String -> buffer	ret
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0xFFFFFFF0:	// GraphY
+		case 0xFFFFFFF1:	// Graphr
+		case 0xFFFFFFF2:	// GraphXt
+		case 0xFFFFFFF3:	// GraphYt
+		case 0xFFFFFFF4:	// GraphX
 			reg=defaultGraphAry;
 			ExecPtr+=2;
 			buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize ) +6;
+			type = ( buffer[0]<<8 ) + ( buffer[1] );
+			switch ( c ) {
+				case 0xFFFFFFF0:	// GraphY
+					c=0x0108; break;
+				case 0xFFFFFFF1:	// Graphr
+					c=0x040A; break;
+				case 0xFFFFFFF2:	// GraphXt
+					c=0x0409; break;
+				case 0xFFFFFFF3:	// GraphYt
+					buffer = strstr(buffer,"\xF6\x00");
+					c=0x0409; break;
+				case 0xFFFFFFF4:	// GraphX
+					c=0x0208; break;
+			}
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0x30:	// StrJoin(
@@ -921,11 +940,22 @@ void StorStrStr( char *SRC ) {	// "String" -> Sto 1-20
 
 void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
 	int reg,dimA,dimB;
-	char *MatAryC;
+	char *MatAryC,*ptr;
+	int size;
+	int c = SRC[ExecPtr-1];
 	reg=defaultGraphAry;
 	MatAryC = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize ) +6;
 	if ( ErrorNo ) return ; // error
-	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
+	size = MatAry[reg].SizeB-1-6;
+	if ( ( c==0xFFFFFFF2 ) ) {	// Yt
+		ptr=strstr(MatAryC, "\xF6\x00");
+		if ( ptr == NULL ) {
+			MatAryC[0]='\0';
+		} else {
+			
+		}
+	} 
+	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1-6 );
 }
 
 void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
@@ -1050,6 +1080,10 @@ void CB_StorStrSub( char *SRC, int c ) {
 			StorStrFn( SRC ) ;
 			break;
 		case 0xFFFFFFF0:	// GraphY
+		case 0xFFFFFFF1:	// Graphr
+		case 0xFFFFFFF2:	// GraphXt
+		case 0xFFFFFFF3:	// GraphYt
+		case 0xFFFFFFF4:	// GraphX
 			ExecPtr+=2;
 			StorStrGraphY( SRC ) ;
 			break;
