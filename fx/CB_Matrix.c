@@ -944,7 +944,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		j=0;
 		if ( reg<84 ) {
 			j=SetVarChar( buffer, reg); buffer[j]='\0';
-			if ( list ) {
+			if ( ( 32<=reg ) && ( list ) ) {
 				if ( reg>=58 ) i=reg-57;
 				else
 				if ( reg<=57 ) i=reg-5;
@@ -3206,9 +3206,9 @@ int CB_MatBase( char *SRC ){	// MatBase( Mat A )
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
 //int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
