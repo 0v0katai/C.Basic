@@ -181,6 +181,9 @@ typedef struct {
 } CurrentStk;
 
 //------------------------------------------------------------------------------
+#define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
+
+
 void CB_SaveTextVRAM() ;
 void CB_RestoreTextVRAM() ;
 void CB_SelectTextVRAM() ;

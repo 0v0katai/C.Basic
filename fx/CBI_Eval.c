@@ -1,7 +1,7 @@
 /*
 ===============================================================================
 
- Casio Basic RUNTIME library for fx-9860G series  v0.80
+ Casio Basic RUNTIME library for fx-9860G series  v0.90
 
  copyright(c)2015 by sentaro21
  e-mail sentaro21@pm.matrix.jp
@@ -28,7 +28,7 @@
 #include "CBI_interpreter.h"
 //------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//		Expression evaluation    string -> double
+//		Expression evaluation    string -> int
 //----------------------------------------------------------------------------------------------
 int Eval_atod(char *SRC, int c ) {
 	int	result=0;
@@ -545,11 +545,13 @@ int EvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 		} else return result;
 	}
 }
+
 int EvalIntsubTop( char *SRC ) {	// eval 1
 	int c;
 	int excptr=ExecPtr;
 	int  result,dst;
 
+	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
 	result=EvalIntsub1(SRC);
 	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0E ) || ( c==0x13 ) || ( c==0x0D ) || ( c==',' ) || ( c==')' ) || ( c==']' ) ) return result;
@@ -637,5 +639,3 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 		} else return result;
 	}
 }
-
-

@@ -40,8 +40,8 @@ static int FileCmp( const void *p1, const void *p2 );
 static int size=0;
 static char folder[FILENAMEMAX] = "", name[FILENAMEMAX];
 Files Favoritesfiles[FavoritesMAX];
-int	FavoritesSize=-1;
-
+char	FavoritesSize=-1;
+char	FileListUpdate=1;
 
 unsigned int SelectFile (char *filename)
 {
@@ -49,23 +49,30 @@ unsigned int SelectFile (char *filename)
 
 	Bdisp_AllClr_DDVRAM();
 	while( 1 ){
-		size = ReadFile( folder );
-		qsort( files, size, sizeof(Files), FileCmp );
+		if ( FileListUpdate  ) {
+			size = ReadFile( folder );
+			qsort( files, size, sizeof(Files), FileCmp );
+		}
 		
 		key = Explorer( size, folder ) ;
 		if ( key == KEY_CTRL_F3 ) break ;	// new file
 		if ( key == KEY_CHAR_POWROOT ) break ;	// sdk built in file
 
-		if ( ( key == KEY_CTRL_EXIT ) || ( index == size ) ) {							//return to root
+		if ( key == KEY_CTRL_EXIT ) {			//to top of list
+			index = 0;
+			SaveConfig();
+		} else
+		if ( ( key == KEY_CTRL_QUIT ) || ( index == size ) ) {			//return to root
+			if( strlen(folder) ) FileListUpdate = 1 ; // folder to root
 			folder[0] = '\0';	
 			index = 0;
 			SaveConfig();
-		}
-		else if( files[index].filesize == -1 ){				//folder
+		} else
+		if( files[index].filesize == -1 ){				//folder
 			strcpy( folder,files[index].filename );
 			index = 0;
-		}
-		else{										//file
+			FileListUpdate = 1 ;
+		} else {										//file
 			strcpy( name,files[index].filename );
 			break;
 		}
@@ -79,12 +86,10 @@ unsigned int SelectFile (char *filename)
 	return key ;
 }
 
-int SelectFilefree(char *filename) {
-	int i;
-	int result=SelectFile(filename);
-	SaveFavorites();
-	free( files );
-	return result;
+void FileListfree() {
+	if ( FileListUpdate ) {
+		if ( files != NULL ) free( files );
+	}
 }
 
 
@@ -117,6 +122,7 @@ static int ReadFile( char *folder )
 	i = FavoritesMAX ;
 	files = (Files *)malloc( size*sizeof(Files) );
 	memset( files, 0, size*sizeof(Files) );
+	
 	Bfile_FindFirst (find_path, &find_h, find_name, &file_info);
 	if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) ){
 		FontToChar(find_name,str);
@@ -157,35 +163,36 @@ unsigned int Explorer( int size, char *folder )
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
 
-	FavCount=0;
-	j=FavoritesMAX-1;
-	for( i=FavoritesMAX-1; i>=0; i--){			//	set favorites list
-		files[i].filesize=0;
-		k=0;
-		while ( k < FavoritesMAX ) {	// file matching search
-			if ( strcmp( Favoritesfiles[i].filename,  files[k].filename )== 0 ) break; // already favorite exist
-			k++;
-		}
-		if ( k == FavoritesMAX ) { 		//	no favorites list
-			k=FavoritesMAX+1;
-			while ( k < size ) {	// favorite file exist? search
-				if ( strcmp( files[k].filename,  Favoritesfiles[i].filename )== 0 ) break; // not matching
+	if ( FileListUpdate ) {
+		FavCount=0;
+		j=FavoritesMAX-1;
+		for( i=FavoritesMAX-1; i>=0; i--){			//	set favorites list
+			files[i].filesize=0;
+			k=0;
+			while ( k < FavoritesMAX ) {	// file matching search
+				if ( strcmp( Favoritesfiles[i].filename,  files[k].filename )== 0 ) break; // already favorite exist
 				k++;
 			}
-			if ( k < size ) { 		//	set Favorites 
-				strncpy( files[j].filename, Favoritesfiles[i].filename, FILENAMEMAX);
-				files[j].filesize = files[k].filesize;
-				j--;
-				FavCount++;
-			} else {	// not found cancel favorite
-				memset( Favoritesfiles[i].filename, 0x00, FILENAMEMAX );
-				Favoritesfiles[i].filesize=0;
+			if ( k == FavoritesMAX ) { 		//	no favorites list
+				k=FavoritesMAX+1;
+				while ( k < size ) {	// favorite file exist? search
+					if ( strcmp( files[k].filename,  Favoritesfiles[i].filename )== 0 ) break; // not matching
+					k++;
+				}
+				if ( k < size ) { 		//	set Favorites 
+					strncpy( files[j].filename, Favoritesfiles[i].filename, FILENAMEMAX);
+					files[j].filesize = files[k].filesize;
+					j--;
+					FavCount++;
+				} else {	// not found cancel favorite
+					memset( Favoritesfiles[i].filename, 0x00, FILENAMEMAX );
+					Favoritesfiles[i].filesize=0;
+				}
 			}
 		}
+		files[FavoritesMAX].filesize = 0xFFFF;	// separator
 	}
-	files[FavoritesMAX].filesize = 0xFFFF;	// separator
-	StartLine=FavoritesMAX - FavCount; if ( FavCount == 0 ) StartLine++;
-
+	FileListUpdate = 0 ;
 	top = index ;
 
 	while( cont )
@@ -423,6 +430,7 @@ unsigned int Explorer( int size, char *folder )
 		}
 	}
 	
+	SaveFavorites();
 
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
 	return key;
@@ -568,7 +576,7 @@ int storeFile( const char *name, unsigned char* codes, int size )
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}
-	
+	FileListUpdate=1;
 	handle = Bfile_CreateFile( filename, size );
 	if( handle < 0 ) { ErrorMSGfile( "Can't create file", name ); return 1 ; }
 	r = Bfile_CloseFile( handle );
@@ -887,6 +895,7 @@ char * LoadPicture( int pictNo ){
 }
 
 //----------------------------------------------------------------------------------------------
+
 void DeleteFile(char *sname) {
 	FONTCHARACTER filename[50];
 	int r;
@@ -895,6 +904,7 @@ void DeleteFile(char *sname) {
 
 	r = Bfile_DeleteFile( filename );
 	if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return ; }
+	FileListUpdate=1;
 }
 
 void DeleteFileFav(char *sname ) {
@@ -902,21 +912,10 @@ void DeleteFileFav(char *sname ) {
 	char fname[32];
 	int i,j,r;
 	
-	CharToFont( sname, filename );
-
 	if ( YesNo( "Delete file?" ) == 0 ) return ;
-	
-	r = Bfile_DeleteFile( filename );
-	if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return ; }
 
-//	i=0;
-//	while ( i < FavoritesMAX ) {	// file matching search
-//		if ( strcmp( name,  Favoritesfiles[i].filename )== 0 ) break; // not matching
-//		i++;
-//	}
-//	if ( i < FavoritesMAX ) { 		//	delet Favorites 
-//		Favoritesfiles[i].filesize = 0;
-//	}
+	DeleteFile( sname );
+
 }
 
 //----------------------------------------------------------------------------------------------

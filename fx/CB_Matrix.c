@@ -863,11 +863,18 @@ void CB_MatrixInit( char *SRC ) { //	{n,m}->Dim Mat A[.B][.W][.L][.F]
 }
 
 //-----------------------------------------------------------------------------
+
+int SkipSpcCR( char *SRC ) {
+	if ( SRC[ExecPtr] == 0x0D ) ExecPtr++; // Skip [CR]
+	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
+	return SRC[ExecPtr];
+}
+
 void CB_MatrixInit2( char *SRC ) { //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
 	int c,d;
 	int dimA,dimB,i;
 	int reg;
-	int exptr=ExecPtr,exptr2;
+	int exptr,exptr2;
 	char	*cptr;
 	short	*wptr;
 	int		*iptr;
@@ -876,40 +883,45 @@ void CB_MatrixInit2( char *SRC ) { //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
 	double data;
 	int m,n;
 	
-	c=SRC[ExecPtr];
+	c=SkipSpcCR(SRC);
 	if ( c != '[' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
+	SkipSpcCR(SRC);
+	exptr=ExecPtr;
 	n=1;
 	while ( 1 ) {
 		if (CB_INT)	data=(EvalIntsubTop( SRC )); else data=(EvalsubTop( SRC ));
-		c=SRC[ExecPtr];
+		c=SkipSpcCR(SRC);
 		if ( c == ']' ) break;
 		if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
+		SkipSpcCR(SRC);
 		n++;
 	}
 	dimB=n;
 	ExecPtr++;
-	c=SRC[ExecPtr];
+	c=SkipSpcCR(SRC);
 	m=1;
 	if ( c != ']' ) { 
 		while ( 1 ) {
-			c=SRC[ExecPtr];
+			c=SkipSpcCR(SRC);
 			if ( c != '[' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 			ExecPtr++;
+			SkipSpcCR(SRC);
 			n=1;
 			while ( 1 ) {
 				if (CB_INT)	data=(EvalIntsubTop( SRC )); else data=(EvalsubTop( SRC ));
-				c=SRC[ExecPtr];
+				c=SkipSpcCR(SRC);
 				if ( c == ']' ) break;
 				if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 				ExecPtr++;
+				SkipSpcCR(SRC);
 				n++;
 			}
 			if ( n != dimB ) { CB_Error(DimensionERR); return; }  // Dimension error
 			m++;
 			ExecPtr++;
-			c=SRC[ExecPtr];
+			c=SkipSpcCR(SRC);
 			if ( c == ']' ) break;
 		}
 	}
@@ -927,14 +939,17 @@ void CB_MatrixInit2( char *SRC ) { //	[[1.2,3][4,5,6]]->Mat A[.B][.W][.L][.F]
 	ExecPtr=exptr;
 	m=0; n=0;
 	while ( m < dimA ) {
-		ExecPtr++;
 		n=0;
 		while ( n < dimB ) {
 			if (CB_INT)	WriteMatrixInt( reg, m, n, EvalIntsubTop( SRC ));
 			else 		   WriteMatrix( reg, m, n, EvalsubTop( SRC ));
-			ExecPtr++;
+			SkipSpcCR(SRC);
+			ExecPtr++;	// , skip
+			SkipSpcCR(SRC);
 			n++;
 		}
+		ExecPtr++;		// ] skip
+		SkipSpcCR(SRC);
 		m++;
 	}
 	ExecPtr=exptr2;
