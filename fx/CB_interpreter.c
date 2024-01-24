@@ -2043,6 +2043,7 @@ void  CB_Input( char *SRC ){
 	int*	MatAryI;
 	
 	KeyRecover();
+	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 	CB_SelectTextDD();	// Select Text Screen
 	if ( CursorX==22 ) CursorX=1;
 	locate( CursorX, CursorY); Print((unsigned char*)"?");

@@ -1764,11 +1764,14 @@ const topcodes OpCodeStrList[] = {
 	{ 0x7F5F, "Ticks" }, 
 	{ 0x7F9F, "KeyRow(" }, 
 	{ 0x7FB4, " Xor " }, 		// SDK emu not support
+	{ 0x7FBC, " Int\xB9 " }, 	// SDK emu not support
+	{ 0x7FBD, " Rmdr " }, 		// SDK emu not support
 	{ 0x7FF5, "IsExist(" }, 
 	{ 0x7FF6, "Peek(" }, 
 	{ 0x7FF8, "VarPtr(" }, 
 	{ 0x7FFA, "ProgPtr(" }, 
 	{ 0xF70C, "Return " }, 		// add space
+	{ 0xF70F, "ElseIf " }, 
 	{ 0xF717, "ACBreak" }, 
 	{ 0xF73B, "DotPut(" }, 
 	{ 0xF73D, "DotTrim(" }, 
@@ -1782,7 +1785,6 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF7E4, "Disp " }, 
 	{ 0xF7E8, "ReadGraph(" }, 
 	{ 0xF7E9, "WriteGraph " }, 
-	{ 0xF70F, "ElseIf " }, 
 	{ 0xF7EA, "Switch " }, 
 	{ 0xF7EB, "Case " }, 
 	{ 0xF7EC, "Default " }, 
