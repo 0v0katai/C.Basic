@@ -868,6 +868,7 @@ double GraphXYEval( char *buffer, int *add ) {
 	int Ansreg=CB_MatListAnsreg;
 	dspflag=0;
 	ExecPtr=0;
+	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	result = Cplx_ListEvalsubTop( buffer ).real;
 	*add = ExecPtr+1;
 	ExecPtr=excptr;
@@ -884,17 +885,17 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, int *listdirect ) {
 		gp = 1;
 		*listdirect = 1;
 	} else {		// A+{ etc
+		CB_MatListAnsreg=28;
 		*dadd = Cplx_Evalsub1(graph).real;
 		if ( dspflag<3 ) {
 			c = graph[ExecPtr++];
 			if ( c == 0xFFFFFF89 ) {	// +
 				if ( graph[ExecPtr] == '{' ) {
 					gp = ExecPtr +1;
-					CB_MatListAnsreg=28;
 					Cplx_Evalsub1(graph);
 					c = graph[ExecPtr];
 					if ( ( c==',' ) || ( c==':' ) || ( c==')' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0x00 ) ) {
-						*listdirect = 1;
+						(*listdirect) = 1;
 						goto exit;
 					}
 				}
@@ -914,7 +915,7 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 	double p_y=Previous_Y;
 	char *graphX=GraphX;
 	char *graphY=GraphY;
-	double xdadd,ydadd;
+	double xdadd=0,ydadd=0;
 	int XlistDirect=0,YlistDirect=0;
 	int sizeA,sizeA2;
 	int base=1,base2=1;
@@ -951,11 +952,10 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg){	// Graph XY ( List 1, List 
 		if ( TThetaptch == 0 ) return ;
 		while ( regT.real<=TThetamax ) {
 			//-----------------------------
-			if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 			regX.real = GraphXYEval(graphX, &addX) + xdadd;		// function
-			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( CB_MatListAnsreg, c, base );
+			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( xlistreg, c, base );
 			regY.real = GraphXYEval(graphY, &addY) + ydadd;		// function
-			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( CB_MatListAnsreg, c, base2 );
+			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( ylistreg, c, base2 );
 			if ( ErrorNo ) return ;
 			//-----------------------------
 //			if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
@@ -1093,12 +1093,12 @@ int glib2ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 int glib2ObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int glib2ObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
+//int glib2ObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
 //int glib2ObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
