@@ -652,7 +652,7 @@ complex Cplx_ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				
 			case  0xFFFFFF8C  :	//  dms
 				result.real = DmsToDec( SRC, result.real );
-				result.real = 0;
+				result.imag = 0;
 				break;
 				
 			case  0xFFFFFF9C  :	//  Deg

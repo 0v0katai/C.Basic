@@ -38,7 +38,10 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	if ( HeapRAM == NULL )  { Abort(); }
 	
 	IsSH3=CPU_check();
-	HiddenRAM();	// Check HiddenRAM
+	if ( HiddenRAM() == NULL ) {	;	// Check HiddenRAM
+		ExtendList   = 0;
+		UseHiddenRAM = 0;
+	}
 	SetVeiwWindowInit();
 	for ( i=0; i<6; i++) VWinflag[i]=0;
 //	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init

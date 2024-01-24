@@ -95,6 +95,7 @@ double RoundFix( double x, double digit);
 double RoundSci( double x, double digit);
 
 double Eval_atof(char *SRC, int c) ;
+double DmsToDec( char *SRC, double h ) ;	// 12"34"56 -> 12.5822222
 
 double Eval(char *SRC);
 double Eval2(char *SRC, int *ptr);

@@ -3,7 +3,7 @@
 struct st_round CB_Round = { Norm , 1} ; // Round
 char ENG=0;	// ENG flag  1:ENG  3:3digit separate
 
-char UseHiddenRAM=0;	//	0x11 :HiddenRAMInit off
+char UseHiddenRAM=1;	//	0x11 :HiddenRAMInit off
 char IsHiddenRAM =0;
 
 #define HIDDENRAM_TOP 0x88040000
