@@ -30,8 +30,8 @@ complex Cplx_ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 
 			MatAryC=(char*)MatAry[reg].Adrs;			// Matrix array 4 bit
 			r=MatAryC[dimB*(((MatAry[reg].SizeA-1)>>1)+1)+(dimA>>1)];
 			if ( (dimA&1)==0 )  r = r>>4;
-			else				r = r&0xF;
-			if ( r>=8 ) r -= 16;	// minus
+			r = r&0xF;
+//			if ( r>=8 ) r -= 16;	// minus
 			result.real = r ;
 			break;
 		case  8:
@@ -50,8 +50,11 @@ complex Cplx_ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 
 	return result;
 }
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
+int EvalObjectAlignEC4a0( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignEC4a1( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignEC4a2( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignEC4a3( unsigned int n ){ return n; }	// align +4byte
+int EvalObjectAlignEC4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 void Cplx_WriteMatrix( int reg, int dimA, int dimB, complex value){		// base:0  0-    base:1 1-
