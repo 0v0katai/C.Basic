@@ -1,6 +1,6 @@
 /*****************************************************************/
 /*                                                               */
-/*   inp Library  ver 1.04                                       */
+/*   inp Library  ver 1.05                                       */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -92,6 +92,7 @@ unsigned int SelectChar() {
 	int opNum=0 ;
 
 	SaveDisp(SAVEDISP_PAGE1);		// --------
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 
 	while (cont) {
 		opNum=0;
@@ -495,8 +496,9 @@ const unsigned short oplistVARS[]={
 		0x7FF0,	// GraphY
 		0xF720,	// DrawGraph
 		0xEE,	// Graph Y=
-		0xF73F,	// DotG(
-		0xF94B,	// DotP(
+		0xF73F,	// DotGet(
+		0xF94B,	// DotPut(
+		0xF74F,	// DotTrim(
 		0};
 
 //---------------------------------------------------------------------------------------------
@@ -555,6 +557,7 @@ int SelectOpcode5800P(unsigned short *oplist, int *select) {
 		GetKey( &key );
 		switch (key) {
 			case KEY_CTRL_EXIT:
+				RestoreDisp(SAVEDISP_PAGE1);
 				return 0;
 			case KEY_CTRL_EXE:
 				cont=0;
@@ -781,15 +784,15 @@ const unsigned short oplistCMD[]={
 		0xF71F,	// S-L-Dot
 		
 		0x7F00,	// Xmin
+		0x7F04,	// Ymin
 		0x7F01,	// Xmax
+		0x7F05,	// Ymax
 		0x7F02,	// Xscl
+		0x7F06,	// Yscl
 		0x7F0B,	// Xfct
+		0x7F0C,	// Yfct
 		0XF921,	// Xdot
 		0xFFFF,	// 				-
-		0x7F04,	// Ymin
-		0x7F05,	// Ymax
-		0x7F06,	// Yscl
-		0x7F0C,	// Yfct
 		0xFFFF,	// 				-
 		0xFFFF,	// 				-
 
@@ -836,9 +839,9 @@ const unsigned short oplistCMD[]={
 		0xEE,	// Graph Y=
 		0x7FF0,	// GraphY
 		0xFFFF,	// 				-
-		0xF73F,	// DotG(
-		0xF94B,	// DotP(
-		0xFFFF,	// 				-
+		0xF73F,	// DotGet(
+		0xF94B,	// DotPut(
+		0xF74F,	// DotTrim(
 		0xFFFF,	// 				-
 //		0xF797,	// StoV-Win
 //		0xF798,	// RclV-Win
@@ -1053,16 +1056,31 @@ int CB_OpcodeToStr( unsigned short opcode, unsigned char *string  ) {
 		string[1]='o';
 		string[2]='t';
 		string[3]='P';
-		string[4]='(';
-		string[5]='\0';
+		string[4]='u';
+		string[5]='t';
+		string[6]='(';
+		string[7]='\0';
 	} else
 	if ( opcode == 0xF73F ) {
 		string[0]='D';
 		string[1]='o';
 		string[2]='t';
 		string[3]='G';
-		string[4]='(';
-		string[5]='\0';
+		string[4]='e';
+		string[5]='t';
+		string[6]='(';
+		string[7]='\0';
+	} else
+	if ( opcode == 0xF74F ) {
+		string[0]='D';
+		string[1]='o';
+		string[2]='t';
+		string[3]='T';
+		string[4]='r';
+		string[5]='i';
+		string[6]='m';
+		string[7]='(';
+		string[8]='\0';
 	} else
 	if ( opcode == 0x00FB ) { // P(
 		string[0]='E';
@@ -1242,23 +1260,6 @@ int PrintOpcode(int x, int y, unsigned char *buffer, int width, int ofst, int pt
 	return x;
 }
 
-int OpStrLastoffset(unsigned char *buffer, int ptrX, int csrwidth, int *csrX) {
-	int i,j,len,csX,ofstX;
-	unsigned int  c;
-	csX=0;
-	ofstX=ptrX;
-	while ( ptrX > 0 ) {
-		PrevOpcode( buffer, &ptrX ) ;
-		c = GetOpcode ( buffer, ptrX ) ;
-		len = OpcodeStrlen( c );
-		csX += len ;
-		PrevOpcode( buffer, &ofstX ) ;
-		if ( csX > csrwidth ) { NextOpcode( buffer, &ofstX ); csX-=len; break; }
-	}
-	*csrX = csX;
-	return  ofstX;
-}
-
 //----------------------------------------------------------------------------------------------
 
 void PutAlphamode1( int CursorStyle ){
@@ -1292,8 +1293,6 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 	
 	for(i=0; i<=MaxStrlen; i++) buffer2[i]=buffer[i]; // backup
 
-	offsetX=OpStrLastoffset(buffer, ptrX, csrwidth ,&csrX);
-
 	CursorStyle=Cursor_GetFlashStyle();
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
@@ -1314,8 +1313,8 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				else				PrevOpcode( buffer, &offsetX);
 		}
 		
-		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(4,"A<>a"); else Fkey_dispN_Aa(4,"A<>a");
-		if ( ( pallet_mode ) && ( alpha_mode ) ) Fkey_dispR(5,"CHAR");
+		if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA(3,"A<>a"); else Fkey_dispN_Aa(3,"A<>a");
+		if ( ( pallet_mode ) && ( alpha_mode ) ) Fkey_dispR(4,"CHAR");
 
 		CursorStyle=Cursor_GetFlashStyle();
 		if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
@@ -1364,19 +1363,18 @@ int InputStrSub(int x, int y, int width, int ptrX, unsigned char* buffer, int Ma
 				break;
 			case KEY_CTRL_DOWN:
 					ptrX=length;
-					offsetX=OpStrLastoffset(buffer, ptrX, csrwidth ,&csrX);
 				break;
-			case KEY_CTRL_F5:
+			case KEY_CTRL_F4:
 				if ( ( pallet_mode ) && ( alpha_mode ) ) {
 					lowercase=1-lowercase;
-					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
+					if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
 				break;
-			case KEY_CTRL_F6:
+			case KEY_CTRL_F5:
 				Cursor_SetFlashMode(0); 		// cursor flashing off
 				if ( ( pallet_mode ) && ( alpha_mode ) ) {
 					key=SelectChar();
-					if ( alphalock == 0 ) if ( ( CursorStyle==0x4 ) || ( CursorStyle==0x3 ) || ( CursorStyle==0xA ) || ( CursorStyle==0x9 ) ) PutKey( KEY_CTRL_ALPHA, 1 );
+					if ( alphalock == 0 ) if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 				}
 				break;
 			case KEY_CTRL_SHIFT:

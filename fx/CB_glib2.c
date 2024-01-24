@@ -243,15 +243,12 @@ unsigned int Plot()
 					case KEY_CTRL_EXIT:
 						break;
 					case KEY_CTRL_SETUP:
-						GCursorSetFlashMode(0);	// graphic cursor flashing off
 						selectSetup=SetupG(selectSetup);
 						break;
 					case KEY_CTRL_F1:
-						GCursorSetFlashMode(0);	// graphic cursor flashing off
 						selectVar=SetVar(selectVar);		// A - 
 						break;
 					case KEY_CTRL_F3:
-						GCursorSetFlashMode(0);	// graphic cursor flashing off
 						selectMatrix=SetMatrix(selectMatrix);		// 
 						break;
 					case KEY_CTRL_F6:

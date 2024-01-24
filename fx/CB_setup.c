@@ -32,7 +32,7 @@ void VerDisp() {
 	PopUpWin( 6 );
 	locate( 3, 2 ); Print( (unsigned char*)"Basic Interpreter" );
 	locate( 3, 3 ); Print( (unsigned char*)"&(Basic Compiler)" );
-	locate( 3, 4 ); Print( (unsigned char*)"            v0.72" );
+	locate( 3, 4 ); Print( (unsigned char*)"            v0.73" );
 	locate( 3, 6 ); Print( (unsigned char*)"     by sentaro21" );
 	locate( 3, 7 ); Print( (unsigned char*)"          (c)2015" );
 	GetKey(&key);
@@ -222,6 +222,7 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	retrun 0: no 
 	double	tThetamax = TThetamax ;
 	double	tThetaptch= TThetaptch;
 
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 	while (cont) {
 		Bdisp_AllClr_VRAM();
 		locate( 1,1);Print((unsigned char*)"View Window");
@@ -434,6 +435,7 @@ void SetFactor(){
 
 	PopUpWin(3);
 
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 	while (cont) {
 		locate(3,3); Print((unsigned char *)"Factor");
 		locate(3,4); Print((unsigned char *) "Xfact:           ");
@@ -510,6 +512,7 @@ void InitVar( double value, int VarMode, int vartop ) {
 	int i,reg;
 	PopUpWin(3);
 
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 	while (cont) {
 		locate( 3,3); Print((unsigned char *)"Init All Variable");
 		locate( 3,5); Print((unsigned char *)"value:           ");
@@ -560,6 +563,8 @@ int SetVar(int select){		// ----------- Set Variable
 	int small=0;
 	double value=0;
 	int VarMode=CB_INT;	// 0:double  1:int
+
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 
 	if (select>25) { small=32; select-=32; }
 
@@ -703,6 +708,8 @@ int SetupG(int select){		// ----------- Setup
 	int scrl=select-6;
 	int y;
 	int listmax=12;
+	
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 	
 	if ( select > listmax ) select=0;
 	if ( select < scrl ) scrl-=1;
