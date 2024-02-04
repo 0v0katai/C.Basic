@@ -4,61 +4,66 @@ C.Basic would not be possible without the following open source softwares and we
 
 We tried our best to gather the license information of all materials we used, but unfortunately we cannot retrieve some of them due to inaccessibility at the time of writing this CREDIT.md or difficulty in contacting authors for further confirmation.
 
-If you are one of the copyright holders of these materials and would like to inform us of your license information, please open a issue ticket to do so. We apologize for the inconveniences caused.
+If you are one of the copyright holders of these materials and would like to inform us of your license information, please open an issue ticket to do so. We apologize for the inconveniences caused.
 
-### Lead developer
+## Application developers
 
-* Sentaro21
+Application         | Developers
+---                 | ---
+Help File           | Sentaro21
+Font File Manager   | Sentaro21, Colon
+Font Editor         | Sentaro21, Colon, Tsuru
+System Manager      | Colon
 
-### Application developers
+## Documentation
 
-* Colon - Font File Manager, Font Editor, System Manager
-* Tsuru - Font Editor
+Language            | Contributors
+---                 | ---
+Japanese            | Krtyski, Colon, Tsuru
+English             | Krtyski, CalcLoverHK
+French              | Lephenixnoir
+Simplified Chinese  | CalcLoverHK
 
-### Documentation helpers
+## Japanese font
 
-* Krtyski - Japanese
-* Lephenixnoir - French
-* CalcLoverHK - English and Simplified Chinese, C.Basic Wiki
-
-# Website and documentation
-
-## Katakana font
-
-[Homepage (archived)](https://web.archive.org/web/20160408224416/http://baticadila.dip.jp/fx_sdk_005.html)
+[Homepage (archived)](https://web.archive.org/web/20160408224416/http://baticadila.dip.jp/fx_sdk_005.html)  
+Tutorial for importing Katakana font to fx-9860 calculators.
 
 <details><summary>License</summary>
 
-Adapted from _グラフ関数電卓 fx-9860G SDK（グラフィック表示）_ by Baticadila, 2013.
+Copyright (c) 2013 弦木考忘. All rights reserved.
 
 </details>
 
 ## e-Gadget
 
 [Blog homepage](https://egadget.blog.fc2.com)  
-[Web homepage](https://egadget2.web.fc2.com/)
+Main place for C.Basic development and Casio Basic research.
+
+[Web homepage](https://egadget2.web.fc2.com/)  
+Main place for C.Basic releases.
 
 <details><summary>License</summary>
 
-Copyright (c) 2013 Krtyski/e-Gadget. All rights reserved.
+Copyright (c) 2013 Krtyski. All rights reserved.
 
 </details>
 
-## fxReverse
+## SuperH-based fx calculators
 
-[Documentation](https://bible.planet-casio.com/simlo/fxreverse/fxReverse2.pdf)
+[Homepage](https://bible.planet-casio.com/simlo/chm/v20/start.htm)  
+Techincal information of the fx-9860 and fx-CG series calculators.
 
 <details><summary>License</summary>
 
-Copyright (c) 2008 Andreas Bertheussen, Simon Lothar.
-
-This work is licensed under a Creative Commons Attribution-Noncommercial-No Derivative Works 3.0 Unported License. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-nd/3.0.
+Copyright (c) 2014 Simon Lothar. All rights reserved.
 
 </details>
-
-# Software and program
 
 ## fx-9860G SDK
+
+[Download](https://edu.casio.com/support/en/agreement.html#2)  
+Official Casio SDK for creating _C.Basic for FX_.
 
 <details><summary>License</summary>
 
@@ -66,17 +71,47 @@ Copyright (c) 2006 CASIO Co., Ltd. All right reserved.
 
 </details>
 
-## miniSDK
+## PrizmSDK
+
+[GitHub page](https://github.com/Jonimoose/libfxcg)  
+Community fx-CG SDK for creating _C.Basic for CG_.
 
 <details><summary>License</summary>
 
-Copyright (c) 2011 Simon Lothar. All right reserved.
+Copyright (c) 2014, The libfxcg Project Contributors
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of the project nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 </details>
 
 ## WSC and FVM
 
-[GitHub page](https://github.com/merrymercy/WSC-and-FVM)
+[GitHub page](https://github.com/merrymercy/WSC-and-FVM)  
+Main inspiration of the principles of C.Basic and the foundation of the file manager.
 
 <details><summary>License</summary>
 
@@ -106,6 +141,8 @@ SOFTWARE.
 
 ## Sprintf
 
+Advanced string processing.
+
 <details><summary>License</summary>
 
 Excerpt from snprintf.cpp:
@@ -121,7 +158,8 @@ Excerpt from snprintf.cpp:
 
 ## MonochromeLib
 
-[Homepage](https://www.planet-casio.com/Fr/logiciels/voir_un_logiciel_casio.php?showid=86)
+[Homepage](https://www.planet-casio.com/Fr/logiciels/voir_un_logiciel_casio.php?showid=86)  
+Fast graphic library.
 
 <details><summary>License</summary>
 
@@ -145,7 +183,8 @@ Excerpt from MonochromeLib.h:
 
 ## Gauss-Kronrod Quadrature
 
-[Reference](https://community.casiocalc.org/topic/7637-cbasic-international-release/page-14#entry62978)
+[Reference](https://community.casiocalc.org/topic/7637-cbasic-international-release/page-14#entry62978)  
+Gauss-Kronrod 25-51 points rule integration implementation.
 
 <details><summary>License</summary>
 
@@ -155,7 +194,8 @@ Adapted from the HP41 INTDIFFEQ module by Jean-Marc Baillard (https://hp41progra
 
 ## Ptune2
 
-[Homepage](https://pm.matrix.jp/ftune2e.html)
+[Homepage](https://pm.matrix.jp/ftune2e.html)  
+Overclocking in fx-CG10 and fx-CG20.
 
 <details><summary>License</summary>
 
