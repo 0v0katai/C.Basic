@@ -6,6 +6,10 @@ We tried our best to gather the license information of all materials we used, bu
 
 If you are one of the copyright holders of these materials and would like to inform us of your license information, please open an issue ticket to do so. We apologize for the inconveniences caused.
 
+## Original author
+
+[Sentaro21](mailto:sentaro21@pm.matrix.jp)
+
 ## Application developers
 
 Application         | Developers
@@ -19,8 +23,8 @@ System Manager      | Colon
 
 Language            | Contributors
 ---                 | ---
-Japanese            | Krtyski, Colon, Tsuru
-English             | Krtyski, CalcLoverHK
+Japanese            | Krtyski, Sentaro21, Colon, Tsuru
+English             | Krtyski, Sentaro21, CalcLoverHK
 French              | Lephenixnoir
 Simplified Chinese  | CalcLoverHK
 
@@ -31,80 +35,54 @@ Tutorial for importing Katakana font to fx-9860 calculators.
 
 <details><summary>License</summary>
 
-Copyright (c) 2013 弦木考忘. All rights reserved.
+Copyright © 2013 弦木考忘. All rights reserved.
 
 </details>
 
 ## e-Gadget
 
 [Blog homepage](https://egadget.blog.fc2.com)  
-Main place for C.Basic development and Casio Basic research.
+Main place for C.Basic development and CASIO Basic research.
 
 [Web homepage](https://egadget2.web.fc2.com/)  
 Main place for C.Basic releases.
 
 <details><summary>License</summary>
 
-Copyright (c) 2013 Krtyski. All rights reserved.
+Copyright © 2013 Krtyski/e-Gadget. All rights reserved.
 
 </details>
 
 ## SuperH-based fx calculators
 
 [Homepage](https://bible.planet-casio.com/simlo/chm/v20/start.htm)  
-Techincal information of the fx-9860 and fx-CG series calculators.
+Technical information of the CASIO fx-9860 and fx-CG series calculators.
 
 <details><summary>License</summary>
 
-Copyright (c) 2014 Simon Lothar. All rights reserved.
+Copyright © 2011 Simon Lothar. All rights reserved.
 
 </details>
 
 ## fx-9860G SDK
 
 [Download](https://edu.casio.com/support/en/agreement.html#2)  
-Official Casio SDK for creating _C.Basic for FX_.
+Official CASIO SDK for creating _C.Basic for FX_.
 
 <details><summary>License</summary>
 
-Copyright (c) 2006 CASIO Co., Ltd. All right reserved.
+Copyright © 2006 CASIO Co., Ltd. All rights reserved.
 
 </details>
 
-## PrizmSDK
+## miniSDK
 
-[GitHub page](https://github.com/Jonimoose/libfxcg)  
+[Homepage](https://bible.planet-casio.com/simlo/chm/v20/fxCG20_SDK.htm)  
 Community fx-CG SDK for creating _C.Basic for CG_.
 
 <details><summary>License</summary>
 
-Copyright (c) 2014, The libfxcg Project Contributors
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-* Neither the name of the project nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Copyright © 2011 Simon Lothar. All rights reserved.
 
 </details>
 
@@ -115,9 +93,8 @@ Main inspiration of the principles of C.Basic and the foundation of the file man
 
 <details><summary>License</summary>
 
-The MIT License (MIT)
-
-Copyright (c) 2016 Mercy
+**The MIT License (MIT)**  
+Copyright © 2016 Mercy.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -145,15 +122,10 @@ Advanced string processing.
 
 <details><summary>License</summary>
 
-Excerpt from snprintf.cpp:
-```
-/*
- * Copyright Patrick Powell 1995
- * This code is based on code written by Patrick Powell (papowell@astart.com)
- * It may be used for any purpose as long as this notice remains intact
- * on all source code distributions
- */
-```
+Copyright © 1995 [Patrick Powel](mailto:papowell@astart.com).  
+This code is based on code written by Patrick Powel.
+It may be used for any purpose as long as this notice remains intact on all source code distributions.
+
 </details>
 
 ## MonochromeLib
@@ -163,44 +135,31 @@ Fast graphic library.
 
 <details><summary>License</summary>
 
-Excerpt from MonochromeLib.h:
-```
-/*************************************************************/
-/** MonochromeLib - monochrome graphic library for fx-9860G **/
-/** MonochromeLib is free software                          **/
-/**                                                         **/
-/** @author Pierre "PierrotLL" Le Gall                      **/
-/** @contact legallpierre89@gmail.com                       **/
-/**                                                         **/
-/** @file MonochromeLib.h                                   **/
-/** Include header for MonochromeLib                        **/
-/**                                                         **/
-/** @date 11-22-2011                                        **/
-/*************************************************************/
-```
+Copyright © 2011 [Pierre "PierrotLL" Le Gall](mailto:legallpierre89@gmail.com).  
+MonochromeLib is a free software.
 
 </details>
 
 ## Gauss-Kronrod Quadrature
 
-[Reference](https://community.casiocalc.org/topic/7637-cbasic-international-release/page-14#entry62978)  
-Gauss-Kronrod 25-51 points rule integration implementation.
+[Thread reply](https://community.casiocalc.org/topic/7637-cbasic-international-release/page-14#entry62978)  
+Implementation of integration using the Gauss-Kronrod 25-51 points rule.
 
 <details><summary>License</summary>
 
-Adapted from the HP41 INTDIFFEQ module by Jean-Marc Baillard (https://hp41programs.yolasite.com), by acapde @ Universal Casio Forum, 2020. Adapted with permission.
+Adapted from the HP41 INTDIFFEQ module by [Jean-Marc Baillard](https://hp41programs.yolasite.com), by [acapde](https://community.casiocalc.org/user/30287-acapde), 2020. Adapted with permission.
 
 </details>
 
 ## Ptune2
 
 [Homepage](https://pm.matrix.jp/ftune2e.html)  
+[Gitea page](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune)
 Overclocking in fx-CG10 and fx-CG20.
 
 <details><summary>License</summary>
 
-GNU General Public License
-
+**GNU General Public License**  
 _Version 2, June 1991_  
 _Copyright © 1989, 1991 Free Software Foundation, Inc.,_  
 _51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA_
@@ -208,7 +167,7 @@ _51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA_
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
 
-### Preamble
+**Preamble**
 
 The licenses for most software are designed to take away your
 freedom to share and change it. By contrast, the GNU General Public
@@ -258,7 +217,7 @@ patent must be licensed for everyone's free use or not licensed at all.
 The precise terms and conditions for copying, distribution and
 modification follow.
 
-### TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+**TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION**
 
 **0.** This License applies to any program or other work which contains
 a notice placed by the copyright holder saying it may be distributed
@@ -452,7 +411,7 @@ make exceptions for this. Our decision will be guided by the two goals
 of preserving the free status of all derivatives of our free software and
 of promoting the sharing and reuse of software generally.
 
-### NO WARRANTY
+**NO WARRANTY**
 
 **11.** BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
 FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN
@@ -476,7 +435,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
 END OF TERMS AND CONDITIONS
 
-### How to Apply These Terms to Your New Programs
+**How to Apply These Terms to Your New Programs**
 
 If you develop a new program, and you want it to be of the greatest
 possible use to the public, the best way to achieve this is to make it
@@ -534,39 +493,5 @@ proprietary programs. If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library. If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
-
-</details>
-
-## QSort
-
-<details><summary>License</summary>
-
-Modified BSD License
-
-_Copyright © 1992, 1993, The Regents of the University of California_  
-_All rights reserved._
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. Neither the name of the University nor the
-   names of its contributors may be used to endorse or promote products
-   derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 </details>
