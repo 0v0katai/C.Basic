@@ -1,38 +1,34 @@
-# C.Basic - fx-9860及fx-CG系列图形计算器的Casio Basic集成开发环境插件
+# C.Basic - fx-9860及fx-CG系列图形计算器的CASIO Basic集成开发环境
 
-C.Basic是以C/C++语言实现的Casio Basic解释器。*FX版*以卡西欧官方SDK编写，而*CG版*以社区miniSDK编写。
+C.Basic是以C/C++语言实现的卡西欧Basic解释器。FX版以卡西欧官方SDK编写，而CG版以社区miniSDK编写。
 
-该插件能让你随时随地在计算器上将SDK专属功能整合到你的Casio Basic程序，而不用面对繁琐的C/C++调试环境。
+该插件能让你随时随地在计算器上将SDK专属功能整合到你的卡西欧Basic程序，而不用面对繁琐的C/C++调试环境。
 
 C.Basic在当前阶段只实现了解释器部分。未来C.Basic将包含编译器，并改名为C:Basic。
 
 ## 适用机型
 
-* *FX版*
-    * fx-9860所有机型
-    * fx-9750GIII
-    * Graph 75/85/95所有机型
-    * Graph 35+E II
-* *CG版*
-    * fx-CG所有机型
-    * Graph 90+E
+版本 | 机型
+---  | ---
+FX版 | fx-9750GIII/9860系列, Graph 35+EII/75/85/95系列
+CG版 | fx-CG系列, Graph 90+E
 
 ## 特色
 
 * 几乎无需任何修改，即可实现类似插件的性能
 * 可直接存取和编辑在SMEM和SD卡里的程序
 * 具有主流集成开发环境特性的编辑器 — 语法高亮、缩进、变量/矩阵查找和调试
-* Casio Basic语法风格的扩展指令
+* 延续卡西欧Basic语法风格的扩展指令
 * 在fx-CG系列计算器上模拟G1M运行环境
 
 ## 注意事项
 
-* 如果您是fx-CG10或fx-CG20用户，C.Basic会询问你是否同意让它超频，使你的计算器达到 fx-CG50的性能。
-    * 超频原理基于[Ptune2](https://pm.matrix.jp/ftune2e.html)插件，由C.Basic的同一作者制作。一经同意，C.Basic将会把处理器核心时钟（IFC）从58.98 MHz提高到117.96 MHz。
+* 如果您是fx-CG10或fx-CG20用户，C.Basic会询问你是否同意让它超频，使你的计算器达到fx-CG50的性能。
+    * 超频原理基于[Ptune2](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune)插件，由C.Basic的原作者制作。一经同意，C.Basic将会把处理器核心时钟（IFC）从58.98 MHz提高到117.96 MHz。
     * 超频（以及使用该插件）所造成的损坏不在卡西欧的保修范围之内。
     * 您可以随时在设置中禁用此提示。
-* 由于C.Basic使用浮点表示数字，而不是Casio Basic使用的二进码十进数（BCD码），处理非整数计算可能会导致误差。我们建议不要将C.Basic用于涉及严谨计算的用途上。
-* C.Basic的文件管理器尚未针对采用Fugue文件系统的计算器进行优化。详情请参见[#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1)。
+* 由于C.Basic使用浮点表示数字，而不是卡西欧Basic使用的二进码十进数（BCD码），处理非整数计算可能会导致误差。我们建议不要将C.Basic用于涉及严谨计算的用途上。
+* C.Basic的文件管理器尚未针对采用Fugue文件系统的计算器进行优化，详情请参见[#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1)。
 
 ## 指引
 
@@ -40,24 +36,26 @@ C.Basic在当前阶段只实现了解释器部分。未来C.Basic将包含编译
 
 ### 漏洞报告
 
-描述此漏洞并提供重现步骤。如果可以的话，也请在合并请求中指出需要更改的部分代码以修复该漏洞。
+描述此漏洞并提供重现步骤。
 
 ### 功能提议
 
-列出支持提议的理由、新功能的工作原理和使用方法。
+描述所建议功能的工作原理和使用方法。
 
 ### 文档
 
-打开合并请求以提交你的文档更改。
+开启合并请求以提交你的文档更改。
 
 ## 许可证
 
-C.Basic采用GNU通用公共许可证第2版（GPLv2）。请参阅[LICENSE.md](LICENSE.md)，以查看完整的许可证文本。
+C.Basic采用GNU通用公共许可证第2版（GPLv2）。  
+请参阅[LICENSE.md](LICENSE.md)，以查看完整的许可证文本。
 
 ## 鸣谢
 
-参阅[CREDIT.md](CREDIT.md)，以查看鸣谢名单。
+请参阅[CREDIT.md](CREDIT.md)，以查看鸣谢名单。
 
 ## 百科
 
-点击上方导航栏中的"Wiki"标签，以进入C.Basic百科。目前它托管在Fandom上，不过我们已决定在其大部分内容准备就绪后，将其转移到Casio Universal Wiki。
+点击上方导航栏中的"Wiki"标签，以进入C.Basic百科。  
+目前它托管在Fandom上，不过我们已决定在其大部分内容准备就绪后，将其转移到其他Wiki托管。
