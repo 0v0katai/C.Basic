@@ -8,10 +8,12 @@ C.Basic在当前阶段只实现了解释器部分。未来C.Basic将包含编译
 
 ## 适用机型
 
+_此列表为适用机型的摘要，点击[此处](https://cbasic.fandom.com/wiki/Tutorials/Installation)以知悉更详细的受支持机型。_
+
 版本 | 机型
 ---  | ---
-FX版 | fx-9750GIII/9860系列, Graph 35+EII/75/85/95系列
-CG版 | fx-CG系列, Graph 90+E
+FX版 | fx-9750GIII/9860, Graph 35+EII/75/85/95
+CG版 | fx-CG10/20/50, Graph 90+E
 
 ## 特色
 
@@ -24,27 +26,11 @@ CG版 | fx-CG系列, Graph 90+E
 ## 注意事项
 
 * 如果您是fx-CG10或fx-CG20用户，C.Basic会询问你是否同意让它超频，使你的计算器达到fx-CG50的性能。
-    * 超频原理基于[Ptune2](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune)插件，由C.Basic的原作者制作。一经同意，C.Basic将会把处理器核心时钟（IFC）从58.98 MHz提高到117.96 MHz。
+    * 超频原理基于[Ptune2](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune)插件，由C.Basic的原作者制作。一经同意，C.Basic将会套用Ptune2的[F3](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune/wiki/Ptune2#presets)模式。
     * 超频（以及使用该插件）所造成的损坏不在卡西欧的保修范围之内。
     * 您可以随时在设置中禁用此提示。
 * 由于C.Basic使用浮点表示数字，而不是卡西欧Basic使用的二进码十进数（BCD码），处理非整数计算可能会导致误差。我们建议不要将C.Basic用于涉及严谨计算的用途上。
 * C.Basic的文件管理器尚未针对采用Fugue文件系统的计算器进行优化，详情请参见[#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1)。
-
-## 指引
-
-在使用过程中发现了漏洞？觉得有需要改进的地方？请开启工单或合并请求并依据以下指引提交。我们会考虑每一个反馈，并在我们的版本发布中注明你的贡献以示感谢。
-
-### 漏洞报告
-
-描述此漏洞并提供重现步骤。
-
-### 功能提议
-
-描述所建议功能的工作原理和使用方法。
-
-### 文档
-
-开启合并请求以提交你的文档更改。
 
 ## 许可证
 
