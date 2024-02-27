@@ -27,7 +27,7 @@ CG版 | fx-CG10/20/50, Graph 90+E
 
 * 如果您是fx-CG10或fx-CG20用户，C.Basic会询问你是否同意让它超频，使你的计算器达到fx-CG50的性能。
     * 超频原理基于[Ptune2](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune)插件，由C.Basic的原作者制作。一经同意，C.Basic将会套用Ptune2的[F3](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune/wiki/Ptune2#presets)模式。
-    * 超频（以及使用该插件）所造成的损坏不在卡西欧的保修范围之内。
+    * 超频（以及使用该插件）所造成的损坏不在卡西欧的保修范围之内，作者对任何因用户操作不当造成的损失概不负责。
     * 您可以随时在设置中禁用此提示。
 * 由于C.Basic使用浮点表示数字，而不是卡西欧Basic使用的二进码十进数（BCD码），处理非整数计算可能会导致误差。我们建议不要将C.Basic用于涉及严谨计算的用途上。
 * C.Basic的文件管理器尚未针对采用Fugue文件系统的计算器进行优化，详情请参见[#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1)。

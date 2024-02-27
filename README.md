@@ -27,7 +27,7 @@ CG      | fx-CG10/20/50, Graph 90+E
 
 * If you are an fx-CG10 or fx-CG20 user, C.Basic will ask you if you wish to overclock your calculator to achieve the performance of an fx-CG50.
     * The overclocking mechanism is based on [Ptune2](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune), an overclocking add-in developed by the same author of C.Basic. Upon agreement, C.Basic will apply the [F3](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune/wiki/Ptune2#presets) preset of Ptune2.
-    * Please keep in mind that any damage caused by overclocking (and using this add-in) will not be covered by CASIO's warranty, and the author is not responsible for the loss.
+    * Please keep in mind that damage caused by overclocking (and using this add-in) will not be covered by CASIO's warranty, and the author is not responsible for any loss caused by user's improper operations.
     * You can disable the `Auto OverClk` setting to prevent this prompt from being displayed at each startup.
 * As C.Basic uses floating point to express numbers instead of binary-coded decimal that CASIO Basic uses, handling non-integers calculations may cause approximation errors. You are advised not to use C.Basic for applications involving serious calculations.
 * Please note that the file manager of C.Basic is not yet optimized with calculators featuring the Fugue filesystem. See [#1](https://gitea.planet-casio.com/CalcLoverHK/C.Basic/issues/1) for more details.
