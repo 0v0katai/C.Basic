@@ -1,4 +1,4 @@
-//  ‚±‚¿‚ç‚ÌƒTƒCƒg‚æ‚èƒJƒiƒtƒHƒ“ƒgƒf[ƒ^‚¨‚æ‚Ñ•\¦ƒ‹[ƒ`ƒ“‚ğˆø—p‚³‚¹‚Ä‚¢‚½‚¾‚¢‚Ä‚¢‚Ü‚·B
+//  ã“ã¡ã‚‰ã®ã‚µã‚¤ãƒˆã‚ˆã‚Šã‚«ãƒŠãƒ•ã‚©ãƒ³ãƒˆãƒ‡ãƒ¼ã‚¿ãŠã‚ˆã³è¡¨ç¤ºãƒ«ãƒ¼ãƒãƒ³ã‚’å¼•ç”¨ã•ã›ã¦ã„ãŸã ã„ã¦ã„ã¾ã™ã€‚
 //	http://baticadila.dip.jp/fx_sdk_005.html
 //
 
@@ -32,10 +32,10 @@ void SaveExtFontKana(  int flag, char* sname, int folder, int no, int check );		
 void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check );		// font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
 void SaveExtFontAnk(   int flag, char* sname, int folder, int no, int check );		// font 6x8 -> FONTA8L.bmp    font 6x6 -> FONTA6M.bmp
 
-void KPrintChar( int px, int py, unsigned char *c) ; //ƒJƒiˆê•¶š•\¦
-void KPrintRevChar( int px, int py, unsigned char *c) ; //ƒJƒiˆê•¶š•\¦
+void KPrintChar( int px, int py, unsigned char *c) ; //ã‚«ãƒŠä¸€æ–‡å­—è¡¨ç¤º
+void KPrintRevChar( int px, int py, unsigned char *c) ; //ã‚«ãƒŠä¸€æ–‡å­—è¡¨ç¤º
 
-int KPrintCharMini( int px, int py, unsigned char *str, int mode ) ; // ƒJƒi‘Î‰ PrintMini
+int KPrintCharMini( int px, int py, unsigned char *str, int mode ) ; // ã‚«ãƒŠå¯¾å¿œ PrintMini
 
 int CB_GetFont( char *SRC );		// DotChar(0xFFA0)->Mat C
 int CB_GetFontMini( char *SRC );	// DotChar(0xFFA0)->Mat C
