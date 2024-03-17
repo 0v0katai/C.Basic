@@ -1,5 +1,12 @@
 # File
+.gitignore
 *.dlw
+*.dlr
+*.G1A
+*.bat
 
 # Directory
 .vscode/
+src-fx/Debug
+src-fx/INIT
+src-fx/SDCard
