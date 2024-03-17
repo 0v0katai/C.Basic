@@ -188,9 +188,9 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 		Fkey_Icon( FKeyNo1,  69 );	//	Fkey_dispR( FKeyNo1, "STORE");
 		Fkey_Icon( FKeyNo2,  70 );	//	Fkey_dispR( FKeyNo2, "RECALL");
 		if ( type==1 ) Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dispR( FKeyNo3, " fn ");
-		Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
-		if ( ReEnterSEE == 0 ) Fkey_Icon( FKeyNo5, 389 );	//	Fkey_dispR( FKeyNo5,"EDIT");
-//		if ( ReEnterSEE == 0 ) Fkey_Icon( FKeyNo5,  42 );	//	Fkey_dispN( FKeyNo5, "Edit");
+//		Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
+//		if ( ReEnterSEE == 0 ) Fkey_Icon( FKeyNo5, 389 );	//	Fkey_dispR( FKeyNo5,"EDIT");
+		if ( ReEnterSEE == 0 ) Fkey_Icon( FKeyNo4,  42 );	//	Fkey_dispN( FKeyNo4, "Edit");
 
 //		Bdisp_PutDisp_DD();
 
@@ -238,7 +238,7 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 				cont=0;
 				break;
 
-			case KEY_CTRL_F5:
+			case KEY_CTRL_F4:
 			case KEY_CTRL_LEFT:
 			case KEY_CTRL_RIGHT:
 				if ( ReEnterSEE == 0 ) {

@@ -335,24 +335,24 @@ void CB_Except( char*SRC ) {
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
 int CB_GetRGB( char *SRC, int mode ){	// GetRGB/HSV/HSL() -> ListAns
-	int c,d,r,g,b,m;		
-	int h,s,v;		
-	int base=MatBase;		
-	int errorCheck=1;		
-	int pipe=mode & 0xF0;		
-	mode &= 0x0F;		
-	d = CB_EvalInt( SRC );		
-	if ( SRC[ExecPtr] == ',' ) {		
-		c=SRC[++ExecPtr];		
-		if ( ( c == 'N' ) || ( c == 'N' ) ) { ExecPtr++; errorCheck=0; }		
-	}		
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;		
+	int c,d,r,g,b,m;
+	int h,s,v;
+	int base=MatBase;
+	int errorCheck=1;
+	int pipe=mode & 0xF0;
+	mode &= 0x0F;
+	d = CB_EvalInt( SRC );
+	if ( SRC[ExecPtr] == ',' ) {
+		c=SRC[++ExecPtr];
+		if ( ( c == 'N' ) || ( c == 'N' ) ) { ExecPtr++; errorCheck=0; }
+	}
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
-	b = ((d&0x001F) << 3);		
-	g = ((d&0x07E0) >> 3);		
-	r = ((d&0xF800) >> 8);		
+	b = ((d&0x001F) << 3);
+	g = ((d&0x07E0) >> 3);
+	r = ((d&0xF800) >> 8);
 
-	h=r; s=g; v=b;		
+	h=r; s=g; v=b;
 //	if ( mode ) {
 //		if ( ( errorCheck ) && ( pipe==0 ) ) {
 //			if ( (d==0x003F) || (d==0x041F) || (d==0xF820) || (d==0xFC00) ) { if ( CannotSupportERROR( d ) ) return 0; } // Can not support error
@@ -362,11 +362,11 @@ int CB_GetRGB( char *SRC, int mode ){	// GetRGB/HSV/HSL() -> ListAns
 //	}
 	dspflag=4;	// List ans
 	NewMatListAns( 3, 1, base, 32 );		// List Ans[3]
-	m=base;		
+	m=base;
 	WriteMatrix( CB_MatListAnsreg, m++, base, h ) ;	//
 	WriteMatrix( CB_MatListAnsreg, m++, base, s ) ;	// 
 	WriteMatrix( CB_MatListAnsreg, m  , base, v ) ;	// 
-	return d;		
+	return d;
 }
 
 int CB_RGBlistsub( char *SRC, int*r, int*g, int*b ){

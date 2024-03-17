@@ -13,11 +13,12 @@ void Text(int y, int x, unsigned char*str);
 extern int skip_count;
 
 void DrawBusy();		// BusyInd=0: running indicator off,  BusyInd=1: on
+int Check_skip_count( void ) ;
 void Bdisp_PutDisp_DD_DrawBusy();
 void Bdisp_PutDisp_DD_DrawBusy_skip();
 void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) ;
 void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) ;
-
+void CB_PutDispDD( char*SRC );
 //-----------------------------------------------------------------------------
 int VWtoPXY(double x, double y, int *px, int *py);	// ViewWwindow(x,y) -> pixel(x,y)
 

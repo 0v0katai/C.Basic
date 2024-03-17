@@ -770,15 +770,15 @@ char* CB_GetOpStrSub( char *SRC ,int *maxlen, int c ) {		// String -> buffer	ret
 			dimA = GetStrYFnNo( SRC, reg, defaultGraphAryN, defaultGraphArySize );
 			switch ( c ) {
 				case 0xFFFFFFF0:	// GraphY
-					buffer = (char *)ReadGraphY( dimA ); break;
+					buffer = ReadGraphY( dimA ); break;
 				case 0xFFFFFFF1:	// Graphr
-					buffer = (char *)ReadGraphr( dimA ); break;
+					buffer = ReadGraphr( dimA ); break;
 				case 0xFFFFFFF2:	// GraphXt
-					buffer = (char *)ReadGraphXt( dimA ); break;
+					buffer = ReadGraphXt( dimA ); break;
 				case 0xFFFFFFF3:	// GraphYt
-					buffer = (char *)ReadGraphYt( dimA ); break;
+					buffer = ReadGraphYt( dimA ); break;
 				case 0xFFFFFFF4:	// GraphX
-					buffer = (char *)ReadGraphX( dimA ); break;
+					buffer = ReadGraphX( dimA ); break;
 				default:
 					buffer = MatrixPtr( reg, dimA, 7 );
 			}
@@ -1391,15 +1391,15 @@ char* CB_GraphStrSub( char *SRC ) {	//  defaultGraphAry
 	if ( ErrorNo ) return 0;
 	switch ( c ) {
 		case 0xFFFFFFF0:	// GraphY
-			ptr = (char *)ReadGraphY( dimA ); break;
+			ptr = ReadGraphY( dimA ); break;
 		case 0xFFFFFFF1:	// Graphr
-			ptr = (char *)ReadGraphr( dimA ); break;
+			ptr = ReadGraphr( dimA ); break;
 		case 0xFFFFFFF2:	// GraphXt
-			ptr = (char *)ReadGraphXt( dimA ); break;
+			ptr = ReadGraphXt( dimA ); break;
 		case 0xFFFFFFF3:	// GraphYt
-			ptr = (char *)ReadGraphYt( dimA ); break;
+			ptr = ReadGraphYt( dimA ); break;
 		case 0xFFFFFFF4:	// GraphX
-			ptr = (char *)ReadGraphX( dimA ); break;
+			ptr = ReadGraphX( dimA ); break;
 		default:
 			ptr = MatrixPtr( defaultGraphAry, dimA, 7 );
 	}
