@@ -56,8 +56,15 @@ void CB_Print( int x, int y, const unsigned char *str);
 void CB_PrintRev( int x, int y, const unsigned char *str);
 void CB_PrintXYC( int px, int py,const unsigned char *c , int mode );
 void CB_PrintXY( int px, int py, const unsigned char *str, int mode );
-void CB_PrintMini( int px, int py, const unsigned char *str, int mode);
-int  CB_PrintMiniC( int px, int py, const unsigned char *str, int mode);
+
+void CB_PrintMini(int px, int py, const unsigned char *str, int mode, int ext_flag);
+// void CB_PrintMini_no_ext(int px, int py, const unsigned char *str, int mode);
+// void CB_PrintMini_ext(int px, int py, const unsigned char *str, int mode);
+
+int  CB_PrintMiniC(int px, int py, const unsigned char *str, int mode, int ext_flag);
+// int  CB_PrintMiniC_no_ext(int px, int py, const unsigned char *str, int mode);
+// int  CB_PrintMiniC_ext(int px, int py, const unsigned char *str, int mode); 
+
 int  CB_PrintMiniLength( unsigned char *str, int extflag  );
 int  CB_PrintMiniLengthStr( unsigned char *str, int extflag  );
 
@@ -78,7 +85,7 @@ void Fkey_dispR_ext(int ,char *, int ofset, int extend);
 void Fkey_dispRB_ext(int ,char *, int ofset, int extend);
 void Fkey_dispRS_ext(int ,char *, int ofset, int extend);
 void Fkey_dispRS(int n,char *buf ) ;	// black select
-void PrintMiniXY(int X, int Y, char*buf, int mode, int xlength ) ;	// xlength : 19 fkeyicon
+void PrintMiniXY(int X, int Y, char*buf, int mode, int ext_flag, int xlength ) ;	// xlength : 19 fkeyicon
 void FkeyMask(int n) ;
 void FkeyMaskm(int n, int m) ;
 void Fkey_dispRR(int n,char *buf) ;

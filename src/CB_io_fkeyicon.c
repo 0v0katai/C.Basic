@@ -100,7 +100,7 @@ void FkeyClearAll(){
 }
 void Fkey_dispN(int n,char *buffer) {
 	FkeyClear(n);
-	CB_PrintMini(n*21+4,7*8+2,(unsigned char *)buffer, MINI_OVER);
+	CB_PrintMini(n*21+4, 7*8+2, (unsigned char *)buffer, MINI_OVER, false);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+20,7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2,7*8+0,n*21+2,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+3,7*8+1,n*21+3,7*8+7);
@@ -112,7 +112,7 @@ void Fkey_dspRB(int n,char *buffer) {
 	int i;
 	FkeyClear(n);
 	for (i=0;i<8;i++) Bdisp_DrawLineVRAM(n*21+2,7*8+i,n*21+20,7*8+i);
-	CB_PrintMini(n*21+3,7*8+2     ,(unsigned char *)buffer, MINI_REV);
+	CB_PrintMini(n*21+3, 7*8+2, (unsigned char *)buffer, MINI_REV, false);
 	Bdisp_ClearLineVRAM(n*21+21,7*8+0,n*21+21,7*8+7);
 	Bdisp_ClearLineVRAM(n*21+22,7*8+0,n*21+22,7*8+7);
 }
@@ -147,7 +147,7 @@ void Fkey_dispN_aA(int n, char *buffer) {
 void Fkey_dispN_ext(int n,char *buf, int ofset, int extend ) {
 	int m=(n+extend);
 	FkeyClearN(n, extend);
-	PrintMiniXY(n*21+4-(ofset!=0), 7*8+2, buf, MINI_OVER | 0x100, 16 +(ofset!=0)*3 +21*extend );
+	PrintMiniXY(n*21+4-(ofset!=0), 7*8+2, buf, MINI_OVER, true, 16 +(ofset!=0)*3 +21*extend );
 	Bdisp_DrawLineVRAM(n*21+2, 7*8+0, m*21+20, 7*8+0);
 	Bdisp_DrawLineVRAM(n*21+2, 7*8+0, n*21+2 , 7*8+7);
 //	Bdisp_ClearLineVRAM(n*21+3, 7*8+1, n*21+3, 7*8+7);
@@ -165,7 +165,7 @@ void Fkey_dispRB_ext(int n,char *buf, int ofset, int extend ) {
 	int i;
 	FkeyClearN(n, extend);
 	for (i=0;i<8;i++) Bdisp_DrawLineVRAM(n*21+2, 7*8+i, m*21+20, 7*8+i);
-	PrintMiniXY(n*21+3-(ofset!=0), 7*8+2, buf, MINI_REV | 0x100, 16 +(ofset!=0)*3 +21*extend );
+	PrintMiniXY(n*21+3-(ofset!=0), 7*8+2, buf, MINI_REV, true, 16 +(ofset!=0)*3 +21*extend );
 	Bdisp_ClearLineVRAM(m*21+21, 7*8+0, m*21+21, 7*8+7);
 	Bdisp_ClearLineVRAM(m*21+22, 7*8+0, m*21+22, 7*8+7);
 }
@@ -180,11 +180,11 @@ void Fkey_dispRS(int n,char *buf ) {	// black select
 	Fkey_dispRS_ext(n, buf, 0, 0 ) ;
 }
 	
-void PrintMiniXY(int X, int Y, char*buf, int mode, int xlength ) {	// xlength : 19 fkeyicon 
+void PrintMiniXY(int X, int Y, char*buf, int mode, int ext_flag, int xlength ) {	// xlength : 19 fkeyicon 
 	int k,i,j;
 	j=CB_PrintMiniLengthStr( (unsigned char *)buf, mode );
 	i=(xlength +j)/2-j; if ( i<0 ) i=0;
-	CB_PrintMini( X+i, Y, (unsigned char *)buf, mode  );	// extflag on
+	CB_PrintMini( X+i, Y, (unsigned char *)buf, mode, ext_flag);	// extflag on
 }
 
 void FkeyMaskm(int n, int m ) {
