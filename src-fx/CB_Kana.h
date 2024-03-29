@@ -32,10 +32,10 @@ extern unsigned char *ExtKanaFontFXmini;    /* Katakana and Gaiji mini font char
 extern const unsigned char Font00[][8];
 extern const unsigned char Fontmini[][8];
 extern const unsigned char Fontmini80[][8];
-extern const unsigned char Fontmini7F50[][8];
-extern const unsigned char Fontmini7F53[][8];
-extern const unsigned char Fontmini7F54[][8];
-extern const unsigned char Fontmini7FC7[][8];
+extern const unsigned char Fontmini7F50[8];
+extern const unsigned char Fontmini7F53[8];
+extern const unsigned char Fontmini7F54[8];
+extern const unsigned char Fontmini7FC7[8];
 extern const unsigned char FontminiE5[][8];
 extern const unsigned char FontminiE6[][8];
 extern const unsigned char FontE7[][8];
