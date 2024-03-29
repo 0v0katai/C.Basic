@@ -17,7 +17,6 @@
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
 #include "CB.h"
-#include "CB_font.h"
 
 /* Initialization */
 
@@ -141,13 +140,13 @@ int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // カナ�
     } else
     if ( a == 0x7F )  {
         c = str[1];
-        if ( c == 0x50 ) font=Fontmini7F50;
+        if ( c == 0x50 ) font=Fontmini7F50[1];
         else
-        if ( c == 0x53 ) font=Fontmini7F53;
+        if ( c == 0x53 ) font=Fontmini7F53[1];
         else
-        if ( c == 0x54 ) font=Fontmini7F54;
+        if ( c == 0x54 ) font=Fontmini7F54[1];
         else
-        if ( c == 0xC7 ) font=Fontmini7FC7;
+        if ( c == 0xC7 ) font=Fontmini7FC7[1];
         else goto err;
     } else
     if ( a == 0xE5 )  {

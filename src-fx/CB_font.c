@@ -1,5 +1,5 @@
 /* *****************************************************************************
- * CB_font.h -- C.Basic font character sets
+ * CB_font.c -- C.Basic font character sets
  * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
