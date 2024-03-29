@@ -54,4 +54,3 @@ SourceFile=:CBZ_serial.c
 SourceFile=:CBZ_fileMCS.c
 SourceFile=:CBZ_Help.c
 SourceFile=:CB_StrExt.c
-SourceFile=:CB_font.c

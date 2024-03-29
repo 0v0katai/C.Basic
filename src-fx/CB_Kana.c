@@ -17,6 +17,8 @@
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
 #include "CB.h"
+#include "CB_font.h"
+#include "CB_fontmini.h"
 
 /* Initialization */
 
