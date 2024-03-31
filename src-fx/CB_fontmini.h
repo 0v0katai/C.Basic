@@ -17,22 +17,17 @@
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
 
-/* *****************************************************************************
- *  Mini font data format
- * *****************************************************************************
- * 
- * Each mini character matrix holds an array of 8 values.
+/**
+ * The size of mini font character ranges from 2 to 6 pixels by 6 lines.
  * The first value defines the width of the cursor when the character is selected.
  * The rest in its corresponding line is multiplied by powers of 2 and accumulated.
- * 
  * For instance, `{6,0,0x70,0x08,0x68,0x98,0x70,0x00}` will produce:
  *      . @ @ @ . .  // 0x70 = 01110000
  *      . . . . @ .  // 0x08 = 00001000
  *      . @ @ . @ .  // 0x68 = 01101000
  *      @ . . @ @ .  // 0x98 = 10011000
  *      . @ @ @ . .  // 0x70 = 01110000
- * 
- * ************************************************************************** */
+ */
 
 /* Mini font character set (#0000-#007E) */
 const unsigned char Fontmini[][8] = {
