@@ -1,5 +1,5 @@
 /* *****************************************************************************
- * CB_font.h -- C.Basic standard font character sets
+ * CB_font.h -- Standard font character sets
  * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
@@ -17,26 +17,26 @@
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
 
-/**
- * Standard font character has a size of 6 pixels by 8 lines.
- * Each hex value in an array is converted to binary, where the first 6 digits
- * represents the status of 6 pixels in its corresponding line.
- * For example, `{0x38,0x44,0x04,0x34,0x54,0x54,0x38,0x00}` will produce:
- * 
- *     . . @ @ @ .  // 0x38 = 00111000
- *     . @ . . . @  // 0x44 = 01000100
- *     . . . . . @  // 0x04 = 00000100
- *     . . @ @ . @  // 0x34 = 00110100
- *     . @ . @ . @  // 0x54 = 01010100
- *     . @ . @ . @  // 0x54 = 01010100
- *     . . @ @ @ .  // 0x38 = 00111000
- *     . . . . . .  // 0x00 = 00000000
- * 
- * To comply with existing characters in Casio Basic, the character glyph
- * should have one line of space on the left and at the bottom.
- */
+/* Standard font character has a size of 6 pixels by 8 lines.
+   Each hex value in an array is converted to binary, where the first 6 digits
+   represents the status of 6 pixels in its corresponding line.
+   For example, `{0x38,0x44,0x04,0x34,0x54,0x54,0x38,0x00}` will produce:
+   
+   . . @ @ @ .  // 0x38 = 00111000
+   . @ . . . @  // 0x44 = 01000100
+   . . . . . @  // 0x04 = 00000100
+   . . @ @ . @  // 0x34 = 00110100
+   . @ . @ . @  // 0x54 = 01010100
+   . @ . @ . @  // 0x54 = 01010100
+   . . @ @ @ .  // 0x38 = 00111000
+   . . . . . .  // 0x00 = 00000000
+   
+   To comply with existing characters in Casio Basic, the character glyph
+   should have one line of space on the left and at the bottom. */
 
-/* Single-byte standard font character set */
+/* Single-byte standard font character set (#00XX).
+   This set replicates the FX standard font for C.Basic CG.
+   It is used as a custom font save for `SetFont` in C.Basic FX. */
 const unsigned char Font00[][8] = {
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}   // (null)
    ,{0x0C,0x10,0x38,0x10,0x10,0x10,0x10,0x00}   // f
@@ -167,9 +167,9 @@ const unsigned char Font00[][8] = {
    ,{0x00,0x00,0x24,0x54,0x48,0x00,0x00,0x00}   // ~
 };
 
-/* Multi-byte standard font character set (#E7XX)
- * This set consists of mini font characters that are wrapped in standard font size.
- * Most of them are listed in the [F5] section of character picker. */
+/* Multi-byte standard font character set (#E7XX).
+   This set consists of mini font characters that are wrapped in standard font size.
+   Most of them are listed in the [F5] section of character picker. */
 const unsigned char FontE7[][8] = {
     {0,0,0x70,0x08,0x68,0x98,0x70,0x00} //	40	@ *
    ,{0,0,0x20,0x50,0x70,0x50,0x50,0x00}	//	41	A

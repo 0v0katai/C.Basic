@@ -1,5 +1,5 @@
 /* *****************************************************************************
- * CB_Kana.h -- Header for Japanese font display routine
+ * CB_Kana.h -- Header for font display routine
  * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
@@ -17,17 +17,19 @@
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
 
-extern char ExtCharAnkFX;                   /* Indicator of Ank standard font. (0,1)        */
+/* ANK means "Alpha, Numeric and Katakana" in JIS encoding system. */
+
+extern char ExtCharAnkFX;                   /* Indicator of ANK standard font. (0,1)        */
 extern char ExtCharKanaFX;                  /* Indicator of Katakana standard font. (0,1)   */
 extern char ExtCharGaijiFX;                 /* Indicator of Gaiji standard font. (0,1)      */
-extern char ExtCharAnkMiniFX;               /* Indicator of Ank mini font. (0,1)            */
+extern char ExtCharAnkMiniFX;               /* Indicator of ANK mini font. (0,1)            */
 extern char ExtCharKanaMiniFX;              /* Indicator of Katakana mini font. (0,1)       */
 extern char ExtCharGaijiMiniFX;             /* Indicator of Gaiji mini font. (0,1)          */
 
-extern unsigned char *ExtAnkFontFX;         /* Ank standard font character set backup? */
-extern unsigned char *ExtAnkFontFXmini;     /* Ank mini font character set backup? */
-extern unsigned char *ExtKanaFontFX;        /* Katakana and Gaiji standard font character sets backup? */
-extern unsigned char *ExtKanaFontFXmini;    /* Katakana and Gaiji mini font character sets backup? */
+extern unsigned char *ExtAnkFontFX;         /* Pointer to the address of ANK standard font data. */
+extern unsigned char *ExtAnkFontFXmini;     /* Pointer to the address of ANK mini font data.  */
+extern unsigned char *ExtKanaFontFX;        /* Pointer to the address of Katakana standard font data. */
+extern unsigned char *ExtKanaFontFXmini;    /* Pointer to the address of Katakana mini font data. */
 
 extern const unsigned char Font00[][8];
 extern const unsigned char Fontmini[][8];
@@ -43,8 +45,13 @@ extern const unsigned char FontminiE7[][8];
 extern const unsigned char KanaFont[][8];
 extern const unsigned char KanaFontmini[][8];
 
+/* 
+   
+   */
 void ClearExtFontflag();
-int Make_FontFoloder();
+
+// int Make_FontFolder();
+
 void LoadExtFontKanafolder(  int flag, char* sname, int folder, int no );        // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no );        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
 void LoadExtFontAnkfolder(   int flag, char* sname, int folder, int no );        // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6

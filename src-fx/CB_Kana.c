@@ -1,5 +1,5 @@
 /* *****************************************************************************
- * CB_Kana.c -- C.Basic Japanese font display routine
+ * CB_Kana.c -- Font display routine
  * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
+
 #include "CB.h"
 #include "CB_font.h"
 #include "CB_fontmini.h"
-
-/* Initialization */
 
 char ExtCharAnkFX=0;
 char ExtCharKanaFX=0;
@@ -29,10 +28,10 @@ char ExtCharAnkMiniFX=0;
 char ExtCharKanaMiniFX=0;
 char ExtCharGaijiMiniFX=0;
 
-unsigned char *ExtAnkFontFX;            // Ext Ank font
-unsigned char *ExtAnkFontFXmini;        // Ext Ank font mini
-unsigned char *ExtKanaFontFX;           // Ext Kana & Gaiji font
-unsigned char *ExtKanaFontFXmini;       // Ext Kana & Gaiji font mini
+unsigned char *ExtAnkFontFX;
+unsigned char *ExtAnkFontFXmini;
+unsigned char *ExtKanaFontFX;
+unsigned char *ExtKanaFontFXmini;
 
 /**
  * Subsidiary function to display a Katakana character.

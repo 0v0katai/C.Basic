@@ -1,5 +1,5 @@
 /* *****************************************************************************
- * CB_fontmini.h -- C.Basic mini font character sets
+ * CB_fontmini.h -- Mini font character sets
  * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
