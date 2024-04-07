@@ -34,12 +34,12 @@ unsigned char *ExtKanaFontFX;
 unsigned char *ExtKanaFontFXmini;
 
 /**
- * Subsidiary function to display a Katakana character.
+ * Subsidiary function to display a character in [F6] section of character picker.
  * 
  * @param px (0..383)
  * @param py (-24..191)
- * @param c Extended character.
- * @param modify `WRITEMODIFY` modifier.
+ * @param c Character hex code.
+ * @param modify `IMB_WRITEMODIFY` modifier.
  */
 void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     DISPGRAPH kfont;
@@ -87,24 +87,10 @@ void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     Bdisp_WriteGraph_VRAM(&kfont);
 }
 
-/**
- * Shortcut for `KPrintCharSub(px, py, c, IMB_WRITEMODIFY_NORMAL)`.
- * 
- * @param px (0..383)
- * @param py (-24..191)
- * @param c Extended character.
- */
 void KPrintChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_NORMAL);
 }
 
-/**
- * Shortcut for `KPrintCharSub(px, py, c, IMB_WRITEMODIFY_REVERCE)`.
- * 
- * @param px (0..383)
- * @param py (-24..191)
- * @param c Extended character.
- */
 void KPrintRevChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
 }

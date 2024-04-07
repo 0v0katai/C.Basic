@@ -95,8 +95,23 @@ void SaveExtFontKana(  int flag, char* sname, int folder, int no, int check );  
 void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
 void SaveExtFontAnk(   int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTA8L.bmp    font 6x6 -> FONTA6M.bmp
 
-void KPrintChar( int px, int py, unsigned char *c) ; //カナ一文字表示
-void KPrintRevChar( int px, int py, unsigned char *c) ; //カナ一文字表示
+/**
+ * Shortcut for `KPrintCharSub(px, py, c, IMB_WRITEMODIFY_NORMAL)`.
+ * 
+ * @param px (0..383)
+ * @param py (-24..191)
+ * @param c Character hex code.
+ */
+void KPrintChar( int px, int py, unsigned char *c);
+
+/**
+ * Shortcut for `KPrintCharSub(px, py, c, IMB_WRITEMODIFY_REVERCE)`.
+ * 
+ * @param px (0..383)
+ * @param py (-24..191)
+ * @param c Character hex code.
+ */
+void KPrintRevChar( int px, int py, unsigned char *c);
 
 int KPrintCharMini( int px, int py, unsigned char *str, int mode ) ; // カナ対応 PrintMini
 
