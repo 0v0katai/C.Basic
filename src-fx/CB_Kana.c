@@ -38,8 +38,8 @@ unsigned char *ExtKanaFontFXmini;
  * 
  * @param px (0..383)
  * @param py (-24..191)
- * @param c Character hex code.
- * @param modify `IMB_WRITEMODIFY` modifier.
+ * @param c Character hex code
+ * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
  */
 void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     DISPGRAPH kfont;
@@ -95,12 +95,6 @@ void KPrintRevChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
 
-/// @brief ni
-/// @param px
-/// @param py 
-/// @param str 
-/// @param mode 
-/// @return test
 int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // カナ対応 PrintMini
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;
@@ -224,12 +218,12 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 void ClearExtFontflag() {
-    ExtCharAnkFX=0;                // 0:Normal     1:Ext Ank  font FX
-    ExtCharKanaFX=0;            // 0:Normal     1:Ext Kana  font FX
-    ExtCharGaijiFX=0;            // 0:Normal     1:Ext Gaiji font FX
-    ExtCharAnkMiniFX=0;            // 0:Normal     1:Ext Ank  font FX
-    ExtCharKanaMiniFX=0;        // 0:Normal     1:Ext Kana  font FX
-    ExtCharGaijiMiniFX=0;        // 0:Normal     1:Ext Gaiji font FX
+    ExtCharAnkFX=0;
+    ExtCharKanaFX=0;
+    ExtCharGaijiFX=0;
+    ExtCharAnkMiniFX=0;
+    ExtCharKanaMiniFX=0;
+    ExtCharGaijiMiniFX=0;
     memcpy( (char*)ExtAnkFontFX,     (char*)Font00  +32*8,  96*8 );        // Ank Font copy   FX font 
     memcpy( (char*)ExtAnkFontFXmini, (char*)Fontmini+32*8,  96*8 );        // Ank mini copy   FX font 
     memcpy( (char*)ExtKanaFontFX,    (char*)KanaFont    ,  112*8 );        // Ank Font copy   FX font 

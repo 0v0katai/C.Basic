@@ -65,12 +65,12 @@ extern const unsigned char KanaFontmini[][8];
 #define HEXCHAR_NEQ     0x11
 #define HEXCHAR_MTEQ    0x12
 #define HEXCHAR_IMPLY   0x13
-// #define HEXCHAR_0X14    0x14
-// #define HEXCHAR_0X15    0x15
-// #define HEXCHAR_0X16    0x16
-// #define HEXCHAR_0X17    0x17
-// #define HEXCHAR_0X18    0x18
-// #define HEXCHAR_0X19    0x19
+#define HEXCHAR_f1      0x14
+#define HEXCHAR_f2      0x15
+#define HEXCHAR_f3      0x16
+#define HEXCHAR_f4      0x17
+#define HEXCHAR_f5      0x18
+#define HEXCHAR_f6      0x19
 #define HEXCHAR_HEXA    0x1A
 #define HEXCHAR_HEXB    0x1B
 #define HEXCHAR_HEXC    0x1C
@@ -78,18 +78,22 @@ extern const unsigned char KanaFontmini[][8];
 #define HEXCHAR_HEXE    0x1E
 #define HEXCHAR_HEXF    0x1F
 
-/* 
-   */
+/* Clears all external font indicators and restores to the original font data. */
 void ClearExtFontflag();
 
 // int Make_FontFolder();
 
+/**
+ * 
+ * 
+ * @param flag 
+ * @param sname 
+ * @param folder 
+ * @param no 
+ */
 void LoadExtFontKanafolder(  int flag, char* sname, int folder, int no );        // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no );        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
 void LoadExtFontAnkfolder(   int flag, char* sname, int folder, int no );        // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
-void LoadExtFontKana(  int flag, char* sname, int no );            // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
-void LoadExtFontGaiji( int flag, char* sname, int no );            // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
-void LoadExtFontAnk(   int flag, char* sname, int no );            // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
 
 void SaveExtFontKana(  int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTK8L.bmp    font 6x6 -> FONTK6M.bmp
 void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
@@ -100,7 +104,7 @@ void SaveExtFontAnk(   int flag, char* sname, int folder, int no, int check );  
  * 
  * @param px (0..383)
  * @param py (-24..191)
- * @param c Character hex code.
+ * @param c Character hex code
  */
 void KPrintChar( int px, int py, unsigned char *c);
 
@@ -109,10 +113,19 @@ void KPrintChar( int px, int py, unsigned char *c);
  * 
  * @param px (0..383)
  * @param py (-24..191)
- * @param c Character hex code.
+ * @param c Character hex code
  */
 void KPrintRevChar( int px, int py, unsigned char *c);
 
+/**
+ * Main function to display a mini character.
+ * 
+ * @param px (0..383)
+ * @param py (-24..191)
+ * @param str Character hex code
+ * @param mode `MINI` macro (dispbios.h)
+ * @return The value of the first index of the font data array.
+ */
 int KPrintCharMini( int px, int py, unsigned char *str, int mode ) ; // カナ対応 PrintMini
 
 int CB_GetFont( char *SRC );        // DotChar(0xFFA0)->Mat C
@@ -120,4 +133,9 @@ int CB_GetFontMini( char *SRC );    // DotChar(0xFFA0)->Mat C
 void CB_SetFont( char *SRC );        // SetFont 0xFFA0,Mat C
 void CB_SetFontMini( char *SRC );    // SetFont 0xFFA0,Mat C
 
+/* Reads external font bitmaps in the current folder. */
 void ReadExtFont();
+
+void LoadExtFontKana(  int flag, char* sname, int no );            // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+void LoadExtFontGaiji( int flag, char* sname, int no );            // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+void LoadExtFontAnk(   int flag, char* sname, int no );            // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
