@@ -36,6 +36,9 @@
     
     Use `{0x0 ,0x0 ,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }` to indicate a null font data. */
 
+/* Standard font unknown character */
+const unsigned char UnknownFont[8] = {0x7C,0x4C,0x74,0x6C,0x7C,0x6C,0x7C,0x00};
+
 /** Single-byte standard font character set `00-7E`.
     This set replicates the FX standard font for C.Basic CG.
     It is used as a custom font save for `SetFont` in C.Basic FX. */

@@ -36,47 +36,34 @@ unsigned char *ExtKanaFontFXmini;
 /**
  * Subsidiary function to display a character in [F6] section of character picker.
  * 
- * @param px (0..383)
- * @param py (-24..191)
- * @param c Character hex code
+ * @param px x-pixel coordinate
+ * @param py y-pixel coordinate
+ * @param c character hex code
  * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
  */
 void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;
-    int a,b;
 
-    b= (*c);
-    a= (b<<8) + c[1];
-     if ( ( ( ExtCharKanaFX  )&&( 0xFFA0 <= a )&&( a <= 0xFFEF ) ) ||
-         ( ( ExtCharGaijiFX )&&( 0xFF80 <= a )&&( a <= 0xFF9F ) ) ||
-         ( ( ExtCharAnkFX   )&&( 0x20 <= b   )&&( b < 0x7F    ) ) ) {
-        if ( ( 0x20 <= b )&&( b < 0x7F ) ) {
-            kfont_info.pBitmap = ExtAnkFontFX + (b-0x20)*8;
+    int char1 = c[0], char2 = c[1];
+
+    if ( ( ExtCharAnkFX ) && ( char1 <= 0x7E ) ) {
+        kfont_info.pBitmap = ExtAnkFontFX + (char1-0x20)*8;
+    } else
+    if ( ( char1 == 0xE7 ) && ( 0x41 <= char2 ) && ( char2 <= 0x7E ) ) {
+        kfont_info.pBitmap = FontE7[char2-0x40];
+    } else
+    if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xE2 ) ) {
+        char2 -= 0x80;
+        if ( ( ExtCharGaijiFX ) || ( ExtCharKanaFX ) ) {
+            kfont_info.pBitmap = ExtKanaFontFX + char2*8;
         } else {
-            a &= 0xFF;
-            a -= 0x80;
-            if ( a>=0x70 ) goto err ;
-            kfont_info.pBitmap = ExtKanaFontFX + a*8;
+            kfont_info.pBitmap = KanaFont[char2];
         }
     } else {
-        if ( ( 0xE741 <= a )&&( a <= 0xE77E ) ) {
-            a &= 0xFF;
-            a -= 0x40;
-            kfont_info.pBitmap = FontE7[a];
-        } else 
-        if ( ( 0xFF80 <= a )&&( a <= 0xFFE2 ) ) {
-            a &= 0xFF;
-            a -= 0x80;
-            kfont_info.pBitmap = KanaFont[a];
-        } else {
-          err:
-            locate (px/6+1,py/8+1);
-            if ( modify == IMB_WRITEMODIFY_NORMAL ) PrintC( (unsigned char*)"@" );
-            else                                    PrintRevC( (unsigned char*)"@" );
-            return ;
-        }
+        kfont_info.pBitmap = UnknownFont;
     }
+
     kfont_info.width = 6;
     kfont_info.height = 8;
     kfont.x = px;
@@ -95,82 +82,89 @@ void KPrintRevChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
 
-int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // カナ対応 PrintMini
+/**
+ * 0x21 + extflag*0x100
+ * 0x10 ~ 0x13
+ * 0x110 ~ 0x113
+ * */
+int KPrintCharMini( int px, int py, unsigned char *str, int mode ) {
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;
+
     unsigned char *font;
-    int a,b,c;
+    int char1 = str[0], char2 = str[1];
     int extflag = mode & 0xFF00;
-    mode &= 0xFF;
-    font=Fontmini[0];
-    a= str[0];
-     if ( a < 0x7F ) {
-        if ( ( extflag ) && ( ExtCharAnkMiniFX ) && ( 0x20 <= a ) ) font= ExtAnkFontFXmini + (a-0x20)*8;
-        else font=Fontmini[a];
-     } else 
-    if ( a == 0xFF )  {
-        c = str[1];
-        if ( ( 0xA0 <= c ) && ( c <= 0xEF ) ) {
-            if ( ( extflag ) && ( ExtCharKanaMiniFX ) ) font= ExtKanaFontFXmini + (c-0x80)*8;
-            else font=KanaFontmini[c-0x80];
+
+    if ( char1 <= 0x7E ) {
+        if ( ( extflag ) && ( ExtCharAnkMiniFX ) && ( 0x20 <= char1 ) ) {
+            font= ExtAnkFontFXmini + (char1-0x20)*8;
+        } else {
+            font=Fontmini[char1];
+        }
+    } else
+    if ( char1 == 0x7F ) {
+        if ( char2 == 0x50 ) {
+            font=Fontmini7F50;
         } else
-        if ( ( 0x80 <= c ) && ( c <= 0x9F ) ) {
-            if ( ( extflag ) && ( ExtCharGaijiMiniFX ) ) font= ExtKanaFontFXmini + (c-0x80)*8;
-            else  font=KanaFontmini[c-0x80];
-        } else goto err;
+        if ( char2 == 0x53 ) {
+            font=Fontmini7F53;
+        } else
+        if ( char2 == 0x54 ) {
+            font=Fontmini7F54;
+        } else
+        if ( char2 == 0xC7 ) {
+            font=Fontmini7FC7;
+        } else {
+            font=UnknownFontMini;
+        }
     } else
-    if ( a == 0x7F )  {
-        c = str[1];
-        if ( c == 0x50 ) font=Fontmini7F50;
-        else
-        if ( c == 0x53 ) font=Fontmini7F53;
-        else
-        if ( c == 0x54 ) font=Fontmini7F54;
-        else
-        if ( c == 0xC7 ) font=Fontmini7FC7;
-        else goto err;
+    if ( char1 <= 0xDF ) {
+        font=Fontmini80[char1-0x80];
     } else
-    if ( a == 0xE5 )  {
-        c = str[1];
-        if ( c <= 0xDF ) font=FontminiE5[c];
-        else goto err;
+    if ( ( char1 == 0xE5 ) && ( char2 <= 0xDF ) ) {
+        font=FontminiE5[char2];
     } else
-    if ( a == 0xE6 )  {
-        c = str[1];
-        if ( c <= 0xDF ) font=FontminiE6[c];
-        else goto err;
+    if ( ( char1 == 0xE6 ) && ( char2 <= 0xDF ) ) {
+        font=FontminiE6[char2];
     } else
-    if ( a == 0xE7 )  {
-        c = str[1];
-        if ( ( 0x40 <= c ) && ( c <= 0x7E ) ) font=FontminiE7[c-0x40];
-        else goto err;
+    if ( ( char1 == 0xE7 ) && ( 0x40 <= char2 ) && ( char2 <= 0x7E ) ) {
+        font=FontminiE7[char2-0x40];
     } else
-    if ( ( 0x80 <= a ) && ( a <= 0xDF ) ) font=Fontmini80[a-0x80];
-    else {
-      err:
-        font=Fontmini['@'];
+    if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xEF ) ) {
+        if ( ( extflag ) && ( ExtCharKanaMiniFX ) ) {
+            font = ExtKanaFontFXmini + (char2-0x80)*8;
+        } else {
+            font = KanaFontmini[char2-0x80];
+        }
+    } else {
+        font=UnknownFontMini;
     }
-    
-    kfont_info.width = font[0];
+
+    mode &= 0xFF;
     if ( mode==0x21 ) goto exit;
-    switch ( mode ) {
-        case MINI_OVER:
-            kfont.WriteModify = IMB_WRITEMODIFY_NORMAL;
-            kfont.WriteKind = IMB_WRITEKIND_OVER;
-            break;
-        case MINI_REV:
-            kfont.WriteModify = IMB_WRITEMODIFY_REVERCE;
-            kfont.WriteKind = IMB_WRITEKIND_OVER;
-            break;
-        case MINI_OR:
-            kfont.WriteModify = IMB_WRITEMODIFY_NORMAL;
-            kfont.WriteKind = IMB_WRITEKIND_OR;
-            break;
-        case MINI_REVOR:
-            kfont.WriteModify = IMB_WRITEMODIFY_REVERCE;
-            kfont.WriteKind = IMB_WRITEKIND_OR;
-            break;
-    }
+    kfont.WriteModify = ( mode >= 0x12 ) + 1 ;
+    kfont.WriteKind = ( mode % 2 ) + 1 ;
+
+    // switch ( mode ) {
+    //     case MINI_OVER:
+    //         kfont.WriteModify = IMB_WRITEMODIFY_NORMAL;
+    //         kfont.WriteKind = IMB_WRITEKIND_OVER;
+    //         break;
+    //     case MINI_OR:
+    //         kfont.WriteModify = IMB_WRITEMODIFY_NORMAL;
+    //         kfont.WriteKind = IMB_WRITEKIND_OR;
+    //         break;
+    //     case MINI_REV:
+    //         kfont.WriteModify = IMB_WRITEMODIFY_REVERCE;
+    //         kfont.WriteKind = IMB_WRITEKIND_OVER;
+    //         break;
+    //     case MINI_REVOR:
+    //         kfont.WriteModify = IMB_WRITEMODIFY_REVERCE;
+    //         kfont.WriteKind = IMB_WRITEKIND_OR;
+    //         break;
+    // }
+
+    kfont_info.width = font[0];
     kfont_info.height = 6;
     kfont_info.pBitmap = font+2;
     kfont.x = px;

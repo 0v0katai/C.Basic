@@ -36,6 +36,9 @@
     
     Use `{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }` to indicate a null font data. */
 
+/* Mini font unknown character */
+const unsigned char UnknownFontMini[8] = {5,0,0x30,0xD0,0xB0,0xF0,0xB0,0x00};
+
 /** Single-byte mini font character set `00-7E`.
     This set replicates the FX mini font `00-7E` for C.Basic CG.
     It is used as a custom font save for `SetFont` in C.Basic FX. */
