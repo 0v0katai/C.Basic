@@ -34,12 +34,13 @@ unsigned char *ExtKanaFontFX;
 unsigned char *ExtKanaFontFXmini;
 
 /**
- * Subsidiary function to display a character in [F6] section of character picker.
+ * Subsidiary function to display an extended and/or external character.
  * 
- * @param px x-pixel coordinate
- * @param py y-pixel coordinate
- * @param c character hex code
+ * @param px x-pixel coordinate of the character
+ * @param py y-pixel coordinate of the character
+ * @param c hex code of the character (single or multi-byte)
  * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
+ * @return Stores the character bitmap data to VRAM.
  */
 void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     DISPGRAPH kfont;
@@ -47,19 +48,32 @@ void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
 
     int char1 = c[0], char2 = c[1];
 
+    /* displays the ANK (ASCII) characters in the external ANK bitmap */
     if ( ( ExtCharAnkFX ) && ( char1 <= 0x7E ) ) {
         kfont_info.pBitmap = ExtAnkFontFX + (char1-0x20)*8;
     } else
+
+    /* displays characters ranging from `E741` to `E77E` */
     if ( ( char1 == 0xE7 ) && ( 0x41 <= char2 ) && ( char2 <= 0x7E ) ) {
         kfont_info.pBitmap = FontE7[char2-0x40];
     } else
+
+    /* displays Katakana/Gaiji characters from*/
     if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xE2 ) ) {
+
+        /* takes the index value */
         char2 -= 0x80;
+
+        /* checks if external Katakana or Gaiji bitmaps exist */
         if ( ( ExtCharGaijiFX ) || ( ExtCharKanaFX ) ) {
             kfont_info.pBitmap = ExtKanaFontFX + char2*8;
+
+        /* if not, uses the default Katakana/Gaiji font data */
         } else {
             kfont_info.pBitmap = KanaFont[char2];
         }
+    
+    /* for invalid characters */
     } else {
         kfont_info.pBitmap = UnknownFont;
     }
@@ -74,10 +88,12 @@ void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     Bdisp_WriteGraph_VRAM(&kfont);
 }
 
+/* Shortcut function to print an extended/external character in a normal display. */
 void KPrintChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_NORMAL);
 }
 
+/* Shortcut function to print an extended/external character in a reverse display. */
 void KPrintRevChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
