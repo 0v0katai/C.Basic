@@ -19,31 +19,49 @@
 
 /* ANK means "Alpha, Numeric and Katakana" in JIS encoding system. */
 
-extern char ExtCharAnkFX;                   /* Indicator of external ANK standard font bitmap.        (0,1) */
-extern char ExtCharAnkMiniFX;               /* Indicator of external ANK mini font bitmap.            (0,1) */
-extern char ExtCharKanaFX;                  /* Indicator of external Katakana standard font bitmap.   (0,1) */
-extern char ExtCharKanaMiniFX;              /* Indicator of external Katakana mini font bitmap.       (0,1) */
-extern char ExtCharGaijiFX;                 /* Indicator of external Gaiji standard font bitmap.      (0,1) */
-extern char ExtCharGaijiMiniFX;             /* Indicator of external Gaiji mini font bitmap.          (0,1) */
+/* Indicator of external ASCII standard font bitmap. */
+extern bool g_external_asc;
 
-extern unsigned char *ExtAnkFontFX;         /* Pointer to the address of ANK standard font data.               */
-extern unsigned char *ExtAnkFontFXmini;     /* Pointer to the address of ANK mini font data.                   */
-extern unsigned char *ExtKanaFontFX;        /* Pointer to the address of Katakana & Gaiji standard font data.  */
-extern unsigned char *ExtKanaFontFXmini;    /* Pointer to the address of Katakana & Gaiji mini font data.      */
+/* Indicator of external ASCII mini font bitmap. */
+extern bool g_external_asc_mini;
 
-extern const unsigned char Font00[][8];
-extern const unsigned char Fontmini[][8];
-extern const unsigned char Fontmini80[][8];
-extern const unsigned char Fontmini7F50[8];
-extern const unsigned char Fontmini7F53[8];
-extern const unsigned char Fontmini7F54[8];
-extern const unsigned char Fontmini7FC7[8];
-extern const unsigned char FontminiE5[][8];
-extern const unsigned char FontminiE6[][8];
-extern const unsigned char FontE7[][8];
-extern const unsigned char FontminiE7[][8];
-extern const unsigned char KanaFont[][8];
-extern const unsigned char KanaFontmini[][8];
+/* Indicator of external Katakana standard font bitmap. */
+extern bool g_external_kana;
+
+/* Indicator of external Katakana mini font bitmap. */         
+extern bool g_external_kana_mini;
+
+/* Indicator of external Gaiji standard font bitmap. */
+extern bool g_external_gaiji;
+
+/* Indicator of external Gaiji mini font bitmap. */
+extern bool g_external_gaiji_mini;
+
+/* Pointer to the address of ANK standard font data. */
+extern unsigned char *p_external_asc;
+
+/* Pointer to the address of ANK mini font data. */
+extern unsigned char *p_external_asc_mini;
+
+/* Pointer to the address of Katakana and Gaiji standard font data.  */
+extern unsigned char *p_external_kana_gaiji;
+
+/* Pointer to the address of Katakana and Gaiji mini font data. */
+extern unsigned char *p_external_kana_gaiji_mini;
+
+extern const unsigned char font_asc[][8];
+extern const unsigned char font_asc_mini[][8];
+extern const unsigned char font_80_mini[][8];
+extern const unsigned char font_7f50_mini[8];
+extern const unsigned char font_7f53_mini[8];
+extern const unsigned char font_7f54_mini[8];
+extern const unsigned char font_7fc7_mini[8];
+extern const unsigned char font_e5_mini[][8];
+extern const unsigned char font_e6_mini[][8];
+extern const unsigned char font_e7[][8];
+extern const unsigned char font_e7_mini[][8];
+extern const unsigned char font_kana[][8];
+extern const unsigned char font_kana_mini[][8];
 
 #define HEXCHAR_NULL    0x00
 #define HEXCHAR_FEMTO   0x01

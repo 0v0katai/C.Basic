@@ -6,11 +6,6 @@
 #include <math.h>
 #include <timer.h>
 
-typedef struct  {
-	double real;
-	double imag;
-} complex;
-
 #include "CB_complex.h"
 #include "CB_interpreter.h"
 #include "KeyScan.h"
@@ -29,9 +24,17 @@ typedef struct  {
 #include "CB_Matrix.h"
 #include "CB_Str.h"
 #include "CB_Help.h"
-
 #include "CB_error.h"
 #include "fx_syscall.h"
 #include "fxCG_Registers.h"
 #include "MonochromeLib.h"
 #include "CB_MonochromeLib.h"
+
+typedef struct {
+    double real;
+    double imag;
+} complex;
+
+typedef char bool;
+#define false 0
+#define true 1

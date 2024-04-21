@@ -37,7 +37,7 @@
     Use `{0x0 ,0x0 ,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }` to indicate a null font data. */
 
 /* Standard font unknown character */
-const unsigned char UnknownFont[8] = {0x7C,0x4C,0x74,0x6C,0x7C,0x6C,0x7C,0x00};
+const unsigned char font_unknown[8] = {0x7C,0x4C,0x74,0x6C,0x7C,0x6C,0x7C,0x00};
 
 /** Single-byte ASCII standard font character set `20-7E`.
     This set replicates the ASCII standard font and is preloaded in RAM
@@ -183,7 +183,7 @@ const unsigned char font_asc[][8] = {
 /** Multi-byte standard font character set `E7XX`.
     This set consists of mini font characters that are wrapped in standard font size.
     Most of them are listed in the [F5] section of character picker. */
-const unsigned char FontE7[][8] = {
+const unsigned char font_e7[][8] = {
     {0x00,0x00,0x70,0x08,0x68,0x98,0x70,0x00}/* 40  @ */            // unused
    ,{0x00,0x00,0x20,0x50,0x70,0x50,0x50,0x00}/* 41  A */
    ,{0x00,0x00,0x60,0x50,0x60,0x50,0x60,0x00}/* 42  B */

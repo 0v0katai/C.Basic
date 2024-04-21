@@ -37,7 +37,7 @@
     Use `{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }` to indicate a null font data. */
 
 /* Mini font unknown character */
-const unsigned char UnknownFontMini[8] = {5,0,0x30,0xD0,0xB0,0xF0,0xB0,0x00};
+const unsigned char font_unknown_mini[8] = {5,0,0x30,0xD0,0xB0,0xF0,0xB0,0x00};
 
 /** Single-byte ASCII mini font character set `20-7E`.
     This set replicates the ASCII mini font and is preloaded in RAM
@@ -183,7 +183,7 @@ const unsigned char font_asc_mini[][8] = {
 /** Single-byte mini font character set `80-DF`.
     This set replicates the FX mini font `80-DF` for C.Basic CG.
     It is used as a custom font save for `SetFont` in C.Basic FX. */
-const unsigned char Fontmini80[][8] = {
+const unsigned char font_80_mini[][8] = {
     {4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }/* 80        */
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }/* 81        */
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }/* 82        */
@@ -283,19 +283,19 @@ const unsigned char Fontmini80[][8] = {
 };
 
 /* Mini font character `7F50`: i */
-const unsigned char Fontmini7F50[8] = {4,0,0x40,0x00,0xC0,0x40,0xE0,0x00};
+const unsigned char font_7f50_mini[8] = {4,0,0x40,0x00,0xC0,0x40,0xE0,0x00};
 
 /* Mini font character `7F53`: ∞ */
-const unsigned char Fontmini7F53[8] = {6,0,0x00,0x50,0xA8,0xA8,0x50,0x00};
+const unsigned char font_7f53_mini[8] = {6,0,0x00,0x50,0xA8,0xA8,0x50,0x00};
 
 /* Mini font character `7F54`: ∠ */
-const unsigned char Fontmini7F54[8] = {4,0,0x00,0x00,0x20,0x40,0xE0,0x00};
+const unsigned char font_7f54_mini[8] = {4,0,0x00,0x00,0x20,0x40,0xE0,0x00};
 
 /* Mini font character `7FC7`: p̂ */
-const unsigned char Fontmini7FC7[8] = {4,0,0x40,0xC0,0xA0,0xC0,0x80,0x00};
+const unsigned char font_7fc7_mini[8] = {4,0,0x40,0xC0,0xA0,0xC0,0x80,0x00};
 
 /* Mini font character set `E5XX` */
-const unsigned char FontminiE5[][8] = {
+const unsigned char font_e5_mini[][8] = {
 
     /* Latin letters with diacritics */
     {4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }/* 00    */
@@ -539,7 +539,7 @@ const unsigned char FontminiE5[][8] = {
 };
 
 /* Mini font character set `E6XX` */
-const unsigned char FontminiE6[][8] = {
+const unsigned char font_e6_mini[][8] = {
     {4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }/* 00    */
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }/* 01    */
    ,{4,0,0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }/* 02    */
@@ -779,7 +779,7 @@ const unsigned char FontminiE6[][8] = {
 };
 
 /* Mini font character set `E7XX` */
-const unsigned char FontminiE7[][8] = {
+const unsigned char font_e7_mini[][8] = {
     {6,0,0x70,0x08,0x68,0x98,0x70,0x00}/* 40  @ */
    ,{4,0,0x40,0xA0,0xE0,0xA0,0xA0,0x00}/* 41  A */
    ,{4,0,0xC0,0xA0,0xC0,0xA0,0xC0,0x00}/* 42  B */

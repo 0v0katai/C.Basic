@@ -247,7 +247,7 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 void CB_PrintC_ext( int x, int y,const unsigned char *c, int extflag ){
 	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintChar( (--x)*6, (--y)*8, c );
 	else {
-		if ( ( extflag ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) KPrintChar( (--x)*6, (--y)*8, c );
+		if ( ( extflag ) && ( g_external_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) KPrintChar( (--x)*6, (--y)*8, c );
 		else {
 			locate (x,y);
 			PrintC( c );
@@ -267,7 +267,7 @@ void CB_Print_ext( int x, int y, const unsigned char *str, int extflag ){
 void CB_PrintRevC_ext( int x, int y,const unsigned char *c, int extflag ){
 	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintRevChar( (--x)*6, (--y)*8, c );
 	else {
-		if ( ( extflag ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) KPrintRevChar( (--x)*6, (--y)*8, c );
+		if ( ( extflag ) && ( g_external_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) KPrintRevChar( (--x)*6, (--y)*8, c );
 		else {
 			locate (x,y);
 			PrintRevC( c );
@@ -326,7 +326,7 @@ void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){	// mode >0
 		if ( mode & 0xFF )	KPrintRevChar( px, py, c );
 		else				KPrintChar( px, py, c );
 	} else {
-		if ( ( mode & 0xFF00 ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) {
+		if ( ( mode & 0xFF00 ) && ( g_external_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) {
 			if ( mode & 0xFF )	KPrintRevChar( px, py, c );
 			else				KPrintChar( px, py, c );
 		} else
