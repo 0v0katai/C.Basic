@@ -186,16 +186,16 @@ int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 
 void HiddenRAM_ExtFontAryInit() {
 	if ( EnableExtFont ) {
-        p_external_asc              = (unsigned char *)HiddenRAM_Top;
-        p_external_asc_mini         = (unsigned char *)(p_external_asc           + 95*8);
-        p_external_kana_gaiji       = (unsigned char *)(p_external_asc_mini      + 95*8);
-        p_external_kana_gaiji_mini  = (unsigned char *)(p_external_kana_gaiji    + 99*8);
-        HiddenRAM_Top               = ((char *)p_external_kana_gaiji             + 99*8);
+        p_ext_asc              = (unsigned char *)HiddenRAM_Top;
+        p_ext_asc_mini         = (unsigned char *)(p_ext_asc           + 95*8);
+        p_ext_kana_gaiji       = (unsigned char *)(p_ext_asc_mini      + 95*8);
+        p_ext_kana_gaiji_mini  = (unsigned char *)(p_ext_kana_gaiji    + 99*8);
+        HiddenRAM_Top               = ((char *)p_ext_kana_gaiji             + 99*8);
 	} else {
-        p_external_asc              = (unsigned char *)font_asc;
-        p_external_asc_mini         = (unsigned char *)font_asc_mini;
-        p_external_kana_gaiji       = (unsigned char *)font_kana;
-        p_external_kana_gaiji_mini  = (unsigned char *)font_kana_mini;
+        p_ext_asc              = (unsigned char *)font_asc;
+        p_ext_asc_mini         = (unsigned char *)font_asc_mini;
+        p_ext_kana_gaiji       = (unsigned char *)font_kana;
+        p_ext_kana_gaiji_mini  = (unsigned char *)font_kana_mini;
 	}
 }
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
@@ -245,13 +245,13 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 void CB_PrintC_ext( int x, int y,const unsigned char *c, int extflag ){
-	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintChar( (--x)*6, (--y)*8, c );
+	if ( ( ( *c == 0xFF ) || ( *c == 0xE7 ) ) ||
+		 ( ( extflag ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) )
+		KPrintChar( (--x)*6, (--y)*8, c );
+
 	else {
-		if ( ( extflag ) && ( g_external_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) KPrintChar( (--x)*6, (--y)*8, c );
-		else {
-			locate (x,y);
-			PrintC( c );
-		}
+		locate(x,y);
+		PrintC( c );
 	}
 }
 void CB_Print_ext( int x, int y, const unsigned char *str, int extflag ){
@@ -265,13 +265,12 @@ void CB_Print_ext( int x, int y, const unsigned char *str, int extflag ){
 	}
 }
 void CB_PrintRevC_ext( int x, int y,const unsigned char *c, int extflag ){
-	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintRevChar( (--x)*6, (--y)*8, c );
+	if ( ( ( *c == 0xFF ) || ( *c == 0xE7 ) ) ||
+	     ( ( extflag ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) )
+		KPrintRevChar( (--x)*6, (--y)*8, c );
 	else {
-		if ( ( extflag ) && ( g_external_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) KPrintRevChar( (--x)*6, (--y)*8, c );
-		else {
-			locate (x,y);
-			PrintRevC( c );
-		}
+		locate(x,y);
+		PrintRevC( c );
 	}
 }
 void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
@@ -326,7 +325,7 @@ void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){	// mode >0
 		if ( mode & 0xFF )	KPrintRevChar( px, py, c );
 		else				KPrintChar( px, py, c );
 	} else {
-		if ( ( mode & 0xFF00 ) && ( g_external_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) {
+		if ( ( mode & 0xFF00 ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) {
 			if ( mode & 0xFF )	KPrintRevChar( px, py, c );
 			else				KPrintChar( px, py, c );
 		} else

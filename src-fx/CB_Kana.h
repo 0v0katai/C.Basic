@@ -20,34 +20,34 @@
 /* ANK means "Alpha, Numeric and Katakana" in JIS encoding system. */
 
 /* Indicator of external ASCII standard font bitmap. */
-extern bool g_external_asc;
+extern bool g_ext_asc;
 
 /* Indicator of external ASCII mini font bitmap. */
-extern bool g_external_asc_mini;
+extern bool g_ext_asc_mini;
 
 /* Indicator of external Katakana standard font bitmap. */
-extern bool g_external_kana;
+extern bool g_ext_kana;
 
 /* Indicator of external Katakana mini font bitmap. */         
-extern bool g_external_kana_mini;
+extern bool g_ext_kana_mini;
 
 /* Indicator of external Gaiji standard font bitmap. */
-extern bool g_external_gaiji;
+extern bool g_ext_gaiji;
 
 /* Indicator of external Gaiji mini font bitmap. */
-extern bool g_external_gaiji_mini;
+extern bool g_ext_gaiji_mini;
 
 /* Pointer to the address of ANK standard font data. */
-extern unsigned char *p_external_asc;
+extern unsigned char *p_ext_asc;
 
 /* Pointer to the address of ANK mini font data. */
-extern unsigned char *p_external_asc_mini;
+extern unsigned char *p_ext_asc_mini;
 
 /* Pointer to the address of Katakana and Gaiji standard font data.  */
-extern unsigned char *p_external_kana_gaiji;
+extern unsigned char *p_ext_kana_gaiji;
 
 /* Pointer to the address of Katakana and Gaiji mini font data. */
-extern unsigned char *p_external_kana_gaiji_mini;
+extern unsigned char *p_ext_kana_gaiji_mini;
 
 extern const unsigned char font_asc[][8];
 extern const unsigned char font_asc_mini[][8];
