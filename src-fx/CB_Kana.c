@@ -21,12 +21,12 @@
 #include "CB_font.h"
 #include "CB_fontmini.h"
 
-char ExtCharAnkFX=0;
-char ExtCharKanaFX=0;
-char ExtCharGaijiFX=0;
-char ExtCharAnkMiniFX=0;
-char ExtCharKanaMiniFX=0;
-char ExtCharGaijiMiniFX=0;
+bool g_external_asc         = false;
+bool g_external_kana        = false;
+bool g_external_gaiji       = false;
+bool g_external_asc_mini    = false;
+bool g_external_kana_mini   = false;
+bool g_external_gaiji_mini  = false;
 
 unsigned char *p_external_asc;
 unsigned char *p_external_asc_mini;
@@ -226,19 +226,17 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
     return length;
 }
 
-//---------------------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------------------
 void ClearExtFontflag() {
-    ExtCharAnkFX=0;
-    ExtCharKanaFX=0;
-    ExtCharGaijiFX=0;
-    ExtCharAnkMiniFX=0;
-    ExtCharKanaMiniFX=0;
-    ExtCharGaijiMiniFX=0;
-    memcpy( (char*)ExtAnkFontFX,     (char*)Font00  +32*8,  96*8 );        // Ank Font copy   FX font 
-    memcpy( (char*)ExtAnkFontFXmini, (char*)Fontmini+32*8,  96*8 );        // Ank mini copy   FX font 
-    memcpy( (char*)ExtKanaFontFX,    (char*)KanaFont    ,  112*8 );        // Ank Font copy   FX font 
-    memcpy( (char*)ExtKanaFontFXmini,(char*)KanaFontmini,  112*8 );        // Ank mini copy   FX font 
+    g_external_asc         = false;
+    g_external_kana        = false;
+    g_external_gaiji       = false;
+    g_external_asc_mini    = false;
+    g_external_kana_mini   = false;
+    g_external_gaiji_mini  = false;
+    memcpy( (char*)p_external_asc,              (char*)font_asc,        95*8 );
+    memcpy( (char*)p_external_asc_mini,         (char*)font_asc_mini,   95*8 );
+    memcpy( (char*)p_external_kana_gaiji,       (char*)font_kana,       99*8 );
+    memcpy( (char*)p_external_kana_gaiji_mini,  (char*)font_kana_mini,  99*8 );
 }
 
 void ReadExtFont(){

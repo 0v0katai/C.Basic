@@ -186,16 +186,16 @@ int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 
 void HiddenRAM_ExtFontAryInit() {
 	if ( EnableExtFont ) {
-		ExtAnkFontFX     =(unsigned char *)HiddenRAM_Top ;				// Ext Ascii font
-		ExtAnkFontFXmini =(unsigned char *)(ExtAnkFontFX     + 96*8) ;	// Ext Ascii font
-		ExtKanaFontFX    =(unsigned char *)(ExtAnkFontFXmini + 96*8) ;	// Ext Kana & Gaiji font
-		ExtKanaFontFXmini=(unsigned char *)(ExtKanaFontFX    + 112*8) ;	// Ext Kana & Gaiji font
-		HiddenRAM_Top    =((char *)ExtKanaFontFX + 112*8) ;			// Heap RAM top ptr
+        p_external_asc              = (unsigned char *)HiddenRAM_Top;
+        p_external_asc_mini         = (unsigned char *)(p_external_asc           + 95*8);
+        p_external_kana_gaiji       = (unsigned char *)(p_external_asc_mini      + 95*8);
+        p_external_kana_gaiji_mini  = (unsigned char *)(p_external_kana_gaiji    + 99*8);
+        HiddenRAM_Top               = ((char *)p_external_kana_gaiji             + 99*8);
 	} else {
-		ExtAnkFontFX     =(unsigned char *)Font00   +32*8;	//  Ascii font
-		ExtAnkFontFXmini =(unsigned char *)Fontmini +32*8;	//  Ascii font
-		ExtKanaFontFX    =(unsigned char *)KanaFont ;		//  Kana & Gaiji font
-		ExtKanaFontFXmini=(unsigned char *)KanaFontmini ;	// Ext Kana & Gaiji font
+        p_external_asc              = (unsigned char *)font_asc;
+        p_external_asc_mini         = (unsigned char *)font_asc_mini;
+        p_external_kana_gaiji       = (unsigned char *)font_kana;
+        p_external_kana_gaiji_mini  = (unsigned char *)font_kana_mini;
 	}
 }
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
