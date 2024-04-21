@@ -88,21 +88,14 @@ void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     Bdisp_WriteGraph_VRAM(&kfont);
 }
 
-/* Shortcut function to print an extended/external character in a normal display. */
 void KPrintChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_NORMAL);
 }
 
-/* Shortcut function to print an extended/external character in a reverse display. */
 void KPrintRevChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
 
-/**
- * 0x21 + extflag*0x100
- * 0x10 ~ 0x13
- * 0x110 ~ 0x113
- * */
 int KPrintCharMini( int px, int py, unsigned char *str, int mode ) {
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;

@@ -63,52 +63,11 @@ extern const unsigned char font_e7_mini[][8];
 extern const unsigned char font_kana[][8];
 extern const unsigned char font_kana_mini[][8];
 
-#define HEXCHAR_NULL    0x00
-#define HEXCHAR_FEMTO   0x01
-#define HEXCHAR_PICO    0x02
-#define HEXCHAR_NANO    0x03
-#define HEXCHAR_MICRO   0x04
-#define HEXCHAR_MILLI   0x05
-#define HEXCHAR_KILO    0x06
-#define HEXCHAR_MEGA    0x07
-#define HEXCHAR_GIGA    0x08
-#define HEXCHAR_TERA    0x09
-#define HEXCHAR_PETA    0x0A
-#define HEXCHAR_EXA     0x0B
-#define HEXCHAR_DISP    0x0C
-#define HEXCHAR_CR      0x0D
-// #define HEXCHAR_0X0E    0x0E
-#define HEXCHAR_EXP     0x0F
-#define HEXCHAR_LTEQ    0x10
-#define HEXCHAR_NEQ     0x11
-#define HEXCHAR_MTEQ    0x12
-#define HEXCHAR_IMPLY   0x13
-#define HEXCHAR_f1      0x14
-#define HEXCHAR_f2      0x15
-#define HEXCHAR_f3      0x16
-#define HEXCHAR_f4      0x17
-#define HEXCHAR_f5      0x18
-#define HEXCHAR_f6      0x19
-#define HEXCHAR_HEXA    0x1A
-#define HEXCHAR_HEXB    0x1B
-#define HEXCHAR_HEXC    0x1C
-#define HEXCHAR_HEXD    0x1D
-#define HEXCHAR_HEXE    0x1E
-#define HEXCHAR_HEXF    0x1F
-
-/* Clears all external font indicators and restores to the original font data. */
+/** Main function to clear all external font indicators; and
+    restore their corresponding data pointers to the built-in font matrices. */
 void ClearExtFontflag();
-
 // int Make_FontFolder();
 
-/**
- * 
- * 
- * @param flag 
- * @param sname 
- * @param folder 
- * @param no 
- */
 void LoadExtFontKanafolder(  int flag, char* sname, int folder, int no );        // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
 void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no );        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
 void LoadExtFontAnkfolder(   int flag, char* sname, int folder, int no );        // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
@@ -117,22 +76,10 @@ void SaveExtFontKana(  int flag, char* sname, int folder, int no, int check );  
 void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
 void SaveExtFontAnk(   int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTA8L.bmp    font 6x6 -> FONTA6M.bmp
 
-/**
- * Shortcut for `KPrintCharSub(px, py, c, IMB_WRITEMODIFY_NORMAL)`.
- * 
- * @param px (0..383)
- * @param py (-24..191)
- * @param c Character hex code
- */
+/* Shortcut function to print an extended/external character in a normal display. */
 void KPrintChar( int px, int py, unsigned char *c);
 
-/**
- * Shortcut for `KPrintCharSub(px, py, c, IMB_WRITEMODIFY_REVERCE)`.
- * 
- * @param px (0..383)
- * @param py (-24..191)
- * @param c Character hex code
- */
+/* Shortcut function to print an extended/external character in a reverse display. */
 void KPrintRevChar( int px, int py, unsigned char *c);
 
 /**
