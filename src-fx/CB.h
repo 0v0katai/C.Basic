@@ -25,6 +25,15 @@
 #include <math.h>
 #include <timer.h>
 
+typedef struct {
+    double real;
+    double imag;
+} complex;
+
+typedef char bool;
+#define false 0
+#define true 1
+
 #include "CB_complex.h"
 #include "CB_interpreter.h"
 #include "KeyScan.h"
@@ -48,12 +57,3 @@
 #include "fxCG_Registers.h"
 #include "MonochromeLib.h"
 #include "CB_MonochromeLib.h"
-
-typedef struct {
-    double real;
-    double imag;
-} complex;
-
-typedef char bool;
-#define false 0
-#define true 1
