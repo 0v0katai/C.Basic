@@ -33,32 +33,23 @@ unsigned char *p_ext_asc_mini;
 unsigned char *p_ext_kana_gaiji;
 unsigned char *p_ext_kana_gaiji_mini;
 
-/**
- * Subsidiary function to display an extended and/or external character.
- * 
- * @param px x-pixel coordinate of the character
- * @param py y-pixel coordinate of the character
- * @param c hex code of the character (single or multi-byte)
- * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
- * @return Stores the character bitmap data to VRAM.
- */
 void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;
 
     int char1 = c[0], char2 = c[1];
 
-    /* displays the ASCII (ANK) characters in the corresponding external bitmap */
+    /* displays an external ASCII (ANK) character */
     if ( ( g_ext_asc ) && ( 0x20 <= char1 ) && ( char1 <= 0x7E ) ) {
         kfont_info.pBitmap = p_ext_asc + (char1-0x20)*8;
     } else
 
-    /* displays characters ranging from `E741` to `E77E` */
+    /* displays a character in the range `E741` to `E77E` */
     if ( ( char1 == 0xE7 ) && ( 0x41 <= char2 ) && ( char2 <= 0x7E ) ) {
         kfont_info.pBitmap = font_e7[char2-0x40];
     } else
 
-    /* displays Katakana/Gaiji characters from*/
+    /* displays a Katakana/Gaiji character in the range `FF80` to `FFE2` */
     if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xE2 ) ) {
 
         /* takes the index value */

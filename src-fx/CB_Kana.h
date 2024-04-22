@@ -83,6 +83,17 @@ void KPrintChar( int px, int py, unsigned char *c);
 void KPrintRevChar( int px, int py, unsigned char *c);
 
 /**
+ * Subsidiary function to display an extended and/or external character.
+ * 
+ * @param px x-pixel coordinate of the character
+ * @param py y-pixel coordinate of the character
+ * @param c hex code of the character (single or multi-byte)
+ * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
+ * @return Stores the character bitmap data to VRAM.
+ */
+void KPrintCharSub( int px, int py, unsigned char *c, int modify );
+
+/**
  * Main function to display a mini character.
  * 
  * @param px (0..383)
