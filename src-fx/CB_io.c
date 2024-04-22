@@ -284,27 +284,27 @@ void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 	}
 }
 
-int CB_PrintC2( int px, int py, unsigned char *str, int extflag ){	// extflag 0x1000:fx6*8fontmode  0x100:ExtAnkChar
-	int i;
-	i=KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
-	return i;
-}
-void CB_Prints2( int px, int py, unsigned char *str, int extflag ){
-	int i;
-	while ( *str ) {
-		i=CB_PrintC2( px, py, str, extflag );
-		str += OpcodeLen2( (char*)str );
-		px  += i;
-		if ( px>378 ) break;
-	}
-}
-void CB_Prints_ext( int x, int y, unsigned char *str, int extflag ){
-	unsigned int c=*str;
-	int i;
-	int px,py;
-	px=(x-1)*18; py=(y-1)*24;
-	CB_Prints2( px, py, str, extflag );
-}
+// int CB_PrintC2( int px, int py, unsigned char *str, int extflag ){	// extflag 0x1000:fx6*8fontmode  0x100:ExtAnkChar
+// 	int i;
+// 	i=KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
+// 	return i;
+// }
+// void CB_Prints2( int px, int py, unsigned char *str, int extflag ){
+// 	int i;
+// 	while ( *str ) {
+// 		i=CB_PrintC2( px, py, str, extflag );
+// 		str += OpcodeLen2( (char*)str );
+// 		px  += i;
+// 		if ( px>378 ) break;
+// 	}
+// }
+// void CB_Prints_ext( int x, int y, unsigned char *str, int extflag ){
+// 	unsigned int c=*str;
+// 	int i;
+// 	int px,py;
+// 	px=(x-1)*18; py=(y-1)*24;
+// 	CB_Prints2( px, py, str, extflag );
+// }
 
 void CB_PrintC( int x, int y,const unsigned char *c ){
 	CB_PrintC_ext( x, y, c, 0 );
