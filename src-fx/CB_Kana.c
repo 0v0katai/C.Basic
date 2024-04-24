@@ -33,6 +33,15 @@ unsigned char *p_ext_asc_mini;
 unsigned char *p_ext_kana_gaiji;
 unsigned char *p_ext_kana_gaiji_mini;
 
+/**
+ * Subsidiary function to display an extended and/or external character.
+ * 
+ * @param px x-pixel coordinate of the character
+ * @param py y-pixel coordinate of the character
+ * @param c hex code of the character (single or multi-byte)
+ * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
+ * @return Stores the character bitmap data to VRAM.
+ */
 void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;
@@ -61,7 +70,7 @@ void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
 
         /* if not, uses the default Katakana/Gaiji font data */
         } else {
-            kfont_info.pBitmap = font_kana[char2];
+            kfont_info.pBitmap = font_kana_gaiji[char2];
         }
     
     /* for invalid characters */
@@ -87,85 +96,74 @@ void KPrintRevChar( int px, int py, unsigned char *c) {
     KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
 
-int KPrintCharMini( int px, int py, unsigned char *str, int mode ) {
+int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // カナ対応 PrintMini
     DISPGRAPH kfont;
     GRAPHDATA kfont_info;
-
     unsigned char *font;
     int char1 = str[0], char2 = str[1];
     int extflag = mode & 0xFF00;
 
-    if ( ( 0x20 <= char1 ) && ( char1 <= 0x7E ) ) {
-        char1 -= 0x20;
-        if ( ( extflag ) && ( g_ext_asc_mini ) ) {
-            font = p_ext_asc_mini + char1*8;
-        } else {
+    if ( char1 <= 0x7E ) {
+        if ( ( extflag ) && ( g_ext_asc_mini ) && ( 0x20 <= char1 ) )
+            font = p_ext_asc_mini + (char1-0x20)*8;
+        else
             font = font_asc_mini[char1];
-        }
     } else
-    if ( char1 == 0x7F ) {
-        if ( char2 == 0x50 ) {
-            font=font_7f50_mini;
-        } else
-        if ( char2 == 0x53 ) {
-            font=font_7f53_mini;
-        } else
-        if ( char2 == 0x54 ) {
-            font=font_7f54_mini;
-        } else
-        if ( char2 == 0xC7 ) {
-            font=font_7fc7_mini;
-        } else {
-            font=font_unknown_mini;
-        }
-    } else
-    if ( char1 <= 0xDF ) {
-        font=font_80_mini[char1-0x80];
-    } else
-    if ( ( char1 == 0xE5 ) && ( char2 <= 0xDF ) ) {
-        font=font_e5_mini[char2];
-    } else
-    if ( ( char1 == 0xE6 ) && ( char2 <= 0xDF ) ) {
-        font=font_e6_mini[char2];
-    } else
-    if ( ( char1 == 0xE7 ) && ( 0x40 <= char2 ) && ( char2 <= 0x7E ) ) {
-        font=font_e7_mini[char2-0x40];
-    } else
-    if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xEF ) ) {
-        if ( ( extflag ) && ( g_ext_kana_mini ) ) {
-            font = p_ext_kana_gaiji_mini + (char2-0x80)*8;
-        } else {
-            font = font_kana_mini[char2-0x80];
-        }
-    } else {
-        font=font_unknown_mini;
-    }
 
+    if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xEF ) ) {
+        char2 -= 0x80;
+        if ( ( extflag ) && ( ( g_ext_kana_mini ) || ( g_ext_gaiji_mini ) ) )
+            font = p_ext_kana_gaiji_mini + char2*8;
+        else
+            font = font_kana_gaiji_mini[char2];
+    } else
+
+    if ( char1 == 0x7F )  {
+        if ( char2 == 0x50 )
+            font = font_7f50_mini;
+        else if ( char2 == 0x53 )
+            font = font_7f53_mini;
+        else if ( char2 == 0x54 )
+            font = font_7f54_mini;
+        else if ( char2 == 0xC7 )
+            font = font_7fc7_mini;
+        else
+            font = font_unknown_mini;
+    } else
+
+    if ( ( char1 == 0xE5 ) && ( char2 <= 0xDF ) )
+        font = font_e5_mini[char2];
+    else
+
+    if ( ( char1 == 0xE6 ) && ( char2 <= 0xDF ) )
+        font = font_e6_mini[char2];
+    else
+
+    if ( ( char1 == 0xE7 ) && ( 0x40 <= char2 ) && ( char2 <= 0x7E ) )
+        font = font_e7_mini[char2-0x40];
+    else
+
+    if ( char1 <= 0xDF )
+        font = font_80_mini[char1-0x80];
+
+    else
+        font = font_unknown_mini;
+
+    kfont_info.width = font[0];
     mode &= 0xFF;
     if ( mode != 0x21 ) {
+
+        /**
+         *  `MINI_` macro   | Value | Write modify  | Write kind
+         *  ---             | ---   | ---           | ---
+         *  MINI_OVER       | 0x10  | Normal    (1) | Over  (1)
+         *  MINI_OR         | 0x11  | Normal    (1) | Or    (2)
+         *  MINI_REV        | 0x12  | Reverse   (2) | Over  (1)
+         *  MINI_REVOR      | 0x13  | Reverse   (2) | Or    (2)
+         */
         kfont.WriteModify = ( mode >= 0x12 ) + 1 ;
         kfont.WriteKind = ( mode % 2 ) + 1 ;
 
-    // switch ( mode ) {
-    //     case MINI_OVER:
-    //         kfont.WriteModify = IMB_WRITEMODIFY_NORMAL;
-    //         kfont.WriteKind = IMB_WRITEKIND_OVER;
-    //         break;
-    //     case MINI_OR:
-    //         kfont.WriteModify = IMB_WRITEMODIFY_NORMAL;
-    //         kfont.WriteKind = IMB_WRITEKIND_OR;
-    //         break;
-    //     case MINI_REV:
-    //         kfont.WriteModify = IMB_WRITEMODIFY_REVERCE;
-    //         kfont.WriteKind = IMB_WRITEKIND_OVER;
-    //         break;
-    //     case MINI_REVOR:
-    //         kfont.WriteModify = IMB_WRITEMODIFY_REVERCE;
-    //         kfont.WriteKind = IMB_WRITEKIND_OR;
-    //         break;
-    // }
-
-        kfont_info.width = font[0];
         kfont_info.height = 6;
         kfont_info.pBitmap = font+2;
         kfont.x = px;
@@ -219,10 +217,10 @@ void ClearExtFontflag() {
     g_ext_asc_mini    = false;
     g_ext_kana_mini   = false;
     g_ext_gaiji_mini  = false;
-    memcpy( (char*)p_ext_asc,              (char*)font_asc,        95*8 );
-    memcpy( (char*)p_ext_asc_mini,         (char*)font_asc_mini,   95*8 );
-    memcpy( (char*)p_ext_kana_gaiji,       (char*)font_kana,       99*8 );
-    memcpy( (char*)p_ext_kana_gaiji_mini,  (char*)font_kana_mini,  99*8 );
+    memcpy( (char*)p_ext_asc,              (char*)font_asc+32*8,        95*8 );
+    memcpy( (char*)p_ext_asc_mini,         (char*)font_asc_mini+32*8,   95*8 );
+    memcpy( (char*)p_ext_kana_gaiji,       (char*)font_kana_gaiji,            99*8 );
+    memcpy( (char*)p_ext_kana_gaiji_mini,  (char*)font_kana_gaiji_mini,       99*8 );
 }
 
 void ReadExtFont(){

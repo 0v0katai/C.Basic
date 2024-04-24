@@ -60,8 +60,8 @@ extern const unsigned char font_e5_mini[][8];
 extern const unsigned char font_e6_mini[][8];
 extern const unsigned char font_e7[][8];
 extern const unsigned char font_e7_mini[][8];
-extern const unsigned char font_kana[][8];
-extern const unsigned char font_kana_mini[][8];
+extern const unsigned char font_kana_gaiji[][8];
+extern const unsigned char font_kana_gaiji_mini[][8];
 
 /** Main function to clear all external font indicators; and
     restore their corresponding data pointers to the built-in font matrices. */
@@ -91,7 +91,7 @@ void KPrintRevChar( int px, int py, unsigned char *c);
  * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
  * @return Stores the character bitmap data to VRAM.
  */
-void KPrintCharSub( int px, int py, unsigned char *c, int modify );
+// void KPrintCharSub( int px, int py, unsigned char *c, int modify );
 
 /**
  * Main function to display a mini character.

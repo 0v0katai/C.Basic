@@ -194,8 +194,8 @@ void HiddenRAM_ExtFontAryInit() {
 	} else {
         p_ext_asc              = (unsigned char *)font_asc;
         p_ext_asc_mini         = (unsigned char *)font_asc_mini;
-        p_ext_kana_gaiji       = (unsigned char *)font_kana;
-        p_ext_kana_gaiji_mini  = (unsigned char *)font_kana_mini;
+        p_ext_kana_gaiji       = (unsigned char *)font_kana_gaiji;
+        p_ext_kana_gaiji_mini  = (unsigned char *)font_kana_gaiji_mini;
 	}
 }
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
@@ -245,7 +245,7 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 void CB_PrintC_ext( int x, int y,const unsigned char *c, int extflag ){
-	if ( ( ( *c == 0xFF ) || ( *c == 0xE7 ) ) ||
+	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ||
 		 ( ( extflag ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) )
 		KPrintChar( (--x)*6, (--y)*8, c );
 
@@ -284,27 +284,27 @@ void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 	}
 }
 
-// int CB_PrintC2( int px, int py, unsigned char *str, int extflag ){	// extflag 0x1000:fx6*8fontmode  0x100:ExtAnkChar
-// 	int i;
-// 	i=KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
-// 	return i;
-// }
-// void CB_Prints2( int px, int py, unsigned char *str, int extflag ){
-// 	int i;
-// 	while ( *str ) {
-// 		i=CB_PrintC2( px, py, str, extflag );
-// 		str += OpcodeLen2( (char*)str );
-// 		px  += i;
-// 		if ( px>378 ) break;
-// 	}
-// }
-// void CB_Prints_ext( int x, int y, unsigned char *str, int extflag ){
-// 	unsigned int c=*str;
-// 	int i;
-// 	int px,py;
-// 	px=(x-1)*18; py=(y-1)*24;
-// 	CB_Prints2( px, py, str, extflag );
-// }
+int CB_PrintC2( int px, int py, unsigned char *str, int extflag ){	// extflag 0x1000:fx6*8fontmode  0x100:ExtAnkChar
+	int i;
+	i=KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
+	return i;
+}
+void CB_Prints2( int px, int py, unsigned char *str, int extflag ){
+	int i;
+	while ( *str ) {
+		i=CB_PrintC2( px, py, str, extflag );
+		str += OpcodeLen2( (char*)str );
+		px  += i;
+		if ( px>378 ) break;
+	}
+}
+void CB_Prints_ext( int x, int y, unsigned char *str, int extflag ){
+	unsigned int c=*str;
+	int i;
+	int px,py;
+	px=(x-1)*18; py=(y-1)*24;
+	CB_Prints2( px, py, str, extflag );
+}
 
 void CB_PrintC( int x, int y,const unsigned char *c ){
 	CB_PrintC_ext( x, y, c, 0 );
@@ -320,15 +320,14 @@ void CB_PrintRev( int x, int y, const unsigned char *str){
 }
 
 
-void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){	// mode >0x100 extflag
-	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ) {
-		if ( mode & 0xFF )	KPrintRevChar( px, py, c );
-		else				KPrintChar( px, py, c );
+void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){
+    if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ||
+         ( ( mode & 0xFF00 ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) ) {
+        if ( mode & 0xFF )
+            KPrintRevChar( px, py, c );
+        else
+            KPrintChar( px, py, c );
 	} else {
-		if ( ( mode & 0xFF00 ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) {
-			if ( mode & 0xFF )	KPrintRevChar( px, py, c );
-			else				KPrintChar( px, py, c );
-		} else
 		PrintXY( px, py, c ,mode & 0xFF );
 	}
 }
