@@ -50,11 +50,11 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
 
     else if ((char1 == 0xFF) && (0x80 <= char2) && (char2 <= 0xE2)) {
         /* displays a Katakana/Gaiji character in the range `FF80` to `FFE2` */
-        char2 -= 0x80;
-        if (g_ext_gaiji || g_ext_kana)
-            std_font.pBitmap = p_ext_kana_gaiji + char2*8;
+        int i = char2 - 0x80;
+        if ((g_ext_gaiji && (i <= 0x1F)) || (g_ext_kana && (i >= 0x20)))
+            std_font.pBitmap = p_ext_kana_gaiji + i*8;
         else
-            std_font.pBitmap = font_kana_gaiji[char2];
+            std_font.pBitmap = font_kana_gaiji[i];
     
     /* for invalid characters */
     } else
@@ -111,12 +111,12 @@ unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag) {
     else if ((char1 == 0xE7) && (0x40 <= char2) && (char2 <= 0x7E))
         return font_e7_mini[char2-0x40];
 
-    else if ((char1 == 0xFF) && (0x80 <= char2) && (char2 <= 0xEF)) {
-        char2 -= 0x80;
-        if (ext_flag && (g_ext_kana_mini || g_ext_gaiji_mini))
-            return p_ext_kana_gaiji_mini + char2*8;
+    else if ((char1 == 0xFF) && (0x80 <= char2) && (char2 <= 0xE2)) {
+        int i = char2 - 0x80;
+        if (ext_flag && ((g_ext_gaiji_mini && (i <= 0x1F)) || (g_ext_kana_mini && (i >= 0x20))))
+            return p_ext_kana_gaiji_mini + i*8;
         else
-            return font_kana_gaiji_mini[char2];
+            return font_kana_gaiji_mini[i];
     }
 
     else
