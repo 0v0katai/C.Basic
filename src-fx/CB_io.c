@@ -258,14 +258,17 @@ void CB_Print_ext( int x, int y, const unsigned char *str, int extflag ){
 	int c=(char)*str;
 	while ( c ) {
 		CB_PrintC_ext( x, y, str++, extflag );
-		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		if ( (c == 0x7F)        || (c == 0xFFFFFFF9) ||
+             (c == 0xFFFFFFE5)  || (c == 0xFFFFFFE6) ||
+             (c == 0xFFFFFFE7)  || (c == 0xFFFFFFFF) )
+                str++;
 		x++;
 		if ( x>21 ) break;
 		c=(char)*str;
 	}
 }
 void CB_PrintRevC_ext( int x, int y,const unsigned char *c, int extflag ){
-	if ( ( ( *c == 0xFF ) || ( *c == 0xE7 ) ) ||
+	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ||
 	     ( ( extflag ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) )
 		KPrintRevChar( (--x)*6, (--y)*8, c );
 	else {
@@ -277,7 +280,10 @@ void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 	unsigned int c=(char)*str;
 	while ( c ) {
 		CB_PrintRevC_ext( x, y, str++, extflag );
-		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		if ( (c == 0x7F)        || (c == 0xFFFFFFF9) ||
+             (c == 0xFFFFFFE5)  || (c == 0xFFFFFFE6) ||
+             (c == 0xFFFFFFE7)  || (c == 0xFFFFFFFF) )
+                str++;
 		x++;
 		if ( x>21 ) break;
 		c=(char)*str;
@@ -320,16 +326,16 @@ void CB_PrintRev( int x, int y, const unsigned char *str){
 }
 
 
-void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){
-    if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ||
-         ( ( mode & 0xFF00 ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) ) {
-        if ( mode & 0xFF )
-            KPrintRevChar( px, py, c );
+void CB_PrintXYC(int px, int py, const unsigned char *c ,int mode) {
+    if ((*c == 0xFF) || (*c == 0xE7) ||
+        (g_ext_asc && (mode & 0xFF00) &&
+        (0x20 <= *c) && (*c <= 0x7E)))
+        if (mode & 0xFF)
+            KPrintRevChar(px, py, c);
         else
-            KPrintChar( px, py, c );
-	} else {
-		PrintXY( px, py, c ,mode & 0xFF );
-	}
+            KPrintChar(px, py, c);
+	else
+		PrintXY(px, py, c ,mode & 0xFF);
 }
 void CB_PrintXY( int px, int py, const unsigned char *str, int mode){	// mode >0x100 extflag
 	int c=(char)*str;
