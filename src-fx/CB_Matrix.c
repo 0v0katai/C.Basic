@@ -3993,10 +3993,10 @@ double determinant( double *m, int N)
     double det = 1, r;
     double tmp;
  
-    // ��O�p�s��ɕϊ����A�Ίp�����̐ς��v�Z����B
+    // 上三角行列に変換しつつ、対角成分の積を計算する。
     for(y = 0; y < N - 1; y++){
         if(m[y * N + y] == 0){
-            // �Ίp������0�������ꍇ�́A���̗�̒l��0�łȂ��s�ƌ�������
+            // 対角成分が0だった場合は、その列の値が0でない行と交換する
             for(i = y + 1; i < N; i++){
                 if(m[i * N + y] != 0){
                     break;
@@ -4006,7 +4006,7 @@ double determinant( double *m, int N)
                 for(x = 0; x < N; x++){
                     SWAP(m[i * N + x], m[y * N + x]);
                 }
-                // ������������̂ōs�񎮂̒l�̕����͔��]����B
+                // 列を交換したので行列式の値の符号は反転する。
                 det = -det;
             }
         }
