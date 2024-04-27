@@ -98,15 +98,16 @@ void KPrintRevChar( int px, int py, unsigned char *c);
 // void KPrintCharSub( int px, int py, unsigned char *c, int modify );
 
 /**
- * Main function to display a mini character.
- * 
- * @param px (0..383)
- * @param py (-24..191)
- * @param str Character hex code
- * @param mode `MINI` macro (dispbios.h)
- * @return The value of the first index of the font data array.
+ * Subsidiary function to display an extended/external mini character.
+ * @return The width of the mini character.
  */
-int KPrintCharMini( int px, int py, unsigned char *str, int mode ) ; // カナ対応 PrintMini
+int KPrintCharMini(int px, int py, unsigned char *str, int mode, int ext_flag);
+
+/**
+ * Subsidiary function to return the font data of a mini character.
+ * @return The font data of the assigned mini character.
+ */
+unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag);
 
 int CB_GetFont( char *SRC );        // DotChar(0xFFA0)->Mat C
 int CB_GetFontMini( char *SRC );    // DotChar(0xFFA0)->Mat C

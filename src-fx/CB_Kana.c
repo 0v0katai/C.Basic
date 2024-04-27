@@ -33,171 +33,150 @@ unsigned char *p_ext_asc_mini;
 unsigned char *p_ext_kana_gaiji;
 unsigned char *p_ext_kana_gaiji_mini;
 
-/**
- * Subsidiary function to display an extended and/or external character.
- * 
- * @param px x-pixel coordinate of the character
- * @param py y-pixel coordinate of the character
- * @param c hex code of the character (single or multi-byte)
- * @param modify `IMB_WRITEMODIFY` macro (dispbios.h)
- * @return Stores the character bitmap data to VRAM.
- */
-void KPrintCharSub( int px, int py, unsigned char *c, int modify ) {
-    DISPGRAPH kfont;
-    GRAPHDATA kfont_info;
+/* Subsidiary function to display an extended and/or external standard character. */
+void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
+    DISPGRAPH std_char;
+    GRAPHDATA std_font;
 
     int char1 = c[0], char2 = c[1];
 
-    /* displays an external ASCII (ANK) character */
-    if ( ( g_ext_asc ) && ( 0x20 <= char1 ) && ( char1 <= 0x7E ) ) {
-        kfont_info.pBitmap = p_ext_asc + (char1-0x20)*8;
-    } else
+    if (char1 <= 0x7E)
+        /* displays an external ASCII (ANK) character */
+        std_font.pBitmap = p_ext_asc + (char1-0x20)*8;
 
-    /* displays a character in the range `E741` to `E77E` */
-    if ( ( char1 == 0xE7 ) && ( 0x41 <= char2 ) && ( char2 <= 0x7E ) ) {
-        kfont_info.pBitmap = font_e7[char2-0x40];
-    } else
+    else if ((char1 == 0xE7) && (0x41 <= char2) && (char2 <= 0x7E))
+        /* displays a character in the range `E741` to `E77E` */
+        std_font.pBitmap = font_e7[char2-0x40];
 
-    /* displays a Katakana/Gaiji character in the range `FF80` to `FFE2` */
-    if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xE2 ) ) {
-
-        /* takes the index value */
+    else if ((char1 == 0xFF) && (0x80 <= char2) && (char2 <= 0xE2)) {
+        /* displays a Katakana/Gaiji character in the range `FF80` to `FFE2` */
         char2 -= 0x80;
-
-        /* checks if external Katakana or Gaiji bitmaps exist */
-        if ( ( g_ext_gaiji ) || ( g_ext_kana ) ) {
-            kfont_info.pBitmap = p_ext_kana_gaiji + char2*8;
-
-        /* if not, uses the default Katakana/Gaiji font data */
-        } else {
-            kfont_info.pBitmap = font_kana_gaiji[char2];
-        }
+        if (g_ext_gaiji || g_ext_kana)
+            std_font.pBitmap = p_ext_kana_gaiji + char2*8;
+        else
+            std_font.pBitmap = font_kana_gaiji[char2];
     
     /* for invalid characters */
-    } else {
-        kfont_info.pBitmap = font_unknown;
-    }
+    } else
+        std_font.pBitmap = font_unknown;
 
-    kfont_info.width = 6;
-    kfont_info.height = 8;
-    kfont.x = px;
-    kfont.y = py;
-    kfont.GraphData = kfont_info;
-    kfont.WriteModify = modify;
-    kfont.WriteKind = IMB_WRITEKIND_OVER;
-    Bdisp_WriteGraph_VRAM(&kfont);
+    std_font.width = 6;
+    std_font.height = 8;
+    std_char.x = px;
+    std_char.y = py;
+    std_char.GraphData = std_font;
+    std_char.WriteModify = modify;
+    std_char.WriteKind = IMB_WRITEKIND_OVER;
+    Bdisp_WriteGraph_VRAM(&std_char);
 }
 
-void KPrintChar( int px, int py, unsigned char *c) {
-    KPrintCharSub( px, py, c, IMB_WRITEMODIFY_NORMAL);
+void KPrintChar(int px, int py, unsigned char *c) {
+    KPrintCharSub(px, py, c, IMB_WRITEMODIFY_NORMAL);
 }
 
-void KPrintRevChar( int px, int py, unsigned char *c) {
-    KPrintCharSub( px, py, c, IMB_WRITEMODIFY_REVERCE);
+void KPrintRevChar(int px, int py, unsigned char *c) {
+    KPrintCharSub(px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
 
-int KPrintCharMini( int px, int py, unsigned char *str, int mode ) { // カナ対応 PrintMini
-    DISPGRAPH kfont;
-    GRAPHDATA kfont_info;
-    unsigned char *font;
+unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag) {
     int char1 = str[0], char2 = str[1];
-    int extflag = mode & 0xFF00;
 
-    if ( char1 <= 0x7E ) {
-        if ( ( extflag ) && ( g_ext_asc_mini ) && ( 0x20 <= char1 ) )
-            font = p_ext_asc_mini + (char1-0x20)*8;
+    if (char1 <= 0x7E) {
+        if (ext_flag && g_ext_asc_mini && (0x20 <= char1))
+            return p_ext_asc_mini + (char1-0x20)*8;
         else
-            font = font_asc_mini[char1];
-    } else
-
-    if ( ( char1 == 0xFF ) && ( 0x80 <= char2 ) && ( char2 <= 0xEF ) ) {
-        char2 -= 0x80;
-        if ( ( extflag ) && ( ( g_ext_kana_mini ) || ( g_ext_gaiji_mini ) ) )
-            font = p_ext_kana_gaiji_mini + char2*8;
-        else
-            font = font_kana_gaiji_mini[char2];
-    } else
-
-    if ( char1 == 0x7F )  {
-        if ( char2 == 0x50 )
-            font = font_7f50_mini;
-        else if ( char2 == 0x53 )
-            font = font_7f53_mini;
-        else if ( char2 == 0x54 )
-            font = font_7f54_mini;
-        else if ( char2 == 0xC7 )
-            font = font_7fc7_mini;
-        else
-            font = font_unknown_mini;
-    } else
-
-    if ( ( char1 == 0xE5 ) && ( char2 <= 0xDF ) )
-        font = font_e5_mini[char2];
-    else
-
-    if ( ( char1 == 0xE6 ) && ( char2 <= 0xDF ) )
-        font = font_e6_mini[char2];
-    else
-
-    if ( ( char1 == 0xE7 ) && ( 0x40 <= char2 ) && ( char2 <= 0x7E ) )
-        font = font_e7_mini[char2-0x40];
-    else
-
-    if ( char1 <= 0xDF )
-        font = font_80_mini[char1-0x80];
-
-    else
-        font = font_unknown_mini;
-
-    kfont_info.width = font[0];
-    mode &= 0xFF;
-    if ( mode != 0x21 ) {
-
-        /**
-         *  `MINI_` macro   | Value | Write modify  | Write kind
-         *  ---             | ---   | ---           | ---
-         *  MINI_OVER       | 0x10  | Normal    (1) | Over  (1)
-         *  MINI_OR         | 0x11  | Normal    (1) | Or    (2)
-         *  MINI_REV        | 0x12  | Reverse   (2) | Over  (1)
-         *  MINI_REVOR      | 0x13  | Reverse   (2) | Or    (2)
-         */
-        kfont.WriteModify = ( mode >= 0x12 ) + 1 ;
-        kfont.WriteKind = ( mode % 2 ) + 1 ;
-
-        kfont_info.height = 6;
-        kfont_info.pBitmap = font+2;
-        kfont.x = px;
-        kfont.y = py;
-        kfont.GraphData = kfont_info;
-        if ( px+kfont_info.width > 128 )
-            kfont_info.width = 127-px;
-        if ( kfont_info.width > 1 )
-            Bdisp_WriteGraph_VRAM(&kfont);
+            return font_asc_mini[char1];
     }
-    return kfont_info.width;
+    
+    else if (char1 == 0x7F) {
+        if (char2 == 0x50)
+            return font_7f50_mini;
+        else if (char2 == 0x53)
+            return font_7f53_mini;
+        else if (char2 == 0x54)
+            return font_7f54_mini;
+        else if (char2 == 0xC7)
+            return font_7fc7_mini;
+    }
+
+    else if (char1 <= 0xDF)
+        return font_80_mini[char1-0x80];
+    
+    else if ((char1 == 0xE5) && (char2 <= 0xDF))
+        return font_e5_mini[char2];
+    
+    else if ((char1 == 0xE6) && (char2 <= 0xDF))
+        return font_e6_mini[char2];
+    
+    else if ((char1 == 0xE7) && (0x40 <= char2) && (char2 <= 0x7E))
+        return font_e7_mini[char2-0x40];
+
+    else if ((char1 == 0xFF) && (0x80 <= char2) && (char2 <= 0xEF)) {
+        char2 -= 0x80;
+        if (ext_flag && (g_ext_kana_mini || g_ext_gaiji_mini))
+            return p_ext_kana_gaiji_mini + char2*8;
+        else
+            return font_kana_gaiji_mini[char2];
+    }
+
+    else
+        return font_unknown_mini;
+}
+
+int KPrintCharMini(int px, int py, unsigned char *str, int mode, int ext_flag) {
+    DISPGRAPH mini_char;
+    GRAPHDATA mini_font;
+    unsigned char *font_data;
+
+    font_data = _char_mini_font_lookup(str, ext_flag);
+    mini_font.width = font_data[0];
+    if (px + mini_font.width > 128)
+        mini_font.width = 127-px;
+    mini_font.height = 6;
+    mini_font.pBitmap = font_data+2;
+    mini_char.x = px;
+    mini_char.y = py;
+    mini_char.GraphData = mini_font;
+
+    /**
+     *  `MINI_` macro   | Value | Write modify  | Write kind
+     *  ---             | ---   | ---           | ---
+     *  MINI_OVER       | 0x10  | Normal    (1) | Over  (1)
+     *  MINI_OR         | 0x11  | Normal    (1) | Or    (2)
+     *  MINI_REV        | 0x12  | Reverse   (2) | Over  (1)
+     *  MINI_REVOR      | 0x13  | Reverse   (2) | Or    (2)
+     */
+    mini_char.WriteModify = (mode >= 0x12) + 1;
+    mini_char.WriteKind = (mode % 2) + 1;
+
+    if (mini_font.width > 1)
+        Bdisp_WriteGraph_VRAM(&mini_char);
+    return mini_font.width;
 }
 
 //---------------------------------------------------------------------------------------------
 
-void CB_PrintMini( int px, int py, const unsigned char *str, int mode){
+void CB_PrintMini(int px, int py, const unsigned char *str, int mode, int ext_flag) {
     unsigned char mod,kind;
     int i;
     int c=(char)*str;
     while ( c ) {
-        i=KPrintCharMini( px, py, str++ , mode );
+        i=KPrintCharMini( px, py, str++ , mode, ext_flag);
         if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
         px+=i;
         if ( px>127 ) break;
         c=(char)*str;
     }
 }
-int CB_PrintMiniC( int px, int py, const unsigned char *str, int mode){
-    return KPrintCharMini( px, py, str , mode );
+
+int CB_PrintMiniC(int px, int py, const unsigned char *str, int mode, int ext_flag) {
+    return KPrintCharMini(px, py, str, mode, ext_flag);
 }
 
-int CB_PrintMiniLength( unsigned char *str, int extflag ){
-    return KPrintCharMini( 0, 0, str , 0x21+ extflag*0x100 );
+int CB_PrintMiniLength( unsigned char *str, int extflag ) {
+    return _char_mini_font_lookup(str, extflag)[0];
 }
+
 int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
     int i,length=0;
     int c=(char)*str;
@@ -217,7 +196,7 @@ void ClearExtFontflag() {
     g_ext_asc_mini    = false;
     g_ext_kana_mini   = false;
     g_ext_gaiji_mini  = false;
-    memcpy( (char*)p_ext_asc,              (char*)font_asc+32*8,        95*8 );
+    memcpy( (char*)p_ext_asc,              (char*)font_asc,             95*8 );
     memcpy( (char*)p_ext_asc_mini,         (char*)font_asc_mini+32*8,   95*8 );
     memcpy( (char*)p_ext_kana_gaiji,       (char*)font_kana_gaiji,            99*8 );
     memcpy( (char*)p_ext_kana_gaiji_mini,  (char*)font_kana_gaiji_mini,       99*8 );
@@ -330,10 +309,10 @@ int CB_GetFontMini( char *SRC ){    // GetFont(0xFFA0)->Mat C
             
             memcpy( vbuf, vram, 16*8 );
             if ( cstr==NULL ) {
-                                CB_PrintMiniC( 0, 0, (unsigned char *)" ", MINI_OVER );
+                                CB_PrintMiniC(0, 0, (unsigned char *)" ", MINI_OVER, false);
             } else {
-                if ( orgflag )    CB_PrintMiniC( 0, 0, cstr, MINI_OVER );
-                else            CB_PrintMiniC( 0, 0, cstr, MINI_OVER | 0x100 );
+                if ( orgflag )    CB_PrintMiniC(0, 0, cstr, MINI_OVER, false);
+                else            CB_PrintMiniC(0, 0, cstr, MINI_OVER, true);
             }
             x=1;
             y=1;

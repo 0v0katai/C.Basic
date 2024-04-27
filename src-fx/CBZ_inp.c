@@ -604,10 +604,10 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 			ptr=(y-2+scrl)*19+x-2 ;
 			opcode=oplist[ ptr ];
 			CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
-		switch ( mini ) {
+			switch ( mini ) {
 				case 2:
-					if ( CharPtr == ptr )	CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV  | 0x100 );
-					else 					CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER | 0x100 );
+					if ( CharPtr == ptr )	CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV, true);
+					else 					CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER, true);
 					break;
 				case 1:
 					if ( CharPtr == ptr )	PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV );
@@ -857,7 +857,7 @@ int SelectOpcodeRecent( int listselect ) {
 			for ( i=0; i<6; i++ ) {
 				CB_Print(3,2+i,(unsigned char *)"                 ");
 				sprintf(buffer, "F%d:", i+1 ) ;
-				CB_PrintMini( 13, 8*i+10, (unsigned char *)buffer, MINI_OVER ) ;
+				CB_PrintMini( 13, 8*i+10, (unsigned char *)buffer, MINI_OVER, false) ;
 				if ( listselect == CMDLIST_RECENT ) {
 					j=OplistRecent[seltop+i];
 				} else {
@@ -3694,8 +3694,8 @@ int PrintOpcode(int px, int py, char *buffer, int width, int ofst, int ptrX, int
 		while ( i < len ) {
 			if ( px <= pxmax-wk ) {
 				if ( miniflag ) {
-					if ( rev )	CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_REV  | (0x100*EditExtFont) ) ;
-					else		CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_OVER | (0x100*EditExtFont) ) ;
+					if ( rev )	CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_REV, EditExtFont);
+					else		CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_OVER, EditExtFont);
 					px+=4;
 				} else {
 					if ( rev )	CB_PrintXYC( px , py, (unsigned char*)(tmpb+i), (0x100*EditExtFont) | 0xFF  ) ;

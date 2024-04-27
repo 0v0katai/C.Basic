@@ -551,7 +551,7 @@ void CB_Text( char *SRC ) { //	Text
 		}
 		else { ExecPtr--; CB_Error(SyntaxERR); return; }  // Syntax error
 	}
-	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode | 0x100 );		// ext
+	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode, true);		// ext
 		else 	       PrintMini( px, py, (unsigned char*)buffer, mode);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
