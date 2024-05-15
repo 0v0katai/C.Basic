@@ -19,35 +19,41 @@
 
 /* ANK means "Alpha, Numeric and Katakana" in JIS encoding system. */
 
-/* Indicator of external ASCII standard font bitmap. */
+/* Indicator of external ASCII standard font bitmap file. */
 extern bool g_ext_asc;
 
-/* Indicator of external ASCII mini font bitmap. */
+/* Indicator of external ASCII mini font bitmap file. */
 extern bool g_ext_asc_mini;
 
-/* Indicator of external Katakana standard font bitmap. */
+/* Indicator of external Katakana standard font bitmap file. */
 extern bool g_ext_kana;
 
-/* Indicator of external Katakana mini font bitmap. */         
+/* Indicator of external Katakana mini font bitmap file. */         
 extern bool g_ext_kana_mini;
 
-/* Indicator of external Gaiji standard font bitmap. */
+/* Indicator of external Gaiji standard font bitmap file. */
 extern bool g_ext_gaiji;
 
-/* Indicator of external Gaiji mini font bitmap. */
+/* Indicator of external Gaiji mini font bitmap file. */
 extern bool g_ext_gaiji_mini;
 
-/* Pointer to the address of ANK standard font data. */
+/* Pointer to the address of external ANK standard font data. */
 extern unsigned char *p_ext_asc;
 
-/* Pointer to the address of ANK mini font data. */
+/* Pointer to the address of external ANK mini font data. */
 extern unsigned char *p_ext_asc_mini;
 
-/* Pointer to the address of Katakana and Gaiji standard font data.  */
-extern unsigned char *p_ext_kana_gaiji;
+/* Pointer to the address of external Katakana standard font data. */
+extern unsigned char *p_ext_kana;
 
-/* Pointer to the address of Katakana and Gaiji mini font data. */
-extern unsigned char *p_ext_kana_gaiji_mini;
+/* Pointer to the address of external Katakana mini font data. */
+extern unsigned char *p_ext_kana_mini;
+
+/* Pointer to the address of external Gaiji standard font data. */
+extern unsigned char *p_ext_gaiji;
+
+/* Pointer to the address of external Gaiji mini font data. */
+extern unsigned char *p_ext_gaiji_mini;
 
 extern const unsigned char font_asc[][8];
 extern const unsigned char font_asc_mini[][8];
@@ -60,8 +66,8 @@ extern const unsigned char font_e5_mini[][8];
 extern const unsigned char font_e6_mini[][8];
 extern const unsigned char font_e7[][8];
 extern const unsigned char font_e7_mini[][8];
-extern const unsigned char font_kana_gaiji[][8];
-extern const unsigned char font_kana_gaiji_mini[][8];
+extern const unsigned char font_kana[][8];
+extern const unsigned char font_kana_mini[][8];
 
 /** Main function to clear all external font indicators; and
     restore their corresponding data pointers to the built-in font matrices. */

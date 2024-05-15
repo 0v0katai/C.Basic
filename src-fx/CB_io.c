@@ -188,14 +188,16 @@ void HiddenRAM_ExtFontAryInit() {
 	if ( EnableExtFont ) {
         p_ext_asc              = (unsigned char *)HiddenRAM_Top;
         p_ext_asc_mini         = (unsigned char *)(p_ext_asc        + 95*8);
-        p_ext_kana_gaiji       = (unsigned char *)(p_ext_asc_mini   + 95*8);
-        p_ext_kana_gaiji_mini  = (unsigned char *)(p_ext_kana_gaiji + 99*8);
-        HiddenRAM_Top          = ((char *)p_ext_kana_gaiji          + 99*8);
+        p_ext_gaiji       	   = (unsigned char *)(p_ext_asc_mini   + 95*8);
+        p_ext_kana       	   = (unsigned char *)(p_ext_gaiji      + 32*8);
+        p_ext_gaiji_mini       = (unsigned char *)(p_ext_kana       + 67*8);
+        p_ext_kana_mini        = (unsigned char *)(p_ext_gaiji_mini + 32*8);
+        HiddenRAM_Top          = ((char *)p_ext_kana_mini           + 67*8);
 	} else {
         p_ext_asc              = (unsigned char *)font_asc;
         p_ext_asc_mini         = (unsigned char *)font_asc_mini + 32*8;
-        p_ext_kana_gaiji       = (unsigned char *)font_kana_gaiji;
-        p_ext_kana_gaiji_mini  = (unsigned char *)font_kana_gaiji_mini;
+        p_ext_kana             = (unsigned char *)font_kana;
+        p_ext_kana_mini        = (unsigned char *)font_kana_mini;
 	}
 }
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
