@@ -57,7 +57,6 @@ extern unsigned char *p_ext_gaiji_mini;
 
 extern const unsigned char font_asc[][8];
 extern const unsigned char font_asc_mini[][8];
-extern const unsigned char font_80_mini[][8];
 extern const unsigned char font_7f50_mini[8];
 extern const unsigned char font_7f53_mini[8];
 extern const unsigned char font_7f54_mini[8];
@@ -66,8 +65,12 @@ extern const unsigned char font_e5_mini[][8];
 extern const unsigned char font_e6_mini[][8];
 extern const unsigned char font_e7[][8];
 extern const unsigned char font_e7_mini[][8];
-extern const unsigned char font_kana[][8];
-extern const unsigned char font_kana_mini[][8];
+extern const unsigned char font_ffe0[8];
+extern const unsigned char font_ffe1[8];
+extern const unsigned char font_ffe2[8];
+extern const unsigned char font_ffe0_mini[8];
+extern const unsigned char font_ffe1_mini[8];
+extern const unsigned char font_ffe2_mini[8];
 
 /** Main function to clear all external font indicators; and
     restore their corresponding data pointers to the built-in font matrices. */

@@ -40,28 +40,31 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
     DISPGRAPH std_char;
     GRAPHDATA std_font;
 
-    int char1 = c[0], char2 = c[1];
+    /* Single-byte character */
+    int sbchar = c[0];
+    /* Multi-byte character */
+    int mbchar = sbchar << 8 | c[1];
 
-    if (char1 <= 0x7E)
+    if (sbchar <= 0x7E)
         /* displays an external ASCII (ANK) character */
-        std_font.pBitmap = p_ext_asc + (char1-0x20)*8;
+        std_font.pBitmap = p_ext_asc + (mbchar-0x20)*8;
 
-    else if ((char1 == 0xE7) && (0x41 <= char2) && (char2 <= 0x7E))
+    else if ((0xE741 <= mbchar) && (mbchar <= 0xE77E))
         /* displays a character in the range `E741` to `E77E` */
-        std_font.pBitmap = font_e7[char2-0x40];
-
-    else if (g_ext_gaiji && (char1 == 0xFF) && (0x80 <= char2) && (char2 <= 0x9F))
+        std_font.pBitmap = font_e7[mbchar-0xE740];
+    
+    else if (g_ext_gaiji && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
         /* displays an external Gaiji character in the range `FF80` to `FF9F` */
-        std_font.pBitmap = p_ext_gaiji + (char2-0x80)*8;
-    
-    else if ((char1 == 0xFF) && (0xA0 <= char2) && (char2 <= 0xE2)) {
-        int i = char2 - 0xA0;
-        if (g_ext_kana)
-            std_font.pBitmap = p_ext_kana + i*8;
-        else
-            std_font.pBitmap = font_kana[i];
-    }
-    
+        std_font.pBitmap = p_ext_gaiji + (mbchar-0xFF80)*8;
+    else if (g_ext_kana && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
+        /* displays an external Gaiji character in the range `FF80` to `FF9F` */
+        std_font.pBitmap = p_ext_kana + (mbchar-0xFFA0)*8;
+    else if (mbchar == 0xFFE0)
+        std_font.pBitmap = font_ffe0;
+    else if (mbchar == 0xFFE1)
+        std_font.pBitmap = font_ffe1;
+    else if (mbchar == 0xFFE2)
+        std_font.pBitmap = font_ffe2;
     else
         /* for invalid characters */
         std_font.pBitmap = font_unknown;
@@ -85,49 +88,50 @@ void KPrintRevChar(int px, int py, unsigned char *c) {
 }
 
 unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag) {
-    int char1 = str[0], char2 = str[1];
+    /* Single-byte character */
+    int sbchar = str[0];
+    /* Multi-byte character */
+    int mbchar = sbchar << 8 | str[1];
 
-    if (char1 <= 0x7E) {
-        if (ext_flag && g_ext_asc_mini && (0x20 <= char1))
-            return p_ext_asc_mini + (char1-0x20)*8;
+    if ((sbchar != 0x7F) && (sbchar <= 0xDF)) {
+        if (ext_flag && g_ext_asc_mini && (0x20 <= sbchar) && (sbchar <= 0x7E))
+            return p_ext_asc_mini + (sbchar-0x20)*8;
         else
-            return font_asc_mini[char1];
-    }
-    
-    else if (char1 == 0x7F) {
-        if (char2 == 0x50)
-            return font_7f50_mini;
-        else if (char2 == 0x53)
-            return font_7f53_mini;
-        else if (char2 == 0x54)
-            return font_7f54_mini;
-        else if (char2 == 0xC7)
-            return font_7fc7_mini;
+            return font_asc_mini[sbchar];
     }
 
-    else if (char1 <= 0xDF)
-        return font_80_mini[char1-0x80];
+    else if (mbchar == 0x7F50)
+        return font_7f50_mini;
+    else if (mbchar == 0x7F53)
+        return font_7f53_mini;
+    else if (mbchar == 0x7F54)
+        return font_7f54_mini;
+    else if (mbchar == 0x7FC7)
+        return font_7fc7_mini;
     
-    else if ((char1 == 0xE5) && (char2 <= 0xDF))
-        return font_e5_mini[char2];
+    else if ((0xE500 <= mbchar) && (mbchar <= 0xE5DF))
+        return font_e5_mini[mbchar-0xE500];
     
-    else if ((char1 == 0xE6) && (char2 <= 0xDF))
-        return font_e6_mini[char2];
+    else if ((0xE600 <= mbchar) && (mbchar <= 0xE6DF))
+        return font_e6_mini[mbchar-0xE600];
     
-    else if ((char1 == 0xE7) && (0x40 <= char2) && (char2 <= 0x7E))
-        return font_e7_mini[char2-0x40];
+    else if ((0xE740 <= mbchar) && (mbchar <= 0xE77E))
+        return font_e7_mini[mbchar-0xE740];
     
-    else if (g_ext_gaiji_mini && (char1 == 0xFF) && (0x80 <= char2) && (char2 <= 0x9F))
-        /* displays an external Gaiji character in the range `FF80` to `FF9F` */
-        return p_ext_gaiji_mini + (char2-0x80)*8;
+    else if (g_ext_gaiji_mini && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
+        return p_ext_gaiji_mini + (mbchar-0xFF80)*8;
     
-    else if ((char1 == 0xFF) && (0xA0 <= char2) && (char2 <= 0xE2)) {
-        int i = char2 - 0xA0;
-        if (g_ext_kana_mini)
-            return p_ext_kana_mini + i*8;
-        else
-            return font_kana_mini[i];
-    }
+    else if (g_ext_kana_mini && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
+        return p_ext_kana_mini + (mbchar-0xFFA0)*8;
+
+    else if (mbchar == 0xFFE0)
+        return font_ffe0_mini;
+
+    else if (mbchar == 0xFFE1)
+        return font_ffe1_mini;
+
+    else if (mbchar == 0xFFE2)
+        return font_ffe2_mini;
 
     else
         return font_unknown_mini;
@@ -199,18 +203,18 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
     return length;
 }
 
-void font_init(
-    unsigned char** font_pointer,
-    int font_count
-) {
-    int font_size = 8;
+// void font_init(
+//     unsigned char** font_pointer,
+//     int font_count
+// ) {
+//     int font_size = 8;
 
-    *font_pointer == NULL;
-    free(*font_pointer);
-    *font_pointer = malloc(font_size * font_count);
-    if (*font_pointer == NULL)
-        Abort();
-}
+//     *font_pointer == NULL;
+//     free(*font_pointer);
+//     *font_pointer = malloc(font_size * font_count);
+//     if (*font_pointer == NULL)
+//         Abort();
+// }
 
 void ClearExtFontflag() {
     g_ext_asc         = false;
@@ -221,10 +225,10 @@ void ClearExtFontflag() {
     g_ext_gaiji_mini  = false;
     memcpy((char*)p_ext_asc,              (char*)font_asc,             95*8);
     memcpy((char*)p_ext_asc_mini,         (char*)font_asc_mini+32*8,   95*8);
-    memcpy((char*)p_ext_kana,             (char*)font_kana,            67*8);
-    memcpy((char*)p_ext_kana_mini,        (char*)font_kana_mini,       67*8);
-    font_init(&p_ext_gaiji, 32);
-    font_init(&p_ext_gaiji_mini, 32);
+    // font_init(&p_ext_kana,          64);
+    // font_init(&p_ext_kana_mini,     64);
+    // font_init(&p_ext_gaiji,         32);
+    // font_init(&p_ext_gaiji_mini,    32);
 }
 
 void ReadExtFont(){
@@ -551,14 +555,14 @@ void LoadExtFontKanafolder( int flag, char* sname, int folder, int no ){        
             else                            sprintf(sname2 ,"%sFONTK8L%d", fontfolderFX[folder], no );
     }
     if (flag & 1)
-        g_ext_kana = LoadExtFontKana_sub(sname2, (char*)p_ext_kana, 5);
+        g_ext_kana = LoadExtFontKana_sub(sname2, (char*)p_ext_kana, 4);
     
     if ( sname[0]=='\0' ) {
             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK6M",   fontfolderFX[folder] );
             else                            sprintf(sname2 ,"%sFONTK6M%d", fontfolderFX[folder], no);
     }
     if (flag & 2)
-        g_ext_kana_mini = LoadExtFontKanaMini_sub(sname2, (char*)p_ext_kana_mini, 5);
+        g_ext_kana_mini = LoadExtFontKanaMini_sub(sname2, (char*)p_ext_kana_mini, 4);
 }
 
 void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no ){        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
