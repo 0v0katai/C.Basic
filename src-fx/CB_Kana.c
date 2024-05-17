@@ -46,25 +46,26 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
     int mbchar = sbchar << 8 | c[1];
 
     if (sbchar <= 0x7E)
-        /* displays an external ASCII (ANK) character */
         std_font.pBitmap = p_ext_asc + (mbchar-0x20)*8;
 
-    else if ((0xE741 <= mbchar) && (mbchar <= 0xE77E))
-        /* displays a character in the range `E741` to `E77E` */
+    else if ((0xE740 <= mbchar) && (mbchar <= 0xE77E))
         std_font.pBitmap = font_e7[mbchar-0xE740];
     
     else if (g_ext_gaiji && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
-        /* displays an external Gaiji character in the range `FF80` to `FF9F` */
         std_font.pBitmap = p_ext_gaiji + (mbchar-0xFF80)*8;
+
     else if (g_ext_kana && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
-        /* displays an external Gaiji character in the range `FF80` to `FF9F` */
         std_font.pBitmap = p_ext_kana + (mbchar-0xFFA0)*8;
+
     else if (mbchar == 0xFFE0)
         std_font.pBitmap = font_ffe0;
+
     else if (mbchar == 0xFFE1)
         std_font.pBitmap = font_ffe1;
+
     else if (mbchar == 0xFFE2)
         std_font.pBitmap = font_ffe2;
+
     else
         /* for invalid characters */
         std_font.pBitmap = font_unknown;
@@ -143,6 +144,8 @@ int KPrintCharMini(int px, int py, unsigned char *str, int mode, int ext_flag) {
     unsigned char *font_data;
 
     font_data = _char_mini_font_lookup(str, ext_flag);
+    if (font_data[1])
+        font_data = font_unknown_mini;
     mini_font.width = font_data[0];
     if (px + mini_font.width > 128)
         mini_font.width = 127-px;
