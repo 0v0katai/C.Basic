@@ -550,7 +550,8 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 	short opcode;
 	int opNum=0, n ,i;
 	int mini=0;
-	char *Extchar[]={"  ","A "," G ","AG","  K","A K"," GK","AGK"};
+	// char *Extchar[]={"  ","A "," G ","AG","  K","A K"," GK","AGK"};
+	char *Extchar[]={"  ","A "," X","AX"};
 
 	SaveDisp(SAVEDISP_PAGE1);		// --------
 	Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -636,10 +637,12 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 		switch ( mini ) {
 			case 2:
 			case 1:
-				i = (g_ext_kana_mini!=0)*4 + (g_ext_gaiji_mini!=0)*2 + (g_ext_asc_mini!=0);
+				// i = (g_ext_kana_mini!=0)*4 + (g_ext_gaiji_mini!=0)*2 + (g_ext_asc_mini!=0);
+				i = (g_ext_ff_mini!=0)*2 + (g_ext_asc_mini!=0);
 				break;
 			case 0:
-				i = (g_ext_kana!=0)*4 + (g_ext_gaiji!=0)*2 + (g_ext_asc!=0);
+				// i = (g_ext_kana!=0)*4 + (g_ext_gaiji!=0)*2 + (g_ext_asc!=0);
+				i = (g_ext_ff!=0)*2 + (g_ext_asc!=0);
 				break;
 		}
 		Fkey_dispN( FKeyNo6, Extchar[i] );

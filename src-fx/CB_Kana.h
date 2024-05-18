@@ -25,17 +25,23 @@ extern bool g_ext_asc;
 /* Indicator of external ASCII mini font bitmap file. */
 extern bool g_ext_asc_mini;
 
-/* Indicator of external Katakana standard font bitmap file. */
-extern bool g_ext_kana;
+// /* Indicator of external Katakana standard font bitmap file. */
+// extern bool g_ext_kana;
 
-/* Indicator of external Katakana mini font bitmap file. */         
-extern bool g_ext_kana_mini;
+// /* Indicator of external Katakana mini font bitmap file. */         
+// extern bool g_ext_kana_mini;
 
-/* Indicator of external Gaiji standard font bitmap file. */
-extern bool g_ext_gaiji;
+// /* Indicator of external Gaiji standard font bitmap file. */
+// extern bool g_ext_gaiji;
 
-/* Indicator of external Gaiji mini font bitmap file. */
-extern bool g_ext_gaiji_mini;
+// /* Indicator of external Gaiji mini font bitmap file. */
+// extern bool g_ext_gaiji_mini;
+
+/* Indicator of external `FFXX` standard font bitmap file. */
+extern bool g_ext_ff;
+
+/* Indicator of external `FFXX` mini font bitmap file. */
+extern bool g_ext_ff_mini;
 
 /* Pointer to the address of external ANK standard font data. */
 extern unsigned char *p_ext_asc;
@@ -43,17 +49,23 @@ extern unsigned char *p_ext_asc;
 /* Pointer to the address of external ANK mini font data. */
 extern unsigned char *p_ext_asc_mini;
 
-/* Pointer to the address of external Katakana standard font data. */
-extern unsigned char *p_ext_kana;
+// /* Pointer to the address of external Katakana standard font data. */
+// extern unsigned char *p_ext_kana;
 
-/* Pointer to the address of external Katakana mini font data. */
-extern unsigned char *p_ext_kana_mini;
+// /* Pointer to the address of external Katakana mini font data. */
+// extern unsigned char *p_ext_kana_mini;
 
-/* Pointer to the address of external Gaiji standard font data. */
-extern unsigned char *p_ext_gaiji;
+// /* Pointer to the address of external Gaiji standard font data. */
+// extern unsigned char *p_ext_gaiji;
 
-/* Pointer to the address of external Gaiji mini font data. */
-extern unsigned char *p_ext_gaiji_mini;
+// /* Pointer to the address of external Gaiji mini font data. */
+// extern unsigned char *p_ext_gaiji_mini;
+
+/* Pointer to the address of external `FFXX` standard font data. */
+extern unsigned char *p_ext_ff;
+
+/* Pointer to the address of external `FFXX` mini font data. */
+extern unsigned char *p_ext_ff_mini;
 
 extern const unsigned char font_asc[][8];
 extern const unsigned char font_asc_mini[][8];
@@ -77,17 +89,20 @@ extern const unsigned char font_ffe2_mini[8];
 void ClearExtFontflag();
 // int Make_FontFolder();
 
-void LoadExtFontKanafolder(  int flag, char* sname, int folder, int no );        // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
-void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no );        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+// void LoadExtFontKanafolder(  int flag, char* sname, int folder, int no );        // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+// void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no );        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
 void LoadExtFontAnkfolder(   int flag, char* sname, int folder, int no );        // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
+void LoadExtFontFFfolder(    int flag, char* sname, int folder, int no );        // FONTX8L.bmp -> font 6x8     FONTX6M.bmp -> mini font 6x6
 
-void LoadExtFontKana(  int flag, char* sname, int no );            // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
-void LoadExtFontGaiji( int flag, char* sname, int no );            // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+// void LoadExtFontKana(  int flag, char* sname, int no );            // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+// void LoadExtFontGaiji( int flag, char* sname, int no );            // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
 void LoadExtFontAnk(   int flag, char* sname, int no );            // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
+void LoadExtFontFF(    int flag, char* sname, int no );            // FONTX8L.bmp -> font 6x8     FONTX6M.bmp -> mini font 6x6
 
-void SaveExtFontKana(  int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTK8L.bmp    font 6x6 -> FONTK6M.bmp
-void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
+// void SaveExtFontKana(  int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTK8L.bmp    font 6x6 -> FONTK6M.bmp
+// void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
 void SaveExtFontAnk(   int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTA8L.bmp    font 6x6 -> FONTA6M.bmp
+void SaveExtFontFF(    int flag, char* sname, int folder, int no, int check );        // font 6x8 -> FONTX8L.bmp    font 6x6 -> FONTX6M.bmp
 
 /* Shortcut function to print an extended/external character in a normal display. */
 void KPrintChar( int px, int py, unsigned char *c);

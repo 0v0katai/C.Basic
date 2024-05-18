@@ -253,10 +253,12 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	if ( c == '@' ) { 
 		c =SRC[++ExecPtr];
 		if ( c == '@' ) { 	c =SRC[++ExecPtr]; folder=1; }
-		if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
+		if ( ( c=='X' )||( c=='x' ) ) { ExecPtr++; gaiji=0; }
 		else
-		if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
-		else
+		// if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
+		// else
+		// if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
+		// else
 		if ( ( c=='A' )||( c=='a' ) ) { ExecPtr++; gaiji=2; }
 		else
 		{ CB_Error(SyntaxERR); return; }  // Syntax error
@@ -283,10 +285,12 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 			ExecPtr++;
 		}
 		switch ( gaiji ) {	
+			// case 0:
+			// 	SaveExtFontKana(  flag, sname, folder, no, check ); return ;
+			// case 1:
+			// 	SaveExtFontGaiji( flag, sname, folder, no, check ); return ;
 			case 0:
-				SaveExtFontKana(  flag, sname, folder, no, check ); return ;
-			case 1:
-				SaveExtFontGaiji( flag, sname, folder, no, check ); return ;
+				SaveExtFontFF(    flag, sname, folder, no, check ); return ;
 			case 2:
 				SaveExtFontAnk(   flag, sname, folder, no, check ); return ;
 		}
@@ -385,10 +389,12 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 	if ( c == '@' ) { 		// BmpLoad(@K1)
 		c =SRC[++ExecPtr];
 		if ( c == '@' ) { 	c =SRC[++ExecPtr]; folder=1; }
-		if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
+		if ( ( c=='X' )||( c=='x' ) ) { ExecPtr++; gaiji=0; }
 		else
-		if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
-		else
+		// if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
+		// else
+		// if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
+		// else
 		if ( ( c=='A' )||( c=='a' ) ) { ExecPtr++; gaiji=2; }
 		else
 		{ CB_Error(SyntaxERR); return; }  // Syntax error
@@ -410,9 +416,11 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 		switch ( gaiji ) {	
 			case 0:
-				LoadExtFontKanafolder(  flag, sname, folder, no ); return ;
-			case 1:
-				LoadExtFontGaijifolder( flag, sname, folder, no ); return ;
+				LoadExtFontFFfolder(    flag, sname, folder, no ); return ;
+			// case 0:
+			// 	LoadExtFontKanafolder(  flag, sname, folder, no ); return ;
+			// case 1:
+			// 	LoadExtFontGaijifolder( flag, sname, folder, no ); return ;
 			case 2:
 				LoadExtFontAnkfolder(   flag, sname, folder, no ); return ;
 		}

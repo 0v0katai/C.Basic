@@ -22,18 +22,22 @@
 #include "CB_fontmini.h"
 
 bool g_ext_asc         = false;
-bool g_ext_kana        = false;
-bool g_ext_gaiji       = false;
+// bool g_ext_kana        = false;
+// bool g_ext_gaiji       = false;
+bool g_ext_ff          = false;
 bool g_ext_asc_mini    = false;
-bool g_ext_kana_mini   = false;
-bool g_ext_gaiji_mini  = false;
+// bool g_ext_kana_mini   = false;
+// bool g_ext_gaiji_mini  = false;
+bool g_ext_ff_mini     = false;
 
 unsigned char *p_ext_asc;
 unsigned char *p_ext_asc_mini;
-unsigned char *p_ext_gaiji;
-unsigned char *p_ext_gaiji_mini;
-unsigned char *p_ext_kana;
-unsigned char *p_ext_kana_mini;
+// unsigned char *p_ext_gaiji;
+// unsigned char *p_ext_gaiji_mini;
+// unsigned char *p_ext_kana;
+// unsigned char *p_ext_kana_mini;
+unsigned char *p_ext_ff;
+unsigned char *p_ext_ff_mini;
 
 /* Subsidiary function to display an extended and/or external standard character. */
 void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
@@ -51,11 +55,14 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
     else if ((0xE740 <= mbchar) && (mbchar <= 0xE77E))
         std_font.pBitmap = font_e7[mbchar-0xE740];
     
-    else if (g_ext_gaiji && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
-        std_font.pBitmap = p_ext_gaiji + (mbchar-0xFF80)*8;
+    else if ((g_ext_ff) && (0xFF80 <= mbchar) && (mbchar <= 0xFFDF))
+        std_font.pBitmap = p_ext_ff + (mbchar-0xFF80)*8;
+    
+    // else if (g_ext_gaiji && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
+    //     std_font.pBitmap = p_ext_gaiji + (mbchar-0xFF80)*8;
 
-    else if (g_ext_kana && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
-        std_font.pBitmap = p_ext_kana + (mbchar-0xFFA0)*8;
+    // else if (g_ext_kana && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
+    //     std_font.pBitmap = p_ext_kana + (mbchar-0xFFA0)*8;
 
     else if (mbchar == 0xFFE0)
         std_font.pBitmap = font_ffe0;
@@ -119,11 +126,14 @@ unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag) {
     else if ((0xE740 <= mbchar) && (mbchar <= 0xE77E))
         return font_e7_mini[mbchar-0xE740];
     
-    else if (g_ext_gaiji_mini && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
-        return p_ext_gaiji_mini + (mbchar-0xFF80)*8;
+    else if (g_ext_ff_mini && (0xFF80 <= mbchar) && (mbchar <= 0xFFDF))
+        return p_ext_ff_mini + (mbchar-0xFF80)*8;
     
-    else if (g_ext_kana_mini && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
-        return p_ext_kana_mini + (mbchar-0xFFA0)*8;
+    // else if (g_ext_gaiji_mini && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
+    //     return p_ext_gaiji_mini + (mbchar-0xFF80)*8;
+    
+    // else if (g_ext_kana_mini && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
+    //     return p_ext_kana_mini + (mbchar-0xFFA0)*8;
 
     else if (mbchar == 0xFFE0)
         return font_ffe0_mini;
@@ -221,11 +231,13 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
 
 void ClearExtFontflag() {
     g_ext_asc         = false;
-    g_ext_kana        = false;
-    g_ext_gaiji       = false;
+    // g_ext_kana        = false;
+    // g_ext_gaiji       = false;
+    g_ext_ff          = false;
     g_ext_asc_mini    = false;
-    g_ext_kana_mini   = false;
-    g_ext_gaiji_mini  = false;
+    // g_ext_kana_mini   = false;
+    // g_ext_gaiji_mini  = false;
+    g_ext_ff_mini     = false;
     memcpy((char*)p_ext_asc,              (char*)font_asc,             95*8);
     memcpy((char*)p_ext_asc_mini,         (char*)font_asc_mini+32*8,   95*8);
     // font_init(&p_ext_kana,          64);
@@ -236,8 +248,9 @@ void ClearExtFontflag() {
 
 void ReadExtFont(){
     LoadExtFontAnk(   3, "", -1 );            // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
-    LoadExtFontGaiji( 3, "", -1 );            // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
-    LoadExtFontKana(  3, "", -1 );            // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+    // LoadExtFontGaiji( 3, "", -1 );            // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+    // LoadExtFontKana(  3, "", -1 );            // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+    LoadExtFontFF(    3, "", -1 );            // FONTX8L.bmp -> font 6x8     FONTX6M.bmp -> mini font 6x6
 }
 
 int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
@@ -309,7 +322,8 @@ int CB_GetFont( char *SRC ){    // GetFont(0xFFA0)->Mat C
             memcpy( vram, vbuf, 16*8);
     } else { CB_Error(SyntaxERR);}    // Syntax error
   exit:
-    return (g_ext_kana!=0)*4 + (g_ext_gaiji!=0)*2 + (g_ext_asc!=0);
+    // return (g_ext_kana!=0)*4 + (g_ext_gaiji!=0)*2 + (g_ext_asc!=0);
+    return (g_ext_ff!=0)*2 + (g_ext_asc!=0);
 }
 
 int CB_GetFontMini( char *SRC ){    // GetFont(0xFFA0)->Mat C
@@ -357,7 +371,8 @@ int CB_GetFontMini( char *SRC ){    // GetFont(0xFFA0)->Mat C
             memcpy( vram, vbuf, 16*8 );
     } else { CB_Error(SyntaxERR); }    // Syntax error
   exit:
-    return (g_ext_kana_mini!=0)*4 + (g_ext_gaiji_mini!=0)*2 + (g_ext_asc_mini!=0);
+    // return (g_ext_kana_mini!=0)*4 + (g_ext_gaiji_mini!=0)*2 + (g_ext_asc_mini!=0);
+    return (g_ext_ff_mini!=0)*2 + (g_ext_asc_mini!=0);
 }
 
 
@@ -386,21 +401,25 @@ char* CB_SetFontSub( char *SRC, int *reg, int mini ) {
         CharNo &= 0xFF;
         CharNo -= 0x80;
         if (mini) {
-            if (CharNo < 0x20) {
-                fontptr = (char*)p_ext_gaiji_mini + 8*CharNo;
-                g_ext_gaiji_mini = true;
-            } else {
-                fontptr = (char*)p_ext_kana_mini + 8*(CharNo-0x20);
-                g_ext_kana_mini = true;
-            }
+            // if (CharNo < 0x20) {
+            //     fontptr = (char*)p_ext_gaiji_mini + 8*CharNo;
+            //     g_ext_gaiji_mini = true;
+            // } else {
+            //     fontptr = (char*)p_ext_kana_mini + 8*(CharNo-0x20);
+            //     g_ext_kana_mini = true;
+            // }
+            fontptr = (char*)p_ext_ff_mini + 8*CharNo;
+            g_ext_ff_mini = true;
         } else {
-            if (CharNo < 0x20) {
-                fontptr = (char*)p_ext_gaiji + 8*CharNo;
-                g_ext_gaiji = true;
-            } else {
-                fontptr = (char*)p_ext_kana + 8*(CharNo-0x20);
-                g_ext_kana = true;
-            }
+            // if (CharNo < 0x20) {
+            //     fontptr = (char*)p_ext_gaiji + 8*CharNo;
+            //     g_ext_gaiji = true;
+            // } else {
+            //     fontptr = (char*)p_ext_kana + 8*(CharNo-0x20);
+            //     g_ext_kana = true;
+            // }
+            fontptr = (char*)p_ext_ff + 8*CharNo;
+            g_ext_ff = true;
         }
     }
     if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return NULL; }  // Syntax error
@@ -549,43 +568,43 @@ int LoadExtFontKanaMini_sub( char* name, char *font, int line ){            // M
 
 const char fontfolderFX[][8]={"","/FONT/"};
 
-void LoadExtFontKanafolder( int flag, char* sname, int folder, int no ){        // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
-    char sname2[32];
-    strcpy( sname2, sname );
-    if ( EnableExtFont==0 ) return ;
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK8L",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTK8L%d", fontfolderFX[folder], no );
-    }
-    if (flag & 1)
-        g_ext_kana = LoadExtFontKana_sub(sname2, (char*)p_ext_kana, 4);
+// void LoadExtFontKanafolder( int flag, char* sname, int folder, int no ){        // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
+//     char sname2[32];
+//     strcpy( sname2, sname );
+//     if ( EnableExtFont==0 ) return ;
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK8L",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTK8L%d", fontfolderFX[folder], no );
+//     }
+//     if (flag & 1)
+//         g_ext_kana = LoadExtFontKana_sub(sname2, (char*)p_ext_kana, 4);
     
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK6M",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTK6M%d", fontfolderFX[folder], no);
-    }
-    if (flag & 2)
-        g_ext_kana_mini = LoadExtFontKanaMini_sub(sname2, (char*)p_ext_kana_mini, 4);
-}
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK6M",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTK6M%d", fontfolderFX[folder], no);
+//     }
+//     if (flag & 2)
+//         g_ext_kana_mini = LoadExtFontKanaMini_sub(sname2, (char*)p_ext_kana_mini, 4);
+// }
 
-void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no ){        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
-    char sname2[32];
-    strcpy( sname2, sname );
-    if ( EnableExtFont==0 ) return ;
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG8L",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTG8L%d", fontfolderFX[folder], no );
-    }
-    if (flag & 1)
-        g_ext_gaiji = LoadExtFontKana_sub(sname2, (char*)p_ext_gaiji, 2);
+// void LoadExtFontGaijifolder( int flag, char* sname, int folder, int no ){        // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
+//     char sname2[32];
+//     strcpy( sname2, sname );
+//     if ( EnableExtFont==0 ) return ;
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG8L",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTG8L%d", fontfolderFX[folder], no );
+//     }
+//     if (flag & 1)
+//         g_ext_gaiji = LoadExtFontKana_sub(sname2, (char*)p_ext_gaiji, 2);
 
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG6M",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTG6M%d", fontfolderFX[folder], no);
-    }
-    if (flag & 2)
-        g_ext_gaiji_mini = LoadExtFontKanaMini_sub(sname2, (char*)p_ext_gaiji_mini, 2);
-}
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG6M",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTG6M%d", fontfolderFX[folder], no);
+//     }
+//     if (flag & 2)
+//         g_ext_gaiji_mini = LoadExtFontKanaMini_sub(sname2, (char*)p_ext_gaiji_mini, 2);
+// }
 
 void LoadExtFontAnkfolder( int flag, char* sname, int folder, int no ){        // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
     char sname2[32];
@@ -606,14 +625,34 @@ void LoadExtFontAnkfolder( int flag, char* sname, int folder, int no ){        /
     if ( flag & 2 ) g_ext_asc_mini = LoadExtFontKanaMini_sub( sname2, (char*)p_ext_asc_mini, 6 );
 }
 
-void LoadExtFontKana( int flag, char* sname, int no ){        // LFONTK.bmp -> font 18x24
-    LoadExtFontKanafolder(flag, sname, 0, no );
+void LoadExtFontFFfolder( int flag, char* sname, int folder, int no ){        // FONTX8L.bmp -> font 6x8     FONTX6M.bmp -> mini font 6x6
+    char sname2[32];
+    strcpy( sname2, sname );
+    if ( EnableExtFont==0 ) return ;
+    if ( sname[0]=='\0' ) {
+            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTX8L",   fontfolderFX[folder] );
+            else                            sprintf(sname2 ,"%sFONTX8L%d", fontfolderFX[folder], no);
+    }
+    if ( flag & 1 ) g_ext_ff = LoadExtFontKana_sub( sname2, (char*)p_ext_ff, 6 );
+    
+    if ( sname[0]=='\0' ) {
+            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTX6M",   fontfolderFX[folder] );
+            else                            sprintf(sname2 ,"%sFONTX6M%d", fontfolderFX[folder], no);
+    }
+    if ( flag & 2 ) g_ext_ff_mini = LoadExtFontKanaMini_sub( sname2, (char*)p_ext_ff_mini, 6 );
 }
-void LoadExtFontGaiji( int flag, char* sname, int no ){        // LFONTK.bmp -> font 18x24
-    LoadExtFontGaijifolder( flag, sname, 0, no );
-}
+
+// void LoadExtFontKana( int flag, char* sname, int no ){        // LFONTK.bmp -> font 18x24
+//     LoadExtFontKanafolder(flag, sname, 0, no );
+// }
+// void LoadExtFontGaiji( int flag, char* sname, int no ){        // LFONTK.bmp -> font 18x24
+//     LoadExtFontGaijifolder( flag, sname, 0, no );
+// }
 void LoadExtFontAnk( int flag, char* sname, int no ){        // LFONTK.bmp -> font 18x24
     LoadExtFontAnkfolder( flag, sname, 0, no );
+}
+void LoadExtFontFF( int flag, char* sname, int no ){        // LFONTK.bmp -> font 18x24
+    LoadExtFontFFfolder( flag, sname, 0, no );
 }
 
 //------------------------------------------------------------------------------
@@ -704,43 +743,43 @@ void SaveExtFontKanaMini_sub( char* sname, char *font, int line, int check ){   
     CB_SaveSub( sname, bmpbuffer, bfSize, check, "bmp" );
 }
 
-void SaveExtFontKana( int flag, char* sname, int folder, int no, int check ){        // font 6x8 -> FONTK8L.bmp    font 6x6 -> FONTK6M.bmp
-    char sname2[32];
-    if ( EnableExtFont==0 ) return ;
-    strcpy( sname2, sname );
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK8L",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTK8L%d", fontfolderFX[folder], no );
-    }
-    if ((flag & 1) && (g_ext_kana))
-        SaveExtFontKana_sub(sname2, (char*)p_ext_kana, 5, check);
+// void SaveExtFontKana( int flag, char* sname, int folder, int no, int check ){        // font 6x8 -> FONTK8L.bmp    font 6x6 -> FONTK6M.bmp
+//     char sname2[32];
+//     if ( EnableExtFont==0 ) return ;
+//     strcpy( sname2, sname );
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK8L",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTK8L%d", fontfolderFX[folder], no );
+//     }
+//     if ((flag & 1) && (g_ext_kana))
+//         SaveExtFontKana_sub(sname2, (char*)p_ext_kana, 5, check);
     
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK6M",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTK6M%d", fontfolderFX[folder], no);
-    }
-    if ((flag & 2) && (g_ext_kana_mini))
-        SaveExtFontKanaMini_sub(sname2, (char*)p_ext_kana_mini, 5, check);
-}
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTK6M",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTK6M%d", fontfolderFX[folder], no);
+//     }
+//     if ((flag & 2) && (g_ext_kana_mini))
+//         SaveExtFontKanaMini_sub(sname2, (char*)p_ext_kana_mini, 5, check);
+// }
 
-void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check ){        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
-    char sname2[32];
-    if ( EnableExtFont==0 ) return ;
-    strcpy( sname2, sname );
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG8L",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTG8L%d", fontfolderFX[folder], no );
-    }
-    if ((flag & 1) && (g_ext_gaiji))
-        SaveExtFontKana_sub(sname2, (char*)p_ext_gaiji, 2, check);
+// void SaveExtFontGaiji( int flag, char* sname, int folder, int no, int check ){        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
+//     char sname2[32];
+//     if ( EnableExtFont==0 ) return ;
+//     strcpy( sname2, sname );
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG8L",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTG8L%d", fontfolderFX[folder], no );
+//     }
+//     if ((flag & 1) && (g_ext_gaiji))
+//         SaveExtFontKana_sub(sname2, (char*)p_ext_gaiji, 2, check);
     
-    if ( sname[0]=='\0' ) {
-            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG6M",   fontfolderFX[folder] );
-            else                            sprintf(sname2 ,"%sFONTG6M%d", fontfolderFX[folder], no);
-    }
-    if ((flag & 2) && (g_ext_gaiji_mini))
-        SaveExtFontKanaMini_sub(sname2, (char*)p_ext_gaiji_mini, 2, check);
-}
+//     if ( sname[0]=='\0' ) {
+//             if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTG6M",   fontfolderFX[folder] );
+//             else                            sprintf(sname2 ,"%sFONTG6M%d", fontfolderFX[folder], no);
+//     }
+//     if ((flag & 2) && (g_ext_gaiji_mini))
+//         SaveExtFontKanaMini_sub(sname2, (char*)p_ext_gaiji_mini, 2, check);
+// }
 
 void SaveExtFontAnk( int flag, char* sname, int folder, int no, int check ){            // font 6x8 -> FONTA8L.bmp    font 6x6 -> FONTA6M.bmp
     char sname2[32];
@@ -757,4 +796,23 @@ void SaveExtFontAnk( int flag, char* sname, int folder, int no, int check ){    
             else                            sprintf(sname2 ,"%sFONTA6M%d", fontfolderFX[folder], no);
     }
     if ( ( flag & 2 ) && ( g_ext_asc_mini ) ) SaveExtFontKanaMini_sub( sname2, (char*)p_ext_asc_mini, 6, check );
+}
+
+void SaveExtFontFF( int flag, char* sname, int folder, int no, int check ){        // font 6x8 -> FONTG8L.bmp    font 6x6 -> FONTG6M.bmp
+    char sname2[32];
+    if ( EnableExtFont==0 ) return ;
+    strcpy( sname2, sname );
+    if ( sname[0]=='\0' ) {
+            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTX8L",   fontfolderFX[folder] );
+            else                            sprintf(sname2 ,"%sFONTX8L%d", fontfolderFX[folder], no );
+    }
+    if ((flag & 1) && (g_ext_ff))
+        SaveExtFontKana_sub(sname2, (char*)p_ext_ff, 6, check);
+    
+    if ( sname[0]=='\0' ) {
+            if ( ( no < 0 )||( 9 < no ) )    sprintf(sname2 ,"%sFONTX6M",   fontfolderFX[folder] );
+            else                            sprintf(sname2 ,"%sFONTX6M%d", fontfolderFX[folder], no);
+    }
+    if ((flag & 2) && (g_ext_ff_mini))
+        SaveExtFontKanaMini_sub(sname2, (char*)p_ext_ff_mini, 6, check);
 }
