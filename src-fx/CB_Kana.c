@@ -108,14 +108,15 @@ unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag) {
             return font_asc_mini[sbchar];
     }
 
-    else if (mbchar == 0x7F50)
-        return font_7f50_mini;
-    else if (mbchar == 0x7F53)
-        return font_7f53_mini;
-    else if (mbchar == 0x7F54)
-        return font_7f54_mini;
-    else if (mbchar == 0x7FC7)
-        return font_7fc7_mini;
+    else if (sbchar == 0x7F)
+        if (mbchar == 0x7F50)
+            return font_7f50_mini;
+        else if (mbchar == 0x7F53)
+            return font_7f53_mini;
+        else if (mbchar == 0x7F54)
+            return font_7f54_mini;
+        else if (mbchar == 0x7FC7)
+            return font_7fc7_mini;
     
     else if ((0xE500 <= mbchar) && (mbchar <= 0xE5DF))
         return font_e5_mini[mbchar-0xE500];
