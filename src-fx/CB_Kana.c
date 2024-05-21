@@ -50,7 +50,7 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
     int mbchar = sbchar << 8 | c[1];
 
     if (sbchar <= 0x7E)
-        std_font.pBitmap = p_ext_asc + (mbchar-0x20)*8;
+        std_font.pBitmap = p_ext_asc + (sbchar-0x20)*8;
 
     else if ((0xE740 <= mbchar) && (mbchar <= 0xE77E))
         std_font.pBitmap = font_e7[mbchar-0xE740];
