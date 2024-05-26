@@ -22,30 +22,28 @@
 #include "CB_fontmini.h"
 
 bool g_ext_asc         = false;
-// bool g_ext_kana        = false;
-// bool g_ext_gaiji       = false;
 bool g_ext_ff          = false;
 bool g_ext_asc_mini    = false;
-// bool g_ext_kana_mini   = false;
-// bool g_ext_gaiji_mini  = false;
 bool g_ext_ff_mini     = false;
 
 unsigned char *p_ext_asc;
 unsigned char *p_ext_asc_mini;
-// unsigned char *p_ext_gaiji;
-// unsigned char *p_ext_gaiji_mini;
-// unsigned char *p_ext_kana;
-// unsigned char *p_ext_kana_mini;
 unsigned char *p_ext_ff;
 unsigned char *p_ext_ff_mini;
 
-/* Subsidiary function to display an extended and/or external standard character. */
-void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
+/* Subsidiary function to display an extended or external standard character. */
+void KPrintCharSub(
+    int px,
+    int py,
+    unsigned char *c,
+    int modify
+) {
     DISPGRAPH std_char;
     GRAPHDATA std_font;
 
     /* Single-byte character */
     int sbchar = c[0];
+
     /* Multi-byte character */
     int mbchar = sbchar << 8 | c[1];
 
@@ -57,12 +55,6 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
     
     else if ((g_ext_ff) && (0xFF80 <= mbchar) && (mbchar <= 0xFFDF))
         std_font.pBitmap = p_ext_ff + (mbchar-0xFF80)*8;
-    
-    // else if (g_ext_gaiji && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
-    //     std_font.pBitmap = p_ext_gaiji + (mbchar-0xFF80)*8;
-
-    // else if (g_ext_kana && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
-    //     std_font.pBitmap = p_ext_kana + (mbchar-0xFFA0)*8;
 
     else if (mbchar == 0xFFE0)
         std_font.pBitmap = font_ffe0;
@@ -74,7 +66,6 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
         std_font.pBitmap = font_ffe2;
 
     else
-        /* for invalid characters */
         std_font.pBitmap = font_unknown;
 
     std_font.width = 6;
@@ -87,26 +78,37 @@ void KPrintCharSub(int px, int py, unsigned char *c, int modify) {
     Bdisp_WriteGraph_VRAM(&std_char);
 }
 
-void KPrintChar(int px, int py, unsigned char *c) {
+void KPrintChar(
+    int px,
+    int py,
+    unsigned char *c
+) {
     KPrintCharSub(px, py, c, IMB_WRITEMODIFY_NORMAL);
 }
 
-void KPrintRevChar(int px, int py, unsigned char *c) {
+void KPrintRevChar(
+    int px,
+    int py,
+    unsigned char *c
+) {
     KPrintCharSub(px, py, c, IMB_WRITEMODIFY_REVERCE);
 }
 
-unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag) {
+unsigned char* _char_mini_font_lookup(
+    unsigned char *str,
+    int ext_flag
+) {
     /* Single-byte character */
     int sbchar = str[0];
+
     /* Multi-byte character */
     int mbchar = sbchar << 8 | str[1];
 
-    if ((sbchar != 0x7F) && (sbchar <= 0xDF)) {
-        if (ext_flag && g_ext_asc_mini && (0x20 <= sbchar) && (sbchar <= 0x7E))
-            return p_ext_asc_mini + (sbchar-0x20)*8;
-        else
-            return font_asc_mini[sbchar];
-    }
+    if (ext_flag && g_ext_asc_mini && (0x20 <= sbchar) && (sbchar <= 0x7E))
+        return p_ext_asc_mini + (sbchar-0x20)*8;
+    
+    else if ((sbchar != 0x7F) && (sbchar <= 0xDF))
+        return font_asc_mini[sbchar];
     
     else if ((0xE500 <= mbchar) && (mbchar <= 0xE5DF))
         return font_e5_mini[mbchar-0xE500];
@@ -120,43 +122,41 @@ unsigned char* _char_mini_font_lookup(unsigned char *str, int ext_flag) {
     else if (g_ext_ff_mini && (0xFF80 <= mbchar) && (mbchar <= 0xFFDF))
         return p_ext_ff_mini + (mbchar-0xFF80)*8;
     
-    // else if (g_ext_gaiji_mini && (0xFF80 <= mbchar) && (mbchar <= 0xFF9F))
-    //     return p_ext_gaiji_mini + (mbchar-0xFF80)*8;
-    
-    // else if (g_ext_kana_mini && (0xFFA0 <= mbchar) && (mbchar <= 0xFFDF))
-    //     return p_ext_kana_mini + (mbchar-0xFFA0)*8;
-
-    else if (mbchar == 0xFFE0)
-        return font_ffe0_mini;
-
-    else if (mbchar == 0xFFE1)
-        return font_ffe1_mini;
-
-    else if (mbchar == 0xFFE2)
-        return font_ffe2_mini;
-    
-    else if (sbchar == 0x7F)
-        if (mbchar == 0x7F50)
+    switch (mbchar) {
+        case 0xFFE0:
+            return font_ffe0_mini;
+        case 0xFFE1:
+            return font_ffe1_mini;
+        case 0xFFE2:
+            return font_ffe2_mini;
+        case 0x7F50:
             return font_7f50_mini;
-        else if (mbchar == 0x7F53)
+        case 0x7F53:
             return font_7f53_mini;
-        else if (mbchar == 0x7F54)
+        case 0x7F54:
             return font_7f54_mini;
-        else if (mbchar == 0x7FC7)
+        case 0x7FC7:
             return font_7fc7_mini;
-    
-    else
-        return font_unknown_mini;
+    }
+
+    return font_unknown_mini;
 }
 
-int KPrintCharMini(int px, int py, unsigned char *str, int mode, int ext_flag) {
+int KPrintCharMini(
+    int px,
+    int py,
+    unsigned char *str,
+    int mode,
+    int ext_flag
+) {
     DISPGRAPH mini_char;
     GRAPHDATA mini_font;
-    unsigned char *font_data;
+    unsigned char *font_data = _char_mini_font_lookup(str, ext_flag);
 
-    font_data = _char_mini_font_lookup(str, ext_flag);
+    /* Checking if the font is left unifinished */
     if (font_data[1])
         font_data = font_unknown_mini;
+
     mini_font.width = font_data[0];
     if (px + mini_font.width > 128)
         mini_font.width = 127-px;
@@ -184,74 +184,78 @@ int KPrintCharMini(int px, int py, unsigned char *str, int mode, int ext_flag) {
 
 //---------------------------------------------------------------------------------------------
 
-void CB_PrintMini(int px, int py, const unsigned char *str, int mode, int ext_flag) {
+void CB_PrintMini(
+    int px,
+    int py,
+    const unsigned char *str,
+    int mode,
+    int ext_flag
+) {
     unsigned char mod,kind;
     int i;
-    int c=(char)*str;
-    while ( c ) {
-        i=KPrintCharMini( px, py, str++ , mode, ext_flag);
-        if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
-        px+=i;
-        if ( px>127 ) break;
-        c=(char)*str;
+    int c = (char)*str;
+
+    while (c) {
+        i = KPrintCharMini(px, py, str++ , mode, ext_flag);
+        if ((c == 0x7F)       || (c == 0xFFFFFFF9) ||
+            (c == 0xFFFFFFE5) || (c == 0xFFFFFFE6) ||
+            (c == 0xFFFFFFE7) || (c == 0xFFFFFFFF)  )
+            str++;
+        px += i;
+        if (px > 127)
+            break;
+        c = (char)*str;
     }
 }
 
-int CB_PrintMiniC(int px, int py, const unsigned char *str, int mode, int ext_flag) {
+int CB_PrintMiniC(
+    int px,
+    int py,
+    const unsigned char *str,
+    int mode,
+    int ext_flag
+) {
     return KPrintCharMini(px, py, str, mode, ext_flag);
 }
 
-int CB_PrintMiniLength( unsigned char *str, int extflag ) {
+int CB_PrintMiniLength(
+    unsigned char *str,
+    int extflag
+) {
     return _char_mini_font_lookup(str, extflag)[0];
 }
 
-int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
-    int i,length=0;
-    int c=(char)*str;
-    while ( c ) {
-        i=CB_PrintMiniLength( str++, extflag );
-        if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
-        length+=i;
-        c=(char)*str;
+int CB_PrintMiniLengthStr(
+    unsigned char *str,
+    int extflag
+) {
+    int i,length = 0;
+    int c = (char)*str;
+
+    while (c) {
+        i = CB_PrintMiniLength(str++, extflag);
+        if ((c == 0x7F)       || (c == 0xFFFFFFF9) ||
+            (c == 0xFFFFFFE5) || (c == 0xFFFFFFE6) ||
+            (c == 0xFFFFFFE7) || (c == 0xFFFFFFFF)  )
+            str++;
+        length += i;
+        c = (char)*str;
     }
     return length;
 }
 
-// void font_init(
-//     unsigned char** font_pointer,
-//     int font_count
-// ) {
-//     int font_size = 8;
-
-//     *font_pointer == NULL;
-//     free(*font_pointer);
-//     *font_pointer = malloc(font_size * font_count);
-//     if (*font_pointer == NULL)
-//         Abort();
-// }
-
 void ClearExtFontflag() {
     g_ext_asc         = false;
-    // g_ext_kana        = false;
-    // g_ext_gaiji       = false;
     g_ext_ff          = false;
     g_ext_asc_mini    = false;
-    // g_ext_kana_mini   = false;
-    // g_ext_gaiji_mini  = false;
     g_ext_ff_mini     = false;
     memcpy((char*)p_ext_asc,              (char*)font_asc,             95*8);
     memcpy((char*)p_ext_asc_mini,         (char*)font_asc_mini+32*8,   95*8);
-    // font_init(&p_ext_kana,          64);
-    // font_init(&p_ext_kana_mini,     64);
-    // font_init(&p_ext_gaiji,         32);
-    // font_init(&p_ext_gaiji_mini,    32);
 }
 
-void ReadExtFont(){
-    LoadExtFontAnk(   3, "", -1 );            // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
-    // LoadExtFontGaiji( 3, "", -1 );            // FONTG8L.bmp -> font 6x8     FONTG6M.bmp -> mini font 6x6
-    // LoadExtFontKana(  3, "", -1 );            // FONTK8L.bmp -> font 6x8     FONTK6M.bmp -> mini font 6x6
-    LoadExtFontFF(    3, "", -1 );            // FONTX8L.bmp -> font 6x8     FONTX6M.bmp -> mini font 6x6
+void ReadExtFont() {
+    LoadExtFontAnk(3, "", -1);            // FONTA8L.bmp -> font 6x8     FONTA6M.bmp -> mini font 6x6
+    LoadExtFontFF(3, "", -1);            // FONTX8L.bmp -> font 6x8     FONTX6M.bmp -> mini font 6x6
 }
 
 int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
@@ -388,14 +392,14 @@ char* CB_SetFontSub( char *SRC, int *reg, int mini ) {
     if ( CharNo == -1 ) { CB_Error(SyntaxERR); return 0; }    // Syntax error
     if ( CharNo == -2 ) { return 0; }    // SetFont 0   SetFont 1
     if ( CharNo < 0xFF ) {
-        if ( ( CharNo < 0x20 ) || ( CharNo >= 0x7F ) ) {  CB_Error(OutOfDomainERR); return NULL; } // Out of Domain error
+        if ((CharNo < 0x20) || (CharNo > 0x7E)) {  CB_Error(OutOfDomainERR); return NULL; } // Out of Domain error
         CharNo&=0xFF;
         CharNo-=0x20;
         if ( mini )    { fontptr=(char*)p_ext_asc_mini+(7+1)*CharNo; g_ext_asc_mini = 1; }
         else        { fontptr=(char*)p_ext_asc+(8)*CharNo;        g_ext_asc = 1; }
     } else {
         CharNo &= 0xFFFF;
-        if ((CharNo < 0xFF80) || (CharNo > 0xFFE2)) {
+        if ((CharNo < 0xFF80) || (CharNo > 0xFFDF)) {
             CB_Error(OutOfDomainERR);
             return NULL;
         }
