@@ -153,7 +153,7 @@ int KPrintCharMini(
     GRAPHDATA mini_font;
     unsigned char *font_data = _char_mini_font_lookup(str, ext_flag);
 
-    /* Checking if the font is left unifinished */
+    /* Check if the font is left unfinished */
     if (font_data[1])
         font_data = font_unknown_mini;
 
@@ -258,74 +258,102 @@ void ReadExtFont() {
     LoadExtFontFF(3, "", -1);            // FONTX8L.bmp -> font 6x8     FONTX6M.bmp -> mini font 6x6
 }
 
-int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
+int CB_GetFontSub(
+    char *SRC,
+    char *cstr,
+    int *orgflag,
+    int getmode
+) {
     int opcode;
-    int c=SRC[ExecPtr];
-    if ( c == ')' ) { ExecPtr++; return -1; }
-    *orgflag=0; if ( c == '@' ) { ExecPtr++; *orgflag=1; }
-    c=CB_IsStr( SRC, ExecPtr );
-    if ( c ) {    // string
-        CB_GetLocateStr( SRC, cstr, 256-1 );        // String -> buffer    return 
-        GetOpcodeLen( cstr, 0, &opcode );
+    int c = SRC[ExecPtr];
+
+    if (c == ')') {
+        ExecPtr++;
+        return -1;
+    }
+
+    *orgflag = false;
+    if (c == '@') {
+        ExecPtr++;
+        *orgflag = true;
+    }
+    
+    c = CB_IsStr(SRC, ExecPtr);
+    if (c) {    // string
+        CB_GetLocateStr(SRC, cstr, 256-1);        // String -> buffer    return 
+        GetOpcodeLen(cstr, 0, &opcode);
     } else {    // expression
-        opcode = CB_EvalInt( SRC );
-        if ( getmode == 0 ) {
-            if ( opcode == 0 ) { ClearExtFontflag(); return -2; }
-            if ( opcode == 1 ) { 
-                if (EnableExtFont==0) OkMSGstr2("Please Enable","Extfont by Setup"); else ReadExtFont();
+        opcode = CB_EvalInt(SRC);
+        if (getmode == false) {
+            if (opcode == 0) {
+                ClearExtFontflag();
                 return -2;
-             }
+            }
+            if (opcode == 1) { 
+                if (EnableExtFont == false)
+                    OkMSGstr2("Please Enable","Extfont by Setup");
+                else
+                    ReadExtFont();
+                return -2;
+            }
         }
-        if ( opcode>0xFF ) { 
-            cstr[0]=(opcode>>8) & 0xFF;
-            cstr[1]=(opcode) & 0xFF;
-            cstr[2]='\0';
+        if (opcode > 0xFF) { 
+            cstr[0] = (opcode>>8) & 0xFF;
+            cstr[1] = opcode & 0xFF;
+            cstr[2] = '\0';
         } else {
-            cstr[0]=opcode;
-            cstr[1]='\0';
+            cstr[0] = opcode;
+            cstr[1] = '\0';
         }
     }
     return opcode & 0xFFFF;
 }
-int CB_GetFont( char *SRC ){    // GetFont(0xFFA0)->Mat C
+
+int CB_GetFont(char *SRC) {    // GetFont(0xFFA0)->Mat C
     int c;
-    int x,y,px,py;
-    int reg,i;
+    int x, y, px, py;
+    int reg, i;
     int mptr;
-    int ElementSize=1;
+    int ElementSize = 1;
     unsigned short CharNo;
-    int width=6,height=8;
+    int width = 6, height = 8;
     char vbuf[16*8];
-    char *vram=(char*)PictAry[0];
+    char *vram = (char*)PictAry[0];
     unsigned char cstr[256];
     int orgflag;
 
-    c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
-    if ( c == -1 ) goto exit;
-    if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-    if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
-            ExecPtr++;
-            width=6;
-            MatrixOprand( SRC, &reg, &x, &y );
-            if ( ErrorNo == NoMatrixArrayERR ) {     // No Matrix Array
-                ErrorNo=0;    // error cancel
-            }
-            DimMatrixSub( reg, 1, width, height,  ElementSize ) ;    // 1bit
-            if ( ErrorNo ) return; // error
-
-            memcpy( vbuf, vram, 16*8 );
-            if ( cstr==NULL )    CB_PrintC( 1, 1, (unsigned char *)" " );
-            else            CB_PrintC_ext( 1, 1, cstr, orgflag==0 );
-            x=1;
-            y=1;
-            i=x;
-            for ( py=0; py<8 ; py++) {
-                x=i;
-                for ( px=0; px<6 ; px++) WriteMatrixInt( reg, x++, y, BdispGetPointVRAM2(px,py) );
-                y++;
-            }
-            memcpy( vram, vbuf, 16*8);
-    } else { CB_Error(SyntaxERR);}    // Syntax error
+    c = CB_GetFontSub(SRC, (char*)cstr, &orgflag, true) ;
+    if (c == -1)
+        goto exit;
+    if (SRC[ExecPtr] == ')')
+        ExecPtr++;
+    if (SRC[ExecPtr] == 0x0E) {  // -> Mat C
+        ExecPtr++;
+        MatrixOprand(SRC, &reg, &x, &y);
+        if (ErrorNo == NoMatrixArrayERR) {
+            ErrorNo = 0;
+        }
+        DimMatrixSub(reg, 1, width, height, ElementSize);    // 1bit
+        if (ErrorNo)
+            return;
+        memcpy(vbuf, vram, 16*8);
+        if (cstr == NULL)
+            CB_PrintC(1, 1, (unsigned char *)" ");
+        else
+            CB_PrintC_ext(1, 1, cstr, orgflag == false);
+        x = 1;
+        y = 1;
+        i = x;
+        for (py = 0; py < 8; py++) {
+            x = i;
+            for (px = 0; px < 6; px++)
+                WriteMatrixInt(reg, x++, y, BdispGetPointVRAM2(px, py));
+            y++;
+        }
+        memcpy(vram, vbuf, 16*8);
+    } else {
+        CB_Error(SyntaxERR);
+    }
   exit:
     // return (g_ext_kana!=0)*4 + (g_ext_gaiji!=0)*2 + (g_ext_asc!=0);
     return (g_ext_ff!=0)*2 + (g_ext_asc!=0);
