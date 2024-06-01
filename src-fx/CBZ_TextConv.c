@@ -1401,8 +1401,8 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			text[textofst++] = code;
 			ofst++;
 		} else
-		if ( ( 0xFF80 <= code ) && ( code <= 0xFFDF ) ) {	// kana
-				if ( code <= 0xFFA0 ) goto code4;
+		if ( ( 0xFF80 <= code ) && ( code <= 0xFFFF ) ) {	// kana
+				if ( ( code <= 0xFFA0 ) || ( 0xFFE0 <= code ) ) goto code4;
 				text[textofst++] = code & 0xFF;
 				ofst+=2;
 		} else
