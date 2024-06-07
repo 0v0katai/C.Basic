@@ -1733,40 +1733,31 @@ int CB_Catalog(void) {
 	char buffer[22];
 	char tmpbuf[18];
 	unsigned int key;
-	int	cont,cont2=1;
 	int i,j,k,m,y;
 	int seltop;
 	char search[10]="", *search2;
 	int CursorStyle;
-	int alphalock ;
-	char alphalock_bk ;
 	int searchmode=1;
 	int csrX=0;
 
- alpha_start:
 	CursorStyle=Cursor_GetFlashStyle();
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
 	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
-	alphalock = 1;
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 
-	while ( cont2 ) {
 		
-		opNum=0 ;
-		while ( oplist[opNum++] ) ;
-		opNum-=2;
-		seltop=*select;
-		cont=1;
+	opNum=0 ;
+	while ( oplist[opNum++] ) ;
+	opNum-=2;
+	seltop=*select;
 
-		Cursor_SetFlashMode(0); 		// cursor flashing off
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 
-		SaveDisp(SAVEDISP_PAGE1);
+	SaveDisp(SAVEDISP_PAGE1);
 
-		
-		while (cont) {
-			loop:
+		while (1) {
 			Bdisp_AllClr_VRAM();
 			locate( 1,1); Print((unsigned char*)"Catalog.CB");
 			Fkey_dispN( FKeyNo1, "INPUT");
@@ -1822,14 +1813,11 @@ int CB_Catalog(void) {
 			
 			GetKey_DisableMenu(&key);
 			switch (key) {
-				case KEY_CTRL_SHIFT:
-					goto loop;
 
 				case KEY_CTRL_MENU:
 				case KEY_CTRL_F5:
 					key=SelectOpcodeRecent( CMDLIST_RECENT );
 					if ( key ) return key;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_QUIT:
@@ -1839,23 +1827,12 @@ int CB_Catalog(void) {
 					
 				case KEY_CTRL_F1:
 				case KEY_CTRL_EXE:
-					cont=0;
-					cont2=0;
-					goto exit;
-					break;
-			
-				case KEY_CTRL_ALPHA:
-					alphalock = 0 ;
-					key = 0;
-					goto loop;
+					return oplist[(*select)] & 0xFFFF;
 					break;
 						
 				case KEY_CTRL_AC:
 					search[0]='\0';
 					csrX=0;
-					if  ( alphalock ) goto alpha_start;
-					key = 0;
-					goto loop;
 					break;
 
 				case KEY_CTRL_DEL:
@@ -1865,13 +1842,11 @@ int CB_Catalog(void) {
 						}
 						DeleteOpcode1( search, 8, &csrX );
 					}
-					goto loop;
 					break;
 				
 				case KEY_CTRL_LEFT:
 					if ( searchmode ) { 
 						PrevOpcode( search, &csrX ); 
-						goto loop;
 						break; 
 					}
 //					for ( i=(*select)-2; i>0; i-- ) {
@@ -1882,14 +1857,12 @@ int CB_Catalog(void) {
 //					*select = i ;
 //					seltop = *select;
 					searchmode=1;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_RIGHT:
 					if ( searchmode ) {
 						if ( search[csrX] != 0x00 )	NextOpcode( search, &csrX );
-						goto loop;
-						break;
+							break;
 					}
 //					for ( i=(*select)+1; i<(*select)+opNum; i++ ) {
 //						if ( oplist[i] == 0xFFFFFFFF ) break;
@@ -1898,21 +1871,18 @@ int CB_Catalog(void) {
 //					if ( *select > opNum ) *select = opNum;
 //					seltop = *select;
 					searchmode=1;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_UP:
 					(*select)--;
 					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)--;
 					if ( *select < 0 ) *select = opNum;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_DOWN:
 					(*select)++;
 					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)++;
 					if ( *select > opNum ) *select =0;
-					goto loop;
 					break;
 
 				default:
@@ -1929,9 +1899,6 @@ int CB_Catalog(void) {
 					i=InsertOpcode1( search, 8, csrX, key );
 				}
 				if ( i==0 ) NextOpcode( search, &csrX );
-			} else {
-				RestoreDisp(SAVEDISP_PAGE1);
-				return key;
 			}
 			if ( ( ( ('A' <= key) && (key <= 'Z') ) || (key == 0x9C) || (key == '_') ) && ( strlen(search) ) ) {
 				searchmode=1;
@@ -1958,12 +1925,7 @@ int CB_Catalog(void) {
 				}
 			}
 		}
-		RestoreDisp(SAVEDISP_PAGE1);
 	}
-	exit:
-	Bdisp_PutDisp_DD();
-	return oplist[(*select)] & 0xFFFF;
-}
 
 //--------------------------------------------------------------------------
 
