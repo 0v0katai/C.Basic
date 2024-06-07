@@ -1725,6 +1725,11 @@ int check_ext_opcode(int code) {	// 0:genuine	1:ext
 }
 
 
+void force_alphalock() {
+	unsigned int key;
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+}
 
 int CB_Catalog(void) {
 	short *select=&selectCATALOG;
@@ -1792,14 +1797,12 @@ int CB_Catalog(void) {
 //				Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 //				Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
 			}
-			Bdisp_PutDisp_DD();	
 			
 //			if ( seltop <= opNum-6 ) { locate(19,7); Print((unsigned char*)"\xE6\x93"); } // dw
 //			if ( seltop >= 1 )       { locate(19,2); Print((unsigned char*)"\xE6\x92"); } // up
 			
 			y = ((*select)-seltop) + 1 ;
 			Bdisp_AreaReverseVRAM(0, y*8, 125, y*8+7);	// reverse *select line 
-			Bdisp_PutDisp_DD();
 
 			if ( searchmode ) {
 				locate(13+csrX,1);
@@ -1811,6 +1814,8 @@ int CB_Catalog(void) {
 				if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
 			}
 			
+			force_alphalock();
+			// Bdisp_PutDisp_DD();
 			GetKey_DisableMenu(&key);
 			switch (key) {
 
