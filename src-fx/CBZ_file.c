@@ -653,8 +653,7 @@ unsigned int Explorer( int size, char *folder )
 	CursorStyle=Cursor_GetFlashStyle();
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+	apply_alphalock();
 	alphalock = 1;
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 
@@ -1562,8 +1561,7 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 	char msg2[32];
 	SaveDisp(SAVEDISP_PAGE2);
 	PopUpWin(5);
-	PutKey( KEY_CTRL_SHIFT, 1 );
-	PutKey( KEY_CTRL_ALPHA, 1 );
+	put_alphalock();
   loop:
   	if ( ext[0]=='M' ) {
 		sprintf( msg1, "%s to       ", pmsg );

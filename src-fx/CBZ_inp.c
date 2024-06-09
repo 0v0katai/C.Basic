@@ -1725,10 +1725,22 @@ int check_ext_opcode(int code) {	// 0:genuine	1:ext
 }
 
 
-void force_alphalock() {
+void apply_alphalock() {
 	unsigned int key;
 	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
 	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+}
+
+void cancel_alphalock() {
+	unsigned int key;
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+}
+
+void put_alphalock() {
+	unsigned int key;
+	PutKey( KEY_CTRL_SHIFT, 1 );
+	PutKey( KEY_CTRL_ALPHA, 1 );
 }
 
 int CB_Catalog(void) {
@@ -1748,8 +1760,7 @@ int CB_Catalog(void) {
 	CursorStyle=Cursor_GetFlashStyle();
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+	apply_alphalock();
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 
 		
@@ -1814,7 +1825,7 @@ int CB_Catalog(void) {
 				if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
 			}
 			
-			force_alphalock();
+			apply_alphalock();
 			// Bdisp_PutDisp_DD();
 			GetKey_DisableMenu(&key);
 			switch (key) {
@@ -3754,10 +3765,8 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
 
 	if ( ( float_mode == 0 ) && ( exp_mode == 0 ) && ( alpha_mode ) ) {
-		PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-		PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-		PutKey( KEY_CTRL_SHIFT, 1 );
-		PutKey( KEY_CTRL_ALPHA, 1 );
+		cancel_alphalock();
+		apply_alphalock();
 		displaystatus=1;
 	}
 
@@ -4037,7 +4046,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 					case KEY_CTRL_F5:	// A<>a
 							if ( ( pallet_mode ) && ( alpha_mode ) ) {
 								lowercase=1-lowercase;
-								if ( alphalock_bk ) { alphalock = 1; PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key); PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key); }
+								if ( alphalock_bk ) { alphalock = 1; apply_alphalock(); }
 								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 							}
 							key=0;
