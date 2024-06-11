@@ -1277,7 +1277,7 @@ unsigned int Explorer( int size, char *folder )
 		SaveFavorites();
 	}
 
-	if ( alphalock ) { PutKey( KEY_CTRL_ALPHA, 1 ); i=key; GetKey(&key); key=i; }
+	if ( alphalock ) { i=key; perform_key(KEY_CTRL_ALPHA); key=i; }
 	
 
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
@@ -1561,7 +1561,7 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 	char msg2[32];
 	SaveDisp(SAVEDISP_PAGE2);
 	PopUpWin(5);
-	put_alphalock();
+	apply_alphalock();
   loop:
   	if ( ext[0]=='M' ) {
 		sprintf( msg1, "%s to       ", pmsg );

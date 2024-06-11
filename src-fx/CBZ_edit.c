@@ -2021,9 +2021,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								alphalock = 1;
 								apply_alphalock();
 							} else {
-								if ( ( mini ) && ( alphastatus_bk ) ) {
-									PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
-								}
+								if (mini && alphastatus_bk)
+									perform_key(KEY_CTRL_ALPHA);
 							}
 							key=0;
 							goto PUTALPHA;
@@ -2279,7 +2278,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					Undo.enable = 0;
 					if ( help_code == 0x0D ) {
 						if ( alphalock ) {
-							put_alphalock();
+							apply_alphalock();
 							alphalock   = 0;
 							alphastatus = 0;
 						}

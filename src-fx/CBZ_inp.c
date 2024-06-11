@@ -1724,23 +1724,20 @@ int check_ext_opcode(int code) {	// 0:genuine	1:ext
 	return 0;
 }
 
+void perform_key(unsigned int keycode) {
+	unsigned int key;
+	PutKey(keycode, 1);
+	GetKey(&key);
+}
 
 void apply_alphalock() {
-	unsigned int key;
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+	perform_key(KEY_CTRL_SHIFT);
+	perform_key(KEY_CTRL_ALPHA);
 }
 
 void cancel_alphalock() {
-	unsigned int key;
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-}
-
-void put_alphalock() {
-	unsigned int key;
-	PutKey( KEY_CTRL_SHIFT, 1 );
-	PutKey( KEY_CTRL_ALPHA, 1 );
+	perform_key(KEY_CTRL_SHIFT);
+	perform_key(KEY_CTRL_SHIFT);
 }
 
 int CB_Catalog(void) {
