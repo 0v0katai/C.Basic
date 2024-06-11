@@ -864,7 +864,7 @@ int SelectOpcodeRecent( int listselect ) {
 					j=OplistRecentFreq[seltop+i].code;
 				}
 				CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
-				tmpbuf[12]='\0'; 
+				// tmpbuf[12]='\0'; 
 				DMS_Opcode( tmpbuf, j);
 				j=0; if ( tmpbuf[0]==' ' ) j++;
 				if ( listselect == CMDLIST_RECENT ) {
