@@ -344,16 +344,14 @@ int frandIntint( int x, int y ) {
 	return rand()*(y-x+1)/(RAND_MAX+1) +x ;
 }
 
-int fMODint( int x, int y ) {	// fMODint(x,y)
+int fMODint(int x, int y) {
 	int result;
-	if ( y == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-	result= abs(x % y);
-	if ( x < 0 ) {
-		y = abs(y);
-		result = y-result;
-		if ( ( result == y  ) || ( x == y  ) ) result=0;
-	}
-	return result ;
+	if (y == 0)
+		CB_Error(DivisionByZeroERR);
+	result = x % y;
+	if (result < 0)
+		result += abs(y);
+	return result;
 }
 
 int fGCDint( int x, int y ) {	// GCD(x,y)
