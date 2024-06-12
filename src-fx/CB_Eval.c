@@ -954,28 +954,21 @@ double fDIV( double x, double y ) {	// x / y
 	if ( y == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
 	return x/y;
 }
-void fDIVcheck( double *x, double *y ) {	//
-	double tmp,tmp2,result;
-	(*x)  = floor( (*x) +.5);
-	(*y) = floor( (*y) +.5);
-	if ( (*y) == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-}
 
-double fMOD( double x, double y ) {	// fMOD(x,y)
+double fMOD(double x, double y) {	// fMOD(x,y)
 	double result;
-	fDIVcheck( &x, &y );
-	result= floor(fabs(fmod( x, y ))+.5);
-	if ( x < 0 ) {
-		result = fabs(y)-result;
-		if ( ( result == fabs(y)  ) || ( x == y  ) ) result=0;
-	}
-	return result ;
+	if (y == 0)
+		CB_Error(DivisionByZeroERR);
+	result = fmod(x,y);
+	if (result < 0)
+		result += fabs(y);
+	return result;
 }
 
 double fIDIV( double x, double y ) {	// floor( floor(x) / floor(y) )
-	double result;
-	fDIVcheck( &x, &y );
-	return floor((x/y));
+	if (y == 0)
+		CB_Error(DivisionByZeroERR);
+	return floor(x/y);
 }
 double ffact( double x ) {
 	double tmp;
@@ -1961,10 +1954,10 @@ double Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// ~
+			case 0xFFFFFFA9 :		// ï¿½~
 				result *= Evalsub7( SRC );
 				break;
-			case 0xFFFFFFB9 :		// €
+			case 0xFFFFFFB9 :		// ï¿½ï¿½
 				tmp = Evalsub7( SRC );
 				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 				result /= tmp ;
@@ -1972,7 +1965,7 @@ double Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// Int€
+					case 0xFFFFFFBC:	// Intï¿½ï¿½
 						result = fIDIV( result, Evalsub7( SRC ) );
 						break;
 					case 0xFFFFFFBD:	// Rmdr

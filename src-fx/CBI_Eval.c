@@ -344,16 +344,14 @@ int frandIntint( int x, int y ) {
 	return rand()*(y-x+1)/(RAND_MAX+1) +x ;
 }
 
-int fMODint( int x, int y ) {	// fMODint(x,y)
+int fMODint(int x, int y) {
 	int result;
-	if ( y == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-	result= abs(x % y);
-	if ( x < 0 ) {
-		y = abs(y);
-		result = y-result;
-		if ( ( result == y  ) || ( x == y  ) ) result=0;
-	}
-	return result ;
+	if (y == 0)
+		CB_Error(DivisionByZeroERR);
+	result = x % y;
+	if (result < 0)
+		result += abs(y);
+	return result;
 }
 
 int fGCDint( int x, int y ) {	// GCD(x,y)
@@ -1104,10 +1102,10 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// ~
+			case 0xFFFFFFA9 :		// ï¿½~
 				result *= EvalIntsub7( SRC );
 				break;
-			case 0xFFFFFFB9 :		// €
+			case 0xFFFFFFB9 :		// ï¿½ï¿½
 				tmp = EvalIntsub7( SRC );
 				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 				result /= tmp ;
@@ -1115,7 +1113,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// Int€
+					case 0xFFFFFFBC:	// Intï¿½ï¿½
 						tmp = EvalIntsub7( SRC );
 						if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 						result /= tmp ;
