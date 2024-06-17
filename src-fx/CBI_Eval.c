@@ -353,16 +353,10 @@ int fMODint(int x, int y) {
 	return result;
 }
 
-int fGCDint( int x, int y ) {	// GCD(x,y)
-	int tmp;
-	if ( x<y ) { tmp=x; x=y; y=tmp; }
-	tmp=fMODint(x,y);
-	while( tmp != 0 ) {
-		x=y;
-		y=tmp;
-		tmp=fMODint(x,y);
-	}
-	return y;
+int fGCDint(int x, int y) {	// GCD(x,y)
+	if (y == 0)
+		return abs(x);
+	return abs(fGCDint(y, x % y)); 
 }
 int fLCMint( int x, int y ) {	// LCM(x,y)
 	return abs(fDIVint(x*y, fGCDint(x,y) + (y == 0)));
