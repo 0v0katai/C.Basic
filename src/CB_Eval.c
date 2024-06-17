@@ -1017,16 +1017,10 @@ double fRanBin( double n, double p) {	// RanBin#
 	for ( i=0; i<n; i++ ) if ( rand() <= r ) m++;
 	return m;
 }
-double fGCD( double x, double y ) {	// GCD(x,y)
-	double tmp;
-	if ( x<y ) { tmp=x; x=y; y=tmp; }
-	tmp=fMOD(x,y);
-	while( tmp != 0 ) {
-		x=y;
-		y=tmp;
-		tmp=fMOD(x,y);
-	}
-	return fabs(y);
+double fGCD(double x, double y) {	// GCD(x,y)
+	if (y == 0)
+		return fabs(x);
+	return fabs(fGCD(y, fmod(x,y))); 
 }
 double fLCM(double x, double y) {	// LCM(x,y)
 	return fabs(fDIV(x*y,fGCD(x,y) + (y == 0)));
