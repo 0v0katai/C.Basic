@@ -202,6 +202,11 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 //int EvalIntObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 
+void _div_check_int(int div) {
+	if (div == 0)
+		CB_Error(DivisionByZeroERR);
+}
+
 int fintint( int x ) {
 	return x;
 }
@@ -257,8 +262,7 @@ int f_nCrint( int n, int r ) {
 	return f_nCr( n, r);
 }
 int frecipint( int x ) {	// ^(-1) RECIP
-	if ( x == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-	return 1 / x ;
+	return fDIVint(1, x);
 }
 
 int fsignint( int x ) {	// -x
@@ -274,7 +278,7 @@ int fMULint( int x, int y ) {	// x * y
 	return x*y;
 }
 int fDIVint( int x, int y ) {	// x / y
-	if ( y == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	_div_check_int(y);
 	return x/y;
 }
 int fANDint( int x, int y ) {	// x and y
@@ -324,16 +328,10 @@ int fpowint( int x, int y ) {	// pow(x,y)
 	return pow( x, y );
 }
 int fpowrootint( int x, int y ) {	// powroot(x,y)
-	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	return pow( x, 1/(double)y );
+	return fpowroot(x, y);
 }
-int flogabint( int x, int y ) {	// flogab(x,y)
-	double base;
-	int result;
-	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	base  = log(x);
-	result = log(y)/base;
-	return result ;
+int flogabint(int x, int y) {	// flogab(x,y)
+	return flogab(x,y);
 }
 int frandint() {
 	return rand();
@@ -346,8 +344,7 @@ int frandIntint( int x, int y ) {
 
 int fMODint(int x, int y) {
 	int result;
-	if (y == 0)
-		CB_Error(DivisionByZeroERR);
+	_div_check_int(y);
 	result = x % y;
 	if (result < 0)
 		result += abs(y);
@@ -1107,7 +1104,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				break;
 			case 0xFFFFFFB9 :		// ��
 				tmp = EvalIntsub7( SRC );
-				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+				_div_check_int(tmp);
 				result /= tmp ;
 				break;
 			case 0x7F:
@@ -1115,7 +1112,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int��
 						tmp = EvalIntsub7( SRC );
-						if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+						_div_check_int(tmp);
 						result /= tmp ;
 						break;
 					case 0xFFFFFFBD:	// Rmdr

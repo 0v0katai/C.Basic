@@ -699,6 +699,10 @@ int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
+void _div_check(double div) {
+	if (div == 0)
+		CB_Error(DivisionByZeroERR);
+}
 
 double frac( double x ) {
 	double sign=1,tmp,d;
@@ -889,9 +893,7 @@ double fsqrt( double x ) {
 	return x;
 }
 double fcuberoot( double x ) {
-	x = pow( x, 1.0/3.0 );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return fpow(x, 1./3.);
 }
 double flog10( double x ) {
 	x = log10( x );
@@ -913,29 +915,21 @@ double fexp( double x ) {
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
-double flogab( double x, double y ) {	// flogab(x,y)
-	double base,tmp,result;
-	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	base  = log(x);
-	result = log(y)/base;
-	CheckMathERR(&result); // Math error ?
-	return result ;
-}
-double fpow( double x, double y ) {	// pow(x,y)
-	x = pow( x, y );
+double flogab(double x, double y) {	// flogab(x,y)
+	x = fDIV(log(y), log(x));
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
-double fpowroot( double x, double y ) {	// powroot(x,y)
-	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = pow( x, 1/y );
-	CheckMathERR(&x); // Math error ?
+double fpow(double x, double y) {	// pow(x,y)
+	x = pow(x,y);
+	CheckMathERR(&x);
 	return x;
 }
-
-double frecip( double x ) {	// ^(-1) RECIP
-	if ( x == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
-	return 1 / x ;
+double fpowroot(double x, double y) {	// powroot(x,y)
+	return fpow(x, frecip(y));
+}
+double frecip(double x) {	// ^(-1) RECIP
+	return fDIV(1., x);
 }
 
 double fsign( double x ) {	// -x
@@ -951,24 +945,20 @@ double fMUL( double x, double y ) {	// x * y
 	return x*y;
 }
 double fDIV( double x, double y ) {	// x / y
-	if ( y == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
+	_div_check(y);
 	return x/y;
 }
 
 double fMOD(double x, double y) {	// fMOD(x,y)
 	double result;
-	if (y == 0)
-		CB_Error(DivisionByZeroERR);
+	_div_check(y);
 	result = fmod(x,y);
 	if (result < 0)
 		result += fabs(y);
 	return result;
 }
-
-double fIDIV( double x, double y ) {	// floor( floor(x) / floor(y) )
-	if (y == 0)
-		CB_Error(DivisionByZeroERR);
-	return floor(x/y);
+double fIDIV(double x, double y) {
+	return floor(fDIV(x,y));
 }
 double ffact( double x ) {
 	double tmp;
@@ -1727,8 +1717,7 @@ double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result *= result ;
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				if ( result == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				result = 1 / result ;
+				result = frecip(result);
 				break;
 			case  0xFFFFFFAB  :	//  !
 				result = ffact( result );
@@ -1801,12 +1790,10 @@ double Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
-				result = pow( result, Evalsub2( SRC ) );
-				CheckMathERR(&result); // Math error ?
+				result = fpow(result, Evalsub2(SRC));
 				break;
 			case  0xFFFFFFB8  :	// powroot
-				result = pow( Evalsub2( SRC ), 1/result );
-				CheckMathERR(&result); // Math error ?
+				result = fpowroot(Evalsub2(SRC), result);
 				break;
 			case ' ':	// Skip Space
 				break;
@@ -1831,11 +1818,9 @@ double Evalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 		if ( c == 0xFFFFFFBB ) {
 			ExecPtr++;
 			frac3 = Evalsub3( SRC );
-			if ( frac3 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = frac1 + ( frac2 / frac3 ) ;
+			result = frac1 + fDIV(frac2, frac3);
 		} else {
-			if ( frac2 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = ( frac1 / frac2 ) ;
+			result = fDIV(frac1, frac2) ;
 		}
 	}
 	return result;
@@ -1957,15 +1942,14 @@ double Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 			case 0xFFFFFFA9 :		// �~
 				result *= Evalsub7( SRC );
 				break;
-			case 0xFFFFFFB9 :		// ��
+			case 0xFFFFFFB9 :		// ÷
 				tmp = Evalsub7( SRC );
-				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				result /= tmp ;
+				result = fDIV(result, tmp);
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// Int��
+					case 0xFFFFFFBC:	// Int÷
 						result = fIDIV( result, Evalsub7( SRC ) );
 						break;
 					case 0xFFFFFFBD:	// Rmdr

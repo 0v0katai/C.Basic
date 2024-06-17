@@ -766,10 +766,10 @@ complex Cplx_ListEvalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 		if ( c == 0xFFFFFFBB ) {
 			ExecPtr++;
 			frac3 = Cplx_ListEvalsub3( SRC );
-			if ( frac3.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+			// _div_check(frac3.real);
 			result = Cplx_fADD( frac1, Cplx_fDIV( frac2, frac3 ) );
 		} else {
-			if ( frac2.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+			// _div_check(frac2.real);
 			result = Cplx_fDIV( frac1, frac2 );
 		}
 	}
@@ -942,16 +942,16 @@ complex Cplx_ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// Å~
+			case 0xFFFFFFA9 :		// √ó
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub8( SRC ) ) ;
 				break;
-			case 0xFFFFFFB9 :		// ÅÄ
+			case 0xFFFFFFB9 :		// √∑
 				result = Cplx_EvalFxDbl2( &Cplx_fDIV, &resultflag, &resultreg, result, Cplx_ListEvalsub8( SRC ) ) ;
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// IntÅÄ
+					case 0xFFFFFFBC:	// Int√∑
 						result = Cplx_EvalFxDbl2( &Cplx_fIDIV, &resultflag, &resultreg, result, Cplx_ListEvalsub8( SRC ) ) ;
 						break;
 					case 0xFFFFFFBD:	// Rmdr
