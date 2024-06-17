@@ -365,8 +365,7 @@ int fGCDint( int x, int y ) {	// GCD(x,y)
 	return y;
 }
 int fLCMint( int x, int y ) {	// LCM(x,y)
-	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
-	return x/fGCDint(x,y)*y;
+	return abs(fDIVint(x*y, fGCDint(x,y) + (y == 0)));
 }
 
 int CB_rand( char *SRC ) {

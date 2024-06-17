@@ -1028,10 +1028,8 @@ double fGCD( double x, double y ) {	// GCD(x,y)
 	}
 	return fabs(y);
 }
-double fLCM( double x, double y ) {	// LCM(x,y)
-	if ( ( x == 0 ) || ( y == 0 ) ) return 0;
-	if ( ( x < 0 ) || ( y < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
-	return x/fGCD(x,y)*y;
+double fLCM(double x, double y) {	// LCM(x,y)
+	return fabs(fDIV(x*y,fGCD(x,y) + (y == 0)));
 }
 
 double fnot( double x ) {
