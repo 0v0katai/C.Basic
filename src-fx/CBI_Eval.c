@@ -250,13 +250,15 @@ int ffactint( int x ) {
 	while ( tmp > 0 ) { x *= tmp; tmp--; }
 	return x;
 }
-int f_nPrint( int n, int r ) {
-	int x,tmp;
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	return x;
+int f_nPrint(int n, int r) {
+	int i, sum=1;
+	if (n < r) {
+		CB_Error(MathERR);
+		return 0;
+	}
+	for (i = n; i > n-r; i--)
+		sum *= i;
+	return sum;
 }
 int f_nCrint( int n, int r ) {
 	return f_nCr( n, r);
