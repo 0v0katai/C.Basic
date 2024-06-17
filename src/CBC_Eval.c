@@ -460,11 +460,10 @@ complex Cplx_fpowroot( complex x, complex y ) {	// powroot(x,y)
 complex Cplx_frecip( complex z ) {	// ^(-1) RECIP
 	double c;
 	if ( z.imag==0 ) {
-		if ( z.real==0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-		z.real = 1 / z.real ;
+		z.real = frecip(z.real);
 	} else {
 		c = z.real*z.real + z.imag*z.imag;
-		if ( c == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+		_div_check(c);
 		z.real =  z.real / c;
 		z.imag = -z.imag / c;
 	}
@@ -502,12 +501,11 @@ complex Cplx_fDIV( complex x, complex y ) {	// x / y
 	double tmp;
 	complex z;
 	if ( (x.imag==0)&&(y.imag==0) ) {
-		if ( y.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-		z.real = x.real / y.real;
+		z.real = fDIV(x.real, y.real);
 		z.imag = 0;
 	} else {
 		tmp = y.real*y.real + y.imag*y.imag;
-		if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+		_div_check(tmp);
 		z.real = (x.real * y.real + x.imag * y.imag) /tmp;
 		z.imag = (x.imag * y.real - x.real * y.imag) /tmp;
 	}
@@ -1174,7 +1172,7 @@ complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result = Cplx_fMUL( result, result ) ;
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				if ( result.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+				// _div_check(result.real);
 				result = Cplx_frecip( result );
 				break;
 			case  0xFFFFFFAB  :	//  !
@@ -1279,10 +1277,10 @@ complex Cplx_Evalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 		if ( c == 0xFFFFFFBB ) {
 			ExecPtr++;
 			frac3 = Cplx_Evalsub3( SRC );
-			if ( frac3.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+			// _div_check(frac3.real);
 			result = Cplx_fADD( frac1, Cplx_fDIV( frac2, frac3 ) );
 		} else {
-			if ( frac2.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+			// _div_check(frac2.real);
 			result = Cplx_fDIV( frac1, frac2 );
 		}
 	}
@@ -1436,18 +1434,18 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// Å~
+			case 0xFFFFFFA9 :		// √ó
 				result = Cplx_fMUL( result, Cplx_Evalsub8( SRC ) );
 				break;
-			case 0xFFFFFFB9 :		// ÅÄ
+			case 0xFFFFFFB9 :		// √∑
 				tmp = Cplx_Evalsub8( SRC );
-				if ( tmp.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+				// _div_check(tmp.real);
 				result = Cplx_fDIV( result, tmp );
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// IntÅÄ
+					case 0xFFFFFFBC:	// Int√∑
 						result = Cplx_fIDIV( result, Cplx_Evalsub8( SRC ) );
 						break;
 					case 0xFFFFFFBD:	// Rmdr

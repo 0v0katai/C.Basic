@@ -12,6 +12,8 @@
 extern char ExpBuffer[];
 //-----------------------------------------------------------------------------
 void CheckMathERR( double *result ) ;
+void _div_check(double div);
+void _div_check_int(int div);
 double asinh( double x ) ;
 double acosh( double x ) ;
 double atanh( double x ) ;
