@@ -703,6 +703,12 @@ void _div_check(double div) {
 	if (div == 0)
 		CB_Error(DivisionByZeroERR);
 }
+void _nPCr_check(double *n, double *r) {
+	*n = floor(*n);
+	*r = floor(*r);
+	if (*n < *r)
+		CB_Error(MathERR);
+}
 
 double frac( double x ) {
 	double sign=1,tmp,d;
@@ -960,38 +966,34 @@ double fMOD(double x, double y) {	// fMOD(x,y)
 double fIDIV(double x, double y) {
 	return floor(fDIV(x,y));
 }
-double ffact( double x ) {
-	double tmp;
-	tmp = floor( x );
-	if ( ( tmp < 0 ) || ( 170 < tmp ) ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	while ( tmp > 0 ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return x;
+double ffact(double x) {
+	double i, sum=1;
+	if ((x < 0) || (170 < x)) {
+		CB_Error(MathERR);
+		return 0;
+	}
+	for (i = x; i > 1; i--)
+		sum *= i;
+	CheckMathERR(&sum);
+	return sum;
 }
-double f_nPr( double n, double r ) {
-	double x,tmp;
-	n = floor( n );
-	r = floor( r );
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return x;
+double f_nPr(double n, double r) {
+	double i, sum=1;
+	_nPCr_check(&n, &r);
+	for (i = n; i > n-r; i--)
+		sum *= i;
+	CheckMathERR(&sum);
+	return sum;
 }
-double f_nCr( double n, double r ) {
-	double x,tmp;
-	n = floor( n );
-	r = floor( r );
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = 1;
-	while ( tmp <= r ) { x /= tmp; tmp++; }
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return floor( x +.05 );
+double f_nCr(double n, double r) {
+	double i, sum=1;
+	_nPCr_check(&n, &r);
+	if (r >= floor(n/2))
+		r = n-r;
+	for (i = 1; i <= r; i++)
+		sum = sum * (n-i+1) / i;
+	CheckMathERR(&sum);
+	return sum;
 }
 double frand() {
 	return (double)rand()/(double)(RAND_MAX+1.0);
