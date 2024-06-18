@@ -1051,8 +1051,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	UpdateLineNum=1;
 
 	if ( DebugMode ) DebugMenuSw=1; 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	cancel_alphalock();
 
 //	Cursor_SetFlashMode(1);			// cursor flashing on
 	if (Cursor_GetFlashStyle()<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
@@ -2019,11 +2018,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_F5:	//
 							lowercase=1-lowercase;
 							if  ( alphalock_bk ) { 
-								alphalock = 1; PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key); PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+								alphalock = 1;
+								apply_alphalock();
 							} else {
-								if ( ( mini ) && ( alphastatus_bk ) ) {
-									PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
-								}
+								if (mini && alphastatus_bk)
+									perform_key(KEY_CTRL_ALPHA);
 							}
 							key=0;
 							goto PUTALPHA;
@@ -2279,8 +2278,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					Undo.enable = 0;
 					if ( help_code == 0x0D ) {
 						if ( alphalock ) {
-							PutKey( KEY_CTRL_SHIFT, 1 );
-							PutKey( KEY_CTRL_ALPHA, 1 );
+							apply_alphalock();
 							alphalock   = 0;
 							alphastatus = 0;
 						}

@@ -866,7 +866,7 @@ int SelectOpcodeRecent( int listselect ) {
 					j=OplistRecentFreq[seltop+i].code;
 				}
 				CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
-				tmpbuf[12]='\0'; 
+				// tmpbuf[12]='\0'; 
 				DMS_Opcode( tmpbuf, j);
 				j=0; if ( tmpbuf[0]==' ' ) j++;
 				if ( listselect == CMDLIST_RECENT ) {
@@ -1726,7 +1726,21 @@ int check_ext_opcode(int code) {	// 0:genuine	1:ext
 	return 0;
 }
 
+void perform_key(unsigned int keycode) {
+	unsigned int key;
+	PutKey(keycode, 1);
+	GetKey(&key);
+}
 
+void apply_alphalock() {
+	perform_key(KEY_CTRL_SHIFT);
+	perform_key(KEY_CTRL_ALPHA);
+}
+
+void cancel_alphalock() {
+	perform_key(KEY_CTRL_SHIFT);
+	perform_key(KEY_CTRL_SHIFT);
+}
 
 int CB_Catalog(void) {
 	short *select=&selectCATALOG;
@@ -1735,40 +1749,30 @@ int CB_Catalog(void) {
 	char buffer[22];
 	char tmpbuf[18];
 	unsigned int key;
-	int	cont,cont2=1;
 	int i,j,k,m,y;
 	int seltop;
 	char search[10]="", *search2;
 	int CursorStyle;
-	int alphalock ;
-	char alphalock_bk ;
 	int searchmode=1;
 	int csrX=0;
 
- alpha_start:
 	CursorStyle=Cursor_GetFlashStyle();
 	if (CursorStyle<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
-	alphalock = 1;
+	apply_alphalock();
 	Cursor_SetFlashMode(0); 		// cursor flashing off
 
-	while ( cont2 ) {
 		
-		opNum=0 ;
-		while ( oplist[opNum++] ) ;
-		opNum-=2;
-		seltop=*select;
-		cont=1;
+	opNum=0 ;
+	while ( oplist[opNum++] ) ;
+	opNum-=2;
+	seltop=*select;
 
-		Cursor_SetFlashMode(0); 		// cursor flashing off
+	Cursor_SetFlashMode(0); 		// cursor flashing off
 
-		SaveDisp(SAVEDISP_PAGE1);
+	SaveDisp(SAVEDISP_PAGE1);
 
-		
-		while (cont) {
-			loop:
+		while (1) {
 			Bdisp_AllClr_VRAM();
 			locate( 1,1); Print((unsigned char*)"Catalog.CB");
 			Fkey_dispN( FKeyNo1, "INPUT");
@@ -1803,14 +1807,12 @@ int CB_Catalog(void) {
 //				Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 //				Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
 			}
-			Bdisp_PutDisp_DD();	
 			
 //			if ( seltop <= opNum-6 ) { locate(19,7); Print((unsigned char*)"\xE6\x93"); } // dw
 //			if ( seltop >= 1 )       { locate(19,2); Print((unsigned char*)"\xE6\x92"); } // up
 			
 			y = ((*select)-seltop) + 1 ;
 			Bdisp_AreaReverseVRAM(0, y*8, 125, y*8+7);	// reverse *select line 
-			Bdisp_PutDisp_DD();
 
 			if ( searchmode ) {
 				locate(13+csrX,1);
@@ -1822,16 +1824,15 @@ int CB_Catalog(void) {
 				if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
 			}
 			
+			apply_alphalock();
+			// Bdisp_PutDisp_DD();
 			GetKey_DisableMenu(&key);
 			switch (key) {
-				case KEY_CTRL_SHIFT:
-					goto loop;
 
 				case KEY_CTRL_MENU:
 				case KEY_CTRL_F5:
 					key=SelectOpcodeRecent( CMDLIST_RECENT );
 					if ( key ) return key;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_QUIT:
@@ -1841,23 +1842,12 @@ int CB_Catalog(void) {
 					
 				case KEY_CTRL_F1:
 				case KEY_CTRL_EXE:
-					cont=0;
-					cont2=0;
-					goto exit;
-					break;
-			
-				case KEY_CTRL_ALPHA:
-					alphalock = 0 ;
-					key = 0;
-					goto loop;
+					return oplist[(*select)] & 0xFFFF;
 					break;
 						
 				case KEY_CTRL_AC:
 					search[0]='\0';
 					csrX=0;
-					if  ( alphalock ) goto alpha_start;
-					key = 0;
-					goto loop;
 					break;
 
 				case KEY_CTRL_DEL:
@@ -1867,13 +1857,11 @@ int CB_Catalog(void) {
 						}
 						DeleteOpcode1( search, 8, &csrX );
 					}
-					goto loop;
 					break;
 				
 				case KEY_CTRL_LEFT:
 					if ( searchmode ) { 
 						PrevOpcode( search, &csrX ); 
-						goto loop;
 						break; 
 					}
 //					for ( i=(*select)-2; i>0; i-- ) {
@@ -1884,14 +1872,12 @@ int CB_Catalog(void) {
 //					*select = i ;
 //					seltop = *select;
 					searchmode=1;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_RIGHT:
 					if ( searchmode ) {
 						if ( search[csrX] != 0x00 )	NextOpcode( search, &csrX );
-						goto loop;
-						break;
+							break;
 					}
 //					for ( i=(*select)+1; i<(*select)+opNum; i++ ) {
 //						if ( oplist[i] == 0xFFFFFFFF ) break;
@@ -1900,21 +1886,18 @@ int CB_Catalog(void) {
 //					if ( *select > opNum ) *select = opNum;
 //					seltop = *select;
 					searchmode=1;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_UP:
 					(*select)--;
 					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)--;
 					if ( *select < 0 ) *select = opNum;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_DOWN:
 					(*select)++;
 					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)++;
 					if ( *select > opNum ) *select =0;
-					goto loop;
 					break;
 
 				default:
@@ -1931,9 +1914,6 @@ int CB_Catalog(void) {
 					i=InsertOpcode1( search, 8, csrX, key );
 				}
 				if ( i==0 ) NextOpcode( search, &csrX );
-			} else {
-				RestoreDisp(SAVEDISP_PAGE1);
-				return key;
 			}
 			if ( ( ( ('A' <= key) && (key <= 'Z') ) || (key == 0x9C) || (key == '_') ) && ( strlen(search) ) ) {
 				searchmode=1;
@@ -1960,12 +1940,7 @@ int CB_Catalog(void) {
 				}
 			}
 		}
-		RestoreDisp(SAVEDISP_PAGE1);
 	}
-	exit:
-	Bdisp_PutDisp_DD();
-	return oplist[(*select)] & 0xFFFF;
-}
 
 //--------------------------------------------------------------------------
 
@@ -3789,10 +3764,8 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 		else 				Cursor_SetFlashOn(0x6);		// overwrite mode cursor 
 
 	if ( ( float_mode == 0 ) && ( exp_mode == 0 ) && ( alpha_mode ) ) {
-		PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-		PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-		PutKey( KEY_CTRL_SHIFT, 1 );
-		PutKey( KEY_CTRL_ALPHA, 1 );
+		cancel_alphalock();
+		apply_alphalock();
 		displaystatus=1;
 	}
 
@@ -4072,7 +4045,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 					case KEY_CTRL_F5:	// A<>a
 							if ( ( pallet_mode ) && ( alpha_mode ) ) {
 								lowercase=1-lowercase;
-								if ( alphalock_bk ) { alphalock = 1; PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key); PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key); }
+								if ( alphalock_bk ) { alphalock = 1; apply_alphalock(); }
 								if ( alphalock == 0 ) PutAlphamode1(CursorStyle);
 							}
 							key=0;

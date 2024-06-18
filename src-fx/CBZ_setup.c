@@ -956,8 +956,7 @@ int SetVar(int select){		// ----------- Set Variable
 	int VarMode=CB_INT;	// 0:double or complex  1:int
 	int hex=0;	// 0:normal  1:hex
 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	cancel_alphalock();
 
 	if ( VarMode==2 ) VarMode=0;	// complex ->double
 	Cursor_SetFlashMode(0); 		// cursor flashing off

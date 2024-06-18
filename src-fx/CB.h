@@ -57,3 +57,6 @@ typedef char bool;
 #include "fxCG_Registers.h"
 #include "MonochromeLib.h"
 #include "CB_MonochromeLib.h"
+
+#define min(X, Y)  ((X) < (Y) ? (X) : (Y))
+#define max(X, Y)  ((X) > (Y) ? (X) : (Y))

@@ -202,6 +202,15 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 //int EvalIntObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 
+int rand2() {
+	return ((rand() % 2) << 30) + (rand() << 15) + rand();
+}
+
+void _div_check_int(int div) {
+	if (div == 0)
+		CB_Error(DivisionByZeroERR);
+}
+
 int fintint( int x ) {
 	return x;
 }
@@ -245,20 +254,21 @@ int ffactint( int x ) {
 	while ( tmp > 0 ) { x *= tmp; tmp--; }
 	return x;
 }
-int f_nPrint( int n, int r ) {
-	int x,tmp;
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	return x;
+int f_nPrint(int n, int r) {
+	int i, sum=1;
+	if (n < r) {
+		CB_Error(MathERR);
+		return 0;
+	}
+	for (i = n; i > n-r; i--)
+		sum *= i;
+	return sum;
 }
 int f_nCrint( int n, int r ) {
 	return f_nCr( n, r);
 }
 int frecipint( int x ) {	// ^(-1) RECIP
-	if ( x == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-	return 1 / x ;
+	return fDIVint(1, x);
 }
 
 int fsignint( int x ) {	// -x
@@ -274,7 +284,7 @@ int fMULint( int x, int y ) {	// x * y
 	return x*y;
 }
 int fDIVint( int x, int y ) {	// x / y
-	if ( y == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	_div_check_int(y);
 	return x/y;
 }
 int fANDint( int x, int y ) {	// x and y
@@ -324,52 +334,34 @@ int fpowint( int x, int y ) {	// pow(x,y)
 	return pow( x, y );
 }
 int fpowrootint( int x, int y ) {	// powroot(x,y)
-	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	return pow( x, 1/(double)y );
+	return fpowroot(x, y);
 }
-int flogabint( int x, int y ) {	// flogab(x,y)
-	double base;
-	int result;
-	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	base  = log(x);
-	result = log(y)/base;
-	return result ;
+int flogabint(int x, int y) {	// flogab(x,y)
+	return flogab(x,y);
 }
 int frandint() {
 	return rand();
 }
-int frandIntint( int x, int y ) {
-	int i;
-	if ( x>y ) { i=x; x=y; y=i; }
-	return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+int frandIntint(int x, int y) {
+	return rand2() % (abs(y-x)+1) + min(x,y);
 }
 
-int fMODint( int x, int y ) {	// fMODint(x,y)
+int fMODint(int x, int y) {
 	int result;
-	if ( y == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-	result= abs(x % y);
-	if ( x < 0 ) {
-		y = abs(y);
-		result = y-result;
-		if ( ( result == y  ) || ( x == y  ) ) result=0;
-	}
-	return result ;
+	_div_check_int(y);
+	result = x % y;
+	if (result < 0)
+		result += abs(y);
+	return result;
 }
 
-int fGCDint( int x, int y ) {	// GCD(x,y)
-	int tmp;
-	if ( x<y ) { tmp=x; x=y; y=tmp; }
-	tmp=fMODint(x,y);
-	while( tmp != 0 ) {
-		x=y;
-		y=tmp;
-		tmp=fMODint(x,y);
-	}
-	return y;
+int fGCDint(int x, int y) {	// GCD(x,y)
+	if (y == 0)
+		return abs(x);
+	return abs(fGCDint(y, x % y)); 
 }
 int fLCMint( int x, int y ) {	// LCM(x,y)
-	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
-	return x/fGCDint(x,y)*y;
+	return abs(fDIVint(x*y, fGCDint(x,y) + (y == 0)));
 }
 
 int CB_rand( char *SRC ) {
@@ -1104,20 +1096,20 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// ~
+			case 0xFFFFFFA9 :		// ï¿½~
 				result *= EvalIntsub7( SRC );
 				break;
-			case 0xFFFFFFB9 :		// €
+			case 0xFFFFFFB9 :		// ï¿½ï¿½
 				tmp = EvalIntsub7( SRC );
-				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+				_div_check_int(tmp);
 				result /= tmp ;
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// Int€
+					case 0xFFFFFFBC:	// Intï¿½ï¿½
 						tmp = EvalIntsub7( SRC );
-						if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+						_div_check_int(tmp);
 						result /= tmp ;
 						break;
 					case 0xFFFFFFBD:	// Rmdr

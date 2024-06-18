@@ -699,6 +699,16 @@ int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
 //int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
+void _div_check(double div) {
+	if (div == 0)
+		CB_Error(DivisionByZeroERR);
+}
+void _nPCr_check(double *n, double *r) {
+	*n = floor(*n);
+	*r = floor(*r);
+	if (*n < *r)
+		CB_Error(MathERR);
+}
 
 double frac( double x ) {
 	double sign=1,tmp,d;
@@ -889,9 +899,7 @@ double fsqrt( double x ) {
 	return x;
 }
 double fcuberoot( double x ) {
-	x = pow( x, 1.0/3.0 );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return fpow(x, 1./3.);
 }
 double flog10( double x ) {
 	x = log10( x );
@@ -913,29 +921,21 @@ double fexp( double x ) {
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
-double flogab( double x, double y ) {	// flogab(x,y)
-	double base,tmp,result;
-	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	base  = log(x);
-	result = log(y)/base;
-	CheckMathERR(&result); // Math error ?
-	return result ;
-}
-double fpow( double x, double y ) {	// pow(x,y)
-	x = pow( x, y );
+double flogab(double x, double y) {	// flogab(x,y)
+	x = fDIV(log(y), log(x));
 	CheckMathERR(&x); // Math error ?
 	return x;
 }
-double fpowroot( double x, double y ) {	// powroot(x,y)
-	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = pow( x, 1/y );
-	CheckMathERR(&x); // Math error ?
+double fpow(double x, double y) {	// pow(x,y)
+	x = pow(x,y);
+	CheckMathERR(&x);
 	return x;
 }
-
-double frecip( double x ) {	// ^(-1) RECIP
-	if ( x == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
-	return 1 / x ;
+double fpowroot(double x, double y) {	// powroot(x,y)
+	return fpow(x, frecip(y));
+}
+double frecip(double x) {	// ^(-1) RECIP
+	return fDIV(1., x);
 }
 
 double fsign( double x ) {	// -x
@@ -951,64 +951,49 @@ double fMUL( double x, double y ) {	// x * y
 	return x*y;
 }
 double fDIV( double x, double y ) {	// x / y
-	if ( y == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
+	_div_check(y);
 	return x/y;
 }
-void fDIVcheck( double *x, double *y ) {	//
-	double tmp,tmp2,result;
-	(*x)  = floor( (*x) +.5);
-	(*y) = floor( (*y) +.5);
-	if ( (*y) == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-}
 
-double fMOD( double x, double y ) {	// fMOD(x,y)
+double fMOD(double x, double y) {	// fMOD(x,y)
 	double result;
-	fDIVcheck( &x, &y );
-	result= floor(fabs(fmod( x, y ))+.5);
-	if ( x < 0 ) {
-		result = fabs(y)-result;
-		if ( ( result == fabs(y)  ) || ( x == y  ) ) result=0;
+	_div_check(y);
+	result = fmod(x,y);
+	if (result < 0)
+		result += fabs(y);
+	return result;
+}
+double fIDIV(double x, double y) {
+	return floor(fDIV(x,y));
+}
+double ffact(double x) {
+	double i, sum=1;
+	if ((x < 0) || (170 < x)) {
+		CB_Error(MathERR);
+		return 0;
 	}
-	return result ;
+	for (i = x; i > 1; i--)
+		sum *= i;
+	CheckMathERR(&sum);
+	return sum;
 }
-
-double fIDIV( double x, double y ) {	// floor( floor(x) / floor(y) )
-	double result;
-	fDIVcheck( &x, &y );
-	return floor((x/y));
+double f_nPr(double n, double r) {
+	double i, sum=1;
+	_nPCr_check(&n, &r);
+	for (i = n; i > n-r; i--)
+		sum *= i;
+	CheckMathERR(&sum);
+	return sum;
 }
-double ffact( double x ) {
-	double tmp;
-	tmp = floor( x );
-	if ( ( tmp < 0 ) || ( 170 < tmp ) ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	while ( tmp > 0 ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return x;
-}
-double f_nPr( double n, double r ) {
-	double x,tmp;
-	n = floor( n );
-	r = floor( r );
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return x;
-}
-double f_nCr( double n, double r ) {
-	double x,tmp;
-	n = floor( n );
-	r = floor( r );
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = 1;
-	while ( tmp <= r ) { x /= tmp; tmp++; }
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return floor( x +.05 );
+double f_nCr(double n, double r) {
+	double i, sum=1;
+	_nPCr_check(&n, &r);
+	if (r >= floor(n/2))
+		r = n-r;
+	for (i = 1; i <= r; i++)
+		sum = sum * (n-i+1) / i;
+	CheckMathERR(&sum);
+	return sum;
 }
 double frand() {
 	return (double)rand()/(double)(RAND_MAX+1.0);
@@ -1032,21 +1017,13 @@ double fRanBin( double n, double p) {	// RanBin#
 	for ( i=0; i<n; i++ ) if ( rand() <= r ) m++;
 	return m;
 }
-double fGCD( double x, double y ) {	// GCD(x,y)
-	double tmp;
-	if ( x<y ) { tmp=x; x=y; y=tmp; }
-	tmp=fMOD(x,y);
-	while( tmp != 0 ) {
-		x=y;
-		y=tmp;
-		tmp=fMOD(x,y);
-	}
-	return fabs(y);
+double fGCD(double x, double y) {	// GCD(x,y)
+	if (y == 0)
+		return fabs(x);
+	return fabs(fGCD(y, fmod(x,y))); 
 }
-double fLCM( double x, double y ) {	// LCM(x,y)
-	if ( ( x == 0 ) || ( y == 0 ) ) return 0;
-	if ( ( x < 0 ) || ( y < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
-	return x/fGCD(x,y)*y;
+double fLCM(double x, double y) {	// LCM(x,y)
+	return fabs(fDIV(x*y,fGCD(x,y) + (y == 0)));
 }
 
 double fnot( double x ) {
@@ -1734,8 +1711,7 @@ double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result *= result ;
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				if ( result == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				result = 1 / result ;
+				result = frecip(result);
 				break;
 			case  0xFFFFFFAB  :	//  !
 				result = ffact( result );
@@ -1808,12 +1784,10 @@ double Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
-				result = pow( result, Evalsub2( SRC ) );
-				CheckMathERR(&result); // Math error ?
+				result = fpow(result, Evalsub2(SRC));
 				break;
 			case  0xFFFFFFB8  :	// powroot
-				result = pow( Evalsub2( SRC ), 1/result );
-				CheckMathERR(&result); // Math error ?
+				result = fpowroot(Evalsub2(SRC), result);
 				break;
 			case ' ':	// Skip Space
 				break;
@@ -1838,11 +1812,9 @@ double Evalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 		if ( c == 0xFFFFFFBB ) {
 			ExecPtr++;
 			frac3 = Evalsub3( SRC );
-			if ( frac3 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = frac1 + ( frac2 / frac3 ) ;
+			result = frac1 + fDIV(frac2, frac3);
 		} else {
-			if ( frac2 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = ( frac1 / frac2 ) ;
+			result = fDIV(frac1, frac2) ;
 		}
 	}
 	return result;
@@ -1961,18 +1933,17 @@ double Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// ~
+			case 0xFFFFFFA9 :		// ï¿½~
 				result *= Evalsub7( SRC );
 				break;
-			case 0xFFFFFFB9 :		// €
+			case 0xFFFFFFB9 :		// Ã·
 				tmp = Evalsub7( SRC );
-				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				result /= tmp ;
+				result = fDIV(result, tmp);
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// Int€
+					case 0xFFFFFFBC:	// IntÃ·
 						result = fIDIV( result, Evalsub7( SRC ) );
 						break;
 					case 0xFFFFFFBD:	// Rmdr
