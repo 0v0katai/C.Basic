@@ -273,8 +273,8 @@ void CB_GraphFunc( char *SRC, int c ) {
 	}
 	if ( c == 0xFFFFFF98 ) {	// SetG-Color
 		c = CB_GetColor( SRC );
-		if ( SRC[ExecPtr]!=',' ) { CB_Error(SyntaxERR); goto exit; }	// Syntax error
-		ExecPtr++;
+		if ( SRC[g_exec_ptr]!=',' ) { CB_Error(SyntaxERR); goto exit; }	// Syntax error
+		g_exec_ptr++;
 		buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize ) ;
 		if ( buffer[7-1] ) {
 			buffer[5-1] = c/256;
@@ -283,7 +283,7 @@ void CB_GraphFunc( char *SRC, int c ) {
 		goto exit; 
 	}
 
-	d=SRC[ExecPtr];
+	d=SRC[g_exec_ptr];
 	if ( ( d==':' ) || ( d==0x0D ) || ( d==0x0C ) || ( d==0x00 ) ) {
 		n = MatAry[reg].SizeA;
 		if ( n ) { 

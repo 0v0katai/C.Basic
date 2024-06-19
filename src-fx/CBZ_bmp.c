@@ -249,40 +249,38 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 	int folder=0;
 	int gaiji=0,no=-1,flag;
 
-	c =SRC[ExecPtr];
+	c =SRC[g_exec_ptr];
 	if ( c == '@' ) { 
-		c =SRC[++ExecPtr];
-		if ( c == '@' ) { 	c =SRC[++ExecPtr]; folder=1; }
-		if ( ( c=='X' )||( c=='x' ) ) { ExecPtr++; gaiji=0; }
+		c =SRC[++g_exec_ptr];
+		if ( c == '@' ) { 	c =SRC[++g_exec_ptr]; folder=1; }
+		if ( ( c=='K' )||( c=='k' ) ) { g_exec_ptr++; gaiji=0; }
 		else
-		// if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
-		// else
-		// if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
-		// else
-		if ( ( c=='A' )||( c=='a' ) ) { ExecPtr++; gaiji=2; }
+		if ( ( c=='G' )||( c=='g' ) ) { g_exec_ptr++; gaiji=1; }
+		else
+		if ( ( c=='A' )||( c=='a' ) ) { g_exec_ptr++; gaiji=2; }
 		else
 		{ CB_Error(SyntaxERR); return; }  // Syntax error
 
-		c =SRC[ExecPtr];
-		if ( ( c=='L' )||( c=='l' ) ) { ExecPtr++; flag=1; }
+		c =SRC[g_exec_ptr];
+		if ( ( c=='L' )||( c=='l' ) ) { g_exec_ptr++; flag=1; }
 		else
-		if ( ( c=='M' )||( c=='m' ) ) { ExecPtr++; flag=2; }
+		if ( ( c=='M' )||( c=='m' ) ) { g_exec_ptr++; flag=2; }
 		else { flag=3; }  // both
 		
-		c=CB_IsStr( SRC, ExecPtr );
+		c=CB_IsStr( SRC, g_exec_ptr );
 		if ( c ) {	// string
 			if ( flag==3 ) { CB_Error(ArgumentERR); return; }  // Argument error
-			CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+			CB_GetLocateStr(SRC, sname,22); if ( g_error_type ) return ;	// error
 		} else {	// expression
-			c =SRC[ExecPtr];
-			if ( ( '0'<=c )&&( c<='9' ) ) { ExecPtr++; no=c-'0'; }
+			c =SRC[g_exec_ptr];
+			if ( ( '0'<=c )&&( c<='9' ) ) { g_exec_ptr++; no=c-'0'; }
 			sname[0]='\0';
 		}
-		c =SRC[ExecPtr];
+		c =SRC[g_exec_ptr];
 		if ( c == ',' ) {
-			c =SRC[++ExecPtr];
+			c =SRC[++g_exec_ptr];
 			if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
-			ExecPtr++;
+			g_exec_ptr++;
 		}
 		switch ( gaiji ) {	
 			// case 0:
@@ -298,25 +296,25 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 
-	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
-	c =SRC[ExecPtr];
+	CB_GetLocateStr(SRC, sname,22); if ( g_error_type ) return ;	// error
+	c =SRC[g_exec_ptr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
-	c =SRC[ExecPtr];
-	if ( ( c == 0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) ) ) {	//	BmpSave "TEST.bmp",Mat A[,Q]
+	g_exec_ptr++;
+	c =SRC[g_exec_ptr];
+	if ( ( c == 0x7F ) && ( ( SRC[g_exec_ptr+1]==0x40 ) ) ) {	//	BmpSave "TEST.bmp",Mat A[,Q]
 		FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
 		dimA =MatAry[reg].SizeA;
 		dimB =MatAry[reg].SizeB;
-		if ( ErrorNo ) return; // error
+		if ( g_error_type ) return; // error
 	} else {											//	BmpSave "TEST.bmp",x1,y1,x2,y2
 		CB_GetOprand4( SRC, &x1, &y1, & x2, &y2 );
 		direct=1;
 	}
-	c =SRC[ExecPtr];
+	c =SRC[g_exec_ptr];
 	if ( c == ',' ) {
-		c =SRC[++ExecPtr];
+		c =SRC[++g_exec_ptr];
 		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
-		ExecPtr++;
+		g_exec_ptr++;
 	}
 	if ( direct == 0 ) {
 		switch ( MatAry[reg].ElementSize ) {
@@ -345,7 +343,7 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 				height= dimA;
 				break;
 			default:
-				CB_Error(ElementSizeERR);
+				CB_Error(InvalidSize);
 				break;
 		}
 	} else {
@@ -354,11 +352,11 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 		width = x2-x1+1;
 		height= y2-y1+1;
 	}
-	c =SRC[ExecPtr];
+	c =SRC[g_exec_ptr];
 	if ( c == ',' ) {
-		c =SRC[++ExecPtr];
+		c =SRC[++g_exec_ptr];
 		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
-		ExecPtr++;
+		g_exec_ptr++;
 	}
 	
 	bfSize = ((((width+7)/8)+3)/4)*4 *height +bfOffBits;
@@ -385,35 +383,33 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 	int folder=0;
 	int gaiji=0,no=-1,flag;
 
-	c =SRC[ExecPtr];
+	c =SRC[g_exec_ptr];
 	if ( c == '@' ) { 		// BmpLoad(@K1)
-		c =SRC[++ExecPtr];
-		if ( c == '@' ) { 	c =SRC[++ExecPtr]; folder=1; }
-		if ( ( c=='X' )||( c=='x' ) ) { ExecPtr++; gaiji=0; }
+		c =SRC[++g_exec_ptr];
+		if ( c == '@' ) { 	c =SRC[++g_exec_ptr]; folder=1; }
+		if ( ( c=='K' )||( c=='k' ) ) { g_exec_ptr++; gaiji=0; }
 		else
-		// if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
-		// else
-		// if ( ( c=='G' )||( c=='g' ) ) { ExecPtr++; gaiji=1; }
-		// else
-		if ( ( c=='A' )||( c=='a' ) ) { ExecPtr++; gaiji=2; }
+		if ( ( c=='G' )||( c=='g' ) ) { g_exec_ptr++; gaiji=1; }
+		else
+		if ( ( c=='A' )||( c=='a' ) ) { g_exec_ptr++; gaiji=2; }
 		else
 		{ CB_Error(SyntaxERR); return; }  // Syntax error
-		c =SRC[ExecPtr];
-		if ( ( c=='L' )||( c=='l' ) ) { ExecPtr++; flag=1; }
+		c =SRC[g_exec_ptr];
+		if ( ( c=='L' )||( c=='l' ) ) { g_exec_ptr++; flag=1; }
 		else
-		if ( ( c=='M' )||( c=='m' ) ) { ExecPtr++; flag=2; }
+		if ( ( c=='M' )||( c=='m' ) ) { g_exec_ptr++; flag=2; }
 		else { flag=3; }  // both
 		
-		c=CB_IsStr( SRC, ExecPtr );
+		c=CB_IsStr( SRC, g_exec_ptr );
 		if ( c ) {	// string
 			if ( flag==3 ) { CB_Error(ArgumentERR); return; }  // Argument error
-			CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+			CB_GetLocateStr(SRC, sname,22); if ( g_error_type ) return ;	// error
 		} else {	// expression
-			c =SRC[ExecPtr];
-			if ( ( '0'<=c )&&( c<='9' ) ) { ExecPtr++; no=c-'0'; }
+			c =SRC[g_exec_ptr];
+			if ( ( '0'<=c )&&( c<='9' ) ) { g_exec_ptr++; no=c-'0'; }
 			sname[0]='\0';
 		}
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 		switch ( gaiji ) {	
 			case 0:
 				LoadExtFontFFfolder(    flag, sname, folder, no ); return ;
@@ -425,7 +421,7 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 				LoadExtFontAnkfolder(   flag, sname, folder, no ); return ;
 		}
 	}
-	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
+	CB_GetLocateStr(SRC, sname,22); if ( g_error_type ) return ;	// error
 	
 //	c =SRC[ExecPtr];
 //	if ( c == ',' ) {
@@ -433,21 +429,21 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 //		ptr=CB_EvalInt( SRC );
 //		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
 //	}
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	c =SRC[ExecPtr];
+	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
+	c =SRC[g_exec_ptr];
 	if ( c == 0x0E ) {
-		ExecPtr++;
+		g_exec_ptr++;
 		CB_SaveLoadOprand( SRC, &reg, &matsize );
-		if ( ErrorNo == NoMatrixArrayERR ) { ErrorNo=0; }	// No Mat error cancel
+		if ( g_error_type == UndefinedMatrix ) { g_error_type=0; }	// No Mat error cancel
 	} else {
 		direct=1;
 		if ( c == ',' ) { 
-			ExecPtr++;
+			g_exec_ptr++;
 			CB_GetOprand2( SRC, &px, &py);
 		}
 	}
 	FilePtr=CB_LoadSub( sname, ptr, &size, "bmp" ) ;
-	if ( ErrorNo ) return ; // error
+	if ( g_error_type ) return ; // error
 
 	ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );
 	dimA = width;
@@ -460,7 +456,7 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 		goto exit; 
 	}
 	DimMatrixSub( reg, ElementSize, dimA, dimB, base ) ;
-	if ( ErrorNo ) goto exit; // error
+	if ( g_error_type ) goto exit; // error
 	matptr=(char*)MatAry[reg].Adrs;
 	DecodeBmp2mem( matptr , FilePtr+offset, width, height );	//	bmpformat -> bmp
   exit:

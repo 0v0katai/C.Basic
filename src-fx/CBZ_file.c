@@ -33,19 +33,19 @@ char textmode=0;
 int SetRoot2( char* SRC ) {
 	char sname[root2_MAX];
 	int c;
-	c = SRC[ExecPtr++];
+	c = SRC[g_exec_ptr++];
 	if ( c == '/' ) {
-		if ( SRC[ExecPtr] == '"' ) {
-			CB_GetLocateStr(SRC, sname, root2_MAX-1); if ( ErrorNo ) goto exit ;	// error
+		if ( SRC[g_exec_ptr] == '"' ) {
+			CB_GetLocateStr(SRC, sname, root2_MAX-1); if ( g_error_type ) goto exit ;	// error
 			root2[0] = '\\';
 			strncpy( root2+1, sname, root2_MAX-1 );
 			root2[root2_MAX-1] = '\0';
 		} else root2[0] = '\0';
 	} else
 	if ( c=='.' ) RestoreRoot2() ;
-	else ExecPtr--;
+	else g_exec_ptr--;
   exit:
-	return SRC[ExecPtr] ;
+	return SRC[g_exec_ptr] ;
 }
 
 void StoreRoot2(){
@@ -1360,7 +1360,7 @@ char * loadFile( const char *name, int *editMax, int disperror, int *filesize )
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
 		if ( disperror ) ErrorMSGfile( "Can't find file", name, handle);
-		CB_Error(CantFindFileERR);
+		CB_Error(FileNotFound);
 		return NULL;
 	}
 
@@ -1370,7 +1370,7 @@ char * loadFile( const char *name, int *editMax, int disperror, int *filesize )
 	if( buffer == NULL ) {
 		(*editMax)/=2; if ( (*editMax)>=16 ) goto loop;
 		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)name, handle);
-		CB_Error(NotEnoughMemoryERR);
+		CB_Error(NotEnoughMemory);
 		return NULL;
 //		Abort();
 	}
@@ -1903,7 +1903,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	} else {	// G1M file
 			filebase = loadFile( fname , &edsize, disperror, &fsize );	// hidden ram
 		  g1mload:
-			if ( filebase == NULL ) { CB_Error(CantFindFileERR); return 1; }
+			if ( filebase == NULL ) { CB_Error(FileNotFound); return 1; }
 			if ( CheckG1M( filebase ) ) { HiddenRAM_freeProg( filebase ); return 1; } // not support g1m
 			strncpy( filebase+0x3C-8, folder, 8);		// set folder to G1M header
 			CurrentFileMode=0;		// g1m load save mode
@@ -1915,7 +1915,7 @@ int LoadProgfile( char *fname, int prgNo, int editsize, int disperror ) {
 	if ( ProgfileMax[prgNo] > EDITMAX ) ProgfileMax[prgNo] = EDITMAX;
 	ProgfileEdit[prgNo]= 0;
 	ProgfileMode[prgNo]= CurrentFileMode;
-	ProgNo=prgNo;
+	g_current_prog=prgNo;
 //	ExecPtr=0;
 	if ( editsize ) return ( CB_PreProcessIndent( filebase, prgNo ) ) ;	// 0:ok
 	return 0; // ok
@@ -2036,7 +2036,7 @@ int NewProg(){
 	size=NewMax;
 	filebase = ( char *)HiddenRAM_mallocProg( size*sizeof(char)+4 );
 	if( filebase == NULL ) {
-		CB_ErrMsg(NotEnoughMemoryERR);
+		CB_ErrMsg(NotEnoughMemory);
 		return 1;
 	}
 	memset( filebase, 0x77,             size*sizeof(char)+4 );
@@ -2062,8 +2062,8 @@ int NewProg(){
 	if ( ProgfileMax[0] > EDITMAX ) ProgfileMax[0] = EDITMAX;
 	ProgfileEdit[0]= 1;
 	ProgfileMode[0]= 0;	// g1m default
-	ProgNo=0;
-	ExecPtr=0;
+	g_current_prog=0;
+	g_exec_ptr=0;
 	strncpy( filebase+0x3C-8, folder, 8);		// set folder to header
 
 	return 0;	// ok
@@ -2183,7 +2183,7 @@ char * Load1st2nd( char *basname, char *dir2nd, char *ext ){
 	HiddenRAM_freeProg( fileptr );
 	if ( fileptr  != NULL ) return fileptr;
 
-	ErrorNo=0;	// error cancel
+	g_error_type=0;	// error cancel
 	SetFullfilenameExtFolder( fname, dir2nd, basname, ext ) ;	// folder 2nd
 	edsize = 0;
 	fileptr = loadFile( fname, &edsize, 0, &fsize );					// no hidden load
@@ -2476,7 +2476,7 @@ int CB_FileList( char *ext ) {
 	dimB=32;
 	NewMatListAns( dimA, dimB, base, element );
 	memset( fname, 0, 32 );
-	if ( ErrorNo ) return 0;	// error
+	if ( g_error_type ) return 0;	// error
 	for ( i=0; i<n; i++ ) {
 		if( strlen(folder) == 0 )
 			sprintf( fname, "%s", files[i].filename );
@@ -2497,8 +2497,8 @@ int CB_IsExist( char *SRC , int calcflag ) {	//	IsExist("TEST")		//  no exist: r
 	char ext[8];
 	char *cptr;
 
-	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return 0;	// error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	CB_GetLocateStr(SRC, sname,22); if ( g_error_type ) return 0;	// error
+	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 	Getfolder( sname );
 	if ( ( sname[0]=='*' ) && ( sname[1]=='.' ) ) {
 		ext[0]=sname[2];
@@ -2562,20 +2562,20 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
-	c =SRC[ExecPtr];
+	CB_GetLocateStr(SRC, sname,22); if ( g_error_type ) return ;	// error
+	c =SRC[g_exec_ptr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
+	g_exec_ptr++;
 //	FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
 	FilePtr = (char *)VarPtrLength( SRC, &matsize, &c, 0);
 	if ( c==SERIAL_STRING ) matsize--;
-	if ( ErrorNo ) return; // error
+	if ( g_error_type ) return; // error
 
-	c =SRC[ExecPtr];
+	c =SRC[g_exec_ptr];
 	if ( c == ',' ) {
-		c =SRC[++ExecPtr];
+		c =SRC[++g_exec_ptr];
 		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
-		ExecPtr++;
+		g_exec_ptr++;
 	}
 
 	CB_SaveSub( sname, FilePtr, matsize, check, "bin" );
@@ -2597,13 +2597,13 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {	// load to
 
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
-		CB_Error(CantFindFileERR);  goto exit;
+		CB_Error(FileNotFound);  goto exit;
 	}
 
 	(*size) = Bfile_GetFileSize( handle ) -(ptr) ;
 
 	buffer = ( char *)HiddenRAM_mallocProg( (*size)*sizeof(char)+4 );
-	if( buffer == NULL ) { CB_Error(NotEnoughMemoryERR); goto exit; }	// Not enough memory error
+	if( buffer == NULL ) { CB_Error(NotEnoughMemory); goto exit; }	// Not enough memory error
 	memset( buffer, 0x00,     (*size)*sizeof(char)+4 );
 
 	Bfile_ReadFile( handle, buffer, (*size), ptr );
@@ -2629,7 +2629,7 @@ void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extna
 
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
 	if( handle < 0 ) {
-		CB_Error(CantFindFileERR);  goto exit;
+		CB_Error(FileNotFound);  goto exit;
 	}
 	fsize = Bfile_GetFileSize( handle ) -(ptr) ;
 	if ( fsize > size ) fsize=size;
@@ -2650,24 +2650,24 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
-	c =SRC[ExecPtr];
+	CB_GetLocateStr(SRC, sname,22); if ( g_error_type ) return ;	// error
+	c =SRC[g_exec_ptr];
 	if ( c == ',' ) {
-		ExecPtr++;
+		g_exec_ptr++;
 		ptr=CB_EvalInt( SRC );
 		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
 	}
-	c =SRC[ExecPtr];
-	if ( c == ')' ) ExecPtr++;
-	c =SRC[ExecPtr];
+	c =SRC[g_exec_ptr];
+	if ( c == ')' ) g_exec_ptr++;
+	c =SRC[g_exec_ptr];
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	ExecPtr++;
+	g_exec_ptr++;
 //	matptr = CB_SaveLoadOprand( SRC, &reg, &matsize );
 	matptr = (char *)VarPtrLength( SRC, &matsize, &type, 1);
-	if ( ErrorNo ) return ; // error
+	if ( g_error_type ) return ; // error
 
 	CB_LoadSubBuffer( matptr, sname, ptr, matsize, "bin", type ) ;
-	if ( ErrorNo ) return ; // error
+	if ( g_error_type ) return ; // error
 }
 
 void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
@@ -2676,13 +2676,13 @@ void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
 	int c;
 	int yesno=0;
 
-	CB_GetLocateStr(SRC, sname, 22); if ( ErrorNo ) return ;	// error
-	c =SRC[ExecPtr];
+	CB_GetLocateStr(SRC, sname, 22); if ( g_error_type ) return ;	// error
+	c =SRC[g_exec_ptr];
 	if ( c == ',' ) {
-		ExecPtr++;
+		g_exec_ptr++;
 		yesno = CB_EvalInt( SRC );
 	}
-	if ( ErrorNo ) return ; // error
+	if ( g_error_type ) return ; // error
 
 	Getfolder( sname );
 	GetExtName( sname, ext );
@@ -3076,10 +3076,10 @@ void LoadConfig1data( int n ) {	// config data ->List Ans
 		default:
 			return ;
 	}
-	if  ( LoadConfigReadFile( buffer, fname, fsize ) < 0 ) { CB_Error(CantFindFileERR); return ; }
+	if  ( LoadConfigReadFile( buffer, fname, fsize ) < 0 ) { CB_Error(FileNotFound); return ; }
 	
 	NewMatListAns( fsize, 1, 0, 8 );		// List Ans
-	if ( ErrorNo ) return ;
+	if ( g_error_type ) return ;
 	memcpy( MatAry[CB_MatListAnsreg].Adrs,  buffer , fsize );
 	dspflag=4; 	// List Ans;
 }
@@ -3347,7 +3347,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 	maxsize = HiddenRAM_MatTopPtr - filebase -16;
 	HiddenRAM_freeProg( filebase );
 	filebase = (char*)HiddenRAM_mallocProg( maxsize );
-	if ( filebase == NULL ) { CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
+	if ( filebase == NULL ) { CB_Error(NotEnoughMemory); CB_ErrMsg(g_error_type); return 1; } //
 	memcpy2( filebase+maxsize-size, filebase, size+1 );
 
 	SRC  = filebase+maxsize-size +0x56;
@@ -3356,7 +3356,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 
 	while ( sptr < size ){
 		if ( dptr >= maxsize ) {
-			CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
+			CB_Error(NotEnoughMemory); CB_ErrMsg(g_error_type); return 1; } //
 		c=SRC[sptr++];
 		dest[dptr++]=c;
 		switch ( c ) {
@@ -3461,7 +3461,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 	filebase = (char*)HiddenRAM_mallocProg( newsize +editMax);
 	if ( filebase == NULL ) {
 		editMax/=2; if ( editMax>=16 ) goto loop;
-		{ CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
+		{ CB_Error(NotEnoughMemory); CB_ErrMsg(g_error_type); return 1; } //
 	}
 	G1M_header( filebase, &newsize );	// G1M header set
 	ProgfileMax[progno] = newsize +editMax;
@@ -3531,9 +3531,9 @@ void CB_Local( char *SRC ) {
 			ProgLocalVar[ProgEntryN][i] = reg;	// local var set
 		}
 		i++;
-		c=SRC[ExecPtr];
+		c=SRC[g_exec_ptr];
 		if ( c != ',' ) break; 	//
-		ExecPtr++;
+		g_exec_ptr++;
 		if ( i >= ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
 	}
 	ProgLocalN[ProgEntryN] = i;
@@ -3544,10 +3544,10 @@ int PP_Search_IfEnd( char *SRC ){
 	int c,i;
 	int PP_ptr;
 	while (1){
-		c=SRC[ExecPtr++];
+		c=SRC[g_exec_ptr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
-				ExecPtr--;
+				g_exec_ptr--;
 				return 0 ;
 			case 0x22:	// "
 				Skip_quot(SRC);
@@ -3556,12 +3556,12 @@ int PP_Search_IfEnd( char *SRC ){
 				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	//
-				c=SRC[ExecPtr++];
+				c=SRC[g_exec_ptr++];
 				if ( c == 0x00 ) { 			// If
-					PP_ptr=ExecPtr-2;
+					PP_ptr=g_exec_ptr-2;
 					i=PP_Search_IfEnd(SRC) ;
-					if ( ErrorNo ) return;
-					if ( i != 1  ) { ExecPtr=PP_ptr; CB_Error(IfWithoutIfEndERR); CB_ErrMsg(ErrorNo); return 0; } // not IfEnd error
+					if ( g_error_type ) return;
+					if ( i != 1  ) { g_exec_ptr=PP_ptr; CB_Error(MissingIfEnd); CB_ErrMsg(g_error_type); return 0; } // not IfEnd error
 					break;
 				} else
 				if ( c == 0x03 ) return 1 ;	// IfEnd
@@ -3572,7 +3572,7 @@ int PP_Search_IfEnd( char *SRC ){
 			case 0xFFFFFFE6:	//
 			case 0xFFFFFFE7:	//
 			case 0xFFFFFFFF:	//
-				ExecPtr++;
+				g_exec_ptr++;
 				break;
 		}
 	}
@@ -3614,16 +3614,16 @@ void PP_ReplaceCode( char *SRC ){
 
 void CB_PreProcess( char *SRC ) { //	If..IfEnd Check
 	int c=1,i;
-	int execptr=ExecPtr;
+	int execptr=g_exec_ptr;
 
 	if ( textmode ) return ;
-	ExecPtr=0;
+	g_exec_ptr=0;
 //	PP_ReplaceCode( SRC );
-	ErrorNo=0;
-	ExecPtr=0;
+	g_error_type=0;
+	g_exec_ptr=0;
 	if ( CheckIfEnd ) PP_Search_IfEnd(SRC);
-	if ( ErrorNo ) return;
-	ExecPtr=execptr;
+	if ( g_error_type ) return;
+	g_exec_ptr=execptr;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -3690,15 +3690,15 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 						filebase=ProgfileAdrs[ProgEntryN];
 						strncpy( filebase+0x3C, basname, 8);		// set filename to g1m/g3m header
 						ProgEntryN++;
-						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProgERR); CB_ErrMsg(ErrorNo); return ; } // Too Many Prog error
+						if ( ProgEntryN > ProgMax ) { CB_Error(TooManyProg); CB_ErrMsg(ErrorNo); return ; } // Too Many Prog error
 						StackProgPtr = ExecPtr;
 						CB_ProgEntry( filebase + 0x56  );		//
-						if ( ErrorNo == IfWithoutIfEndERR ) return ;
+						if ( ErrorNo == MissingIfEnd ) return ;
 						ExecPtr = StackProgPtr ;
 //						if ( ErrorNo ) {
-//							ErrorPtr=StackProgPtr;
+//							g_error_ptr=StackProgPtr;
 //							ProgNo=progno;
-//							ErrorProg=ProgNo;
+//							g_error_prog=ProgNo;
 //							return ;
 //						}
 					}
@@ -3722,9 +3722,9 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 		}
 		if ( ErrorNo ) {	// error
 		 err:
-			ErrorPtr=ExecPtr;
+			g_error_ptr=ExecPtr;
 			ProgNo=progno;
-			ErrorProg=ProgNo;
+			g_error_prog=ProgNo;
 			CB_ErrMsg(ErrorNo);
 			return;
 		}
@@ -3735,10 +3735,10 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 */
 void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
 	int c=1;
-	ExecPtr=0;
+	g_exec_ptr=0;
 	while ( c!=0 ) {
-		c=SRC[ExecPtr++];
-		if ( c==0x00 ) { ExecPtr--; break; }
+		c=SRC[g_exec_ptr++];
+		if ( c==0x00 ) { g_exec_ptr--; break; }
 		switch ( c ) {
 			case 0x3A:	// <:>
 			case 0x0D:	// <CR>
@@ -3750,18 +3750,18 @@ void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
 				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	//
-				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
+				if ( SRC[g_exec_ptr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
 				break;
 			case 0xFFFFFFF9:	//
-				if ( SRC[ExecPtr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
-				ErrorNo=0;
+				if ( SRC[g_exec_ptr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
+				g_error_type=0;
 				break;
 			case 0x7F:	//
 			case 0xFFFFFFE5:	//
 			case 0xFFFFFFE6:	//
 			case 0xFFFFFFE7:	//
 			case 0xFFFFFFFF:	//
-				ExecPtr++;
+				g_exec_ptr++;
 				break;
 			default:
 				break;
@@ -3776,7 +3776,7 @@ int CB_GetProgEntry( char *SRC, char *buffer ) { //	Prog "..." into memory
 	char sname[32],basname[32];
 	char ext[8];
 	char *filebase;
-	int ExecPtr_bk=ExecPtr;
+	int ExecPtr_bk=g_exec_ptr;
 	int progEntryN;
 	int ProgEntryN_bk = ProgEntryN;
 	char *SRC_bk = SRC;
@@ -3785,7 +3785,7 @@ int CB_GetProgEntry( char *SRC, char *buffer ) { //	Prog "..." into memory
 		if ( ProgfileAdrs[i] == NULL ) break;		// Prog
 	}
 	ProgEntryN = i;
-	if ( ProgEntryN >= ProgMax ) { CB_Error(TooManyProgERR); return -1; } // Too Many Prog error
+	if ( ProgEntryN >= ProgMax ) { CB_Error(TooManyProg); return -1; } // Too Many Prog error
 
 	HelpText = NULL;	// help buffer cancel
 
@@ -3796,20 +3796,20 @@ int CB_GetProgEntry( char *SRC, char *buffer ) { //	Prog "..." into memory
 	SetFullfilenameExt( filename, buffer, "g1m" ) ;		// g1m 1st reading
 	r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
 	if ( r ) {
-		ErrorNo=0;	// clear error
+		g_error_type=0;	// clear error
 		SetFullfilenameExt( filename, buffer, "txt" ) ;	// retry 2nd text file
 		r=LoadProgfile( filename, ProgEntryN, EditMaxProg, 0 ) ;
 	}
 	Restorefolder();
-	if ( ( ErrorNo ) || r ) { CB_Error(GoERR); return -1; }	// Can't find Prog
+	if ( ( g_error_type ) || r ) { CB_Error(GoERR); return -1; }	// Can't find Prog
 
 	filebase=ProgfileAdrs[ProgEntryN];
 	strncpy( filebase+0x3C, basname, 8);		// set filename to g1m/g3m header
 
 	SRC = filebase +0x56;
 	CB_GetAliasLocalProg( SRC ) ; //	Preprocess Alias/Local
-	SetSrcSize( SRC-0x56 , ExecPtr+0x56+1 );
-	ExecPtr    = ExecPtr_bk;
+	SetSrcSize( SRC-0x56 , g_exec_ptr+0x56+1 );
+	g_exec_ptr    = ExecPtr_bk;
 	r = ProgEntryN ;
 	ProgEntryN = ProgEntryN_bk;
 	return r;
