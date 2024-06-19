@@ -178,18 +178,18 @@ int System( int n ) {
 
 int CB_System( char *SRC ) {	// System( n )
 	int r;
-	int c = SRC[ExecPtr];
+	int c = SRC[g_exec_ptr];
 	int n = CB_EvalInt( SRC );
 	if ( n==10000 ) {	// load config data to ListAns   Ststem(10000,1) Ststem(10000,2) Ststem(10000,3)
-		if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-		ExecPtr++;
+		if ( SRC[g_exec_ptr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+		g_exec_ptr++;
 		c = CB_EvalInt( SRC );
 		LoadConfig1data( c );
 		goto exit;
 	}
 	r = System( n );
   exit:
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 	return r;
 }
 

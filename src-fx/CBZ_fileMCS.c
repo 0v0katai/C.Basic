@@ -96,7 +96,7 @@ char * MCS_LoadG1M( char *fname , int *editMax, int disperror, int *filesize  ) 
 	if( filebase == NULL ) {
 		(*editMax)/=2; if ( (*editMax)>=16 ) goto loop;
 		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)basname, 0 );
-		CB_Error(NotEnoughMemoryERR); 
+		CB_Error(NotEnoughMemory); 
 		return NULL;
 //		Abort();
 	}

@@ -293,7 +293,7 @@ void Cplx_sprintGR1s( char* buffer, complex num, int width, int align_mode, int 
 		if ( ComplexMode == 2 ) { // r_theta
 			r = fpolr( a, b);
 			t = fpolt( a, b);
-			if ( ErrorNo ) ErrorNo=0;
+			if ( g_error_type ) g_error_type=0;
 			sprintGRSiE( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
 			sprintGRSiE( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
 			strcat(buffer, bufferR );	// /_
@@ -415,7 +415,7 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 		if ( ComplexMode == 2 ) { // r_theta
 			r = fpolr( a, b);
 			t = fpolt( a, b);
-			if ( ErrorNo ) ErrorNo=0;
+			if ( g_error_type ) g_error_type=0;
 			sprintGRSiE( buffer,  r, width, LEFT_ALIGN, round_mode, round_digit, 0);	// r
 			sprintGRSiE( buffer2, t, width, LEFT_ALIGN, round_mode, round_digit, 0);	// theta
 			buffer3[0]='\0';
@@ -459,19 +459,19 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 }
 
 void Cplx_sprintGR2SRC( char* SRC, char* buffer, char* buffer2, complex num, int width ) { // + round  ENG  + i
-	int c=SRC[ExecPtr];
+	int c=SRC[g_exec_ptr];
 	int Cplx_bk=ComplexMode;
 	if ( c==0xFFFFFFF9 ) {
-		c=SRC[++ExecPtr];
-		if ( c==0x05 ) { ExecPtr++; ComplexMode = 3; }	// >DMS
+		c=SRC[++g_exec_ptr];
+		if ( c==0x05 ) { g_exec_ptr++; ComplexMode = 3; }	// >DMS
 		else
-		if ( c==0x06 ) { ExecPtr++; ComplexMode = 1; }	// >a+bi
+		if ( c==0x06 ) { g_exec_ptr++; ComplexMode = 1; }	// >a+bi
 		else
-		if ( c==0x07 ) { ExecPtr++; ComplexMode = 2; }	// >r_theta
+		if ( c==0x07 ) { g_exec_ptr++; ComplexMode = 2; }	// >r_theta
 	}
 	Cplx_sprintGR2(buffer, buffer2, num, width, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 	if ( ComplexMode == 3 ) {
-		CB_CurrentStr=NewStrBuffer(); if ( ErrorNo==0 ) { strcpy( CB_CurrentStr, buffer ); strcat( CB_CurrentStr, buffer2 ); }
+		CB_CurrentStr=NewStrBuffer(); if ( g_error_type==0 ) { strcpy( CB_CurrentStr, buffer ); strcat( CB_CurrentStr, buffer2 ); }
 	}
 	ComplexMode=Cplx_bk;
 }
@@ -4295,8 +4295,8 @@ double InputNumD(int x, int y, int width, double defaultNum, char* SPC, int rev_
 		*key= InputStrSub( x, y, width, csrX, buffer, width, SPC, rev_mode, float_mode, exp_mode, ALPHA_OFF, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_OFF ) ;
 		if ( ( *key == KEY_CTRL_EXIT ) || ( *key != KEY_CTRL_EXE ) ) return (defaultNum);
 		result = Eval( buffer );
-		csrX   = ErrorPtr;
-	} while ( ErrorNo || (buffer[0]=='\0') );	// error loop
+		csrX   = g_error_ptr;
+	} while ( g_error_type || (buffer[0]=='\0') );	// error loop
 	return result; // value ok
 }
 
@@ -4330,8 +4330,8 @@ complex InputNumC_sub_mini(int x, int y, int width, int ptrX, complex defaultNum
 		key= InputStrSub_mini( x, y, width, ptrX, ExpBuffer, ExpMax-1, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_OFF, miniflag ) ;
 		if ( ( key == KEY_CTRL_EXIT ) || ( key != KEY_CTRL_EXE ) ) return (defaultNum);
 		result = Cplx_Eval( ExpBuffer );
-		ptrX = ErrorPtr;
-	} while ( ErrorNo || (ExpBuffer[0]=='\0') ) ;	// error loop
+		ptrX = g_error_ptr;
+	} while ( g_error_type || (ExpBuffer[0]=='\0') ) ;	// error loop
 	CB_CurrentValue = result ;
 	return result; // value ok
 }
@@ -4436,12 +4436,12 @@ complex InputNumC_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV,
 	unsigned int key;
 	complex result;
 	ExpBuffer[0]='\0';
-	ErrorPtr=0;
+	g_error_ptr=0;
 	do {
-		key=InputStrSub( x, y, width, ErrorPtr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON, AC_CANCEL_OFF );
-		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
+		key=InputStrSub( x, y, width, g_error_ptr, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON, AC_CANCEL_OFF );
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=g_exec_ptr; return Int2Cplx(0); }
 		result = Cplx_Eval( ExpBuffer );
-	} while ( ErrorNo || (ExpBuffer[0]=='\0') ) ;		// error loop
+	} while ( g_error_type || (ExpBuffer[0]=='\0') ) ;		// error loop
 	return result; // value ok
 }
 complex InputNumC_CB2_sub(int px, int py, int width, int MaxStrlen, int ptrX, char* SPC, int REV, complex defaultNum, int miniflag ) {		//  Basic Input sub
@@ -4450,11 +4450,11 @@ complex InputNumC_CB2_sub(int px, int py, int width, int MaxStrlen, int ptrX, ch
 	int csrX;
 	do {
 		key=InputStrSubC( px, py, width, ptrX, ExpBuffer, MaxStrlen, SPC, REV, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_OFF, EXIT_CANCEL_ON, AC_CANCEL_OFF, FN_CANCEL_ON,  miniflag, 0 );
-		if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr; return Int2Cplx(0); }
+		if ( key==KEY_CTRL_AC  ) { BreakPtr=g_exec_ptr; return Int2Cplx(0); }
 		if ( ExpBuffer[0]=='\0' ) if ( key==KEY_CTRL_EXE  ) { result=(defaultNum); goto exit2; }
 		result = Cplx_Eval( ExpBuffer );
-		ptrX   = ErrorPtr;
-	} while ( ErrorNo || (ExpBuffer[0]=='\0') ) ;	// error loop
+		ptrX   = g_error_ptr;
+	} while ( g_error_type || (ExpBuffer[0]=='\0') ) ;	// error loop
   exit2:
 	i=PrintOpcode( px, py, ExpBuffer, width, 0, 0, &csrX, REV , " ", miniflag,-1,-1);
 	if ( i==0 ) Cplx_sprintGR1cutlim( ExpBuffer, result, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );	//
@@ -4501,10 +4501,10 @@ void  CB_Input( char *SRC ){
 
 	CB_ChangeTextMode( SRC ) ;
 //	CB_SelectTextDD();	// Select Text Screen
-	c=SRC[ExecPtr];
+	c=SRC[g_exec_ptr];
 	if ( c=='(' ) {	// ?option([@][csrX][,csrY][,width][,spcchr][,length][,R][,M])
-		c=SRC[++ExecPtr];
-		if ( c=='@' ) { pxmode=1; miniflag=1; c=SRC[++ExecPtr]; }	// 0~127 pixel mode
+		c=SRC[++g_exec_ptr];
+		if ( c=='@' ) { pxmode=1; miniflag=1; c=SRC[++g_exec_ptr]; }	// 0~127 pixel mode
 //		else CB_SelectTextDD();	// Select Text Screen
 		if ( ( c==')' ) || ( c==0x0E ) ) goto optionexit;
 		if ( c!=',' ) {
@@ -4515,10 +4515,10 @@ void  CB_Input( char *SRC ){
 				CursorX = CB_EvalInt( SRC );
 				if ( ( CursorX<1 ) || ( 21<CursorX ) )  { CB_Error(ArgumentERR); return ; } // Argument error
 			}
-			c=SRC[ExecPtr];
+			c=SRC[g_exec_ptr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c=SRC[++g_exec_ptr];
 		if ( c!=',' ) {
 			if ( pxmode ) {
 				miniCsrY = CB_EvalInt( SRC );
@@ -4527,80 +4527,80 @@ void  CB_Input( char *SRC ){
 				CursorY = CB_EvalInt( SRC );
 				if ( ( CursorY<0 ) || ( 8<CursorY ) )  { CB_Error(ArgumentERR); return ; } // Argument error
 			}
-			c=SRC[ExecPtr];
+			c=SRC[g_exec_ptr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c=SRC[++g_exec_ptr];
 		if ( c!=',' ) {
 			width=CB_EvalInt( SRC ); if ( ( width<1 ) || (  32<width ) )  { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c=SRC[g_exec_ptr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c=SRC[++g_exec_ptr];
 		if ( c!=',' ) {	
-			c=CB_IsStr( SRC, ExecPtr );
+			c=CB_IsStr( SRC, g_exec_ptr );
 			if ( c ) {	// string
 				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
 			} else { CB_Error(ArgumentERR); return ; } // Argument error
 			spcchr[0]=buffer[0];
 			spcchr[1]=buffer[1];
 			spcchr[2]=buffer[2];
-			c=SRC[ExecPtr];
+			c=SRC[g_exec_ptr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c=SRC[++g_exec_ptr];
 		if ( c!=',' ) {
 			length=CB_EvalInt( SRC ); if ( ( length<1 ) || ( ExpMax-1<length ) ) { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c=SRC[g_exec_ptr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c=SRC[++g_exec_ptr];
 		if ( c!=',' ) {	
 			if ( ( c=='R' ) || ( c=='r' ) ) { // reverse
-				ExecPtr++;
+				g_exec_ptr++;
 				rev=REV_ON;
-			c=SRC[ExecPtr];
+			c=SRC[g_exec_ptr];
 			if ( c!=',' ) goto optionexit;
 			}
 		}
-		c=SRC[++ExecPtr];
+		c=SRC[++g_exec_ptr];
 		if ( c!=')' ) {	
 			if ( ( c=='M' ) || ( c=='m' ) ) { // mini font
-				ExecPtr++;
+				g_exec_ptr++;
 				miniflag=pxmode;
 			}
 		}
 	  optionexit:
 		option=1;
 		if ( pxmode==0 ) { miniCsrX=(CursorX-1)*6; miniCsrY=(CursorY-1)*8; }
-		if ( SRC[ExecPtr]==')' ) ExecPtr++;
+		if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
 	} else {
 		locate( CursorX, CursorY); Print((unsigned char*)"?");
 		Scrl_Y();
 	}
 	
-	c=SRC[ExecPtr];
-	bptr=ExecPtr;
+	c=SRC[g_exec_ptr];
+	bptr=g_exec_ptr;
 	reg=RegVar(c);
 	if ( c==0x0E ) {	// ->
 		flag=0;
-		if ( CB_IsStr( SRC, ExecPtr+1 ) ) flag=2;
+		if ( CB_IsStr( SRC, g_exec_ptr+1 ) ) flag=2;
 	} else 
 	if ( reg>=0 ) {
 	  regj:
 		flag=1;
-		c=SRC[ExecPtr+1];
+		c=SRC[g_exec_ptr+1];
 		if (CB_INT==1) {
 			if ( c=='#' ) {
 				DefaultValue = LocalDbl[reg][0] ;
 			} else { flagint=1; 
 				if ( c=='[' ) {
-					ExecPtr+=2;
+					g_exec_ptr+=2;
 					MatOprandInt2( SRC, reg, &dimA, &dimB );
 					goto Matrix;
 				} else
 				if ( ( '0'<=c )&&( c<='9' ) ) {
-					ExecPtr++;
+					g_exec_ptr++;
 					dimA=c-'0';
 					MatOprand1num( SRC, reg, &dimA, &dimB );
 					goto Matrix;
@@ -4611,12 +4611,12 @@ void  CB_Input( char *SRC ){
 				DefaultValue = Int2Cplx( LocalInt[reg][0] );
 			} else {
 				if ( c=='[' ) {
-					ExecPtr+=2;
+					g_exec_ptr+=2;
 					MatOprand2( SRC, reg, &dimA, &dimB );
 					goto Matrix;
 				} else
 				if ( ( '0'<=c )&&( c<='9' ) ) {
-					ExecPtr++;
+					g_exec_ptr++;
 					dimA=c-'0';
 					MatOprand1num( SRC, reg, &dimA, &dimB );
 					goto Matrix;
@@ -4625,18 +4625,18 @@ void  CB_Input( char *SRC ){
 		}
 	} else
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
+		c = SRC[g_exec_ptr+1] ; 
 		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( ErrorNo ) {  // error
-				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+			if ( g_error_type ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) g_error_type=UndefinedMatrix;	// No Matrix Array error
 				return ;
 			}
 			DefaultValue = Cplx_ReadMatrix( reg, dimA, dimB);
-			ExecPtr=bptr;
+			g_exec_ptr=bptr;
 		} else if ( ( 0xFFFFFF91 <= c ) && ( c <= 0xFFFFFF93 ) ) {	// F Start~F pitch
-				ExecPtr+=2;
+				g_exec_ptr+=2;
 				DefaultValue.real = REGf[c-0xFFFFFF90] ;
 		} else if ( c == 0x00 ) {	// Xmin
 				DefaultValue.real = Xmin ;
@@ -4672,7 +4672,7 @@ void  CB_Input( char *SRC ){
 		flag=1;
 	} else
 	if ( c==0xFFFFFFF9 ) {
-		c = SRC[ExecPtr+1] ; 
+		c = SRC[g_exec_ptr+1] ; 
 		if ( c == 0x3F ) {	// Str 1-20
 			reg=defaultStrAry;
 			aryN=defaultStrAryN;
@@ -4680,11 +4680,11 @@ void  CB_Input( char *SRC ){
 		  strj0:
 		  	c=0;
 		  strj:
-			ExecPtr+=2;
+			g_exec_ptr+=2;
 			StrFnPtr = GetStrYFnPtr( SRC, reg, aryN+1-MatBase, aryS ) +c;
-			if ( ErrorNo ) return ;			// error
+			if ( g_error_type ) return ;			// error
 			flag=3;
-			ExecPtr=bptr;
+			g_exec_ptr=bptr;
 		} else
 		if ( c == 0x1B ) {	// fn
 			reg=defaultFnAry;
@@ -4693,14 +4693,14 @@ void  CB_Input( char *SRC ){
 			goto strj0;
 		} else
 		if ( c == 0x41 ) {	// DATE
-			ExecPtr+=2;
+			g_exec_ptr+=2;
 			flag=4;
-			ExecPtr=bptr;
+			g_exec_ptr=bptr;
 		} else
 		if ( c == 0x42 ) {	// TIME
-			ExecPtr+=2;
+			g_exec_ptr+=2;
 			flag=5;
-			ExecPtr=bptr;
+			g_exec_ptr=bptr;
 		} else
 		if ( c == 0x21 ) {	// Xdot
 				DefaultValue.real = Xdot ;
@@ -4708,13 +4708,13 @@ void  CB_Input( char *SRC ){
 		} else goto exitj;
 	} else
 	if ( c=='$' ) {
-		ExecPtr++;
+		g_exec_ptr++;
 		MatrixOprand( SRC, &reg, &dimA, &dimB );
-		if ( ErrorNo ) return ; // error
-		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+		if ( g_error_type ) return ; // error
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(UndefinedMatrix); return; }	// No Matrix Array error
 		if ( MatAry[reg].ElementSize != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
 		flag=3;
-		ExecPtr=bptr;
+		g_exec_ptr=bptr;
 	} else {
 	  exitj:
 		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
@@ -4727,11 +4727,11 @@ void  CB_Input( char *SRC ){
 			} else {
 				CB_CurrentValue = InputNumC_CB(  CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
 			}
-			ExecPtr++;
+			g_exec_ptr++;
 			if ( CB_INT==1 ) flagint=1;
 		  vinp:
-			ErrorNo=0; // error cancel
-			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; goto exit; }
+			g_error_type=0; // error cancel
+			if ( BreakPtr > 0 ) { g_exec_ptr=BreakPtr; goto exit; }
 			CBint_CurrentValue = CB_CurrentValue.real ;
 			if ( flagint ) {
 				CBint_Store( SRC );
@@ -4761,9 +4761,9 @@ void  CB_Input( char *SRC ){
 	Inpj1:	if ( option == 0 ) CursorX=1;
 			if ( option ) key=InputStr_CB2( miniCsrX, miniCsrY, width, CB_CurrentStr, length, spcchr, rev, miniflag );
 			else		  key=InputStr_CB(  CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
-			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  goto exit; }
-			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
+			g_error_type=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=g_exec_ptr;  goto exit; }
+			if ( SRC[g_exec_ptr]==0x0E ) g_exec_ptr++;	// -> skip
 			CB_StorStr( SRC );
 			break;
 		case 3:	// ?$Mat  ?Str1-20
@@ -4773,8 +4773,8 @@ void  CB_Input( char *SRC ){
 			if ( width > MatAry[reg].SizeB-1 ) width=MatAry[reg].SizeB-1;
 			if ( option ) key=InputStr_CB2( miniCsrX, miniCsrY, width, CB_CurrentStr, length, spcchr, rev, miniflag );
 			else		  key=InputStr_CB(  CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
-			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  goto exit; }
+			g_error_type=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=g_exec_ptr;  goto exit; }
 			CB_StorStr( SRC );
 			break;
 		case 4:	// ?DATE
