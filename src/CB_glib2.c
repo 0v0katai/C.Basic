@@ -490,7 +490,7 @@ double* NewTraceAry(){
 	int reg = Mattmp_traceAry;	//	traceAry
 	if ( MatAry[reg].SizeA == 0 ) {
 		DimMatrixSub( reg, 64, 130, 1, 0 );	// double matrix
-		if ( ErrorNo ) { CB_Error(MemoryERR); return NULL; }	// Memory error
+		if ( g_error_type ) { CB_Error(MemoryERR); return NULL; }	// Memory error
 	}
 	return (double*)MatAry[reg].Adrs;
 }
@@ -548,7 +548,7 @@ void Graph_Draw_X(){	//	62:Graph X= 2C:Graph X>  2D:Graph X<  2E:Graph X>=  2F:G
 	for ( i=0; i<=63; i++) {
 		//-----------------------------
 		tx=CB_EvalStrDBL(GraphY,1);		// function
-		if ( ErrorNo ) return ;
+		if ( g_error_type ) return ;
 		//-----------------------------
 		if ( i==0 ) { Previous_X = tx; Previous_Y = regY.real; }
 		if ( ( 0<i ) && ( i<=63 ) ) {
@@ -605,7 +605,7 @@ void Graph_Draw(){	//	EE:Graph Y= F0:Graph Y>  F1:Graph Y<  F2:Graph Y>=  F3:Gra
 	for ( i=0; i<=127; i++) {
 		//-----------------------------
 		ty=CB_EvalStrDBL(GraphY,1);		// function
-		if ( ErrorNo ) return ;
+		if ( g_error_type ) return ;
 		//-----------------------------
 		if ( fabs(ty)*1e10<Ydot ) ty=0;	// zero adjust
 		traceAry[i]=ty;
@@ -864,22 +864,22 @@ double GraphXYEval( char *buffer, int *add ) {
 */
 double GraphXYEval( char *buffer, int *add ) {
 	double result;
-	int excptr=ExecPtr;
+	int excptr=g_exec_ptr;
 	int Ansreg=CB_MatListAnsreg;
 	dspflag=0;
-	ExecPtr=0;
+	g_exec_ptr=0;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	result = Cplx_ListEvalsubTop( buffer ).real;
-	*add = ExecPtr+1;
-	ExecPtr=excptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
+	*add = g_exec_ptr+1;
+	g_exec_ptr=excptr;
+	if ( g_error_type ) { g_error_ptr=g_exec_ptr; return 0; }
 	return result;
 }
 int Graph_Draw_XY_List_sub( char *graph, double *dadd, double *dmul, int *listdirect ) {
 	int c,reg,gp = 0;
-	int excptr = ExecPtr;
+	int excptr = g_exec_ptr;
 	dspflag = 0;
-	ExecPtr = 0;
+	g_exec_ptr = 0;
 	*dadd = 0.0;
 	*dmul = 1.0;
 	if (graph[0]=='{') {
@@ -888,14 +888,14 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, double *dmul, int *listdi
 		CB_MatListAnsreg=28;
 		*dadd = Cplx_Evalsub1(graph).real;
 		if ( dspflag<3 ) {
-			c = graph[ExecPtr];
+			c = graph[g_exec_ptr];
 			if ( c == 0xFFFFFF89 ) {	// +
-				ExecPtr++;
-				if ( graph[ExecPtr] == '{' ) {
+				g_exec_ptr++;
+				if ( graph[g_exec_ptr] == '{' ) {
 				  checklist:
-					gp = ExecPtr +1;
+					gp = g_exec_ptr +1;
 					Cplx_ListEvalsub1(graph);
-					c = graph[ExecPtr];
+					c = graph[g_exec_ptr];
 					if ( ( c==',' ) || ( c==':' ) || ( c==')' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0x00 ) ) {
 						(*listdirect) = 1;
 						goto exit;
@@ -904,15 +904,15 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, double *dmul, int *listdi
 				 checkmul:
 					*dmul = Cplx_Evalsub1(graph).real;
 					if ( dspflag<3 ) {
-						if ( graph[ExecPtr] == 0xFFFFFFA9 ) ExecPtr++;	// x
-						if ( graph[ExecPtr] == '{' ) goto checklist;	//A*{...}
+						if ( graph[g_exec_ptr] == 0xFFFFFFA9 ) g_exec_ptr++;	// x
+						if ( graph[g_exec_ptr] == '{' ) goto checklist;	//A*{...}
 					}
 				}
 			} else {
-				if ( c == 0xFFFFFFA9 ) ExecPtr++;	// x
+				if ( c == 0xFFFFFFA9 ) g_exec_ptr++;	// x
 				*dmul = *dadd;
 				*dadd = 0.0;
-				if ( graph[ExecPtr] == '{' ) goto checklist;	//A*{...}
+				if ( graph[g_exec_ptr] == '{' ) goto checklist;	//A*{...}
 			}
 		}
 		gp = 0;
@@ -920,7 +920,7 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, double *dmul, int *listdi
 		*dmul = 1.0;
 	}
   exit:
-	ExecPtr = excptr;
+	g_exec_ptr = excptr;
 	return gp;
 }
 
@@ -972,7 +972,7 @@ void Graph_Draw_XY_List(int xlistreg, int ylistreg, int skipf ){	// Graph XY ( L
 			if ( ( xlistreg ) && ( XlistDirect==0 ) ) regX.real = ReadMatrix( CB_MatListAnsreg, c, base );
 			regY.real = GraphXYEval(graphY, &addY)*ydmul + ydadd;		// function
 			if ( ( ylistreg ) && ( YlistDirect==0 ) ) regY.real = ReadMatrix( CB_MatListAnsreg, c, base2 );
-			if ( ErrorNo ) return ;
+			if ( g_error_type ) return ;
 			//-----------------------------
 //			if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
 //			if ( fabs(regY.real)*1e10<Ydot ) regY.real=0;	// zero adjust

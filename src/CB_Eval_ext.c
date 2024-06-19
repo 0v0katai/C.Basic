@@ -94,10 +94,10 @@ double Integral_Kronrod( char *SRC, int execptr, double A, double B, double tol 
 			do {									//			Do
 				J = G*Kronrod[i];					//				G*Mat A[I]->J
 				regX.real = H-J;					//				H-J->X
-				ExecPtr = execptr;					//				Prog Str 1
+				g_exec_ptr = execptr;					//				Prog Str 1
 				K = CB_EvalDbl( SRC );				//				X->K
 				regX.real = H+J;					//				H+J->X
-				ExecPtr = execptr;					//				Prog Str 1
+				g_exec_ptr = execptr;					//				Prog Str 1
 				J = CB_EvalDbl( SRC )+K;			//				X+K->J
 				i--;								//				I-1->I
 				E += Kronrod[i]*J;					//				Mat A[I]*J+E->E
@@ -109,13 +109,13 @@ double Integral_Kronrod( char *SRC, int execptr, double A, double B, double tol 
 				i--;								//				I-1->I
 			} while(i>2);							//			LpWhile I>2
 			regX.real = H;							//			H->X
-			ExecPtr = execptr; 						//			Prog Str 1
+			g_exec_ptr = execptr; 						//			Prog Str 1
 			J = CB_EvalDbl( SRC );					//			X->J
 			E += Kronrod[i]*J;						//			Mat A[I]*J+E->E
 			D += Kronrod[1]*J;						//			J*Mat A[1]+D->D
 			H += G;									//			G+H->H
 			n--;									//			N-1->N
-			if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; goto exit; }	// [AC] break?
+			if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=g_exec_ptr; goto exit; }	// [AC] break?
 		} while(n>0);								//		LpWhile N>0
 		D *= G;										//		G*D->D
 		E *= G;										//		G*E->E
@@ -131,7 +131,7 @@ double Integral_Kronrod( char *SRC, int execptr, double A, double B, double tol 
 		}
 	}												//	Next
 	if ( j>4 ) { 									//	If N%>3 Then "**ACCURACY NOT MET**"
-		CB_Error(NotAccuracyERR);
+		CB_Error(TimeOut);
 	}												//	IfEnd
   exit:
 	regX.real=xreg;
@@ -139,33 +139,33 @@ double Integral_Kronrod( char *SRC, int execptr, double A, double B, double tol 
 }
 
 
-void IntgralOprand( char *SRC, double *start, double *end, double *tol ){	// Integral(sin X,1,10[,5])
-	int exptr=ExecPtr;
+void IntegralOprand( char *SRC, double *start, double *end, double *tol ){	// Integral(sin X,1,10[,5])
+	int exptr=g_exec_ptr;
 	int errflag=0;
 	double data;
   restart:
 	data=CB_EvalDbl( SRC );	// dummy read
-	if ( ErrorNo == 0 ) errflag=0;
+	if ( g_error_type == 0 ) errflag=0;
 	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
-	if ( errflag ) if ( ErrorNo ) return ;	// fatal error
-	errflag=ErrorNo;	// error?
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
-	ExecPtr++;
+	if ( errflag ) if ( g_error_type ) return ;	// fatal error
+	errflag=g_error_type;	// error?
+	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	g_exec_ptr++;
 	*start=CB_EvalDbl( SRC );	// start
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
-	ExecPtr++;
+	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	g_exec_ptr++;
 	*end=CB_EvalDbl( SRC );	// end
-	if ( SRC[ExecPtr] == ',' ) {
-		ExecPtr++;
+	if ( SRC[g_exec_ptr] == ',' ) {
+		g_exec_ptr++;
 		*tol=CB_EvalDbl( SRC );	// tol
 	} else *tol=6;
 
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 	if ( errflag ) {
-		ExecPtr=exptr;
+		g_exec_ptr=exptr;
 		regX=Dbl2Cplx(((*start)+(*end))/2);
-		ErrorPtr= 0;
-		ErrorNo = 0;	// error cancel
+		g_error_ptr= 0;
+		g_error_type = 0;	// error cancel
 		goto restart;
 	}
 }
@@ -175,20 +175,20 @@ double CB_Integral( char *SRC ){	// Integral( FX, start, end, tol )
 	int exptr,exptr2;
 	double start,end,result,tol;
 	
-	exptr  = ExecPtr;
-	IntgralOprand( SRC, &start, &end, &tol );
-	exptr2 = ExecPtr;
-	if ( ErrorNo ) return 0;
+	exptr  = g_exec_ptr;
+	IntegralOprand( SRC, &start, &end, &tol );
+	exptr2 = g_exec_ptr;
+	if ( g_error_type ) return 0;
 	if ( start>end ) { result=start; start=end; end=result;  minus=1; }
 	result  = Integral_Kronrod( SRC, exptr, start, end, tol );
 	if ( minus ) result=-result;
-	ExecPtr = exptr2;
-	if ( ErrorNo ) ErrorPtr=ExecPtr;
+	g_exec_ptr = exptr2;
+	if ( g_error_type ) g_error_ptr=g_exec_ptr;
 	return result;
 }
 
 double CB_Differ( char *SRC ){	// Differ( FX, tol )
-	int exptr=ExecPtr;
+	int exptr=g_exec_ptr;
 	int errflag=0;
 	double data;
   restart:
