@@ -712,8 +712,8 @@ void _div_check(double div) {
 		CB_Error(ZeroDivision);
 }
 void _nPCr_check(double *n, double *r) {
-	*n = floor(*n);
-	*r = floor(*r);
+	*n = (int)(*n);
+	*r = (int)(*r);
 	if (*n < *r)
 		CB_Error(MathERR);
 }
@@ -979,7 +979,7 @@ double fMOD(double x, double y) {	// fMOD(x,y)
 double fIDIV(double x, double y) {
 	return floor(fDIV(x,y));
 }
-double ffact(double x) {
+double ffact(int x) {
 	double sum=1;
 	if (x < 0)
 		CB_Error(MathERR);
