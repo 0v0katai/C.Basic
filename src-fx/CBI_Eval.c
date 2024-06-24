@@ -255,22 +255,11 @@ int fcuberootint( int x ) {
 int fsquint( int x ) {
 	return x*x;
 }
-int ffactint( int x ) {
-	int tmp;
-	tmp = x ;
-	x = 1;
-	while ( tmp > 0 ) { x *= tmp; tmp--; }
-	return x;
+int ffactint(int x) {
+	return ffact(x);
 }
 int f_nPrint(int n, int r) {
-	int i, sum=1;
-	if (n < r) {
-		CB_Error(MathERR);
-		return 0;
-	}
-	for (i = n; i > n-r; i--)
-		sum *= i;
-	return sum;
+	return f_nPr(n,r);
 }
 int f_nCrint( int n, int r ) {
 	return f_nCr( n, r);
