@@ -22,7 +22,7 @@
 #define ExpMax 255
 extern char ExpBuffer[];
 //-----------------------------------------------------------------------------
-void CheckMathERR( double *result ) ;
+int CheckMathERR(double *result);
 void _div_check(double div);
 void _div_check_int(int div);
 double asinh( double x ) ;

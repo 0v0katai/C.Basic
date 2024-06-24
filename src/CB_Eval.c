@@ -875,9 +875,14 @@ double frecy( double r, double t ) {	// Rec(r,Theta) -> y
 	return r ;
 }
 
-void CheckMathERR( double *result ) {
-	char * pt;
-	pt=(char *)(result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
+int CheckMathERR(double *result) {
+	char *pt;
+	pt=(char *)(result);
+	if ((pt[1] == 0xFFFFFFF0) && ((pt[0] == 0x7F) || (pt[0] == 0xFFFFFFFF))) {
+		CB_Error(MathERR);
+		return 1;
+	}
+	return 0;
 }
 
 double asinh( double x ) {
@@ -975,32 +980,35 @@ double fIDIV(double x, double y) {
 	return floor(fDIV(x,y));
 }
 double ffact(double x) {
-	double i, sum=1;
-	if ((x < 0) || (170 < x)) {
+	double sum=1;
+	if (x < 0)
 		CB_Error(MathERR);
-		return 0;
+	while (x > 1) {
+		sum *= x--;
+		if (CheckMathERR(&sum))
+			break;
 	}
-	for (i = x; i > 1; i--)
-		sum *= i;
-	CheckMathERR(&sum);
 	return sum;
 }
 double f_nPr(double n, double r) {
 	double i, sum=1;
 	_nPCr_check(&n, &r);
-	for (i = n; i > n-r; i--)
+	for (i = n; i > n-r; i--) {
 		sum *= i;
-	CheckMathERR(&sum);
+		if (CheckMathERR(&sum))
+			break;
+	}
 	return sum;
 }
 double f_nCr(double n, double r) {
 	double i, sum=1;
 	_nPCr_check(&n, &r);
-	if (r >= floor(n/2))
-		r = n-r;
-	for (i = 1; i <= r; i++)
+	r = min(r, n-r);
+	for (i = 1; i <= r; i++) {
 		sum = sum * (n-i+1) / i;
-	CheckMathERR(&sum);
+		if (CheckMathERR(&sum))
+			break;
+	}
 	return sum;
 }
 double frand() {
