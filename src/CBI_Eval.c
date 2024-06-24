@@ -391,77 +391,87 @@ int EvalIntEndCheck( int c ) {
 }
 */
 int EvalIntsubTop( char *SRC ) {	// eval 1
-	int  result,dst;
+	int result;
 	int c;
 	int excptr=g_exec_ptr;
 	int ansreg=CB_MatListAnsreg;
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
-	result=EvalIntsub1(SRC);
-	c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
-	else 
-	if ( c==0xFFFFFF89 ) { // +
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result+dst;
-	} else
-	if ( c==0xFFFFFF99 ) { // -
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result-dst;
-	} else
-	if ( c=='=') { // ==
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result == dst;
-	} else
-	if ( c=='>') { // >
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result > dst;
-	} else
-	if ( c=='<') { // <
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result < dst;
-	} else
-	if ( c==0x11) { // !=
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result != dst;
-	} else
-	if ( c==0x12) { // >=
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result >= dst;
-	} else
-	if ( c==0x10) { // <=
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result <= dst;
-	} else
-	if ( c==0xFFFFFFA9 ) { // *
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
-	} else
-	if ( c==0xFFFFFFB9 ) { // /
-	  divj:
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fDIVint(result,dst);
-	} else
-	if ( c==0xFFFFFF9A ) { // xor
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result ^ dst;
-	} else
-	if ( ( c=='|' ) || ( c==0xFFFFFFAA ) ) { // or
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result | dst;
-	} else
-	if ( ( c=='&' ) || ( c==0xFFFFFFBA ) ) { // and
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result & dst;
-	} else
-	if ( c==0xFFFFFF8B ) { // ^2
-		g_exec_ptr++;
-		c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*result;
-	} else
-	if ( c==0x7F ) { // 
-		c=SRC[++g_exec_ptr];
-		if ( c==0xFFFFFFB0 ) { // And
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result && (int)dst;
-		} else
-		if ( c==0xFFFFFFB1 ) { // Or
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result || (int)dst;
-		} else
-		if ( c==0xFFFFFFB4 ) { // Xor
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return ((int)result!=0) ^ ((int)dst!=0);
-		} else
-		if ( c==0xFFFFFFBC ) { // Int/
-			goto divj;
-		} else
-		if ( c==0xFFFFFFBD ) { // Rmdr
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMODint(result,dst);
+	result = EvalIntsub1(SRC);
+	c = SRC[g_exec_ptr++];
+	
+	if (c == 0xFFFFFF89) { // +
+		result += EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFF99) { // -
+		result -= EvalIntsub1(SRC);
+	}
+	else if (c == '=') { // ==
+		result = (result == EvalIntsub1(SRC));
+	}
+	else if (c == '>') { // >
+		result = (result > EvalIntsub1(SRC));
+	}
+	else if (c == '<') { // < 
+		result = (result < EvalIntsub1(SRC));
+	}
+	else if (c == 0x11) { // != 
+		result = (result != EvalIntsub1(SRC));
+	}
+	else if (c == 0x12) { // >= 
+		result = (result >= EvalIntsub1(SRC));
+	}
+	else if (c == 0x10) { // <= 
+		result = (result <= EvalIntsub1(SRC));
+	}
+	else if (c == 0xFFFFFFA9) { // * 
+		result *= EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFFB9) { // / 
+		result = fDIVint(result, EvalIntsub1(SRC));
+	}
+	else if (c == 0xFFFFFF9A) { // xor 
+		result = result ^ EvalIntsub1(SRC);
+	}
+	else if (( c == '|' ) || (c == 0xFFFFFFAA)) { // or 
+		result = result | EvalIntsub1(SRC);
+	}
+	else if (( c == '&' ) || (c == 0xFFFFFFBA)) { // and 
+		result = result & EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFF8B) { // ^2
+		result *= result;
+	}
+	else if (c == 0xFFFFFF9B) { // ^(-1) RECIP
+		result = frecipint(result);
+	}
+	else if (c == 0x7F) { // 
+		c = SRC[g_exec_ptr++];
+		if (c == 0xFFFFFFB0) { // And
+			result = (result) && EvalIntsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB1 ) { // Or
+			result = (result) || EvalIntsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB4 ) { // Xor
+			result = (result != 0) ^ (EvalIntsub1(SRC) != 0);
+		}
+		else if ( c==0xFFFFFFBC ) { // Int/
+			result = fDIVint(result, EvalIntsub1(SRC));
+		}
+		else if ( c==0xFFFFFFBD ) { // Rmdr
+			result = fMODint(result, EvalIntsub1(SRC));
+		}
+		else {
+			g_exec_ptr--;
 		}
 	}
+	else {
+		g_exec_ptr--;
+	}
+	c = SRC[g_exec_ptr];
+	if (eval_end_check_2(c))
+		return result;
 
 	g_exec_ptr=excptr;
 	CB_MatListAnsreg=ansreg;

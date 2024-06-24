@@ -112,6 +112,7 @@ double RoundSci( double x, double digit);
 double Eval_atof(char *SRC, int c) ;
 double DmsToDec( char *SRC, double h ) ;	// 12"34"56 -> 12.5822222
 
+int eval_end_check_2(int c);
 double Eval(char *SRC);
 double Eval2(char *SRC, int *ptr);
 double Evalsub1(char *SRC);
