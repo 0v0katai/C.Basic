@@ -57,7 +57,7 @@ double fln( double x ) ;
 double fexp( double x ) ;
 double fcuberoot( double x ) ;
 double fsqu( double x ) ;
-double ffact( double x ) ;
+double ffact( int x ) ;
 double f_nPr( double n, double r ) ;
 double f_nCr( double n, double r ) ;
 double frecip( double x ) ;	// ^(-1) RECIP
