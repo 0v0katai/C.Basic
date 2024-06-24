@@ -347,9 +347,6 @@ int fpowrootint( int x, int y ) {	// powroot(x,y)
 int flogabint(int x, int y) {	// flogab(x,y)
 	return flogab(x,y);
 }
-int frandint() {
-	return rand();
-}
 int frandIntint(int x, int y) {
 	return rand2() % (abs(y-x)+1) + min(x,y);
 }
