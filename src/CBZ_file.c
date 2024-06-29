@@ -1569,7 +1569,7 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 		if ( StorageMode & 1 ) 	Fkey_dispN( FKeyNo1, ">SD");
 		else 					Fkey_dispN( FKeyNo1, ">SMM");
 	} else {
-		sprintf( msg1, "%s as %s to ", pmsg, ext);
+		sprintf( msg1, "%s as %s to", pmsg, ext);
 		if ( StorageMode & 1 ) 	sprintf( msg2, "  SD      Memory." );
 		else 					sprintf( msg2, "  Storage Memory." );
 		Fkey_dispN( FKeyNo1, ">MCS");
