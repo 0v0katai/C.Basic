@@ -17,8 +17,9 @@ typedef struct{	//
 	int execptr;
 }beFiles;
 
-static void check_edited_prog_file() {
+static void save_config_prog() {
 	int i;
+	SaveConfig();
 	for (i=ProgMax; i>=0; i--) {			// memory free
 		if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
 		if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
@@ -85,7 +86,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
 
-	SetQuitHandler((void *)check_edited_prog_file);
+	SetQuitHandler((void *)save_config_prog);
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -195,8 +196,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			default:
 				break;
 		}
-		SaveConfig();
-		check_edited_prog_file();
+		save_config_prog();
 	}
 }
 
