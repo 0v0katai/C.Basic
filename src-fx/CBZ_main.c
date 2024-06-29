@@ -17,6 +17,14 @@ typedef struct{	//
 	int execptr;
 }beFiles;
 
+static void check_edited_prog_file() {
+	int i;
+	for (i=ProgMax; i>=0; i--) {			// memory free
+		if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
+		if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
+	}
+}
+
 //----------------------------------------------------------------------------------------------
 
 //****************************************************************************
@@ -76,6 +84,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	ClearExtFontflag();
 
 	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
+
+	SetQuitHandler((void *)check_edited_prog_file);
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -186,11 +196,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 				break;
 		}
 		SaveConfig();
-		
-		for (i=ProgMax; i>=0; i--) {			// memory free
-			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
-			if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
-		}	
+		check_edited_prog_file();
 	}
 }
 
