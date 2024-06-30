@@ -94,7 +94,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 
 	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
 
-	SetQuitHandler((void *)save_config_prog);
+	// SetQuitHandler((void *)save_config_prog);
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -204,7 +204,12 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			default:
 				break;
 		}
-		save_config_prog();
+		// save_config_prog();
+		SaveConfig();
+		for (i=ProgMax; i>=0; i--) {			// memory free
+			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
+			if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
+		}
 	}
 }
 
