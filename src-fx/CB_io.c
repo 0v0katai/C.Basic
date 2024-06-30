@@ -386,7 +386,7 @@ int YesNo2sub( char*buffer, char*buffer2){
 
 	KeyRecover(); 
 	while ( 1 ) {
-		GetKey(&key);	
+		GetKey_DisableMenu(&key);	
 		if ( key == KEY_CTRL_F1  ) break ;
 		if ( key == KEY_CTRL_F6  ) break ;
 		if ( key == KEY_CTRL_EXIT) { WaitKeyEXIT(); break ; }
@@ -415,7 +415,7 @@ void ExitKey(){
 	unsigned int key;
 	KeyRecover(); 
 	while ( 1 ) {
-		GetKey(&key);	
+		GetKey_DisableMenu(&key);	
 		if ( key == KEY_CTRL_EXIT) { WaitKeyEXIT(); break ; }
 		if ( key == KEY_CTRL_AC  ) break ;
 	}

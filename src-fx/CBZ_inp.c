@@ -659,7 +659,7 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 		cy=(CharPtr/19)+2-scrl;
 		locate(cx,cy);
 
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_AC:
 				RestoreDisp(SAVEDISP_PAGE1);	// --------
@@ -1098,7 +1098,7 @@ int SelectOpcode( int listselect, int flag ) {
 					cont=0;
 					break;
 				case KEY_CTRL_SHIFT:
-					GetKey(&key);
+					GetKey_DisableMenu(&key);
 					switch (key) {
 						case KEY_CTRL_PRGM:
 							listselect=CMDLIST_PRGM;
@@ -1727,7 +1727,7 @@ int check_ext_opcode(int code) {	// 0:genuine	1:ext
 void perform_key(unsigned int keycode) {
 	unsigned int key;
 	PutKey(keycode, 1);
-	GetKey(&key);
+	GetKey_DisableMenu(&key);
 }
 
 void apply_alphalock() {

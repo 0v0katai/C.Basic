@@ -72,7 +72,7 @@ void VerDispSub( int flag ) {
 void VerDisp( int flag ) {
 	unsigned int key;
 	VerDispSub( flag );
-	GetKey(&key);
+	GetKey_DisableMenu(&key);
 }
 
 int IsG3or35E2() {
@@ -218,7 +218,7 @@ void SetLineStyle() {
 
 	FkeyS_L_();
 
-	GetKey(&key);
+	GetKey_DisableMenu(&key);
 	switch (key) {
 		case KEY_CTRL_EXIT:
 			break;

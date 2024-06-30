@@ -1345,7 +1345,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			MatDotEditCursorSetFlashMode( 1 );
 		}
 //		Bdisp_PutDisp_DD();
-		if ( dotedit ) GetKey_DisableMenu(&key); else GetKey(&key);
+		GetKey_DisableMenu(&key);
 		MatDotEditCursorSetFlashMode( 0 );
 		switch (key) {
 			case KEY_CTRL_AC:
