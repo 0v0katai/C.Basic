@@ -155,7 +155,7 @@ unsigned int SelectFile (char *filename)
 void Abort(){		// abort program
 	unsigned int key;
 	MSG2("Not enough Memory","Please Restart");
-	while (1) GetKey(&key);
+	while (1) GetKey(&key); // [MENU]-to-Main
 }
 void ToLower( char *str ){
 	while( (*str) != '\0' ) {
@@ -844,7 +844,7 @@ unsigned int Explorer( int size, char *folder )
 			if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
 			if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
 		}
-		if ( ContinuousSelect ) ContinuousSelect=0; else GetKey(&key);
+		if ( ContinuousSelect ) ContinuousSelect=0; else GetKey(&key); // [MENU]-to-Main
 		Cursor_SetFlashMode(0); 		// cursor flashing off
 		
 		if ( KeyCheckPMINUS() ) {
@@ -1092,7 +1092,7 @@ unsigned int Explorer( int size, char *folder )
 					locate(13+i,1);
 					Cursor_SetFlashMode(1);			// cursor flashing on
 				}
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				Cursor_SetFlashMode(0); 		// cursor flashing off
 				switch (key) {
 					case KEY_CTRL_SHIFT:

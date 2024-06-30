@@ -1650,7 +1650,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) {
 									ScreenModeEdit=1-ScreenModeEdit;
 									RestoreScreenModeEdit();
-									if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
+									GetKey_DisableMenu(&key);
 								} else { GetGenuineCmdF6( &key ); goto F6j; }
 							} else {
 								if ( JumpMenuSw ) {		// ====== Jump Mode
@@ -2033,7 +2033,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								Cursor_SetFlashMode(0); 			// cursor flashing off
 								ScreenModeEdit=1-ScreenModeEdit;
 								RestoreScreenModeEdit();
-								if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
+								GetKey_DisableMenu(&key);
 								if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
 							} else {
 								key=SelectChar( &ContinuousSelect);
@@ -2350,7 +2350,7 @@ int CB_BreakStop() {
 		KeyRecover(); 
 		WaitKeyAC();
 		while ( 1 ) {
-			GetKey(&key);
+			GetKey_DisableMenu(&key);
 			if ( key == KEY_CTRL_EXIT  ) break ;
 			if ( key == KEY_CTRL_AC    ) break ;
 			if ( key == KEY_CTRL_RIGHT ) break ;

@@ -34,7 +34,7 @@ void ERROR(char *buffer) {
 	WaitKeyAC();
 	KeyRecover(); 
 	while (1) {
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		if (key == KEY_CTRL_EXIT  ||
 		    key == KEY_CTRL_AC    ||
 			key == KEY_CTRL_RIGHT ||

@@ -100,7 +100,7 @@ unsigned int Pict() {
 	while ( cont ) {
 		locate(1,8); PrintLine((unsigned char *)" ",21);
 		Fkey_Icon( FKeyNo1, 183 );	//	Fkey_dispR( FKeyNo1, "PICT");
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				key=0;
@@ -111,7 +111,7 @@ unsigned int Pict() {
 			case KEY_CTRL_F1:
 				Fkey_Icon( FKeyNo1, 69 );	//	Fkey_dispR( FKeyNo1, "STO");
 				Fkey_Icon( FKeyNo2, 70 );	//	Fkey_dispR( FKeyNo2, "RCL");
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_AC:
 					case KEY_CTRL_EXE:
@@ -745,7 +745,7 @@ unsigned int Graph_main(){
 	while (cont) {
 		SaveDisp(SAVEDISP_PAGE1);		// ------ SaveDisp1
 		if ( key==KEY_CTRL_OPTN ) key=Pict();
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_AC:
 			case KEY_CTRL_EXE:
@@ -775,7 +775,7 @@ unsigned int Graph_main(){
 				break;
 			case KEY_CTRL_SHIFT:
 				FkeyGraph();
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_EXIT:
 					case KEY_CTRL_F6:
