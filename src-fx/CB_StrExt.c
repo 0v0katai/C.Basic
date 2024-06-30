@@ -198,7 +198,7 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 		
 //		ElementSize=MatAry[reg].ElementSize;
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				cont=0;

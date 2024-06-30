@@ -1837,7 +1837,7 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 	if ( ( filebase[0x00] == 'B' ) && ( filebase[0x01] == 'M' ) ) {	// bmp ?
 		Bdisp_AllClr_VRAM();
 		if ( DecodeBmp2Vram( filebase, 0, 0 ) ==0 ) return 1; // not bmp
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		return 1;
 	}
 	fsize = 0xFFFFFFFF-(((filebase[0x10]&0xFF)<<24)+((filebase[0x11]&0xFF)<<16)+((filebase[0x12]&0xFF)<<8)+(filebase[0x13]&0xFF));
@@ -1849,12 +1849,12 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 				RclPictOr( filebase );
 				memcpy( PictAry[0], filebase+0x4C, size );	// Pict display
 			}
-			GetKey( &key );
+			GetKey_DisableMenu(&key);
 			return 1;
 		} else
 		if ( ( filebase[0x20] == 'C' ) && ( filebase[0x21] == 'A' ) && ( filebase[0x22] == 'P' ) ) {
 			memcpy( PictAry[0], filebase+0x50, 1024 );	// Capt display
-			GetKey( &key );
+			GetKey_DisableMenu(&key);
 			return 1;
 		} else {
 			ErrorMSG( "Not support file", fsize );

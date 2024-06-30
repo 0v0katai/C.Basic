@@ -1049,7 +1049,7 @@ int SelectOpcode( int listselect, int flag ) {
 			Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
 			Bdisp_PutDisp_DD();
 
-			GetKey( &key );
+			GetKey_DisableMenu(&key);
 			switch (key) {
 				case KEY_CTRL_EXIT:
 				case KEY_CTRL_QUIT:
@@ -2919,7 +2919,7 @@ int SelectOpcode5800P( int flag ) {
 //		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse *select line 
 		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_QUIT:
