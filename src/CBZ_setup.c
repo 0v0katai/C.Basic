@@ -459,7 +459,7 @@ int SetViewWindow() {		// ----------- Set  View Window variable	return 0: no cha
 
 		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				return 0;	// no change
@@ -642,7 +642,7 @@ void SetFactor(){
 		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line
 		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:
@@ -727,7 +727,7 @@ void InitVar( complex value, int VarMode, int small) {
 		locate(1,8); SetVarDsp(VarMode);
 //		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				return ;
@@ -1045,7 +1045,7 @@ int SetVar(int select){		// ----------- Set Variable
 		} else {
 			 if ( select<=25 ) k+=small;
 		}
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_OPTN:
 				miniflag=1;
