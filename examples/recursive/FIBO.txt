@@ -1,5 +1,0 @@
-'ProgramMode:RUN
-18->N
-?N
-Prog "FIBOSB",N
-Ans
