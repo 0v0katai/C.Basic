@@ -174,3 +174,11 @@ void WaitKeyAC();
 void WaitKeyEXIT();
 void WaitKeyF1();
 void WaitKeyEXE();
+
+int CheckG1M( char *filebase );
+int SaveBasG1M( char *filebase );
+void Abort();
+void Emu_check();
+void Getfolder( char *sname ) ;
+void SetFullfilenameExt( char *filename, char *sname, char *extname );
+void Restorefolder();

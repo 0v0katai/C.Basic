@@ -87,5 +87,6 @@ void Sleep(int millisecond);
 void SetQuitHandler(void (*callback)(void));
 int INIT_ADDIN_APPLICATION(int isAppli, unsigned short OptionNum);
 
+int Bkey_GetKeyWait(int *code1, int *code2, int wait_type, int time, int menu, short *unused);
 
 #endif

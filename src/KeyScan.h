@@ -11,10 +11,10 @@
 //0B                  DIAG     OSUPD     0B    A44B000B
 //0A                                     0A    A44B000A
 //09  F1    F2   F3   F4   F5   F6       09    A44B0009
-//08  SHIFT OPTN VARS MENU Å©  Å™        08    A44B0008
-//07  ALPHA ^2   ^    EXIT Å´   Å®       07    A44B0007
+//08  SHIFT OPTN VARS MENU ÔøΩÔøΩ  ÔøΩÔøΩ        08    A44B0008
+//07  ALPHA ^2   ^    EXIT ÔøΩÔøΩ   ÔøΩÔøΩ       07    A44B0007
 //06  XTT   log  ln   sin  cos  tan      06    A44B0006
-//05  ab/c  F<>D  (    )    ,   Å®       05    A44B0005
+//05  ab/c  F<>D  (    )    ,   ÔøΩÔøΩ       05    A44B0005
 //04  7     8    9    DEL                04    A44B0004
 //03  4     5    6    x    div           03    A44B0003
 //02  1     2    3    +    -             02    A44B0002
@@ -29,9 +29,9 @@
 //0B                  DIAG     OSUPD     0B
 //0A                                     0A
 //09  MENU  XTT SHIFT ALPHA              09
-//08  F1    log  ^2   ^    Å©  Å™        08
-//07  F2    ln   ,    OPTN Å´   Å®       07
-//06  F3    sin  Å®   VARS HELP LIGHT    06
+//08  F1    log  ^2   ^    ÔøΩÔøΩ  ÔøΩÔøΩ        08
+//07  F2    ln   ,    OPTN ÔøΩÔøΩ   ÔøΩÔøΩ       07
+//06  F3    sin  ÔøΩÔøΩ   VARS HELP LIGHT    06
 //05  F4    cos  7    4    1    0        05
 //04  F5    tan  8    5    2    .        04
 //03  F6    ab/c 9    6    3    EXP      03
@@ -228,3 +228,4 @@ int CB_Getkey2(int sdkcode);
 int CB_GetkeyN( int n, int disableCatalog, int sdkcode) ;			// CasioBasic Getkey 
 
 int BackLight( int n );			// 0:off  1:on   2:xor
+void KeyRecover();

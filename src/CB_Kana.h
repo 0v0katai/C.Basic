@@ -43,3 +43,5 @@ void CB_SetFont( char *SRC );		// SetFont 0xFFA0,Mat C
 void CB_SetFontMini( char *SRC );	// SetFont 0xFFA0,Mat C
 
 void ReadExtFont();
+
+void KPrintCharSub( int px, int py, unsigned char *c, int modify );

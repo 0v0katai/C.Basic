@@ -1457,7 +1457,7 @@ int CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 				ErrorNo=0;	// error cancel
 			}
 			DimMatrixSub( reg, 1, width, height,  ElementSize ) ;	// 1bit
-			if ( ErrorNo ) return; // error
+			if ( ErrorNo ) return 0; // error
 
 			memcpy( vbuf, vram, 16*8 );
 			if ( cstr==NULL )	CB_PrintC( 1, 1, (unsigned char *)" " );
@@ -1501,7 +1501,7 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 				ErrorNo=0;	// error cancel
 			}
 			DimMatrixSub( reg, 1, width, height, ElementSize ) ;	// 1bit
-			if ( ErrorNo ) return; // error
+			if ( ErrorNo ) return 0; // error
 			
 			memcpy( vbuf, vram, 16*8 );
 			if ( cstr==NULL ) {
@@ -1598,6 +1598,8 @@ void CB_SetFontMini( char *SRC ){	// SetFont 0xFFA0,Mat C
 //------------------------------------------------------------------------------
 int ReadBmpHeader( unsigned char *filebase, int *bfOffBits, int *biWidth, int *biHeight );	// 1:1 bit mono bmp file   24:24bit   0:no bmp
 void DecodeBmp2mem( char *buffer2, char *buffer, int width, int height );	//	bmpformat(buffer) -> bmp(buffer2)
+int WriteBmpHeader( char *filebase, int biWidth, int biHeight );
+int EncodeMat2Bmp( int reg , char *buffer , int width, int height );
 
 void FontCopy( char *font,  int reg,  int mx, int my, int dx, int dy ) {	// buffer[x,y]  -> font  1bit data
 	int i,j;

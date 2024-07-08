@@ -47,3 +47,6 @@ extern int *UndoLen;
 extern char   MiniCursorflag;
 extern short  MiniCursorX;
 extern short  MiniCursorY;
+
+void MiniCursorSetFlashMode(int set);
+void SetSrcSize( char *src, int size );

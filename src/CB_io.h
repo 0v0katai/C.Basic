@@ -100,3 +100,7 @@ void OkMSGstr2(char*buffer,char*buffer2);
 
 void ProgressBarPopUp( char *buffer, char *buffer2 ) ;
 void ProgressBar(int current, int max) ;
+
+void CB_Prints_ext( int x, int y, unsigned char *str, int extflag );
+void * memcpy2(void *dest, const void *src, size_t len);
+void ExitKey();

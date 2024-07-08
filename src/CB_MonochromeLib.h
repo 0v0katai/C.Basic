@@ -91,3 +91,7 @@ int CB_MLTest( char *SRC) ; // MLTest_command
 void CB_ML_command( char *SRC, int c ) ; // ML_command
 void CB_GetOprand2( char *SRC, int *px, int *py) ;
 void CB_GetOprand4( char *SRC, int *px, int *py, int *px2, int *py2) ;
+
+int isin( int angle, int x );
+int icos( int angle, int x );
+int CB_GetOprand_int1( char *SRC, int *value );

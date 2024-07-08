@@ -861,34 +861,34 @@ int CB_MLTest_Point( char *SRC ) { // MLTest_Point x, y, width
 	int x,y;
 	CB_GetOprand2VW( SRC, &x, &y );
 	CB_GetOprand_MLwidth( SRC );
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_point( x, y, MLV_width);
 }
 int CB_MLTest_Line( char *SRC ) { // MLTest_Line x1, y1, x2, y2
 	int x1,y1,x2,y2;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_line( x1, y1, x2, y2);
 }
 
 int CB_MLTest_Horizontal( char *SRC ) { // MLTest_Horizontal y, x1, x2
 	int y,x1,x2;
 	CB_GetOprand3VWyxx( SRC, &y, &x1, &x2);
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_horizontal_line( y, x1, x2);
 }
 
 int CB_MLTest_Vertical( char *SRC ) { // MLTest_Vertical x, y1, y2
 	int x,y1,y2;
 	CB_GetOprand3VWxyy( SRC, &x, &y1, &y2);
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_rectangle( x, y1, x, y2);
 }
 
 int CB_MLTest_Rect( char *SRC ) { // MLTest_Rectangle x1,y1,x2,y2
 	int x1,y1,x2,y2;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_rectangle( x1, y1, x2, y2);
 }
 
@@ -896,10 +896,10 @@ int CB_MLTest_Polygon( char *SRC ) { // MLTest_Polygon &Mat X, &Mat Y, nb_vertic
 	int ary_x,ary_y;
 	int nb_vertices;
 	CB_GetOprand2( SRC, &ary_x, &ary_y );
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	nb_vertices=CB_EvalInt( SRC );
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_filled_polygon( (int *)ary_x, (int *)ary_y, nb_vertices);
 }
 
@@ -907,7 +907,7 @@ int CB_MLTest_Circle( char *SRC ) { // MLTest_Circle x, y, radius
 	int x,y;
 	int radius;
 	CB_GetOprand3VWR( SRC, &x, &y, &radius);
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_filled_circle( x, y, radius);
 }
 
@@ -916,14 +916,14 @@ int CB_MLTest_Ellipse( char *SRC ) { // MLTest_Ellipse x, y, radius1, radius2
 	int radius1;
 	int radius2;
 	CB_GetOprand4VWR( SRC, &x, &y, &radius1, &radius2);
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_filled_ellipse( x, y, radius1, radius2);
 }
 
 int CB_MLTest_EllipseInRect( char *SRC ) { // MLTest_EllipseInRect  x1, y1, x2, y2
 	int x1,y1,x2,y2;
 	CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
-	if ( ErrorNo ) return ;
+	if ( ErrorNo ) return 0;
 	return MLTest_filled_ellipse_in_rect( x1, y1, x2, y2);
 }
 //----------------------------------------------------------------------------------------------

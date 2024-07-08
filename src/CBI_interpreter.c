@@ -600,7 +600,7 @@ int CB_EvalIntStrPtr( char *SRC ) {
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
 		buffer = CB_GetOpStr( SRC, &maxoplen );	
-		if ( ErrorNo ) return ;			// error
+		if ( ErrorNo ) return 0;			// error
 		return (int)buffer;	//  return buffer ptr
 	} else {	// expression
 		return CB_EvalInt( SRC );

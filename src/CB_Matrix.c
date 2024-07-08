@@ -167,7 +167,7 @@ int MatElementPlus( int reg, int m, int n ) {	// 1-
 	int ElementSize=MatAry[reg].ElementSize;
 	int maxbyte=MatAry[reg].Maxbyte;
 
-	if ( ( ElementSize!= 1 )&&( ElementSize!= 4 )&&( ElementSize!= 8 )&&( ElementSize!= 16 )&&( ElementSize!= 32 )&&( ElementSize!= 64 )&&( ElementSize!=128 ) ) { CB_Error(ElementSizeERR); return; }	// Illegal Element size
+	if ( ( ElementSize!= 1 )&&( ElementSize!= 4 )&&( ElementSize!= 8 )&&( ElementSize!= 16 )&&( ElementSize!= 32 )&&( ElementSize!= 64 )&&( ElementSize!=128 ) ) { CB_Error(ElementSizeERR); return 0; }	// Illegal Element size
 	if ( ElementSize==4 ) {	// 4 bit matrix
 			matsize=( ((m-1)>>1)+1 )*n;
 	} else 
@@ -3383,7 +3383,7 @@ int CB_EvalSortAD( char *SRC, int flagAD) {	// SortA( List 1 ) or 	// SortD( Lis
 	reg=CB_MatListAnsreg;
 	if ( reg>=0 ) {
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(DimensionERR); return 0; }	// Dimension error
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
 
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
@@ -3554,7 +3554,7 @@ int CB_MinMaxInt( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
@@ -3563,7 +3563,7 @@ int CB_MinMaxInt( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		ListEvalIntsub1(SRC);
-		if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 		reg2=CB_MatListAnsreg;
 		if ( sizeA != MatAry[reg2].SizeA ) { CB_Error(DimensionERR); return 0 ; }	// Dimension error
 		for ( m=base; m<sizeA+base; m++) {
@@ -3601,7 +3601,7 @@ int CB_MeanInt( char *SRC ) {	// Mean( List 1 )
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
@@ -3627,7 +3627,7 @@ int CB_SumInt( char *SRC ) {	// Sum List 1
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 
 	sizeA        = MatAry[reg ].SizeA;
@@ -3653,7 +3653,7 @@ int CB_ProdInt( char *SRC ) {	// Prod List 1
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 
 	sizeA        = MatAry[reg ].SizeA;
@@ -3993,10 +3993,10 @@ double determinant( double *m, int N)
     double det = 1, r;
     double tmp;
  
-    // ãŽOŠps—ñ‚É•ÏŠ·‚µ‚Â‚ÂA‘ÎŠp¬•ª‚ÌÏ‚ðŒvŽZ‚·‚éB
+    // ï¿½ï¿½Oï¿½pï¿½sï¿½ï¿½É•ÏŠï¿½ï¿½ï¿½ï¿½Â‚ÂAï¿½ÎŠpï¿½ï¿½ï¿½ï¿½ï¿½ÌÏ‚ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½ï¿½B
     for(y = 0; y < N - 1; y++){
         if(m[y * N + y] == 0){
-            // ‘ÎŠp¬•ª‚ª0‚¾‚Á‚½ê‡‚ÍA‚»‚Ì—ñ‚Ì’l‚ª0‚Å‚È‚¢s‚ÆŒðŠ·‚·‚é
+            // ï¿½ÎŠpï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍAï¿½ï¿½ï¿½Ì—ï¿½Ì’lï¿½ï¿½0ï¿½Å‚È‚ï¿½ï¿½sï¿½ÆŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             for(i = y + 1; i < N; i++){
                 if(m[i * N + y] != 0){
                     break;
@@ -4006,7 +4006,7 @@ double determinant( double *m, int N)
                 for(x = 0; x < N; x++){
                     SWAP(m[i * N + x], m[y * N + x]);
                 }
-                // —ñ‚ðŒðŠ·‚µ‚½‚Ì‚Ås—ñŽ®‚Ì’l‚Ì•„†‚Í”½“]‚·‚éB
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Åsï¿½ñŽ®‚Ì’lï¿½Ì•ï¿½ï¿½ï¿½ï¿½Í”ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½B
                 det = -det;
             }
         }

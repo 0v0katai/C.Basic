@@ -25,8 +25,9 @@ int VWtoPXY(double x, double y, int *px, int *py);	// ViewWwindow(x,y) -> pixel(
 void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax, double yscl);
 void ZoomIn();
 void ZoomOut();
-/*
+
 void PlotOn_VRAM(double x, double y);
+/*
 void PlotOn_DD(double x, double y);
 void PlotOn_DDVRAM(double x, double y);
 
@@ -57,3 +58,6 @@ void Vertical(double x ,int style, int mode);
 void Horizontal(double y, int style, int mode);
 void Circle(double x, double y, double r, int style, int drawflag, int mode);
 
+void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC );
+void GraphAxesGrid();
+void PXYtoVW(int px, int py, double *x, double *y);

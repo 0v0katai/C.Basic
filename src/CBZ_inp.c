@@ -784,7 +784,7 @@ int InitOpcodeRecent() {
 	}
 }
 
-int AddOpcodeRecent( short opcode ) {
+void AddOpcodeRecent( short opcode ) {
 	int i,j;
 
 	if ( ( ('a'<=opcode)&&(opcode<='z') ) || ( 0x0D == opcode ) || ( 0x0E == opcode ) || ( ',' == opcode ) ) return;

@@ -7,7 +7,9 @@ void PutKey(unsigned int keycode, int mode);
 void Keyboard_ClrBuffer();
 int Keyboard_GetKeyWait(int*column, int*row, int type_of_waiting, int timeout_period, int menu, unsigned short*keycode );
 void EnableGetkeyToMainFunctionReturn(); 
-void DisableGetkeyToMainFunctionReturn(); 
+void DisableGetkeyToMainFunctionReturn();
+
+void HourGlass();
 
 int Cursor_SetPosition(char x, char y); 
 

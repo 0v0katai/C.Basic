@@ -41,7 +41,7 @@ extern short ListFilePtr;
 //------------------------------------------------------------------------------
 int ReadMatrixInt( int reg, int dimA, int dimB);				// 0-
 double ReadMatrix( int reg, int dimA, int dimB);				// 0-
-void WriteMatrixint( int reg, int dimA, int dimB, int value);	// 0-
+void WriteMatrixInt( int reg, int dimA, int dimB, int value);	// 0-
 void WriteMatrix( int reg, int dimA, int dimB, double value);	// 0-
 char *  MatrixPtr( int reg, int m, int n );						// 0-
 int	MatrixSize( int reg, int sizeA, int sizeB ) ;	// size 1-
@@ -156,4 +156,8 @@ void Cplx_CB_MatInv( char *SRC ) ;	// Inverse Mat A
 void CB_ListNo2Ptr( int n );
 void CB_ListFile( char *SRC );
 
-complex Cplx_CB_MatRefRref( char *SRC, int select );	// Ref/Rref Mat A	
+complex Cplx_CB_MatRefRref( char *SRC, int select );	// Ref/Rref Mat A
+
+void CB_List( char *SRC );
+void CB_Matrix( char *SRC );
+int DimMatrixSubNoinit( int reg, int ElementSize, int m, int n, int base, int adrs );

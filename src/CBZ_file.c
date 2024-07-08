@@ -1554,8 +1554,6 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer 
 	return ( key );
 }
 
-void Getfolder( char *sname ) ;
-
 int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 	int key;
 	char msg1[32];
@@ -1825,7 +1823,7 @@ void ConvertToOpcode( char *filebase, char *sname, int editsize){
 	textsize=strlen(filebase);
 	memcpy( filebase+editsize, filebase, textsize);
 	memset( filebase, 0, editsize );
-	codesize=TextToOpcode( filebase, filebase+editsize, textsize+editsize );
+	codesize = TextToOpcode( filebase, filebase+editsize, textsize+editsize );
 	size=codesize+0x56+1;
 	G1M_header( filebase, &size );	// G1M header set
 	G1M_Basic_header( filebase );	// G1M Basic header set
@@ -3562,7 +3560,7 @@ int PP_Search_IfEnd( char *SRC ){
 				if ( c == 0x00 ) { 			// If
 					PP_ptr=ExecPtr-2;
 					i=PP_Search_IfEnd(SRC) ;
-					if ( ErrorNo ) return;
+					if ( ErrorNo ) return 0;
 					if ( i != 1  ) { ExecPtr=PP_ptr; CB_Error(IfWithoutIfEndERR); CB_ErrMsg(ErrorNo); return 0; } // not IfEnd error
 					break;
 				} else
@@ -3905,7 +3903,7 @@ int CB_BatteryStatus( char *SRC ){
 }
 
 //----------------------------------------------------------------------------------------------
-int Emu_check() {
+void Emu_check() {
 //	int i,t,s=RTC_GetTicks();
 //	for(i=0;i<140;i++){
 //		Bdisp_PutDisp_DD();

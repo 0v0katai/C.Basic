@@ -406,7 +406,7 @@ extern	unsigned char IsExtVar;
 
 void CB_AliasVarClr();
 int CB_GetAliasRegVar( char *SRC ) ;	// AliasVar ?
-void CB_AliasVar( char *SRC ) ;	// AliasVar A=ƒ¿
+void CB_AliasVar( char *SRC ) ;	// AliasVar A=ï¿½ï¿½
 int GetVarName( char *SRC, int *ptr, char *name, int *len );
 
 //-----------------------------------------------------------------------------
@@ -474,3 +474,15 @@ int CB_SearchProg( char *name ) ; //	Prog search
 
 void CB_ResetExecTicks();
 int SetStyle();
+
+void CB_StoCapt( char *SRC );
+void CB_RclCapt( char *SRC );
+int CB_Disp( char *SRC );
+int CB_CheckLbl( char * SRC );
+
+void SaveVRAM( char* vram);
+void RestoreVRAM( char* vram);
+void DeletePictPtr();
+void StoPictSmem( int pictNo, int offset );
+int CB_ChangeTextMode( char *SRC );
+void Skip_rem_no_op( char *SRC );

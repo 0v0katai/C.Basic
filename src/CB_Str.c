@@ -1559,7 +1559,7 @@ int CB_StrRight( char *SRC ) {	// StrRight( str1, n  )
 	int maxoplen;
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( ErrorNo ) return ;  // error
+	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	n = CB_EvalInt( SRC );	//
@@ -1681,7 +1681,7 @@ int CB_StrChar( char *SRC ) {	// StrChar("*"[,n]) StrChar( code [,n])
 		code[i++] = '\0';
 		buffer=code;
 	}
-	if ( ErrorNo ) return ;  // error
+	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		n = CB_EvalInt( SRC );	//
@@ -1701,7 +1701,7 @@ int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
 	int  charflag=0;
 	char spc[]=" ";
 	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( ErrorNo ) return ;  // error
+	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	max = CB_EvalInt( SRC );	//
@@ -1762,7 +1762,7 @@ int CB_StrBase( char *SRC ){		// StrBase( Str1,base1,base2 )->str2
 	char *buffer;
 	int base1=10,base2=10;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( ErrorNo ) return ;  // error
+	if ( ErrorNo ) return 0;  // error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	base1 = CB_EvalInt( SRC );	//

@@ -128,3 +128,4 @@ char* ReadGraphXt( int FuncNo );
 char* ReadGraphYt( int FuncNo );
 char* ReadGraphX(  int FuncNo );
 
+void CB_StrPrint( char *SRC , int csrX );

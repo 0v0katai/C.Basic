@@ -340,7 +340,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 						
 				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
-					if ( ErrorNo ) return ; // error
+					if ( ErrorNo ) return 0; // error
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return Cellsum( reg, x, y );
 	
@@ -965,16 +965,16 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// Å~
+			case 0xFFFFFFA9 :		// ÔøΩ~
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
 				break;
-			case 0xFFFFFFB9 :		// ÅÄ
+			case 0xFFFFFFB9 :		// ÔøΩÔøΩ
 				result = EvalFxDbl2( &fDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// IntÅÄ
+					case 0xFFFFFFBC:	// IntÔøΩÔøΩ
 						result = EvalFxDbl2( &fIDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
 						break;
 					case 0xFFFFFFBD:	// Rmdr

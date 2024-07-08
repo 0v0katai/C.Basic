@@ -382,7 +382,7 @@ int SelectVWin( char*msg, int n ,int min, int max, unsigned int *key ) {		//
 	return n ; // ok
 }
 */
-int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no change  -1 : change
+int SetViewWindow() {		// ----------- Set  View Window variable	return 0: no change  -1 : change
 	char buffer[32];
 	unsigned int key;
 	int	cont=1;

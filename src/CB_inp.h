@@ -257,5 +257,5 @@ extern toplistrecentfreq OplistRecentFreqMem[OpRecentFreqMax];
 extern short OplistRecentMem[OpRecentMax];
 
 int InitOpcodeRecent() ;
-int AddOpcodeRecent( short opcode ) ;
+void AddOpcodeRecent( short opcode ) ;
 int SelectOpcodeRecent( int listselect ) ;

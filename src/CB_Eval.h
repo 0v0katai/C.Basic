@@ -178,3 +178,5 @@ void CB_VarList( char *SRC ) ;
 void CB_VarRange( char *SRC ) ;
 void CB_F_Result( char *SRC ) ;
 void CB_DispF_Tbl( char *SRC ) ;
+
+int CB_Ticks( char *SRC );

@@ -131,7 +131,7 @@ int MCS_Save( char *filebase, char *dirname, char *itemname, int size, int flag0
 			return -1 ; 
 		}
 		r = MCS_DeleteItem( (unsigned char *)dirname, (unsigned char *)itemname );
-		r = MCSPutVar2( (unsigned char *)dirname, (unsigned char *)itemname, size, filebase+0x56-10 );
+		// r = MCSPutVar2( (unsigned char *)dirname, (unsigned char *)itemname, size, filebase+0x56-10 );
 		FileListUpdate=1;
 	}
 	if ( r ) { 

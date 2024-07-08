@@ -12,6 +12,7 @@
 /*************************************************************/
 
 #include "MonochromeLib.h"
+#include "CB_MonochromeLib.h"
 #include <stdlib.h>
 #include "fxlib.h"
 #include "mathf.h"
@@ -954,8 +955,8 @@ void ML_angle( int angle, int *sinus, int *cosinus ) {
     *sinus   = isin( angle, 1024 ) << 6;
 }
 void ML_pixel_Rotate( int x, int y, int dx, int dy, int sinus, int cosinus, ML_Color color ){
-//x' = x*cos(ƒÆ) - y*sin(ƒÆ) 
-//y' = x*sin(ƒÆ) + y*cos(ƒÆ) 
+//x' = x*cos(ï¿½ï¿½) - y*sin(ï¿½ï¿½) 
+//y' = x*sin(ï¿½ï¿½) + y*cos(ï¿½ï¿½) 
 	int nx,ny;
 	nx = ( dx*cosinus - dy*sinus ) >>16;
 	ny = ( dx*sinus + dy*cosinus ) >>16;
@@ -963,8 +964,8 @@ void ML_pixel_Rotate( int x, int y, int dx, int dy, int sinus, int cosinus, ML_C
 }
 
 void ML_horizontal_line_Rotate( int y, int dy, int x, int dx,  int sinus, int cosinus, ML_Color color ){
-//x' = x*cos(ƒÆ) - y*sin(ƒÆ) 
-//y' = x*sin(ƒÆ) + y*cos(ƒÆ) 
+//x' = x*cos(ï¿½ï¿½) - y*sin(ï¿½ï¿½) 
+//y' = x*sin(ï¿½ï¿½) + y*cos(ï¿½ï¿½) 
 	int nx1,ny1,nx2,ny2;
 	nx1 = ( ( -dx*cosinus - dy*sinus ) >>16 ) + x;
 	ny1 = ( ( -dx*sinus + dy*cosinus ) >>16 ) + y;
@@ -974,8 +975,8 @@ void ML_horizontal_line_Rotate( int y, int dy, int x, int dx,  int sinus, int co
 }
 
 void ML_Rotate( int x, int y, int *dx, int *dy, int sinus, int cosinus ){
-//x' = x*cos(ƒÆ) - y*sin(ƒÆ) 
-//y' = x*sin(ƒÆ) + y*cos(ƒÆ) 
+//x' = x*cos(ï¿½ï¿½) - y*sin(ï¿½ï¿½) 
+//y' = x*sin(ï¿½ï¿½) + y*cos(ï¿½ï¿½) 
 	int nx,ny;
 	nx = ( ( (*dx)*cosinus - (*dy)*sinus ) >>16) + x;
 	ny = ( ( (*dx)*sinus + (*dy)*cosinus ) >>16) + y;

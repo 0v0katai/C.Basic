@@ -122,7 +122,7 @@ unsigned int Pict() {
 						n=PictSelectNum2( "Store In" );
 						if (n>0) { 
 							RestoreDisp(SAVEDISP_PAGE1);	// ------ RestoreDisp1
-							StoPictSmem(n);
+							StoPict(n);
 							cont=0;
 						}
 						break;
@@ -167,7 +167,7 @@ unsigned int Plot()
 //	while( KeyCheckAC() );
 	KeyRecover();
 	
-	if ( VWtoPXY( Plot_X, Plot_Y, &GCursorX, &GCursorY) ) return;	// VW(X,Y) to  graphic cursor XY
+	if ( VWtoPXY( Plot_X, Plot_Y, &GCursorX, &GCursorY) ) return 0;	// VW(X,Y) to  graphic cursor XY
 	
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 
@@ -283,7 +283,7 @@ unsigned int ZoomXY() {
 	long NextCount; 	// pointer to repeat time of second repeat
 
 	regX.real=(Xmax+Xmin)/2; regY.real=(Ymax+Ymin)/2;		// center
-	if ( VWtoPXY( regX.real, regY.real, &GCursorX, &GCursorY) ) return;	// VW(X,Y) to  graphic cursor XY
+	if ( VWtoPXY( regX.real, regY.real, &GCursorX, &GCursorY) ) return 0;	// VW(X,Y) to  graphic cursor XY
 	
 	Bkey_Get_RepeatTime(&FirstCount,&NextCount);	// repeat time
 	Bkey_Set_RepeatTime(FirstCount,2);				// set graphic cursor repeat time  (count * 25ms)

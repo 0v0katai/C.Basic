@@ -286,8 +286,8 @@ void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 }
 
 int CB_PrintC2( int px, int py, unsigned char *str, int extflag ){	// extflag 0x1000:fx6*8fontmode  0x100:ExtAnkChar
-	int i;
-	i=KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
+	int i=1;
+	KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
 	return i;
 }
 void CB_Prints2( int px, int py, unsigned char *str, int extflag ){

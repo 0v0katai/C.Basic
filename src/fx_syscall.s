@@ -1,6 +1,6 @@
 # refer to siomn's fxDocumentation
 
-.data
+.text
  .global _RTC_GetTicks
  .global _RTC_SetDateTime
  .global _PutKey
