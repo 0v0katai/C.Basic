@@ -144,7 +144,7 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 			eptr=strchr((char*)buffer,'e');
 			i=strlen((char*)buffer); 
 			nptr=buffer+i;
-			if (  eptr != '\0' ) {	// 1.234500000e123  zero cut
+			if (  *eptr != '\0' ) {	// 1.234500000e123  zero cut
 				eptr--; i=0;
 				while ( eptr[i] == '0' ) i-- ;
 				if ( i ) {
@@ -773,7 +773,7 @@ int qsort_OpRecentFreq( const void *p1, const void *p2 ){
 	return OpRecent2->count - OpRecent1->count;
 }
 
-int InitOpcodeRecent() {
+void InitOpcodeRecent() {
 	int i;
 	for (i=0; i<OpRecentFreqMax; i++) {
 		OplistRecentFreq[i].code =0;
@@ -3444,7 +3444,7 @@ const topcodes OpCodeStrList[] = {
 	{ 0, "" }
 };
 
-int CB_OpcodeToStr( int opcode, char *string  ) {
+void CB_OpcodeToStr( int opcode, char *string  ) {
 	int i;
 	int code,H,L;
 	opcode &= 0xFFFF;
@@ -3459,7 +3459,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 				string[1]=0xE0;	// 
 			}
 			string[2]='\0';
-			return 0;
+			return;
 		} else
 		if ( ( 0x7F6A<=opcode )&&( opcode<=0x7F6F ) ){	// List1-6
 			code = opcode -0x7F6A +'1' ;
@@ -3472,7 +3472,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 			}
 			string[2]=code;
 			string[3]='\0';
-			return 0;
+			return;
 		} else
 		if ( opcode==0x7F40 ) {	// Mat
 			if ( EditListChar==1 ) {
@@ -3483,14 +3483,14 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 				string[1]=0xE1;	// 
 			}
 			string[2]='\0';
-			return 0;
+			return;
 		}
 	}
 	H=opcode>>8;
 	if ( (opcode==0xFA)||(opcode==0xA7)||(opcode==0x9A)||(opcode==0xAA)||(opcode==0xBA)||(opcode==0xF)||(H==0xF9 )||(H==0xF7 )||(H==0x7F) ) {
 		do {
 			code = OpCodeStrList[i].code & 0xFFFF ;
-			if ( code == opcode ) { strcpy( string, OpCodeStrList[i].str ); return 0; }
+			if ( code == opcode ) { strcpy( string, OpCodeStrList[i].str ); return; }
 			i++;
 		} while ( code ) ;
 	}
@@ -3499,7 +3499,7 @@ int CB_OpcodeToStr( int opcode, char *string  ) {
 		string[1]=opcode&0xFF;
 		string[2]='\0';
 	} else
-		return OpcodeToStr( (short)opcode, (unsigned char *)string ) ; // SYSCALL
+		OpcodeToStr( (short)opcode, (unsigned char *)string ) ; // SYSCALL
 }
 
 int CB_MB_ElementCount( char *str ) {
@@ -3833,7 +3833,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 			FkeyClear( FKeyNo6 );
 		} else {
 			ClipEndPtr   = -1 ;		// ClipMode cancel
-			if ( ( pallet_mode ) && ( alpha_mode ) ) if ( lowercase ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
+			if ( ( pallet_mode ) && ( alpha_mode ) ) {if ( lowercase ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");}
 			if ( ( pallet_mode ) && ( alpha_mode ) ) { Fkey_Icon( FKeyNo5, 673 ); }	//	Fkey_dispR( FKeyNo5, "CHAR");
 			if ( CommandInputMethod ) DispGenuineCmdMenu();
 		}
@@ -4207,7 +4207,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 
 
 		if (													// ----- 1 byte code -----
-		   ( KEY_CHAR_0 <= key  ) && ( key <= KEY_CHAR_9     ) ||
+		   (( KEY_CHAR_0 <= key  ) && ( key <= KEY_CHAR_9     )) ||
 		   ( hex_mode && ( KEY_CHAR_A <= key  ) && ( key <= KEY_CHAR_F ) ) ||
 		   ( hex_mode && ( KEY_CTRL_XTT == key ) ) ||
 		   ( hex_mode && ( KEY_CHAR_LOG == key ) ) ||

@@ -77,6 +77,11 @@ include_directories(CBFXGCC PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(CBFXGCC PRIVATE
                         -mrenesas -nostdlib -I include
                         -Wall -Wextra -Os -g -flto
+                        # -Wno-sign-compare
+                        -Wno-unused-parameter
+                        -Wno-unused-label
+                        -Wno-unused-variable
+                        -Wno-unused-but-set-variable
                         )
 target_link_options(CBFXGCC PRIVATE
                         -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/addin.ld" -L ${CMAKE_CURRENT_SOURCE_DIR})

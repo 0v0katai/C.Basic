@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 
 #define CB_MatListAnsregMax 4+28-1
-char   CB_MatListAnsreg=27;
+int8_t  CB_MatListAnsreg=27;
 //-----------------------------------------------------------------------------
 
 void NewMatListAns( int dimA, int dimB, int base, int element ){

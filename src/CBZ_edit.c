@@ -1573,7 +1573,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						FkeyClearAll();
 						if ( YesNo2( "Not Display mode", "Replace All Ok?") == 0 ) break;
 						locate (11,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode not display
-						Bdisp_PutDisp_DD;
+						Bdisp_PutDisp_DD();
 						while ( KeyScanDownAC() == 0 ) {
 							i = strlenOp(searchbuf);
 							csrPtr+=i;

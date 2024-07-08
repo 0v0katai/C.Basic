@@ -44,7 +44,7 @@ extern char folder[FOLDERMAX];
 extern int index;
 
 extern char FileListUpdate;
-extern char StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
+extern int8_t StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
 
 extern char ForceG1Msave;		//    1: force g1m save
 extern char AutoSaveMode;		//    1: Auto save ( not pop up )

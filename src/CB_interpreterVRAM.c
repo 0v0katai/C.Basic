@@ -1007,10 +1007,10 @@ void CB_BG_Pict( char *SRC ) { //	BG_Pict
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int CB_DotOprandRect( char *SRC, int *px, int *py) {
+void CB_DotOprandRect( char *SRC, int *px, int *py) {
 	int x,y;
 	*px=CB_EvalInt( SRC );
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR);  // Syntax error
 	ExecPtr++;
 	*py=CB_EvalInt( SRC );
 }
@@ -1618,7 +1618,7 @@ void CB_DotLife( char *SRC ){	// DotLife(Mat A,x1,y1,x2,y2)->Mat B    =>[X,Y]
 int CB_Fix( char *SRC ){
 	int tmp;
 	tmp=CB_EvalInt( SRC );
-	if ( tmp < 0 ) if ( CB_Round.MODE == Fix ) return CB_Round.DIGIT; else return -1;
+	if ( tmp < 0 ) {if ( CB_Round.MODE == Fix ) return CB_Round.DIGIT; else return -1;}
 	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	CB_Round.MODE = Fix ;
 	CB_Round.DIGIT= tmp ;
@@ -1627,7 +1627,7 @@ int CB_Fix( char *SRC ){
 int CB_Sci( char *SRC ){
 	int tmp;
 	tmp=CB_EvalInt( SRC );
-	if ( tmp < 0 ) if ( CB_Round.MODE == Sci ) return CB_Round.DIGIT; else return -1;
+	if ( tmp < 0 ) {if ( CB_Round.MODE == Sci ) return CB_Round.DIGIT; else return -1;}
 	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	CB_Round.MODE = Sci ;
 	CB_Round.DIGIT= tmp ;
@@ -1637,7 +1637,7 @@ int CB_Norm( char *SRC ){
 	int tmp;
 	if ( EvalEndCheck(SRC[ExecPtr]) == 0 ) { 
 		tmp=CB_EvalInt( SRC );
-		if ( tmp < 0 ) if ( CB_Round.MODE == Norm ) return CB_Round.DIGIT; else return -1;
+		if ( tmp < 0 ) {if ( CB_Round.MODE == Norm ) return CB_Round.DIGIT; else return -1;}
 		if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	} else tmp=1;
 	CB_Round.MODE = Norm ;

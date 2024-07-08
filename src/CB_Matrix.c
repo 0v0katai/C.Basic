@@ -35,10 +35,10 @@ char * MatrixPtr( int reg, int m, int n ){		// base:0  0-    base:1 1-
 		case  2:	// Vram
 		case  1:
 			MatAryC=(char*)MatAry[reg].Adrs;
-			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>3+1)*n+(m>>3));
+			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>(3+1))*n+(m>>3));
 		case  4:
 			MatAryC=(char*)MatAry[reg].Adrs;
-			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>1+1)*n+(m>>1));
+			return  (char *)(MatAryC+((MatAry[reg].SizeA-1)>>(1+1))*n+(m>>1));
 		case  8:
 			MatAryC=(char*)MatAry[reg].Adrs;
 			return  (char *)(MatAryC+dimB*m+n);
@@ -54,6 +54,8 @@ char * MatrixPtr( int reg, int m, int n ){		// base:0  0-    base:1 1-
 		case 128:
 			MatAryCPLX=(complex*)MatAry[reg].Adrs;			// Matrix array 128 bit
 			return  (char *)(MatAryCPLX+dimB*m+n);
+		default:
+			return (char *)0;
 	}
 }
 
@@ -637,7 +639,7 @@ complex InitMatrix( int reg, complex value ,int ElementSize ) {
 		}
 	}
 
-	if ( YesNo("Initialize Ok?") ) if ( ElementSize >= 64 ) InitMatSub( reg, value ); else InitMatIntSub( reg, (int)value.real ); 
+	if ( YesNo("Initialize Ok?") ) {if ( ElementSize >= 64 ) InitMatSub( reg, value ); else InitMatIntSub( reg, (int)value.real );} 
 
 	return value;
 }
@@ -694,7 +696,8 @@ void MatDotEditCursorSetFlashMode(int set) {	// 1:on  0:off
 
 //-----------------------------------------------------------------------------
 void NumToBin( char *buffer, unsigned int n, int digit) {
-	unsigned int i,j,k=pow(2,(digit-1));
+	int i;
+	unsigned int j,k=pow(2,(digit-1));
 	char bins[]="01";
 	n &= (k*2-1);
 	for (i=0;i<digit;i++){
@@ -707,7 +710,8 @@ void NumToBin( char *buffer, unsigned int n, int digit) {
 }
 
 void NumToHex( char *buffer, unsigned int n, int digit) {
-	unsigned int i,j,k=pow(16,(digit-1));
+	int i;
+	unsigned int j,k=pow(16,(digit-1));
 	char hexs[]="0123456789ABCDEF";
 	n &= (k*16-1);
 	for (i=0;i<digit;i++){
@@ -1417,18 +1421,18 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			case KEY_CTRL_F5:	// bin
 			  ToBin:
 				if ( strdisp || dotedit ) break;
-				if ( ElementSize ==  4 ) if ( ( bit==0 ) || ( bit== 8 ) ) bit= 4; else bit=0;
-				if ( ElementSize ==  8 ) if ( ( bit==0 ) || ( bit== 8 ) ) bit= 1; else bit=0;
-				if ( ElementSize == 16 ) if ( ( bit==0 ) || ( bit==16 ) ) bit= 2; else bit=0;
+				if ( ElementSize ==  4 ) {if ( ( bit==0 ) || ( bit== 8 ) ) bit= 4; else bit=0;}
+				if ( ElementSize ==  8 ) {if ( ( bit==0 ) || ( bit== 8 ) ) bit= 1; else bit=0;}
+				if ( ElementSize == 16 ) {if ( ( bit==0 ) || ( bit==16 ) ) bit= 2; else bit=0;}
 				break;
 			case KEY_CTRL_F6:	// hex
 			  ToHex:
 				if ( strdisp || dotedit ) break;
-				if ( ElementSize ==  4 ) if ( ( bit==0 ) || ( bit== 4 ) ) bit= 8; else bit=0;
-				if ( ElementSize ==  8 ) if ( ( bit==0 ) || ( bit== 1 ) ) bit= 8; else bit=0;
-				if ( ElementSize == 16 ) if ( ( bit==0 ) || ( bit== 2 ) ) bit=16; else bit=0;
-				if ( ElementSize == 32 ) if ( ( bit==0 ) || ( bit== 1 ) ) bit=32; else bit=0;
-				if ( ElementSize == 64 ) if ( ( bit==0 ) || ( bit== 1 ) ) bit=64; else bit=0;
+				if ( ElementSize ==  4 ) {if ( ( bit==0 ) || ( bit== 4 ) ) bit= 8; else bit=0;}
+				if ( ElementSize ==  8 ) {if ( ( bit==0 ) || ( bit== 1 ) ) bit= 8; else bit=0;}
+				if ( ElementSize == 16 ) {if ( ( bit==0 ) || ( bit== 2 ) ) bit=16; else bit=0;}
+				if ( ElementSize == 32 ) {if ( ( bit==0 ) || ( bit== 1 ) ) bit=32; else bit=0;}
+				if ( ElementSize == 64 ) {if ( ( bit==0 ) || ( bit== 1 ) ) bit=64; else bit=0;}
 				break;
 			case KEY_CTRL_UP:
 				selectY--;

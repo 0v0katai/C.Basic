@@ -1136,7 +1136,8 @@ int CB_CheckYfn( char *SRC ) {	// Fn1->Str 1 ?
 //----------------------------------------------------------------------------------------------
 void ClrLine5800P( int CsrX ){
 	if ( CsrX > 21 ) return ;
-	if ( CB_fx5800P == 0 ) locate(CsrX,CursorY); PrintLine((unsigned char*)" ",21);
+	if ( CB_fx5800P == 0 ) locate(CsrX,CursorY);
+	PrintLine((unsigned char*)" ",21);
 }
 void CB_StrPrint( char *SRC , int csrX ) {
 	char buffer[256];
@@ -1155,7 +1156,8 @@ void CB_StrPrint( char *SRC , int csrX ) {
 		CB_SelectTextVRAM();	// Select Text Screen
 		if ( ( CursorX >1 ) ) Scrl_Y();
 		CursorX+=csrX; px=0;
-		if ( CB_fx5800P == 0 ) locate(1,CursorY); PrintLine((unsigned char*)" ",21);
+		if ( CB_fx5800P == 0 ) locate(1,CursorY);
+		PrintLine((unsigned char*)" ",21);
 		while ( buffer[i] ) {
 			if ( ( CursorX > 21 ) ) { Scrl_Y(); px=0; }
 			CB_PrintC_ext( CursorX, CursorY, (unsigned char*)buffer+i, extAnkfont );

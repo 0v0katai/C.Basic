@@ -15,16 +15,16 @@
 //-----------------------------------------------------------------------------
 char CB_INTDefault=0;	// default mode  0:normal  1: integer mode
 
-char	FuncType	= 0;
-char	DrawType    = 0;	// 0:connect  1:Plot
-char	Coord       = 1;	// 0:off 1:on
-char	Grid        = 0;	// 0:off 1:on
-char	Axes        = 1;	// 0:off 1:on
-char	Label       = 0;	// 0:off 1:on
-char	Derivative  = 0;	// 0:off 1:on
-char	S_L_Style   = S_L_Normal;
-char	tmp_Style   = S_L_Normal;
-char	Angle       = 1;	// 0:deg   1:rad  2:grad
+int8_t FuncType	= 0;
+int8_t DrawType    = 0;	// 0:connect  1:Plot
+int8_t Coord       = 1;	// 0:off 1:on
+int8_t Grid        = 0;	// 0:off 1:on
+int8_t Axes        = 1;	// 0:off 1:on
+int8_t Label       = 0;	// 0:off 1:on
+int8_t Derivative  = 0;	// 0:off 1:on
+int8_t S_L_Style   = S_L_Normal;
+int8_t tmp_Style   = S_L_Normal;
+int8_t Angle       = 1;	// 0:deg   1:rad  2:grad
 
 char PxlMode=1;		// Pxl  1:set  0:clear
 
@@ -103,9 +103,9 @@ char MatdspNo=0;		//
 int CursorX=1;	// text cursor X
 int CursorY=1;	// text cursor X
 
-char GosubNestN=0;		// Gosub Nesting lebel (for subroutin)
-char ProgEntryN=0;		// Basic Program ptr (for subroutin)
-char ProgNo=0;			// current Prog No
+int8_t GosubNestN=0;		// Gosub Nesting lebel (for subroutin)
+int8_t ProgEntryN=0;		// Basic Program ptr (for subroutin)
+int8_t ProgNo=0;			// current Prog No
 char *ProgfileAdrs[ProgMax+1];
 int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
@@ -2745,12 +2745,12 @@ int CB_CheckAliasVar( int c, int *del ) {
 	return 0;
 }
 
-void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD	// (delete) Alias -A=_ABCD  Alias Mat -A=_ABCD
+void CB_AliasVar( char *SRC ) {	// Alias A=ï¿½ï¿½  or A=_ABCD	// (delete) Alias -A=_ABCD  Alias Mat -A=_ABCD
 	int c,i,j,reg,len;
 	int alias_code, org_reg;
 	int del=0;
 	char name[32+1];
-	if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// 	Alias Mat A=ƒ¿  or Mat A=_ABCD / Vct
+	if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// 	Alias Mat A=ï¿½ï¿½  or Mat A=_ABCD / Vct
 		ExecPtr+=2;
 		c=SRC[ExecPtr];
 		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
@@ -2796,7 +2796,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD	// (delete) Alias -A=_
 			}
 		}
 	} else 
-	if ( ( SRC[ExecPtr]==0xFFFFFFE2 ) ) {	// 	Alias Lbl A=ƒ¿  or Lbl A=_ABCD
+	if ( ( SRC[ExecPtr]==0xFFFFFFE2 ) ) {	// 	Alias Lbl A=ï¿½ï¿½  or Lbl A=_ABCD
 		ExecPtr++;
 		c=SRC[ExecPtr];
 //		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
@@ -2841,7 +2841,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=ƒ¿  or A=_ABCD	// (delete) Alias -A=_
 				AliasVarCodeLbl[AliasVarMAXLbl].alias=alias_code;
 			}
 		}
-	} else {						// Alias A=ƒ¿  or A=_ABCD
+	} else {						// Alias A=ï¿½ï¿½  or A=_ABCD
 		c=SRC[ExecPtr];
 		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
 		reg=RegVar(c);
@@ -2912,7 +2912,7 @@ int CB_interpreter( char *SRC ) {
 	char	bk_Label       = Label;	// 0:off 1:on
 	char	bk_Derivative  = Derivative;	// 0:off 1:on
 	char	bk_S_L_Style   = S_L_Style;
-	char	bk_Angle       = Angle;	// 0:deg   1:rad  2:grad
+	int8_t	bk_Angle       = Angle;	// 0:deg   1:rad  2:grad
 	char	bk_ComplexMode = ComplexMode;
 
 	char	bk_ACBreak    =ACBreak;		// AC Break on/off

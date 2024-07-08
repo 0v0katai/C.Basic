@@ -188,7 +188,7 @@ void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr);
 
 int CB_MB_ElementCount( char *str);
 int CB_MB_strlen( char *str ) ;
-int CB_OpcodeToStr( int opcode, char *string );
+void CB_OpcodeToStr( int opcode, char *string );
 
 extern short selectCMD;
 extern short selectOPTN;
@@ -256,6 +256,6 @@ extern short *OplistRecent;
 extern toplistrecentfreq OplistRecentFreqMem[OpRecentFreqMax];
 extern short OplistRecentMem[OpRecentMax];
 
-int InitOpcodeRecent() ;
+void InitOpcodeRecent() ;
 void AddOpcodeRecent( short opcode ) ;
 int SelectOpcodeRecent( int listselect ) ;

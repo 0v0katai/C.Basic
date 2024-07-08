@@ -19,7 +19,7 @@ static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 static Files Favoritesfiles[FavoritesMAX];
 char FileListUpdate=1;
-char StorageMode=0;						// 0:Storage memory   1:SD
+int8_t StorageMode=0;						// 0:Storage memory   1:SD
 char redrawsubfolder=0;
 //int recentsize=0;
 char ForceG1Msave=0;		//    1: force g1m save
@@ -1758,7 +1758,7 @@ int CheckPassWordmsg( char *filebase, char *msg ){	// 1:cancel  0:Ok  -1:no pass
 	return 0;	// ok
 }
 int CheckPassWord( char *filebase ){	// 1:cancel  0:Ok  -1:no pass
-	CheckPassWordmsg( filebase, "Password?" );
+	return CheckPassWordmsg( filebase, "Password?" );
 }
 
 int SetPassWord( int y, char *filebase, char *basname ,char* msg){	// 1:no password   0:Ok
@@ -2458,7 +2458,8 @@ void SetFullfilenameBin( char *fname, char *sname, char *ext ) {
 	int i;
 	strncpy( sname2, sname, 31 ); sname2[31]='\0';
 	GetExtName( sname2, ext2 );
-	if ( ext2[0]=='\0' ) strncpy( ext2, ext, 3 ); ext2[3]='\0';
+	if ( ext2[0]=='\0' ) strncpy( ext2, ext, 3 );
+	ext2[3]='\0';
 	SetFullfilenameExt( fname, sname2, ext2 );
 }
 

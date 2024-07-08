@@ -81,7 +81,7 @@ void CB_ML_DispVRAM( char*SRC ){	// ML_DispVRAM
 	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
 
 }
-int CB_ML_SetContrast( char *SRC ) { // ML_Contrast
+void CB_ML_SetContrast( char *SRC ) { // ML_Contrast
 //	ML_set_contrast( CB_EvalInt( SRC ) );
 	DD_SetContrast( CB_EvalInt( SRC ) );
 }
@@ -274,7 +274,7 @@ void CB_GetOprand_MLcolor( char *SRC, int *color) {
 	double d;
 	int c;
 	*color=ML_BLACK;
-	MLV_rand=(RAND_MAX+1);	//
+	MLV_rand=(32767+1);	//
 	if ( SRC[ExecPtr] != ',' ) return;	// no oprand
 	ExecPtr++;
 	if ( SRC[ExecPtr] == ',' ) goto jp;
@@ -288,12 +288,12 @@ void CB_GetOprand_MLcolor( char *SRC, int *color) {
 		c=CB_EvalInt( SRC );
 		if ( c <   0 ) c=0;
 		if ( c > 100 ) c=100;
-		MLV_rand = c*(RAND_MAX+1)/100;
+		MLV_rand = c*(32767+1)/100;
 	} else {
 		d=CB_EvalDbl( SRC );
 		if ( d < 0 ) d=0;
 		if ( d > 1 ) d=1;
-		MLV_rand = d*(RAND_MAX+1);
+		MLV_rand = d*(32767+1); // RAND_MAX = 32767
 	}
 }
 //----------------------------------------------------------------------------------------------

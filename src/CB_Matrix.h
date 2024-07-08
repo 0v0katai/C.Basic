@@ -31,7 +31,7 @@ extern short Mattmpreg;		//
 extern char	MatBaseDefault;
 extern char	MatBase;
 
-extern char   CB_MatListAnsreg;
+extern int8_t CB_MatListAnsreg;
 
 extern char listdsp;	// Mat:0  list:1
 
