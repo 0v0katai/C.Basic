@@ -1,4 +1,0 @@
-ViewWindow 1,127,0,1,63,0,1,4,1
-{10,30,18,10}->List 1
-{7,54,29,7}->List 2
-Graph(X,Y)=(List 1[T],List 2[T])

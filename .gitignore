@@ -1,12 +1,12 @@
-# File
-.gitignore
-*.dlw
-*.dlr
-*.G1A
-*.bat
+# Build files
+/build*/
+/*.g1a
+/*.g3a
 
-# Directory
-.vscode/
-src-fx/Debug
-src-fx/INIT
-src-fx/SDCard
+# Python bytecode
+__pycache__/
+
+# Common IDE files
+*.sublime-project
+*.sublime-workspace
+.vscode
