@@ -105,12 +105,12 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	int c,result,maxoplen;
 	int reg,dimA, dimB,ElementSize,m,n;
 	int base;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; }
 		else
 		if ( c=='[' ) { goto Matrix; }		// A[1]
@@ -127,7 +127,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	} else
 	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// Mat or Vct
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
@@ -154,7 +154,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		reg=ListRegVar( SRC );
 		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
 		if ( SRC[ExecPtr] == '[' ) {
@@ -202,7 +202,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 }
 
 int CB_baudrate( char *SRC, unsigned char *baud ){
-	int b,c=SRC[ExecPtr];
+	int b,c = (unsigned char)SRC[ExecPtr];
 	if ( c!=',' ) return 0;
 	ExecPtr++;
 	if ( SRC[ExecPtr]==',' ) return 0;
@@ -212,7 +212,7 @@ int CB_baudrate( char *SRC, unsigned char *baud ){
 	return 1;
 }
 int CB_length( char *SRC, int *length ){
-	int len,c=SRC[ExecPtr];
+	int len,c = (unsigned char)SRC[ExecPtr];
 	if ( c!=',' ) return 0;
 	ExecPtr++;
 	if ( SRC[ExecPtr]==',' ) return 0;
@@ -439,7 +439,7 @@ void CB_Beep( char *SRC ){
 	int r,a=1000, n=500;
 	int listreg1,listreg2;
 	int size1,size2,base1,base2,ptr1,ptr2;
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( ( c==':' )||( c==0x0D )||( c==0x0C )||( c==0 ) ) goto next;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	listreg1 = CB_BeepEval(SRC, &a);	// List calc

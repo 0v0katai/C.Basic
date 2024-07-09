@@ -88,14 +88,14 @@ void Bdisp_PutDisp_DD_DrawBusy_skip() {
 //	Bdisp_PutDisp_DD_DrawBusy();
 //}
 //void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) {
-//	char c=SRC[ExecPtr++];
+//	char c = (unsigned char)SRC[ExecPtr++];
 //	if ( c == ':' ) return ;
 //	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 //	ExecPtr--;
 //	Bdisp_PutDisp_DD_DrawBusy();
 //}
 void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) {	// Locate text Clrtext ""...
-	char c=SRC[ExecPtr++];
+	char c = (unsigned char)SRC[ExecPtr++];
 	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;
@@ -105,7 +105,7 @@ void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) {	// Locate text C
 			Bdisp_PutDisp_DD_DrawBusy();
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) {	// graphics command
-	char c=SRC[ExecPtr++];
+	char c = (unsigned char)SRC[ExecPtr++];
 	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
 	ExecPtr--;

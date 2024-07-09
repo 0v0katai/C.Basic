@@ -260,7 +260,7 @@ typedef struct {		// 34+4 bytes
 } CurrentStk;
 
 //-----------------------------------------------------------------------------
-#define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
+#define SkipSpace(SRC) c = (unsigned char)SRC[ExecPtr]; while ( c==0x20 ) c = (unsigned char)SRC[++ExecPtr]
 //------------------------------------------------------------------------------
 void ClrCahche();
 void InitLocalVar();

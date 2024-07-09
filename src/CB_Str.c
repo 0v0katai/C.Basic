@@ -27,7 +27,7 @@ int    defaultGraphArySize=255+1;
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int StrGetOpcode( char *SRC, int ptr ){
-	int c=SRC[ptr];
+	int c = (unsigned char)SRC[ptr];
 	switch ( c ) {
 		case 0x00:		// <EOF>
 			return 0 ;
@@ -44,7 +44,7 @@ int StrGetOpcode( char *SRC, int ptr ){
 	return (unsigned char)c ;
 }
 int StrGetOpcodeInc( char *SRC, int *ptr ){
-	int c=SRC[(*ptr)++];
+	int c = (unsigned char)SRC[(*ptr)++];
 	switch ( c ) {
 		case 0x00:		// <EOF>
 			(*ptr)--;
@@ -92,7 +92,7 @@ int StrPrevOpcode( char *SRC, int *offset ){
 	int c;
 	(*offset)-=2; 
 	if ( *offset < 0 ) { (*offset)=0; return 0;}
-		c=SRC[*offset];
+		c = (unsigned char)SRC[*offset];
 		switch ( c ) {
 			case 0x5C:		//  Backslash
 			case 0x7F:		// 
@@ -421,7 +421,7 @@ int OpcodeCopy(char *buffer, char *SRC, int Maxlen) {
 	int srcPtr=0,ptr=0;
 	if ( buffer == SRC ) return 0;
 	while ( 1 ){
-		c = SRC[srcPtr++];
+		c = (unsigned char)SRC[srcPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				buffer[ptr]='\0';
@@ -460,9 +460,9 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 	int i,j=0,len,srcPtr=0,ptr=0;
 	int c=1;
 	while ( c != '\0' ) {
-		c = SRC[srcPtr++] ; 
+		c = (unsigned char)SRC[srcPtr++] ; 
 		if ( c==0x5C ) // Backslash
-			c = SRC[srcPtr++]&0xFF ;
+			c = (unsigned char)SRC[srcPtr++]&0xFF ;
 		else
 		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) 
 			c = ( ( c & 0xFF )<< 8 ) + (SRC[srcPtr++]&0xFF);
@@ -480,7 +480,7 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 int CheckQuotCR( char *SRC, int ptr ) {
 	int c,d;
 	if ( SRC[ptr-1] != 0x22 ) return 0;	// "
-	c=SRC[ptr-2];
+	c = (unsigned char)SRC[ptr-2];
 	d=SRC[ptr-3];
 	if ( d==0xFFFFFFF7 ) {
 		if ( ( c==0x01 ) || ( c==0x02 ) ) return 1;	// Then or Else
@@ -491,10 +491,10 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int c;
 	int quotflag=( ExecPtr==1 );
 	int ptr=0;
-//	c=SRC[ExecPtr-2];
+//	c = (unsigned char)SRC[ExecPtr-2];
 	if ( CheckQuotCR( SRC, ExecPtr ) ) quotflag=1;
 	while (1){
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		buffer[ptr++]=c;
 		switch ( c ) {
 			case 0x0D:	// <CR>
@@ -504,7 +504,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 				buffer[--ptr]='\0' ;
 				return ptr;
 			case 0x5C:	//
-				c=SRC[ExecPtr];
+				c = (unsigned char)SRC[ExecPtr];
 				if ( ( c == 0x0D ) || ( c == 'n' ) ) {
 					buffer[ptr-1]=0x0D;	// <CR>
 					ExecPtr++;
@@ -661,7 +661,7 @@ int IsStrList( char *SRC, int flag ) {	// List n[0]?
 }
 
 int CB_IsStr_noYFn( char *SRC, int execptr ) {
-	int c=SRC[execptr],extmp,f;
+	int c = (unsigned char)SRC[execptr],extmp,f;
 	if ( c == 0x22 ) {	// String
 		return 1;
 	} else
@@ -669,7 +669,7 @@ int CB_IsStr_noYFn( char *SRC, int execptr ) {
 		return 2;
 	} else
 	if ( c == 0xFFFFFFF9 ) {	// Str
-		c=SRC[execptr+1];
+		c = (unsigned char)SRC[execptr+1];
 		if ( c == 0x30 ) return c;	// StrJoin(
 		else
 		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
@@ -679,7 +679,7 @@ int CB_IsStr_noYFn( char *SRC, int execptr ) {
 		if ( c == 0x4D ) return c;	// StrSplit
 	} else
 	if ( c == 0x7F ) {
-		c=SRC[execptr+1];
+		c = (unsigned char)SRC[execptr+1];
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
 			ExecPtr+=2;
@@ -692,7 +692,7 @@ int CB_IsStr_noYFn( char *SRC, int execptr ) {
 }
 
 int CB_IsStr( char *SRC, int execptr ) {
-	int c=SRC[execptr],extmp,f;
+	int c = (unsigned char)SRC[execptr],extmp,f;
 	if ( c == 0x22 ) {	// String
 		return 1;
 	} else
@@ -700,7 +700,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 		return 2;
 	} else
 	if ( c == 0xFFFFFFF9 ) {	// Str
-		c=SRC[execptr+1];
+		c = (unsigned char)SRC[execptr+1];
 		if ( c == 0x30 ) return c;	// StrJoin(
 		else
 		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
@@ -712,7 +712,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 		if ( c == 0x1B ) return c;	// fn
 	} else
 	if ( c == 0x7F ) {
-		c=SRC[execptr+1];
+		c = (unsigned char)SRC[execptr+1];
 		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
@@ -895,7 +895,7 @@ char* CB_GetOpStrSub1( char *SRC, int *maxoplen, int YFn ) {	// Get opcode Strin
 	else		c=CB_IsStr_noYFn( SRC, ExecPtr );
 	CB_CurrentStr=CB_GetOpStrSub( SRC, &(*maxoplen), c );		// String -> CB_CurrentStr
 	if ( ErrorNo ) return 0;	// error
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c != 0xFFFFFF89 ) { // non +
 //		if ( c == ')' ) ExecPtr++;	
 		return CB_CurrentStr; //
@@ -908,7 +908,7 @@ char* CB_GetOpStrSub1( char *SRC, int *maxoplen, int YFn ) {	// Get opcode Strin
 		if ( ErrorNo ) return 0;	// error
 		
 		StrJoin( CB_StrAddBuffer, CB_CurrentStr, CB_StrBufferMax-1 ) ;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != 0xFFFFFF89 ) break ; // +
 	}
 //	if ( c == ')' ) ExecPtr++;	
@@ -955,7 +955,7 @@ void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
 	int reg,dimA,dimB;
 	char *MatAryC,*ptr;
 	int size;
-	int c = SRC[ExecPtr-1];
+	int c = (unsigned char)SRC[ExecPtr-1];
 	reg=defaultGraphAry;
 	dimA = GetStrYFnNo( SRC, reg, defaultGraphAryN, defaultGraphArySize );
 //	MatAryC = GetStrYFnPtrSub( reg, dimA, defaultGraphArySize ) +6;
@@ -1037,12 +1037,12 @@ void StorTIME( char *buffer ) {	// "23:59:59" -> TIME
 }
 
 int CB_IsStrStor( char *SRC, int execptr ) {
-	int c=SRC[execptr],extmp,f;
+	int c = (unsigned char)SRC[execptr],extmp,f;
 	if ( c=='$' ) {	// Mat String
 		return 2;
 	} else
 	if ( c == 0xFFFFFFF9 ) {
-		c=SRC[execptr+1];
+		c = (unsigned char)SRC[execptr+1];
 		if ( c == 0x3F ) return c;	// Str
 		else
 		if ( c == 0x41 ) return c;	// DATE
@@ -1052,7 +1052,7 @@ int CB_IsStrStor( char *SRC, int execptr ) {
 		if ( c == 0x1B ) return c;	// fn
 	} else
 	if ( c == 0x7F ) {
-		c=SRC[execptr+1];
+		c = (unsigned char)SRC[execptr+1];
 		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
@@ -1101,7 +1101,7 @@ void CB_StorStrSub( char *SRC, int c ) {
 			StorStrList0( SRC ) ;
 			break;
 		default:
-			c=SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			if ( ( SRC[ExecPtr]==0x7F ) && ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) goto ListStrj;	// "ABCD"->List 1
 			CB_Error(SyntaxERR);  // Syntax error
 	}
@@ -1113,7 +1113,7 @@ void CB_StorStr( char *SRC ) {
 //----------------------------------------------------------------------------------------------
 int CB_CheckYfn( char *SRC ) {	// Fn1->Str 1 ?
 	int	extmp=ExecPtr;
-	int c=SRC[ExecPtr-1];
+	int c = (unsigned char)SRC[ExecPtr-1];
 	int maxlen;
 	char *buffer;
 	EvalIntsub1( SRC );
@@ -1146,7 +1146,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 	int extAnkfont=0x100;
 	
 	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// Force OS Font
-	c = SRC[ExecPtr] ; 
+	c = (unsigned char)SRC[ExecPtr] ; 
 	if ( c == 0x0E ) {	// -> store str
 		ExecPtr++;
 		CB_StorStr( SRC );
@@ -1200,7 +1200,7 @@ int CB_StrLen( char *SRC ) {
 	int	buffercnt=CB_StrBufferCNT;
 	char *buffer;
 	int	realbyte=0;
-	int length,type,c=SRC[ExecPtr];
+	int length,type,c = (unsigned char)SRC[ExecPtr];
 	if ( c == '@' ) { ExecPtr++; realbyte=1; }
 	else
 	if ( c == '!' ) { ExecPtr++;		// C/C++ specifcation
@@ -1387,7 +1387,7 @@ char* CB_GraphStrSub( char *SRC ) {	//  defaultGraphAry
 	int dimA,dimB;
 	int reg=defaultGraphAry;
 	int base=MatAry[reg].Base;
-	int c = SRC[ExecPtr-1];
+	int c = (unsigned char)SRC[ExecPtr-1];
 	char *ptr;
 	dimA = CB_GraphFnStrNo( SRC, reg );
 	if ( ErrorNo ) return 0;
@@ -1409,7 +1409,7 @@ char* CB_GraphStrSub( char *SRC ) {	//  defaultGraphAry
 	return ptr;
 }
 void GraphFnEQ( char *SRC ){
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		if ( SRC[ExecPtr+1] == '=' ) ExecPtr+=2;
 	}
@@ -1513,7 +1513,7 @@ int CB_StrJoin( char *SRC ) {
 	int maxoplen;
 	char *CB_StrAddBuffer, *buffer;
 	char *ptr1,*ptr2;
-	int length,type,c=SRC[ExecPtr];
+	int length,type,c = (unsigned char)SRC[ExecPtr];
 	if ( c=='!' ) {	// strcat() 		// C/C++ specifcation
 		ExecPtr++;
 		ptr1 = (char*)VarPtrLength(SRC, &length, &type, 1 );
@@ -1827,7 +1827,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 			strval[i]=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
 			type[i]=2;
 		} else {	// expression
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if (CB_INT==1) { 
 				if ( c=='#' ) { type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
 				else {
@@ -1842,7 +1842,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 				}
 			}
 		}
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != ',' ) break;
 		 ExecPtr++;
 		i++;

@@ -23,18 +23,18 @@ void CBint_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	int dimdim=0;
 	
-	int c=SRC[ExecPtr],d;
+	int c = (unsigned char)SRC[ExecPtr],d;
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
 		ExecPtr++;
 	  aliasj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c == 0x7E ) {		// '~'
 			ExecPtr++;
 			en=RegVarAliasEx(SRC);
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				c=SRC[ExecPtr];
+				c = (unsigned char)SRC[ExecPtr];
 				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalDbl[ i ][0] = Int2Cplx( CBint_CurrentValue ); }
 				} else
 				if ( c=='%' ) ExecPtr++;
@@ -58,10 +58,10 @@ void CBint_Store( char *SRC ){	// ->
 		}
 	} else
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]
 			ExecPtr+=2;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			Matrix0:
@@ -100,11 +100,11 @@ void CBint_Store( char *SRC ){	// ->
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
-				c = SRC[ExecPtr];
+				c = (unsigned char)SRC[ExecPtr];
 				d = SRC[ExecPtr+1];
 				if ( ( c==0x7F ) && ( d==0x46 ) ) {	// {24,18}->dim dim
 					ExecPtr+=2; dimdim=1; 
-					c = SRC[ExecPtr];
+					c = (unsigned char)SRC[ExecPtr];
 					d = SRC[ExecPtr+1];
 					}
 				if ( ( c==0x7F ) && ( ( d==0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) {	// n -> Dim List
@@ -177,7 +177,7 @@ void CBint_Store( char *SRC ){	// ->
 		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF7 ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
 			ExecPtr+=2;
 			CB_PokeSubInt( SRC, CBint_CurrentValue, EvalIntsubTop( SRC ) );
@@ -191,7 +191,7 @@ void CBint_Store( char *SRC ){	// ->
 		CB_StoreTicks( SRC, CBint_CurrentValue );
 	} else
 	if ( c==0xFFFFFFF9 ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
 				if ( CBint_CurrentValue == 0 ) { CB_Error(RangeERR); return; }	// Range error
 				ExecPtr+=2;
@@ -229,12 +229,12 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
 			LocalDbl[reg][0].real --;
@@ -271,7 +271,7 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		{ CB_Error(SyntaxERR); return; }	// Syntax error
 	}
 
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		ExecPtr++;
 		if ( CBint_CurrentValue ) return ;
@@ -295,12 +295,12 @@ void CBint_Isz( char *SRC ) { //	Isz
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='#' ) {
 			ExecPtr++;
 			LocalDbl[reg][0].real ++;
@@ -337,7 +337,7 @@ void CBint_Isz( char *SRC ) { //	Isz
 		{ CB_Error(SyntaxERR); return; }	// Syntax error
 	}
 	
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		ExecPtr++;
 		if ( CBint_CurrentValue ) return ;
@@ -392,9 +392,9 @@ void CBint_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn   0:PxlOff   2:PxlCh
 int WordSizeSelect( char *SRC ) {
 	int c,d;
 	int WordSize=8;
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c=='.' ) {
-		c =SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( ( c=='B' ) || ( c=='b' ) ) { ExecPtr++; }
 		else
 		if ( ( c=='W' ) || ( c=='w' ) ) { ExecPtr++; WordSize=16; }
@@ -679,12 +679,12 @@ int CB_VarPtr( char *SRC ) {
 	int maxoplen;
 	char *buffer;
 	
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; }
 		else
 		if ( c=='[' ) { goto Matrix; }		// A[1]

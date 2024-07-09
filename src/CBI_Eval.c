@@ -133,7 +133,7 @@ int MatOperandIntSub( int c ) {
 //-----------------------------------------------------------------------------
 void MatOprandInt1sub( char *SRC, int reg, int *dimA ){ 	// base:0  0-    base:1 1-
 	int c,d,e;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( (d==',')||(d==']')||(d==0x0E)||(d==0x13)||(d==0x0D)||(d==0) )  {		// [a,
 		ExecPtr++ ;
@@ -144,7 +144,7 @@ void MatOprandInt1sub( char *SRC, int reg, int *dimA ){ 	// base:0  0-    base:1
 		if ( (e==',')||(e==']')||(e==0x0E)||(e==0x13)||(e==0x0D)||(e==0) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			(*dimA) += MatOperandIntSub( c );
 		} else goto L1;
 	} else
@@ -153,7 +153,7 @@ void MatOprandInt1sub( char *SRC, int reg, int *dimA ){ 	// base:0  0-    base:1
 		if ( (e==',')||(e==']')||(e==0x0E)||(e==0x13)||(e==0x0D)||(e==0) ) {
 			ExecPtr+=2 ;
 			(*dimA) = MatOperandIntSub( c );
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			(*dimA) -= MatOperandIntSub( c );
 		} else goto L1;
 	} else {
@@ -373,7 +373,7 @@ int fLCMint( int x, int y ) {	// LCM(x,y)
 }
 
 int CB_rand( char *SRC ) {
-	int c = SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( ( '0'<=c )&&( c<='9' ) ) {
 		jp:
 		srand(CB_EvalInt(SRC));
@@ -412,68 +412,68 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
 	result=EvalIntsub1(SRC);
-	c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
+	c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
 	else 
 	if ( c==0xFFFFFF89 ) { // +
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result+dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result+dst;
 	} else
 	if ( c==0xFFFFFF99 ) { // -
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result-dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result-dst;
 	} else
 	if ( c=='=') { // ==
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result == dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result == dst;
 	} else
 	if ( c=='>') { // >
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result > dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result > dst;
 	} else
 	if ( c=='<') { // <
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result < dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result < dst;
 	} else
 	if ( c==0x11) { // !=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result != dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result != dst;
 	} else
 	if ( c==0x12) { // >=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result >= dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result >= dst;
 	} else
 	if ( c==0x10) { // <=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result <= dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result <= dst;
 	} else
 	if ( c==0xFFFFFFA9 ) { // *
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
 	} else
 	if ( c==0xFFFFFFB9 ) { // /
 	  divj:
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fDIVint(result,dst);
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fDIVint(result,dst);
 	} else
 	if ( c==0xFFFFFF9A ) { // xor
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result ^ dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result ^ dst;
 	} else
 	if ( ( c=='|' ) || ( c==0xFFFFFFAA ) ) { // or
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result | dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result | dst;
 	} else
 	if ( ( c=='&' ) || ( c==0xFFFFFFBA ) ) { // and
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result & dst;
+		ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result & dst;
 	} else
 	if ( c==0xFFFFFF8B ) { // ^2
 		ExecPtr++;
-		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*result;
+		c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*result;
 	} else
 	if ( c==0x7F ) { // 
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c==0xFFFFFFB0 ) { // And
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result && (int)dst;
+			ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result && (int)dst;
 		} else
 		if ( c==0xFFFFFFB1 ) { // Or
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result || (int)dst;
+			ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result || (int)dst;
 		} else
 		if ( c==0xFFFFFFB4 ) { // Xor
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return ((int)result!=0) ^ ((int)dst!=0);
+			ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return ((int)result!=0) ^ ((int)dst!=0);
 		} else
 		if ( c==0xFFFFFFBC ) { // Int/
 			goto divj;
 		} else
 		if ( c==0xFFFFFFBD ) { // Rmdr
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMODint(result,dst);
+			ExecPtr++; dst=EvalIntsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMODint(result,dst);
 		}
 	}
 
@@ -490,31 +490,31 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 int Eval_atoi(char *SRC, int c ) {
 	int	result=0;
 	if ( c == '0' ) {
-		c = SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( (  c=='x' ) || ( c=='X' ) ) {
-			c=SRC[++ExecPtr];
+			c = (unsigned char)SRC[++ExecPtr];
 			while ( ( ( '0'<=c )&&( c<='9' ) ) || ( ('A'<=c)&&(c<='F') ) || ( ('a'<=c)&&(c<='f') ) ) {
 				if ( ( '0'<=c )&&( c<='9' ) ) result = result*16 +(c-'0');
 				else
 				if ( ('A'<=c)&&(c<='F') ) result = result*16 +(c-'A'+10);
 				else
 				if ( ('a'<=c)&&(c<='f') ) result = result*16 +(c-'a'+10);
-				c=SRC[++ExecPtr];
+				c = (unsigned char)SRC[++ExecPtr];
 			}
 			return result ;
 		} else
 		if ( (  c=='b' ) || ( c=='B' ) ) {
-			c=SRC[++ExecPtr];
+			c = (unsigned char)SRC[++ExecPtr];
 			while ( ('0'<=c)&&(c<='1') ) {
 				result = result*2 +(c-'0');
-				c=SRC[++ExecPtr];
+				c = (unsigned char)SRC[++ExecPtr];
 			}
 			return result ;
 		}
 	}
 	while ( ( '0'<=c )&&( c<='9' ) ) {
 		result = result*10 +(c-'0');
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 	}
 	return result ;
 }
@@ -525,7 +525,7 @@ int Get2EvalInt( char *SRC, int *tmp, int *tmp2){
 	if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 	ExecPtr++;
 	(*tmp2) = EvalIntsubTop( SRC );
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ')' ) ExecPtr++;
 	return c;
 }
@@ -540,21 +540,21 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	int*	MatAryI;
 	double*	MatAryF;
 
-	c = SRC[ExecPtr++];
+	c = (unsigned char)SRC[ExecPtr++];
   topj:
 	if ( c == '(') {
 		result = EvalIntsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 		return result;
 	}
-	while ( c == 0xFFFFFF89 ) c=SRC[ExecPtr++];	// +
+	while ( c == 0xFFFFFF89 ) c = (unsigned char)SRC[ExecPtr++];	// +
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
 		return - EvalIntsub5( SRC );
 	}
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  {
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='#' ) { ExecPtr++; return LocalDbl[reg][0].real ; }
 		else
 		if ( c=='[' ) { goto Matrix; }
@@ -574,11 +574,11 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
-			c = SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x40 :		// Mat A[a,b]
 				  Matjmp:
-					c=SRC[ExecPtr];
+					c = (unsigned char)SRC[ExecPtr];
 					if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 					else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 					Matrix1:
@@ -851,7 +851,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			return fcuberootint( EvalIntsub5( SRC ) );
 			
 		case 0xFFFFFFF7:	// F7..
-			c = SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0xFFFFFFAF:	// PxlTest(y,x)
 					y=(EvalIntsubTop( SRC ));
@@ -887,7 +887,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 			}
 			break;
 		case 0xFFFFFFF9:	// F9..
-			c = SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0xFFFFFFC6:	// M_PixelTest(
 					return CB_ML_PixelTest( SRC );
@@ -944,7 +944,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 //		result = Evalsub1( SRC );
 		return result;
 	} else
-	if ( c==' ' ) { while ( c==' ' )c=SRC[ExecPtr++]; goto topj; }	// Skip Space
+	if ( c==' ' ) { while ( c==' ' )c = (unsigned char)SRC[ExecPtr++]; goto topj; }	// Skip Space
 	
 	ExecPtr--;
 	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
@@ -961,7 +961,7 @@ int EvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int c;
 	result = EvalIntsub1( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				result *= result ;
@@ -987,7 +987,7 @@ int EvalIntsub4(char *SRC) {	//  3rd Priority  ( ^ ...)
 	int c;
 	result = EvalIntsub2( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = pow( result, EvalIntsub2( SRC ) );
@@ -1011,7 +1011,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 	int dimA,dimB,reg,x,y;
 	result = EvalIntsub4( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ((( 'A'<=c )&&( c<='Z' )) ||
 			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFCD ) || // <r>
@@ -1022,11 +1022,11 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 				result *= EvalIntsub4( SRC ) ;
 		} else if ( c == 0x7F ) { // 7F..
 				if ( ErrorNo ) goto exitj;
-				c = SRC[ExecPtr+1];
+				c = (unsigned char)SRC[ExecPtr+1];
 				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result *= EvalIntsub4( SRC ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0xFFFFFFAF:	// PxlTest(y,x)
 					result *= EvalIntsub4( SRC ) ;
@@ -1036,7 +1036,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 					break;
 			}
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x1B:	// fn
 				case 0x21:	// Xdot
@@ -1052,7 +1052,7 @@ int EvalIntsub5(char *SRC) {	//  5th Priority  abbreviated multiplication
 					break;
 			}
 //		} else if ( c == 0xFFFFFFE7 ) { // E7..
-//			c = SRC[ExecPtr+1];
+//			c = (unsigned char)SRC[ExecPtr+1];
 //			switch ( c ) {
 //				default:
 //					return result;
@@ -1072,7 +1072,7 @@ int EvalIntsub7(char *SRC) {	//  7th Priority abbreviated multiplication type A/
 	int c;
 	result = EvalIntsub5( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		switch ( c ) {
 			case '(' :
 			case '{' :
@@ -1102,7 +1102,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	int c;
 	result = EvalIntsub7( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// �~
 				result *= EvalIntsub7( SRC );
@@ -1113,7 +1113,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result /= tmp ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int��
 						tmp = EvalIntsub7( SRC );
@@ -1151,7 +1151,7 @@ int EvalIntsub11(char *SRC) {	//  11th Priority  ( +,- )
 	int c;
 	result = EvalIntsub10( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result += EvalIntsub10( SRC );
@@ -1174,7 +1174,7 @@ int EvalIntsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	int c;
 	result = EvalIntsub11( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case '=' :	// =
 				result = ( result == EvalIntsub11( SRC ) );
@@ -1220,9 +1220,9 @@ int EvalIntsub13(char *SRC) {	//  13th Priority  ( And,and)
 	int c;
 	result = EvalIntsub12( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c == 0x7F ) {
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0xFFFFFFB0 :	// And
 					ExecPtr+=2;
@@ -1242,9 +1242,9 @@ int EvalIntsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 	int c;
 	result = EvalIntsub13( SRC );
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c == 0x7F ) {
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0xFFFFFFB1 :	// Or
 					ExecPtr+=2;
@@ -1436,9 +1436,9 @@ int CB_GetkeyM() {	//	Getkey multi  -> list { }
 }
 
 int CB_GetkeyEntry( char *SRC ) {	// CB_GetKey entry
-	int c = SRC[ExecPtr],d;
+	int c = (unsigned char)SRC[ExecPtr],d;
 	int result,sdkcode=0;
-	if ( c=='@' ) { sdkcode=1; c = SRC[++ExecPtr]; }	// Getkey SDK code
+	if ( c=='@' ) { sdkcode=1; c = (unsigned char)SRC[++ExecPtr]; }	// Getkey SDK code
 	if ( ( ( '0'<=c )&&( c<='3' )) || ( c=='m') || ( c=='M') ) {
 		ExecPtr++ ;
 		switch ( c ) {

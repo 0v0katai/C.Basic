@@ -1916,15 +1916,15 @@ int ElementSizeSelectAdrs( char *SRC, int *base, int *adrs, int ElementSize ) {	
 	int c,d;
 	*base=MatBase;
 	*adrs=0;
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c=='.' ) {
-		c =SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		ElementSize = DefaultElemetSize();
-		if ( ( c=='0' ) || ( c=='1' ) ) { *base = c-'0'; c=SRC[++ExecPtr]; }
+		if ( ( c=='0' ) || ( c=='1' ) ) { *base = c-'0'; c = (unsigned char)SRC[++ExecPtr]; }
 		if ( ( c=='P' ) || ( c=='p' ) ) { ExecPtr++; ElementSize= 1; }
 		else
 		if ( ( c=='V' ) || ( c=='v' ) ) { ExecPtr++; ElementSize= 2;
-			c =SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( ( c=='T' ) || ( c=='t' ) ) { ExecPtr++; ElementSize= 3; } // text VRAM
 			if ( ( c=='G' ) || ( c=='g' ) ) { ExecPtr++; ElementSize= 5; } // GraphicVRAM
 		} else
@@ -1939,11 +1939,11 @@ int ElementSizeSelectAdrs( char *SRC, int *base, int *adrs, int ElementSize ) {	
 		if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; ElementSize=64; }
 		else
 		if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; ElementSize=128; }
-		c =SRC[ExecPtr];
-		if ( c=='.' ) c =SRC[++ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
+		if ( c=='.' ) c = (unsigned char)SRC[++ExecPtr];
 		if ( ( c=='0' ) || ( c=='1' ) ) { 
 			*base = c-'0' ;
-			c = SRC[++ExecPtr];
+			c = (unsigned char)SRC[++ExecPtr];
 		}
 		if ( c=='(' ) { 
 			ExecPtr++;
@@ -1974,7 +1974,7 @@ void CB_MatrixInitsubNoMat( char *SRC, int reg, int dimA, int dimB , int Element
 void CB_MatrixInitsub( char *SRC, int *reg, int dimA, int dimB , int ElementSize, int dimdim ) { 	// 1-
 	int c,d;
 	int base=MatBase;
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == 0x7F ) {
 		d =SRC[ExecPtr+1];
 		if ( d ==0x40 ) {		// Mat
@@ -2106,7 +2106,7 @@ int MatGetOpcode(char *SRC, char *buffer, int Maxlen ) {
 	int i,j=0,len,ptr=0;
 	int c=1,d;
 	while ( c != '\0' ) {
-		c = SRC[ExecPtr++] ;
+		c = (unsigned char)SRC[ExecPtr++] ;
 		if ( c==0x22 ) break ; // <CR>
 		else
 		if ( c==0x5C ) // Backslash
@@ -2446,20 +2446,20 @@ int CB_MatCalc( char *SRC, int Matflag ) { //	Mat A -> Mat B  etc
 	double	*dptr, *dptr2;
 	
 	if ( Matflag==0x40 ) reg=MatRegVar(SRC); else reg=VctRegVar(SRC); 
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == 0x0E ) {	// ->
 		if ( reg>=0 ) {
 			if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 		} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
 		ExecPtr++;
-		c =SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != 0x7F ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
-		c =SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c == 0x46 ) { 		// Mat A -> Dim Mat B[.w]
 			dim=1;
-			c =SRC[++ExecPtr];
+			c = (unsigned char)SRC[++ExecPtr];
 			if ( c != 0x7F ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
-			c =SRC[++ExecPtr];
+			c = (unsigned char)SRC[++ExecPtr];
 		}
 		if ( c ==0x40 ) {	// Mat
 			ExecPtr++;
@@ -2493,18 +2493,18 @@ int CB_ListCalc( char *SRC ) { //	List 1 -> List 2  etc
 	
 	reg=ListRegVar( SRC );
 	if ( reg<0 ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == 0x0E ) {	// ->
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return 0; }	// No Matrix Array error
 		ExecPtr++;
-		c =SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != 0x7F ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
-		c =SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c == 0x46 ) { 		// List 1 -> Dim List 2[.w]
 			dim=1;
-			c =SRC[++ExecPtr];
+			c = (unsigned char)SRC[++ExecPtr];
 			if ( c != 0x7F ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
-			c =SRC[++ExecPtr];
+			c = (unsigned char)SRC[++ExecPtr];
 		}
 //		if ( ( c !=0x51 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 		ExecPtr++;
@@ -2542,9 +2542,9 @@ void CB_MatFill( char *SRC ) { //	Fill(value, Mat A)		Fill(value, List 1)
 	complex value;
 	
 	value=CB_Cplx_EvalDbl( SRC );
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	c =SRC[++ExecPtr];
+	c = (unsigned char)SRC[++ExecPtr];
 	if ( ( '1'<=c ) && ( c<='9' ) ) reg=ListRegVar(SRC);	// Fill(value, 1) = Fill(value, List 1)
 	else MatrixOprandreg( SRC, &reg);	// Fill(value, Mat A)
 	if ( reg>=0 ) {
@@ -2882,7 +2882,7 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 		if (CB_INT==1)	WriteMatrixInt( reg, m, n, EvalIntsubTop( SRC ));
 		else 		    Cplx_WriteMatrix( reg, m, n, CB_Cplx_EvalDbl( SRC ));
 		c=SkipSpc(SRC);
-//		c = SRC[ExecPtr];
+//		c = (unsigned char)SRC[ExecPtr];
 		if ( c != ',' ) break;
 		ExecPtr++;	// "," skip
 		SkipSpcCR(SRC);
@@ -3289,7 +3289,7 @@ void CB_SordAD_string( char *SRC, int flagAD) {	// SortA($Mat A);
 	int sizeA,sizeB;
 	double *ptr;
 	ExecPtr++;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	d=SRC[ExecPtr+1];
 	if ( !( ( c == 0x7F ) && ( d == 0x40 ) ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	ExecPtr+=2;
@@ -3318,7 +3318,7 @@ void CB_SortAD( char *SRC, int flagAD) {	// SortA( List 1 [,List 2][,List 3]...)
 	int base;
 	double	*dptr;
 
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c=='$' ) { CB_SordAD_string( SRC, flagAD); return ;}
 	d=SRC[ExecPtr+1];
 	if ( !( ( c == 0x7F ) && ( ( d == 0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -5072,7 +5072,7 @@ int CB_Dim( char *SRC ){	// Dim Mat or Dim List
 			MatrixOprandreg( SRC, &reg );
 			WriteListAns2( MatAry[reg].SizeA, MatAry[reg].SizeB );
 			return MatAry[reg].SizeA;
-		} else { c=SRC[ExecPtr+1];
+		} else { c = (unsigned char)SRC[ExecPtr+1];
 			if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// Dim List or List1~List6
 				MatrixOprandreg( SRC, &reg );
 				return MatAry[reg].SizeA;
@@ -5120,7 +5120,7 @@ void CB_ListNo2Ptr( int n ){
 	}
 }
 void CB_ListFile( char *SRC ){
-	int n, c = SRC[ExecPtr-1];
+	int n, c = (unsigned char)SRC[ExecPtr-1];
 	if ( ( 0xFFFFFFB8 <= c )&& ( c <= 0xFFFFFFBD ) ) { n = c-0xFFFFFFB7; }	// File1~File6
 	else n = CB_EvalInt( SRC );
 	if ( ( n<0 ) || ( ExtendList+1<n ) ) { CB_Error(ArgumentERR); return ; } // Argument error

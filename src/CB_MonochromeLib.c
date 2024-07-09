@@ -71,7 +71,7 @@ ML_BmpRotate
 //}
 void CB_ML_DispVRAM( char*SRC ){	// ML_DispVRAM
 	int y1,y2,i;
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( c == ';' ) {
 		ExecPtr++;
 		if ( Check_skip_count() == 0 ) return ;
@@ -238,7 +238,7 @@ int CB_GetOprand_percent( char *SRC ) {	// 0~100
 	int value=100;
 	if ( SRC[ExecPtr] != ',' ) return value;	// no rand oprand
 	ExecPtr++;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) return value;
 	if ( c == '%') { ExecPtr++;
 		c=CB_EvalInt( SRC );
@@ -282,7 +282,7 @@ void CB_GetOprand_MLcolor( char *SRC, int *color) {
   jp:
 	if ( SRC[ExecPtr] != ',' ) return;	// no rand oprand
 	ExecPtr++;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) return;
 	if ( c == '%') { ExecPtr++;
 		c=CB_EvalInt( SRC );
@@ -319,10 +319,10 @@ void CB_ML_Point( char *SRC ) { // ML_Point x, y, width, color
 int CB_ML_PixelTest( char *SRC ) { // ML_PixelTest( x, y[,T/G])
 	int x,y,c,f=0;
 	CB_GetOprand2VW( SRC, &x, &y );
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( ( c=='T' )||( c=='t' ) ) {
 			ExecPtr++;
 			f=1;	// select Text Vram
@@ -470,7 +470,7 @@ void CB_ML_H_Scroll( char *SRC ) { // ML_H_Scroll scroll
 	int scroll;
 	int x1,y1,x2,y2;
 	scroll=CB_EvalInt( SRC );
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
 		CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
@@ -486,7 +486,7 @@ void CB_ML_V_Scroll( char *SRC ) { // ML_V_Scroll scroll
 	int scroll;
 	int x1,y1,x2,y2;
 	scroll=CB_EvalInt( SRC );
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
 		CB_GetOprand4VW( SRC, &x1, &y1, &x2, &y2);
@@ -500,11 +500,11 @@ void CB_ML_V_Scroll( char *SRC ) { // ML_V_Scroll scroll
 
 //----------------------------------------------------------------------------------------------
 void CB_ML_GetBmpMode( char *SRC, int *mode1, int *mode2 ) {
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	(*mode1)=0;
 	(*mode2)=0;
 	if ( c != ',' )  return ;	// 
-	c=SRC[++ExecPtr];
+	c = (unsigned char)SRC[++ExecPtr];
 	if ( ( c == 'O' ) || ( c == 'o' ) )  (*mode1)=0;	// Or
 	else
 	if ( ( c == 'A' ) || ( c == 'a' ) )  (*mode1)=1;	// And
@@ -514,7 +514,7 @@ void CB_ML_GetBmpMode( char *SRC, int *mode1, int *mode2 ) {
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 
 	if ( SRC[++ExecPtr] != ',' ) return ;
-	c=SRC[++ExecPtr];
+	c = (unsigned char)SRC[++ExecPtr];
 	if ( ( c == 'C' ) || ( c == 'c' ) )  (*mode2)=1;	// Cl
 	else { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
@@ -523,7 +523,7 @@ void CB_ML_GetBmpMode( char *SRC, int *mode1, int *mode2 ) {
 /*
 unsigned char* CB_ML_GetMatAdrs( char *SRC ) {
 	int reg,x,y;
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( ( c=='&' ) || ( ( c==0x7F)&&(SRC[ExecPtr+1]==0xFFFFFFF8) ) {	// & or VarPtr(
 		return (unsigned char *)CB_EvalInt( SRC );
 	} else {
@@ -929,10 +929,10 @@ int CB_MLTest_EllipseInRect( char *SRC ) { // MLTest_EllipseInRect  x1, y1, x2, 
 //----------------------------------------------------------------------------------------------
 int CB_MLTest( char *SRC) { // MLTest_command
 	int c;
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c != 0xFFFFFFF9 ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
-	c=SRC[ExecPtr++];
+	c = (unsigned char)SRC[ExecPtr++];
 	switch ( c ) {
 		case 0xFFFFFFC5:	// _Point
 			return CB_MLTest_Point( SRC );

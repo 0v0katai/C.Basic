@@ -191,21 +191,21 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 
 	dspflag=2;		// 2:value		3:Mat    4:List
 
-	c = SRC[ExecPtr++];
+	c = (unsigned char)SRC[ExecPtr++];
   topj:
 	if ( c == '(') {
 		result = ListEvalsubTop( SRC );
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 		return result;
 	}
-	while ( c == 0xFFFFFF89 ) c=SRC[ExecPtr++];	// +
+	while ( c == 0xFFFFFF89 ) c = (unsigned char)SRC[ExecPtr++];	// +
 	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
 		return EvalFxDbl( &fsign, ListEvalsub5( SRC ) ) ; 
 	}
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) )  {
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='%' ) { ExecPtr++; return LocalInt[reg][0] ; }
 		else
 		if ( c=='[' ) { goto Matrix; }
@@ -225,7 +225,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 	
 	switch ( c ) { 			// ( type C function )  sin cos tan... 
 		case 0x7F:	// 7F..
-			c = SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x40 :		// Mat A[a,b]
 				  Matjmp:
@@ -518,7 +518,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			return 0;
 
 		case 0xFFFFFFF7:	// F7..
-			c = SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0xFFFFFFAF:	// PxlTest(y,x)
 					y=(NoListEvalsubTop( SRC ));
@@ -613,7 +613,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 			return 0;
 
 		case 0xFFFFFFF9:	// F9..
-			c = SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0xFFFFFFC6:	// M_PixelTest(
 					return CB_ML_PixelTest( SRC );
@@ -671,7 +671,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 		result = EvalsubTop( SRC );
 		return result;
 	} else
-	if ( c==' ' ) { while ( c==' ' )c=SRC[ExecPtr++]; goto topj; }	// Skip Space
+	if ( c==' ' ) { while ( c==' ' )c = (unsigned char)SRC[ExecPtr++]; goto topj; }	// Skip Space
 	
 	ExecPtr--;
 	reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
@@ -694,7 +694,7 @@ double ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	result = ListEvalsub1( SRC );
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFF8B  :	// ^2
 				if ( resultflag==3 ) {
@@ -779,7 +779,7 @@ double ListEvalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				if ( resultflag==3 ) {	// Mat
@@ -819,12 +819,12 @@ double ListEvalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 	double result,frac1,frac2,frac3;
 	unsigned int c;
 	result = ListEvalsub3( SRC );
-	c = SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == 0xFFFFFFBB ) {
 		ExecPtr++;
 		frac1 = result ;
 		frac2 = ListEvalsub3( SRC );
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c == 0xFFFFFFBB ) {
 			ExecPtr++;
 			frac3 = ListEvalsub3( SRC );
@@ -848,7 +848,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ((( 'A'<=c )&&( c<='Z' )) ||
 			(( 'a'<=c )&&( c<='z' )) ||
 			 ( c == 0xFFFFFFCD ) || // <r>
@@ -860,11 +860,11 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
 				if ( ErrorNo ) goto exitj;
-				c = SRC[ExecPtr+1];
+				c = (unsigned char)SRC[ExecPtr+1];
 				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0xFFFFFFAF:	// PxlTest(y,x)
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub4( SRC ) ) ;
@@ -874,7 +874,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 					break;
 			}
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x1B:	// fn
 				case 0x21:	// Xdot
@@ -890,7 +890,7 @@ double ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 					break;
 			}
 //		} else if ( c == 0xFFFFFFE7 ) { // E7..
-//			c = SRC[ExecPtr+1];
+//			c = (unsigned char)SRC[ExecPtr+1];
 //			switch ( c ) {
 //				default:
 //					return result;
@@ -915,7 +915,7 @@ double ListEvalsub7(char *SRC) {	//  7th Priority abbreviated multiplication typ
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		switch ( c ) {
 			case '(' :
 			case '{' :
@@ -963,7 +963,7 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFFA9 :		// �~
 				result = EvalFxDbl2( &fMUL, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
@@ -972,7 +972,7 @@ double ListEvalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				result = EvalFxDbl2( &fDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
 				break;
 			case 0x7F:
-				c = SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int��
 						result = EvalFxDbl2( &fIDIV, &resultflag, &resultreg, result, ListEvalsub7( SRC ) ) ;
@@ -1012,7 +1012,7 @@ double ListEvalsub11(char *SRC) {	//  11th Priority  ( +,- )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0xFFFFFF89 :		// +
 				result = EvalFxDbl2( &fADD, &resultflag, &resultreg, result, ListEvalsub10( SRC ) ) ;
@@ -1040,7 +1040,7 @@ double ListEvalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case '=' :	// =
 				result = EvalFxDbl2( &fcmpEQ, &resultflag, &resultreg, result, ListEvalsub11( SRC ) ) ;
@@ -1091,9 +1091,9 @@ double ListEvalsub13(char *SRC) {	//  13th Priority  ( And,and)
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c == 0x7F ) {
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0xFFFFFFB0 :	// And
 					ExecPtr+=2;
@@ -1120,9 +1120,9 @@ double ListEvalsubTop(char *SRC) {	//
 	resultflag=dspflag;		// 2:result	3:Listresult
 	resultreg=CB_MatListAnsreg;
 	while ( 1 ) {
-		c = SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c == 0x7F ) {
-			c = SRC[ExecPtr+1];
+			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0xFFFFFFB1 :	// Or
 					ExecPtr+=2;

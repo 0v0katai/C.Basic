@@ -62,7 +62,7 @@ char * LoadHelp(){
 void Help_Skip_cmmt( char *SRC, int *Ptr ){ // skip "..."
 	int c;
 	while (1){
-		c=SRC[(*Ptr)++];
+		c = (unsigned char)SRC[(*Ptr)++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				(*Ptr)--;
@@ -86,7 +86,7 @@ void Help_Skip_cmmt( char *SRC, int *Ptr ){ // skip "..."
 void Help_Skip_block( char *SRC, int *Ptr ){
 	int c;
 	while (1){
-		c=SRC[(*Ptr)++];
+		c = (unsigned char)SRC[(*Ptr)++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				(*Ptr)--;
@@ -256,7 +256,7 @@ char TryFlag;
 int Search_ExceptTryEnd( char *SRC ){
 	int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -268,7 +268,7 @@ int Search_ExceptTryEnd( char *SRC ){
 				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x38 ) return  c;	// Except
 				else
 				if ( c == 0x39 ) return  c;	// TryEnd
@@ -314,7 +314,7 @@ void CB_Except( char*SRC ) {
 	else
 	if ( r == 0x38 ) {	// Except
 		ErrorNo = 0;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( ( c == ':' ) || ( c == 0x0D ) ) n = 0; else  n = CB_EvalInt( SRC );
 		if ( ErrorNo ) { TryFlag = 0; return; }
 		if ( ( 0 < n ) && ( ErrNo != n ) ) goto loop;
@@ -343,7 +343,7 @@ int CB_GetRGB( char *SRC, int mode ){	// GetRGB/HSV/HSL() -> ListAns
 	mode &= 0x0F;
 	d = CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] == ',' ) {
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( ( c == 'N' ) || ( c == 'N' ) ) { ExecPtr++; errorCheck=0; }
 	}
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
@@ -400,7 +400,7 @@ unsigned short CB_RGB( char *SRC, int mode ) {	// n or (r,g,b)    return : color
 	int dspflagtmp=dspflag;
 	int r,g,b;
 	int h,s,v;
-	int	c=SRC[ExecPtr];
+	int	c = (unsigned char)SRC[ExecPtr];
 	if ( c=='#' ) { 	// direct 16bit color #12345
 		ExecPtr++;
 		r = CB_EvalInt( SRC );
@@ -449,10 +449,10 @@ unsigned short CB_RGB( char *SRC, int mode ) {	// n or (r,g,b)    return : color
 }
 
 int CB_GetColor( char *SRC ){
-	int	c=SRC[ExecPtr++];
+	int	c = (unsigned char)SRC[ExecPtr++];
 	switch ( c ) {
 			case 0x7F:	// 7F
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x34 :				// Red
 //						return 0xF800;	// Red
@@ -479,7 +479,7 @@ int CB_GetColor( char *SRC ){
 				}
 				break;
 			case 0xFFFFFFF9:	// F9
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0xFFFFFF9B :			// Black
 //						return 0x0000;	// Black
@@ -518,7 +518,7 @@ void CB_PlotLineColor( char *SRC ){
 	CB_GetColor( SRC );
 }
 void CB_BackColor( char *SRC ){
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( c=='@' ) {
 		ExecPtr++;
 		CB_GetColor( SRC );
@@ -528,7 +528,7 @@ void CB_BackColor( char *SRC ){
 }
 void CB_TransparentColor( char *SRC ){
 	int color;
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) || ( c==0x0C ) || ( c==0 ) ) {
 	} else {
 		CB_GetColor( SRC );

@@ -178,7 +178,7 @@ int System( int n ) {
 
 int CB_System( char *SRC ) {	// System( n )
 	int r;
-	int c = SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	int n = CB_EvalInt( SRC );
 	if ( n==10000 ) {	// load config data to ListAns   Ststem(10000,1) Ststem(10000,2) Ststem(10000,3)
 		if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 

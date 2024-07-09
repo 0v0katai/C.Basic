@@ -191,10 +191,10 @@ int CB_interpreter_sub( char *SRC ) {
 			if ( SRC[ExecPtr] == 0x0C ) if ( ( ErrorNo==0 ) && ( DebugMode==0 ) ) ExecPtr++; // disps
 			ClrCahche();
 		}
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		if ( ( c==':'  ) || ( c==0x0D )|| ( c==0x20 ) ) {
-				c=SRC[ExecPtr++];
-				while ( ( c==0x0D ) || ( c==0x20 ) ) c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
+				while ( ( c==0x0D ) || ( c==0x20 ) ) c = (unsigned char)SRC[ExecPtr++];
 				if  ( breakcount==0 ) {
 					if ( ( BreakCheck ) && ( KeyScanDownAC() ) ) {	// [AC] break?
 						KeyRecover();
@@ -208,7 +208,7 @@ int CB_interpreter_sub( char *SRC ) {
 			else  break;
 		}
 		
-//		while ( c==0x20 ) c=SRC[ExecPtr++]; // Skip Space
+//		while ( c==0x20 ) c = (unsigned char)SRC[ExecPtr++]; // Skip Space
 
 		switch (c) {
 			case 0xFFFFFFEC:	// Goto
@@ -225,7 +225,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case 0xFFFFFFF7:	// F7
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x00:	// If
 						CB_If(SRC, &CacheIf );
@@ -276,7 +276,7 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						break;
 					case 0x0C:	// Return
-						c=SRC[ExecPtr];
+						c = (unsigned char)SRC[ExecPtr];
 						if ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) { 
 							dspflag=2;
 							if (CB_INT==1)	CBint_CurrentValue   = EvalIntsubTop( SRC );
@@ -541,7 +541,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case 0x7F:	// 7F
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x40:	// Mat
 					case 0xFFFFFF84:	// Vct
@@ -592,7 +592,7 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case 0xFFFFFFF9:	// F9
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) && ( c != 0xFFFFFFC6 ) && ( c != 0xFFFFFFD8 ) ) { CB_ML_command( SRC, c ); break; }
 				else
 				if ( ( 0x38 != c ) && ( 0x3E != c ) && ( 0x34 <= c ) && ( c <= 0x49 ) )  goto strjp;
@@ -814,7 +814,7 @@ int CB_interpreter_sub( char *SRC ) {
 				CB_ResetExecTicks();
 				dspflagtmp=2;
 //				if ( BreakPtr ) break;
-//				c=SRC[ExecPtr++];
+//				c = (unsigned char)SRC[ExecPtr++];
 //				if ( c == 0x0E ) {		// ->
 //					if (CB_INT==1)	CBint_Store(SRC); else CB_Store(SRC);
 //				}
@@ -823,7 +823,7 @@ int CB_interpreter_sub( char *SRC ) {
 			case 0x0C:	// disps
 				if ( CB_Disps(SRC, dspflag) ) BreakPtr=ExecPtr ;  // [AC] break
 				CB_ResetExecTicks();
-//				c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
+//				c = (unsigned char)SRC[ExecPtr]; while ( c==0x20 ) c = (unsigned char)SRC[++ExecPtr]; // Skip Space
 				break;
 		
 			default:
@@ -848,27 +848,27 @@ int CB_interpreter_sub( char *SRC ) {
 					}
 				}
 				dspflagtmp = dspflag;
-				c=SRC[ExecPtr]; 
+				c = (unsigned char)SRC[ExecPtr]; 
 				if (c==0x0E) goto inext1;
 				if (c==0x13) goto inext2;
 				if ( (c==':')||(c==0x0D) ) goto inext3;
 				if ( (c==0x0C)||(c==0x00) ) goto inext3;
 				if ( c==0xFFFFFFF9 ) {
-					c=SRC[ExecPtr+1];
+					c = (unsigned char)SRC[ExecPtr+1];
 					if ( (0x05<=c)&&(c<=0x07) ) { ExecPtr+=2; goto inext3; }	// >DMS // >a+bi // >r_theta
 				}
 				CB_Error(SyntaxERR) ; // Syntax error 
 				goto inext3;
 		}
-		c=SRC[ExecPtr];
-//		while ( c==0x20 ) c=SRC[++ExecPtr]; // Skip Space
+		c = (unsigned char)SRC[ExecPtr];
+//		while ( c==0x20 ) c = (unsigned char)SRC[++ExecPtr]; // Skip Space
 		if ( c == 0x0E ) { 
 		  inext1:
 			ExecPtr++;
 			if (CB_INT==1)	CBint_Store(SRC);	// ->
 			else		CB_Store(SRC);		// ->
 			dspflagtmp=dspflag+0x10; //	12:nomal  13:mat  14:list
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c == 0x0E ) goto inext1;
 		}
 		if ( c == 0x13 ) {					// =>
@@ -1095,7 +1095,7 @@ int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
 void Skip_block( char *SRC ){
 	int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -1122,10 +1122,10 @@ void Skip_block( char *SRC ){
 
 void Skip_quot( char *SRC ){ // skip "..."
 	int c;
-	c=SRC[ExecPtr-2];
+	c = (unsigned char)SRC[ExecPtr-2];
 	if ( ( c==0x27 ) || ( c==' ' ) || ( c==0x0D ) || ( c==':' ) ) {
 		while (1){
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x00:	// <EOF>
 					ExecPtr--;
@@ -1148,7 +1148,7 @@ void Skip_quot( char *SRC ){ // skip "..."
 		}
 	} else {
 		while (1){
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
 				case 0x00:	// <EOF>
 					ExecPtr--;
@@ -1176,18 +1176,18 @@ void Skip_quot( char *SRC ){ // skip "..."
 void Skip_rem_sub( char *SRC, int nonopflag ){	// skip '...
 	int c,reg;
 remloop:
-	c=SRC[ExecPtr++];
+	c = (unsigned char)SRC[ExecPtr++];
 	if ( c=='/' ) { 	// '/ execute C.Basic only
 		return;
 	} else 
 	if ( nonopflag ) goto next;
 	else
 	if ( c=='#' ) {
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		if ( c=='C') {
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			if ( c=='B' ) {
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c=='i' ) || ( c=='I' ) ) CB_INT=1;
 				else
 				if ( ( c=='c' ) || ( c=='C' ) ) CB_INT=2;
@@ -1196,16 +1196,16 @@ remloop:
 			}
 		} else
 		if ( c==0xFFFFFFF9 ) {
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			if ( c==0x3F ) {	// Str
 				reg=RegVarAliasEx(SRC);
 				if ( reg>=0 ) {
 					defaultStrAry= reg;
 					if ( SRC[ExecPtr] == ',') {
-						c=SRC[++ExecPtr];
+						c = (unsigned char)SRC[++ExecPtr];
 						defaultStrAryN=CB_EvalInt( SRC );
 						if ( SRC[ExecPtr] == ',') {
-							c=SRC[++ExecPtr];
+							c = (unsigned char)SRC[++ExecPtr];
 							defaultStrArySize=CB_EvalInt( SRC );
 						}
 					}
@@ -1218,48 +1218,48 @@ remloop:
 				if ( reg>=0 ) {
 					defaultFnAry= reg;
 					if ( SRC[ExecPtr] == ',') {
-						c=SRC[++ExecPtr];
+						c = (unsigned char)SRC[++ExecPtr];
 						defaultFnAryN=CB_EvalInt( SRC );
 						if ( SRC[ExecPtr] == ',') {
-							c=SRC[++ExecPtr];
+							c = (unsigned char)SRC[++ExecPtr];
 							defaultFnArySize=CB_EvalInt( SRC );
 						}
 					}
 					goto DelStrBuffer;
 				}
-			} else { c=SRC[ExecPtr++]; }
+			} else { c = (unsigned char)SRC[ExecPtr++]; }
 		} else
 		if ( c==0xFFFFFFF7 ) {
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			if ( c==0x0D ) {	// Break
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c=='0' ) || ( c=='1' ) ) {
 					BreakCheck= (c-'0') ;
 				}
-			} else { c=SRC[ExecPtr++]; }
+			} else { c = (unsigned char)SRC[ExecPtr++]; }
 		} else
 		if ( c=='5' ){	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c=='8' ) )  CB_fx5800P = 1;		// fx-5800P mode on
 		} else
 		if ( c=='9' ){	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c=='8' ) )  CB_fx5800P = 0;		// fx-5800P mode off
 		} else
 		if ( c=='R' ){	// Root folder
 				c = SetRoot2( SRC );
 		} else
 		if ( c==0x7F ) {
-			c=SRC[ExecPtr++];
+			c = (unsigned char)SRC[ExecPtr++];
 			if ( c==0xFFFFFFF0 ) {	// Graph
 				reg=RegVarAliasEx(SRC);
 				if ( reg>=0 ) {
 					defaultGraphAry= reg;
 					if ( SRC[ExecPtr] == ',') {
-						c=SRC[++ExecPtr];
+						c = (unsigned char)SRC[++ExecPtr];
 						defaultGraphAryN=CB_EvalInt( SRC );
 						if ( SRC[ExecPtr] == ',') {
-							c=SRC[++ExecPtr];
+							c = (unsigned char)SRC[++ExecPtr];
 							defaultGraphArySize=CB_EvalInt( SRC );
 						}
 					}
@@ -1267,19 +1267,19 @@ remloop:
 				}
 			} else
 			if ( c==0x40 ) {	// Mat 0  : base 0
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c=='0' ) || ( c=='1' ) ) {
 					MatBase= c-'0' ;
 				}
 			} else
 			if ( c==0xFFFFFF8F ) {	// GetKey
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c=='R' ) || ( c=='r' ) ) {
 					if ( TimeDsp ) TimeDsp |= 0x2 ; // on  reset GetKey1/2 
 				} else {
 					if ( TimeDsp ) TimeDsp &= ~0x2 ; // on  cont
 				}
-			} else { c=SRC[ExecPtr++]; }
+			} else { c = (unsigned char)SRC[ExecPtr++]; }
 
 		}
 	}
@@ -1300,7 +1300,7 @@ remloop:
 			case 0x7F:	// 
 			case 0xFFFFFFF7:	// 
 			case 0xFFFFFFF9:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c!=0x0F ) || ( SRC[ExecPtr]!=0xFFFFFFE2 ) )  break;
 				// Alias Lbl skip
 			case 0xFFFFFFE5:	// 
@@ -1310,7 +1310,7 @@ remloop:
 				ExecPtr++;
 				break;
 		}
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 	}
 }
 
@@ -1320,7 +1320,7 @@ void Skip_rem_no_op( char *SRC ){
 
 void CB_Rem( char *SRC, CchIf *Cache ){
 	int i,ii,j,execptr;
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( c=='#' ) { 	// C.Basic command
 		Skip_rem_sub( SRC, 0 );
 		return;
@@ -1354,7 +1354,7 @@ int CB_CheckLbl( char * SRC ){
 	int i,j,len=32;
 	int alias_code, org_reg;
 	char name[32+1];
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( ( '0'<=c )&&( c<='9' ) ) {
 		ExecPtr++;
 		return c-'0';
@@ -1397,7 +1397,7 @@ int Search_Lbl( char *SRC, int lc ){
 	int bptr=ExecPtr;
 	ExecPtr=0;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr=bptr;
@@ -1414,7 +1414,7 @@ int Search_Lbl( char *SRC, int lc ){
 				if ( c == lc ) return 1 ;
 				break;
 			case 0xFFFFFFF9:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c!=0x0F ) || ( SRC[ExecPtr]!=0xFFFFFFE2 ) )  break;
 				// Alias Lbl skip
 			case 0x7F:	// 
@@ -1543,7 +1543,7 @@ int ObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 void Search_IfEnd( char *SRC ){
 	int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -1555,7 +1555,7 @@ void Search_IfEnd( char *SRC ){
 				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) { 			// If
 					Search_IfEnd(SRC);
 					break;
@@ -1578,7 +1578,7 @@ void Search_IfEnd( char *SRC ){
 int Search_ElseIfEnd( char *SRC ){
 	int c;
 	while (1){	// Search  Else or IfEnd
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -1590,7 +1590,7 @@ int Search_ElseIfEnd( char *SRC ){
 				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) {			// If
 					Search_IfEnd(SRC);
 					break;
@@ -1619,9 +1619,9 @@ void CB_If( char *SRC, CchIf *Cache ){
 	int judge;
   loop:
 	judge  = CB_EvalCheckZero( SRC );
-	c =SRC[ExecPtr];
-	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
-	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c=SRC[ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
+	c = (unsigned char)SRC[ExecPtr];
+	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c = (unsigned char)SRC[++ExecPtr]; while ( c==' ' ) c = (unsigned char)SRC[++ExecPtr]; }
+	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c = (unsigned char)SRC[ExecPtr]; while ( c==' ' ) c = (unsigned char)SRC[++ExecPtr]; }
 	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
 	if ( judge ) return ; // true
 	
@@ -1681,7 +1681,7 @@ void CB_Else( char *SRC, CchIf *Cache ){
 int Search_Next( char *SRC ){
 	int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -1696,7 +1696,7 @@ int Search_Next( char *SRC ){
 				Skip_block(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) { 		// If
 					Search_IfEnd(SRC);
 				} else
@@ -1725,7 +1725,7 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 	if ( CurrentStruct->ForPtr >= StackForMax ) { CB_Error(NestingERR); return; } //  nesting error
 	if (CB_INT==1) {		//					------------ INT mode
 		CBint_CurrentValue = EvalIntsubTop( SRC );
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }	// Syntax error	// ->
 		ExecPtr++;
 		expbuf=ExecPtr;
@@ -1736,11 +1736,11 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 		ExecPtr=expbuf;
 		CurrentStruct->Var[CurrentStruct->ForPtr]=LocalInt[reg];
 		CBint_Store(SRC);
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
 		CurrentStruct->IntEnd[CurrentStruct->ForPtr] = CB_EvalInt( SRC );
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
 			CurrentStruct->IntStep[CurrentStruct->ForPtr] = CB_EvalInt( SRC );
@@ -1766,7 +1766,7 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 
 	} else {			//					------------ Double mode
 		CB_CurrentValue.real = EvalsubTopReal( SRC );
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }	// Syntax error	// ->
 		ExecPtr++;
 		expbuf=ExecPtr;
@@ -1778,11 +1778,11 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 		CurrentStruct->Var[CurrentStruct->ForPtr]=(int*)LocalDbl[reg];
 		CB_CurrentValue.imag = 0;
 		CB_Store(SRC);
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
 		CurrentStruct->End[CurrentStruct->ForPtr] = CB_EvalDbl( SRC );
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
 			CurrentStruct->Step[CurrentStruct->ForPtr] = CB_EvalDbl( SRC );
@@ -1868,7 +1868,7 @@ int ObjectAligni4c( unsigned int n ){ return n; }	// align +4byte
 int Search_WhileEnd( char *SRC ){
 	int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -1883,7 +1883,7 @@ int Search_WhileEnd( char *SRC ){
 				Skip_block(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) {		// If
 					Search_IfEnd(SRC);
 				} else
@@ -1909,7 +1909,7 @@ int Search_WhileEnd( char *SRC ){
 int Search_LpWhile( char *SRC ){
 	unsigned int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -1924,7 +1924,7 @@ int Search_LpWhile( char *SRC ){
 				Skip_block(SRC);
 				break;
 			case 0xFFFFFFF7:	// 
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) {		// If
 					Search_IfEnd(SRC);
 				} else
@@ -2018,7 +2018,7 @@ void CB_LpWhile( char *SRC, CurrentStk *CurrentStruct ) {
 int Search_SwitchEnd( char *SRC ){
 	unsigned int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -2050,7 +2050,7 @@ int Search_SwitchEnd( char *SRC ){
 int Search_CaseEnd( char *SRC ){
 	unsigned int c;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -2086,7 +2086,7 @@ void CB_Switch( char *SRC, CurrentStk *CurrentStruct ,CchIf *Cache ) {
 	int wPtr,execptr;
 	int c,i,ii,j,value;
 	value=CB_EvalInt( SRC );
-//	c=SRC[ExecPtr];
+//	c = (unsigned char)SRC[ExecPtr];
 //	if ( ( c!=0x0D ) && ( c!=':' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 //	ExecPtr++;
 	wPtr=ExecPtr;
@@ -2133,10 +2133,10 @@ void CB_Case( char *SRC, CurrentStk *CurrentStruct ) {
 	if ( CurrentStruct->SwitchPtr <= 0 ) { CB_Error(CaseWithoutSwitchERR); return; }  // Case without Switch error
 	CurrentStruct->SwitchPtr--;
 
-//	c=SRC[ExecPtr];
+//	c = (unsigned char)SRC[ExecPtr];
 //	value=Eval_atoi( SRC, c );
 	value=CB_EvalInt( SRC );
-//	c=SRC[ExecPtr];
+//	c = (unsigned char)SRC[ExecPtr];
 //	if ( ( c!=0x0D ) && ( c!=':' ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 //	ExecPtr++;
 
@@ -2220,12 +2220,12 @@ void CB_Dsz( char *SRC ) { //	Dsz
 	short*	MatAryW;
 	int*	MatAryI;
 	if (CB_INT==1) { CBint_Dsz(SRC) ; return; }
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='%' ) {
 			ExecPtr++;
 			LocalInt[reg][0] --;
@@ -2262,7 +2262,7 @@ void CB_Dsz( char *SRC ) { //	Dsz
 		{ CB_Error(SyntaxERR); return; }	// Syntax error
 	}
 
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		ExecPtr++;
 		if ( CB_CurrentValue.real ) return ;
@@ -2287,12 +2287,12 @@ void CB_Isz( char *SRC ) { //	Isz
 	short*	MatAryW;
 	int*	MatAryI;
 	if (CB_INT==1) { CBint_Isz(SRC) ; return; }
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c=='%' ) {
 			ExecPtr++;
 			LocalInt[reg][0] ++;
@@ -2329,7 +2329,7 @@ void CB_Isz( char *SRC ) { //	Isz
 		{ CB_Error(SyntaxERR); return; }	// Syntax error
 	}
 
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
 		ExecPtr++;
 		if ( CB_CurrentValue.real ) return ;
@@ -2356,18 +2356,18 @@ void CB_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	int dimdim=0;
 	
-	int c=SRC[ExecPtr],d;
+	int c = (unsigned char)SRC[ExecPtr],d;
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
 		ExecPtr++;
 	  aliasj:
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c == 0x7E ) {		// '~'
 			ExecPtr++;
 			en=RegVarAliasEx(SRC);
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				c=SRC[ExecPtr];
+				c = (unsigned char)SRC[ExecPtr];
 				if ( c=='%' ) { ExecPtr++;  for ( i=reg; i<=en; i++) { if ( REGtype[i] == 0 ) LocalInt[ i ][0] = CB_CurrentValue.real; }
 				} else
 				if ( c=='#' ) ExecPtr++;
@@ -2391,10 +2391,10 @@ void CB_Store( char *SRC ){	// ->
 		}
 	} else
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]  Vct A[a,b]
 			ExecPtr+=2;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			Matrix0:
@@ -2433,11 +2433,11 @@ void CB_Store( char *SRC ){	// ->
 			
 		} else if ( c == 0x46 ) {	// -> Dim
 				ExecPtr+=2;
-				c = SRC[ExecPtr];
+				c = (unsigned char)SRC[ExecPtr];
 				d = SRC[ExecPtr+1];
 				if ( ( c==0x7F ) && ( d==0x46 ) ) {	// {24,18}->dim dim
 					ExecPtr+=2; dimdim=1; 
-					c = SRC[ExecPtr];
+					c = (unsigned char)SRC[ExecPtr];
 					d = SRC[ExecPtr+1];
 					}
 				if ( ( c==0x7F ) && ( ( d==0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) {	// n -> Dim List
@@ -2512,7 +2512,7 @@ void CB_Store( char *SRC ){	// ->
 		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF7 ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
 			ExecPtr+=2;
 			CB_PokeSub( SRC, CB_CurrentValue, EvalsubTop( SRC ) );
@@ -2527,7 +2527,7 @@ void CB_Store( char *SRC ){	// ->
 		skip_count=0;
 	} else
 	if ( c==0xFFFFFFF9 ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
 				if ( CB_CurrentValue.real == 0 ) { CB_Error(RangeERR); return; }	// Range error
 				ExecPtr+=2;
@@ -2563,7 +2563,7 @@ void CB_argNum( char *SRC ) { //
 	while ( (c!=0)&&(c!=0x0C)&&(c!=0x0D)&&(c!=':') ) {
 		if (CB_INT==1) LocalInttmp[Argc]=EvalIntsubTop( SRC ); else if (CB_INT==0) LocalDbltmp[Argc].real=EvalsubTop(  SRC ); else LocalDbltmp[Argc]=Cplx_EvalsubTop(  SRC );
 		Argc++;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != ',' ) break; 	// 
 		ExecPtr++;
 		if ( Argc > ArgcMAX ) { CB_Error(TooMuchData); return; }	// too much error
@@ -2592,14 +2592,14 @@ void CB_Prog( char *SRC, int *localvarInt, complex *localvarDbl ) { //	Prog "...
 	char BreakPtr_bk; 
 	char StepOutProgNo=0;
 
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == 0x22 ) {
 		ExecPtr++;
 		CB_GetQuotOpcode(SRC, buffer,32-1);	// Prog name
 	} else CB_GetLocateStr(SRC, buffer,32-1); 
 	if ( ErrorNo ) return ;	// error
 
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {	// arg
 		ExecPtr++;
 		CB_argNum( SRC );	// get local value
@@ -2669,7 +2669,7 @@ void CB_Gosub( char *SRC, int *StackGotoAdrs, int *StackGosubAdrs ){ //	Gosub N
 	label = CB_CheckLbl( SRC );
 	if ( label < 0 ) { CB_Error(SyntaxERR); return; }	// syntax error
 
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {	// arg
 		ExecPtr++;
 		CB_argNum( SRC );	// get local value
@@ -2752,16 +2752,16 @@ void CB_AliasVar( char *SRC ) {	// Alias A=��  or A=_ABCD	// (delete) Alias 
 	char name[32+1];
 	if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// 	Alias Mat A=��  or Mat A=_ABCD / Vct
 		ExecPtr+=2;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
 		reg=RegVar(c);
 		org_reg=reg;
 		if ( reg>=0 ) {
 			ExecPtr++;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 			ExecPtr++;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c=='_' ) {	//	_ABCDE   var name
 				ExecPtr++; len=32;
 				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -2798,16 +2798,16 @@ void CB_AliasVar( char *SRC ) {	// Alias A=��  or A=_ABCD	// (delete) Alias 
 	} else 
 	if ( ( SRC[ExecPtr]==0xFFFFFFE2 ) ) {	// 	Alias Lbl A=��  or Lbl A=_ABCD
 		ExecPtr++;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 //		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
 		reg=RegVar(c);
 		org_reg=reg;
 		if ( reg>=0 ) {
 			ExecPtr++;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 			ExecPtr++;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c=='_' ) {	//	_ABCDE   var name
 				ExecPtr++; len=32;
 				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
@@ -2842,16 +2842,16 @@ void CB_AliasVar( char *SRC ) {	// Alias A=��  or A=_ABCD	// (delete) Alias 
 			}
 		}
 	} else {						// Alias A=��  or A=_ABCD
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
 		reg=RegVar(c);
 		org_reg=reg;
 		if ( reg>=0 ) {
 			ExecPtr++;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c != '=' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 			ExecPtr++;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c=='_' ) {	//	_ABCDE   var name
 				ExecPtr++; len=32;
 				if ( GetVarName( SRC, &ExecPtr, name, &len) == 0 ) { CB_Error(SyntaxERR); return; }	// Syntax error

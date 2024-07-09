@@ -1406,7 +1406,7 @@ void ReadExtFont(){
 
 int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
 	int opcode;
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	if ( c == ')' ) { ExecPtr++; return -1; }
 	*orgflag=0; if ( c == '@' ) { ExecPtr++; *orgflag=1; }
 	c=CB_IsStr( SRC, ExecPtr );

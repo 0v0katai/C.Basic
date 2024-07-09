@@ -33,7 +33,7 @@ char textmode=0;
 int SetRoot2( char* SRC ) {
 	char sname[root2_MAX];
 	int c;
-	c = SRC[ExecPtr++];
+	c = (unsigned char)SRC[ExecPtr++];
 	if ( c == '/' ) {
 		if ( SRC[ExecPtr] == '"' ) {
 			CB_GetLocateStr(SRC, sname, root2_MAX-1); if ( ErrorNo ) goto exit ;	// error
@@ -2567,10 +2567,10 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	char* FilePtr;
 	int check=0;
 
-//	c =SRC[ExecPtr];
+//	c = (unsigned char)SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 //	FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
@@ -2578,9 +2578,9 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	if ( c==SERIAL_STRING ) matsize--;
 	if ( ErrorNo ) return; // error
 
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {
-		c =SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
 		ExecPtr++;
 	}
@@ -2655,18 +2655,18 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	int ptr=0,size;
 	int type;
 
-//	c =SRC[ExecPtr];
+//	c = (unsigned char)SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
 		ptr=CB_EvalInt( SRC );
 		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
 	}
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ')' ) ExecPtr++;
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 //	matptr = CB_SaveLoadOprand( SRC, &reg, &matsize );
@@ -2684,7 +2684,7 @@ void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
 	int yesno=0;
 
 	CB_GetLocateStr(SRC, sname, 22); if ( ErrorNo ) return ;	// error
-	c =SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
 		yesno = CB_EvalInt( SRC );
@@ -3224,10 +3224,10 @@ void LoadConfig(){
 
 void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
 	int c,flag=0;
-	c=SRC[(*ptr)-2];
+	c = (unsigned char)SRC[(*ptr)-2];
 	if ( CheckQuotCR( SRC, (*ptr) ) ) flag=1;	// "   "
 	while (1){
-		c=SRC[(*ptr)++];
+		c = (unsigned char)SRC[(*ptr)++];
 		switch ( c ) {
 			case 0x0D:	// <CR>
 				if ( flag ) break;
@@ -3241,7 +3241,7 @@ void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
 			case 0xFFFFFFF9:	//
 			case 0xFFFFFFFF:	//
 			case 0xFFFFFFF7:	//
-				c=SRC[(*ptr)++];
+				c = (unsigned char)SRC[(*ptr)++];
 				break;
 		}
 	}
@@ -3249,7 +3249,7 @@ void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
 void PP_Search_CR_SPACE_Skip_comment(char *SRC, int *ptr){
 	int c;
 	while (1){
-		c=SRC[(*ptr)++];
+		c = (unsigned char)SRC[(*ptr)++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 			case 0x0D:	// <CR>
@@ -3261,7 +3261,7 @@ void PP_Search_CR_SPACE_Skip_comment(char *SRC, int *ptr){
 			case 0xFFFFFFF9:	//
 			case 0xFFFFFFFF:	//
 			case 0xFFFFFFF7:	//
-				c=SRC[(*ptr)++];
+				c = (unsigned char)SRC[(*ptr)++];
 				break;
 		}
 	}
@@ -3272,7 +3272,7 @@ int PP_Search_CR_SPACE(char *SRC ){
 	int ptr=0;
 	if ( SRC[ptr] == ' ' ) return 1;
 	while (1){
-		c=SRC[ptr++];
+		c = (unsigned char)SRC[ptr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				return 0;
@@ -3294,7 +3294,7 @@ int PP_Search_CR_SPACE(char *SRC ){
 			case 0xFFFFFFF9:	//
 			case 0xFFFFFFFF:	//
 			case 0xFFFFFFF7:	//
-				c=SRC[ptr++];
+				c = (unsigned char)SRC[ptr++];
 				break;
 		}
 	}
@@ -3303,11 +3303,11 @@ int PP_Search_CR_SPACE(char *SRC ){
 
 int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 	int c,flag=0,d=0;
-	c=SRC[(*sptr)-2];
+	c = (unsigned char)SRC[(*sptr)-2];
 	if ( CheckQuotCR( SRC, (*sptr) ) ) flag=1;	// "   "
 	if ( SRC[(*sptr)-1] == 0x27 ) { d=1; flag=0; }
 	while (1){
-		c=SRC[(*sptr)++];
+		c = (unsigned char)SRC[(*sptr)++];
 		dest[(*dptr)++]=c;
 		switch ( c ) {
 			case 0x0D:	// <CR>
@@ -3325,7 +3325,7 @@ int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 			case 0xFFFFFFF9:	//
 			case 0xFFFFFFFF:	//
 			case 0xFFFFFFF7:	//
-				c=SRC[(*sptr)++];
+				c = (unsigned char)SRC[(*sptr)++];
 				dest[(*dptr)++]=c;
 				break;
 		}
@@ -3364,7 +3364,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 	while ( sptr < size ){
 		if ( dptr >= maxsize ) {
 			CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
-		c=SRC[sptr++];
+		c = (unsigned char)SRC[sptr++];
 		dest[dptr++]=c;
 		switch ( c ) {
 			case 0x00:	// <EOF>
@@ -3385,11 +3385,11 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 			case 0xFFFFFFE7:	//
 			case 0xFFFFFFF9:	//
 			case 0xFFFFFFFF:	//
-				c=SRC[sptr++];
+				c = (unsigned char)SRC[sptr++];
 				dest[dptr++]=c;
 				break;
 			case 0xFFFFFFF7:	//
-				c=SRC[sptr++];
+				c = (unsigned char)SRC[sptr++];
 				dest[dptr++]=c;
 				switch (c) {
 					case 0x00:	// If
@@ -3492,7 +3492,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 	dest = filebase +0x56;
 
 	while ( sptr < size ){
-		c=SRC[sptr++];
+		c = (unsigned char)SRC[sptr++];
 		dest[dptr++]=c;
 		switch ( c ) {
 			case 0x00:	// <EOF>
@@ -3513,7 +3513,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 			case 0xFFFFFFF9:	//
 			case 0xFFFFFFFF:	//
 			case 0xFFFFFFF7:	//
-				c=SRC[sptr++];
+				c = (unsigned char)SRC[sptr++];
 				dest[dptr++]=c;
 				break;
 			default:
@@ -3538,7 +3538,7 @@ void CB_Local( char *SRC ) {
 			ProgLocalVar[ProgEntryN][i] = reg;	// local var set
 		}
 		i++;
-		c=SRC[ExecPtr];
+		c = (unsigned char)SRC[ExecPtr];
 		if ( c != ',' ) break; 	//
 		ExecPtr++;
 		if ( i >= ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
@@ -3551,7 +3551,7 @@ int PP_Search_IfEnd( char *SRC ){
 	int c,i;
 	int PP_ptr;
 	while (1){
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -3563,7 +3563,7 @@ int PP_Search_IfEnd( char *SRC ){
 				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFF7:	//
-				c=SRC[ExecPtr++];
+				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) { 			// If
 					PP_ptr=ExecPtr-2;
 					i=PP_Search_IfEnd(SRC) ;
@@ -3589,7 +3589,7 @@ int PP_Search_IfEnd( char *SRC ){
 void PP_ReplaceCode( char *SRC ){
 	int c,i;
 //	while (1){
-//		c=SRC[ExecPtr++];
+//		c = (unsigned char)SRC[ExecPtr++];
 //		switch ( c ) {
 //			case 0x00:	// <EOF>
 //				ExecPtr--;
@@ -3602,13 +3602,13 @@ void PP_ReplaceCode( char *SRC ){
 //				ExecPtr++;
 //				break;
 //			case 0xFFFFFFF7:	//
-//				c=SRC[ExecPtr++];
+//				c = (unsigned char)SRC[ExecPtr++];
 //				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
 //				else
 //				if ( c==0x4F ) SRC[ExecPtr-1]=0x3D;	// DotTrim(  F74F -> F73D
 //				break;
 //			case 0xFFFFFFF9:	//
-//				c=SRC[ExecPtr++];
+//				c = (unsigned char)SRC[ExecPtr++];
 //				if ( c==0x4B ) {
 //					SRC[ExecPtr-2]=0xFFFFFFF7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
 //				else
@@ -3659,7 +3659,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	if ( ErrorNo ) { return ; }
 	ExecPtr=0;
 	while ( c!=0 ) {
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		if ( c==0x00 ) { ExecPtr--; break; }
 		switch ( c ) {
 			case 0x3A:	// <:>
@@ -3672,7 +3672,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 				Skip_rem_no_op(SRC);
 				break;
 			case 0xFFFFFFED:	// Prog "..."
-				c =SRC[ExecPtr];
+				c = (unsigned char)SRC[ExecPtr];
 				if ( c != 0x22 ) break;
 				ExecPtr++;	// " skip
 				CB_GetQuotOpcode(SRC, buffer, 32);	// Prog name
@@ -3744,7 +3744,7 @@ void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
 	int c=1;
 	ExecPtr=0;
 	while ( c!=0 ) {
-		c=SRC[ExecPtr++];
+		c = (unsigned char)SRC[ExecPtr++];
 		if ( c==0x00 ) { ExecPtr--; break; }
 		switch ( c ) {
 			case 0x3A:	// <:>

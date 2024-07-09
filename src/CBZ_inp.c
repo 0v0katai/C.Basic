@@ -459,10 +459,10 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 }
 
 void Cplx_sprintGR2SRC( char* SRC, char* buffer, char* buffer2, complex num, int width ) { // + round  ENG  + i
-	int c=SRC[ExecPtr];
+	int c = (unsigned char)SRC[ExecPtr];
 	int Cplx_bk=ComplexMode;
 	if ( c==0xFFFFFFF9 ) {
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c==0x05 ) { ExecPtr++; ComplexMode = 3; }	// >DMS
 		else
 		if ( c==0x06 ) { ExecPtr++; ComplexMode = 1; }	// >a+bi
@@ -3136,7 +3136,7 @@ int OpcodeLen2( char *SRC ) {
 	return OpcodeLen( GetOpcode( SRC, 0 ) ) ;
 }
 int GetOpcode( char *SRC, int ptr ){
-	int c=SRC[ptr];
+	int c = (unsigned char)SRC[ptr];
 	switch ( c ) {
 		case 0x00:		// <EOF>
 			return 0 ;
@@ -3163,7 +3163,7 @@ int OpcodeStrlen(int c) {
 int OpcodeStrLenBuf(char *SRC, int offset) {
 		int opcode;
 		int c,d;
-		c=SRC[offset];
+		c = (unsigned char)SRC[offset];
 		d=SRC[offset+1];
 		switch ( c ) {
 				case 0x7F:		// 
@@ -3211,7 +3211,7 @@ int NextLine( char *SRC, int *offset ){
 		 if ( NextOpcode( SRC, &(*offset) ) ==0 ) return (*offset)-ofst ;
 		ofst2=*offset;
 		PrevOpcode( SRC, &ofst2 );
-		c=SRC[ofst2];
+		c = (unsigned char)SRC[ofst2];
 		switch ( c ) {
 			case 0x0C:		// dsps
 			case 0x0D:		// <CR>
@@ -3226,7 +3226,7 @@ int PrevOpcode( char *SRC, int *offset ){
 	int c;
 	(*offset)-=2; 
 	if ( *offset < 0 ) { (*offset)=0; return 0;}
-		c=SRC[*offset];
+		c = (unsigned char)SRC[*offset];
 		switch ( c ) {
 			case 0x7F:		// 
 			case 0xFFFFFFF7:		// 
@@ -3247,7 +3247,7 @@ int PrevLine( char *SRC, int *offset ){
 	while (1) {
 		PrevOpcode( SRC, &(*offset) );
 		if ( *offset <= 0 ) { *offset=0; return ofst-(*offset) ; }
-		c=SRC[*offset];
+		c = (unsigned char)SRC[*offset];
 		ofst2=*offset;
 		PrevOpcode( SRC, &ofst2 );
 		d=SRC[ofst2];
@@ -4528,10 +4528,10 @@ void  CB_Input( char *SRC ){
 
 	CB_ChangeTextMode( SRC ) ;
 //	CB_SelectTextDD();	// Select Text Screen
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c=='(' ) {	// ?option([@][csrX][,csrY][,width][,spcchr][,length][,R][,M])
-		c=SRC[++ExecPtr];
-		if ( c=='@' ) { pxmode=1; miniflag=1; c=SRC[++ExecPtr]; }	// 0~127 pixel mode
+		c = (unsigned char)SRC[++ExecPtr];
+		if ( c=='@' ) { pxmode=1; miniflag=1; c = (unsigned char)SRC[++ExecPtr]; }	// 0~127 pixel mode
 //		else CB_SelectTextDD();	// Select Text Screen
 		if ( ( c==')' ) || ( c==0x0E ) ) goto optionexit;
 		if ( c!=',' ) {
@@ -4542,10 +4542,10 @@ void  CB_Input( char *SRC ){
 				CursorX = CB_EvalInt( SRC );
 				if ( ( CursorX<1 ) || ( 21<CursorX ) )  { CB_Error(ArgumentERR); return ; } // Argument error
 			}
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {
 			if ( pxmode ) {
 				miniCsrY = CB_EvalInt( SRC );
@@ -4554,16 +4554,16 @@ void  CB_Input( char *SRC ){
 				CursorY = CB_EvalInt( SRC );
 				if ( ( CursorY<0 ) || ( 8<CursorY ) )  { CB_Error(ArgumentERR); return ; } // Argument error
 			}
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {
 			width=CB_EvalInt( SRC ); if ( ( width<1 ) || (  32<width ) )  { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {	
 			c=CB_IsStr( SRC, ExecPtr );
 			if ( c ) {	// string
@@ -4572,25 +4572,25 @@ void  CB_Input( char *SRC ){
 			spcchr[0]=buffer[0];
 			spcchr[1]=buffer[1];
 			spcchr[2]=buffer[2];
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {
 			length=CB_EvalInt( SRC ); if ( ( length<1 ) || ( ExpMax-1<length ) ) { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {	
 			if ( ( c=='R' ) || ( c=='r' ) ) { // reverse
 				ExecPtr++;
 				rev=REV_ON;
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 			}
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=')' ) {	
 			if ( ( c=='M' ) || ( c=='m' ) ) { // mini font
 				ExecPtr++;
@@ -4606,7 +4606,7 @@ void  CB_Input( char *SRC ){
 		Scrl_Y();
 	}
 	
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	bptr=ExecPtr;
 	reg=RegVar(c);
 	if ( c==0x0E ) {	// ->
@@ -4616,7 +4616,7 @@ void  CB_Input( char *SRC ){
 	if ( reg>=0 ) {
 	  regj:
 		flag=1;
-		c=SRC[ExecPtr+1];
+		c = (unsigned char)SRC[ExecPtr+1];
 		if (CB_INT==1) {
 			if ( c=='#' ) {
 				DefaultValue = LocalDbl[reg][0] ;
@@ -4652,7 +4652,7 @@ void  CB_Input( char *SRC ){
 		}
 	} else
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
@@ -4699,7 +4699,7 @@ void  CB_Input( char *SRC ){
 		flag=1;
 	} else
 	if ( c==0xFFFFFFF9 ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0x3F ) {	// Str 1-20
 			reg=defaultStrAry;
 			aryN=defaultStrAryN;
@@ -4846,28 +4846,28 @@ void  CB_Input( char *SRC ){
 	if ( CursorX==22 ) CursorX=1;
 	if ( CursorX==23 ) Scrl_Y();
 	
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	if ( c=='(' ) {	// ?option([csrX][,csrY][,width][,spcchr][,length][,R])
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( ( c==')' ) || ( c==0x0E ) ) goto optionexit;
 		if ( c!=',' ) {
 			CursorX=CB_EvalInt( SRC ); if ( ( CursorX<1 ) || ( 21<CursorX ) ) { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {
 			CursorY=CB_EvalInt( SRC ); if ( ( CursorY<1 ) || (  8<CursorY ) ) { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {
 			width=CB_EvalInt( SRC ); if ( ( width<1 ) || (  21<width ) ) { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {	
 			c=CB_IsStr( SRC, ExecPtr );
 			if ( c ) {	// string
@@ -4876,16 +4876,16 @@ void  CB_Input( char *SRC ){
 			spcchr[0]=buffer[0];
 			spcchr[1]=buffer[1];
 			spcchr[2]=buffer[2];
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=',' ) {
 			length=CB_EvalInt( SRC ); if ( ( length<1 ) || ( ExpMax-1<length ) ) { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
+			c = (unsigned char)SRC[ExecPtr];
 			if ( c!=',' ) goto optionexit;
 		}
-		c=SRC[++ExecPtr];
+		c = (unsigned char)SRC[++ExecPtr];
 		if ( c!=')' ) {	
 			if ( ( c=='R' ) || ( c=='r' ) ) { // reverse
 				ExecPtr++;
@@ -4900,7 +4900,7 @@ void  CB_Input( char *SRC ){
 		Scrl_Y();
 	}
 	
-	c=SRC[ExecPtr];
+	c = (unsigned char)SRC[ExecPtr];
 	bptr=ExecPtr;
 	reg=RegVar(c);
 	if ( c==0x0E ) {	// ->
@@ -4910,7 +4910,7 @@ void  CB_Input( char *SRC ){
 	if ( reg>=0 ) {
 	  regj:
 		flag=1;
-		c=SRC[ExecPtr+1];
+		c = (unsigned char)SRC[ExecPtr+1];
 		if (CB_INT==1) {
 			if ( c=='#' ) {
 				DefaultValue = LocalDbl[reg][0] ;
@@ -4946,7 +4946,7 @@ void  CB_Input( char *SRC ){
 		}
 	} else
 	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
@@ -4993,7 +4993,7 @@ void  CB_Input( char *SRC ){
 		flag=1;
 	} else
 	if ( c==0xFFFFFFF9 ) {
-		c = SRC[ExecPtr+1] ; 
+		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0x3F ) {	// Str 1-20
 			reg =defaultStrAry;
 			aryN=defaultStrAryN;
