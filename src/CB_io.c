@@ -1,10 +1,10 @@
 #include "CB.h"
 
 struct st_round CB_Round = { Norm , 1} ; // Round
-char ENG=0;	// ENG flag  1:ENG  3:3digit separate
+int8_t ENG=0;	// ENG flag  1:ENG  3:3digit separate
 
-char UseHiddenRAM=1;	//	0x11 :HiddenRAMInit off
-char IsHiddenRAM =0;
+int8_t UseHiddenRAM=1;	//	0x11 :HiddenRAMInit off
+int8_t IsHiddenRAM =0;
 
 #define HIDDENRAM_TOP   0x88040000
 #define HIDDENRAM_TOP2  0x88051400
@@ -17,9 +17,9 @@ char * HiddenRAM_End        =(char*)HIDDENRAM_END;				// Hidden RAM END
 char * HiddenRAM_ProgNextPtr=(char*)HIDDENRAM_TOP+16+256;		// Hidden RAM Prog next ptr
 char * HiddenRAM_MatTopPtr  =(char*)HIDDENRAM_END;				// Hidden RAM Mat top ptr
 
-char IsSH3;	//	3:SH3   4:SH4
-char Is35E2=0;	//
-char IsEmu=0;
+int8_t IsSH3;	//	3:SH3   4:SH4
+int8_t Is35E2=0;	//
+int8_t IsEmu=0;
 
 /*
 ----------------------------------------

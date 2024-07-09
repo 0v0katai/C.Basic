@@ -12,8 +12,8 @@
 
 //extern char *ClipBuffer;
 
-extern char DebugMode;			// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
-extern char DebugScreen;		// 0:no   1:Screen debug mode   2: Screen debug mode with fkey 
+extern int8_t DebugMode;			// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
+extern int8_t DebugScreen;		// 0:no   1:Screen debug mode   2: Screen debug mode with fkey 
 
 extern int EditMaxfree;
 extern int EditMaxProg;
@@ -21,7 +21,7 @@ extern int NewMax;
 extern int ClipMax;
 
 extern short EditLineNum;
-extern char  UpdateLineNum;
+extern int8_t  UpdateLineNum;
 
 int SrcSize( char *src ) ;
 int FixSrcSize( char *filebase ) ;

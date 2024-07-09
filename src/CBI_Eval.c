@@ -57,7 +57,8 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 		case 128:
 			MatAryCPLX=(complex*)MatAry[reg].Adrs;			// Matrix array 1 bit
 			return MatAryCPLX[dimA*MatAry[reg].SizeB+dimB].real ;			// Matrix array complex
-			break;
+		default:
+			return 0;
 	}
 }
 //-----------------------------------------------------------------------------
@@ -341,7 +342,7 @@ int frandint() {
 int frandIntint( int x, int y ) {
 	int i;
 	if ( x>y ) { i=x; x=y; y=i; }
-	return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+	return rand()*(y-x+1)/RAND_MAX +x ;
 }
 
 int fMODint( int x, int y ) {	// fMODint(x,y)

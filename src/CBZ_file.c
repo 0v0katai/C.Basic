@@ -2413,7 +2413,7 @@ void Setfoldername16( char *folder16, char *sname ) {
 	char *cptr;
 	int i=0,j,def=1;
 	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) {
-		i=0;
+		int i=0;
 		do
 			sname[i]=sname[++i];
 		while ( sname[i] );

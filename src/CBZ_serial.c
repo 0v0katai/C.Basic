@@ -357,7 +357,7 @@ unsigned short SerialPortMask, SerialPortMode, SerialPortMode0, SerialPortMode1;
 unsigned char SerialPortOut, SerialPortIn;
 unsigned int iresult, iDelay, i;
 unsigned char hb[15];
-int PortCR = P7305_SERIAL_DIRECT_PORTCR;
+unsigned int PortCR = P7305_SERIAL_DIRECT_PORTCR;
 	
 // open the outer gate
 	*(unsigned short*)P11CR = ( *(unsigned short*)P11CR & ~P11CR_ENABLE_SERIAL_MASK) | P11CR_ENABLE_SERIAL;

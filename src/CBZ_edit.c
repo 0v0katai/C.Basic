@@ -3,19 +3,19 @@
 //----------------------------------------------------------------------------------------------
 //char ClipBuffer[ClipMax];
 //char *ClipBuffer;
-char DisableDebugMode=0;	// 0:enable debug mode
-char ExitDebugModeCheck=0;  // ExitDebugModeCheck
-char ForceDebugMode;
-char DebugMode=0;	// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
-char ScreenModeEdit=0;
-char DebugScreen=0;		// 0:no   1:Screen debug mode with fkey    2: Screen debug mode
-char InpMethod=1;		// 0:C.Basic  1:Casio Basic
-char InpCommandList=0;	// 0:none  1:OPTN 
+int8_t DisableDebugMode=0;	// 0:enable debug mode
+int8_t ExitDebugModeCheck=0;  // ExitDebugModeCheck
+int8_t ForceDebugMode;
+int8_t DebugMode=0;	// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
+int8_t ScreenModeEdit=0;
+int8_t DebugScreen=0;		// 0:no   1:Screen debug mode with fkey    2: Screen debug mode
+int8_t InpMethod=1;		// 0:C.Basic  1:Casio Basic
+int8_t InpCommandList=0;	// 0:none  1:OPTN 
 short EditLineNum=0;
 short CurrentLineNum;
-char  EDITpxNum=0;		//  EditLineNumber pixel
-char  EDITpxMAX=123;	//  max x pixel
-char  UpdateLineNum;
+int8_t  EDITpxNum=0;		//  EditLineNumber pixel
+int8_t  EDITpxMAX=123;	//  max x pixel
+int8_t  UpdateLineNum;
 
 int EditMaxfree;
 int EditMaxProg;

@@ -465,6 +465,8 @@ void ML_pixel(int x, int y, ML_Color color)
 			ML_pixel( x+1, y+1, ML_XOR);
 			break;
 */
+		default:
+			break;
 	}
 }
 #endif
@@ -754,6 +756,8 @@ void ML_horizontal_line(int y, int x1, int x2, ML_Color color)
 				for ( i=x1; i<=x2; i+=2) ML_pixel( i, y, ML_22DOT4X );
 				break;
 */
+		default:
+			break;
     }
 }
 
@@ -893,6 +897,8 @@ void ML_vertical_line(int x, int y1, int y2, ML_Color color)
 				for ( i=y1; i<=y2; i+=2) ML_pixel( x, i, ML_22DOT4X );
 				break;
 */
+		default:
+			break;
 	}
 }
 #endif
@@ -1949,7 +1955,8 @@ void ML_bmp_xor_cl(const unsigned char *bmp, int x, int y, int width, int height
 void ML_bmp_8_or(const unsigned char *bmp, int x, int y)
 {
 	unsigned short line;
-	char i, shift, begin=0, end=8, *screen, *p=(char*)&line;
+	int8_t i;
+	char shift, begin=0, end=8, *screen, *p=(char*)&line;
 	if(!bmp || x<0 || x>120 || y<-7 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 56) end = 64-y;
@@ -1969,7 +1976,8 @@ void ML_bmp_8_or(const unsigned char *bmp, int x, int y)
 void ML_bmp_8_and(const unsigned char *bmp, int x, int y)
 {
 	unsigned short line;
-	char i, shift, begin=0, end=8, *screen, *p=(char*)&line;
+	int8_t i;
+	char shift, begin=0, end=8, *screen, *p=(char*)&line;
 	if(!bmp || x<0 || x>120 || y<-7 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 56) end = 64-y;
@@ -1989,7 +1997,8 @@ void ML_bmp_8_and(const unsigned char *bmp, int x, int y)
 void ML_bmp_8_xor(const unsigned char *bmp, int x, int y)
 {
 	unsigned short line;
-	char i, shift, begin=0, end=8, *screen, *p=(char*)&line;
+	int8_t i;
+	char shift, begin=0, end=8, *screen, *p=(char*)&line;
 	if(!bmp || x<0 || x>120 || y<-7 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 56) end = 64-y;
@@ -2009,7 +2018,8 @@ void ML_bmp_8_xor(const unsigned char *bmp, int x, int y)
 void ML_bmp_8_or_cl(const unsigned char *bmp, int x, int y)
 {
 	unsigned short line;
-	char i, shift, begin=0, end=8, bool1=1, bool2=1, *screen, *p=(char*)&line;
+	int8_t i;
+	char shift, begin=0, end=8, bool1=1, bool2=1, *screen, *p=(char*)&line;
 	if(!bmp || x<-7 || x>127 || y<-7 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 56) end = 64-y;
@@ -2031,7 +2041,8 @@ void ML_bmp_8_or_cl(const unsigned char *bmp, int x, int y)
 void ML_bmp_8_and_cl(const unsigned char *bmp, int x, int y)
 {
 	unsigned short line;
-	char i, shift, begin=0, end=8, bool1=1, bool2=1, *screen, *p=(char*)&line;
+	int8_t i;
+	char shift, begin=0, end=8, bool1=1, bool2=1, *screen, *p=(char*)&line;
 	if(!bmp || x<-7 || x>127 || y<-7 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 56) end = 64-y;
@@ -2053,7 +2064,8 @@ void ML_bmp_8_and_cl(const unsigned char *bmp, int x, int y)
 void ML_bmp_8_xor_cl(const unsigned char *bmp, int x, int y)
 {
 	unsigned short line;
-	char i, shift, begin=0, end=8, bool1=1, bool2=1, *screen, *p=(char*)&line;
+	int8_t i;
+	char shift, begin=0, end=8, bool1=1, bool2=1, *screen, *p=(char*)&line;
 	if(!bmp || x<-7 || x>127 || y<-7 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 56) end = 64-y;
@@ -2075,7 +2087,8 @@ void ML_bmp_8_xor_cl(const unsigned char *bmp, int x, int y)
 void ML_bmp_16_or(const unsigned short *bmp, int x, int y)
 {
 	unsigned long line;
-	char i, shift, begin=0, end=16, *screen, *p=(char*)&line+1;
+	int8_t i;
+	char shift, begin=0, end=16, *screen, *p=(char*)&line+1;
 	if(!bmp || x<0 || x>112 || y<-15 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 48) end = 64-y;
@@ -2096,7 +2109,8 @@ void ML_bmp_16_or(const unsigned short *bmp, int x, int y)
 void ML_bmp_16_and(const unsigned short *bmp, int x, int y)
 {
 	unsigned long line;
-	char i, shift, begin=0, end=16, *screen, *p=(char*)&line+1;
+	int8_t i;
+	char shift, begin=0, end=16, *screen, *p=(char*)&line+1;
 	if(!bmp || x<0 || x>112 || y<-15 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 48) end = 64-y;
@@ -2117,7 +2131,8 @@ void ML_bmp_16_and(const unsigned short *bmp, int x, int y)
 void ML_bmp_16_xor(const unsigned short *bmp, int x, int y)
 {
 	unsigned long line;
-	char i, shift, begin=0, end=16, *screen, *p=(char*)&line+1;
+	int8_t i;
+	char shift, begin=0, end=16, *screen, *p=(char*)&line+1;
 	if(!bmp || x<0 || x>112 || y<-15 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 48) end = 64-y;
@@ -2138,7 +2153,8 @@ void ML_bmp_16_xor(const unsigned short *bmp, int x, int y)
 void ML_bmp_16_or_cl(const unsigned short *bmp, int x, int y)
 {
 	unsigned long line;
-	char i, shift, begin=0, end=16, bool1=1, bool2=1, bool3=1, *screen, *p=(char*)&line+1;
+	int8_t i;
+	char shift, begin=0, end=16, bool1=1, bool2=1, bool3=1, *screen, *p=(char*)&line+1;
 	if(!bmp || x<-15 || x>127 || y<-15 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 48) end = 64-y;
@@ -2162,7 +2178,8 @@ void ML_bmp_16_or_cl(const unsigned short *bmp, int x, int y)
 void ML_bmp_16_and_cl(const unsigned short *bmp, int x, int y)
 {
 	unsigned long line;
-	char i, shift, begin=0, end=16, bool1=1, bool2=1, bool3=1, *screen, *p=(char*)&line+1;
+	int8_t i;
+	char shift, begin=0, end=16, bool1=1, bool2=1, bool3=1, *screen, *p=(char*)&line+1;
 	if(!bmp || x<-15 || x>127 || y<-15 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 48) end = 64-y;
@@ -2186,7 +2203,8 @@ void ML_bmp_16_and_cl(const unsigned short *bmp, int x, int y)
 void ML_bmp_16_xor_cl(const unsigned short *bmp, int x, int y)
 {
 	unsigned long line;
-	char i, shift, begin=0, end=16, bool1=1, bool2=1, bool3=1, *screen, *p=(char*)&line+1;
+	int8_t i;
+	char shift, begin=0, end=16, bool1=1, bool2=1, bool3=1, *screen, *p=(char*)&line+1;
 	if(!bmp || x<-15 || x>127 || y<-15 || y>63) return;
 	if(y < 0) begin = -y;
 	if(y > 48) end = 64-y;
@@ -2428,7 +2446,7 @@ int MLTest_point(int x, int y, int width )
 {
 	int count=0;
 	if(width < 1) return 0;
-	if(width == 1) count=ML_pixel_test(x, y);
+	if(width == 1) {count=ML_pixel_test(x, y); return 0;}
 	else
 	{
 		int padding, pair;

@@ -3184,7 +3184,7 @@ int OpcodeStrLenBuf(char *SRC, int offset) {
 
 
 int NextOpcode( char *SRC, int *offset ){
-	switch ( SRC[(*offset)++] ) {
+	switch ( (unsigned char)SRC[(*offset)++] ) {
 		case 0x00:		// <EOF>
 			(*offset)--;
 			return 0 ;
