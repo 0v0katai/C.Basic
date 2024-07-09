@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------
 // Casio Basic inside
 //-----------------------------------------------------------------------------
-char CB_INTDefault=0;	// default mode  0:normal  1: integer mode
+int8_t CB_INTDefault=0;	// default mode  0:normal  1: integer mode
 
 int8_t FuncType	= 0;
 int8_t DrawType    = 0;	// 0:connect  1:Plot
@@ -26,21 +26,21 @@ int8_t S_L_Style   = S_L_Normal;
 int8_t tmp_Style   = S_L_Normal;
 int8_t Angle       = 1;	// 0:deg   1:rad  2:grad
 
-char PxlMode=1;		// Pxl  1:set  0:clear
+int8_t PxlMode=1;		// Pxl  1:set  0:clear
 
-char BreakCheckDefault=1;	// Break Stop on/off
-char BreakCheck=1;	// Break Stop on/off
-char ACBreak=1;		// AC Break on/off
+int8_t BreakCheckDefault=1;	// Break Stop on/off
+int8_t BreakCheck=1;	// Break Stop on/off
+int8_t ACBreak=1;		// AC Break on/off
 
-char TimeDsp=0;		// Execution Time Display  0:off 1:on
-char MatXYmode=0;		// 0: normal  1:reverse
-char PictMode=3;	// StoPict/RclPict  StrageMem:0  heap:1  both:2  MSC:3(default)
-char CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
+int8_t TimeDsp=0;		// Execution Time Display  0:off 1:on
+int8_t MatXYmode=0;		// 0: normal  1:reverse
+int8_t PictMode=3;	// StoPict/RclPict  StrageMem:0  heap:1  both:2  MSC:3(default)
+int8_t CheckIfEnd=0;	// If...IfEnd check  0:off  1:on
 
-char CommandInputMethod=1;	//	0:C.Basic  1:Genuine
+int8_t CommandInputMethod=1;	//	0:C.Basic  1:Genuine
 
-char  RefreshCtrl=0;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
-char  Refreshtime=2;	// Refresh time  (Refreshtime+1)/128s
+int8_t  RefreshCtrl=0;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
+int8_t  Refreshtime=2;	// Refresh time  (Refreshtime+1)/128s
 
 short DefaultWaitcount=0;	// wait control
 short Waitcount=0;	// current wait control

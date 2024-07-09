@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #define BREAKCOUNT 100
 
-extern char CB_INTDefault;	// default mode  0:normal  1: integer mode
+extern int8_t CB_INTDefault;	// default mode  0:normal  1: integer mode
 
 extern int8_t	DrawType  ;	// 0:connect  1:Plot
 extern int8_t	Coord     ;	// 0:off 1:on
@@ -32,20 +32,20 @@ extern int Previous_PY   ;	// Plot Previous PY
 extern double Plot_X     ;	// Plot Current X
 extern double Plot_Y     ;	// Plot Current Y
 
-extern char BreakCheckDefault;	// Break Stop on/off
-extern char BreakCheck;	// Break Stop on/off
-extern char ACBreak;	// AC Break on/off
+extern int8_t BreakCheckDefault;	// Break Stop on/off
+extern int8_t BreakCheck;	// Break Stop on/off
+extern int8_t ACBreak;	// AC Break on/off
 
-extern char TimeDsp;
-extern char MatXYmode;
-extern char PictMode;	// StoPict/RclPict  StrageMem:0  heap:1  MCS:3
-extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
-extern char RefreshCtrl;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
-extern char Refreshtime;	// Refresh time  n/128
+extern int8_t TimeDsp;
+extern int8_t MatXYmode;
+extern int8_t PictMode;	// StoPict/RclPict  StrageMem:0  heap:1  MCS:3
+extern int8_t CheckIfEnd;	// If...IfEnd check  0:off  1:on
+extern int8_t RefreshCtrl;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
+extern int8_t Refreshtime;	// Refresh time  n/128
 
 extern short DefaultWaitcount;	// wait control
 extern short Waitcount;			// current wait control
-extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
+extern int8_t  CommandInputMethod;	//	0:C.Basic  1:Genuine
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------

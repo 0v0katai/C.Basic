@@ -9,9 +9,9 @@ matary *MatAry;
 short ExtListMax=0;		// Extend List Max number
 short Mattmpreg;		//
 complex MatDefaultValue={0,0};
-char	MatBaseDefault=1;
-char	MatBase=1;
-char	ListFileNo=0;	// 0:normal	 1~:file mode
+int8_t MatBaseDefault=1;
+int8_t MatBase=1;
+int8_t ListFileNo=0;	// 0:normal	 1~:file mode
 short	ListFilePtr=0;
 
 //----------------------------------------------------------------------------------------------
@@ -1564,7 +1564,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 }
 
 //-----------------------------------------------------------------------------
-char listdsp=0;	// Mat:0  list:1
+int8_t listdsp=0;	// Mat:0  list:1
 
 int SetMatMat( int k, char*Data ){
 	int reg;
