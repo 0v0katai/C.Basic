@@ -7,7 +7,7 @@ int MCS_ReadFileList() {	// MSC file list -> files
 	TMainMemoryDirectoryEntry *pMCSdir_system;
 	int tmp[4];
 	TDirectoryItem *item;
-	char *dirno;
+	char *dirno="";
 	char fbuf[32];
 	char *cg1m=".g1m";
 	int i,j,r;

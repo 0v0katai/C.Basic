@@ -2138,7 +2138,7 @@ int SavePicture( char *filebase, int pictNo ){
 	filebase[0x41]= d;
 	filebase[0x44]=0x07;	// Picture
 
-	for (i=0;i<FILENAMEMAX;i++) folder2[i]=folder[i];	// backup folder
+	for (i=0;i<FILENAMEMAX-4;i++) folder2[i]=folder[i];	// backup folder
 	folder[0x00]='P';
 	folder[0x01]='I';
 	folder[0x02]='C';
@@ -2149,7 +2149,7 @@ int SavePicture( char *filebase, int pictNo ){
 	if ( r < 0 ) return r;
 
 	r = SaveG1Mbin( filebase );
-	for (i=0;i<FILENAMEMAX;i++) folder[i]=folder2[i];	// restore folder
+	for (i=0;i<FILENAMEMAX-4;i++) folder[i]=folder2[i];	// restore folder
 
 	return r ;
 }
@@ -2412,7 +2412,13 @@ int RenameDirectorys( char * foldername ){
 void Setfoldername16( char *folder16, char *sname ) {
 	char *cptr;
 	int i=0,j,def=1;
-	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) { do sname[i]=sname[++i]; while ( sname[i] ); def=0; }
+	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) {
+		i=0;
+		do
+			sname[i]=sname[++i];
+		while ( sname[i] );
+		def=0;
+	}
 	for (i=0;i<17+4;i++) folder16[i]=0;
 	cptr=strstr(sname,"\\");
 	if ( cptr==NULL ) { i=0; }	// current folder
