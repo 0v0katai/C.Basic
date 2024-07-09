@@ -33,12 +33,12 @@ int StrGetOpcode( char *SRC, int ptr ){
 			return 0 ;
 		case 0x5C:	//  Backslash
 		case 0x7F:		// 
-		case 0xFFFFFFF7:		// 
-		case 0xFFFFFFF9:		// 
-		case 0xFFFFFFE5:		// 
-		case 0xFFFFFFE6:		// 
-		case 0xFFFFFFE7:		// 
-		case 0xFFFFFFFF:	// 
+		case 0x000000F7:		// 
+		case 0x000000F9:		// 
+		case 0x000000E5:		// 
+		case 0x000000E6:		// 
+		case 0x000000E7:		// 
+		case 0x000000FF:	// 
 			return ((unsigned char)c<<8)+(unsigned char)SRC[ptr+1];
 	}
 	return (unsigned char)c ;
@@ -51,12 +51,12 @@ int StrGetOpcodeInc( char *SRC, int *ptr ){
 			return 0 ;
 		case 0x5C:	//  Backslash
 		case 0x7F:		// 
-		case 0xFFFFFFF7:		// 
-		case 0xFFFFFFF9:		// 
-		case 0xFFFFFFE5:		// 
-		case 0xFFFFFFE6:		// 
-		case 0xFFFFFFE7:		// 
-		case 0xFFFFFFFF:	// 
+		case 0x000000F7:		// 
+		case 0x000000F9:		// 
+		case 0x000000E5:		// 
+		case 0x000000E6:		// 
+		case 0x000000E7:		// 
+		case 0x000000FF:	// 
 			return ((unsigned char)c<<8)+(unsigned char)SRC[(*ptr)++];
 	}
 	return (unsigned char)c ;
@@ -77,12 +77,12 @@ int StrNextOpcode( char *SRC, int *offset ){
 			return 0 ;
 		case 0x5C:		//  Backslash
 		case 0x7F:		// 
-		case 0xFFFFFFF7:		// 
-		case 0xFFFFFFF9:		// 
-		case 0xFFFFFFE5:		// 
-		case 0xFFFFFFE6:		// 
-		case 0xFFFFFFE7:		// 
-		case 0xFFFFFFFF:	// 
+		case 0x000000F7:		// 
+		case 0x000000F9:		// 
+		case 0x000000E5:		// 
+		case 0x000000E6:		// 
+		case 0x000000E7:		// 
+		case 0x000000FF:	// 
 			(*offset)++;
 			return 2 ;
 	}
@@ -96,12 +96,12 @@ int StrPrevOpcode( char *SRC, int *offset ){
 		switch ( c ) {
 			case 0x5C:		//  Backslash
 			case 0x7F:		// 
-			case 0xFFFFFFF7:		// 
-			case 0xFFFFFFF9:		// 
-			case 0xFFFFFFE5:		// 
-			case 0xFFFFFFE6:		// 
-			case 0xFFFFFFE7:		// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000F7:		// 
+			case 0x000000F9:		// 
+			case 0x000000E5:		// 
+			case 0x000000E6:		// 
+			case 0x000000E7:		// 
+			case 0x000000FF:	// 
 				return 2 ;
 		}
 	(*offset)++;
@@ -386,9 +386,9 @@ int StrBase( char *str1, char *str2, int base1, int base2 ) {	// Strbase( str1.b
 		else
 		if ( ( 'a' <= c ) && ( c <= 'z' ) ) d=c-'a'+36;
 		else
-		if ( c == 0xFFFFFFCE )  d=62;
+		if ( c == 0x000000CE )  d=62;
 		else
-		if ( c == 0xFFFFFFD0 )  d=63;
+		if ( c == 0x000000D0 )  d=63;
 		else break;
 		dec += bnum*d;
 		bnum *= base1;
@@ -428,12 +428,12 @@ int OpcodeCopy(char *buffer, char *SRC, int Maxlen) {
 				return ptr;
 			case 0x5C:	//  Backslash
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000F7:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+			case 0x000000FF:	// 
 				if ( ptr < Maxlen-1 ) {	// 2byte opcode
 					buffer[ptr++]=c;
 					buffer[ptr++]=SRC[srcPtr++];
@@ -464,7 +464,7 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 		if ( c==0x5C ) // Backslash
 			c = (unsigned char)SRC[srcPtr++]&0xFF ;
 		else
-		if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) 
+		if ( (c==0x7F)||(c==0x000000F7)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) ) 
 			c = ( ( c & 0xFF )<< 8 ) + (SRC[srcPtr++]&0xFF);
 		else c = c & 0xFF;
 
@@ -482,10 +482,10 @@ int CheckQuotCR( char *SRC, int ptr ) {
 	if ( SRC[ptr-1] != 0x22 ) return 0;	// "
 	c = (unsigned char)SRC[ptr-2];
 	d=SRC[ptr-3];
-	if ( d==0xFFFFFFF7 ) {
+	if ( d==0x000000F7 ) {
 		if ( ( c==0x01 ) || ( c==0x02 ) ) return 1;	// Then or Else
 	}
-	return ( ( c==' ' ) || ( c==0x0D ) || ( c==0x13 ) || ( c==':' ) || ( c==0xFFFFFF89 ) );
+	return ( ( c==' ' ) || ( c==0x0D ) || ( c==0x13 ) || ( c==':' ) || ( c==0x00000089 ) );
 }
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 	int c;
@@ -512,12 +512,12 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 				}
 //				if ( ( 0x00<c ) && ( c<0x7F ) ) ptr--;
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000F7:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+			case 0x000000FF:	// 
 				buffer[ptr++]=SRC[ExecPtr++];
 				break;
 			default:
@@ -646,10 +646,10 @@ int IsStrList( char *SRC, int flag ) {	// List n[0]?
 			break;
 	}
 	if ( reg<0 ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
-	if ( SRC[ExecPtr] == '[' ) { ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == '[' ) { ExecPtr++;
 		if ( MatAry[reg].SizeA == 0 ) base=MatBase; else base=MatAry[reg].Base;
 		dimA = CB_EvalInt( SRC );
-		if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
+		if ( (unsigned char)SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 		if ( dimA >= base ) return -1;  // no string
 		return reg+1;
 	}
@@ -668,7 +668,7 @@ int CB_IsStr_noYFn( char *SRC, int execptr ) {
 	if ( c=='$' ) {	// Mat String
 		return 2;
 	} else
-	if ( c == 0xFFFFFFF9 ) {	// Str
+	if ( c == 0x000000F9 ) {	// Str
 		c = (unsigned char)SRC[execptr+1];
 		if ( c == 0x30 ) return c;	// StrJoin(
 		else
@@ -699,7 +699,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 	if ( c=='$' ) {	// Mat String
 		return 2;
 	} else
-	if ( c == 0xFFFFFFF9 ) {	// Str
+	if ( c == 0x000000F9 ) {	// Str
 		c = (unsigned char)SRC[execptr+1];
 		if ( c == 0x30 ) return c;	// StrJoin(
 		else
@@ -713,7 +713,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 	} else
 	if ( c == 0x7F ) {
 		c = (unsigned char)SRC[execptr+1];
-		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
+		if ( ( 0x000000F0 <= c ) && ( c <= 0x000000F4 ) ) return c;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
@@ -760,24 +760,24 @@ char* CB_GetOpStrSub( char *SRC ,int *maxlen, int c ) {		// String -> buffer	ret
 			buffer = GetStrYFnPtr( SRC, reg, defaultFnAryN, defaultFnArySize );
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
-		case 0xFFFFFFF0:	// GraphY
-		case 0xFFFFFFF1:	// Graphr
-		case 0xFFFFFFF2:	// GraphXt
-		case 0xFFFFFFF3:	// GraphYt
-		case 0xFFFFFFF4:	// GraphX
+		case 0x000000F0:	// GraphY
+		case 0x000000F1:	// Graphr
+		case 0x000000F2:	// GraphXt
+		case 0x000000F3:	// GraphYt
+		case 0x000000F4:	// GraphX
 			reg=defaultGraphAry;
 			ExecPtr+=2;
 			dimA = GetStrYFnNo( SRC, reg, defaultGraphAryN, defaultGraphArySize );
 			switch ( c ) {
-				case 0xFFFFFFF0:	// GraphY
+				case 0x000000F0:	// GraphY
 					buffer = ReadGraphY( dimA ); break;
-				case 0xFFFFFFF1:	// Graphr
+				case 0x000000F1:	// Graphr
 					buffer = ReadGraphr( dimA ); break;
-				case 0xFFFFFFF2:	// GraphXt
+				case 0x000000F2:	// GraphXt
 					buffer = ReadGraphXt( dimA ); break;
-				case 0xFFFFFFF3:	// GraphYt
+				case 0x000000F3:	// GraphYt
 					buffer = ReadGraphYt( dimA ); break;
-				case 0xFFFFFFF4:	// GraphX
+				case 0x000000F4:	// GraphX
 					buffer = ReadGraphX( dimA ); break;
 				default:
 					buffer = MatrixPtr( reg, dimA, 7 );
@@ -896,7 +896,7 @@ char* CB_GetOpStrSub1( char *SRC, int *maxoplen, int YFn ) {	// Get opcode Strin
 	CB_CurrentStr=CB_GetOpStrSub( SRC, &(*maxoplen), c );		// String -> CB_CurrentStr
 	if ( ErrorNo ) return 0;	// error
 	c = (unsigned char)SRC[ExecPtr];
-	if ( c != 0xFFFFFF89 ) { // non +
+	if ( c != 0x00000089 ) { // non +
 //		if ( c == ')' ) ExecPtr++;	
 		return CB_CurrentStr; //
 	}
@@ -909,7 +909,7 @@ char* CB_GetOpStrSub1( char *SRC, int *maxoplen, int YFn ) {	// Get opcode Strin
 		
 		StrJoin( CB_StrAddBuffer, CB_CurrentStr, CB_StrBufferMax-1 ) ;
 		c = (unsigned char)SRC[ExecPtr];
-		if ( c != 0xFFFFFF89 ) break ; // +
+		if ( c != 0x00000089 ) break ; // +
 	}
 //	if ( c == ')' ) ExecPtr++;	
 	return CB_StrAddBuffer;
@@ -961,15 +961,15 @@ void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
 //	MatAryC = GetStrYFnPtrSub( reg, dimA, defaultGraphArySize ) +6;
 	if ( ErrorNo ) return ; // error
 	switch ( c ) {
-		case 0xFFFFFFF0:	// GraphY
+		case 0x000000F0:	// GraphY
 			StoreGraphY(  CB_CurrentStr, dimA ); break;
-		case 0xFFFFFFF1:	// Graphr
+		case 0x000000F1:	// Graphr
 			StoreGraphr(  CB_CurrentStr, dimA ); break;
-		case 0xFFFFFFF2:	// GraphXt
+		case 0x000000F2:	// GraphXt
 			StoreGraphXt( CB_CurrentStr, dimA ); break;
-		case 0xFFFFFFF3:	// GraphYt
+		case 0x000000F3:	// GraphYt
 			StoreGraphYt( CB_CurrentStr, dimA ); break;
-		case 0xFFFFFFF4:	// GraphX
+		case 0x000000F4:	// GraphX
 			StoreGraphX(  CB_CurrentStr, dimA ); break;
 			break;
 	}
@@ -1041,7 +1041,7 @@ int CB_IsStrStor( char *SRC, int execptr ) {
 	if ( c=='$' ) {	// Mat String
 		return 2;
 	} else
-	if ( c == 0xFFFFFFF9 ) {
+	if ( c == 0x000000F9 ) {
 		c = (unsigned char)SRC[execptr+1];
 		if ( c == 0x3F ) return c;	// Str
 		else
@@ -1053,7 +1053,7 @@ int CB_IsStrStor( char *SRC, int execptr ) {
 	} else
 	if ( c == 0x7F ) {
 		c = (unsigned char)SRC[execptr+1];
-		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
+		if ( ( 0x000000F0 <= c ) && ( c <= 0x000000F4 ) ) return c;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
@@ -1087,11 +1087,11 @@ void CB_StorStrSub( char *SRC, int c ) {
 			ExecPtr+=2;
 			StorStrFn( SRC ) ;
 			break;
-		case 0xFFFFFFF0:	// GraphY
-		case 0xFFFFFFF1:	// Graphr
-		case 0xFFFFFFF2:	// GraphXt
-		case 0xFFFFFFF3:	// GraphYt
-		case 0xFFFFFFF4:	// GraphX
+		case 0x000000F0:	// GraphY
+		case 0x000000F1:	// Graphr
+		case 0x000000F2:	// GraphXt
+		case 0x000000F3:	// GraphYt
+		case 0x000000F4:	// GraphX
 			ExecPtr+=2;
 			StorStrGraphY( SRC ) ;
 			break;
@@ -1117,7 +1117,7 @@ int CB_CheckYfn( char *SRC ) {	// Fn1->Str 1 ?
 	int maxlen;
 	char *buffer;
 	EvalIntsub1( SRC );
-	if ( SRC[ExecPtr] == 0x0E ) {	// ->
+	if ( (unsigned char)SRC[ExecPtr] == 0x0E ) {	// ->
 		ExecPtr=extmp;
 		ExecPtr-=2;
 		CB_CurrentStr = CB_GetOpStrSub( SRC, &(maxlen),  CB_IsStrStor( SRC, ExecPtr ) );
@@ -1145,7 +1145,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 	int px,code;
 	int extAnkfont=0x100;
 	
-	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// Force OS Font
+	if ( (unsigned char)SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// Force OS Font
 	c = (unsigned char)SRC[ExecPtr] ; 
 	if ( c == 0x0E ) {	// -> store str
 		ExecPtr++;
@@ -1164,7 +1164,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 			CursorX++; px=CursorX;
 			c = buffer[i] ;
 			if ( ( c==0x0C ) || ( c==0x0D ) ) { ClrLine5800P( CursorX ); Scrl_Y(); px=0; }
-			if ( (c==0x7F)||(c==0xFFFFFFF7)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) ) i++;
+			if ( (c==0x7F)||(c==0x000000F7)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) ) i++;
 			i++;
 //			Bdisp_PutDisp_DD_DrawBusy_skip_through_text(SRC);
 		}
@@ -1174,7 +1174,7 @@ void CB_StrPrint( char *SRC , int csrX ) {
 			if ( CursorY < 7 ) {
 				Scrl_Y();
 				CursorX=22;
-				if ( SRC[ExecPtr] != '?' ) CursorX=23;
+				if ( (unsigned char)SRC[ExecPtr] != '?' ) CursorX=23;
 			} else {	// CursorY == 7 
 				CursorX=23;
 			}
@@ -1205,12 +1205,12 @@ int CB_StrLen( char *SRC ) {
 	else
 	if ( c == '!' ) { ExecPtr++;		// C/C++ specifcation
 		buffer = (char*)VarPtrLength(SRC, &length, &type, 0 ); 
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 		return strlen( buffer );
 	}
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_StrBufferCNT=buffercnt;
 	if  ( realbyte ) return strlenOp( buffer );	// real byte count
 	return StrLen( buffer ,&i );
@@ -1222,26 +1222,26 @@ int CB_StrCmp( char *SRC ) {
 	char *buffer, *buffer2;
 	int length,type;
 	int n;
-	if ( SRC[ExecPtr] == '!' ) { ExecPtr++;		// C/C++ specifcation
+	if ( (unsigned char)SRC[ExecPtr] == '!' ) { ExecPtr++;		// C/C++ specifcation
 		buffer  = (char*)VarPtrLength(SRC, &length, &type, 0 ); 
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 		buffer2 = (char*)VarPtrLength(SRC, &length, &type, 0 ); 
 		length = -1;
-		if ( SRC[ExecPtr] == ',' ) { ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ',' ) { ExecPtr++;
 			length = CB_EvalInt( SRC );
 		}
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 		if ( length>=0 )	return strncmp( buffer, buffer2, length );
 		else				return strcmp( buffer, buffer2 );
 	}
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	buffer2 = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	CB_StrBufferCNT=buffercnt;
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return StrCmp( buffer, buffer2 ) ;
 }
 
@@ -1252,16 +1252,16 @@ int CB_StrSrc( char *SRC ) {
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	slen=StrLen( CB_CurrentStr ,&maxoplen);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	buffer2  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
 	CB_StrBufferCNT=buffercnt;
-	if ( SRC[ExecPtr] == ',' ) { 
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		sptr = CB_EvalInt( SRC );	//
 	}
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( sptr < 1 ) sptr=1;
 	if ( sptr > slen ) return 0; // no found
 	if ( StrSrc( buffer, buffer2, &sptr, CB_StrBufferMax-1 ) ==0 ) return 0 ; // no found
@@ -1274,7 +1274,7 @@ int CB_StrAsc( char *SRC ) {	// StrAsc("A")  -> 0x41
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return GetOpcode( buffer, 0 );
 //	return StrGetOpcode( buffer, 0 );
 }
@@ -1336,7 +1336,7 @@ double CB_EvalStr( char *SRC, int calcflag ) {		// Exp(
 	if ( ErrorNo ) return 0;  // error
 	CB_StrBufferCNT=buffercnt;
 	result=CB_EvalStrDBL( buffer, calcflag );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return result;
 }
 complex CB_Cplx_EvalStr( char *SRC, int calcflag ) {		// Exp(	
@@ -1350,7 +1350,7 @@ complex CB_Cplx_EvalStr( char *SRC, int calcflag ) {		// Exp(
 	if ( ErrorNo ) return Int2Cplx(0);  // error
 	CB_StrBufferCNT=buffercnt;
 	result=CB_Cplx_EvalStrDBL( buffer, calcflag );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return result;
 }
 int CBint_EvalStr( char *SRC, int calcflag ) {		// Exp(			Eval str -> int
@@ -1364,7 +1364,7 @@ int CBint_EvalStr( char *SRC, int calcflag ) {		// Exp(			Eval str -> int
 	if ( ErrorNo ) return 0;  // error
 	CB_StrBufferCNT=buffercnt;
 	result=CB_EvalStrInt( buffer, calcflag );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return result;
 }
 
@@ -1392,15 +1392,15 @@ char* CB_GraphStrSub( char *SRC ) {	//  defaultGraphAry
 	dimA = CB_GraphFnStrNo( SRC, reg );
 	if ( ErrorNo ) return 0;
 	switch ( c ) {
-		case 0xFFFFFFF0:	// GraphY
+		case 0x000000F0:	// GraphY
 			ptr = ReadGraphY( dimA ); break;
-		case 0xFFFFFFF1:	// Graphr
+		case 0x000000F1:	// Graphr
 			ptr = ReadGraphr( dimA ); break;
-		case 0xFFFFFFF2:	// GraphXt
+		case 0x000000F2:	// GraphXt
 			ptr = ReadGraphXt( dimA ); break;
-		case 0xFFFFFFF3:	// GraphYt
+		case 0x000000F3:	// GraphYt
 			ptr = ReadGraphYt( dimA ); break;
-		case 0xFFFFFFF4:	// GraphX
+		case 0x000000F4:	// GraphX
 			ptr = ReadGraphX( dimA ); break;
 		default:
 			ptr = MatrixPtr( defaultGraphAry, dimA, 7 );
@@ -1420,11 +1420,11 @@ double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	double tmpX = regX.real;
 	char *ptr = CB_GraphStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
-	if ( SRC[ExecPtr] == '(' ) {
+	if ( (unsigned char)SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
 		GraphFnEQ( SRC );
 		regX.real = CB_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_EvalStrDBL( ptr, calcflag );
 	regX.real = tmpX;
@@ -1435,11 +1435,11 @@ complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	complex tmpX = regX;
 	char *ptr = CB_GraphStrSub( SRC ) ;
 	if ( ErrorNo ) return Int2Cplx(0);
-	if ( SRC[ExecPtr] == '(' ) {
+	if ( (unsigned char)SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
 		GraphFnEQ( SRC );
 		regX = CB_Cplx_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_Cplx_EvalStrDBL( ptr, calcflag );
 	regX = tmpX;
@@ -1450,11 +1450,11 @@ int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	int tmpintX = regintX;
 	char *ptr = CB_GraphStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
-	if ( SRC[ExecPtr] == '(' ) {
+	if ( (unsigned char)SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
 		GraphFnEQ( SRC );
 		regintX = CB_EvalInt(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_EvalStrInt( ptr, calcflag );
 	regintX = tmpintX;
@@ -1466,11 +1466,11 @@ double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	double tmpX = regX.real;
 	char *ptr = CB_FnStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
-	if ( SRC[ExecPtr] == '(' ) {
+	if ( (unsigned char)SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
 		GraphFnEQ( SRC );
 		regX.real = CB_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_EvalStrDBL( ptr, calcflag );
 	regX.real = tmpX;
@@ -1481,11 +1481,11 @@ complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	complex tmpX = regX;
 	char *ptr = CB_FnStrSub( SRC ) ;
 	if ( ErrorNo ) return Int2Cplx(0);
-	if ( SRC[ExecPtr] == '(' ) {
+	if ( (unsigned char)SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
 		GraphFnEQ( SRC );
 		regX = CB_Cplx_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_Cplx_EvalStrDBL( ptr, calcflag );
 	regX = tmpX;
@@ -1497,11 +1497,11 @@ int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	char *ptr = CB_FnStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
 	if ( calcflag == 0 ) return 0;
-	if ( SRC[ExecPtr] == '(' ) {
+	if ( (unsigned char)SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
 		GraphFnEQ( SRC );
 		regintX = CB_EvalInt(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
 	result = CB_EvalStrInt( ptr, calcflag );
 	regintX = tmpintX;
@@ -1517,25 +1517,25 @@ int CB_StrJoin( char *SRC ) {
 	if ( c=='!' ) {	// strcat() 		// C/C++ specifcation
 		ExecPtr++;
 		ptr1 = (char*)VarPtrLength(SRC, &length, &type, 1 );
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 		ExecPtr++;
 		ptr2 = (char*)VarPtrLength(SRC, &length, &type, 0 );
 		if ( ErrorNo ) return 0;
 		strcat( ptr1, ptr2);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 		CB_CurrentStr=ptr1;
 		return 0;
 	}
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	CB_StrAddBuffer=NewStrBuffer(); if ( CB_StrAddBuffer==NULL ) return 0;
 	OpcodeCopy( CB_StrAddBuffer, buffer, CB_StrBufferMax-1 );		//
 
 	buffer = CB_GetOpStr( SRC, &maxoplen ) ;		// String -> CB_CurrentStr
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	StrJoin( CB_StrAddBuffer, buffer, CB_StrBufferMax-1 ) ;
 	CB_CurrentStr=CB_StrAddBuffer;
 	return CB_StrBufferMax-1;
@@ -1547,10 +1547,10 @@ int CB_StrLeft( char *SRC ) {	// StrLeft( str1, n  )
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	n = CB_EvalInt( SRC );	//
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	if ( n > 0 ) StrMid( CB_CurrentStr, buffer, 1, n ) ;
 	else	CB_CurrentStr[0]='\0';
@@ -1562,10 +1562,10 @@ int CB_StrRight( char *SRC ) {	// StrRight( str1, n  )
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	n = CB_EvalInt( SRC );	//
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	if ( n > 0 ) StrRight( CB_CurrentStr, buffer, n ) ;
 	else	CB_CurrentStr[0]='\0';
@@ -1577,14 +1577,14 @@ int CB_StrMid( char *SRC ) {	// StrMid( str1, n [,m] )
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	n = CB_EvalInt( SRC );	//
-	if ( SRC[ExecPtr] == ',' ) { 
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		m = CB_EvalInt( SRC );	//
 	} else m=maxoplen;
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	if ( m > 0 ) StrMid( CB_CurrentStr, buffer, n, m ) ;
 	else	CB_CurrentStr[0]='\0';
@@ -1597,7 +1597,7 @@ int CB_StrLwr( char *SRC ) {	// StrLwr( str1 )
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	StrLwr( CB_CurrentStr, buffer ) ;
 	return CB_StrBufferMax-1;
@@ -1607,7 +1607,7 @@ int CB_StrUpr( char *SRC ) {	// StrUpr( str1 )
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	StrUpr( CB_CurrentStr, buffer ) ;
 	return CB_StrBufferMax-1;
@@ -1616,7 +1616,7 @@ int CB_StrInv( char *SRC ) {	// StrInv( str1 )
 	int maxoplen;
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	StrInv( CB_CurrentStr, buffer ) ;
 	return CB_StrBufferMax-1;
@@ -1627,11 +1627,11 @@ int CB_StrShift( char *SRC ) {	// StrShift( str1 [,n] )
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ',' ) { 
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		n = CB_EvalInt( SRC );	//
 	} else n = 1;
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	StrShift( CB_CurrentStr, buffer, n ) ;
 	return CB_StrBufferMax-1;
@@ -1642,11 +1642,11 @@ int CB_StrRotate( char *SRC ) {	// StrRotate( str1 [,n] )
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] == ',' ) { 
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		n = CB_EvalInt( SRC );	//
 	} else n = 1;
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	StrRotate( CB_CurrentStr, buffer, n ) ;
 	return CB_StrBufferMax-1;
@@ -1657,11 +1657,11 @@ int CB_ExpToStr( char *SRC ) {	//  Exp->Str(
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	CB_CurrentStr = buffer;
 	CB_StorStr( SRC );
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return 1;
 }
 
@@ -1684,11 +1684,11 @@ int CB_StrChar( char *SRC ) {	// StrChar("*"[,n]) StrChar( code [,n])
 		buffer=code;
 	}
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ',' ) { 
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		n = CB_EvalInt( SRC );	//
 	} else n = 1;
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	if ( n > 0 ) StrChar( CB_CurrentStr, buffer, n) ;
 	else	CB_CurrentStr[0]='\0';
@@ -1704,14 +1704,14 @@ int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
 	char spc[]=" ";
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	max = CB_EvalInt( SRC );	//
-	if ( SRC[ExecPtr] == ',' ) { ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { ExecPtr++;
 		buffer2 = CB_GetOpStr( SRC, &maxoplen2 );
 		charflag=1;
 	}
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	if ( max > 0 ) StrCenter( CB_CurrentStr, buffer, max, charflag? buffer2:spc) ;
 	else	CB_CurrentStr[0]='\0';
@@ -1721,14 +1721,14 @@ int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
 int CB_EvalToStr( char *SRC ){		// ToStr( n 
 	int dms=0;
 	complex value = CB_Cplx_EvalDbl( SRC );
-	if ( ( SRC[ExecPtr] == 0xFFFFFFF9 ) && ( SRC[ExecPtr+1] == 0x05 ) ) {	// >DMS
+	if ( ( (unsigned char)SRC[ExecPtr] == 0x000000F9 ) && ( (unsigned char)SRC[ExecPtr+1] == 0x05 ) ) {	// >DMS
 		ExecPtr+=2;
 		dms=1;
 	}
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	if ( dms )	StrDMSsub( CB_CurrentStr, value.real ) ;
 	else		Cplx_sprintGR1(CB_CurrentStr, value, CB_StrBufferMax-1, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT);
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
 
@@ -1742,7 +1742,7 @@ int CB_Hex( char *SRC ){		// Hex(
 	if (value) { while ( (tmp&0xF0000000)==0 ) { tmp=tmp<<4; n--; } } else n=1;
 	if ( n<1 ) n=1;
 	NumToHex( CB_CurrentStr, (unsigned int)value, n);
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
 int CB_Bin( char *SRC ){		// Bin(
@@ -1754,7 +1754,7 @@ int CB_Bin( char *SRC ){		// Bin(
 	if (value) { while ( (tmp&0x80000000)==0 ) { tmp=tmp<<1; n--; } } else n=1;
 	if ( n<1 ) n=1;
 	NumToBin( CB_CurrentStr, (unsigned int)value, n);
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
 
@@ -1765,17 +1765,17 @@ int CB_StrBase( char *SRC ){		// StrBase( Str1,base1,base2 )->str2
 	int base1=10,base2=10;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	base1 = CB_EvalInt( SRC );	//
 	if ( (base1<2) || (base1>64) ) { CB_Error(ArgumentERR); }  // Argument error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	base2 = CB_EvalInt( SRC );	//
 	if ( (base2<2) || (base2>64) ) { CB_Error(ArgumentERR); }  // Argument error
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 	StrBase( CB_CurrentStr, buffer, base1, base2);
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
 
@@ -1786,22 +1786,22 @@ int CB_StrRepl( char *SRC ){	// StrRepl( Str1,Str2,Str3[,n])->str4
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	slen=StrLen( CB_CurrentStr ,&maxoplen);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	srcstr  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	repstr  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] == ',' ) { 
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		sptr = CB_EvalInt( SRC );	//
 		if ( sptr < 1 ) sptr=1;
 		if ( sptr > slen ) sptr=slen;
 	}
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	StrRepl( CB_CurrentStr, buffer, srcstr, repstr, sptr, CB_StrBufferMax-1 );
 	return CB_StrBufferMax-1;
 }
@@ -1817,7 +1817,7 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 
 	i=0;
@@ -2006,11 +2006,11 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89",","[,n]) -> MatAns[["12
 	buffer = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0;  // error
 	slen=StrLen( CB_CurrentStr ,&maxoplen);
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
 	srcstr  = CB_GetOpStr( SRC, &maxoplen );
 	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] == ',' ) { 
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) { 
 		ExecPtr++;
 		sptr = CB_EvalInt( SRC );	//
 		if ( sptr < 1 ) sptr=1;
@@ -2018,7 +2018,7 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89",","[,n]) -> MatAns[["12
 	}
 	
 //	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	StrSplit( buffer, srcstr, sptr, CB_StrBufferMax-1 );
 	dspflag=3;	// Mat ans
 	CB_CurrentStr=MatrixPtr( CB_MatListAnsreg, 1, 1 );

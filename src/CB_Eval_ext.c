@@ -149,18 +149,18 @@ void IntgralOprand( char *SRC, double *start, double *end, double *tol ){	// Int
 	if ( dspflag >= 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
 	if ( errflag ) if ( ErrorNo ) return ;	// fatal error
 	errflag=ErrorNo;	// error?
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
 	ExecPtr++;
 	*start=CB_EvalDbl( SRC );	// start
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return ; }  // Syntax error
 	ExecPtr++;
 	*end=CB_EvalDbl( SRC );	// end
-	if ( SRC[ExecPtr] == ',' ) {
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) {
 		ExecPtr++;
 		*tol=CB_EvalDbl( SRC );	// tol
 	} else *tol=6;
 
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	if ( errflag ) {
 		ExecPtr=exptr;
 		regX=Dbl2Cplx(((*start)+(*end))/2);

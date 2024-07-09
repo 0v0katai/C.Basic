@@ -207,27 +207,27 @@ int DecodeBmp2Vram( char *filebase, int px, int py ){	//	bmp -> vram
 
 /*
 int CB_GetOprand_XY1XY2( char *SRC, int *x1, int *y1, int *x2, int *y2 ) {
-	if ( SRC[ExecPtr] != ',' ) return 0;
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) return 0;
 	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) goto jp;
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) goto jp;
 	*x1=CB_EvalInt( SRC );
 	
-	if ( SRC[ExecPtr] != ',' ) return 1;
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) return 1;
   jp:
 	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) goto jp2;
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) goto jp2;
 	*y1=CB_EvalInt( SRC );
 	
-	if ( SRC[ExecPtr] != ',' ) return 1;
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) return 1;
   jp2:
 	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) goto jp3;
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) goto jp3;
 	*x2=CB_EvalInt( SRC );
 	
-	if ( SRC[ExecPtr] != ',' ) return 1;
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) return 1;
   jp3:
 	ExecPtr++;
-	if ( SRC[ExecPtr] == ',' ) return 0;
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) return 0;
 	*y2=CB_EvalInt( SRC );
 	return 1;
 }
@@ -407,7 +407,7 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 			if ( ( '0'<=c )&&( c<='9' ) ) { ExecPtr++; no=c-'0'; }
 			sname[0]='\0';
 		}
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 		switch ( gaiji ) {	
 			case 0:
 				LoadExtFontKanafolder(  flag, sname, folder, no ); return ;
@@ -425,7 +425,7 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 //		ptr=CB_EvalInt( SRC );
 //		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
 //	}
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	c = (unsigned char)SRC[ExecPtr];
 	if ( c == 0x0E ) {
 		ExecPtr++;

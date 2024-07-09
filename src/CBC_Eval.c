@@ -110,7 +110,7 @@ void Cplx_WriteMatrix( int reg, int dimA, int dimB, complex value){		// base:0  
 complex CB_Cplx_EvalDbl( char *SRC ) {
 	complex value={0,0};
 	if (CB_INT==1) {
-		if ( SRC[ExecPtr]=='#' ) { ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr]=='#' ) { ExecPtr++;
 			goto cplx;
 		}
 		else value.real=EvalIntsubTop( SRC ); 
@@ -139,10 +139,10 @@ complex Cplx_EvalsubTop( char *SRC ) {	// eval 1
 	result= Cplx_Evalsub1(SRC);
 	c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
 	else 
-	if ( c==0xFFFFFF89 ) { // +
+	if ( c==0x00000089 ) { // +
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fADD(result,dst);
 	} else
-	if ( c==0xFFFFFF99 ) { // -
+	if ( c==0x00000099 ) { // -
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fSUB(result,dst);
 	} else
 	if ( c=='=') { // ==
@@ -163,48 +163,48 @@ complex Cplx_EvalsubTop( char *SRC ) {	// eval 1
 	if ( c==0x10) { // <=
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fcmpLE(result,dst);
 	} else
-	if ( c==0xFFFFFFA9 ) { // *
+	if ( c==0x000000A9 ) { // *
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fMUL(result,dst);
 	} else
-	if ( c==0xFFFFFFB9 ) { // /
+	if ( c==0x000000B9 ) { // /
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fDIV(result,dst);
 	} else
-	if ( c==0xFFFFFF9A ) { // xor
+	if ( c==0x0000009A ) { // xor
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fXOR(result,dst);
 	} else
-	if ( ( c=='|' ) || ( c==0xFFFFFFAA ) ) { // or
+	if ( ( c=='|' ) || ( c==0x000000AA ) ) { // or
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fOR(result,dst);
 	} else
-	if ( ( c=='&' ) || ( c==0xFFFFFFBA ) ) { // and
+	if ( ( c=='&' ) || ( c==0x000000BA ) ) { // and
 		ExecPtr++; dst=Cplx_Evalsub1(SRC); c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fAND(result,dst);
 	} else
-	if ( c==0xFFFFFF8B ) { // ^2
+	if ( c==0x0000008B ) { // ^2
 		ExecPtr++;
 		c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fMUL(result,result);
 	} else
-	if ( c==0xFFFFFF9B ) { // ^(-1) RECIP
+	if ( c==0x0000009B ) { // ^(-1) RECIP
 		ExecPtr++;
 		c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_frecip(result);
 	} else
 	if ( c==0x7F ) { // 
 		c = (unsigned char)SRC[++ExecPtr];
-		if ( c==0xFFFFFFB0 ) { // And
+		if ( c==0x000000B0 ) { // And
 			ExecPtr++; dst=Cplx_Evalsub1(SRC);
 			c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fAND_logic(result,dst);
 		} else
-		if ( c==0xFFFFFFB1 ) { // Or
+		if ( c==0x000000B1 ) { // Or
 			ExecPtr++; dst=Cplx_Evalsub1(SRC);
 			c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fOR_logic(result,dst);
 		} else
-		if ( c==0xFFFFFFB4 ) { // Xor
+		if ( c==0x000000B4 ) { // Xor
 			ExecPtr++; dst=Cplx_Evalsub1(SRC);
 			c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fXOR_logic(result,dst);
 		} else
-		if ( c==0xFFFFFFBC ) { // Int/
+		if ( c==0x000000BC ) { // Int/
 			ExecPtr++; dst=Cplx_Evalsub1(SRC);
 			c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fIDIV(result,dst);
 		} else
-		if ( c==0xFFFFFFBD ) { // Rmdr
+		if ( c==0x000000BD ) { // Rmdr
 			ExecPtr++; dst=Cplx_Evalsub1(SRC);
 			c = (unsigned char)SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fMOD(result,dst);
 		}
@@ -662,7 +662,7 @@ complex Cplx_RoundSci( complex num, complex digit){
 int Cplx_Get2Eval( char *SRC, complex *tmp, complex *tmp2){
 	int c;
 	(*tmp) = Cplx_EvalsubTop( SRC );
-	if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+	if ( (unsigned char)SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 	ExecPtr++;
 	(*tmp2) = Cplx_EvalsubTop( SRC );
 	c = (unsigned char)SRC[ExecPtr];
@@ -686,11 +686,11 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
   topj:
 	if ( c == '(') {
 		result = Cplx_EvalsubTop( SRC );
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 		return result;
 	}
-	while ( c == 0xFFFFFF89 ) c = (unsigned char)SRC[ExecPtr++];	// +
-	if ( ( c == 0xFFFFFF87 ) || ( c == 0xFFFFFF99 ) ) {	//  -
+	while ( c == 0x00000089 ) c = (unsigned char)SRC[ExecPtr++];	// +
+	if ( ( c == 0x00000087 ) || ( c == 0x00000099 ) ) {	//  -
 		result = Cplx_fsign( Cplx_Evalsub5( SRC ) );
 		return result;
 	}
@@ -727,7 +727,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 					else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 					Matrix1:	
-					if ( SRC[ExecPtr] == '[' ) {
+					if ( (unsigned char)SRC[ExecPtr] == '[' ) {
 					Matrix:	
 						ExecPtr++;
 						MatOprand2( SRC, reg, &dimA, &dimB );
@@ -739,7 +739,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					}
 					return Cplx_ReadMatrix( reg, dimA, dimB);
 						
-				case 0xFFFFFF84 :	// Vct A[a,b]
+				case 0x00000084 :	// Vct A[a,b]
 					reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 					goto Matrix1;
 
@@ -752,7 +752,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 				case 0x6F :		// List6
 					reg=ListRegVar( SRC );
 				  Listj:
-					if ( SRC[ExecPtr] == '[' ) {
+					if ( (unsigned char)SRC[ExecPtr] == '[' ) {
 						ExecPtr++;
 						MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
 						if ( ErrorNo ) return Int2Cplx( 1 ); // error
@@ -778,64 +778,64 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					Cplx_Get2Eval( SRC, &tmp, &tmp2);
 					return Cplx_fLCM(tmp,tmp2);
 					
-				case 0xFFFFFF85 :		// logab(a,b)
+				case 0x00000085 :		// logab(a,b)
 					Cplx_Get2Eval( SRC, &tmp, &tmp2);
 					return Cplx_flogab(tmp,tmp2);
 					
-				case 0xFFFFFFB3 :		// Not
+				case 0x000000B3 :		// Not
 					return Cplx_fNot_logic( Cplx_Evalsub5( SRC ) ) ;
 						
-				case 0xFFFFFF9F :		// KeyRow(
+				case 0x0000009F :		// KeyRow(
 					return Int2Cplx( CB_KeyRow( SRC ) ) ; 
-				case 0xFFFFFF8F :		// Getkey
+				case 0x0000008F :		// Getkey
 					return Int2Cplx( CB_GetkeyEntry( SRC ) );
 					
-				case 0xFFFFFF87 :		// RanInt#(st,en[,n])
+				case 0x00000087 :		// RanInt#(st,en[,n])
 					if ( Cplx_Get2Eval( SRC, &tmp, &tmp2) == ',' ) {
 						ExecPtr++;
 						CB_RanInt( SRC, tmp.real, tmp2.real );
 					}
 					return Dbl2Cplx( frandIntint( tmp.real, tmp2.real ) );
 					
-				case 0xFFFFFF88 :		// RanList#(n) ->ListAns
+				case 0x00000088 :		// RanList#(n) ->ListAns
 					CB_RanList( SRC ) ;
 					return Dbl2Cplx( 4 );
-				case 0xFFFFFF89 :		// RanBin#(n,p[,m]) ->ListAns
+				case 0x00000089 :		// RanBin#(n,p[,m]) ->ListAns
 					return Dbl2Cplx( CB_RanBin( SRC ) );
-				case 0xFFFFFF8A :		// RanNorm#(sd,mean[,n]) ->ListAns
+				case 0x0000008A :		// RanNorm#(sd,mean[,n]) ->ListAns
 					return Dbl2Cplx( CB_RanNorm( SRC ) );
 					
-				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
+				case 0x000000E9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
 					if ( ErrorNo ) return Int2Cplx( 1 ); // error
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 					return Int2Cplx( Cellsum( reg, x, y ) );
 	
 				case 0x5F :				// 1/128 Ticks
 					return Int2Cplx( CB_Ticks( SRC ) );	// 
 					
-				case 0xFFFFFF86 :		// RndFix(n,digit)
+				case 0x00000086 :		// RndFix(n,digit)
 					tmp = Cplx_EvalsubTop( SRC );
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-					if ( SRC[++ExecPtr] == 0xFFFFFFE4 ) { ExecPtr++; i=Sci; } else i=Fix;
+					if ( (unsigned char)SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					if ( (unsigned char)SRC[++ExecPtr] == 0x000000E4 ) { ExecPtr++; i=Sci; } else i=Fix;
 					tmp2 = Cplx_EvalsubTop( SRC );
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 					return Cplx_Round( tmp, i, tmp2.real);
 						
-				case 0xFFFFFFF0 :		// GraphY str
-				case 0xFFFFFFF1:		// Graphr
-				case 0xFFFFFFF2:		// GraphXt
-				case 0xFFFFFFF3:		// GraphYt
-				case 0xFFFFFFF4:		// GraphX
+				case 0x000000F0 :		// GraphY str
+				case 0x000000F1:		// Graphr
+				case 0x000000F2:		// GraphXt
+				case 0x000000F3:		// GraphYt
+				case 0x000000F4:		// GraphX
 					return CB_Cplx_GraphYStr( SRC, 0 );
 						
-				case 0xFFFFFFF5 :		// IsExist(
+				case 0x000000F5 :		// IsExist(
 					return Int2Cplx( CB_IsExist( SRC ,0 ) );
-				case 0xFFFFFFF6 :		// Peek(
+				case 0x000000F6 :		// Peek(
 					return CB_Peek( SRC, Cplx_EvalsubTop( SRC ).real );
-				case 0xFFFFFFF8 :		// VarPtr(
+				case 0x000000F8 :		// VarPtr(
 					return Int2Cplx( CB_VarPtr( SRC ) );
-				case 0xFFFFFFFA :		// ProgPtr(
+				case 0x000000FA :		// ProgPtr(
 					return Int2Cplx( CB_ProgPtr( SRC ) );
 				case 0x00 :				// Xmin
 					return Dbl2Cplx( Xmin );
@@ -945,17 +945,17 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 				case 0x26 :				// dx/dy
 					return Dbl2Cplx( CB_Differ( SRC ) );
 
-				case 0xFFFFFFCF :				// System(
+				case 0x000000CF :				// System(
 					return Int2Cplx( CB_System( SRC ) );
-				case 0xFFFFFFDF :				// Version
+				case 0x000000DF :				// Version
 					return Int2Cplx( CB_Version() );		//
 
-				case 0xFFFFFF90 :				// F Result
+				case 0x00000090 :				// F Result
 					dspflag=4;		// 2:value		3:Mat    4:List
-				case 0xFFFFFF91 :				// F Start
-				case 0xFFFFFF92 :				// F End
-				case 0xFFFFFF93 :				// F pitch
-					return Dbl2Cplx( REGf[c-0xFFFFFF90] );
+				case 0x00000091 :				// F Start
+				case 0x00000092 :				// F End
+				case 0x00000093 :				// F pitch
+					return Dbl2Cplx( REGf[c-0x00000090] );
 
 				default:
 					ExecPtr--;	// error
@@ -964,19 +964,19 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 			break;
 		case '&' :	// & VarPtr
 			return Int2Cplx( CB_VarPtr( SRC ) );
-		case 0xFFFFFFD0 :	// const_PI
+		case 0x000000D0 :	// const_PI
 			return Dbl2Cplx( const_PI );
-		case 0xFFFFFFC1 :	// Ran#
+		case 0x000000C1 :	// Ran#
 			return Dbl2Cplx( CB_frand( SRC ) );
-		case 0xFFFFFF97 :	// abs
+		case 0x00000097 :	// abs
 			return Cplx_fabs( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFA6 :	// int
+		case 0x000000A6 :	// int
 			return Cplx_fint( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFDE :	// intg
+		case 0x000000DE :	// intg
 			return Cplx_intg( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFB6 :	// frac
+		case 0x000000B6 :	// frac
 			return Cplx_frac( Cplx_Evalsub5( SRC ) );
-		case  0xFFFFFFAB  :	//  ! Not
+		case  0x000000AB  :	//  ! Not
 			return Cplx_fNot( Cplx_Evalsub5( SRC ) );
 
 		case '%' :	// 1/128 Ticks
@@ -996,105 +996,105 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 			dspflag=3;
 			return Int2Cplx( 0 );
 
-		case 0xFFFFFFF7:	// F7..
+		case 0x000000F7:	// F7..
 			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
-				case 0xFFFFFFAF:	// PxlTest(y,x)
+				case 0x000000AF:	// PxlTest(y,x)
 					y= Cplx_EvalsubTop( SRC ).real;
-					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+					if ( (unsigned char)SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++ ;	// ',' skip
 					x= Cplx_EvalsubTop( SRC ).real;
-					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+					if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 					return Int2Cplx( PxlTest(y, x) );			// 
-				case 0xFFFFFFB0 :				// SortA( List 1)
+				case 0x000000B0 :				// SortA( List 1)
 					return Int2Cplx( CB_EvalSortAD( SRC, 1 ) );
-				case 0xFFFFFFB1 :				// SortD( List 1)
+				case 0x000000B1 :				// SortD( List 1)
 					return Int2Cplx( CB_EvalSortAD( SRC, 0 ) );
-				case 0xFFFFFFF4:	// SysCall(
+				case 0x000000F4:	// SysCall(
 					return  Int2Cplx( CB_SysCall( SRC ) );
-				case 0xFFFFFFF5:	// Call(
+				case 0x000000F5:	// Call(
 					return  Int2Cplx( CB_Call( SRC ) );
-				case 0xFFFFFFF8:	// RefreshCtrl
+				case 0x000000F8:	// RefreshCtrl
 					return  Int2Cplx( RefreshCtrl );
-				case 0xFFFFFFFA:	// RefreshTime
+				case 0x000000FA:	// RefreshTime
 					return  Int2Cplx( Refreshtime+1 );
-				case 0xFFFFFFFB:	// Screen
+				case 0x000000FB:	// Screen
 					return  Int2Cplx( ScreenMode );
-				case 0xFFFFFFFE:	// BackLight
+				case 0x000000FE:	// BackLight
 					return	Int2Cplx( BackLight(-1) );
-				case 0xFFFFFFF2:	// PopUpWin(
+				case 0x000000F2:	// PopUpWin(
 					return Int2Cplx( CB_PopUpWin(SRC) );
-				case 0xFFFFFFDE:	// BatteryStatus
+				case 0x000000DE:	// BatteryStatus
 					return Int2Cplx( CB_BatteryStatus(SRC) );
 				default:
 					ExecPtr--;	// error
 					break;
 			}
 			break;
-		case 0xFFFFFF86 :	// sqr
+		case 0x00000086 :	// sqr
 			return  Cplx_fsqrt( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF95 :	// log10
+		case 0x00000095 :	// log10
 			return  Cplx_flog10( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFB5 :	// 10^
+		case 0x000000B5 :	// 10^
 			return  Cplx_fpow10( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF85 :	// ln
+		case 0x00000085 :	// ln
 			return  Cplx_fln( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFA5 :	// expn
+		case 0x000000A5 :	// expn
 			return  Cplx_fexp( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF96 :	// cuberoot
+		case 0x00000096 :	// cuberoot
 			return  Cplx_fcuberoot( Cplx_Evalsub5( SRC ) );
 
-		case 0xFFFFFF81 :	// sin
+		case 0x00000081 :	// sin
 			return  Cplx_fsin( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF82 :	// cos
+		case 0x00000082 :	// cos
 			return  Cplx_fcos( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF83 :	// tan
+		case 0x00000083 :	// tan
 			return  Cplx_ftan( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF91 :	// asin
+		case 0x00000091 :	// asin
 			return  Cplx_fasin( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF92 :	// acos
+		case 0x00000092 :	// acos
 			return  Cplx_facos( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFF93 :	// atan
+		case 0x00000093 :	// atan
 			return  Cplx_fatan( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFA1 :	// sinh
+		case 0x000000A1 :	// sinh
 			return  Cplx_fsinh( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFA2 :	// cosh
+		case 0x000000A2 :	// cosh
 			return  Cplx_fcosh( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFA3 :	// tanh
+		case 0x000000A3 :	// tanh
 			return  Cplx_ftanh( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFB1 :	// asinh
+		case 0x000000B1 :	// asinh
 			return  Cplx_fasinh( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFB2 :	// acosh
+		case 0x000000B2 :	// acosh
 			return  Cplx_facosh( Cplx_Evalsub5( SRC ) );
-		case 0xFFFFFFB3 :	// atanh
+		case 0x000000B3 :	// atanh
 			return  Cplx_fatanh( Cplx_Evalsub5( SRC ) );
 			
-		case 0xFFFFFF8D :	// integral
+		case 0x0000008D :	// integral
 			return  Dbl2Cplx( CB_Integral( SRC ) );
 			
-		case 0xFFFFFF80 :	// Pol( x, y ) -> r=List Ans[1] , Theta=List Ans[2]
+		case 0x00000080 :	// Pol( x, y ) -> r=List Ans[1] , Theta=List Ans[2]
 			tmp=Cplx_EvalsubTop( SRC );
-			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR) ; return Int2Cplx( 0 ); }	// Syntax error
+			if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR) ; return Int2Cplx( 0 ); }	// Syntax error
 			ExecPtr++;
 			tmp2=Cplx_EvalsubTop( SRC );
-			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+			if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 			Cplx_WriteListAns2( Cplx_fpolr(tmp,tmp2), Cplx_fpolt(tmp,tmp2) );
 			return Int2Cplx( 0 );
-		case 0xFFFFFFA0 :	// Rec( r, Theta ) -> X,Y
+		case 0x000000A0 :	// Rec( r, Theta ) -> X,Y
 			tmp=Cplx_EvalsubTop( SRC );
-			if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR) ; return Int2Cplx( 0 ); }	// Syntax error
+			if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR) ; return Int2Cplx( 0 ); }	// Syntax error
 			ExecPtr++;
 			tmp2=Cplx_EvalsubTop( SRC );
-			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+			if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 			Cplx_WriteListAns2( Cplx_frecx(tmp,tmp2), Cplx_frecy(tmp,tmp2) );
 			return Int2Cplx( 0 );
 			
-		case 0xFFFFFFF9:	// F9..
+		case 0x000000F9:	// F9..
 			c = (unsigned char)SRC[ExecPtr++];
 			switch ( c ) {
-				case 0xFFFFFFC6:	// M_PixelTest(
+				case 0x000000C6:	// M_PixelTest(
 					return Int2Cplx( CB_ML_PixelTest( SRC ) );
-				case 0xFFFFFFD8:	// M_Test
+				case 0x000000D8:	// M_Test
 					return Int2Cplx( CB_MLTest( SRC ) );
 //				case 0x53:	// M_Contrast(
 //					return Int2Cplx( CB_ML_GetContrast( SRC ) );
@@ -1137,7 +1137,7 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					break;
 			}
 			break;
-		case 0xFFFFFFDD :	// Eng
+		case 0x000000DD :	// Eng
 			return Int2Cplx( ENG );
 		default:
 			break;
@@ -1170,14 +1170,14 @@ complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	while ( 1 ) {
 		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
-			case  0xFFFFFF8B  :	// ^2
+			case  0x0000008B  :	// ^2
 				result = Cplx_fMUL( result, result ) ;
 				break;
-			case  0xFFFFFF9B  :	// ^(-1) RECIP
+			case  0x0000009B  :	// ^(-1) RECIP
 				if ( result.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 				result = Cplx_frecip( result );
 				break;
-			case  0xFFFFFFAB  :	//  !
+			case  0x000000AB  :	//  !
 				result = Cplx_ffact( result );
 				break;
 				
@@ -1215,18 +1215,18 @@ complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result = Cplx_fExa( result );
 				break;
 				
-			case  0xFFFFFF8C  :	//  dms
+			case  0x0000008C  :	//  dms
 				result.real = DmsToDec( SRC, result.real );
 				result.imag = 0;
 				break;
 				
-			case  0xFFFFFF9C  :	//  Deg
+			case  0x0000009C  :	//  Deg
 				result=Cplx_finvdegree( result );
 				break;
-			case  0xFFFFFFAC  :	//  Rad
+			case  0x000000AC  :	//  Rad
 				result=Cplx_finvradian( result );
 				break;
-			case  0xFFFFFFBC  :	//  Grad
+			case  0x000000BC  :	//  Grad
 				result=Cplx_finvgrad( result );
 				break;
 				
@@ -1248,11 +1248,11 @@ complex Cplx_Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 	while ( 1 ) {
 		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
-			case  0xFFFFFFA8  :	// a ^ b
+			case  0x000000A8  :	// a ^ b
 				result = Cplx_fpow( result, Cplx_Evalsub2( SRC ) );
 				CheckMathERR(&result.real); // Math error ?
 				break;
-			case  0xFFFFFFB8  :	// powroot
+			case  0x000000B8  :	// powroot
 				result = Cplx_fpow( Cplx_Evalsub2( SRC ), Cplx_frecip( result ) );
 				CheckMathERR(&result.real); // Math error ?
 				break;
@@ -1271,12 +1271,12 @@ complex Cplx_Evalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 	unsigned int c;
 	result = Cplx_Evalsub3( SRC );
 	c = (unsigned char)SRC[ExecPtr];
-	if ( c == 0xFFFFFFBB ) {
+	if ( c == 0x000000BB ) {
 		ExecPtr++;
 		frac1 = result ;
 		frac2 = Cplx_Evalsub3( SRC );
 		c = (unsigned char)SRC[ExecPtr];
-		if ( c == 0xFFFFFFBB ) {
+		if ( c == 0x000000BB ) {
 			ExecPtr++;
 			frac3 = Cplx_Evalsub3( SRC );
 			if ( frac3.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
@@ -1297,29 +1297,29 @@ complex Cplx_Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 		c = (unsigned char)SRC[ExecPtr];
 		if ((( 'A'<=c )&&( c<='Z' )) ||
 			(( 'a'<=c )&&( c<='z' )) ||
-			 ( c == 0xFFFFFFCD ) || // <r>
-			 ( c == 0xFFFFFFCE ) || // Theta
-			 ( c == 0xFFFFFFD0 ) || // const_PI
-			 ( c == 0xFFFFFFC0 ) || // Ans
-			 ( c == 0xFFFFFFC1 ) || // Ran#
-			 ( c == 0xFFFFFF8D )) { // integral
+			 ( c == 0x000000CD ) || // <r>
+			 ( c == 0x000000CE ) || // Theta
+			 ( c == 0x000000D0 ) || // const_PI
+			 ( c == 0x000000C0 ) || // Ans
+			 ( c == 0x000000C1 ) || // Ran#
+			 ( c == 0x0000008D )) { // integral
 				result = Cplx_fMUL( result, Cplx_Evalsub4( SRC ) );
 		} else if ( c == 0x7F ) { // 7F..
 				if ( ErrorNo ) goto exitj;
 				c = (unsigned char)SRC[ExecPtr+1];
-				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
+				if ( ( 0x000000B0 <= c ) && ( c <= 0x000000BD ) && ( c != 0x000000B3 ) ) goto exitj;	// And Or xor
 				result = Cplx_fMUL( result, Cplx_Evalsub4( SRC ) );
-		} else if ( c == 0xFFFFFFF7 ) { // F7..
+		} else if ( c == 0x000000F7 ) { // F7..
 			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
-				case 0xFFFFFFAF:	// PxlTest(y,x)
+				case 0x000000AF:	// PxlTest(y,x)
 					result = Cplx_fMUL( result, Cplx_Evalsub4( SRC ) );
 					break;
 				default:
 					goto exitj;
 					break;
 			}
-		} else if ( c == 0xFFFFFFF9 ) { // F9..
+		} else if ( c == 0x000000F9 ) { // F9..
 			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
 				case 0x1B:	// fn
@@ -1335,7 +1335,7 @@ complex Cplx_Evalsub5(char *SRC) {	//  5th Priority abbreviated multiplication
 					goto exitj;
 					break;
 			}
-//		} else if ( c == 0xFFFFFFE7 ) { // E7..
+//		} else if ( c == 0x000000E7 ) { // E7..
 //			c = (unsigned char)SRC[ExecPtr+1];
 //			switch ( c ) {
 //				default:
@@ -1361,30 +1361,30 @@ complex Cplx_Evalsub7(char *SRC) {	//  7th Priority abbreviated multiplication t
 		switch ( c ) {
 			case '(' :
 			case '{' :
-			case 0xFFFFFF97 :	// abs
-			case 0xFFFFFFA6 :	// int
-			case 0xFFFFFFDE :	// intg
-			case 0xFFFFFFB6 :	// frac
-			case 0xFFFFFF85 :	// ln
-			case 0xFFFFFF86 :	// sqr
-			case 0xFFFFFF95 :	// log10
-			case 0xFFFFFF96 :	// cuberoot
-			case 0xFFFFFFA5 :	// expn
-			case 0xFFFFFFA7 :	// Not
-			case 0xFFFFFFB5 :	// 10^
-			case 0xFFFFFFB7 :	// Neg
-			case 0xFFFFFF81 :	// sin
-			case 0xFFFFFF82 :	// cos
-			case 0xFFFFFF83 :	// tan
-			case 0xFFFFFF91 :	// asin
-			case 0xFFFFFF92 :	// acos
-			case 0xFFFFFF93 :	// atan
-			case 0xFFFFFFA1 :	// sinh
-			case 0xFFFFFFA2 :	// cosh
-			case 0xFFFFFFA3 :	// tanh
-			case 0xFFFFFFB1 :	// asinh
-			case 0xFFFFFFB2 :	// acosh
-			case 0xFFFFFFB3 :	// atanh
+			case 0x00000097 :	// abs
+			case 0x000000A6 :	// int
+			case 0x000000DE :	// intg
+			case 0x000000B6 :	// frac
+			case 0x00000085 :	// ln
+			case 0x00000086 :	// sqr
+			case 0x00000095 :	// log10
+			case 0x00000096 :	// cuberoot
+			case 0x000000A5 :	// expn
+			case 0x000000A7 :	// Not
+			case 0x000000B5 :	// 10^
+			case 0x000000B7 :	// Neg
+			case 0x00000081 :	// sin
+			case 0x00000082 :	// cos
+			case 0x00000083 :	// tan
+			case 0x00000091 :	// asin
+			case 0x00000092 :	// acos
+			case 0x00000093 :	// atan
+			case 0x000000A1 :	// sinh
+			case 0x000000A2 :	// cosh
+			case 0x000000A3 :	// tanh
+			case 0x000000B1 :	// asinh
+			case 0x000000B2 :	// acosh
+			case 0x000000B3 :	// atanh
 				result = Cplx_fMUL( result, Cplx_Evalsub5( SRC ) );
 				break;
 			default:
@@ -1401,10 +1401,10 @@ complex Cplx_Evalsub8(char *SRC) {	//  8th Priority  ( nPr,nCr,/_ )
 	while ( 1 ) {
 		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFF88 :		// nPr
+			case 0x00000088 :		// nPr
 				result = Cplx_f_nPr( result, Cplx_Evalsub7( SRC ) );
 				break;
-			case 0xFFFFFF98 :		// nCr
+			case 0x00000098 :		// nCr
 				result = Cplx_f_nCr( result, Cplx_Evalsub7( SRC ) );
 				break;
 			case 0x7F:
@@ -1436,10 +1436,10 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 	while ( 1 ) {
 		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFFA9 :		// �~
+			case 0x000000A9 :		// �~
 				result = Cplx_fMUL( result, Cplx_Evalsub8( SRC ) );
 				break;
-			case 0xFFFFFFB9 :		// ��
+			case 0x000000B9 :		// ��
 				tmp = Cplx_Evalsub8( SRC );
 				if ( tmp.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
 				result = Cplx_fDIV( result, tmp );
@@ -1447,10 +1447,10 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 			case 0x7F:
 				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFFBC:	// Int��
+					case 0x000000BC:	// Int��
 						result = Cplx_fIDIV( result, Cplx_Evalsub8( SRC ) );
 						break;
-					case 0xFFFFFFBD:	// Rmdr
+					case 0x000000BD:	// Rmdr
 						result = Cplx_fMOD( result, Cplx_Evalsub8( SRC ) );
 						break;
 					default:
@@ -1476,10 +1476,10 @@ complex Cplx_Evalsub11(char *SRC) {	//  11th Priority  ( +,- )
 	while ( 1 ) {
 		c = (unsigned char)SRC[ExecPtr++];
 		switch ( c ) {
-			case 0xFFFFFF89 :		// +
+			case 0x00000089 :		// +
 				result = Cplx_fADD( result, Cplx_Evalsub10( SRC ) );
 				break;
-			case 0xFFFFFF99 :		// -
+			case 0x00000099 :		// -
 				result = Cplx_fSUB( result, Cplx_Evalsub10( SRC ) );
 				break;
 			case ' ':	// Skip Space
@@ -1518,15 +1518,15 @@ complex Cplx_Evalsub12(char *SRC) {	//  12th Priority ( =,!=,><,>=,<= )
 			case 0x10 :	// <=
 				result = Cplx_fcmpLE( result,  Cplx_Evalsub11( SRC ) );
 				break;
-			case 0xFFFFFF9A :	// xor
+			case 0x0000009A :	// xor
 				result = Cplx_fXOR( result,  Cplx_Evalsub11( SRC ) );
 				break;
 			case '|' :	// or
-			case 0xFFFFFFAA :	// or
+			case 0x000000AA :	// or
 				result = Cplx_fOR( result,  Cplx_Evalsub11( SRC ) );
 				break;
 			case '&' :	// and
-			case 0xFFFFFFBA :	// and
+			case 0x000000BA :	// and
 				result = Cplx_fAND( result,  Cplx_Evalsub11( SRC ) );
 				break;
 			case ' ':	// Skip Space
@@ -1548,7 +1548,7 @@ complex Cplx_Evalsub13(char *SRC) {	//  13th Priority  ( And,and)
 		if ( c == 0x7F ) {
 			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
-				case 0xFFFFFFB0 :	// And
+				case 0x000000B0 :	// And
 					ExecPtr+=2;
 					result = Cplx_fAND_logic( result,  Cplx_Evalsub12( SRC ) );
 					break;
@@ -1570,11 +1570,11 @@ complex Cplx_Evalsub14(char *SRC) {	//  14th Priority  ( Or,Xor,or,xor,xnor )
 		if ( c == 0x7F ) {
 			c = (unsigned char)SRC[ExecPtr+1];
 			switch ( c ) {
-				case 0xFFFFFFB1 :	// Or
+				case 0x000000B1 :	// Or
 					ExecPtr+=2;
 					result = Cplx_fOR_logic( result,  Cplx_Evalsub13( SRC ) );
 					break;
-				case 0xFFFFFFB4 :	// Xor
+				case 0x000000B4 :	// Xor
 					ExecPtr+=2;
 					result = Cplx_fXOR_logic( result,  Cplx_Evalsub13( SRC ) );
 					break;

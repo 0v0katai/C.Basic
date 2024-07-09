@@ -71,12 +71,12 @@ void Help_Skip_cmmt( char *SRC, int *Ptr ){ // skip "..."
 				return ;
 			case 0x5C:		//  Backslash
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000F7:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+			case 0x000000FF:	// 
 				(*Ptr)++;
 				break;
 		}
@@ -99,12 +99,12 @@ void Help_Skip_block( char *SRC, int *Ptr ){
 				break;
 			case 0x5C:		//  Backslash
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000F7:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+			case 0x000000FF:	// 
 				(*Ptr)++;
 				break;
 		}
@@ -196,12 +196,12 @@ void CB_Help( int opcode, int yposflg ) {
 				break;
 			case 0x5C:		//  Backslash
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000F7:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+			case 0x000000FF:	// 
 				Ptr++;
 				break;
 		}
@@ -267,18 +267,18 @@ int Search_ExceptTryEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0x000000F7:	// 
 				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x38 ) return  c;	// Except
 				else
 				if ( c == 0x39 ) return  c;	// TryEnd
 				break ;
 			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -342,11 +342,11 @@ int CB_GetRGB( char *SRC, int mode ){	// GetRGB/HSV/HSL() -> ListAns
 	int pipe=mode & 0xF0;
 	mode &= 0x0F;
 	d = CB_EvalInt( SRC );
-	if ( SRC[ExecPtr] == ',' ) {
+	if ( (unsigned char)SRC[ExecPtr] == ',' ) {
 		c = (unsigned char)SRC[++ExecPtr];
 		if ( ( c == 'N' ) || ( c == 'N' ) ) { ExecPtr++; errorCheck=0; }
 	}
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 
 	b = ((d&0x001F) << 3);
 	g = ((d&0x07E0) >> 3);
@@ -404,7 +404,7 @@ unsigned short CB_RGB( char *SRC, int mode ) {	// n or (r,g,b)    return : color
 	if ( c=='#' ) { 	// direct 16bit color #12345
 		ExecPtr++;
 		r = CB_EvalInt( SRC );
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+		if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 		return r;
 	}
 	c=CB_RGBlistsub( SRC, &r, &g, &b );
@@ -414,12 +414,12 @@ unsigned short CB_RGB( char *SRC, int mode ) {	// n or (r,g,b)    return : color
 		r=CB_EvalInt( SRC );
 //		if ( r<  0 ) r=  0;
 //		if ( r>255 ) r=255;
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 		ExecPtr++;
 		g=CB_EvalInt( SRC );
 //		if ( g<  0 ) g=  0;
 //		if ( g>255 ) g=255;
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 		ExecPtr++;
 		b=CB_EvalInt( SRC );
 //		if ( b<  0 ) b=  0;
@@ -428,12 +428,12 @@ unsigned short CB_RGB( char *SRC, int mode ) {	// n or (r,g,b)    return : color
 		if ( c==4 ) { h=r; s=g; v=b; goto exithsv; }	// List
 		h=CB_EvalInt( SRC );
 		if ( ( h<0 ) || ( h>359 ) ) h = h%360;
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 		ExecPtr++;
 		s=CB_EvalInt( SRC );
 		if ( s<  0 ) s=  0;
 		if ( s>255 ) s=255;
-		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
+		if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 		ExecPtr++;
 		v=CB_EvalInt( SRC );
 		if ( v<  0 ) v=  0;
@@ -443,7 +443,7 @@ unsigned short CB_RGB( char *SRC, int mode ) {	// n or (r,g,b)    return : color
 	}
 	exithsv:
   exit:
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return 0;
 
 }
@@ -478,22 +478,22 @@ int CB_GetColor( char *SRC ){
 						break;
 				}
 				break;
-			case 0xFFFFFFF9:	// F9
+			case 0x000000F9:	// F9
 				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
-					case 0xFFFFFF9B :			// Black
+					case 0x0000009B :			// Black
 //						return 0x0000;	// Black
 						break;
-					case 0xFFFFFF9C :			// White
+					case 0x0000009C :			// White
 //						return 0xFFFF;	// White
 						break;
-					case 0xFFFFFF9D :			// Magenta
+					case 0x0000009D :			// Magenta
 //						return 0xF81F;	// Magenta
 						break;
-					case 0xFFFFFF9E :			// Cyan
+					case 0x0000009E :			// Cyan
 //						return 0x07FF;	// Cyan
 						break;
-					case 0xFFFFFF9F :			// Yellow
+					case 0x0000009F :			// Yellow
 //						return 0xFFE0;	// Yellow
 						break;
 					default:

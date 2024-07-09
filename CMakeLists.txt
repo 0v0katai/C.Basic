@@ -84,7 +84,8 @@ target_compile_options(CBFXGCC PRIVATE
                         -Wno-unused-but-set-variable
                         -Wno-unused-but-set-variable
                         -Wno-discarded-qualifiers
-                        -Wno-parentheses)
+                        -Wno-parentheses
+                        -Werror=type-limits)
 target_link_options(CBFXGCC PRIVATE
                         -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/addin.ld" -L ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(CBFXGCC PRIVATE -lfx -lgcc)

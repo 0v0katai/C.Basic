@@ -181,7 +181,7 @@ int CB_System( char *SRC ) {	// System( n )
 	int c = (unsigned char)SRC[ExecPtr];
 	int n = CB_EvalInt( SRC );
 	if ( n==10000 ) {	// load config data to ListAns   Ststem(10000,1) Ststem(10000,2) Ststem(10000,3)
-		if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+		if ( (unsigned char)SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 		ExecPtr++;
 		c = CB_EvalInt( SRC );
 		LoadConfig1data( c );
@@ -189,7 +189,7 @@ int CB_System( char *SRC ) {	// System( n )
 	}
 	r = System( n );
   exit:
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
 	return r;
 }
 

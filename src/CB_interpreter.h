@@ -414,7 +414,7 @@ int GetVarName( char *SRC, int *ptr, char *name, int *len );
 #define GRAPHLENMAX	64
 typedef struct {
 	char en;		// 
-	char type;
+	unsigned char type;
 	char style;			//
 	unsigned short color;	//
 	char gstr[GRAPHLENMAX];		//

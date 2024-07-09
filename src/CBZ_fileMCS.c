@@ -150,7 +150,7 @@ int MCS_SaveG1M( char *filebase ) {	// g1m file -> MCS
 
 	G1MHeaderTobasname8( filebase, basname);
 	size = FixSrcSize(filebase);
-	size = ( ( size +10 +3 ) & 0xFFFFFFFC ) ; // file size 4byte align adjust
+	size = ( ( size +10 +3 ) & 0x000000FC ) ; // file size 4byte align adjust
 	SetSrcSize( filebase, size ); 
 	r = MCS_Save( filebase, (char*)MCSdir_system, basname, size, 0xC7 ) ;	// g1m file -> MCS
 	return r;

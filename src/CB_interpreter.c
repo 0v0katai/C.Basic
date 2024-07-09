@@ -188,7 +188,7 @@ int CB_interpreter_sub( char *SRC ) {
 			if ( BreakPtr == -8 ) goto iend;
 			if ( CB_BreakStop() ) return -7 ;
 			if ( ( BreakPtr ==  0 ) && ( TryFlag ) ) goto except;
-			if ( SRC[ExecPtr] == 0x0C ) if ( ( ErrorNo==0 ) && ( DebugMode==0 ) ) ExecPtr++; // disps
+			if ( (unsigned char)SRC[ExecPtr] == 0x0C ) if ( ( ErrorNo==0 ) && ( DebugMode==0 ) ) ExecPtr++; // disps
 			ClrCahche();
 		}
 		c = (unsigned char)SRC[ExecPtr++];
@@ -211,20 +211,20 @@ int CB_interpreter_sub( char *SRC ) {
 //		while ( c==0x20 ) c = (unsigned char)SRC[ExecPtr++]; // Skip Space
 
 		switch (c) {
-			case 0xFFFFFFEC:	// Goto
+			case 0x000000EC:	// Goto
 				CB_Goto(SRC, StackGotoAdrs, &CurrentStruct );
 				break;
-			case 0xFFFFFFE8:	// Dsz
+			case 0x000000E8:	// Dsz
 				CB_Dsz(SRC) ;
 				break;
-			case 0xFFFFFFE9:	// Isz
+			case 0x000000E9:	// Isz
 				CB_Isz(SRC) ;
 				break;
-			case 0xFFFFFFE2:	// Lbl
+			case 0x000000E2:	// Lbl
 				CB_Lbl(SRC, StackGotoAdrs );
 				break;
 				
-			case 0xFFFFFFF7:	// F7
+			case 0x000000F7:	// F7
 				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x00:	// If
@@ -259,16 +259,16 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_Do(SRC, &CurrentStruct );
 //						ClrCahche();
 						break;
-					case 0xFFFFFFEA:	// Switch
+					case 0x000000EA:	// Switch
 						CB_Switch(SRC, &CurrentStruct, &CacheSwitch );
 						break;
-					case 0xFFFFFFEB:	// Case
+					case 0x000000EB:	// Case
 						CB_Case(SRC, &CurrentStruct );
 						break;
-					case 0xFFFFFFEC:	// Default
+					case 0x000000EC:	// Default
 						CB_Default(SRC, &CurrentStruct );
 						break;
-					case 0xFFFFFFED:	// SwitchEnd
+					case 0x000000ED:	// SwitchEnd
 						CB_SwitchEnd(SRC, &CurrentStruct );
 						break;
 					case 0x0D:	// Break
@@ -295,61 +295,61 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_Locate(SRC);
 						dspflag=1;
 						break;
-					case 0xFFFFFFE4:	// Disp
+					case 0x000000E4:	// Disp
 						CB_Disp(SRC);
 						dspflag=1;
 						break;
-					case 0xFFFFFFA5:	// Text
+					case 0x000000A5:	// Text
 						dspflag=0;
 						CB_Text(SRC);
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFAB:	// PxlOn
+					case 0x000000AB:	// PxlOn
 						if (CB_INT==1)	CBint_PxlSub(SRC,1); else CB_PxlSub(SRC,1);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFAC:	// PxlOff
+					case 0x000000AC:	// PxlOff
 						if (CB_INT==1)	CBint_PxlSub(SRC,0); else CB_PxlSub(SRC,0);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFAD:	// PxlChg
+					case 0x000000AD:	// PxlChg
 						if (CB_INT==1)	CBint_PxlSub(SRC,2); else CB_PxlSub(SRC,2);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFA8:	// PlotOn
+					case 0x000000A8:	// PlotOn
 						CB_PlotSub(SRC,1);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFA9:	// PlotOff
+					case 0x000000A9:	// PlotOff
 						CB_PlotSub(SRC,0);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFAA:	// PlotChg
+					case 0x000000AA:	// PlotChg
 						CB_PlotSub(SRC,2);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFA7:	// F-Line
+					case 0x000000A7:	// F-Line
 						CB_FLine(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFA3:	// Vertical
+					case 0x000000A3:	// Vertical
 						CB_Vertical(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFA4:	// Horizontal
+					case 0x000000A4:	// Horizontal
 						CB_Horizontal(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFA6:	// Circle
+					case 0x000000A6:	// Circle
 						CB_Circle(SRC);
 						dspflag=0;
 						UseGraphic=9;
@@ -362,56 +362,56 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_ClrGraph(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFE1:	// Rect
+					case 0x000000E1:	// Rect
 						CB_Rect(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFE2:	// FillRect
+					case 0x000000E2:	// FillRect
 						CB_FillRect(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFE3:	// LocateYX
+					case 0x000000E3:	// LocateYX
 						CB_LocateYX(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFE9:	// WriteGraph
+					case 0x000000E9:	// WriteGraph
 						CB_WriteGraph(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFFE8:	// ReadGraph
+					case 0x000000E8:	// ReadGraph
 						CB_ReadGraph(SRC);
 						dspflag=0;
 						UseGraphic=9;
 						break;
-//					case 0xFFFFFFF0:	// DotShape(
+//					case 0x000000F0:	// DotShape(
 //						CB_DotShape(SRC);
 //						dspflag=0;
 //						UseGraphic=9;
 //						break;
-					case 0xFFFFFFFC:	// PutDispDD
+					case 0x000000FC:	// PutDispDD
 						CB_PutDispDD(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFFD:	// Fkeyfunc(
+					case 0x000000FD:	// Fkeyfunc(
 						CB_FkeyMenu( SRC );
 						dspflag=0;
 						break;
-					case 0xFFFFFFFB:	// Screen
+					case 0x000000FB:	// Screen
 						CB_Screen(SRC);
 						break;
-					case 0xFFFFFFF1:	// Local
+					case 0x000000F1:	// Local
 						Skip_block(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFF6:	// Poke
+					case 0x000000F6:	// Poke
 						CB_Poke(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFDD:	// Beep
+					case 0x000000DD:	// Beep
 						CB_Beep(SRC);
 						dspflag=0;
 						break;
@@ -423,7 +423,7 @@ int CB_interpreter_sub( char *SRC ) {
 						CB_DotGet(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFE0:	// DotLife(
+					case 0x000000E0:	// DotLife(
 						CB_DotLife(SRC);
 						dspflag=0;
 						break;
@@ -442,27 +442,27 @@ int CB_interpreter_sub( char *SRC ) {
 						UseGraphic=2;
 						dspflag=0;
 						break;
-					case 0xFFFFFF9E:	// Menu
+					case 0x0000009E:	// Menu
 						CB_Menu( SRC, StackGotoAdrs, &CurrentStruct );
 						dspflag=0;
 						break;
-					case 0xFFFFFFEE:	// Save
+					case 0x000000EE:	// Save
 						CB_Save(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFEF:	// Load(
+					case 0x000000EF:	// Load(
 						CB_Load(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFF8:	// RefreshCtrl
+					case 0x000000F8:	// RefreshCtrl
 						CB_RefreshCtrl(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFFA:	// RefreshTime
+					case 0x000000FA:	// RefreshTime
 						CB_RefreshTime(SRC);
 						dspflag=0;
 						break;
-					case 0xFFFFFFFE:	// BackLight
+					case 0x000000FE:	// BackLight
 						BackLight( CB_EvalInt( SRC ) );
 						dspflag=0;
 						break;
@@ -489,7 +489,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x2E:			// DispF-Tbl
 						CB_DispF_Tbl( SRC );
 						break;
-					case 0xFFFFFF88:	// VarRange
+					case 0x00000088:	// VarRange
 						CB_VarRange( SRC );
 						break;
 					
@@ -497,10 +497,10 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x2C:			// ThickG
 					case 0x2D:			// BrokenThickG
 					case 0x3F:			// DotG
-					case 0xFFFFFFC8:	// G SelOn
-					case 0xFFFFFFC9:	// T SelOn
-					case 0xFFFFFFD8:	// G SelOff
-					case 0xFFFFFFD9:	// T SelOff
+					case 0x000000C8:	// G SelOn
+					case 0x000000C9:	// T SelOn
+					case 0x000000D8:	// G SelOff
+					case 0x000000D9:	// T SelOff
 					case 0x63:			// Y=Type
 					case 0x64:			// r=Type
 					case 0x65:			// ParamType
@@ -518,7 +518,7 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 
 					case 0x17:	// ACBreak
-						if ( ( SRC[ExecPtr]==0xFFFFFFF7 ) && ( SRC[ExecPtr+1]==0x0E ) ) {	// ACBreak Stop;
+						if ( ( (unsigned char)SRC[ExecPtr]==0x000000F7 ) && ( (unsigned char)SRC[ExecPtr+1]==0x0E ) ) {	// ACBreak Stop;
 							ExecPtr+=2;
 							ACBreak=0;
 							break;
@@ -533,7 +533,7 @@ int CB_interpreter_sub( char *SRC ) {
 						BreakPtr=-8;	// program end
 						break;
 					default:
-						if ( ( ( 0x11 <= c ) && ( c <=0x7D ) ) || ( ( 0xFFFFFF8C <= c ) && ( c <=0xFFFFFFDF ) ) ) { 
+						if ( ( ( 0x11 <= c ) && ( c <=0x7D ) ) || ( ( 0x0000008C <= c ) && ( c <=0x000000DF ) ) ) { 
 							if ( CB_F7sub( SRC, c ) ) { dspflag=0; break; }
 						}
 						goto Evalexit2;
@@ -544,11 +544,11 @@ int CB_interpreter_sub( char *SRC ) {
 				c = (unsigned char)SRC[ExecPtr++];
 				switch ( c ) {
 					case 0x40:	// Mat
-					case 0xFFFFFF84:	// Vct
+					case 0x00000084:	// Vct
 						dspflagtmp=CB_MatCalc(SRC,c);
 						if ( dspflagtmp ) goto Evalexit2;
 						break;
-					case 0xFFFFFFF0:	// GraphY
+					case 0x000000F0:	// GraphY
 						goto fnjmp;
 					case 0x51:	// List
 					case 0x6A:	// List1
@@ -591,13 +591,13 @@ int CB_interpreter_sub( char *SRC ) {
 				}
 				break;
 				
-			case 0xFFFFFFF9:	// F9
+			case 0x000000F9:	// F9
 				c = (unsigned char)SRC[ExecPtr++];
-				if ( ( 0xFFFFFFC0 <= c ) && ( c <= 0xFFFFFFDF ) && ( c != 0xFFFFFFC6 ) && ( c != 0xFFFFFFD8 ) ) { CB_ML_command( SRC, c ); break; }
+				if ( ( 0x000000C0 <= c ) && ( c <= 0x000000DF ) && ( c != 0x000000C6 ) && ( c != 0x000000D8 ) ) { CB_ML_command( SRC, c ); break; }
 				else
 				if ( ( 0x38 != c ) && ( 0x3E != c ) && ( 0x34 <= c ) && ( c <= 0x49 ) )  goto strjp;
 				else
-				if ( ( 0xFFFFFF98 <= c ) && ( c <= 0xFFFFFF9F ) ) break;	// color command   Black/(White)/Magenta/Cyan/Yellow
+				if ( ( 0x00000098 <= c ) && ( c <= 0x0000009F ) ) break;	// color command   Black/(White)/Magenta/Cyan/Yellow
 				switch ( c ) {
 					case 0x1B:	// fn
 					  fnjmp:
@@ -627,23 +627,23 @@ int CB_interpreter_sub( char *SRC ) {
 //						dspflag=0;
 						break;
 
-					case 0xFFFFFF9B :			// Black
-					case 0xFFFFFF9C :			// White
-					case 0xFFFFFF9D :			// Magenta
-					case 0xFFFFFF9E :			// Cyan
-					case 0xFFFFFF9F :			// Yellow
-					case 0xFFFFFF9A:			// AxesScale
+					case 0x0000009B :			// Black
+					case 0x0000009C :			// White
+					case 0x0000009D :			// Magenta
+					case 0x0000009E :			// Cyan
+					case 0x0000009F :			// Yellow
+					case 0x0000009A:			// AxesScale
 					case 0x7D :					// ColorClr
-					case 0xFFFFFFF4:			// S-L-Thin
-					case 0xFFFFFFF3:			// SketchThin
+					case 0x000000F4:			// S-L-Thin
+					case 0x000000F3:			// SketchThin
 						break;
-					case 0xFFFFFF99 :			// Plot/Line-Color
+					case 0x00000099 :			// Plot/Line-Color
 						CB_PlotLineColor( SRC );
 						break;
-					case 0xFFFFFFBE :			// Back-Color
+					case 0x000000BE :			// Back-Color
 						CB_BackColor( SRC );
 						break;
-					case 0xFFFFFFBF :			// Transp-Color
+					case 0x000000BF :			// Transp-Color
 						CB_TransparentColor( SRC );
 						break;
 						
@@ -665,7 +665,7 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0x0B:	// EngOn
 						ENG=1;
-						if ( SRC[ExecPtr]=='3' ) { ExecPtr++; ENG=3; } // 3 digit separate
+						if ( (unsigned char)SRC[ExecPtr]=='3' ) { ExecPtr++; ENG=3; } // 3 digit separate
 						dspflag=0;
 						break;
 					case 0x0C:	// EngOff
@@ -702,8 +702,8 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFF98:	// SetG-Color
-					case 0xFFFFFFF5:	// ThinG
+					case 0x00000098:	// SetG-Color
+					case 0x000000F5:	// ThinG
 						CB_GraphFunc(SRC,c);
 						break;
 
@@ -719,85 +719,85 @@ int CB_interpreter_sub( char *SRC ) {
 				break;
 				
 			case 0x27:	// ' rem
-				if ( SRC[ExecPtr] == '/' ) { ExecPtr++; break; }	// '/ execute only C.Basic 
+				if ( (unsigned char)SRC[ExecPtr] == '/' ) { ExecPtr++; break; }	// '/ execute only C.Basic 
 				CB_Rem(SRC, &CacheRem );
 //				dspflag=0;
 				break;
-			case 0xFFFFFFED:	// Prog "..."
+			case 0x000000ED:	// Prog "..."
 				CB_Prog(SRC, localvarInt, localvarDbl );
 				ClrCahche();
 				if ( BreakPtr > 0 ) return BreakPtr;
 				goto jpgsb;
-			case 0xFFFFFFFA:	// Gosub
+			case 0x000000FA:	// Gosub
 				CB_Gosub(SRC, StackGotoAdrs, StackGosubAdrs );
 		jpgsb:	dspflagtmp=dspflag;
 				break;
-			case 0xFFFFFFD1:	// Cls
+			case 0x000000D1:	// Cls
 				CB_Cls(SRC);
 				dspflag=0;
 				break;
-			case 0xFFFFFFE0:	// Plot
+			case 0x000000E0:	// Plot
 				CB_Plot(SRC);
 				dspflag=0;
 				UseGraphic=1;
 				break;
-			case 0xFFFFFFE1:	// Line
+			case 0x000000E1:	// Line
 				CB_Line(SRC);
 				UseGraphic=9;
 				dspflag=0;
 				break;
-			case 0xFFFFFFDA:	// Deg
+			case 0x000000DA:	// Deg
 				Angle = 0;
 				dspflag=0;
 				break;
-			case 0xFFFFFFDB:	// Rad
+			case 0x000000DB:	// Rad
 				Angle = 1;
 				dspflag=0;
 				break;
-			case 0xFFFFFFDC:	// Grad
+			case 0x000000DC:	// Grad
 				Angle = 2;
 				dspflag=0;
 				break;
 				
-			case 0xFFFFFFDD:	// Eng
+			case 0x000000DD:	// Eng
 				if ( ENG ) ENG=0; else ENG=1;
 				dspflag=0;
 				break;
-			case 0xFFFFFFD3:	// Rnd
+			case 0x000000D3:	// Rnd
 				CB_Rnd();
 				dspflagtmp=2;
 				break;
-			case 0xFFFFFFD9:	// Norm
+			case 0x000000D9:	// Norm
 				CBint_CurrentValue = CB_Norm(SRC);
 				goto retvalue;
 				break;
-			case 0xFFFFFFE3:	// Fix
+			case 0x000000E3:	// Fix
 				CBint_CurrentValue = CB_Fix(SRC);
 				goto retvalue;
 				break;
-			case 0xFFFFFFE4:	// Sci
+			case 0x000000E4:	// Sci
 				CBint_CurrentValue = CB_Sci(SRC);
 			  retvalue:
 				CB_CurrentValue    = Int2Cplx( CBint_CurrentValue );
 				dspflagtmp=2;
 				break;
-			case 0xFFFFFFEB:	// ViewWindow
+			case 0x000000EB:	// ViewWindow
 				CB_ViewWindow(SRC);
 				dspflag=0;
 				UseGraphic=3;
 				break;
-			case 0xFFFFFFEE:	// Graph Y=
-			case 0xFFFFFFEF:	// Graph Integral
-			case 0xFFFFFFF0:	// Graph Y>
-			case 0xFFFFFFF1:	// Graph Y<
-			case 0xFFFFFFF2:	// Graph Y>=
-			case 0xFFFFFFF3:	// Graph Y<=
-			case 0xFFFFFFF4:	// Graph r=
+			case 0x000000EE:	// Graph Y=
+			case 0x000000EF:	// Graph Integral
+			case 0x000000F0:	// Graph Y>
+			case 0x000000F1:	// Graph Y<
+			case 0x000000F2:	// Graph Y>=
+			case 0x000000F3:	// Graph Y<=
+			case 0x000000F4:	// Graph r=
 				CB_GraphY(SRC);
 				dspflag=0;
 				UseGraphic=2;
 				break;
-			case 0xFFFFFFF5:	// Graph(X,Y)=(
+			case 0x000000F5:	// Graph(X,Y)=(
 				CB_GraphXY(SRC);
 				dspflag=0;
 				UseGraphic=9;
@@ -853,7 +853,7 @@ int CB_interpreter_sub( char *SRC ) {
 				if (c==0x13) goto inext2;
 				if ( (c==':')||(c==0x0D) ) goto inext3;
 				if ( (c==0x0C)||(c==0x00) ) goto inext3;
-				if ( c==0xFFFFFFF9 ) {
+				if ( c==0x000000F9 ) {
 					c = (unsigned char)SRC[ExecPtr+1];
 					if ( (0x05<=c)&&(c<=0x07) ) { ExecPtr+=2; goto inext3; }	// >DMS // >a+bi // >r_theta
 				}
@@ -979,78 +979,78 @@ int CB_F7sub( char *SRC, int c ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
-					case 0xFFFFFF93:	// StoPict
+					case 0x00000093:	// StoPict
 						CB_StoPict(SRC);
 						UseGraphic=9;
 						break;
-					case 0xFFFFFF94:	// RclPict
+					case 0x00000094:	// RclPict
 						CB_RclPict(SRC);
 						UseGraphic=9;
 						break;
-					case 0xFFFFFF9D:	// StoCapt
+					case 0x0000009D:	// StoCapt
 						CB_StoCapt( SRC );
 						UseGraphic=9;
 						break;
-					case 0xFFFFFF9F:	// RclCapt
+					case 0x0000009F:	// RclCapt
 						CB_RclCapt( SRC );
 						UseGraphic=9;
 						break;
-					case 0xFFFFFF8C:	// SketchNormal
+					case 0x0000008C:	// SketchNormal
 						tmp_Style = S_L_Normal;
 						break;
-					case 0xFFFFFF8D:	// SketchThick
+					case 0x0000008D:	// SketchThick
 						tmp_Style = S_L_Thick;
 						break;
-					case 0xFFFFFF8E:	// SketchBroken
+					case 0x0000008E:	// SketchBroken
 						tmp_Style = S_L_Broken;
 						break;
-					case 0xFFFFFF8F:	// SketchDot
+					case 0x0000008F:	// SketchDot
 						tmp_Style = S_L_Dot;
 						break;
-					case 0xFFFFFF97:	// Sto-VWin
+					case 0x00000097:	// Sto-VWin
 						CB_StoVWin(SRC);
 						break;
-					case 0xFFFFFF98:	// Rcl-VWin
+					case 0x00000098:	// Rcl-VWin
 						CB_RclVWin(SRC);
 						break;
-					case 0xFFFFFFB0:	// SortA(
+					case 0x000000B0:	// SortA(
 						CB_SortAD(SRC, 1);
 						break;
-					case 0xFFFFFFB1:	// SortD(
+					case 0x000000B1:	// SortD(
 						CB_SortAD(SRC, 0);
 						break;
-					case 0xFFFFFFC2:	// AxesOn
+					case 0x000000C2:	// AxesOn
 						Axes=1;
 						break;
-					case 0xFFFFFFC3:	// CoordOn
+					case 0x000000C3:	// CoordOn
 						Coord=1;
 						break;
-					case 0xFFFFFFC4:	// LabelOn
+					case 0x000000C4:	// LabelOn
 						Label=1;
 						break;
-					case 0xFFFFFFC5:	// DerivOn
+					case 0x000000C5:	// DerivOn
 						Derivative=1;
 						break;
-					case 0xFFFFFFD2:	// AxesOff
+					case 0x000000D2:	// AxesOff
 						Axes=0;
 						break;
-					case 0xFFFFFFD3:	// CoordOff
+					case 0x000000D3:	// CoordOff
 						Coord=0;
 						break;
-					case 0xFFFFFFD5:	// DerivOff
+					case 0x000000D5:	// DerivOff
 						Derivative=0;
 						break;
-					case 0xFFFFFFD4:	// LabelOff
+					case 0x000000D4:	// LabelOff
 						Label=0;
-					case 0xFFFFFFC0:	// FunOn
-					case 0xFFFFFFD0:	// FunOFF
-					case 0xFFFFFFD1:	// SimulOff
+					case 0x000000C0:	// FunOn
+					case 0x000000D0:	// FunOFF
+					case 0x000000D1:	// SimulOff
 						break;
-					case 0xFFFFFFDF:	// Delete
+					case 0x000000DF:	// Delete
 						CB_Delete( SRC );
 						break;
 					default:
-						if ( ( 0xFFFFFFB8 <= c )&& ( c <= 0xFFFFFFBD ) ) { CB_ListFile(SRC); dspflag=0; break; }	// File1~File6
+						if ( ( 0x000000B8 <= c )&& ( c <= 0x000000BD ) ) { CB_ListFile(SRC); dspflag=0; break; }	// File1~File6
 						return 0;
 	}
 	return 1;
@@ -1108,12 +1108,12 @@ void Skip_block( char *SRC ){
 				Skip_quot(SRC);
 				break;
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F7:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1136,12 +1136,12 @@ void Skip_quot( char *SRC ){ // skip "..."
 					return ;
 					break;
 				case 0x7F:	// 
-				case 0xFFFFFFF7:	// 
-				case 0xFFFFFFF9:	// 
-				case 0xFFFFFFE5:	// 
-				case 0xFFFFFFE6:	// 
-				case 0xFFFFFFE7:	// 
-//				case 0xFFFFFFFF:	// 
+				case 0x000000F7:	// 
+				case 0x000000F9:	// 
+				case 0x000000E5:	// 
+				case 0x000000E6:	// 
+				case 0x000000E7:	// 
+//				case 0x000000FF:	// 
 					ExecPtr++;
 					break;
 			}
@@ -1159,12 +1159,12 @@ void Skip_quot( char *SRC ){ // skip "..."
 					return ;
 					break;
 				case 0x7F:	// 
-				case 0xFFFFFFF7:	// 
-				case 0xFFFFFFF9:	// 
-				case 0xFFFFFFE5:	// 
-				case 0xFFFFFFE6:	// 
-				case 0xFFFFFFE7:	// 
-//				case 0xFFFFFFFF:	// 
+				case 0x000000F7:	// 
+				case 0x000000F9:	// 
+				case 0x000000E5:	// 
+				case 0x000000E6:	// 
+				case 0x000000E7:	// 
+//				case 0x000000FF:	// 
 					ExecPtr++;
 					break;
 			}
@@ -1195,16 +1195,16 @@ remloop:
 				if ( ( c=='d' ) || ( c=='D' ) || ( c=='a' ) || ( c=='A' ) ) CB_INT=0;
 			}
 		} else
-		if ( c==0xFFFFFFF9 ) {
+		if ( c==0x000000F9 ) {
 			c = (unsigned char)SRC[ExecPtr++];
 			if ( c==0x3F ) {	// Str
 				reg=RegVarAliasEx(SRC);
 				if ( reg>=0 ) {
 					defaultStrAry= reg;
-					if ( SRC[ExecPtr] == ',') {
+					if ( (unsigned char)SRC[ExecPtr] == ',') {
 						c = (unsigned char)SRC[++ExecPtr];
 						defaultStrAryN=CB_EvalInt( SRC );
-						if ( SRC[ExecPtr] == ',') {
+						if ( (unsigned char)SRC[ExecPtr] == ',') {
 							c = (unsigned char)SRC[++ExecPtr];
 							defaultStrArySize=CB_EvalInt( SRC );
 						}
@@ -1217,10 +1217,10 @@ remloop:
 				reg=RegVarAliasEx(SRC);
 				if ( reg>=0 ) {
 					defaultFnAry= reg;
-					if ( SRC[ExecPtr] == ',') {
+					if ( (unsigned char)SRC[ExecPtr] == ',') {
 						c = (unsigned char)SRC[++ExecPtr];
 						defaultFnAryN=CB_EvalInt( SRC );
-						if ( SRC[ExecPtr] == ',') {
+						if ( (unsigned char)SRC[ExecPtr] == ',') {
 							c = (unsigned char)SRC[++ExecPtr];
 							defaultFnArySize=CB_EvalInt( SRC );
 						}
@@ -1229,7 +1229,7 @@ remloop:
 				}
 			} else { c = (unsigned char)SRC[ExecPtr++]; }
 		} else
-		if ( c==0xFFFFFFF7 ) {
+		if ( c==0x000000F7 ) {
 			c = (unsigned char)SRC[ExecPtr++];
 			if ( c==0x0D ) {	// Break
 				c = (unsigned char)SRC[ExecPtr++];
@@ -1251,14 +1251,14 @@ remloop:
 		} else
 		if ( c==0x7F ) {
 			c = (unsigned char)SRC[ExecPtr++];
-			if ( c==0xFFFFFFF0 ) {	// Graph
+			if ( c==0x000000F0 ) {	// Graph
 				reg=RegVarAliasEx(SRC);
 				if ( reg>=0 ) {
 					defaultGraphAry= reg;
-					if ( SRC[ExecPtr] == ',') {
+					if ( (unsigned char)SRC[ExecPtr] == ',') {
 						c = (unsigned char)SRC[++ExecPtr];
 						defaultGraphAryN=CB_EvalInt( SRC );
-						if ( SRC[ExecPtr] == ',') {
+						if ( (unsigned char)SRC[ExecPtr] == ',') {
 							c = (unsigned char)SRC[++ExecPtr];
 							defaultGraphArySize=CB_EvalInt( SRC );
 						}
@@ -1272,7 +1272,7 @@ remloop:
 					MatBase= c-'0' ;
 				}
 			} else
-			if ( c==0xFFFFFF8F ) {	// GetKey
+			if ( c==0x0000008F ) {	// GetKey
 				c = (unsigned char)SRC[ExecPtr++];
 				if ( ( c=='R' ) || ( c=='r' ) ) {
 					if ( TimeDsp ) TimeDsp |= 0x2 ; // on  reset GetKey1/2 
@@ -1292,21 +1292,21 @@ remloop:
 			case 0x0C:	// dsps
 				return ;
 			case 0x0D:	// <CR>
-				if ( SRC[ExecPtr] == 0x27 ) { ExecPtr++; goto remloop; }
+				if ( (unsigned char)SRC[ExecPtr] == 0x27 ) { ExecPtr++; goto remloop; }
 				return;
 			case 0x22:	// "
 				Skip_quot(SRC);
 				break;
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
+			case 0x000000F7:	// 
+			case 0x000000F9:	// 
 				c = (unsigned char)SRC[ExecPtr++];
-				if ( ( c!=0x0F ) || ( SRC[ExecPtr]!=0xFFFFFFE2 ) )  break;
+				if ( ( c!=0x0F ) || ( (unsigned char)SRC[ExecPtr]!=0x000000E2 ) )  break;
 				// Alias Lbl skip
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1361,9 +1361,9 @@ int CB_CheckLbl( char * SRC ){
 	} else if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		ExecPtr++;
 		return  c-'A'+10;
-	} else 	if ( ( c == 0xFFFFFFCD ) || ( c == 0xFFFFFFCE ) ) {	// <r> or Theta
+	} else 	if ( ( c == 0x000000CD ) || ( c == 0x000000CE ) ) {	// <r> or Theta
 		ExecPtr++;
-		return  c-0xFFFFFFCD+10+26;
+		return  c-0x000000CD+10+26;
 	} else if ( ( c=='_' ) ) {	// Alias Lbl
 		ExecPtr++;
 		if ( GetVarName( SRC, &ExecPtr, name, &len) ) {
@@ -1409,20 +1409,20 @@ int Search_Lbl( char *SRC, int lc ){
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0xFFFFFFE2:	// Lbl
+			case 0x000000E2:	// Lbl
 				c = CB_CheckLbl( SRC );
 				if ( c == lc ) return 1 ;
 				break;
-			case 0xFFFFFFF9:	// 
+			case 0x000000F9:	// 
 				c = (unsigned char)SRC[ExecPtr++];
-				if ( ( c!=0x0F ) || ( SRC[ExecPtr]!=0xFFFFFFE2 ) )  break;
+				if ( ( c!=0x0F ) || ( (unsigned char)SRC[ExecPtr]!=0x000000E2 ) )  break;
 				// Alias Lbl skip
 			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-			case 0xFFFFFFFF:	// 
+			case 0x000000F7:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1554,7 +1554,7 @@ void Search_IfEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0x000000F7:	// 
 				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) { 			// If
 					Search_IfEnd(SRC);
@@ -1563,11 +1563,11 @@ void Search_IfEnd( char *SRC ){
 				if ( c == 0x03 ) return  ;	// IfEnd
 				break ;
 			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1589,7 +1589,7 @@ int Search_ElseIfEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0x000000F7:	// 
 				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) {			// If
 					Search_IfEnd(SRC);
@@ -1602,11 +1602,11 @@ int Search_ElseIfEnd( char *SRC ){
 				if ( c == 0x0F ) return c ; 	// ElseIf
 				break;
 			case 0x0000007F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1622,7 +1622,7 @@ void CB_If( char *SRC, CchIf *Cache ){
 	c = (unsigned char)SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c = (unsigned char)SRC[++ExecPtr]; while ( c==' ' ) c = (unsigned char)SRC[++ExecPtr]; }
 	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c = (unsigned char)SRC[ExecPtr]; while ( c==' ' ) c = (unsigned char)SRC[++ExecPtr]; }
-	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
+	if ( ( c == 0x000000F7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
 	if ( judge ) return ; // true
 	
 	j=0; i=Cache->TOP;
@@ -1695,7 +1695,7 @@ int Search_Next( char *SRC ){
 			case 0x13:	// =>
 				Skip_block(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0x000000F7:	// 
 				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) { 		// If
 					Search_IfEnd(SRC);
@@ -1708,11 +1708,11 @@ int Search_Next( char *SRC ){
 				}
 				break;
 			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1731,17 +1731,17 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 		expbuf=ExecPtr;
 		reg=RegVarAliasEx(SRC);
 		if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
-		if ( SRC[ExecPtr] == '#' ) { CB_CurrentValue.real = CBint_CurrentValue; goto forDBL; }
+		if ( (unsigned char)SRC[ExecPtr] == '#' ) { CB_CurrentValue.real = CBint_CurrentValue; goto forDBL; }
 	  forINT:
 		ExecPtr=expbuf;
 		CurrentStruct->Var[CurrentStruct->ForPtr]=LocalInt[reg];
 		CBint_Store(SRC);
 		c = (unsigned char)SRC[ExecPtr];
-		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		if ( ( c != 0x000000F7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
 		CurrentStruct->IntEnd[CurrentStruct->ForPtr] = CB_EvalInt( SRC );
 		c = (unsigned char)SRC[ExecPtr];
-		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
+		if ( ( c == 0x000000F7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
 			CurrentStruct->IntStep[CurrentStruct->ForPtr] = CB_EvalInt( SRC );
 		} else {
@@ -1772,18 +1772,18 @@ void CB_For( char *SRC ,CurrentStk *CurrentStruct ){
 		expbuf=ExecPtr;
 		reg=RegVarAliasEx(SRC);
 		if ( reg<0 ) { CB_Error(SyntaxERR); return; }	// Syntax error
-		if ( SRC[ExecPtr] == '%' ) { CBint_CurrentValue = CB_CurrentValue.real; goto forINT; }
+		if ( (unsigned char)SRC[ExecPtr] == '%' ) { CBint_CurrentValue = CB_CurrentValue.real; goto forINT; }
 	 forDBL:
 		ExecPtr=expbuf;
 		CurrentStruct->Var[CurrentStruct->ForPtr]=(int*)LocalDbl[reg];
 		CB_CurrentValue.imag = 0;
 		CB_Store(SRC);
 		c = (unsigned char)SRC[ExecPtr];
-		if ( ( c != 0xFFFFFFF7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		if ( ( c != 0x000000F7 ) || ( SRC[ExecPtr+1] != 0x05 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
 		ExecPtr+=2;
 		CurrentStruct->End[CurrentStruct->ForPtr] = CB_EvalDbl( SRC );
 		c = (unsigned char)SRC[ExecPtr];
-		if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
+		if ( ( c == 0x000000F7 ) && ( SRC[ExecPtr+1] == 0x06 ) ) {	// Step
 			ExecPtr+=2;
 			CurrentStruct->Step[CurrentStruct->ForPtr] = CB_EvalDbl( SRC );
 		} else {
@@ -1882,7 +1882,7 @@ int Search_WhileEnd( char *SRC ){
 			case 0x13:	// =>
 				Skip_block(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0x000000F7:	// 
 				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) {		// If
 					Search_IfEnd(SRC);
@@ -1895,11 +1895,11 @@ int Search_WhileEnd( char *SRC ){
 				}
 				break;
 			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -1923,7 +1923,7 @@ int Search_LpWhile( char *SRC ){
 			case 0x13:	// =>
 				Skip_block(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
+			case 0x000000F7:	// 
 				c = (unsigned char)SRC[ExecPtr++];
 				if ( c == 0x00 ) {		// If
 					Search_IfEnd(SRC);
@@ -1936,11 +1936,11 @@ int Search_LpWhile( char *SRC ){
 				}
 				break;
 			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -2029,18 +2029,18 @@ int Search_SwitchEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
-				if ( SRC[ExecPtr] == 0xFFffFFEA ) { ExecPtr++;				// Switch
+			case 0x000000F7:	// 
+				if ( (unsigned char)SRC[ExecPtr] == 0x000000EA ) { ExecPtr++;				// Switch
 					Search_SwitchEnd(SRC);
 					break;
 				}
-				if ( SRC[ExecPtr] == 0xFFFFFFED ) { ExecPtr++; return 1; }	// SwitchEnd
+				if ( (unsigned char)SRC[ExecPtr] == 0x000000ED ) { ExecPtr++; return 1; }	// SwitchEnd
 			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -2061,20 +2061,20 @@ int Search_CaseEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0xFFFFFFF7:	// 
-				if ( SRC[ExecPtr] == 0xFFffFFEA ) { ExecPtr++;				// Switch
+			case 0x000000F7:	// 
+				if ( (unsigned char)SRC[ExecPtr] == 0x000000EA ) { ExecPtr++;				// Switch
 					Search_SwitchEnd(SRC);
 					break;
 				}
-				if ( SRC[ExecPtr] == 0xFFFFFFED ) { ExecPtr--; return 1; }	// SwitchEnd
-				if ( SRC[ExecPtr] == 0xFFFFFFEB ) { ExecPtr--; return 2; }	// Case
-				if ( SRC[ExecPtr] == 0xFFFFFFEC ) { ExecPtr--; return 3; }	// Default
+				if ( (unsigned char)SRC[ExecPtr] == 0x000000ED ) { ExecPtr--; return 1; }	// SwitchEnd
+				if ( (unsigned char)SRC[ExecPtr] == 0x000000EB ) { ExecPtr--; return 2; }	// Case
+				if ( (unsigned char)SRC[ExecPtr] == 0x000000EC ) { ExecPtr--; return 3; }	// Default
 			case 0x7F:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
+			case 0x000000F9:	// 
+			case 0x000000E5:	// 
+			case 0x000000E6:	// 
+			case 0x000000E7:	// 
+//			case 0x000000FF:	// 
 				ExecPtr++;
 				break;
 		}
@@ -2247,7 +2247,7 @@ void CB_Dsz( char *SRC ) { //	Dsz
 			CB_CurrentValue = LocalDbl[reg][0] ;
 		}
 	} else 
-	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
+	if ( ( c==0x7F ) && ( ( (unsigned char)SRC[ExecPtr+1]==0x40 ) || ( (unsigned char)SRC[ExecPtr+1]==0x00000084 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -2314,7 +2314,7 @@ void CB_Isz( char *SRC ) { //	Isz
 			CB_CurrentValue = LocalDbl[reg][0] ;
 		}
 	} else 
-	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
+	if ( ( c==0x7F ) && ( ( (unsigned char)SRC[ExecPtr+1]==0x40 ) || ( (unsigned char)SRC[ExecPtr+1]==0x00000084 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
 			if ( ErrorNo ) {  // error
@@ -2398,7 +2398,7 @@ void CB_Store( char *SRC ){	// ->
 			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			Matrix0:
-			if ( SRC[ExecPtr] != '[' ) { 
+			if ( (unsigned char)SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ); MatdspNo=reg;  return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatSub( reg, CB_CurrentValue);		// 10 -> Mat A
@@ -2413,7 +2413,7 @@ void CB_Store( char *SRC ){	// ->
 				}
 				if ( CB_INT==0) WriteMatrix( reg, dimA, dimB, CB_CurrentValue.real); else Cplx_WriteMatrix( reg, dimA, dimB, CB_CurrentValue);
 			}
-		} else if ( c==0xFFFFFF84 ) {	//  Vct A[a,b]
+		} else if ( c==0x00000084 ) {	//  Vct A[a,b]
 			ExecPtr+=2;
 			reg=VctRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 			goto Matrix0;
@@ -2421,7 +2421,7 @@ void CB_Store( char *SRC ){	// ->
 			ExecPtr+=2;
 			reg=ListRegVar( SRC );
 		  Listj:
-			if ( SRC[ExecPtr] != '[' ) { 
+			if ( (unsigned char)SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; dspflag=0; return ; }	// ListAns -> List 1
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
 				InitMatSub( reg, CB_CurrentValue);		// 10 -> List 1
@@ -2449,7 +2449,7 @@ void CB_Store( char *SRC ){	// ->
 						if ( reg>=0 ) DeleteMatrix( reg );
 					}
 				} else
-				if ( ( c==0x7F ) && ( ( d==0x40 ) || ( d==0xFFFFFF84 ) ) ) {	// {10,5} -> Dim Mat A  -> Dim Vct A
+				if ( ( c==0x7F ) && ( ( d==0x40 ) || ( d==0x00000084 ) ) ) {	// {10,5} -> Dim Mat A  -> Dim Vct A
 					CB_MatrixInit( SRC, dimdim );
 					return ;
 				} else {
@@ -2465,9 +2465,9 @@ void CB_Store( char *SRC ){	// ->
 		} else if ( c == 0x5F ) {	// Ticks
 				ExecPtr+=2;
 				goto StoreTicks;
-		} else if ( ( 0xFFFFFF91 <= c ) && ( c <= 0xFFFFFF93 ) ) {	// F Start~F pitch
+		} else if ( ( 0x00000091 <= c ) && ( c <= 0x00000093 ) ) {	// F Start~F pitch
 				ExecPtr+=2;
-				REGf[c-0xFFFFFF90] = CB_CurrentValue.real ;
+				REGf[c-0x00000090] = CB_CurrentValue.real ;
 		} else if ( c == 0x00 ) {	// Xmin
 				Xmin = CB_CurrentValue.real ;
 				SetXdotYdot();
@@ -2511,9 +2511,9 @@ void CB_Store( char *SRC ){	// ->
 				if ( ErrorNo == RangeERR ) ErrorNo=0;	// Cancel Range error
 		} else goto exitj;
 	} else
-	if ( c==0xFFFFFFF7 ) {
+	if ( c==0x000000F7 ) {
 		c = (unsigned char)SRC[ExecPtr+1] ; 
-		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
+		if ( c == 0x000000F6 ) {	// Poke(A)
 			ExecPtr+=2;
 			CB_PokeSub( SRC, CB_CurrentValue, EvalsubTop( SRC ) );
 		} else goto exitj;
@@ -2526,7 +2526,7 @@ void CB_Store( char *SRC ){	// ->
 		CB_StoreTicks( SRC, CB_CurrentValue.real );
 		skip_count=0;
 	} else
-	if ( c==0xFFFFFFF9 ) {
+	if ( c==0x000000F9 ) {
 		c = (unsigned char)SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
 				if ( CB_CurrentValue.real == 0 ) { CB_Error(RangeERR); return; }	// Range error
@@ -2741,7 +2741,7 @@ void CB_AliasVarClr(){
 
 int CB_CheckAliasVar( int c, int *del ) {
 	if ( c=='_' ) { CB_Error(SyntaxERR); return 1; }	// Syntax error
-	if ( c==0xFFFFFF99 ) *del=1; // -
+	if ( c==0x00000099 ) *del=1; // -
 	return 0;
 }
 
@@ -2750,7 +2750,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=��  or A=_ABCD	// (delete) Alias 
 	int alias_code, org_reg;
 	int del=0;
 	char name[32+1];
-	if ( ( SRC[ExecPtr]==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// 	Alias Mat A=��  or Mat A=_ABCD / Vct
+	if ( ( (unsigned char)SRC[ExecPtr]==0x7F ) && ( ( (unsigned char)SRC[ExecPtr+1]==0x40 ) || ( (unsigned char)SRC[ExecPtr+1]==0x00000084 ) ) ) {	// 	Alias Mat A=��  or Mat A=_ABCD / Vct
 		ExecPtr+=2;
 		c = (unsigned char)SRC[ExecPtr];
 		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error
@@ -2796,7 +2796,7 @@ void CB_AliasVar( char *SRC ) {	// Alias A=��  or A=_ABCD	// (delete) Alias 
 			}
 		}
 	} else 
-	if ( ( SRC[ExecPtr]==0xFFFFFFE2 ) ) {	// 	Alias Lbl A=��  or Lbl A=_ABCD
+	if ( ( (unsigned char)SRC[ExecPtr]==0x000000E2 ) ) {	// 	Alias Lbl A=��  or Lbl A=_ABCD
 		ExecPtr++;
 		c = (unsigned char)SRC[ExecPtr];
 //		if ( CB_CheckAliasVar( c, &del ) ) return ;	// Syntax error

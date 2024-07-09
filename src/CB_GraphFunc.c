@@ -227,7 +227,7 @@ char* ReadGraphXt( int FuncNo ) {
 char * StrSearch_0xF6( char *str, int maxlen ) {	// search 0xF6	-> return ptr
 	int i;
 	for (i=0; i<maxlen; i++) {
-		if ( str[i] == 0xFFFFFFF6 ) return str+i;
+		if ( (unsigned char)str[i] == 0x000000F6 ) return str+i;
 	}
 	return str;
 }
@@ -271,9 +271,9 @@ void CB_GraphFunc( char *SRC, int c ) {
 		FuncType = d;
 		return;
 	}
-	if ( c == 0xFFFFFF98 ) {	// SetG-Color
+	if ( c == 0x00000098 ) {	// SetG-Color
 		c = CB_GetColor( SRC );
-		if ( SRC[ExecPtr]!=',' ) { CB_Error(SyntaxERR); goto exit; }	// Syntax error
+		if ( (unsigned char)SRC[ExecPtr]!=',' ) { CB_Error(SyntaxERR); goto exit; }	// Syntax error
 		ExecPtr++;
 		buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize ) ;
 		if ( buffer[7-1] ) {
@@ -290,16 +290,16 @@ void CB_GraphFunc( char *SRC, int c ) {
 			while ( n ) {
 				buffer = MatrixPtr( reg, n, 1 ) ;
 				switch ( c ) {
-					case 0xFFFFFFC8:	// G SelOn
+					case 0x000000C8:	// G SelOn
 						buffer[3-1] |= 0x80;
 						break;
-					case 0xFFFFFFC9:	// T SelOn
+					case 0x000000C9:	// T SelOn
 						buffer[3-1] |= 0x20;
 						break;
-					case 0xFFFFFFD8:	// G SelOff
+					case 0x000000D8:	// G SelOff
 						buffer[3-1] &= 0x7F;
 						break;
-					case 0xFFFFFFD9:	// T SelOff
+					case 0x000000D9:	// T SelOff
 						buffer[3-1] &= 0xDF;
 						break;
 				}
@@ -322,19 +322,19 @@ void CB_GraphFunc( char *SRC, int c ) {
 				case 0x3F:			// DotG
 					buffer[4-1] = 0x08;
 					break;
-				case 0xFFFFFFF5:	// ThinG
+				case 0x000000F5:	// ThinG
 					buffer[4-1] = 0x12;
 					break;
-				case 0xFFFFFFC8:	// G SelOn
+				case 0x000000C8:	// G SelOn
 					buffer[3-1] |= 0x80;
 					break;
-				case 0xFFFFFFC9:	// T SelOn
+				case 0x000000C9:	// T SelOn
 					buffer[3-1] |= 0x20;
 					break;
-				case 0xFFFFFFD8:	// G SelOff
+				case 0x000000D8:	// G SelOff
 					buffer[3-1] &= 0x7F;
 					break;
-				case 0xFFFFFFD9:	// T SelOff
+				case 0x000000D9:	// T SelOff
 					buffer[3-1] &= 0xDF;
 					break;
 		}

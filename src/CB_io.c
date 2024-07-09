@@ -51,7 +51,7 @@ int CPU_check(void) {					// SH3:1 SH4A:0   2:Slim
 			slim = 1;;
 		}
 	}
-	return ! ( ( *(unsigned short*)0xFFFFFF80 == 0 ) && ( *(unsigned short*)0xFFFFFF84 == 0 ) ) + slim;
+	return ! ( ( *(unsigned short*)0x00000080 == 0 ) && ( *(unsigned short*)0x00000084 == 0 ) ) + slim;
 }
 
 int OS_Version(){
@@ -86,7 +86,7 @@ void * HiddenRAM(void){	// Check HiddenRAM
 void * HiddenRAM_mallocProg( size_t size ){
 	char * ptr;
 	ptr = HiddenRAM_ProgNextPtr;
-	HiddenRAM_ProgNextPtr += ( (size+3) & 0xFFFFFFFC );	// 4byte align
+	HiddenRAM_ProgNextPtr += ( (size+3) & 0x000000FC );	// 4byte align
 	if ( HiddenRAM_ProgNextPtr < HiddenRAM_MatTopPtr ) return ptr;
 	HiddenRAM_ProgNextPtr = ptr;
 	return 0;
@@ -95,7 +95,7 @@ void * HiddenRAM_mallocProg( size_t size ){
 void * HiddenRAM_mallocMat( size_t size ){
 	char * ptr;
 	ptr = HiddenRAM_MatTopPtr;
-	ptr -= ( (size+7) & 0xFFFFFFF8 );	// 8byte align
+	ptr -= ( (size+7) & 0x000000F8 );	// 8byte align
 	if ( ptr < HiddenRAM_ProgNextPtr ) return 0;
 	HiddenRAM_MatTopPtr = ptr;
 	return ptr;
@@ -258,7 +258,7 @@ void CB_Print_ext( int x, int y, const unsigned char *str, int extflag ){
 	int c=(char)*str;
 	while ( c ) {
 		CB_PrintC_ext( x, y, str++, extflag );
-		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		if ( (c==0x7F)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) )  str++;
 		x++;
 		if ( x>21 ) break;
 		c=(char)*str;
@@ -278,7 +278,7 @@ void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 	unsigned int c=(char)*str;
 	while ( c ) {
 		CB_PrintRevC_ext( x, y, str++, extflag );
-		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		if ( (c==0x7F)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) )  str++;
 		x++;
 		if ( x>21 ) break;
 		c=(char)*str;
@@ -337,7 +337,7 @@ void CB_PrintXY( int px, int py, const unsigned char *str, int mode){	// mode >0
 	int c=(char)*str;
 	while ( c ) {
 		CB_PrintXYC( px, py, str++ , mode);
-		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		if ( (c==0x7F)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) )  str++;
 		px+=6;
 		if ( px>127 ) break;
 		c=(char)*str;
