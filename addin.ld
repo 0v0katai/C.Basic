@@ -14,6 +14,7 @@ SECTIONS
         .rodata : {
                 *(.rodata)
                 *(.rodata.str1.4)
+		. = ALIGN(4);
                 _romdata = . ;  /* symbol for initialization data */
         } > rom
         .bss : {
@@ -23,9 +24,9 @@ SECTIONS
                 *(.bss) *(COMMON);
                 _ebss = . ;
         } > ram
-        .data : AT(_romdata) {
+        .data : {
                 _bdata = . ;
                 *(.data);
                 _edata = . ;
-        } > ram
+        } > ram AT> rom
 }
