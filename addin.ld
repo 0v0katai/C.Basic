@@ -10,8 +10,9 @@ SECTIONS
         .text : {
                 *(.pretext)     /* init stuff */
                 *(.text)
+		*(P)
         } > rom
-        .rodata : {
+        .rodata : SUBALIGN(4) {
                 *(.rodata)
                 *(.rodata.str1.4)
 		. = ALIGN(4);
@@ -22,11 +23,13 @@ SECTIONS
                 _bssdatasize = . ;
                 LONG(0);        /* bssdatasize */
                 *(.bss) *(COMMON);
+		*(B);
                 _ebss = . ;
         } > ram
         .data : {
                 _bdata = . ;
                 *(.data);
+		*(C) *(D);
                 _edata = . ;
         } > ram AT> rom
 }

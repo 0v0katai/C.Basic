@@ -90,7 +90,7 @@ target_compile_options(CBFXGCC PRIVATE
                         -Wno-shift-negative-value)
 target_link_options(CBFXGCC PRIVATE
                         -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/addin.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
-                        -Wl,--print-memory-usage)
+                        -Wl,--print-memory-usage -Wl,-Map=map)
 target_link_libraries(CBFXGCC PRIVATE -lfx -lgcc)
 
 
