@@ -11,10 +11,10 @@
 //0B                  DIAG     OSUPD     0B    A44B000B
 //0A                                     0A    A44B000A
 //09  F1    F2   F3   F4   F5   F6       09    A44B0009
-//08  SHIFT OPTN VARS MENU Å©  Å™        08    A44B0008
-//07  ALPHA ^2   ^    EXIT Å´   Å®       07    A44B0007
+//08  SHIFT OPTN VARS MENU ÔøΩÔøΩ  ÔøΩÔøΩ        08    A44B0008
+//07  ALPHA ^2   ^    EXIT ÔøΩÔøΩ   ÔøΩÔøΩ       07    A44B0007
 //06  XTT   log  ln   sin  cos  tan      06    A44B0006
-//05  ab/c  F<>D  (    )    ,   Å®       05    A44B0005
+//05  ab/c  F<>D  (    )    ,   ÔøΩÔøΩ       05    A44B0005
 //04  7     8    9    DEL                04    A44B0004
 //03  4     5    6    x    div           03    A44B0003
 //02  1     2    3    +    -             02    A44B0002
@@ -149,7 +149,7 @@ int BackLight( int n ){		// 0:off  1:on   2:xor
 		default:
 			break;
 	}
-	if ( (*adrs) && (~bit) ) return 1; else return 0;
+	return (*adrs & bit) != 0;
 }
 
 int KeyConvert2Slim( int code ) {

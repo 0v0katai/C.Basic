@@ -1460,8 +1460,9 @@ int CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 			if ( ErrorNo ) return 0; // error
 
 			memcpy( vbuf, vram, 16*8 );
-			if ( cstr==NULL )	CB_PrintC( 1, 1, (unsigned char *)" " );
-			else			CB_PrintC_ext( 1, 1, cstr, orgflag==0 );
+            CB_PrintC_ext( 1, 1, cstr, orgflag==0 );
+			// if ( cstr==NULL )	CB_PrintC( 1, 1, (unsigned char *)" " );
+			// else			CB_PrintC_ext( 1, 1, cstr, orgflag==0 );
 			x=1;
 			y=1;
 			i=x;
@@ -1504,12 +1505,14 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 			if ( ErrorNo ) return 0; // error
 			
 			memcpy( vbuf, vram, 16*8 );
-			if ( cstr==NULL ) {
-								CB_PrintMiniC( 0, 0, (unsigned char *)" ", MINI_OVER );
-			} else {
-				if ( orgflag )	CB_PrintMiniC( 0, 0, cstr, MINI_OVER );
+            	if ( orgflag )	CB_PrintMiniC( 0, 0, cstr, MINI_OVER );
 				else			CB_PrintMiniC( 0, 0, cstr, MINI_OVER | 0x100 );
-			}
+			// if ( cstr==NULL ) {
+			// 					CB_PrintMiniC( 0, 0, (unsigned char *)" ", MINI_OVER );
+			// } else {
+			// 	if ( orgflag )	CB_PrintMiniC( 0, 0, cstr, MINI_OVER );
+			// 	else			CB_PrintMiniC( 0, 0, cstr, MINI_OVER | 0x100 );
+			// }
 			x=1;
 			y=1;
 			i=x;

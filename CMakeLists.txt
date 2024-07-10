@@ -76,7 +76,7 @@ add_executable(CBFXGCC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
 include_directories(CBFXGCC PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(CBFXGCC PRIVATE
                         -mrenesas -nostdlib -I include
-                        -Wall -Wextra -Os -g -flto
+                        -Wall -Wextra -Os -g -flto=auto
                         # -Wno-sign-compare
                         -Wno-unused-parameter
                         -Wno-unused-label
@@ -85,9 +85,9 @@ target_compile_options(CBFXGCC PRIVATE
                         -Wno-unused-but-set-variable
                         -Wno-discarded-qualifiers
                         -Wno-parentheses
-                        -Werror=type-limits
                         -Wno-implicit-fallthrough
-                        -Wno-unused-value)
+                        -Wno-unused-value
+                        -Wno-shift-negative-value)
 target_link_options(CBFXGCC PRIVATE
                         -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/addin.ld" -L ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(CBFXGCC PRIVATE -lfx -lgcc)

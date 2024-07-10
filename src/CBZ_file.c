@@ -1405,7 +1405,7 @@ int deleteFile( FONTCHARACTER *filename, int size ){
 	r = alreadyExistedFile( filename, buffer );
 	if( r == 0 ) { //already existed, delete it
 		GetMediaFree(&freehigh,&freelow);
-		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 2 ; }
+		if ( ( freehigh == 0 ) && ( (int)freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 2 ; }
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}
@@ -2413,9 +2413,11 @@ void Setfoldername16( char *folder16, char *sname ) {
 	char *cptr;
 	int i=0,j,def=1;
 	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) {
-		int i=0;
-		do
-			sname[i]=sname[++i];
+		int I=0;
+		do {
+			sname[i]=sname[I+1];
+			I=i++;
+		}
 		while ( sname[i] );
 		def=0;
 	}
