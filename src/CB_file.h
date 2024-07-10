@@ -40,7 +40,7 @@ typedef struct{	// 14(13)+10(9)+4=28
 #define	root2_MAX 10
 
 extern Files *files;
-extern char folder[FOLDERMAX];
+extern char folder[FILENAMEMAX];
 extern int index;
 
 extern char FileListUpdate;

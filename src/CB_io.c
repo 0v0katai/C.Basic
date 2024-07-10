@@ -46,12 +46,16 @@ int CPU_check(void) {					// SH3:1 SH4A:0   2:Slim
 	if  ( OS_Version() >= 300 ) { Is35E2 = 1;
 		HIDDENRAM_Top =(char*)HIDDENRAM_TOP2;
 	}
-	if ( *(unsigned int*)0x80000300 == 0x80005D7C ){
-		if ( ( *(unsigned char*)0xA4000128 & 0x08 ) == 0 ) {
-			slim = 1;;
-		}
-	}
-	return ! ( ( *(unsigned short*)0x00000080 == 0 ) && ( *(unsigned short*)0x00000084 == 0 ) ) + slim;
+	volatile unsigned short *PLCR = (void *)0xa4050114;
+	unsigned short old = *PLCR;
+	*PLCR = 0xffff;
+	unsigned short tested = *PLCR;
+	*PLCR = old;
+
+	if ( tested == 0x00ff || tested == 0x0fff )
+		return ( *(unsigned char*)0xA4000128 & 0x08 ) == 0 ? 2 : 1;
+	else
+		return 0;
 }
 
 int OS_Version(){

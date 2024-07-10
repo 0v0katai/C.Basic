@@ -14,7 +14,7 @@ unsigned int Explorer( int size, char *folder );
 static int FileCmp( const void *p1, const void *p2 );
 
 static int size=0;
-char folder[FOLDERMAX] = "", tmpfolder[FOLDERMAX] = "";	//, name[FILENAMEMAX] = "";
+char folder[FILENAMEMAX] = "", tmpfolder[FOLDERMAX] = "";	//, name[FILENAMEMAX] = "";
 static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 static Files Favoritesfiles[FavoritesMAX];
