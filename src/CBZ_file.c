@@ -19,11 +19,11 @@ static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 static Files Favoritesfiles[FavoritesMAX];
 char FileListUpdate=1;
-int8_t StorageMode=0;						// 0:Storage memory   1:SD
+char StorageMode=0;						// 0:Storage memory   1:SD
 char redrawsubfolder=0;
 //int recentsize=0;
-int8_t ForceG1Msave=0;		//    1: force g1m save
-int8_t AutoSaveMode=0;		//    1: Auto save ( not pop up )
+char ForceG1Msave=0;		//    1: force g1m save
+char AutoSaveMode=0;		//    1: Auto save ( not pop up )
 const char root[][5]={"fls0","crd0","fls0","crd0"};
 char root2[root2_MAX]="";	// "\\SAVE-F"
 char root3[root2_MAX]="";	// "\\SAVE-F"
@@ -33,9 +33,9 @@ char textmode=0;
 int SetRoot2( char* SRC ) {
 	char sname[root2_MAX];
 	int c;
-	c = (unsigned char)SRC[ExecPtr++];
+	c = SRC[ExecPtr++];
 	if ( c == '/' ) {
-		if ( (unsigned char)SRC[ExecPtr] == '"' ) {
+		if ( SRC[ExecPtr] == '"' ) {
 			CB_GetLocateStr(SRC, sname, root2_MAX-1); if ( ErrorNo ) goto exit ;	// error
 			root2[0] = '\\';
 			strncpy( root2+1, sname, root2_MAX-1 );
@@ -784,7 +784,7 @@ unsigned int Explorer( int size, char *folder )
 //						k -= 0x38;	// file size adjust G1M
 						if ( StorageMode & 2 ) {	// MCS mode
 							buf2[j-4]='\0';
-							k = (k+21) & 0x000000FC;	// file size adjust G1M
+							k = (k+21) & 0xFFFFFFFC;	// file size adjust G1M
 						}
 					}
 					sprintf( buf, " %-12s ", buf2 );
@@ -1405,7 +1405,7 @@ int deleteFile( FONTCHARACTER *filename, int size ){
 	r = alreadyExistedFile( filename, buffer );
 	if( r == 0 ) { //already existed, delete it
 		GetMediaFree(&freehigh,&freelow);
-		if ( ( freehigh == 0 ) && ( (int)freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 2 ; }
+		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 2 ; }
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}
@@ -1546,7 +1546,7 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer 
 		key=InputStrSub_status( x, y, width, csrX, buffer, maxLen, " ", REV_OFF, FLOAT_OFF, EXP_OFF, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF);
 	} while ( (key!=KEY_CTRL_EXIT)&&(key!=KEY_CTRL_QUIT)&&(buffer[0]=='\0') ) ;
 	for( i=0; i<strlenOp((char*)buffer); i++ ) {	// kana cancel
-		if ( (unsigned char)buffer[i]==0x000000FF ) {
+		if ( buffer[i]==0xFFFFFFFF ) {
 			buffer[i]=0x7E;
 			if ( buffer[i+1] != '\0' ) buffer[i+1]=0x7E;
 		}
@@ -1652,7 +1652,7 @@ void G1MHeaderTobasname8( char *filebase, char *basname) {	// header -> abcd
 }
 
 void G1M_header( char *filebase ,int *size ) {
-	(*size) = (*size + 3 ) & 0x000000FC ; // file size 4byte align adjust
+	(*size) = (*size + 3 ) & 0xFFFFFFFC ; // file size 4byte align adjust
 	SetSrcSize( filebase, *size );
 	filebase[0x00]=0xAA;			// G1M header set
 	filebase[0x01]=0xAC;
@@ -1670,10 +1670,10 @@ void G1M_header( char *filebase ,int *size ) {
 	filebase[0x0D]=0xFF;
 	filebase[0x0E]=(0xBE - *size)&0xFF;
 	filebase[0x0F]=0xFE;
-	filebase[0x10]=((0x000000FF - *size)>>24)&0xFF;	//
-	filebase[0x11]=((0x000000FF - *size)>>16)&0xFF;	//
-	filebase[0x12]=((0x000000FF - *size)>>8)&0xFF;	//
-	filebase[0x13]=((0x000000FF - *size))&0xFF;		//
+	filebase[0x10]=((0xFFFFFFFF - *size)>>24)&0xFF;	//
+	filebase[0x11]=((0xFFFFFFFF - *size)>>16)&0xFF;	//
+	filebase[0x12]=((0xFFFFFFFF - *size)>>8)&0xFF;	//
+	filebase[0x13]=((0xFFFFFFFF - *size))&0xFF;		//
 	filebase[0x14]=(0x47 - *size)&0xFF;			//
 	filebase[0x15]=0x00;
 	filebase[0x16]=0x00;
@@ -1758,7 +1758,7 @@ int CheckPassWordmsg( char *filebase, char *msg ){	// 1:cancel  0:Ok  -1:no pass
 	return 0;	// ok
 }
 int CheckPassWord( char *filebase ){	// 1:cancel  0:Ok  -1:no pass
-	return CheckPassWordmsg( filebase, "Password?" );
+	CheckPassWordmsg( filebase, "Password?" );
 }
 
 int SetPassWord( int y, char *filebase, char *basname ,char* msg){	// 1:no password   0:Ok
@@ -1840,7 +1840,7 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 		GetKey( &key );
 		return 1;
 	}
-	fsize = 0x000000FF-(((filebase[0x10]&0xFF)<<24)+((filebase[0x11]&0xFF)<<16)+((filebase[0x12]&0xFF)<<8)+(filebase[0x13]&0xFF));
+	fsize = 0xFFFFFFFF-(((filebase[0x10]&0xFF)<<24)+((filebase[0x11]&0xFF)<<16)+((filebase[0x12]&0xFF)<<8)+(filebase[0x13]&0xFF));
 	size  = SrcSize( filebase ) ;
 	if ( ( fsize != size ) || ( filebase[0x20] != 'P' ) || ( filebase[0x21] != 'R' ) ) {
 		if ( ( filebase[0x20] == 'P' ) && ( filebase[0x21] == 'I' ) && ( filebase[0x22] == 'C' ) ) {
@@ -2138,7 +2138,7 @@ int SavePicture( char *filebase, int pictNo ){
 	filebase[0x41]= d;
 	filebase[0x44]=0x07;	// Picture
 
-	for (i=0;i<FILENAMEMAX-4;i++) folder2[i]=folder[i];	// backup folder
+	for (i=0;i<FILENAMEMAX;i++) folder2[i]=folder[i];	// backup folder
 	folder[0x00]='P';
 	folder[0x01]='I';
 	folder[0x02]='C';
@@ -2149,7 +2149,7 @@ int SavePicture( char *filebase, int pictNo ){
 	if ( r < 0 ) return r;
 
 	r = SaveG1Mbin( filebase );
-	for (i=0;i<FILENAMEMAX-4;i++) folder[i]=folder2[i];	// restore folder
+	for (i=0;i<FILENAMEMAX;i++) folder[i]=folder2[i];	// restore folder
 
 	return r ;
 }
@@ -2412,15 +2412,7 @@ int RenameDirectorys( char * foldername ){
 void Setfoldername16( char *folder16, char *sname ) {
 	char *cptr;
 	int i=0,j,def=1;
-	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) {
-		int I=0;
-		do {
-			sname[i]=sname[I+1];
-			I=i++;
-		}
-		while ( sname[i] );
-		def=0;
-	}
+	if ( ( sname[i]== '\\' ) || ( sname[i]== '/' ) ) { do sname[i]=sname[++i]; while ( sname[i] ); def=0; }
 	for (i=0;i<17+4;i++) folder16[i]=0;
 	cptr=strstr(sname,"\\");
 	if ( cptr==NULL ) { i=0; }	// current folder
@@ -2466,8 +2458,7 @@ void SetFullfilenameBin( char *fname, char *sname, char *ext ) {
 	int i;
 	strncpy( sname2, sname, 31 ); sname2[31]='\0';
 	GetExtName( sname2, ext2 );
-	if ( ext2[0]=='\0' ) strncpy( ext2, ext, 3 );
-	ext2[3]='\0';
+	if ( ext2[0]=='\0' ) strncpy( ext2, ext, 3 ); ext2[3]='\0';
 	SetFullfilenameExt( fname, sname2, ext2 );
 }
 
@@ -2507,7 +2498,7 @@ int CB_IsExist( char *SRC , int calcflag ) {	//	IsExist("TEST")		//  no exist: r
 	char *cptr;
 
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return 0;	// error
-	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	Getfolder( sname );
 	if ( ( sname[0]=='*' ) && ( sname[1]=='.' ) ) {
 		ext[0]=sname[2];
@@ -2569,10 +2560,10 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	char* FilePtr;
 	int check=0;
 
-//	c = (unsigned char)SRC[ExecPtr];
+//	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
-	c = (unsigned char)SRC[ExecPtr];
+	c =SRC[ExecPtr];
 	if ( c != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 //	FilePtr = CB_SaveLoadOprand( SRC, &reg, &matsize);
@@ -2580,9 +2571,9 @@ void CB_Save( char *SRC ) { //	Save "TEST",Mat A[1,3] [,Q] etc
 	if ( c==SERIAL_STRING ) matsize--;
 	if ( ErrorNo ) return; // error
 
-	c = (unsigned char)SRC[ExecPtr];
+	c =SRC[ExecPtr];
 	if ( c == ',' ) {
-		c = (unsigned char)SRC[++ExecPtr];
+		c =SRC[++ExecPtr];
 		if ( ( c == 'Q' ) || ( c == 'q' ) ) check=1;
 		ExecPtr++;
 	}
@@ -2657,18 +2648,18 @@ void CB_Load( char *SRC ) { //	Load ("TEST" [, Ptr])->Mat A[1,3]
 	int ptr=0,size;
 	int type;
 
-//	c = (unsigned char)SRC[ExecPtr];
+//	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	CB_GetLocateStr(SRC, sname,22); if ( ErrorNo ) return ;	// error
-	c = (unsigned char)SRC[ExecPtr];
+	c =SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
 		ptr=CB_EvalInt( SRC );
 		if ( ptr < 0 ) { CB_Error(RangeERR); return; }	// Range error
 	}
-	c = (unsigned char)SRC[ExecPtr];
+	c =SRC[ExecPtr];
 	if ( c == ')' ) ExecPtr++;
-	c = (unsigned char)SRC[ExecPtr];
+	c =SRC[ExecPtr];
 	if ( c != 0x0E ) { CB_Error(SyntaxERR); return; }  // Syntax error
 	ExecPtr++;
 //	matptr = CB_SaveLoadOprand( SRC, &reg, &matsize );
@@ -2686,7 +2677,7 @@ void CB_Delete( char *SRC ) {	// Delete "ABC.bin"[,1]
 	int yesno=0;
 
 	CB_GetLocateStr(SRC, sname, 22); if ( ErrorNo ) return ;	// error
-	c = (unsigned char)SRC[ExecPtr];
+	c =SRC[ExecPtr];
 	if ( c == ',' ) {
 		ExecPtr++;
 		yesno = CB_EvalInt( SRC );
@@ -3226,10 +3217,10 @@ void LoadConfig(){
 
 void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
 	int c,flag=0;
-	c = (unsigned char)SRC[(*ptr)-2];
+	c=SRC[(*ptr)-2];
 	if ( CheckQuotCR( SRC, (*ptr) ) ) flag=1;	// "   "
 	while (1){
-		c = (unsigned char)SRC[(*ptr)++];
+		c=SRC[(*ptr)++];
 		switch ( c ) {
 			case 0x0D:	// <CR>
 				if ( flag ) break;
@@ -3237,13 +3228,13 @@ void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
 			case 0x22:	// "
 				return ;
 			case 0x0000007F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000F9:	//
-			case 0x000000FF:	//
-			case 0x000000F7:	//
-				c = (unsigned char)SRC[(*ptr)++];
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
+				c=SRC[(*ptr)++];
 				break;
 		}
 	}
@@ -3251,19 +3242,19 @@ void PP_Search_CR_SPACE_Skip_quot(char *SRC, int *ptr){
 void PP_Search_CR_SPACE_Skip_comment(char *SRC, int *ptr){
 	int c;
 	while (1){
-		c = (unsigned char)SRC[(*ptr)++];
+		c=SRC[(*ptr)++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 			case 0x0D:	// <CR>
 				return ;
 			case 0x0000007F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000F9:	//
-			case 0x000000FF:	//
-			case 0x000000F7:	//
-				c = (unsigned char)SRC[(*ptr)++];
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
+				c=SRC[(*ptr)++];
 				break;
 		}
 	}
@@ -3274,7 +3265,7 @@ int PP_Search_CR_SPACE(char *SRC ){
 	int ptr=0;
 	if ( SRC[ptr] == ' ' ) return 1;
 	while (1){
-		c = (unsigned char)SRC[ptr++];
+		c=SRC[ptr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				return 0;
@@ -3290,13 +3281,13 @@ int PP_Search_CR_SPACE(char *SRC ){
 				if ( SRC[ptr] == ' ' ) return 1;
 				break;
 			case 0x0000007F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000F9:	//
-			case 0x000000FF:	//
-			case 0x000000F7:	//
-				c = (unsigned char)SRC[ptr++];
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
+				c=SRC[ptr++];
 				break;
 		}
 	}
@@ -3305,11 +3296,11 @@ int PP_Search_CR_SPACE(char *SRC ){
 
 int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 	int c,flag=0,d=0;
-	c = (unsigned char)SRC[(*sptr)-2];
+	c=SRC[(*sptr)-2];
 	if ( CheckQuotCR( SRC, (*sptr) ) ) flag=1;	// "   "
 	if ( SRC[(*sptr)-1] == 0x27 ) { d=1; flag=0; }
 	while (1){
-		c = (unsigned char)SRC[(*sptr)++];
+		c=SRC[(*sptr)++];
 		dest[(*dptr)++]=c;
 		switch ( c ) {
 			case 0x0D:	// <CR>
@@ -3321,13 +3312,13 @@ int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 			case 0x00:	// <EOF>
 				return 0;
 			case 0x0000007F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000F9:	//
-			case 0x000000FF:	//
-			case 0x000000F7:	//
-				c = (unsigned char)SRC[(*sptr)++];
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
+				c=SRC[(*sptr)++];
 				dest[(*dptr)++]=c;
 				break;
 		}
@@ -3366,7 +3357,7 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 	while ( sptr < size ){
 		if ( dptr >= maxsize ) {
 			CB_Error(NotEnoughMemoryERR); CB_ErrMsg(ErrorNo); return 1; } //
-		c = (unsigned char)SRC[sptr++];
+		c=SRC[sptr++];
 		dest[dptr++]=c;
 		switch ( c ) {
 			case 0x00:	// <EOF>
@@ -3382,16 +3373,16 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 				}
 				break;
 			case 0x0000007F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000F9:	//
-			case 0x000000FF:	//
-				c = (unsigned char)SRC[sptr++];
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+				c=SRC[sptr++];
 				dest[dptr++]=c;
 				break;
-			case 0x000000F7:	//
-				c = (unsigned char)SRC[sptr++];
+			case 0xFFFFFFF7:	//
+				c=SRC[sptr++];
 				dest[dptr++]=c;
 				switch (c) {
 					case 0x00:	// If
@@ -3494,7 +3485,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 	dest = filebase +0x56;
 
 	while ( sptr < size ){
-		c = (unsigned char)SRC[sptr++];
+		c=SRC[sptr++];
 		dest[dptr++]=c;
 		switch ( c ) {
 			case 0x00:	// <EOF>
@@ -3509,13 +3500,13 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 				while ( SRC[sptr] == ' ' ) sptr++;
 				break;
 			case 0x0000007F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000F9:	//
-			case 0x000000FF:	//
-			case 0x000000F7:	//
-				c = (unsigned char)SRC[sptr++];
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFFF:	//
+			case 0xFFFFFFF7:	//
+				c=SRC[sptr++];
 				dest[dptr++]=c;
 				break;
 			default:
@@ -3540,7 +3531,7 @@ void CB_Local( char *SRC ) {
 			ProgLocalVar[ProgEntryN][i] = reg;	// local var set
 		}
 		i++;
-		c = (unsigned char)SRC[ExecPtr];
+		c=SRC[ExecPtr];
 		if ( c != ',' ) break; 	//
 		ExecPtr++;
 		if ( i >= ArgcMAX ) { CB_Error(TooMuchData); break; }	// too much error
@@ -3553,7 +3544,7 @@ int PP_Search_IfEnd( char *SRC ){
 	int c,i;
 	int PP_ptr;
 	while (1){
-		c = (unsigned char)SRC[ExecPtr++];
+		c=SRC[ExecPtr++];
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				ExecPtr--;
@@ -3564,8 +3555,8 @@ int PP_Search_IfEnd( char *SRC ){
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0x000000F7:	//
-				c = (unsigned char)SRC[ExecPtr++];
+			case 0xFFFFFFF7:	//
+				c=SRC[ExecPtr++];
 				if ( c == 0x00 ) { 			// If
 					PP_ptr=ExecPtr-2;
 					i=PP_Search_IfEnd(SRC) ;
@@ -3576,11 +3567,11 @@ int PP_Search_IfEnd( char *SRC ){
 				if ( c == 0x03 ) return 1 ;	// IfEnd
 				break ;
 			case 0x0000007F:	//
-			case 0x000000F9:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000FF:	//
+			case 0xFFFFFFF9:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFFF:	//
 				ExecPtr++;
 				break;
 		}
@@ -3591,28 +3582,28 @@ int PP_Search_IfEnd( char *SRC ){
 void PP_ReplaceCode( char *SRC ){
 	int c,i;
 //	while (1){
-//		c = (unsigned char)SRC[ExecPtr++];
+//		c=SRC[ExecPtr++];
 //		switch ( c ) {
 //			case 0x00:	// <EOF>
 //				ExecPtr--;
 //				return ;
 //			case 0x0000007F:	//
-//			case 0x000000E5:	//
-//			case 0x000000E6:	//
-//			case 0x000000E7:	//
-//			case 0x000000FF:	//
+//			case 0xFFFFFFE5:	//
+//			case 0xFFFFFFE6:	//
+//			case 0xFFFFFFE7:	//
+//			case 0xFFFFFFFF:	//
 //				ExecPtr++;
 //				break;
-//			case 0x000000F7:	//
-//				c = (unsigned char)SRC[ExecPtr++];
+//			case 0xFFFFFFF7:	//
+//				c=SRC[ExecPtr++];
 //				if ( c==0x3F ) SRC[ExecPtr-1]=0x3E;	// DotGet(  F73F -> F73E
 //				else
 //				if ( c==0x4F ) SRC[ExecPtr-1]=0x3D;	// DotTrim(  F74F -> F73D
 //				break;
-//			case 0x000000F9:	//
-//				c = (unsigned char)SRC[ExecPtr++];
+//			case 0xFFFFFFF9:	//
+//				c=SRC[ExecPtr++];
 //				if ( c==0x4B ) {
-//					SRC[ExecPtr-2]=0x000000F7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
+//					SRC[ExecPtr-2]=0xFFFFFFF7; SRC[ExecPtr-1]=0x3B; }	// DotPut(  F94B -> F73B
 //				else
 //				if ( c==0x3E ) SRC[ExecPtr-1]=0x43;	// Sprintf(  F93E -> F943
 //				break;
@@ -3661,7 +3652,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	if ( ErrorNo ) { return ; }
 	ExecPtr=0;
 	while ( c!=0 ) {
-		c = (unsigned char)SRC[ExecPtr++];
+		c=SRC[ExecPtr++];
 		if ( c==0x00 ) { ExecPtr--; break; }
 		switch ( c ) {
 			case 0x3A:	// <:>
@@ -3673,8 +3664,8 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0x000000ED:	// Prog "..."
-				c = (unsigned char)SRC[ExecPtr];
+			case 0xFFFFFFED:	// Prog "..."
+				c =SRC[ExecPtr];
 				if ( c != 0x22 ) break;
 				ExecPtr++;	// " skip
 				CB_GetQuotOpcode(SRC, buffer, 32);	// Prog name
@@ -3713,17 +3704,17 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 					}
 				}
 				break;
-			case 0x000000F7:	//
-				if ( SRC[ExecPtr++] == 0x000000F1 ) CB_Local(SRC);	// Local var set
+			case 0xFFFFFFF7:	//
+				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
 				break;
-			case 0x000000F9:	//
+			case 0xFFFFFFF9:	//
 				if ( SRC[ExecPtr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
 				break;
 			case 0x7F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000FF:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFFF:	//
 				ExecPtr++;
 				break;
 			default:
@@ -3746,7 +3737,7 @@ void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
 	int c=1;
 	ExecPtr=0;
 	while ( c!=0 ) {
-		c = (unsigned char)SRC[ExecPtr++];
+		c=SRC[ExecPtr++];
 		if ( c==0x00 ) { ExecPtr--; break; }
 		switch ( c ) {
 			case 0x3A:	// <:>
@@ -3758,18 +3749,18 @@ void CB_GetAliasLocalProg( char *SRC ) { //	Preprocess Alias/Local
 			case 0x27:	// ' rem
 				Skip_rem_no_op(SRC);
 				break;
-			case 0x000000F7:	//
-				if ( (unsigned char)SRC[ExecPtr++] == 0x000000F1 ) CB_Local(SRC);	// Local var set
+			case 0xFFFFFFF7:	//
+				if ( SRC[ExecPtr++] == 0xFFFFFFF1 ) CB_Local(SRC);	// Local var set
 				break;
-			case 0x000000F9:	//
+			case 0xFFFFFFF9:	//
 				if ( SRC[ExecPtr++] == 0x0F ) CB_AliasVar(SRC);	// Alias var set
 				ErrorNo=0;
 				break;
 			case 0x7F:	//
-			case 0x000000E5:	//
-			case 0x000000E6:	//
-			case 0x000000E7:	//
-			case 0x000000FF:	//
+			case 0xFFFFFFE5:	//
+			case 0xFFFFFFE6:	//
+			case 0xFFFFFFE7:	//
+			case 0xFFFFFFFF:	//
 				ExecPtr++;
 				break;
 			default:
@@ -3839,7 +3830,7 @@ int GetMainBatteryVoltagePointer(){
     ea = ea + 2;
     j = *(unsigned char*)( ea + 1 );
     j = 4*j;
-    j = ( ea + j + 4 ) & 0x000000FC;
+    j = ( ea + j + 4 ) & 0xFFFFFFFC;
     return *(unsigned int*)( j );
 }
 // battery == 1 : main (ADC channel C)

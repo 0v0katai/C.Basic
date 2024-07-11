@@ -28,14 +28,14 @@ extern short Mattmpreg;		//
 
 #define ClipBuffer CLIP_Buffer()
 
-extern int8_t MatBaseDefault;
-extern int8_t MatBase;
+extern char	MatBaseDefault;
+extern char	MatBase;
 
-extern int8_t CB_MatListAnsreg;
+extern char   CB_MatListAnsreg;
 
-extern int8_t listdsp;	// Mat:0  list:1
+extern char listdsp;	// Mat:0  list:1
 
-extern int8_t  ListFileNo;
+extern char  ListFileNo;
 extern short ListFilePtr;
 
 //------------------------------------------------------------------------------

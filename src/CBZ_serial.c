@@ -105,12 +105,12 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	int c,result,maxoplen;
 	int reg,dimA, dimB,ElementSize,m,n;
 	int base;
-	c = (unsigned char)SRC[ExecPtr];
+	c=SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
 		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c = (unsigned char)SRC[ExecPtr];
+		c=SRC[ExecPtr];
 		if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; }
 		else
 		if ( c=='[' ) { goto Matrix; }		// A[1]
@@ -125,12 +125,12 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 		else
 		if (CB_INT==1)	{ result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; } else { result=(int)&LocalDbl[reg][0]; (*length)=type_DBLorCPLX(&(*type)); }
 	} else
-	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( (unsigned char)SRC[ExecPtr+1]==0x00000084 ) ) ) {	// Mat or Vct
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// Mat or Vct
 		ExecPtr+=2;
-		c = (unsigned char)SRC[ExecPtr];
+		c=SRC[ExecPtr];
 		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
-		if ( (unsigned char)SRC[ExecPtr] == '[' ) {
+		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
 			ExecPtr++;
 			MatOprand2( SRC, reg, &dimA, &dimB );	// Mat A[a,b]
@@ -154,10 +154,10 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	} else
 	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
 		ExecPtr+=2;
-		c = (unsigned char)SRC[ExecPtr];
+		c=SRC[ExecPtr];
 		reg=ListRegVar( SRC );
 		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
-		if ( (unsigned char)SRC[ExecPtr] == '[' ) {
+		if ( SRC[ExecPtr] == '[' ) {
 			ExecPtr++;
 			MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
 			if ( ErrorNo ) return 0 ; // error
@@ -202,20 +202,20 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 }
 
 int CB_baudrate( char *SRC, unsigned char *baud ){
-	int b,c = (unsigned char)SRC[ExecPtr];
+	int b,c=SRC[ExecPtr];
 	if ( c!=',' ) return 0;
 	ExecPtr++;
-	if ( (unsigned char)SRC[ExecPtr]==',' ) return 0;
+	if ( SRC[ExecPtr]==',' ) return 0;
 	b=CB_EvalInt(SRC);
 	if ( ( b<0 ) || ( 9<b ) ) { CB_Error(ArgumentERR) ; } // Argument error 
 	*baud=b;
 	return 1;
 }
 int CB_length( char *SRC, int *length ){
-	int len,c = (unsigned char)SRC[ExecPtr];
+	int len,c=SRC[ExecPtr];
 	if ( c!=',' ) return 0;
 	ExecPtr++;
-	if ( (unsigned char)SRC[ExecPtr]==',' ) return 0;
+	if ( SRC[ExecPtr]==',' ) return 0;
 	len=CB_EvalInt(SRC);
 	if ( ( len<0 ) ) { CB_Error(ArgumentERR) ; } // Argument error 
 	*length=len;
@@ -252,7 +252,7 @@ void CB_Send( char *SRC ){				// Send( data )
 	if ( r == -9 ) { ErrorNo=0; r=0; }	//
 	if ( ErrorNo ) return;
 	if ( r ) CB_Error(TransmitERR);
-	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 }
 void CB_Receive( char *SRC ){			// Receive( data )
 	int ptr;
@@ -277,7 +277,7 @@ void CB_Receive( char *SRC ){			// Receive( data )
 	if ( ErrorNo ) return;
 	if ( type2 != type ) CB_Error(TypeMismatchERR);
 	if ( r ) CB_Error(ReceiveERR);
-	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 }
 
 void CB_OpenComport38k( char *SRC ){	// OpenComport38k
@@ -357,7 +357,7 @@ unsigned short SerialPortMask, SerialPortMode, SerialPortMode0, SerialPortMode1;
 unsigned char SerialPortOut, SerialPortIn;
 unsigned int iresult, iDelay, i;
 unsigned char hb[15];
-unsigned int PortCR = P7305_SERIAL_DIRECT_PORTCR;
+int PortCR = P7305_SERIAL_DIRECT_PORTCR;
 	
 // open the outer gate
 	*(unsigned short*)P11CR = ( *(unsigned short*)P11CR & ~P11CR_ENABLE_SERIAL_MASK) | P11CR_ENABLE_SERIAL;
@@ -439,12 +439,12 @@ void CB_Beep( char *SRC ){
 	int r,a=1000, n=500;
 	int listreg1,listreg2;
 	int size1,size2,base1,base2,ptr1,ptr2;
-	int c = (unsigned char)SRC[ExecPtr];
+	int c=SRC[ExecPtr];
 	if ( ( c==':' )||( c==0x0D )||( c==0x0C )||( c==0 ) ) goto next;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	listreg1 = CB_BeepEval(SRC, &a);	// List calc
 	if ( listreg1 ) {
-		if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		listreg2 = CB_BeepEval( SRC, &n );
 		if ( listreg2 ) {

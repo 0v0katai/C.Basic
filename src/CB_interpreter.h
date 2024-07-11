@@ -3,15 +3,15 @@
 //-----------------------------------------------------------------------------
 #define BREAKCOUNT 100
 
-extern int8_t CB_INTDefault;	// default mode  0:normal  1: integer mode
+extern char CB_INTDefault;	// default mode  0:normal  1: integer mode
 
-extern int8_t	DrawType  ;	// 0:connect  1:Plot
-extern int8_t	Coord     ;	// 0:off 1:on
-extern int8_t	Grid      ;	// 0:off 1:on
-extern int8_t	Axes      ;	// 0:off 1:on
-extern int8_t	Label     ;	// 0:off 1:on
-extern int8_t	Derivative     ;	// 0:off 1:on
-extern int8_t FuncType;
+extern char	DrawType  ;	// 0:connect  1:Plot
+extern char	Coord     ;	// 0:off 1:on
+extern char	Grid      ;	// 0:off 1:on
+extern char	Axes      ;	// 0:off 1:on
+extern char	Label     ;	// 0:off 1:on
+extern char	Derivative     ;	// 0:off 1:on
+extern char FuncType;
 
 #define S_L_Normal   0
 #define S_L_Thick    1
@@ -19,9 +19,9 @@ extern int8_t FuncType;
 #define S_L_Dot      3
 #define S_L_Default  -1
 
-extern int8_t S_L_Style;		// set line style 
-extern int8_t tmp_Style;		// set line style 
-extern int8_t Angle;			// 0:deg  1:rad  2:grad
+extern char S_L_Style;		// set line style 
+extern char tmp_Style;		// set line style 
+extern char Angle;			// 0:deg  1:rad  2:grad
 
 extern double Previous_X ;	// Line Previous X
 extern double Previous_Y ;	// Line Previous Y
@@ -32,20 +32,20 @@ extern int Previous_PY   ;	// Plot Previous PY
 extern double Plot_X     ;	// Plot Current X
 extern double Plot_Y     ;	// Plot Current Y
 
-extern int8_t BreakCheckDefault;	// Break Stop on/off
-extern int8_t BreakCheck;	// Break Stop on/off
-extern int8_t ACBreak;	// AC Break on/off
+extern char BreakCheckDefault;	// Break Stop on/off
+extern char BreakCheck;	// Break Stop on/off
+extern char ACBreak;	// AC Break on/off
 
-extern int8_t TimeDsp;
-extern int8_t MatXYmode;
-extern int8_t PictMode;	// StoPict/RclPict  StrageMem:0  heap:1  MCS:3
-extern int8_t CheckIfEnd;	// If...IfEnd check  0:off  1:on
-extern int8_t RefreshCtrl;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
-extern int8_t Refreshtime;	// Refresh time  n/128
+extern char TimeDsp;
+extern char MatXYmode;
+extern char PictMode;	// StoPict/RclPict  StrageMem:0  heap:1  MCS:3
+extern char CheckIfEnd;	// If...IfEnd check  0:off  1:on
+extern char RefreshCtrl;	// 0:no refresh Ctrl     1: GrphicsCMD refresh Ctrl      2: all refresh Ctrl
+extern char Refreshtime;	// Refresh time  n/128
 
 extern short DefaultWaitcount;	// wait control
 extern short Waitcount;			// current wait control
-extern int8_t  CommandInputMethod;	//	0:C.Basic  1:Genuine
+extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
@@ -193,8 +193,8 @@ extern int CBint_CurrentValue;	// Ans
 extern complex CB_CurrentValue;	// Ans
 
 #define ProgMax 40
-extern int8_t ProgEntryN;		// how many subroutin
-extern int8_t ProgNo;			// current Prog No
+extern char ProgEntryN;		// how many subroutin
+extern char ProgNo;			// current Prog No
 extern char *ProgfileAdrs[ProgMax+1];
 extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
@@ -224,14 +224,14 @@ extern char IsDispsMat;
 
 typedef struct {		// 10 bytes
 	char	CNT;
-	int8_t		TOP;
+	char	TOP;
 	int		Ptr[IfCntMax];
 	int		Adrs[IfCntMax];
 } CchIf;
 
 typedef struct {		// 34+4 bytes
-	int8_t 	CNT;
-	int8_t 	ForPtr;
+	char	CNT;
+	char	ForPtr;
 	char	TYPE[20];
 	char	GosubNest[20];
 
@@ -244,14 +244,14 @@ typedef struct {		// 34+4 bytes
 	double End[StackForMax];
 	double Step[StackForMax];
 
-	int8_t 	WhilePtr;
-	int8_t 	DoPtr;
+	char	WhilePtr;
+	char	DoPtr;
 	int	WhileAdrs[StackWhileMax];
 	int	WhileEndAdrs[StackWhileMax];
 	int	DoAdrs[StackDoMax];
 	int	LpWhileAdrs[StackDoMax];
 
-	int8_t 	SwitchPtr;
+	char	SwitchPtr;
 	char	Switchflag[StackSwitchMax];
 	int		SwitchAdrs[StackSwitchMax];
 	int		SwitchEndAdrs[StackSwitchMax];
@@ -260,7 +260,7 @@ typedef struct {		// 34+4 bytes
 } CurrentStk;
 
 //-----------------------------------------------------------------------------
-#define SkipSpace(SRC) c = (unsigned char)SRC[ExecPtr]; while ( c==0x20 ) c = (unsigned char)SRC[++ExecPtr]
+#define SkipSpace(SRC) c=SRC[ExecPtr]; while ( c==0x20 ) c=SRC[++ExecPtr]
 //------------------------------------------------------------------------------
 void ClrCahche();
 void InitLocalVar();
@@ -414,7 +414,7 @@ int GetVarName( char *SRC, int *ptr, char *name, int *len );
 #define GRAPHLENMAX	64
 typedef struct {
 	char en;		// 
-	unsigned char type;
+	char type;
 	char style;			//
 	unsigned short color;	//
 	char gstr[GRAPHLENMAX];		//

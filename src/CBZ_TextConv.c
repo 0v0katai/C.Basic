@@ -1851,7 +1851,7 @@ int TextToOpcode( char *filebase, char *text, int maxsize ) {
 				textofst++;
 			}
 		} else 
-		if ( ( 0x000000A0 <= c ) && ( c <= 0x000000DF ) ) {	// kana
+		if ( ( 0xFFFFFFA0 <= c ) && ( c <= 0xFFFFFFDF ) ) {	// kana
 				srcbase[ofst++] = 0xFF;
 				srcbase[ofst++] = c;
 				textofst++;

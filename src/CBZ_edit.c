@@ -3,19 +3,19 @@
 //----------------------------------------------------------------------------------------------
 //char ClipBuffer[ClipMax];
 //char *ClipBuffer;
-int8_t DisableDebugMode=0;	// 0:enable debug mode
-int8_t ExitDebugModeCheck=0;  // ExitDebugModeCheck
-int8_t ForceDebugMode;
-int8_t DebugMode=0;	// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
-int8_t ScreenModeEdit=0;
-int8_t DebugScreen=0;		// 0:no   1:Screen debug mode with fkey    2: Screen debug mode
-int8_t InpMethod=1;		// 0:C.Basic  1:Casio Basic
-int8_t InpCommandList=0;	// 0:none  1:OPTN 
+char DisableDebugMode=0;	// 0:enable debug mode
+char ExitDebugModeCheck=0;  // ExitDebugModeCheck
+char ForceDebugMode;
+char DebugMode=0;	// 0:disable   1:cont   2:trace   3:step over   4:step out   9:debug mode start
+char ScreenModeEdit=0;
+char DebugScreen=0;		// 0:no   1:Screen debug mode with fkey    2: Screen debug mode
+char InpMethod=1;		// 0:C.Basic  1:Casio Basic
+char InpCommandList=0;	// 0:none  1:OPTN 
 short EditLineNum=0;
 short CurrentLineNum;
-int8_t  EDITpxNum=0;		//  EditLineNumber pixel
-int8_t  EDITpxMAX=123;	//  max x pixel
-int8_t  UpdateLineNum;
+char  EDITpxNum=0;		//  EditLineNumber pixel
+char  EDITpxMAX=123;	//  max x pixel
+char  UpdateLineNum;
 
 int EditMaxfree;
 int EditMaxProg;
@@ -232,7 +232,7 @@ char* NewclipBuffer( int *size ){	// size:-1  max
 	return buffer;
 }
 void AdjclipBuffer( int size ){	// size
-	size = (size+7) & 0x000000F8;	// 8byte align
+	size = (size+7) & 0xFFFFFFF8;	// 8byte align
 	memcpy2( Recent_HiddenRAM_MatTopPtr-size, HiddenRAM_MatTopPtr, size );
 	HiddenRAM_MatTopPtr = Recent_HiddenRAM_MatTopPtr - size;
 	MatAry[Mattmp_clipBuffer].Adrs = (double*)HiddenRAM_MatTopPtr;
@@ -334,12 +334,12 @@ int AddComment( char *filebase, int ptr, int startp, int endp ){
 				plus++;
 				break;
 			case 0x7F:	// 
-			case 0x000000F7:	// 
-			case 0x000000F9:	// 
-			case 0x000000E5:	// 
-			case 0x000000E6:	// 
-			case 0x000000E7:	// 
-			case 0x000000FF:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
 				ptr++;
 				break;
 		}
@@ -371,12 +371,12 @@ int DelComment( char *filebase, int ptr, int startp, int endp ){
 				}
 				break;
 			case 0x7F:	// 
-			case 0x000000F7:	// 
-			case 0x000000F9:	// 
-			case 0x000000E5:	// 
-			case 0x000000E6:	// 
-			case 0x000000E7:	// 
-			case 0x000000FF:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
 				ptr++;
 				break;
 		}
@@ -468,7 +468,7 @@ int OpcodeMinilength( char *str, int *oplen ){
 	int c=(char)*str;
 	int length=CB_PrintMiniLength( (unsigned char *)str++, EditExtFont);	// minifont ext font mode
 	(*oplen)=1;
-	if ( (c==0x7F)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) )  (*oplen)++;
+	if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  (*oplen)++;
 	return length;
 }
 
@@ -633,12 +633,12 @@ int HomeLineNum( char * SrcBase, int offset ) {	// Logical line numbrer
 				no++;
 				break;
 			case 0x7F:	// 
-			case 0x000000F7:	// 
-			case 0x000000F9:	// 
-			case 0x000000E5:	// 
-			case 0x000000E6:	// 
-			case 0x000000E7:	// 
-			case 0x000000FF:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
 				ofst++;
 				break;
 		}
@@ -661,12 +661,12 @@ int JumpLineNum( char * SrcBase, int lineNum ) {	// Logical line numbrer
 				no++;
 				break;
 			case 0x7F:	// 
-			case 0x000000F7:	// 
-			case 0x000000F9:	// 
-			case 0x000000E5:	// 
-			case 0x000000E6:	// 
-			case 0x000000E7:	// 
-			case 0x000000FF:	// 
+			case 0xFFFFFFF7:	// 
+			case 0xFFFFFFF9:	// 
+			case 0xFFFFFFE5:	// 
+			case 0xFFFFFFE6:	// 
+			case 0xFFFFFFE7:	// 
+			case 0xFFFFFFFF:	// 
 				ofst++;
 				break;
 		}
@@ -951,7 +951,7 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 int CheckIndentCommand( char *SrcBase, int ptr ){
 	int c=SrcBase[ptr++];
 	int indent=0;
-	if ( c==0x000000F7 ) {
+	if ( c==0xFFFFFFF7 ) {
 		c=SrcBase[ptr++];
 		switch (c) {
 			case 0x00:	// If
@@ -978,7 +978,7 @@ void RestoreScreenModeEdit(){
 unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	char *filebase,*SrcBase;
 	unsigned int key=0;
-	unsigned char keyH,keyL;
+	char keyH,keyL;
 	char cont=1,stat;
 	char buffer[32];
 	char buffer2[32];
@@ -1573,7 +1573,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						FkeyClearAll();
 						if ( YesNo2( "Not Display mode", "Replace All Ok?") == 0 ) break;
 						locate (11,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode not display
-						Bdisp_PutDisp_DD();
+						Bdisp_PutDisp_DD;
 						while ( KeyScanDownAC() == 0 ) {
 							i = strlenOp(searchbuf);
 							csrPtr+=i;
@@ -2186,9 +2186,9 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 			keyH=(key&0xFF00) >>8 ;
 			keyL=(key&0x00FF) ;
 			switch ( keyH ) {		// ----- 2byte code -----
-				case 0x000000F7:		// 
+				case 0xFFFFFFF7:		// 
 					if ( ( keyL==0x02 ) || ( keyL==0x0F ) || ( keyL==0x03 ) ||	// Else/ElseIf
-						 ( keyL==0x07 ) || ( keyL==0x09 ) || ( keyL==0x0B ) || ( keyL==0x000000ED )  ) {	// Next/WhileEnd/LpWhile/SwitchEnd
+						 ( keyL==0x07 ) || ( keyL==0x09 ) || ( keyL==0x0B ) || ( keyL==0xFFFFFFED )  ) {	// Next/WhileEnd/LpWhile/SwitchEnd
 						i=0;
 						while ( i < (CB_EditIndent&0x07) ) {
 							PrevOpcode( SrcBase, &csrPtr );
@@ -2199,11 +2199,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						}
 					}
 				case 0x7F:		// 
-				case 0x000000F9:		// 
-				case 0x000000E5:		// 
-				case 0x000000E6:		// 
-				case 0x000000E7:		// 
-				case 0x000000FF:	// 
+				case 0xFFFFFFF9:		// 
+				case 0xFFFFFFE5:		// 
+				case 0xFFFFFFE6:		// 
+				case 0xFFFFFFE7:		// 
+				case 0xFFFFFFFF:	// 
 					if (ClipStartPtr>=0) { 
 						ClipStartPtr = -1 ;		// ClipMode cancel			
 						break;

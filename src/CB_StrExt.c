@@ -135,6 +135,7 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 	int reg,dimA,dimB,ElementSize;
 	int base;
 	char *string=0,*str=0;
+	char opcodeFN[]="\xF9\x1B";
 	
 	char *scrbuf[896];
 	memcpy( scrbuf, PictAry[0], 896);	// store VRAM
@@ -227,13 +228,15 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 				CB_StoreStringSub( type, (*select), clipbuffer );
 				break;
 			case KEY_CTRL_F2:	// recall
-				memcpy( PictAry[0], scrbuf, 896);
-				return RecallStringSub( reg, (*select) ) ;
+				str = RecallStringSub( reg, (*select) ) ;
+				cont=0;
+				break;
 				
 			case KEY_CTRL_F3:	// 
 				if ( type!=1 ) break;
-				memcpy( PictAry[0], scrbuf, 896);
-				return "\xF9\x1B";
+				str=opcodeFN;
+				cont=0;
+				break;
 
 			case KEY_CTRL_F4:
 			case KEY_CTRL_LEFT:
@@ -268,6 +271,6 @@ char* CB_SeeString(int type, int *select, char *clipbuffer ){	// ----------- See
 		}
 	}
 	memcpy( PictAry[0], scrbuf, 896);	// restore VRAM
-	return (char *)0;
+	return str;
 }
 

@@ -1358,7 +1358,7 @@ void CB_PrintMini( int px, int py, const unsigned char *str, int mode){
 	int c=(char)*str;
 	while ( c ) {
 		i=KPrintCharMini( px, py, str++ , mode );
-		if ( (c==0x7F)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) )  str++;
+		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
 		px+=i;
 		if ( px>127 ) break;
 		c=(char)*str;
@@ -1376,7 +1376,7 @@ int CB_PrintMiniLengthStr( unsigned char *str, int extflag ){
 	int c=(char)*str;
 	while ( c ) {
 		i=CB_PrintMiniLength( str++, extflag );
-		if ( (c==0x7F)||(c==0x000000F9)||(c==0x000000E5)||(c==0x000000E6)||(c==0x000000E7)||(c==0x000000FF) )  str++;
+		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
 		length+=i;
 		c=(char)*str;
 	}
@@ -1406,7 +1406,7 @@ void ReadExtFont(){
 
 int CB_GetFontSub( char *SRC, char *cstr, int *orgflag, int getmode ) {
 	int opcode;
-	int c = (unsigned char)SRC[ExecPtr];
+	int c=SRC[ExecPtr];
 	if ( c == ')' ) { ExecPtr++; return -1; }
 	*orgflag=0; if ( c == '@' ) { ExecPtr++; *orgflag=1; }
 	c=CB_IsStr( SRC, ExecPtr );
@@ -1448,8 +1448,8 @@ int CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 
 	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
 	if ( c == -1 ) goto exit;
-	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
-	if ( (unsigned char)SRC[ExecPtr] == 0x0E ) {  // -> Mat C
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
 			width=6;
 			MatrixOprand( SRC, &reg, &x, &y );
@@ -1460,9 +1460,8 @@ int CB_GetFont( char *SRC ){	// GetFont(0xFFA0)->Mat C
 			if ( ErrorNo ) return 0; // error
 
 			memcpy( vbuf, vram, 16*8 );
-            CB_PrintC_ext( 1, 1, cstr, orgflag==0 );
-			// if ( cstr==NULL )	CB_PrintC( 1, 1, (unsigned char *)" " );
-			// else			CB_PrintC_ext( 1, 1, cstr, orgflag==0 );
+			if ( cstr==NULL )	CB_PrintC( 1, 1, (unsigned char *)" " );
+			else			CB_PrintC_ext( 1, 1, cstr, orgflag==0 );
 			x=1;
 			y=1;
 			i=x;
@@ -1492,8 +1491,8 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 
 	c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
 	if ( c == -1 ) goto exit;
-	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
-	if ( (unsigned char)SRC[ExecPtr] == 0x0E ) {  // -> Mat C
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
 			ExecPtr++;
 			width=CB_PrintMiniLength( cstr, (orgflag==0) );
 			if ( width<2 ) width=2;
@@ -1505,14 +1504,12 @@ int CB_GetFontMini( char *SRC ){	// GetFont(0xFFA0)->Mat C
 			if ( ErrorNo ) return 0; // error
 			
 			memcpy( vbuf, vram, 16*8 );
-            	if ( orgflag )	CB_PrintMiniC( 0, 0, cstr, MINI_OVER );
+			if ( cstr==NULL ) {
+								CB_PrintMiniC( 0, 0, (unsigned char *)" ", MINI_OVER );
+			} else {
+				if ( orgflag )	CB_PrintMiniC( 0, 0, cstr, MINI_OVER );
 				else			CB_PrintMiniC( 0, 0, cstr, MINI_OVER | 0x100 );
-			// if ( cstr==NULL ) {
-			// 					CB_PrintMiniC( 0, 0, (unsigned char *)" ", MINI_OVER );
-			// } else {
-			// 	if ( orgflag )	CB_PrintMiniC( 0, 0, cstr, MINI_OVER );
-			// 	else			CB_PrintMiniC( 0, 0, cstr, MINI_OVER | 0x100 );
-			// }
+			}
 			x=1;
 			y=1;
 			i=x;
@@ -1557,7 +1554,7 @@ char* CB_SetFontSub( char *SRC, int *reg, int mini ) {
 			if ( CharNo< 0x20 ) ExtCharGaijiFX = 1; else ExtCharKanaFX = 1;
 		}
 	}
-	if ( (unsigned char)SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return NULL; }  // Syntax error
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return NULL; }  // Syntax error
 	ExecPtr++;
 	MatrixOprand( SRC, &(*reg), &width, &height );
 	if ( ErrorNo ) return NULL; // error

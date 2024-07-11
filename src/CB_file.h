@@ -44,10 +44,10 @@ extern char folder[FILENAMEMAX];
 extern int index;
 
 extern char FileListUpdate;
-extern int8_t StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
+extern char StorageMode;		// 0:Storage memory   1:SD		2:MCS		3:SD/MCS
 
-extern int8_t ForceG1Msave;		//    1: force g1m save
-extern int8_t AutoSaveMode;		//    1: Auto save ( not pop up )
+extern char ForceG1Msave;		//    1: force g1m save
+extern char AutoSaveMode;		//    1: Auto save ( not pop up )
 extern char textmode;
 
 extern char root2[root2_MAX];

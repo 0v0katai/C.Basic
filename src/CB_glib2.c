@@ -613,20 +613,20 @@ void Graph_Draw(){	//	EE:Graph Y= F0:Graph Y>  F1:Graph Y<  F2:Graph Y>=  F3:Gra
 		if ( ( 0<i ) && ( i<=127 ) ) {
 			flag=1;
 			switch ( GraphStat[gptr].type ) {
-				case 0x000000EF:	// Graph Integral
+				case 0xFFFFFFEF:	// Graph Integral
 					vy1=0;
 					vy2=ty;
 					flag=( (IntegralStart <= regX.real) && (regX.real <= IntegralEnd) );
 					break;
-				case 0x000000F0:	// Graph Y>
+				case 0xFFFFFFF0:	// Graph Y>
 					flag=2;
-				case 0x000000F2:	// Graph Y>=
+				case 0xFFFFFFF2:	// Graph Y>=
 					vy1=ty;
 					vy2=Ymax;
 					break;
-				case 0x000000F1:	// Graph Y<
+				case 0xFFFFFFF1:	// Graph Y<
 					flag=2;
-				case 0x000000F3:	// Graph Y<=
+				case 0xFFFFFFF3:	// Graph Y<=
 					vy1=ty;
 					vy2=Ymin;
 					break;
@@ -889,7 +889,7 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, double *dmul, int *listdi
 		*dadd = Cplx_Evalsub1(graph).real;
 		if ( dspflag<3 ) {
 			c = graph[ExecPtr];
-			if ( c == 0x00000089 ) {	// +
+			if ( c == 0xFFFFFF89 ) {	// +
 				ExecPtr++;
 				if ( graph[ExecPtr] == '{' ) {
 				  checklist:
@@ -904,12 +904,12 @@ int Graph_Draw_XY_List_sub( char *graph, double *dadd, double *dmul, int *listdi
 				 checkmul:
 					*dmul = Cplx_Evalsub1(graph).real;
 					if ( dspflag<3 ) {
-						if ( (unsigned char)graph[ExecPtr] == 0x000000A9 ) ExecPtr++;	// x
-						if ( (unsigned char)graph[ExecPtr] == '{' ) goto checklist;	//A*{...}
+						if ( graph[ExecPtr] == 0xFFFFFFA9 ) ExecPtr++;	// x
+						if ( graph[ExecPtr] == '{' ) goto checklist;	//A*{...}
 					}
 				}
 			} else {
-				if ( c == 0x000000A9 ) ExecPtr++;	// x
+				if ( c == 0xFFFFFFA9 ) ExecPtr++;	// x
 				*dmul = *dadd;
 				*dadd = 0.0;
 				if ( graph[ExecPtr] == '{' ) goto checklist;	//A*{...}

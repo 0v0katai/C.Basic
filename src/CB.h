@@ -5,7 +5,6 @@
 #include <string.h>
 #include <math.h>
 #include <timer.h>
-#include <stdint.h>
 
 typedef struct  {
 	double real;

@@ -4,24 +4,24 @@
 int KeyRepeatFirstCount=20;		// pointer to repeat time of first repeat (20:default)
 int KeyRepeatNextCount = 5;		// pointer to repeat time of second repeat( 5:default)
 
-int8_t  ComplexMode = 0;		// Complex mode  real:0   a+bi:1  a_b:2
-int8_t MaxMemMode = 0;		// Maximam memory mode
-int8_t EnableExtFont = 0;	// enable external font
+char  ComplexMode = 0;		// Complex mode  real:0   a+bi:1  a_b:2
+char  MaxMemMode = 0;		// Maximam memory mode
+char  EnableExtFont = 0;	// enable external font
 
 short PageUpDownNum = PageUpDownNumDefault;	// PageUp/Down counter
-int8_t EditTopLine = 0;	// 1: use top of line (edit)
-int8_t EditFontSize = 0;	// 0:standard  1:mini
-int8_t EditListChar = 0;	// List character change
-int8_t EditExtFont=0;	// Edit ext Font enable:1
+char  EditTopLine = 0;	// 1: use top of line (edit)
+char  EditFontSize = 0;	// 0:standard  1:mini
+char  EditListChar = 0;	// List character change
+char  EditExtFont=0;	// Edit ext Font enable:1
 
-int8_t ExtendPict=0;	// 0:20  21~99						( use hidden ram only )
-int8_t ExtendList=5;	// 0:52(default) 1:+52 ~ 19:+988	( use hidden ram only )
-int8_t ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
-int8_t ForceReturn;		// 0:none  1:return
-int8_t  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
-int8_t CB_fx5800P = 0;		// fx-5800P mode
-int8_t  CB_HelpOn=0;			// Help function
-int8_t  CB_EditIndent=0;		// indent function  0:Non  1~4:indent space
+char  ExtendPict=0;	// 0:20  21~99						( use hidden ram only )
+char  ExtendList=5;	// 0:52(default) 1:+52 ~ 19:+988	( use hidden ram only )
+char  ForceReturnMode=0;	// 0:none  1:F1 2:EXE  3:Both
+char  ForceReturn;		// 0:none  1:return
+char  CB_RecoverSetup=1;	// setup recover flag 0:none 1:recover
+char  CB_fx5800P = 0;		// fx-5800P mode
+char  CB_HelpOn=0;			// Help function
+char  CB_EditIndent=0;		// indent function  0:Non  1~4:indent space
 
 int selectSetup=0;
 int selectVar=0;
@@ -178,10 +178,10 @@ int System( int n ) {
 
 int CB_System( char *SRC ) {	// System( n )
 	int r;
-	int c = (unsigned char)SRC[ExecPtr];
+	int c = SRC[ExecPtr];
 	int n = CB_EvalInt( SRC );
 	if ( n==10000 ) {	// load config data to ListAns   Ststem(10000,1) Ststem(10000,2) Ststem(10000,3)
-		if ( (unsigned char)SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+		if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 		ExecPtr++;
 		c = CB_EvalInt( SRC );
 		LoadConfig1data( c );
@@ -189,7 +189,7 @@ int CB_System( char *SRC ) {	// System( n )
 	}
 	r = System( n );
   exit:
-	if ( (unsigned char)SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return r;
 }
 

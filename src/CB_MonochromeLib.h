@@ -55,7 +55,7 @@
 void CB_ML_ClrVRAM() ; // ML_ClrVRAM
 void CB_ML_ClrScreen() ; // ML_ClrScreen
 void CB_ML_DispVRAM() ; // ML_DispVRAM
-void CB_ML_SetContrast( char *SRC ) ; // ML_Contrast
+int CB_ML_SetContrast( char *SRC ) ; // ML_Contrast
 int CB_ML_GetContrast() ; // ML_Contrast
 //----------------------------------------------------------------------------------------------
 void CB_ML_Pixel( char *SRC ) ; // ML_Pixel x, y, color
