@@ -76,12 +76,12 @@ add_executable(CBFXGCC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
 include_directories(CBFXGCC PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(CBFXGCC PRIVATE
                         -mrenesas -nostdlib -I include
-                        -Wall -Wextra -Os -g -flto
+                        -Wall -Wextra -Os -g -flto=auto
                         )
 target_link_options(CBFXGCC PRIVATE
                         -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/addin.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
                         -Wl,--print-memory-usage -Wl,-Map=map)
-target_link_libraries(CBFXGCC PRIVATE -lfx -lgcc)
+target_link_libraries(CBFXGCC PRIVATE -lm -lfx -lgcc)
 
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
