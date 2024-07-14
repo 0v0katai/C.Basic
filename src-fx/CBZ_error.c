@@ -1,18 +1,32 @@
-/*
-	This file returns a specific error message given the corresponding value.
-	Refer to CB_error.h for error value lookup.
-*/
+/* *****************************************************************************
+ * CBZ_error.c -- Error handling
+ * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
 
 #include "CB.h"
 
-int g_error_ptr=0;		// Saves current `ExecPtr`
-int g_error_prog=0;	// Saves current `ProgNo`
-int g_error_type;		// Saves entered error type
+int g_error_ptr=0;
+int g_error_prog=0;
+int g_error_type;
 
 void ERROR(char *buffer) {
 	unsigned int key;
 	unsigned int pad = ( strlen(buffer) < 16 );	// Pad error text with length < 16
-// 	char buf[22];
+	char error_type_msg[22];
 
 	if ( TryFlag ) return ;
 	
@@ -27,6 +41,8 @@ void ERROR(char *buffer) {
 
 	PopUpWin(4);
 	locate(3+pad,3); Print((unsigned char *)buffer);
+	sprintf(error_type_msg, "(%d)", g_error_type);
+	PrintMini(102, 8, (unsigned char *)error_type_msg, MINI_OVER);
 	locate(6,5); Print((unsigned char *) "Press:[EXIT]");
 
 	Bdisp_PutDisp_DD();
