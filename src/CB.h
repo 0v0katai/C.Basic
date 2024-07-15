@@ -6,6 +6,10 @@
 #include <math.h>
 #include <timer.h>
 
+#include "_h_c_lib.h"
+#include "assert.h"
+#include "builtin.h"
+
 typedef struct  {
 	double real;
 	double imag;

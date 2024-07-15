@@ -21,10 +21,10 @@
 extern "C" {
 #include <builtin.h>
 #endif
-extern float frexpf(float, int *);
-extern float ldexpf(float, int);
-extern float modff(float, float *);
-extern float ceilf(float);
+__attribute__((renesas)) extern float frexpf(float, int *);
+__attribute__((renesas)) extern float ldexpf(float, int);
+__attribute__((renesas)) extern float modff(float, float *);
+__attribute__((renesas)) extern float ceilf(float);
 #if defined(_SH2E)|defined(_SH3E)|defined(_SH4)
 #ifdef _FPD
 #define  fabsf  _builtin_fabs
@@ -32,24 +32,24 @@ extern float ceilf(float);
 #define  fabsf  _builtin_fabsf
 #endif
 #else
-extern float fabsf(float);
+__attribute__((renesas)) extern float fabsf(float);
 #endif
-extern float floorf(float);
-extern float fmodf(float, float);
-extern float acosf(float);
-extern float asinf(float);
-extern float atanf(float);
-extern float atan2f(float,float);
-extern float cosf(float);
-extern float sinf(float);
-extern float tanf(float);
-extern float coshf(float);
-extern float tanhf(float);
-extern float sinhf(float);
-extern float expf(float);
-extern float logf(float);
-extern float log10f(float);
-extern float powf(float,float);
+__attribute__((renesas)) extern float floorf(float);
+__attribute__((renesas)) extern float fmodf(float, float);
+__attribute__((renesas)) extern float acosf(float);
+__attribute__((renesas)) extern float asinf(float);
+__attribute__((renesas)) extern float atanf(float);
+__attribute__((renesas)) extern float atan2f(float,float);
+__attribute__((renesas)) extern float cosf(float);
+__attribute__((renesas)) extern float sinf(float);
+__attribute__((renesas)) extern float tanf(float);
+__attribute__((renesas)) extern float coshf(float);
+__attribute__((renesas)) extern float tanhf(float);
+__attribute__((renesas)) extern float sinhf(float);
+__attribute__((renesas)) extern float expf(float);
+__attribute__((renesas)) extern float logf(float);
+__attribute__((renesas)) extern float log10f(float);
+__attribute__((renesas)) extern float powf(float,float);
 #if defined(_SH3E)|defined(_SH4)
 #ifdef _FPD
 #define  sqrtf  _builtin_sqrt
@@ -57,7 +57,7 @@ extern float powf(float,float);
 #define  sqrtf  _builtin_sqrtf
 #endif
 #else
-extern float sqrtf(float);
+__attribute__((renesas)) extern float sqrtf(float);
 #endif
 #ifdef __cplusplus
 }
