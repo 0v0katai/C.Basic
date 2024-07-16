@@ -26,7 +26,7 @@ extern "C" {
 
 #define _NFILE 20
 #define SYS_OPEN 20
-extern struct _iobuf {
+__attribute__((renesas)) extern struct _iobuf {
        unsigned char *_bufptr;          /* buffer pointer              */
                 long  _bufcnt;          /* buffer count                */
        unsigned char *_bufbase;         /* buffer base pointer         */
@@ -36,49 +36,49 @@ extern struct _iobuf {
                 char  _iofd;
 }  _iob[_NFILE];
 
-extern volatile int         _errno;
+__attribute__((renesas)) extern volatile int         _errno;
 
 typedef struct _iobuf FILE;             /* define FILE of file-stream    */
 
                                         /* define function of prototype  */
-extern int     _fillbuf(FILE*);
-extern int     _flshbuf(int,FILE*);
-extern void    _putcsub(FILE*);
-extern int     fclose(FILE *);
-extern int     fflush(FILE *);
-extern FILE   *fopen(const char *, const char *);
-extern FILE   *freopen(const char *, const char *, FILE *);
-extern void    setbuf(FILE *, char *);
-extern int     setvbuf(FILE *, char *, int, size_t);
-extern int     fprintf(FILE *, const char *, ...);
-extern int     fscanf(FILE *, const char *, ...);
-extern int     printf(const char * ,...);
-extern int     scanf(const char * ,...);
-extern int     sprintf(char *, const char * ,...);
-extern int     sscanf(const char *, const char * ,...);
-extern int     vfprintf(FILE *, const char *, char *);
-extern int     vprintf(const char *, char *);
-extern int     vsprintf(char *, const char *, char *);
-extern int     fgetc(FILE *);
-extern char   *fgets(char *, int, FILE *);
-extern int     fputc(int , FILE *);
-extern int     fputs(const char *, FILE *);
-extern int     getc(FILE *);
-extern int     getchar(void);
-extern char   *gets(char *);
-extern int     putc(int, FILE *);
-extern int     putchar(int);
-extern int     puts(const char *);
-extern int     ungetc(int, FILE *);
-extern size_t  fread(void *, size_t, size_t, FILE *);
-extern size_t  fwrite(const void *, size_t, size_t, FILE *);
-extern int     fseek(FILE *, long int, int);
-extern long    ftell(FILE *);
-extern void    rewind(FILE *);
-extern void    clearerr(FILE *);
-extern int     feof(FILE *);
-extern int     ferror(FILE *);
-extern void    perror(const char *);
+__attribute__((renesas)) extern int     _fillbuf(FILE*);
+__attribute__((renesas)) extern int     _flshbuf(int,FILE*);
+__attribute__((renesas)) extern void    _putcsub(FILE*);
+__attribute__((renesas)) extern int     fclose(FILE *);
+__attribute__((renesas)) extern int     fflush(FILE *);
+__attribute__((renesas)) extern FILE   *fopen(const char *, const char *);
+__attribute__((renesas)) extern FILE   *freopen(const char *, const char *, FILE *);
+__attribute__((renesas)) extern void    setbuf(FILE *, char *);
+__attribute__((renesas)) extern int     setvbuf(FILE *, char *, int, size_t);
+__attribute__((renesas)) extern int     fprintf(FILE *, const char *, ...);
+__attribute__((renesas)) extern int     fscanf(FILE *, const char *, ...);
+__attribute__((renesas)) extern int     printf(const char * ,...);
+__attribute__((renesas)) extern int     scanf(const char * ,...);
+__attribute__((renesas)) extern int     sprintf(char *, const char * ,...);
+__attribute__((renesas)) extern int     sscanf(const char *, const char * ,...);
+__attribute__((renesas)) extern int     vfprintf(FILE *, const char *, char *);
+__attribute__((renesas)) extern int     vprintf(const char *, char *);
+__attribute__((renesas)) extern int     vsprintf(char *, const char *, char *);
+__attribute__((renesas)) extern int     fgetc(FILE *);
+__attribute__((renesas)) extern char   *fgets(char *, int, FILE *);
+__attribute__((renesas)) extern int     fputc(int , FILE *);
+__attribute__((renesas)) extern int     fputs(const char *, FILE *);
+__attribute__((renesas)) extern int     getc(FILE *);
+__attribute__((renesas)) extern int     getchar(void);
+__attribute__((renesas)) extern char   *gets(char *);
+__attribute__((renesas)) extern int     putc(int, FILE *);
+__attribute__((renesas)) extern int     putchar(int);
+__attribute__((renesas)) extern int     puts(const char *);
+__attribute__((renesas)) extern int     ungetc(int, FILE *);
+__attribute__((renesas)) extern size_t  fread(void *, size_t, size_t, FILE *);
+__attribute__((renesas)) extern size_t  fwrite(const void *, size_t, size_t, FILE *);
+__attribute__((renesas)) extern int     fseek(FILE *, long int, int);
+__attribute__((renesas)) extern long    ftell(FILE *);
+__attribute__((renesas)) extern void    rewind(FILE *);
+__attribute__((renesas)) extern void    clearerr(FILE *);
+__attribute__((renesas)) extern int     feof(FILE *);
+__attribute__((renesas)) extern int     ferror(FILE *);
+__attribute__((renesas)) extern void    perror(const char *);
 #ifdef __cplusplus
 }
 #endif

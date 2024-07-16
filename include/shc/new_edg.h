@@ -72,47 +72,47 @@ using namespace std;
 #endif /* ifdef __EDG_RUNTIME_USES_NAMESPACES */
 
 /* Normal operator new. */
-void *operator new(size_t) throw(__EDG_STD_NAMESPACE::bad_alloc);
+__attribute__((renesas)) void *operator new(size_t) throw(__EDG_STD_NAMESPACE::bad_alloc);
 
 /* Normal operator delete. */
-void operator delete(void*) throw ();
+__attribute__((renesas)) void operator delete(void*) throw ();
 
 /* Nothrow version of operator new. */
-void *operator new(size_t, const __EDG_STD_NAMESPACE::nothrow_t&) throw();
+__attribute__((renesas)) void *operator new(size_t, const __EDG_STD_NAMESPACE::nothrow_t&) throw();
 
 /* Nothrow version of operator delete. */
-void operator delete(void*, const __EDG_STD_NAMESPACE::nothrow_t&) throw();
+__attribute__((renesas)) void operator delete(void*, const __EDG_STD_NAMESPACE::nothrow_t&) throw();
 
 /* Placement new. */
-void *operator new(size_t, void*) throw();
+__attribute__((renesas)) void *operator new(size_t, void*) throw();
 
 /* Placement delete. */
 #ifdef __PLACEMENT_DELETE
-void operator delete(void*, void*) throw();
+__attribute__((renesas)) void operator delete(void*, void*) throw();
 #endif /* ifdef __PLACEMENT_DELETE */
 
 #ifdef __ARRAY_OPERATORS
 
 /* Array new. */
-void *operator new[](size_t) throw(__EDG_STD_NAMESPACE::bad_alloc);
+__attribute__((renesas)) void *operator new[](size_t) throw(__EDG_STD_NAMESPACE::bad_alloc);
 
 /* Array delete. */
-void operator delete[](void*) throw ();
+__attribute__((renesas)) void operator delete[](void*) throw ();
 
 /* Placement array new. */
-void *operator new[](size_t, void*) throw();
+__attribute__((renesas)) void *operator new[](size_t, void*) throw();
 
 /* Placement array delete. */
 #ifdef __PLACEMENT_DELETE
-void operator delete[](void*, void*) throw();
+__attribute__((renesas)) void operator delete[](void*, void*) throw();
 #endif /* ifdef __PLACEMENT_DELETE */
 
 /* Nothrow version of array new. */
-void *operator new[](size_t,
+__attribute__((renesas)) void *operator new[](size_t,
                      const __EDG_STD_NAMESPACE::nothrow_t&) throw();
 
 /* Nothrow version of array delete. */
-void operator delete[](void*,
+__attribute__((renesas)) void operator delete[](void*,
                        const __EDG_STD_NAMESPACE::nothrow_t&) throw();
 #endif /* __ARRAY_OPERATORS */
 

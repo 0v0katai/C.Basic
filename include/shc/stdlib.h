@@ -96,30 +96,30 @@ typedef struct _LDIV_T_TAG ldiv_t ;
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern volatile int _errno;
-extern const double _HUGE_VAL;
+__attribute__((renesas)) extern volatile int _errno;
+__attribute__((renesas)) extern const double _HUGE_VAL;
 #define HUGE_VAL  _HUGE_VAL
 
-extern double atof(const char *) ;
-extern int atoi(const char *) ;
-extern long int atol(const char *) ;
-extern double strtod(const char *, char **) ;
-extern long int strtol(const char *, char **, int);
-extern int rand(void) ;
-extern void srand(unsigned int);
-extern void *calloc(size_t, size_t);
-extern void free(void *) ;
-extern void *malloc(size_t);
-extern void *realloc(void *, size_t) ;
-extern void *bsearch(const void *, const void *, size_t, size_t,
+__attribute__((renesas)) extern double atof(const char *) ;
+__attribute__((renesas)) extern int atoi(const char *) ;
+__attribute__((renesas)) extern long int atol(const char *) ;
+__attribute__((renesas)) extern double strtod(const char *, char **) ;
+__attribute__((renesas)) extern long int strtol(const char *, char **, int);
+__attribute__((renesas)) extern int rand(void) ;
+__attribute__((renesas)) extern void srand(unsigned int);
+__attribute__((renesas)) extern void *calloc(size_t, size_t);
+__attribute__((renesas)) extern void free(void *) ;
+__attribute__((renesas)) extern void *malloc(size_t);
+__attribute__((renesas)) extern void *realloc(void *, size_t) ;
+__attribute__((renesas)) extern void *bsearch(const void *, const void *, size_t, size_t,
                                   int(*)(const void*,const void*) ) ;
-extern void qsort(void *, size_t, size_t,
+__attribute__((renesas)) extern void qsort(void *, size_t, size_t,
                                   int(*)(const void*,const void*) );
 
-extern int abs(int);
-extern div_t div(int, int);
-extern long int labs(long int);
-extern ldiv_t ldiv(long int, long int);
+__attribute__((renesas)) extern int abs(int);
+__attribute__((renesas)) extern div_t div(int, int);
+__attribute__((renesas)) extern long int labs(long int);
+__attribute__((renesas)) extern ldiv_t ldiv(long int, long int);
 #ifdef __cplusplus
 }
 #endif
