@@ -59,6 +59,7 @@ typedef struct {
 } TDirectoryItem;
 
 int MCS_CreateDirectory( unsigned char*dir, char*dirno );
+int MCSPutVar2( unsigned char*dir, unsigned char*item, int data_len, void*buffer );
 int MCS_WriteItem( unsigned char*dir, unsigned char*item, short itemtype, int data_length, int buffer );
 int MCS_DeleteDirectory( unsigned char*dir );
 int MCS_DeleteItem( unsigned char*dir, unsigned char*item );
