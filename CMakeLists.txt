@@ -62,11 +62,9 @@ set(ASSETS
   # ...
 )
 set(ASSETS_fx
-  assets-fx/example.png
   # ...
 )
 set(ASSETS_cg
-  assets-cg/example.png
   # ...
 )
 
