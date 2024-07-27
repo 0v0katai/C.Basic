@@ -495,7 +495,7 @@ const short CharMATH[]= {
 	0xE5D8,0xE5D9,0xE5DA,0xE5DB,0xE5DC,0xE5DD,0xE5DE,0xE5DF,0x00C2,0x00C3,0x00CB,0x00CC,0x7FC7,0x7F54,0x008C,0x009C,0x00AC,0x00BC,0xE6BD,
 	0xE6BE,0xE6BF,0xE6C0,0xE6C1,0xE6C2,0xE6C3,0xE6C4,0xE6C5,0xE6C6,0xE6C7,0xE6C8,0xE6C9,0xE6CA,0xE6CB,0xE6D6,0xE6CC,0xE6CD,0xE6CE,0xE6CF,
 	0xE6D0,0xE6D1,0xE6D2,0xE6D3,0xE6D4,0xE6D5,0xE6B2,0xE6B3,0xE6B4,0xE6B5,0xE6BC,0xE6B6,0xE6D7,0xE6D8,0xE6D9,0xE6DA,0xE6DB,0xE6DC,0xE6DD,
-	0xE6DE,0x00D8,0xE5B1,0xE5B2,0xE5B3,0xE5B4,0xE5E4,0x0000 };
+	0xE6DE,0x00D8,0xE5B1,0xE5B2,0xE5B3,0xE5B4,0xFFE0,0xFFE1,0xFFE2,0x0000 };
 	
 const short CharSYBL[]= {
 	0x0021,0x0022,0x0023,0x0024,0x0025,0x0026,0x0027,0x0028,0x0029,0x002C,0x002E,0x003A,0x003B,0x003F,0x0040,0x005B,0x005C,0x005D,0x005F,
@@ -537,8 +537,7 @@ const short CharKANA[]= {
 	0xFFA0,0xFFA1,0xFFA2,0xFFA3,0xFFA4,0xFFA5,0xFFA6,0xFFA7,0xFFA8,0xFFA9,0xFFAA,0xFFAB,0xFFAC,0xFFAD,0xFFAE,0xFFAF,0x0020,0x0020,0x0020,
 	0xFFB0,0xFFB1,0xFFB2,0xFFB3,0xFFB4,0xFFB5,0xFFB6,0xFFB7,0xFFB8,0xFFB9,0xFFBA,0xFFBB,0xFFBC,0xFFBD,0xFFBE,0xFFBF,0x0020,0x0020,0x0020,
 	0xFFC0,0xFFC1,0xFFC2,0xFFC3,0xFFC4,0xFFC5,0xFFC6,0xFFC7,0xFFC8,0xFFC9,0xFFCA,0xFFCB,0xFFCC,0xFFCD,0xFFCE,0xFFCF,0x0020,0x0020,0x0020,
-	0xFFD0,0xFFD1,0xFFD2,0xFFD3,0xFFD4,0xFFD5,0xFFD6,0xFFD7,0xFFD8,0xFFD9,0xFFDA,0xFFDB,0xFFDC,0xFFDD,0xFFDE,0xFFDF,0x0020,0x0020,0x0020,
-	0xFFE0,0xFFE1,0xFFE2,0x0000 };
+	0xFFD0,0xFFD1,0xFFD2,0xFFD3,0xFFD4,0xFFD5,0xFFD6,0xFFD7,0xFFD8,0xFFD9,0xFFDA,0xFFDB,0xFFDC,0xFFDD,0xFFDE,0xFFDF,0x0000 };
 
 short *oplist=CharMATH;
 short CharPtr=0;
@@ -551,7 +550,8 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 	short opcode;
 	int opNum=0, n ,i;
 	int mini=0;
-	char *Extchar[]={"  ","A "," G ","AG","  K","A K"," GK","AGK"};
+	// char *Extchar[]={"  ","A "," G ","AG","  K","A K"," GK","AGK"};
+	char *Extchar[]={"  ","A "," X","AX"};
 
 	SaveDisp(SAVEDISP_PAGE1);		// --------
 	Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -604,10 +604,10 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 			ptr=(y-2+scrl)*19+x-2 ;
 			opcode=oplist[ ptr ];
 			CB_OpcodeToStr( opcode, tmpbuf ) ; // SYSCALL
-		switch ( mini ) {
+			switch ( mini ) {
 				case 2:
-					if ( CharPtr == ptr )	CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV  | 0x100 );
-					else 					CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER | 0x100 );
+					if ( CharPtr == ptr )	CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV, true);
+					else 					CB_PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_OVER, true);
 					break;
 				case 1:
 					if ( CharPtr == ptr )	PrintMini( (x-1)*6+1, (y-1)*8+1, (unsigned char*)tmpbuf , MINI_REV );
@@ -637,10 +637,12 @@ unsigned int SelectChar( int *ContinuousSelect ) {
 		switch ( mini ) {
 			case 2:
 			case 1:
-				i = (ExtCharKanaMiniFX!=0)*4 + (ExtCharGaijiMiniFX!=0)*2 + (ExtCharAnkMiniFX!=0);
+				// i = (g_ext_kana_mini!=0)*4 + (g_ext_gaiji_mini!=0)*2 + (g_ext_asc_mini!=0);
+				i = (g_ext_ff_mini!=0)*2 + (g_ext_asc_mini!=0);
 				break;
 			case 0:
-				i = (ExtCharKanaFX!=0)*4 + (ExtCharGaijiFX!=0)*2 + (ExtCharAnkFX!=0);
+				// i = (g_ext_kana!=0)*4 + (g_ext_gaiji!=0)*2 + (g_ext_asc!=0);
+				i = (g_ext_ff!=0)*2 + (g_ext_asc!=0);
 				break;
 		}
 		Fkey_dispN( FKeyNo6, Extchar[i] );
@@ -857,7 +859,7 @@ int SelectOpcodeRecent( int listselect ) {
 			for ( i=0; i<6; i++ ) {
 				CB_Print(3,2+i,(unsigned char *)"                 ");
 				sprintf(buffer, "F%d:", i+1 ) ;
-				CB_PrintMini( 13, 8*i+10, (unsigned char *)buffer, MINI_OVER ) ;
+				CB_PrintMini( 13, 8*i+10, (unsigned char *)buffer, MINI_OVER, false) ;
 				if ( listselect == CMDLIST_RECENT ) {
 					j=OplistRecent[seltop+i];
 				} else {
@@ -3669,8 +3671,8 @@ int PrintOpcode(int px, int py, char *buffer, int width, int ofst, int ptrX, int
 		while ( i < len ) {
 			if ( px <= pxmax-wk ) {
 				if ( miniflag ) {
-					if ( rev )	CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_REV  | (0x100*EditExtFont) ) ;
-					else		CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_OVER | (0x100*EditExtFont) ) ;
+					if ( rev )	CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_REV, EditExtFont);
+					else		CB_PrintMiniC( px, py, (unsigned char*)(tmpb+i), MINI_OVER, EditExtFont);
 					px+=4;
 				} else {
 					if ( rev )	CB_PrintXYC( px , py, (unsigned char*)(tmpb+i), (0x100*EditExtFont) | 0xFF  ) ;

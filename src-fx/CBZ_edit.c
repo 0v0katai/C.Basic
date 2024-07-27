@@ -709,15 +709,15 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 				if ( ( Numflag==0 ) && ( EDITpxNum ) ) { Numflag=1;
 					sprintf( (char*)buff, "%3d", CurrentLine );
 					buf=buff; if ( strlen((char*)buff)>3 ) buf++;
-					CB_PrintMini( 0, ((*csry)-1)*yk+2, buf, MINI_OVER );
+					CB_PrintMini( 0, ((*csry)-1)*yk+2, buf, MINI_OVER, false);
 				}
 				if ( mini == 0 ) { c=px-1+EDITpxNum;
 					if ( rev )	CB_PrintRevC_ext( c/6+1 ,(*csry), (unsigned char*)(tmpb), EditExtFont  ) ;
 					else		CB_PrintC_ext(    c/6+1 ,(*csry), (unsigned char*)(tmpb), EditExtFont  ) ;
 					px+=6;
 				} else { c=px+EDITpxNum; d=((*csry)-1)*6+2;
-					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV  | (0x100*EditExtFont) ) ;
-					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER | (0x100*EditExtFont) ) ;
+					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV, EditExtFont);
+					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER, EditExtFont);
 				}
 				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; }
 				if ( ( opcode==0x0D ) && ( buffer[ofst-2]!=0x5C ) ) { Numflag=0; (*NumOfset)++; }
