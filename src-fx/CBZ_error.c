@@ -26,7 +26,7 @@ int g_error_type;
 void ERROR(char *buffer) {
 	unsigned int key;
 	unsigned int pad = ( strlen(buffer) < 16 );	// Pad error text with length < 16
-	char error_type_msg[22];
+	char msg[22];
 
 	if ( TryFlag ) return ;
 	
@@ -41,9 +41,9 @@ void ERROR(char *buffer) {
 
 	PopUpWin(4);
 	locate(3+pad,3); Print((unsigned char *)buffer);
-	sprintf(error_type_msg, "(%d)", g_error_type);
-	PrintMini(102, 8, (unsigned char *)error_type_msg, MINI_OVER);
-	locate(6,5); Print((unsigned char *) "Press:[EXIT]");
+	sprintf(msg, "(%d)", g_error_type);
+	locate(3,5); Print((unsigned char *)msg);
+	locate(14,5); Print((unsigned char *)"[EXIT]");
 
 	Bdisp_PutDisp_DD();
 
