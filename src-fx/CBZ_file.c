@@ -155,7 +155,7 @@ unsigned int SelectFile (char *filename)
 void Abort(){		// abort program
 	unsigned int key;
 	MSG2("Not enough Memory","Please Restart");
-	while (1) GetKey(&key);
+	while (1) GetKey(&key); // [MENU]-to-Main
 }
 void ToLower( char *str ){
 	while( (*str) != '\0' ) {
@@ -844,7 +844,7 @@ unsigned int Explorer( int size, char *folder )
 			if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
 			if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
 		}
-		if ( ContinuousSelect ) ContinuousSelect=0; else GetKey(&key);
+		if ( ContinuousSelect ) ContinuousSelect=0; else GetKey(&key); // [MENU]-to-Main
 		Cursor_SetFlashMode(0); 		// cursor flashing off
 		
 		if ( KeyCheckPMINUS() ) {
@@ -1092,7 +1092,7 @@ unsigned int Explorer( int size, char *folder )
 					locate(13+i,1);
 					Cursor_SetFlashMode(1);			// cursor flashing on
 				}
-				GetKey(&key);
+				GetKey_DisableMenu(&key);
 				Cursor_SetFlashMode(0); 		// cursor flashing off
 				switch (key) {
 					case KEY_CTRL_SHIFT:
@@ -1569,7 +1569,7 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 		if ( StorageMode & 1 ) 	Fkey_dispN( FKeyNo1, ">SD");
 		else 					Fkey_dispN( FKeyNo1, ">SMM");
 	} else {
-		sprintf( msg1, "%s as %s to ", pmsg, ext);
+		sprintf( msg1, "%s as %s to", pmsg, ext);
 		if ( StorageMode & 1 ) 	sprintf( msg2, "  SD      Memory." );
 		else 					sprintf( msg2, "  Storage Memory." );
 		Fkey_dispN( FKeyNo1, ">MCS");
@@ -1837,7 +1837,7 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 	if ( ( filebase[0x00] == 'B' ) && ( filebase[0x01] == 'M' ) ) {	// bmp ?
 		Bdisp_AllClr_VRAM();
 		if ( DecodeBmp2Vram( filebase, 0, 0 ) ==0 ) return 1; // not bmp
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		return 1;
 	}
 	fsize = 0xFFFFFFFF-(((filebase[0x10]&0xFF)<<24)+((filebase[0x11]&0xFF)<<16)+((filebase[0x12]&0xFF)<<8)+(filebase[0x13]&0xFF));
@@ -1849,12 +1849,12 @@ int CheckG1M( char *filebase ){	// Check G1M Basic file
 				RclPictOr( filebase );
 				memcpy( PictAry[0], filebase+0x4C, size );	// Pict display
 			}
-			GetKey( &key );
+			GetKey_DisableMenu(&key);
 			return 1;
 		} else
 		if ( ( filebase[0x20] == 'C' ) && ( filebase[0x21] == 'A' ) && ( filebase[0x22] == 'P' ) ) {
 			memcpy( PictAry[0], filebase+0x50, 1024 );	// Capt display
-			GetKey( &key );
+			GetKey_DisableMenu(&key);
 			return 1;
 		} else {
 			ErrorMSG( "Not support file", fsize );

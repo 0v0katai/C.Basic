@@ -311,7 +311,7 @@ unsigned int SetDimension(int reg, int *dimA, int *dimB, int *Elsize, int *base,
 		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
 		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:
@@ -502,7 +502,7 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){	// base:0  0-    base:
 		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line 
 		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:
@@ -615,7 +615,7 @@ complex InitMatrix( int reg, complex value ,int ElementSize ) {
 		locate(1,8); MatAryElementSizePrint( MatAry[reg].ElementSize ) ;
 //		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				return Int2Cplx(0) ;
@@ -1345,7 +1345,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			MatDotEditCursorSetFlashMode( 1 );
 		}
 //		Bdisp_PutDisp_DD();
-		if ( dotedit ) GetKey_DisableMenu(&key); else GetKey(&key);
+		GetKey_DisableMenu(&key);
 		MatDotEditCursorSetFlashMode( 0 );
 		switch (key) {
 			case KEY_CTRL_AC:
@@ -1703,7 +1703,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 		}
 		ElementSize=MatAry[reg].ElementSize;
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		if ( KEY_CTRL_XTT   == key ) select=23;	// X
 		if ( KEY_CHAR_ANS   == key ) select=28;	// Ans
 		if ( KEY_CHAR_THETA == key ) select=27;	// Theta
@@ -1720,7 +1720,7 @@ int SetMatrix(int select){		// ----------- Set Matrix
 //				Fkey_dispN( FKeyNo4, ">53");
 //				Fkey_dispN( FKeyNo5, ">106");
 //				Fkey_dispN( FKeyNo6, ">157");
-				GetKey( &key );
+				GetKey_DisableMenu(&key);
 				switch (key) {
 					case KEY_CTRL_F1:
 						listdsp=0; // ->Mat

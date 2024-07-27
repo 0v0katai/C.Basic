@@ -1673,7 +1673,7 @@ unsigned int GWait( int exit_cancel ) {
 		if ( (UseGraphic==1)||(UseGraphic==2) ) { key=KEY_CTRL_SHIFT; key2=KEY_CTRL_F6; CB_SelectTextVRAM(); }
 	}
 	while (cont) {
-		if (key==0) GetKey(&key);
+		if (key==0) GetKey_DisableMenu(&key);
 		switch ( key ) {
 			case KEY_CTRL_AC:
 				if ( ScreenMode==0 ) cont =0 ;
@@ -2140,7 +2140,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct) {		// Me
 		if ( listmax > scrl+5 ) PrintXY( 116, 54, (unsigned char*)"\xE6\x93", 0 );
 		y = select-scrl+1;
 		Bdisp_AreaReverseVRAM( 8, y*8+6, 122, y*8+13);	// reverse select line 
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_QUIT:

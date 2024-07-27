@@ -1,13 +1,21 @@
-/*
-===============================================================================
-
- Casio Basic Interpreter (& Compiler) ver 1.8x 
-
- copyright(c)2015/2016/2017/2018 by sentaro21
- e-mail sentaro21@pm.matrix.jp
-
-===============================================================================
-*/
+/* *****************************************************************************
+ * CBZ_main.c -- Main control file
+ * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
 #include "CB.h"
 
 #define BE_MAX 16
@@ -16,6 +24,15 @@ typedef struct{	//
 	char sname[12];
 	int execptr;
 }beFiles;
+
+static void save_config_prog() {
+	int i;
+	SaveConfig();
+	for (i=ProgMax; i>=0; i--) {			// memory free
+		if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
+		if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
+	}
+}
 
 //----------------------------------------------------------------------------------------------
 
@@ -76,6 +93,8 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	ClearExtFontflag();
 
 	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
+
+	// SetQuitHandler((void *)save_config_prog);
 
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
@@ -185,12 +204,12 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 			default:
 				break;
 		}
+		// save_config_prog();
 		SaveConfig();
-		
 		for (i=ProgMax; i>=0; i--) {			// memory free
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
 			if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
-		}	
+		}
 	}
 }
 

@@ -1,13 +1,21 @@
-/*
-===============================================================================
-
- Casio Basic RUNTIME library for fx-9860G series  v1.8x
-
- copyright(c)2015/2016/2017/2018 by sentaro21
- e-mail sentaro21@pm.matrix.jp
-
-===============================================================================
-*/
+/* *****************************************************************************
+ * CBI_Eval.c -- Integer arithmetic library
+ * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
 #include "CB.h"
 //----------------------------------------------------------------------------------------------
 //		Expression evaluation    string -> int
@@ -247,22 +255,11 @@ int fcuberootint( int x ) {
 int fsquint( int x ) {
 	return x*x;
 }
-int ffactint( int x ) {
-	int tmp;
-	tmp = x ;
-	x = 1;
-	while ( tmp > 0 ) { x *= tmp; tmp--; }
-	return x;
+int ffactint(int x) {
+	return ffact(x);
 }
 int f_nPrint(int n, int r) {
-	int i, sum=1;
-	if (n < r) {
-		CB_Error(MathERR);
-		return 0;
-	}
-	for (i = n; i > n-r; i--)
-		sum *= i;
-	return sum;
+	return f_nPr(n,r);
 }
 int f_nCrint( int n, int r ) {
 	return f_nCr( n, r);
@@ -339,9 +336,6 @@ int fpowrootint( int x, int y ) {	// powroot(x,y)
 int flogabint(int x, int y) {	// flogab(x,y)
 	return flogab(x,y);
 }
-int frandint() {
-	return rand();
-}
 int frandIntint(int x, int y) {
 	return rand2() % (abs(y-x)+1) + min(x,y);
 }
@@ -397,77 +391,87 @@ int EvalIntEndCheck( int c ) {
 }
 */
 int EvalIntsubTop( char *SRC ) {	// eval 1
-	int  result,dst;
+	int result;
 	int c;
 	int excptr=g_exec_ptr;
 	int ansreg=CB_MatListAnsreg;
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
-	result=EvalIntsub1(SRC);
-	c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
-	else 
-	if ( c==0xFFFFFF89 ) { // +
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result+dst;
-	} else
-	if ( c==0xFFFFFF99 ) { // -
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result-dst;
-	} else
-	if ( c=='=') { // ==
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result == dst;
-	} else
-	if ( c=='>') { // >
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result > dst;
-	} else
-	if ( c=='<') { // <
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result < dst;
-	} else
-	if ( c==0x11) { // !=
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result != dst;
-	} else
-	if ( c==0x12) { // >=
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result >= dst;
-	} else
-	if ( c==0x10) { // <=
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result <= dst;
-	} else
-	if ( c==0xFFFFFFA9 ) { // *
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
-	} else
-	if ( c==0xFFFFFFB9 ) { // /
-	  divj:
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fDIVint(result,dst);
-	} else
-	if ( c==0xFFFFFF9A ) { // xor
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result ^ dst;
-	} else
-	if ( ( c=='|' ) || ( c==0xFFFFFFAA ) ) { // or
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result | dst;
-	} else
-	if ( ( c=='&' ) || ( c==0xFFFFFFBA ) ) { // and
-		g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result & dst;
-	} else
-	if ( c==0xFFFFFF8B ) { // ^2
-		g_exec_ptr++;
-		c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*result;
-	} else
-	if ( c==0x7F ) { // 
-		c=SRC[++g_exec_ptr];
-		if ( c==0xFFFFFFB0 ) { // And
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result && (int)dst;
-		} else
-		if ( c==0xFFFFFFB1 ) { // Or
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result || (int)dst;
-		} else
-		if ( c==0xFFFFFFB4 ) { // Xor
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return ((int)result!=0) ^ ((int)dst!=0);
-		} else
-		if ( c==0xFFFFFFBC ) { // Int/
-			goto divj;
-		} else
-		if ( c==0xFFFFFFBD ) { // Rmdr
-			g_exec_ptr++; dst=EvalIntsub1(SRC); c=SRC[g_exec_ptr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMODint(result,dst);
+	result = EvalIntsub1(SRC);
+	c = SRC[g_exec_ptr++];
+	
+	if (c == 0xFFFFFF89) { // +
+		result += EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFF99) { // -
+		result -= EvalIntsub1(SRC);
+	}
+	else if (c == '=') { // ==
+		result = (result == EvalIntsub1(SRC));
+	}
+	else if (c == '>') { // >
+		result = (result > EvalIntsub1(SRC));
+	}
+	else if (c == '<') { // < 
+		result = (result < EvalIntsub1(SRC));
+	}
+	else if (c == 0x11) { // != 
+		result = (result != EvalIntsub1(SRC));
+	}
+	else if (c == 0x12) { // >= 
+		result = (result >= EvalIntsub1(SRC));
+	}
+	else if (c == 0x10) { // <= 
+		result = (result <= EvalIntsub1(SRC));
+	}
+	else if (c == 0xFFFFFFA9) { // * 
+		result *= EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFFB9) { // / 
+		result = fDIVint(result, EvalIntsub1(SRC));
+	}
+	else if (c == 0xFFFFFF9A) { // xor 
+		result = result ^ EvalIntsub1(SRC);
+	}
+	else if (( c == '|' ) || (c == 0xFFFFFFAA)) { // or 
+		result = result | EvalIntsub1(SRC);
+	}
+	else if (( c == '&' ) || (c == 0xFFFFFFBA)) { // and 
+		result = result & EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFF8B) { // ^2
+		result *= result;
+	}
+	else if (c == 0xFFFFFF9B) { // ^(-1) RECIP
+		result = frecipint(result);
+	}
+	else if (c == 0x7F) { // 
+		c = SRC[g_exec_ptr++];
+		if (c == 0xFFFFFFB0) { // And
+			result = (result) && EvalIntsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB1 ) { // Or
+			result = (result) || EvalIntsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB4 ) { // Xor
+			result = (result != 0) ^ (EvalIntsub1(SRC) != 0);
+		}
+		else if ( c==0xFFFFFFBC ) { // Int/
+			result = fDIVint(result, EvalIntsub1(SRC));
+		}
+		else if ( c==0xFFFFFFBD ) { // Rmdr
+			result = fMODint(result, EvalIntsub1(SRC));
+		}
+		else {
+			g_exec_ptr--;
 		}
 	}
+	else {
+		g_exec_ptr--;
+	}
+	c = SRC[g_exec_ptr];
+	if (eval_end_check_2(c))
+		return result;
 
 	g_exec_ptr=excptr;
 	CB_MatListAnsreg=ansreg;
