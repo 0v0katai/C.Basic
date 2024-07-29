@@ -69,7 +69,7 @@ int MCS_RenameItem( unsigned char*srcdir, unsigned char*srcitem, unsigned char*t
 int MCS_OverwriteData( unsigned char*dir, unsigned char*item, int write_offset, int bytes_to_write, void*buffer );
 int MCS_GetItemData( unsigned char*dir, unsigned char*item, int offset, int bytes_to_read, void*buffer );
 int MCS_RenameDirectory( unsigned char*oldname, unsigned char*newname );
-int MCS_SearchDirectory( unsigned char*dir, TMainMemoryDirectoryEntry*pdir, char*dirno );
+int MCS_SearchDirectory(unsigned char *dir, TMainMemoryDirectoryEntry **pdir, char *dirno);
 int MCS_SearchDirectoryItem( unsigned char*dir, unsigned char*item, char*flags_0, TDirectoryItem*item_ptr, int*data_ptr, int*data_length );
 int MCS_GetFirstDataPointerByDirno( char*dirno, void*pdata );
 int MCS_GetDirectoryEntryByNumber( char dirno, TMainMemoryDirectoryEntry*pdir );

@@ -5,20 +5,18 @@ const unsigned char MCSdir_system[]="system";
 	
 int MCS_ReadFileList() {	// MSC file list -> files
 	TMainMemoryDirectoryEntry *pMCSdir_system;
-	int tmp[4];
 	TDirectoryItem *item;
-	char *dirno;
+	char dirno;
 	char fbuf[32];
 	char *cg1m=".g1m";
 	int i,j,r;
 	int size;
 
-	r = MCS_SearchDirectory( MCSdir_system, (TMainMemoryDirectoryEntry *)&tmp, dirno );
+	r = MCS_SearchDirectory( MCSdir_system, &pMCSdir_system, &dirno );
 	if ( r == 0x40 ) { ErrorMSG( "Can't find MCS", r); return 0; }
 	if ( r != 0    ) { ErrorMSG( "MCS error",  r); return 0; }
 
-	pMCSdir_system = (TMainMemoryDirectoryEntry *)tmp[0];
-	item = (TDirectoryItem*)pMCSdir_system->addr;
+	item = pMCSdir_system->addr;
 
 	size = pMCSdir_system->count + FavoritesMAX + 1 ;
 //	if ( pMCSdir_system->count == 0 ) return size;	// no file
