@@ -2,9 +2,7 @@
 
 This is the archive branch for documenting all changes made to C.Basic, from the first version (FX 0.10) released in 2015, up until FX 2.47-β2/CG 1.47-β2. Click the `Commits` button above to view the changes for a specific version.
 
-Starting from FX 2.48/CG 1.48 (tentative naming), all changes will be commited to the main branch.
-
-Note that the version build numbers used in some of the commit messages have been revised and may be different from the ones assigned in their coresponding AddinInfo.txt.
+Note that the version numbers used in commit messages abide strictly to the `XX AA.BB.CCDD` format to make distinction between reuploads clearly. For example, `FX 02.45.1503` means _FX Edition_ 2.45 beta 15, reupload 3.
 
 All version changes are uploaded as-is, with the exception of the following ones:
 
