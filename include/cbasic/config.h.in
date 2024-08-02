@@ -1,0 +1,8 @@
+#ifndef _CBASIC_CONFIG
+#define _CBASIC_CONFIG
+
+#define VERSION @CBASIC_VERSION_VALUE@
+#define VERSTR "@CBASIC_VERSION_STRING@" "\xE6\x41" "@BUILD@"
+#define COMMIT_ID "@COMMIT_ID_SHORT@"
+
+#endif
