@@ -3,6 +3,27 @@
 
 set(CBASIC_VERSION "02.47.2000")
 
+if(${CBASIC_VERSION} MATCHES "^0.*")
+  string(SUBSTRING ${CBASIC_VERSION} 1 1 MAJOR)
+else()
+  string(SUBSTRING ${CBASIC_VERSION} 0 2 MAJOR)
+endif()
+
+string(SUBSTRING ${CBASIC_VERSION} 3 2 MINOR)
+
+if(${CBASIC_VERSION} MATCHES "${MAJOR}.${MINOR}.0.*")
+  string(SUBSTRING ${CBASIC_VERSION} 7 1 BUILD)
+else()
+  string(SUBSTRING ${CBASIC_VERSION} 6 2 BUILD)
+endif()
+
+set(CBASIC_VERSION_VALUE "${MAJOR}${MINOR}")
+set(CBASIC_VERSION_STRING "${MAJOR}.${MINOR}")
+
+find_package(Git REQUIRED)
+execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
+                OUTPUT_VARIABLE COMMIT_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(SUBSTRING ${COMMIT_ID} 0 7 COMMIT_ID_SHORT)
 cmake_minimum_required(VERSION 3.15)
 project(CBFXGCC LANGUAGES ASM C VERSION ${CBASIC_VERSION})
 
@@ -70,9 +91,11 @@ set(ASSETS_cg
 
 fxconv_declare_assets(${ASSETS} ${ASSETS_fx} ${ASSETS_cg} WITH_METADATA)
 
+configure_file(include/cbasic/config.h.in include/cbasic/config.h)
 add_executable(CBFXGCC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
 include_directories(CBFXGCC PRIVATE
                         "${CMAKE_CURRENT_SOURCE_DIR}/include/cbasic"
+                        "${CMAKE_CURRENT_BINARY_DIR}/include/cbasic"
                         "${CMAKE_CURRENT_SOURCE_DIR}/include/cbasic/shc")
 target_compile_options(CBFXGCC PRIVATE
                         -nostdlib -I include
