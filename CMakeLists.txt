@@ -72,8 +72,8 @@ fxconv_declare_assets(${ASSETS} ${ASSETS_fx} ${ASSETS_cg} WITH_METADATA)
 
 add_executable(CBFXGCC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
 include_directories(CBFXGCC PRIVATE
-                        "${CMAKE_CURRENT_SOURCE_DIR}/src"
-                        "${CMAKE_CURRENT_SOURCE_DIR}/include/shc")
+                        "${CMAKE_CURRENT_SOURCE_DIR}/include/cbasic"
+                        "${CMAKE_CURRENT_SOURCE_DIR}/include/cbasic/shc")
 target_compile_options(CBFXGCC PRIVATE
                         -nostdlib -I include
                         -Wall -Wextra -Os -g -flto=auto
