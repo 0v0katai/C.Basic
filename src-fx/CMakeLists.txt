@@ -25,7 +25,7 @@ execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
                 OUTPUT_VARIABLE COMMIT_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(SUBSTRING ${COMMIT_ID} 0 7 COMMIT_ID_SHORT)
 cmake_minimum_required(VERSION 3.15)
-project(CBFXGCC LANGUAGES ASM C VERSION ${CBASIC_VERSION})
+project(CBASIC LANGUAGES ASM C VERSION ${CBASIC_VERSION})
 
 include(GenerateG1A)
 include(GenerateG3A)
@@ -92,30 +92,30 @@ set(ASSETS_cg
 fxconv_declare_assets(${ASSETS} ${ASSETS_fx} ${ASSETS_cg} WITH_METADATA)
 
 configure_file(include/cbasic/config.h.in include/cbasic/config.h)
-add_executable(CBFXGCC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
-include_directories(CBFXGCC PRIVATE
+add_executable(CBASIC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
+include_directories(CBASIC PRIVATE
                         "${CMAKE_CURRENT_SOURCE_DIR}/include/cbasic"
                         "${CMAKE_CURRENT_BINARY_DIR}/include/cbasic"
                         "${CMAKE_CURRENT_SOURCE_DIR}/include/cbasic/shc")
-target_compile_options(CBFXGCC PRIVATE
+target_compile_options(CBASIC PRIVATE
                         -nostdlib -I include
                         -Wall -Wextra -Os -g -flto=auto
                         )
-target_link_options(CBFXGCC PRIVATE
+target_link_options(CBASIC PRIVATE
                         -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/addin.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
                         -Wl,--print-memory-usage -Wl,-Map=map)
-target_link_libraries(CBFXGCC PRIVATE -lm -lfx -lgcc)
+target_link_libraries(CBASIC PRIVATE -lm -lfx -lgcc)
 
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
-  generate_g1a(TARGET CBFXGCC VERSION ${CBASIC_VERSION} OUTPUT "CBFXGCC.g1a"
-    NAME "CBFXGCC" ICON assets-fx/icon.png)
+  generate_g1a(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC.g1a"
+    NAME "CBASIC" ICON assets-fx/icon.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
-  generate_g3a(TARGET CBFXGCC VERSION ${CBASIC_VERSION} OUTPUT "CBFXGCC.g3a"
-    NAME "CBFXGCC" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
+  generate_g3a(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC.g3a"
+    NAME "CBASIC" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
-  generate_g3a(TARGET CBFXGCC VERSION ${CBASIC_VERSION} OUTPUT "CBFXGCC-fx.g3a"
-    NAME "CBFXGCC-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
+  generate_g3a(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC-fx.g3a"
+    NAME "CBASIC-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCP)
-  generate_hh2_bin(TARGET CBFXGCC VERSION ${CBASIC_VERSION} OUTPUT "CBFXGCC-hh2.bin")
+  generate_hh2_bin(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC-hh2.bin")
 endif()
