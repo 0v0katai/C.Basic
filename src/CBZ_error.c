@@ -1,21 +1,36 @@
+/* *****************************************************************************
+ * CBZ_error.c -- Error handling
+ * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
+
 #include "CB.h"
 
-//-----------------------------------------------------------------------------
-// Casio Basic inside
-//-----------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-int ErrorPtr=0;		// Error ptr
-int ErrorProg=0;	// Error Prog
-int ErrorNo;		// Error No
-//----------------------------------------------------------------------------------------------
+int g_error_ptr=0;
+int g_error_prog=0;
+int g_error_type;
 
 void ERROR(char *buffer) {
 	unsigned int key;
-	char buf[22];
+	unsigned int pad = ( strlen(buffer) < 16 );	// Pad error text with length < 16
+	char msg[22];
 
 	if ( TryFlag ) return ;
 	
-	CB_SelectTextDD();	// Select Text Screen
+	CB_SelectTextDD();
 	SaveDisp(SAVEDISP_PAGE1);
 
 //	PopUpWin(5);
@@ -25,19 +40,21 @@ void ERROR(char *buffer) {
 //	locate(3,6); Print((unsigned char *) "   Press:[EXIT]");
 
 	PopUpWin(4);
-	locate(3,3); Print((unsigned char *)buffer);
-	locate(3,5); Print((unsigned char *) "   Press:[EXIT]");
+	locate(3+pad,3); Print((unsigned char *)buffer);
+	sprintf(msg, "(%d)", g_error_type);
+	locate(3,5); Print((unsigned char *)msg);
+	locate(14,5); Print((unsigned char *)"[EXIT]");
 
 	Bdisp_PutDisp_DD();
 
 	WaitKeyAC();
 	KeyRecover(); 
-	while ( 1 ) {
-		GetKey(&key);
-		if ( key == KEY_CTRL_EXIT  ) break ;
-		if ( key == KEY_CTRL_AC    ) break ;
-		if ( key == KEY_CTRL_RIGHT ) break ;
-		if ( key == KEY_CTRL_LEFT  ) break ;
+	while (1) {
+		GetKey_DisableMenu(&key);
+		if (key == KEY_CTRL_EXIT  ||
+		    key == KEY_CTRL_AC    ||
+			key == KEY_CTRL_RIGHT ||
+			key == KEY_CTRL_LEFT )	break ;
 	}
 	
 	RestoreDisp(SAVEDISP_PAGE1);
@@ -46,164 +63,144 @@ void ERROR(char *buffer) {
 
 void CB_ErrMsg(int ErrNo) {
 	switch (ErrNo) {
-		case SyntaxERR:					//  1
-			ERROR(" Syntax ERROR");
+
+		// Casio Basic
+		case SyntaxERR:
+			ERROR("Syntax ERROR");
 			break;
-		case MathERR:					//  2
-			ERROR(" Ma ERROR");
+		case MathERR:
+			ERROR("Ma ERROR");
 			break;
-		case GoERR:						//  3
-			ERROR(" Go ERROR");
+		case GoERR:
+			ERROR("Go ERROR");
 			break;
-		case NestingERR:				//  4
-			ERROR(" Nesting ERROR");
+		case NestingERR:
+			ERROR("Nesting ERROR");
 			break;
-		case StackERR:					//  5
-			ERROR(" Stack ERROR");
+		case StackERR:
+			ERROR("Stack ERROR");
 			break;
-		case MemoryERR:					//  6
-			ERROR(" Memory ERROR");
+		case MemoryERR:
+			ERROR("Memory ERROR");
 			break;
-		case ArgumentERR:				//  7
-			ERROR(" Argument ERROR");
+		case ArgumentERR:
+			ERROR("Argument ERROR");
 			break;
-		case DimensionERR:				//  8
-			ERROR(" Dimension ERROR");
+		case DimensionERR:
+			ERROR("Dimension ERROR");
 			break;
-		case RangeERR:					//  9
-			ERROR(" Range ERROR");
+		case RangeERR:
+			ERROR("Range ERROR");
 			break;
-		case NonRealERR:				// 11
-			ERROR(" Non-Real ERROR");
+		case NonRealERR:
+			ERROR("Non-Real ERROR");
 			break;
-		case ComERR:					// 20
-			ERROR(" Com ERROR");
+		case ComERR:
+			ERROR("Com ERROR");
 			break;
-		case TransmitERR:				// 21
-			ERROR(" Transmit ERROR");
+		case TransmitERR:
+			ERROR("Transmit ERROR");
 			break;
-		case ReceiveERR:				// 22
-			ERROR(" Receive ERROR");
+		case ReceiveERR:
+			ERROR("Receive ERROR");
 			break;
-		case TooMuchData:				// 28
-			ERROR(" Too Much Data");
-			break;
-		case InvalidType:				// 30
-			ERROR(" Invalid Type");
+		case TooMuchData:
+			ERROR("Too Much Data");
 			break;
 
-		case NextWithoutForERR:			// 33
+		// C.Basic
+		case MissingNext:
 			ERROR("Missing Next");
 			break;
-		case ForWithoutNextERR:			// 34
+		case MissingFor:
 			ERROR("Missing For");
 			break;
-		case WhileWithoutWhileEndERR:	// 35
+		case MissingWhileEnd:
 			ERROR("Missing WhileEnd");
 			break;
-		case WhileEndWithoutWhileERR:	// 36
+		case MissingWhile:
 			ERROR("Missing While");
 			break;
-		case LpWhileWithoutDoERR:		// 37
+		case MissingLpWhile:
 			ERROR("Missing LpWhile");
 			break;
-		case DoWithoutLpWhileERR:		// 38
+		case MissingDo:
 			ERROR("Missing Do");
 			break;
-		case NotLoopERR:				// 39
-			ERROR("Not Loop ERROR");
+		case NotInLoop:
+			ERROR("Not in Loop");
 			break;
-		case DivisionByZeroERR:			// 40
+		case ZeroDivision:
 			ERROR("Zero Division");
 			break;
-		case UndefinedLabelERR:			// 41
+		case UndefinedLabel:
 			ERROR("Undefined Label");
 			break;
-		case NotEnoughMemoryERR:		// 42
+		case NotEnoughMemory:
 			ERROR("Not Enough Memory");
 			break;
-		case StringTooLongERR:			// 43
+		case StringTooLong:
 			ERROR("String Too Long");
 			break;
-		case NoMatrixArrayERR:			// 44
-			ERROR("No Matrix Array");
+		case UndefinedMatrix:
+			ERROR("Undefined Matrix");
 			break;
-		case ArraySizeERR:				// 45
-			ERROR("Invalid Ary Size");
+		case InvalidSize:
+			ERROR("Invalid Size");
 			break;
-		case NotfoundProgERR:			// 46
+		case ProgNotFound:
 			ERROR("Prog Not Found");
 			break;
-		case TooManyProgERR:			// 47
-			ERROR("Too Many SubProg");
+		case TooManyProg:
+			ERROR("Too Many Prog");
 			break;
-		case IfWithoutIfEndERR:			// 48
+		case MissingIfEnd:
 			ERROR("Missing IfEnd");
 			break;
-		case ThenWithoutIfERR:			// 49
+		case MissingIf:
 			ERROR("Missing If");
 			break;
-		case CaseWithoutSwitchERR:		// 50
-			ERROR("Missing Switch ");
-			break;
-		case DefaultWithoutSwitchERR:	// 51
-			ERROR("Missing Switch ");
-			break;
-		case SwitchWithoutSwitchEndERR:	// 52
+		case MissingSwitchEnd:
 			ERROR("Missing SwitchEnd");
 			break;
-		case SwitchEndWithoutSwitchERR:	// 53
-			ERROR("Missing Switch ");
+		case MissingSwitch:
+			ERROR("Missing Switch");
 			break;
-		case CantFindFileERR:			// 54
+		case FileNotFound:
 			ERROR("File Not Found");
 			break;
-		case ElementSizeERR:			// 55
-			ERROR("Illegal Element");
-			break;
-		case AlreadyOpenERR:			// 56
-			ERROR("Com Opened");
-			break;
-		case ComNotOpenERR:				// 57
+	
+		case ComClosed:
 			ERROR("Com Closed");
 			break;
-		case TypeMismatchERR:			// 58
+		case InvalidType:
 			ERROR("Invalid Type");
 			break;
-		case OutOfDomainERR:			// 59
-			ERROR("Out of Domain ");
+		case OutOfDomain:
+			ERROR("Out of Domain");
 			break;
-		case UndefinedVarERR:			// 60
-			ERROR("Var Undefined");
+		case UndefinedAlias:
+			ERROR("Undefined Alias");
 			break;
-		case UndefinedFuncERR:			// 61
-			ERROR("Func Undefined");
+		case VarMemoryFull:
+			ERROR("Var Memory Full");
+			break; 
+		case AssignERR:
+			ERROR("Assign ERROR");
 			break;
-		case NotSupportERR:				// 62
-			ERROR("Not Supported");
+		case AddressERR:
+			ERROR("Address ERROR");
 			break;
-		case TooManyVarERR:				// 63
-			ERROR("VarLimit Exceeded");
-			break;
-		case DuplicateDefERR:			// 64
-			ERROR("Duplicated Def");
-			break;
-		case AlignmentERR:				// 65
-			ERROR("Address Align ERR");
-			break;
-		case NotAccuracyERR:			// 66
+		case TimeOut:
 			ERROR("Time Out");
 			break;
-		case TryWithoutExceptERR:		// 70
+		case MissingExcept:
 			ERROR("Missing Except");
 			break;
-		case ExcpetWithoutTryERR:		// 71
+		case MissingTry:
 			ERROR("Missing Try");
 			break;
-//		case TryEndWithoutTryERR:		// 72
-//			ERROR("Missing Try");
-//			break;
-			
+
 		default:
 //		case FileERR:
 			ERROR("File ERROR");
@@ -211,13 +208,17 @@ void CB_ErrMsg(int ErrNo) {
 	}
 }
 
-//-----------------------------------------------------------------------------
-void CB_Error(int ErrNo) { // error
-	if ( ErrorNo ) return ;
-	ErrorNo=ErrNo;
-	ErrorPtr=ExecPtr;
-	ErrorProg=ProgNo;
-	if ( ErrNo==MathERR ) ErrorPtr--;
+void CB_Error(int error_macro) {
+
+	/* exit this function if another error occured earlier */
+	if (g_error_type)
+		return;
+	
+	g_error_type = error_macro;
+	g_error_ptr = g_exec_ptr;
+	g_error_prog = g_current_prog;
+
+	/* mimic Casio Basic behaviour */
+	if (error_macro == MathERR)
+		g_error_ptr--;
 }
-
-

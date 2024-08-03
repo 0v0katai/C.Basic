@@ -71,7 +71,7 @@ void VerDispSub( int flag ) {
 void VerDisp( int flag ) {
 	unsigned int key;
 	VerDispSub( flag );
-	GetKey(&key);
+	GetKey_DisableMenu(&key);
 }
 
 int IsG3or35E2() {
@@ -177,18 +177,18 @@ int System( int n ) {
 
 int CB_System( char *SRC ) {	// System( n )
 	int r;
-	int c = SRC[ExecPtr];
+	int c = SRC[g_exec_ptr];
 	int n = CB_EvalInt( SRC );
 	if ( n==10000 ) {	// load config data to ListAns   Ststem(10000,1) Ststem(10000,2) Ststem(10000,3)
-		if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
-		ExecPtr++;
+		if ( SRC[g_exec_ptr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+		g_exec_ptr++;
 		c = CB_EvalInt( SRC );
 		LoadConfig1data( c );
 		goto exit;
 	}
 	r = System( n );
   exit:
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 	return r;
 }
 
@@ -217,7 +217,7 @@ void SetLineStyle() {
 
 	FkeyS_L_();
 
-	GetKey(&key);
+	GetKey_DisableMenu(&key);
 	switch (key) {
 		case KEY_CTRL_EXIT:
 			break;
@@ -459,7 +459,7 @@ int SetViewWindow() {		// ----------- Set  View Window variable	return 0: no cha
 
 		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				return 0;	// no change
@@ -642,7 +642,7 @@ void SetFactor(){
 		Bdisp_AreaReverseVRAM(12, y*8, 113, y*8+7);	// reverse select line
 		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:
@@ -727,7 +727,7 @@ void InitVar( complex value, int VarMode, int small) {
 		locate(1,8); SetVarDsp(VarMode);
 //		Bdisp_PutDisp_DD();
 
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_EXIT:
 				return ;
@@ -955,8 +955,7 @@ int SetVar(int select){		// ----------- Set Variable
 	int VarMode=CB_INT;	// 0:double or complex  1:int
 	int hex=0;	// 0:normal  1:hex
 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	cancel_alphalock();
 
 	if ( VarMode==2 ) VarMode=0;	// complex ->double
 	Cursor_SetFlashMode(0); 		// cursor flashing off
@@ -1046,7 +1045,7 @@ int SetVar(int select){		// ----------- Set Variable
 		} else {
 			 if ( select<=25 ) k+=small;
 		}
-		GetKey( &key );
+		GetKey_DisableMenu(&key);
 		switch (key) {
 			case KEY_CTRL_OPTN:
 				miniflag=1;

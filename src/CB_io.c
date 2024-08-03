@@ -190,16 +190,19 @@ int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 
 void HiddenRAM_ExtFontAryInit() {
 	if ( EnableExtFont ) {
-		ExtAnkFontFX     =(unsigned char *)HiddenRAM_Top ;				// Ext Ascii font
-		ExtAnkFontFXmini =(unsigned char *)(ExtAnkFontFX     + 96*8) ;	// Ext Ascii font
-		ExtKanaFontFX    =(unsigned char *)(ExtAnkFontFXmini + 96*8) ;	// Ext Kana & Gaiji font
-		ExtKanaFontFXmini=(unsigned char *)(ExtKanaFontFX    + 112*8) ;	// Ext Kana & Gaiji font
-		HiddenRAM_Top    =((char *)ExtKanaFontFX + 112*8) ;			// Heap RAM top ptr
+        p_ext_asc              = (unsigned char *)HiddenRAM_Top;
+        p_ext_asc_mini         = (unsigned char *)(p_ext_asc        + 95*8);
+        p_ext_ff       	   = (unsigned char *)(p_ext_asc_mini   + 95*8);
+        // p_ext_gaiji       	   = (unsigned char *)(p_ext_asc_mini   + 95*8);
+        // p_ext_kana       	   = (unsigned char *)(p_ext_gaiji      + 32*8);
+        p_ext_ff_mini       = (unsigned char *)(p_ext_ff         + 96*8);
+        // p_ext_gaiji_mini       = (unsigned char *)(p_ext_kana       + 64*8);
+        // p_ext_kana_mini        = (unsigned char *)(p_ext_gaiji_mini + 32*8);
+        HiddenRAM_Top       = ((char *)p_ext_ff_mini             + 96*8);
+        // HiddenRAM_Top          = ((char *)p_ext_kana_mini           + 64*8);
 	} else {
-		ExtAnkFontFX     =(unsigned char *)Font00   +32*8;	//  Ascii font
-		ExtAnkFontFXmini =(unsigned char *)Fontmini +32*8;	//  Ascii font
-		ExtKanaFontFX    =(unsigned char *)KanaFont ;		//  Kana & Gaiji font
-		ExtKanaFontFXmini=(unsigned char *)KanaFontmini ;	// Ext Kana & Gaiji font
+        p_ext_asc              = (unsigned char *)font_asc;
+        p_ext_asc_mini         = (unsigned char *)font_asc_mini + 32*8;
 	}
 }
 void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
@@ -249,40 +252,45 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 //---------------------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------------------
 void CB_PrintC_ext( int x, int y,const unsigned char *c, int extflag ){
-	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintChar( (--x)*6, (--y)*8, c );
+	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ||
+		 ( ( extflag ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) )
+		KPrintChar( (--x)*6, (--y)*8, c );
+
 	else {
-		if ( ( extflag ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) KPrintChar( (--x)*6, (--y)*8, c );
-		else {
-			locate (x,y);
-			PrintC( c );
-		}
+		locate(x,y);
+		PrintC( c );
 	}
 }
 void CB_Print_ext( int x, int y, const unsigned char *str, int extflag ){
 	int c=(char)*str;
 	while ( c ) {
 		CB_PrintC_ext( x, y, str++, extflag );
-		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		if ( (c == 0x7F)        || (c == 0xFFFFFFF9) ||
+             (c == 0xFFFFFFE5)  || (c == 0xFFFFFFE6) ||
+             (c == 0xFFFFFFE7)  || (c == 0xFFFFFFFF) )
+                str++;
 		x++;
 		if ( x>21 ) break;
 		c=(char)*str;
 	}
 }
 void CB_PrintRevC_ext( int x, int y,const unsigned char *c, int extflag ){
-	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) )	KPrintRevChar( (--x)*6, (--y)*8, c );
+	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ||
+	     ( ( extflag ) && ( g_ext_asc ) && ( 0x20 <= *c ) && ( *c <= 0x7E ) ) )
+		KPrintRevChar( (--x)*6, (--y)*8, c );
 	else {
-		if ( ( extflag ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) KPrintRevChar( (--x)*6, (--y)*8, c );
-		else {
-			locate (x,y);
-			PrintRevC( c );
-		}
+		locate(x,y);
+		PrintRevC( c );
 	}
 }
 void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 	unsigned int c=(char)*str;
 	while ( c ) {
 		CB_PrintRevC_ext( x, y, str++, extflag );
-		if ( (c==0x7F)||(c==0xFFFFFFF9)||(c==0xFFFFFFE5)||(c==0xFFFFFFE6)||(c==0xFFFFFFE7)||(c==0xFFFFFFFF) )  str++;
+		if ( (c == 0x7F)        || (c == 0xFFFFFFF9) ||
+             (c == 0xFFFFFFE5)  || (c == 0xFFFFFFE6) ||
+             (c == 0xFFFFFFE7)  || (c == 0xFFFFFFFF) )
+                str++;
 		x++;
 		if ( x>21 ) break;
 		c=(char)*str;
@@ -325,17 +333,16 @@ void CB_PrintRev( int x, int y, const unsigned char *str){
 }
 
 
-void CB_PrintXYC( int px, int py,const unsigned char *c , int mode ){	// mode >0x100 extflag
-	if ( ( *c == 0xFF ) || ( *c == 0xE7 ) ) {
-		if ( mode & 0xFF )	KPrintRevChar( px, py, c );
-		else				KPrintChar( px, py, c );
-	} else {
-		if ( ( mode & 0xFF00 ) && ( ExtCharAnkFX ) && ( 0x20 <= *c ) && ( *c < 0x7F ) ) {
-			if ( mode & 0xFF )	KPrintRevChar( px, py, c );
-			else				KPrintChar( px, py, c );
-		} else
-		PrintXY( px, py, c ,mode & 0xFF );
-	}
+void CB_PrintXYC(int px, int py, const unsigned char *c ,int mode) {
+    if ((*c == 0xFF) || (*c == 0xE7) ||
+        (g_ext_asc && (mode & 0xFF00) &&
+        (0x20 <= *c) && (*c <= 0x7E)))
+        if (mode & 0xFF)
+            KPrintRevChar(px, py, c);
+        else
+            KPrintChar(px, py, c);
+	else
+		PrintXY(px, py, c ,mode & 0xFF);
 }
 void CB_PrintXY( int px, int py, const unsigned char *str, int mode){	// mode >0x100 extflag
 	int c=(char)*str;
@@ -390,7 +397,7 @@ int YesNo2sub( char*buffer, char*buffer2){
 
 	KeyRecover(); 
 	while ( 1 ) {
-		GetKey(&key);	
+		GetKey_DisableMenu(&key);	
 		if ( key == KEY_CTRL_F1  ) break ;
 		if ( key == KEY_CTRL_F6  ) break ;
 		if ( key == KEY_CTRL_EXIT) { WaitKeyEXIT(); break ; }
@@ -419,7 +426,7 @@ void ExitKey(){
 	unsigned int key;
 	KeyRecover(); 
 	while ( 1 ) {
-		GetKey(&key);	
+		GetKey_DisableMenu(&key);	
 		if ( key == KEY_CTRL_EXIT) { WaitKeyEXIT(); break ; }
 		if ( key == KEY_CTRL_AC  ) break ;
 	}

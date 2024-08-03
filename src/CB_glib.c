@@ -61,7 +61,7 @@ int skip_count=0;
 void Bdisp_PutDisp_DD_DrawBusy() {
 	Bdisp_PutDisp_DD();
 	HourGlass();
-	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
+	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=g_exec_ptr; }	// [AC] break?
 //	DrawBusy();
 }
 int Check_skip_count( void ) {
@@ -95,20 +95,20 @@ void Bdisp_PutDisp_DD_DrawBusy_skip() {
 //	Bdisp_PutDisp_DD_DrawBusy();
 //}
 void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) {	// Locate text Clrtext ""...
-	char c=SRC[ExecPtr++];
-	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
+	char c=SRC[g_exec_ptr++];
+	if ( ( c == ':' ) && (SRC[g_exec_ptr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
-	ExecPtr--;
+	g_exec_ptr--;
 	if ( RefreshCtrl == 2 ) 	// refresh control all
 			Bdisp_PutDisp_DD_DrawBusy_skip();
 	else
 			Bdisp_PutDisp_DD_DrawBusy();
 }
 void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) {	// graphics command
-	char c=SRC[ExecPtr++];
-	if ( ( c == ':' ) && (SRC[ExecPtr]==0x0D) ) return ;
+	char c=SRC[g_exec_ptr++];
+	if ( ( c == ':' ) && (SRC[g_exec_ptr]==0x0D) ) return ;
 	if ( c == ';' ) { Bdisp_PutDisp_DD_DrawBusy_skip(); return ; }
-	ExecPtr--;
+	g_exec_ptr--;
 	if ( RefreshCtrl == 0 ) 	// refresh control off
 			Bdisp_PutDisp_DD_DrawBusy();
 	else
@@ -137,7 +137,7 @@ void PXYtoVW(int px, int py, double *x, double *y){	// pixel(x,y) -> ViewWwindow
 //	if ( fabs(*y)*1e10 < ydot ) *y=0;	// zero adjust
 }
 int VWtoPXY(double x, double y, int *px, int *py){	// ViewWwindow(x,y) -> pixel(x,y)
-	if ( ( Xdot == 0 ) || ( Ydot == 0 ) || ( Xmax == Xmin ) || ( Ymax == Ymin ) ) { ErrorNo=RangeERR; ErrorPtr=ExecPtr; return -1 ; }	// Range error
+	if ( ( Xdot == 0 ) || ( Ydot == 0 ) || ( Xmax == Xmin ) || ( Ymax == Ymin ) ) { g_error_type=RangeERR; g_error_ptr=g_exec_ptr; return -1 ; }	// Range error
 	*px =   1 + ( (x-Xmin)/Xdot + 0.5 ) ;
 //	if ( Xmax >  Xmin )		*px =       (x-Xmin)/Xdot  +1.5 ;
 //	if ( Xmax <  Xmin )		*px = 126 - (x-Xmax)/-Xdot +1.49999999999999 ;

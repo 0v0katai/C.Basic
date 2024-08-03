@@ -129,13 +129,13 @@ void InsertOpcode( char *filebase, int ptr, int opcode ){
 	int opH,opL;
 	char *srcbase;
 	len=OpcodeLen( opcode );
-	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
-		ErrorPtr=ptr; ErrorNo=NotEnoughMemoryERR;		// Memory error
-		CB_ErrMsg(ErrorNo);
+	if ( ( len + SrcSize(filebase) ) > ProgfileMax[g_current_prog] ) {
+		g_error_ptr=ptr; g_error_type=NotEnoughMemory;		// Memory error
+		CB_ErrMsg(g_error_type);
 		return ;
 	}
 	j=ptr+len+0x56;
-	for ( i=ProgfileMax[ProgNo]; i>=j; i-- )
+	for ( i=ProgfileMax[g_current_prog]; i>=j; i-- )
 		 filebase[i]=filebase[i-len];
 		 
 	opH = (opcode&0xFF00) >> 8 ;
@@ -151,7 +151,7 @@ void InsertOpcode( char *filebase, int ptr, int opcode ){
 			break;
 	}
 	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
-	ProgfileEdit[ProgNo]=1;	// edit program
+	ProgfileEdit[g_current_prog]=1;	// edit program
 	AddOpcodeRecent( opcode ) ;
 }
 
@@ -171,7 +171,7 @@ void DeleteOpcode( char *filebase, int *ptr ){
 	ProgMoveMem( filebase+0x56, (*ptr), SrcSize(filebase), len );
 
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
-	ProgfileEdit[ProgNo]=1;	// edit program
+	ProgfileEdit[g_current_prog]=1;	// edit program
 }
 
 void DeleteOpcodeUndo( char *filebase, int *ptr, cUndo *Undo ){
@@ -190,13 +190,13 @@ void DeleteOpcodeUndo( char *filebase, int *ptr, cUndo *Undo ){
 	ProgDeleteSub( filebase, (*ptr), len, Undo  );
 
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
-	ProgfileEdit[ProgNo]=1;	// edit program
+	ProgfileEdit[g_current_prog]=1;	// edit program
 }
 
 int EndOfSrc( char *SRC, int ptr ) {
 	char *filebase,*srcbase;
 	int endPtr;
-	filebase=ProgfileAdrs[ProgNo];
+	filebase=ProgfileAdrs[g_current_prog];
 	srcbase=filebase+0x56;
 	endPtr=SrcEndPtr( filebase );
 	if (SRC < srcbase ) SRC=srcbase;
@@ -218,8 +218,8 @@ char* NewclipBuffer( int *size ){	// size:-1  max
 	Recent_HiddenRAM_MatTopPtr = HiddenRAM_MatTopPtr;
 	if ( *size<0 ) *size=free-4;
 	if ( free < *size ) {
-		ErrorNo=NotEnoughMemoryERR;		// Memory error
-		CB_ErrMsg(ErrorNo);
+		g_error_type=NotEnoughMemory;		// Memory error
+		CB_ErrMsg(g_error_type);
 		return NULL;
 	}
 	if ( MatAry[reg].SizeA == 0 ) {
@@ -245,13 +245,13 @@ void EditPaste( char *filebase, char *Buffer, int *ptr, cUndo *Undo ){
 		
 	len=strlenOp(Buffer);
 	if ( len <=0 ) return;
-	if ( ( len + SrcSize(filebase) ) > ProgfileMax[ProgNo] ) {
-		ErrorPtr=(*ptr); ErrorNo=NotEnoughMemoryERR;		// Memory error
-		CB_ErrMsg(ErrorNo);
+	if ( ( len + SrcSize(filebase) ) > ProgfileMax[g_current_prog] ) {
+		g_error_ptr=(*ptr); g_error_type=NotEnoughMemory;		// Memory error
+		CB_ErrMsg(g_error_type);
 		return ;
 	}
 	j=(*ptr)+len+0x56;
-	for ( i=ProgfileMax[ProgNo]; i>=j; i-- ) filebase[i]=filebase[i-len];
+	for ( i=ProgfileMax[g_current_prog]; i>=j; i-- ) filebase[i]=filebase[i-len];
 		 
 	srcbase=filebase+0x56+(*ptr);
 	for ( i=0; i<len; i++ ) srcbase[i]=Buffer[i];	// copy from Buffer
@@ -262,7 +262,7 @@ void EditPaste( char *filebase, char *Buffer, int *ptr, cUndo *Undo ){
 	Undo->Len    = len;	//
 
 	SetSrcSize( filebase, SrcSize(filebase)+len ) ; 	// set new file size
-	ProgfileEdit[ProgNo]=1;	// edit program
+	ProgfileEdit[g_current_prog]=1;	// edit program
 	
 	(*ptr)=(*ptr)+len;
 }
@@ -303,7 +303,7 @@ void EditCutDel( char *filebase, int *ptr, int startp, int endp, int del, cUndo 
 	ProgDeleteSub( filebase, (startp), len, Undo );
 
 	SetSrcSize( filebase, SrcSize(filebase)-len ) ; 	// set new file size
-	ProgfileEdit[ProgNo]=1;	// edit program
+	ProgfileEdit[g_current_prog]=1;	// edit program
 
 	(*ptr)=(startp);
 }
@@ -709,15 +709,15 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 				if ( ( Numflag==0 ) && ( EDITpxNum ) ) { Numflag=1;
 					sprintf( (char*)buff, "%3d", CurrentLine );
 					buf=buff; if ( strlen((char*)buff)>3 ) buf++;
-					CB_PrintMini( 0, ((*csry)-1)*yk+2, buf, MINI_OVER );
+					CB_PrintMini( 0, ((*csry)-1)*yk+2, buf, MINI_OVER, false);
 				}
 				if ( mini == 0 ) { c=px-1+EDITpxNum;
 					if ( rev )	CB_PrintRevC_ext( c/6+1 ,(*csry), (unsigned char*)(tmpb), EditExtFont  ) ;
 					else		CB_PrintC_ext(    c/6+1 ,(*csry), (unsigned char*)(tmpb), EditExtFont  ) ;
 					px+=6;
 				} else { c=px+EDITpxNum; d=((*csry)-1)*6+2;
-					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV  | (0x100*EditExtFont) ) ;
-					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER | (0x100*EditExtFont) ) ;
+					if ( rev )	px+=CB_PrintMiniC( c, d, tmpb, MINI_REV, EditExtFont);
+					else		px+=CB_PrintMiniC( c, d, tmpb, MINI_OVER, EditExtFont);
 				}
 				if ( ( px > EDITpxMAX ) || ( opcode==0x0C ) || ( opcode==0x0D ) ) {  (y)++; px=1; (*n)++; (*csry)++; }
 				if ( ( opcode==0x0D ) && ( buffer[ofst-2]!=0x5C ) ) { Numflag=0; (*NumOfset)++; }
@@ -1017,11 +1017,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
 
- 	filebase = ProgfileAdrs[ProgNo];
+ 	filebase = ProgfileAdrs[g_current_prog];
 	SrcBase  = filebase+0x56;
 	i = EndOfSrc( SrcBase, 0 );
-	if ( i < ExecPtr ) ExecPtr = i;
-	offset = ExecPtr;
+	if ( i < g_exec_ptr ) g_exec_ptr = i;
+	offset = g_exec_ptr;
 	csrPtr = offset;
 	CursorStyle=0;	// insert mode
 	EditLineNum=0;
@@ -1051,8 +1051,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 	UpdateLineNum=1;
 
 	if ( DebugMode ) DebugMenuSw=1; 
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
-	PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key);
+	cancel_alphalock();
 
 //	Cursor_SetFlashMode(1);			// cursor flashing on
 	if (Cursor_GetFlashStyle()<0x6)	Cursor_SetFlashOn(0x0);		// insert mode cursor 
@@ -1069,8 +1068,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		if ( EditFontSize & 0xF0 ) EDITpxNum=12; else EDITpxNum=0;
 		EDITpxMAX=123-EDITpxNum;
 
-		ErrorNo=0;
-		filebase = ProgfileAdrs[ProgNo];
+		g_error_type=0;
+		filebase = ProgfileAdrs[g_current_prog];
 		SrcBase  = filebase+0x56;
 
 		if ( ( ClipStartPtr >=0 ) || ( SearchMode ) ) { CommandType=0; CommandPage=0; }
@@ -1135,7 +1134,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				default:
 						break;
 			}
-			strncpy(buffer2,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
+			strncpy(buffer2,(const char*)ProgfileAdrs[g_current_prog]+0x3C,8);
 			buffer2[8]='\0'; 
 			if (dumpflg==2) {
 				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
@@ -1220,7 +1219,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		if ( CommandInputMethod ) { DispGenuineCmdMenu();
 			if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) {
 				Fkey_dispN( FKeyNo4, "VWin");
-				sprintf(buffer, "%d",  ProgfileMax[ProgNo]-SrcSize(filebase) );
+				sprintf(buffer, "%d",  ProgfileMax[g_current_prog]-SrcSize(filebase) );
 				Fkey_dispN( FKeyNo5, buffer);
 				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 			}
@@ -1311,7 +1310,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								SrcBase[ptr] = d;
 								key=KEY_CTRL_RIGHT;
 						}
-						ProgfileEdit[ProgNo]=1;	// edit program
+						ProgfileEdit[g_current_prog]=1;	// edit program
 						DebugScreen = 0;
 				}
 				break;
@@ -1376,8 +1375,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 									}
 //									ExitDebugModeCheck&=1; 
 									BreakPtr=-7;	// return to main program
-									if ( ProgEntryN == 0 ) ExecPtr=csrPtr;
-								} else ExecPtr=csrPtr;
+									if ( ProgEntryN == 0 ) g_exec_ptr=csrPtr;
+								} else g_exec_ptr=csrPtr;
 								cont=0;
 							}
 						}
@@ -1400,7 +1399,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							else {
 								if ( DebugMenuSw ) {		// ====== Debug Mode ======
 									cont=0;
-									ExecPtr=csrPtr;
+									g_exec_ptr=csrPtr;
 									BreakPtr=0;
 									DebugMode=1;		// cont mode
 									WaitKeyF1() ;
@@ -1453,7 +1452,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							else {
 								if ( DebugMenuSw ) {		// ====== Debug Mode ======
 										cont=0;
-										ExecPtr=csrPtr;
+										g_exec_ptr=csrPtr;
 										BreakPtr=-1;
 										DebugMode=2;		// trace into mode
 								} else {
@@ -1500,7 +1499,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							else {
 								if ( DebugMenuSw ) {		// ====== Debug Mode ======
 											cont=0;
-											ExecPtr=csrPtr;
+											g_exec_ptr=csrPtr;
 											BreakPtr=-1;
 											DebugMode=3;		// step over mode
 									key=0;
@@ -1550,7 +1549,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							} else {
 								if ( DebugMenuSw ) {		// ====== Debug Mode ======
 											cont=0;
-											ExecPtr=csrPtr;
+											g_exec_ptr=csrPtr;
 											BreakPtr=0;
 											DebugMode=4;		// step out mode
 								} else {
@@ -1638,8 +1637,8 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					} else {
 						Cursor_SetFlashOff(); 			// cursor flashing off
 						MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
-						if ( ErrorNo ) {
-								offset = ErrorPtr;
+						if ( g_error_type ) {
+								offset = g_error_ptr;
 								csrPtr = offset;
 								offset_y=0;
 								run=2; // edit mode
@@ -1651,7 +1650,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) {
 									ScreenModeEdit=1-ScreenModeEdit;
 									RestoreScreenModeEdit();
-									if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
+									GetKey_DisableMenu(&key);
 								} else { GetGenuineCmdF6( &key ); goto F6j; }
 							} else {
 								if ( JumpMenuSw ) {		// ====== Jump Mode
@@ -1670,25 +1669,25 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 										CB_AliasVarClr();
 										StoreRoot2();
 										CB_GetAliasLocalProg( SrcBase );	//	Preprocess Alias/Local
-										if ( ErrorNo ) { 
-											ProgNo=ErrorProg; 
+										if ( g_error_type ) { 
+											g_current_prog=g_error_prog; 
 											stat=1;
 										} else {
-											ProgNo=0;
-											ExecPtr=0;
+											g_current_prog=0;
+											g_exec_ptr=0;
 											stat=CB_interpreter( SrcBase ) ;	// ====== run 1st interpreter ======
 											if ( ( stat==-7 ) && ( ProgEntryN == 0 ) ) DebugMode=0;
 										}
 										RestoreRoot2();
 										SaveConfig();
-										filebase = ProgfileAdrs[ProgNo];
+										filebase = ProgfileAdrs[g_current_prog];
 										SrcBase  = filebase+0x56;
 										if ( ForceReturn ) { goto finish; }	// force program end
 										if ( stat ) {
-											if ( ErrorNo ) offset = ErrorPtr ;			// error
-											else if ( BreakPtr ) offset = ExecPtr ;	// break
+											if ( g_error_type ) offset = g_error_ptr ;			// error
+											else if ( BreakPtr ) offset = g_exec_ptr ;	// break
 										} else offset = 0;
-										if ( stat == -1 ) offset = ExecPtr-1;	// program  no error return
+										if ( stat == -1 ) offset = g_exec_ptr-1;	// program  no error return
 										csrPtr = offset;
 										offset_y=0;
 										run=2; // edit mode
@@ -1697,7 +1696,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 											if ( stat == -1 ) {
 											  finish:
 												cont=0;	// program finish
-												ExecPtr=execptr; 
+												g_exec_ptr=execptr; 
 											}
 										}
 									}
@@ -1875,7 +1874,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					Menu_SHIFT_MENU();
 				} else {
 //					FkeyClear( FKeyNo4 );
-					sprintf(buffer, "%d",  ProgfileMax[ProgNo]-SrcSize(filebase) );
+					sprintf(buffer, "%d",  ProgfileMax[g_current_prog]-SrcSize(filebase) );
 					Fkey_dispN( FKeyNo4, buffer);
 				}
 				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
@@ -1889,7 +1888,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				}
 
 				if (dumpflg==2) {
-						j=ProgfileMax[ProgNo]-SrcSize(filebase) ;
+						j=ProgfileMax[g_current_prog]-SrcSize(filebase) ;
 						sprintf(buffer, "==%-8s==[%dfree]    ", buffer2, j);
 				} else 	{
 						sprintf(buffer, "==%-8s==%08X ", buffer2, SrcBase);
@@ -2019,11 +2018,11 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_F5:	//
 							lowercase=1-lowercase;
 							if  ( alphalock_bk ) { 
-								alphalock = 1; PutKey( KEY_CTRL_SHIFT, 1 ); GetKey(&key); PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
+								alphalock = 1;
+								apply_alphalock();
 							} else {
-								if ( ( mini ) && ( alphastatus_bk ) ) {
-									PutKey( KEY_CTRL_ALPHA, 1 ); GetKey(&key);
-								}
+								if (mini && alphastatus_bk)
+									perform_key(KEY_CTRL_ALPHA);
 							}
 							key=0;
 							goto PUTALPHA;
@@ -2034,7 +2033,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								Cursor_SetFlashMode(0); 			// cursor flashing off
 								ScreenModeEdit=1-ScreenModeEdit;
 								RestoreScreenModeEdit();
-								if ( mini ) GetKey_DisableMenu(&key); else GetKey(&key);
+								GetKey_DisableMenu(&key);
 								if ( key == KEY_CTRL_SHIFT) goto ShiftF6loop;
 							} else {
 								key=SelectChar( &ContinuousSelect);
@@ -2214,7 +2213,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( filebase, &csrPtr);
 						InsertOpcode( filebase, csrPtr, key );
 					}
-					if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
+					if ( g_error_type==0 ) NextOpcode( SrcBase, &csrPtr );
 					alphalock = 0 ;
 					alphastatus = 0;
 					help_code=key;
@@ -2266,7 +2265,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 								if ( SrcBase[csrPtr] !=0 ) DeleteOpcode( filebase, &csrPtr);
 								InsertOpcode( filebase, csrPtr, key );
 						}
-						if ( ErrorNo==0 ) NextOpcode( SrcBase, &csrPtr );
+						if ( g_error_type==0 ) NextOpcode( SrcBase, &csrPtr );
 						indent--;
 						key=' ';
 					} while ( indent >= 0 ) ;
@@ -2279,8 +2278,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 					Undo.enable = 0;
 					if ( help_code == 0x0D ) {
 						if ( alphalock ) {
-							PutKey( KEY_CTRL_SHIFT, 1 );
-							PutKey( KEY_CTRL_ALPHA, 1 );
+							apply_alphalock();
 							alphalock   = 0;
 							alphastatus = 0;
 						}
@@ -2318,7 +2316,7 @@ int CB_BreakStop() {
 	int dbgmode= ( ( DisableDebugMode == 0 ) || ( ForceDebugMode ) ) ;
 
 	if ( BreakPtr == -7 ) return BreakPtr;	// return to main program
-	if ( ErrorNo == StackERR ) { BreakPtr=-999; TryFlag=0; return BreakPtr; }	// stack error
+	if ( g_error_type == StackERR ) { BreakPtr=-999; TryFlag=0; return BreakPtr; }	// stack error
 	if ( ( BreakPtr ==  0 ) && ( TryFlag ) ) return 0;
 
 	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
@@ -2332,12 +2330,12 @@ int CB_BreakStop() {
 //	CB_SelectGraphVRAM();	// Select Graphic screen
 //	CB_SelectTextVRAM();	// Select Text Screen
 
-	if ( ErrorNo ) { 
-		CB_ErrMsg( ErrorNo );
+	if ( g_error_type ) { 
+		CB_ErrMsg( g_error_type );
 		BreakPtr=-999;
-		ExecPtr=ErrorPtr;
+		g_exec_ptr=g_error_ptr;
 		DebugScreen = 0;
-		ErrorNo=0;
+		g_error_type=0;
 		if ( dbgmode ) DebugMode=2;	// enable debug mode
 	}
 	
@@ -2352,7 +2350,7 @@ int CB_BreakStop() {
 		KeyRecover(); 
 		WaitKeyAC();
 		while ( 1 ) {
-			GetKey(&key);
+			GetKey_DisableMenu(&key);
 			if ( key == KEY_CTRL_EXIT  ) break ;
 			if ( key == KEY_CTRL_AC    ) break ;
 			if ( key == KEY_CTRL_RIGHT ) break ;
@@ -2370,7 +2368,7 @@ int CB_BreakStop() {
 		if ( dbgmode  ) DebugMode=2;	// enable debug mode
 		DebugScreen = 0;
 	} else {	// Step mode
-		if( BreakPtr > -999) BreakPtr=ExecPtr;	// set breakptr
+		if( BreakPtr > -999) BreakPtr=g_exec_ptr;	// set breakptr
 	}
 	
 	ScreenModeEdit=scrmode;

@@ -1401,13 +1401,7 @@ int OpcodeToText( char *srcbase, char *text, int maxsize ) {
 			text[textofst++] = code;
 			ofst++;
 		} else
-		if ( ( 0xFF80 <= code ) && ( code <= 0xFFDF ) ) {	// kana
-				if ( code <= 0xFFA0 ) goto code4;
-				text[textofst++] = code & 0xFF;
-				ofst+=2;
-		} else
-		if ( ( 0xE500 <= code ) && ( code <= 0xE6FF ) ) {	// 2byte
-			  code4:
+		if ( ( ( 0xE500 <= code ) && ( code <= 0xE6FF ) ) || ( ( 0xFF80 <= code ) && ( code <= 0xFFFF ) ) ) {
 				if ( flag ) text[textofst++] ='_';
 				text[textofst++] ='#';
 				NumToHex( text+textofst, code, 4);

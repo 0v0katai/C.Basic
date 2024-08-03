@@ -242,6 +242,16 @@ void GetGenuineCmdF5( unsigned int *code );
 void GetGenuineCmdF6( unsigned int *code );
 
 int CB_Catalog();
+
+/* Performs a key automatically. */
+void perform_key(unsigned int keycode);
+
+/* Toggles alpha-lock input mode. */
+void apply_alphalock();
+
+/* Cancels alpha-lock input mode. */
+void cancel_alphalock();
+
 //-------------------------------------------------------------
 #define OpRecentFreqMax 32
 #define OpRecentMax 32

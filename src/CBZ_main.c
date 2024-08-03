@@ -1,13 +1,21 @@
-/*
-===============================================================================
-
- Casio Basic Interpreter (& Compiler) ver 1.8x 
-
- copyright(c)2015/2016/2017/2018 by sentaro21
- e-mail sentaro21@pm.matrix.jp
-
-===============================================================================
-*/
+/* *****************************************************************************
+ * CBZ_main.c -- Main control file
+ * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
 #include "CB.h"
 
 #define BE_MAX 16
@@ -63,6 +71,8 @@ int main()
 
 	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
 
+	// SetQuitHandler((void *)save_config_prog);
+
 	while (1) {
 		for (i=0; i<=ProgMax; i++) {
 			ProgfileAdrs[i]=NULL;	// Prog Entry clear
@@ -71,7 +81,7 @@ int main()
 		}
 
 		CB_INT = CB_INTDefault;
-		ExecPtr=0;	
+		g_exec_ptr=0;	
 		DebugMode=0;
 		DebugScreen=0;
 		ForceDebugMode=0;
@@ -118,27 +128,27 @@ int main()
 				run=2;
 				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 			  bejmp1:
-				ExecPtr=0;
+				g_exec_ptr=0;
 				if ( i==0 )	{
 				  bejmp2:
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
-					ExecPtr=0;
+					g_exec_ptr=0;
 					for (j=0; j<BE_MAX; j++) {
 						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { 
-							ExecPtr = befiles[j].execptr;
+							g_exec_ptr = befiles[j].execptr;
 							break;
 						}
 					}
 					EditRun(run);			// Program listing & edit
 				} else
-				if ( i==NotfoundProgERR ) { ProgNo=ErrorProg; ExecPtr=ErrorPtr; if (ProgNo>=0) EditRun(2); }	// Program listing & edit
+				if ( i==ProgNotFound ) { g_current_prog=g_error_prog; g_exec_ptr=g_error_ptr; if (g_current_prog>=0) EditRun(2); }	// Program listing & edit
 					for (j=0; j<BE_MAX; j++) {
 						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { j++; break; }
 					}
 					j--;
 					if ( j ) memcpy2( befiles[1].sname, befiles[0].sname, sizeof(beFiles)*j );
 					strncpy( befiles[0].sname, sname, 12);
-					befiles[0].execptr = ExecPtr;
+					befiles[0].execptr = g_exec_ptr;
 				break;
 
 			case FileCMD_NEW:
@@ -171,11 +181,11 @@ int main()
 			default:
 				break;
 		}
+		// save_config_prog();
 		SaveConfig();
-		
 		for (i=ProgMax; i>=0; i--) {			// memory free
 			if ( ProgfileEdit[i] ) SaveProgfile(i);	// edited file ?
 			if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
-		}	
+		}
 	}
 }

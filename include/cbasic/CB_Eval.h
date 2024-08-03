@@ -1,17 +1,30 @@
-/*
-===============================================================================
-
- Casio Basic RUNTIME Eval library for fx-9860G series      v1.10
-
-===============================================================================
-*/
+/* *****************************************************************************
+ * CB_Eval.h -- Header for double arithmetic library
+ * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
 #define ExpMax 255
 extern char ExpBuffer[];
 //-----------------------------------------------------------------------------
-void CheckMathERR( double *result ) ;
+int CheckMathERR(double *result);
+void _div_check(double div);
+void _div_check_int(int div);
 double asinh( double x ) ;
 double acosh( double x ) ;
 double atanh( double x ) ;
@@ -99,6 +112,7 @@ double RoundSci( double x, double digit);
 double Eval_atof(char *SRC, int c) ;
 double DmsToDec( char *SRC, double h ) ;	// 12"34"56 -> 12.5822222
 
+int eval_end_check_2(int c);
 double Eval(char *SRC);
 double Eval2(char *SRC, int *ptr);
 double Evalsub1(char *SRC);

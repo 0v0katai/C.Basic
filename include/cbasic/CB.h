@@ -1,3 +1,22 @@
+/* *****************************************************************************
+ * CB.h -- Main header file
+ * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
+
 #include <ctype.h>
 #include <fxlib.h>
 #include <stdio.h>
@@ -28,6 +47,10 @@ typedef struct  {
 	double imag;
 } complex;
 
+typedef char bool;
+#define false 0
+#define true 1
+
 #include "CB_complex.h"
 #include "CB_interpreter.h"
 #include "KeyScan.h"
@@ -54,3 +77,5 @@ typedef struct  {
 #include "CB_MonochromeLib.h"
 #include "CB_TextConv.h"
 
+#define min(X, Y)  ((X) < (Y) ? (X) : (Y))
+#define max(X, Y)  ((X) > (Y) ? (X) : (Y))
