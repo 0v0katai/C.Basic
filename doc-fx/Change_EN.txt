@@ -45,7 +45,7 @@ v2.50beta
 * Disabled unused external ASCII and #FFXX font data
 * Disabled customization for List/Mat glyph (#FFE0-#FFE2)
 * Moved List/Mat glyph from F6 (Kana) to F1 (MATH) section in character selector
-* Default external FONTCHARACTER is now � instead of -
+* Default external FONTCHARACTER is now [?] instead of -
 * Reworked #FFXX font area:
     - Half-width Katakana characters are purely external
     - The embedded font set for Katakana is removed because of inconsistency with existing Casio Basic characters
