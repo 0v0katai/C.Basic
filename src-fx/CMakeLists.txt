@@ -1,7 +1,7 @@
 # Configure with [fxsdk build-fx] or [fxsdk build-cg], which provide the
 # toolchain file and module path of the fxSDK
 
-set(CBASIC_VERSION "02.47.2000")
+set(CBASIC_VERSION "02.50.0100")
 
 if(${CBASIC_VERSION} MATCHES "^0.*")
   string(SUBSTRING ${CBASIC_VERSION} 1 1 MAJOR)
