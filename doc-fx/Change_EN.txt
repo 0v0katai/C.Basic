@@ -1,11 +1,72 @@
+=====================================================================================
+Note: This is the legacy C.Basic changelog and is planned to be deprecated. Visit
+C.Basic Wiki for more up-to-date and comprehensive changelog.
+
+- CalcLoverHK
+=====================================================================================
+
+-------------------------------------------------------------------------------------
 Please look at this site
 http://egadget2.web.fc2.com/CBasic/Interpreter/CBasic_interpreter.html
 This site is translated by Krtyski.
 -------------------------------------------------------------------------------------
-some following text translated by sentaro21
+Some following text translated by sentaro21
 Sorry that translation is not good...
 Translated with www.DeepL.com/Translator (free version)
 -------------------------------------------------------------------------------------
+
+v2.50beta
+    (build01)   2024.8.4
+# Additions
+* Added error value indicator on the bottom-left corner of error prompt
+* Added git commit hash to version pop-up
+
+# Changes
+* Compilation tool changes:
+    - Switched SDK from Casio to fxSDK
+    - Switched compiler from SHC to GCC 14.1
+    - Up to 18% performance uplift
+    - Approximately 50 kB add-in size reduction
+* The save format of half-width katakana characters in text file is switched from Shift-JIS to FONTCHARACTER
+* Input in C.Basic catalog menu is now always in alpha-lock mode
+* `MOD(` no longer rounds off inputs
+* `LCM(` now accepts negative arguments instead of raising `Argument ERROR`
+* Extended the range of unique integers of `RanInt#(` from 2^15 to 2^31
+* Error message changes:
+    - `Not Loop ERROR` -> `Not in Loop`
+    - `No Matrix Array` -> `Undefined Matrix`
+    - `Invalid Ary Size` -> `Invalid Size`
+    - `Var Undefined` -> `Undefined Alias`
+    - `VarLimit Exceeded` -> `Var Memory Full`
+    - `Duplicated Def` -> `Assign ERROR`
+    - `Address Align ERR` -> `Address ERROR`
+* Optimized factorial, `nPr`, `nCr`, `MOD(` and `GCD(` operation
+* Optimized font display routines
+* Disabled unused external ASCII and #FFXX font data
+* Disabled customization for List/Mat glyph (#FFE0-#FFE2)
+* Moved List/Mat glyph from F6 (Kana) to F1 (MATH) section in character selector
+* Default external FONTCHARACTER is now � instead of -
+* Reworked #FFXX font area:
+    - Half-width Katakana characters are purely external
+    - The embedded font set for Katakana is removed because of inconsistency with existing Casio Basic characters
+    - Combined Katakana and Gaiji standard/mini font bitmaps
+* Enabled [MENU]-to-Main only for file manager and abort due to insufficient memory
+
+# Fixes
+* Compilation failure due to `CB_Str.c` (#3)
+* Unexpected exit when pressing certain keys in C.Basic catalog menu (#5)
+* Incorrect text conversion for List/Mat glyph (#11)
+* Incomplete command text display in C.Basic catalog (#13)
+* Implicit division in CPLX mode raises `Zero division` (6f052ef)
+* `nCr` and `nPr` with a very large value of `r` results in zero sum (a98ae47)
+* Having 0 as any argument of `GCD(` causes hang (d76c35e)
+* Missing `TryEnd` in a `Try` statement causes hang (eb08fa0)
+* Incorrect beginning address of hidden RAM after font initialization (87ec8dc)
+* Interpreter hangs indefinitely when TryEnd is missing (#14)
+* Unsaved program is lost when opening another app in Main Menu (#15)
+* Message for text conversion overwrites border of pop-up window (5db8483)
+* Incorrect `MCS_ReadFileList()` prototype (6fb08db)
+
 v2.47beta
     (build02)   2023.12.11
 	-Fixed a bug that [EXIT] did not return to the catalog after history.
