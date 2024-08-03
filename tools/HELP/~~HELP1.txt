@@ -1,0 +1,1078 @@
+'ProgramMode:RUN
+' C.Basic Help text FX ver.1.30
+'
+'----format---
+'$nnnn  '--opcode--
+'Help Strings1
+'Help Strings2
+' separator is <CR>
+'
+
+$0027
+'#CBINT
+'#CBDBL
+'#CBCPLX
+'#_Str _<Mat>,num,length
+
+
+'-------------[MENU]
+
+$F74A
+$F74B
+$F74C
+S-Gph1 DrawOn,Scatter,List1,List2,1,Square
+S-Gph2 DrawOn,xyLine,List1,List2,Cross
+S-Gph3 DrawOn,xyLine,List2,List3,Dot
+
+
+$7F45
+Swap MatName,Row1,Row2
+Swap A,2,3
+
+$7F42
+*Row Multi,MatName,Row
+*Row 4,A,2
+
+$7F43
+*Row+ Multi,MatName,Row,added
+*Row+ 4,A,2,3
+
+$7F44
+Row+ MatName,added,Row
+Row+ A,2,3
+
+$F7B0
+SortA(List 1,List 2,List 3)
+
+$F7B1
+SortD(List 1,List 2,List 3)
+
+
+
+'-------------[OPTN]
+$7F51
+List 1
+List 1[1]
+"ABC"->List 1
+"ABC"->List 1[0]
+
+$7F4A
+List->Mat(1,2)->Mat Ans
+
+$7F46
+Dim Mat A
+Dim List 1
+10->Dim A
+{3,2}->Dim Mat A
+{3,2}->Dim Dim Mat A
+{3,2}->Dim Dim Mat B(0x88000000)
+{3,2}->Dim Dim Mat B(&Mat A)
+
+$7F47
+Fill(3,Mat A)
+Fill(123,List 2)
+
+$7F2C
+Seq(<EXP>,<VAR>,<ST>,<EN>,<Inc>
+Seq(X^2,X,1,11,5)->{1,36,121}
+
+$7F2D
+Min(List 1)
+
+$7F20
+Max(List 1,List 2)
+
+$7F2E
+Mean(List 1)
+
+$7F2F
+Median(List 1,List 2)
+
+$7F49
+Augment(Mat A,Mat B)
+Augment(List 1,List 2)
+
+$7F4C
+Sum List 1
+
+$7F4D
+Prod List 1
+
+$7F5C
+ListCmp(List 1,List 2)
+
+
+$7F40
+{3,2}->Dim Mat A
+Mat A[1,2]
+Mat A[1]
+A[1]
+A1
+
+$7F4B
+Mat->List(Mat A,2)->List Ans
+
+$7F41
+Trn Mat A
+
+$7F21
+Det Mat A
+
+$7F48
+Identity 3->Mat Ans
+
+$7F5B
+MatBase(Mat A)
+
+$7F58
+ElemSize(Mat A)
+
+$7F59
+RowSize(Mat A)
+
+$7F5A
+ColSize(Mat A)
+
+
+$F94B
+DotP(Vct A,Vct B)
+
+$F94A
+CrossP(Vct A,Vct B)
+
+$F96D
+Angle(Vct A,Vct B)
+
+$F95E
+UnitV(Vct A)
+
+$F95B
+Norm(Vct A)
+
+
+
+$7F22
+Arg (3+4Imaginary)->53.13010235
+
+$7F23
+Conjg (2+4Imaginary)->2-4Imaginary
+
+$7F24
+ReP (2+5Imaginary)->2
+
+$7F25
+ImP (2+5Imaginary)->5
+
+
+$7F29
+Sigma(Sin X,X,0,1)
+
+$7F85
+logab(10,2)
+
+$7FBC
+107 Int //7->15
+
+$7FBD
+107 Rmdr 7->2
+
+
+$F90E
+123->Const A
+
+$F90F
+Alias A=_varA
+_varA+1->_varA
+Alias Mat A=_abc
+Mat _abc[1,1]
+Alias Lbl A=_Sub\1
+Lbl _Sub\1
+
+
+$00C1
+Ran#
+Ran#n
+
+$7F87
+RanInt#(A,B)->A
+RanInt#(A,B,n)->List 1
+
+$7F8A
+RanNorm#(a,b[,n])
+
+$7F89
+RanBin#(n,p[,m])
+
+$7F88
+RanList#(n[,a])
+
+
+$0088
+nnPrr
+5nPr2->20
+
+$0098
+nnCrr
+5nCr2->10
+
+
+
+$0097
+Abs 5->5
+Abs (-)5->5
+
+$00A6
+Int 1.5->1
+Int (-)1.5->1
+
+$00B6
+Frac 1.23->0.23
+
+$00D3
+1.23456
+Fix 3
+Rnd
+'_Ans_=1.235
+
+$00DE
+Intg 1.5->1
+Intg (-)1.5->2
+
+$7F86
+RndFix(Value[,Digits])
+RndFix(1.23456,3)->1.235
+RndFix(12.3456,Sci 3)->12.3
+
+$7F3C
+GCD(10,2)->2
+
+$7F3D
+LCM(5,2)->10
+
+$7F3A
+MOD(10,4)->2
+
+
+$0080
+Pol(<r>,Theta)->List Ans
+
+$00A0
+Rec(X,Y)->List Ans
+
+$F905
+>DMS 
+
+
+$F793
+StoPict n
+
+$F794
+RclPict n
+
+$F79D
+StoCapt n
+
+$F79F
+RclCapt n
+
+
+$F91B
+"_sin _X+_cos _X"->fn1
+fn1(30)
+
+
+'-------------[VARS]
+
+$7F00
+$7F01
+$7F02
+$7F04
+$7F05
+$7F06
+$7F08
+$7F09
+$7F0A
+ViewWindow Xmin,Xmax,Xscl,Ymin,Ymax,Yscl,TThetamin,TThetamax,TThetaptch
+
+$7F5F
+'1//128s timer
+0->Ticks
+TicksWait 128
+TicksWait (-)128
+
+$F94F
+Wait n
+
+$F941
+DATE->Str 1
+"2017//01//17"->DATE
+
+$F942
+TIME->Str 1
+"23:59:59"->TIME
+
+$F7FE
+BackLight 0
+BackLight 1
+
+$F7DE
+BatteryStatus
+
+
+$7FF0
+GraphY0
+"_sin _X+1"->GraphY1
+GraphY1(30)
+
+
+
+'-------------[PRGM]
+$F700
+$F701
+$F702
+$F703
+If <Condition>\Then ...\...Else ...\IfEnd
+
+$F70F
+If <Condition>\Then ...
+Else ...
+ElseIf ...
+IfEnd
+
+$F704
+$F705
+$F706
+$F707
+For 1->A To 10 Step 0.1
+...
+Next
+
+$F708
+$F709
+While A>1
+...
+WhileEnd
+
+$F70A
+$F70B
+Do
+...
+LpWhile A>1
+
+$F7EA
+$F7EB
+$F7EC
+$F7ED
+Switch A
+ Case 1
+  ...:Break
+ Default ...
+SwitchEnd
+
+
+$00ED
+Prog "Sample"
+Prog "Sample"->A
+
+$F70C
+Return 
+Return A
+
+$F70D
+Break 
+
+$F70E
+Stop 
+
+$F7F1
+Local a,b,c...
+
+$00FA
+Gosub 1
+Gosub A
+Gosub _Label
+
+$F717
+ACBreak 
+
+$F737
+$F738
+$F739
+Try <PROGRAM>
+Except [error code 1]
+ <PROGRAM for error1>
+Except [error code 2]
+ <PROGRAM for error2>
+TryEnd
+
+
+$00E2
+Lbl 0
+Lbl A
+Lbl _Label
+
+$00EC
+Goto 0
+Goto A
+Goto _Label
+
+$0013
+A>5=>Goto 1
+
+$00E9
+Isz A
+Isz Mat A[B]
+Isz List 1[2]
+
+$00E8
+Dsz A
+Dsz Mat A[B]
+Dsz List 1[2]
+
+$F79E
+Menu "Title","1st",1,"2nd",2,"3rd",3
+Lbl 1
+Lbl 2
+Lbl 3
+
+
+$003F
+?->A
+?A
+?([X][,Y][,W][,"Space"][,limit][,R])
+?[##]([@][X][,Y][,W][,"Space"][,limit][,R][,M])
+"A="?()->A
+?(3,4,5,">",5)A
+
+
+$F720
+DrawGraph 
+
+$F723
+DrawStat 
+
+$F7E4
+Disp A
+Disp "Strings"
+
+
+$F718
+ClrText 
+
+$F719
+ClrGraph 
+
+$F71A
+ClrList 
+ClrList 10
+
+$F71E
+ClrNat
+ClrMat A
+
+$F93E
+ClrVct 
+ClrVct A
+
+
+$F710
+Locate [@][!]X,Y,"str"//EXP,[,N//R]
+'[@] draw current VRAM
+'[!] draw original font
+'[,N]ormal  [,R]everse
+
+$7F8F
+Getkey
+Getkey0 'clr keybuff
+Getkey1 'no clr keybuff
+Getkey2
+Getkey3
+GetkeyM->List Ans
+
+$7F9F
+KeyRow(1)
+KeyRow(9)
+
+$F711
+Send(Data[,baudrate][,exit])
+Send(A,,1 ' enable [EXIT]
+Send(Mat A
+baudrate 0=300, 1=600, 2=1200, 3=2400, 4=4800, 5=9600, 6=19200, 7=38400, 8=57600, 9=115200
+
+$F712
+Receive(Data[,baudrate][,exit])
+Receive(A,,1) ' enable [EXIT]
+Receive(Mat A)
+baudrate 0=300, 1=600, 2=1200, 3=2400, 4=4800, 5=9600, 6=19200, 7=38400, 8=57600, 9=115200
+
+$F713
+OpenComport38k[,baudrate][,transfermode][,exit]
+baudrate 0=300, 1=600, 2=1200, 3=2400, 4=4800, 5=9600, 6=19200, 7=38400, 8=57600, 9=115200
+
+$F714
+CloseComport38k 
+
+$F715
+Send38k Data[,bytecount]
+
+$F716
+Receive38k Data[,bytecount]
+
+$F7DD
+Beep <Hz>,<ms>
+Beep 440,1000  '440Hz 1s
+Beep 1000,300 '1000Hz 300ms
+
+
+$F7EE
+Save "TEST",A
+Save "TEST",Mat A
+Save "TEST",Mat A[5,1]
+Save "TEST",List 3
+Save "TEST",Str 2
+Save "TEST",A,Q 'CheckOverwrite
+
+$F7EF
+Load("TEST")->A
+Load("TEST")->Mat A
+Load("TEST",16)??¨Mat A[10,1]
+Load("TEST")->Listt 3
+Load("TEST")->Str 2
+
+$F7DF
+Delete "filename"
+
+$7FF5
+IsExist("filename")
+if exist->filesize
+not exist->0
+
+
+'---String
+$F930
+StrJoin("ABC"+"CDE")->"ABCDEF"
+
+$F931
+StrLen("string")->6
+
+$F932
+StrCmp("string1","string2")
+return 0:"string1"="string2"
+return 1:"string1">"string2"
+return (-)1:"string1"<"string2"
+
+$F933
+StrSrc("string1","string2",[n])
+StrSrc("ABCDEFG","CDE")->3
+
+$F949
+StrRepl("Hello World","World","Earth")->"Hello Earth"
+StrRepl("abcabc","ab","ff",3)->"abcffc"
+StrRepl("abcabc","ab","ff")->"ffcffc"
+
+$F934
+StrLeft("ABCDEFG",3)->"ABC"
+
+$F935
+StrRight("ABCDEFG",3)->"EFG"
+
+$F936
+StrMid("ABCDEFG",3,3)->"CDE"
+StrMid("ABCDEFG",3)->"CDEFG"
+
+$F937
+Exp>Str(<formula>,<string var>)
+Exp>Str(fn1,Str 1)
+
+$F938
+Exp("<string>")
+Exp("123+456")->579
+
+$F939
+StrUpr("abc")->"ABC"
+
+$F93A
+StrLwr("ABC")->"abc"
+
+$F93B
+StrInv("ABCDEF")->"FEDCBA"
+
+$F93C
+StrShift("12345", 2)->"345  "
+StrShift("12345",(-)2)->"  123"
+
+$F93D
+StrRotate("12345", 2)->"34512"
+StrRotate("12345",(-)2)->"45123"
+
+$F93F
+Str 1
+
+$F940
+ToStr(123)->"123"
+
+$F943
+Sprintf("A=%4dB=%3.2f",%A,#B)
+
+$F944
+StrChar(0x41,5)->"AAAAA"
+StrChar("ABC",3)->"ABCABCABC"
+
+$F945
+StrCenter("Test",8)->"  Test  "
+StrCenter("Test",8,"@")->"@@Test@@"
+
+$F948
+StrBase("string",base1,base2)
+StrBase("579",15,12) -> "873"
+StrBase("100",13,10) -> "169"
+StrBase("123",16,3) -> "101210"
+StrBase("43981",10,16) -> "ABCD"
+StrBase("12A345AFZ",36,10) -> "2999794422815"
+StrBase("AZaz",62,10) -> "2520113"
+
+$F946
+Hex(12345)->Str 1 '="3039"
+Exp("0X"+Str 1)->A '=12345
+
+$F947
+Bin(123)->Str 1 '="1111011"
+Exp("0B"+Str 1)->A '=123
+
+$F94D
+StrSplit("123,4567,89",",")->["123","4567","89"]
+
+$F950
+StrAsc("Ascii")->65
+
+
+$F7F4
+SysCall(syscall number[,arg1][,arg2][,arg3]...[,arg12])->A
+
+$F7F5
+Call(address[,arg1][,arg2][,arg3][,arg4])->A
+
+$F7F6
+Poke(address)[.B][.W][.L][.F],Data
+**(address )[.B][.W][.L][.F],Data
+Data->Poke( address )[.B][.W][.L][.F]
+Data->**( address )[.B][.W][.L][.F])
+Poke(0x8802E000).B,A%
+A%->Poke(0x8802E000).B
+
+$7FF6
+Peek(adrs)[.B][.W][.L][.F]
+**(adrs)[.B][.W][.L][.F]
+Peek(0x80000000).W
+**(0x80000000).W
+
+$7FF8
+VarPtr(A)
+VarPtr(A%)
+VarPtr(Mat A)
+VarPtr(Mat A[2,3])
+
+$7FFA
+ProgPtr("Test")
+
+
+
+'------------[SETUP]
+$00DA
+Deg 
+
+$00DB
+Rad 
+
+$00DC
+Gra 
+
+$00E3
+Fix 
+
+$00E4
+Sci n
+n:0~15
+
+$00D9
+Norm n
+n:0~15
+
+$00DD
+Eng n
+n:0~15
+
+$F90B
+EngOn
+EngOn 3
+
+$F90C
+EngOff 
+
+$7FCF
+System((-)2) 'OS Version
+System((-)1) 'model name
+System(0) 'CB Version
+System(1) 'VRAM ADDRESS
+System(2) 'TEXTV ADDRESS
+System(3) 'GRAPHV ADDRESS
+
+$7FDF
+Version->0123 ' ver1.23
+
+$F7F8
+RefrshCtrl 0 ' no refresh
+RefrshCtrl 1 ' Only Graph
+RefrshCtrl 2 ' Text%Graph
+
+$F7FA
+RefrshTime 5
+'Set refresh control time 
+'in interval of 1//128sec
+
+
+'------------[SHIFT]
+
+$00EB
+ViewWindow Xmin,Xmax,Xscl,Ymin,Ymax,Yscl,TThetamin,TThetamax,TThetaptch
+ViewWindow 1,127,0,63,1,0
+ViewWindow 1,127,0,63,1,0,0,10,1
+ViewWindow 1,379,0,187,1,0
+
+$F797
+StoV-Win n
+
+$F798
+RclV-Win n
+
+$7F0B
+$7F0C
+Xfct 
+Yfct 
+
+
+$00EE
+Graph Y=Sin X
+
+$00EF
+Graph Integralsin X
+
+$00F5
+Graph(X,Y)=(sin X,cos X)
+
+$00E0
+Plot 
+Plot X,Y
+
+$F7A8
+PlotOn X,Y
+
+$F7A9
+PlotOff X,Y
+
+$F7AA
+PlotChg X,Y
+
+
+$00E1
+Line 
+Line X1,Y1,X2,Y2
+
+$F7A7
+F-Line X1,Y1,X2,Y2
+
+$F7A3
+Vertical 
+
+$F7A4
+Horizontal 
+
+$F7AB
+PxlOn py,px
+
+$F7AC
+PxlOff py,px
+
+$F7AD
+PxlChg py,px
+
+$F7AF
+PxlTest(py,px)
+
+$F7A6
+Circle X,Y,R
+
+
+
+
+$F73B
+DotPut(Mat A,X,Y,X1,Y1,X2,Y2)
+DotPut(Mat A,X,Y,X1,Y1,X2,Y2)->Mat B
+DotPut(Mat A[n,m],X,Y,X1,Y1,X2,Y2)->Mat B
+
+$F73D
+DotTrim(
+
+$F73E
+DotGet(X1,Y1,X2,Y2)->Mat A
+DotGet(X1,Y1,X2,Y2)->Mat A[X,Y]
+
+
+$F7A5
+Text [@][!]y,x,"string"//<EXP>,[,N//O//R//V]
+'[@] draw current VRAM.
+'[!] draw original font.
+'[,N] Normal
+'[,R] Reverse
+'[,O] Or
+'[,V] reVerse or
+
+
+$F7FB
+Screen.T ' text mode
+Screen.G ' graphics mode
+Screen.R ' reverse screen
+Screen#1,1,(-)6.3,6.3,-3.1,3.1->List Ans
+Screen%74,22,(-)6.3,6.3,-3.1,3.1->List Ans
+
+$F7FC
+PutDispDD
+PutDispDD;
+
+
+$F7E3
+LocateYX [@][!]y,x,"string"//<EXP>,[,N//R]
+'[,N] Normal
+'[,R] Reverse
+
+$F7FD
+FkeyMenu(1,"1st")
+FkeyMenu(6,"6th",R)
+FkeyMenu(1,"",C)
+FkeyMenu(1,42,C)
+
+$$F7F2
+PopUpWin(n)  (1<=n<=6)
+PopUpWin(11,"Msg1"[,"Msg2"])->A
+PopUpWin(10,"Msg1"[,"Msg2"])->A
+PopUpWin(0) 'push screen
+PopUpWin(9) 'return screen
+
+F7E1
+Rect X1,Y1,X2,Y2
+
+$F7E2
+FillRect X1,Y1,X2,Y2
+
+$F7E8
+ReadGraph(X1,Y1,X2,Y2)->Mat A
+
+$F7E9
+WriteGraph X,Y,dx,dy,Mat A,P1[,P2]
+P1 [,N]ormal [,R]everse [,M]esh
+P2 [omit]over [,X]or [,O]r [,A]nd
+
+
+
+
+'---MLcommand---
+
+$F9C0
+_ClrVram
+
+$F9C1
+_ClrScreen
+
+$F9C2
+_DispVram
+_DispVram;
+
+$F9C3
+_Contrast
+centor:39 (GII)
+centor:32 (35+E)
+
+$F9C4
+_Pixel X,Y[,Col][,%]
+' Col:(-)1 transparent
+' Col:0 back color
+' Col:1 selected color
+' Col:2 Xor  :3 Checker
+' Col:4 Chance(%)
+' Col:5 Brends(%)
+
+$F9C5
+_Point X,Y,W[,Col][,%]
+_Point 10,20,5
+
+$F9C6
+_PixelTest(X,Y)
+
+$F9C7
+_Line X1,Y1,X2,Y2[,Col][,%][,Width]
+_Line 0,0,127,63
+_Line 0,0,127,63,1,,10
+
+$F9C8
+_Horizontal y,X1,X2[,Col][,%]
+
+$F9C9
+_Vertical x,Y1,Y2[,Col][,%]
+
+$F9CA
+_Rectangle X1,Y1,X2,Y2,border_W,borderCol[,fillCol][,%][,angle(deg)][,CX][,CY],[ZOOM]
+_Rectangle 10,20,60,40,0,
+
+$F9CB
+_Polygon **AryX,**AryY,vertices[,Col][,%][,angle(deg)][,CX][,CY],[ZOOM]
+_Polygon &Mat X,&Mat Y,5
+_Polygon &Mat X,&Mat Y,5,4,%50,45,192,96,%200
+_Polygon &Mat X,&Mat Y,5,,,45,,,%200
+
+$F9CC
+_FillPolygon **AryX,**AryY,vertices[,Col][,%][,angle(deg)][,CX][,CY],[ZOOM]
+_FillPolygon &Mat X,&Mat Y,5
+_FillPolygon &Mat X,&Mat Y,5,4,%50,45,192,96,%200
+_FillPolygon &Mat X,&Mat Y,5,,,45,,,%200
+
+$F9CD
+_Circle X,Y,R[,Col][,%][,Width][,start_angle][,end_angle][,vertex]
+_Circle 64,32,20
+_Circle 64,32,20,1,,,20,380,5
+
+$F9CE
+_FillCircle X,Y,R[,Col][,%][,Width][,start_angle][,end_angle][,vertex]
+_FillCircle 64,32,20
+_FillCircle 64,32,20,1,,,20,380,5
+
+$F9CF
+_Elips X,Y,R1,R2[,Col][,%]
+
+$F9D0
+_FillElips X,Y,R1,R2[,Col][,%]
+
+$F9D1
+_ElipsInRct X1,Y1,X2,Y2[,Col][,%]
+
+$F9D2
+_FElipsInRct X1,Y1,X2,Y2[,Col][,%]
+
+$F9D3
+_Hscroll n[,X1,Y1,X2,Y2]
+
+$F9D4
+_Vscroll n[,X1,Y1,X2,Y2]
+
+$F9D5
+_Bmp **arry,X,Y,W,H[,O//A//X][,C]
+ _Bmp &Mat A,10,20,4,8,O,C
+
+$F9D6
+_Bmp8 **arry,X,Y[,O//A//X][,C]
+ _Bmp8 &Mat A,10,20,A
+
+$F9D7
+_Bmp16 **arry,X,Y[,O//A//X][,C]
+ _Bmp16 &Mat A,10,20,A
+
+$F9D8
+_Test_Circle 62,32,20
+_Test_Point 10,10,5
+_Test_Line 10,10,100,30
+
+
+$F9D9
+_BmpZoom &Mat X,Y,W,H[,zW][,zH][,Col][,%]
+_BmpZoom &Mat A,0,0,20,10,1.5,2.5
+_BmpZoom &Mat A,0,0,20,10,%150,%250,4,%50
+
+$F9DA
+_BmpRotate &Mat X,Y,W,H[,angle(degree)][,Col][,%]
+_BmpRotate &Mat A,0,0,20,10,45
+
+$F9DE
+_BmpZoomRotate &Mat X,Y,W,H[,zW][,zH][,angle(degree)][,Col][,%]
+_BmpZoomRotate &Mat A,0,0,20,10,1.5,2.5,90
+_BmpZoomRotate &Mat A,0,0,20,10,%150,%250,15,4,%50
+
+$F9DD
+DrawMat Mat A[px,py],X,Y,W,H[,zW][,zH][,Col][,%]
+DrawMat Mat A,0,0,128,64
+DrawMat Mat A[10,5],0,0,40,30,%150,%250,4,%50
+
+$F9DB
+BmpSave "file",X1,Y1,X2,Y2
+BmpSave "file",Mat A
+
+$F9DC
+BmpLoad("file")->Mat A
+BmpLoad("file"),10,20
+
+
+$F960
+GetFont()->(bit0:Ascii) (bit1:Gaiji) (bit2:Kana)
+GetFont(0x41)->Mat A
+GetFont("A")->Mat A
+GetFont(@0x41)->Mat A
+GetFont(@"A")->Mat A
+
+$F961
+SetFont 0 ' disable Ext font
+SetFont 1 ' enaable Ext font
+SetFont 0xFF80,Mat A
+SetFont "@",Mat A
+
+$F962
+GetFontMini()->(bit0:Ascii) (bit1:Gaiji) (bit2:Kana)
+GetFontMini(0x41)->Mat A
+GetFontMini("A")->Mat A
+GetFontMini(@0x41)->Mat A
+GetFontMini(@"A")->Mat A
+
+$F963
+SetFontMini 0xFF80,Mat A
+SetFontMini "@",Mat A
+
+
+
+'-------------color
+
+$F9BE
+Back-Color Red
+Back-Color @Green
+
+$7F5D
+GetRGB(<EXPRESSION>)
+->List Ans[1]( Red )
+->List Ans[2]( Green )
+->List Ans[3]( Blue )
+
+$7F5E
+RGB(R,G,B)
+R,G,B:0~255
+
+$7F70
+GetHSV(<EXPRESSION>)
+->List Ans[1]( Red )
+->List Ans[2]( Green )
+->List Ans[3]( Blue )
+
+$7F71
+HSV(H,S,V)
+H,S,V:0~255
+
+$7F72
+GetHSL(<EXPRESSION>)
+->List Ans[1]( H )
+->List Ans[2]( S )
+->List Ans[3]( L )
+
+$7F73
+HSL(H,S,L)
+H,S,L:0~255
+
+$F9BF
+Transp-Color Green
+Transp-Color #5
+'the transparent color in the BitMap drawing of the 16bits color
+

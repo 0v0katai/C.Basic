@@ -1,0 +1,175 @@
+------------------------------------------------------------
+Mat n                   Vct n            List n
+
+  1:    Mat A
+  2:    Mat B
+  3:    Mat C
+  4:    Mat D
+  5:    Mat E
+  6:    Mat F
+  7:    Mat G
+  8:    Mat H
+  9:    Mat I
+ 10:    Mat J
+ 11:    Mat K
+ 12:    Mat L
+ 13:    Mat M
+ 14:    Mat N
+ 15:    Mat O
+ 16:    Mat P
+ 17:    Mat Q
+ 18:    Mat R
+ 19:    Mat S
+ 20:    Mat T
+ 21:    Mat U
+ 22:    Mat V
+ 23:    Mat W
+ 24:    Mat X
+ 25:    Mat Y
+ 26:    Mat Z
+
+                        Vct A
+                        Vct B
+                        Vct C
+                        Vct D
+                        Vct E
+                        Vct F
+                        Vct G
+                        Vct H
+                        Vct I
+                        Vct J
+                        Vct K
+                        Vct L
+                        Vct M
+                        Vct N
+                        Vct O
+                        Vct P
+                        Vct Q
+                        Vct R
+                        Vct S
+                        Vct T
+                        Vct U
+                        Vct V
+                        Vct W
+                        Vct X
+                        Vct Y
+                        Vct Z
+
+                                        List  1
+                                        List  2
+                                        List  3
+                                        List  4
+                                        List  5
+                                        List  6
+                                        List  7
+                                        List  8
+                                        List  9
+                                        List 10
+                                        List 11
+                                        List 12
+                                        List 13
+                                        List 14
+                                        List 15
+                                        List 16
+                                        List 17
+                                        List 18
+                                        List 19
+                                        List 20
+                                        List 21
+                                        List 22
+                                        List 23
+                                        List 24
+                                        List 25
+                                        List 26
+
+ 27:    Mat a           Vct a           List 27
+ 28:    Mat b           Vct b           List 28
+ 29:    Mat c           Vct c           List 29
+ 30:    Mat d           Vct d           List 30
+ 31:    Mat e           Vct e           List 31
+ 32:    Mat f           Vct f           List 32
+ 33:    Mat g           Vct g           List 33
+ 34:    Mat h           Vct h           List 34
+ 35:    Mat i           Vct i           List 35
+ 36:    Mat j           Vct j           List 36
+ 37:    Mat k           Vct k           List 37
+ 38:    Mat l           Vct l           List 38
+ 39:    Mat m           Vct m           List 39
+ 40:    Mat n           Vct n           List 40
+ 41:    Mat o           Vct o           List 41
+ 42:    Mat p           Vct p           List 42
+ 43:    Mat q           Vct q           List 43
+ 44:    Mat r           Vct r           List 44
+ 45:    Mat s           Vct s           List 45
+ 46:    Mat t           Vct t           List 46
+ 47:    Mat u           Vct u           List 47
+ 48:    Mat v           Vct v           List 48
+ 49:    Mat w           Vct w           List 49
+ 50:    Mat x           Vct x           List 50
+ 51:    Mat y           Vct y           List 51
+ 52:    Mat z           Vct z           List 52
+
+ 53:    Mat 53          Vct 53          List 53		List  1: file 1
+ 54:    Mat 54          Vct 54          List 54
+ 55:    Mat 55          Vct 55          List 55
+ 56:    Mat 56          Vct 56          List 56
+ 57:    Mat 57          Vct 57          List 57
+ 58:    Mat 58          Vct 58          List 58
+ 59:    Mat 59          Vct 59          List 59
+ 60:    Mat 60          Vct 60          List 60
+ 61:    Mat 61          Vct 61          List 61
+ 62:    Mat 62          Vct 62          List 62
+ 63:    Mat 63          Vct 63          List 63
+ 64:    Mat 64          Vct 64          List 64
+ 65:    Mat 65          Vct 65          List 65
+ 66:    Mat 66          Vct 66          List 66
+ 67:    Mat 67          Vct 67          List 67
+ 68:    Mat 68          Vct 68          List 68
+ 69:    Mat 69          Vct 69          List 69
+ 70:    Mat 70          Vct 70          List 70
+ 71:    Mat 71          Vct 71          List 71
+ 72:    Mat 72          Vct 72          List 72
+ 73:    Mat 73          Vct 73          List 73
+ 74:    Mat 74          Vct 74          List 74
+ 75:    Mat 75          Vct 75          List 75
+ 76:    Mat 76          Vct 76          List 76
+ 77:    Mat 77          Vct 77          List 77
+ 78:    Mat 78          Vct 78          List 78
+
+ 79:    Mat 79          Vct 79          List 79		List  1: file 2
+ 80:    Mat 80          Vct 80          List 80
+ 81:    Mat 81          Vct 81          List 81
+ 82:    Mat 82          Vct 82          List 82
+ 83:    Mat 83          Vct 83          List 83
+ 84:    Mat 84          Vct 84          List 84
+ 85:    Mat 85          Vct 85          List 85
+ 86:    Mat 86          Vct 86          List 86
+ 87:    Mat 87          Vct 87          List 87
+ 88:    Mat 88          Vct 88          List 88
+ 89:    Mat 89          Vct 89          List 89
+ 90:    Mat 90          Vct 90          List 90
+ 91:    Mat 91          Vct 91          List 91
+ 92:    Mat 92          Vct 92          List 92
+ 93:    Mat 93          Vct 93          List 93
+ 94:    Mat 94          Vct 94          List 94
+ 95:    Mat 95          Vct 95          List 95
+ 96:    Mat 96          Vct 96          List 96
+ 97:    Mat 97          Vct 97          List 97
+ 98:    Mat 98          Vct 98          List 98
+ 99:    Mat 99          Vct 99          List 99
+100:    Mat 100         Vct 100         List 100
+101:    Mat 101         Vct 101         List 101
+102:    Mat 102         Vct 102         List 102
+103:    Mat 103         Vct 103         List 103
+104:    Mat 104         Vct 104         List 104
+
+105:    Mat 105         Vct 105         List 105	List  1: file 3
+106:    Mat 106         Vct 106         List 106
+107:    Mat 107         Vct 107         List 107
+
+<r>:    Mat <r>         Vct <r>         List <r>
+ƒÆ :    Mat ƒÆ          Vct ƒÆ          List ƒÆ
+Ans:    Mat Ans         Vct Ans         List Ans
+------------------------------------------------------------
+Last edited by sentaro 2020/02/05(UTC)
+------------------------------------------------------------

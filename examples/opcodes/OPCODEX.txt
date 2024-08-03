@@ -1,0 +1,77 @@
+'ProgramMode:RUN
+' OPCODE LIST extend
+'#_Str _s
+ClrMat s
+{1,32}->Dim Mat s.b
+0X00->A
+0->B
+0->M
+
+Lbl 0
+
+ClrText:
+FkeyMenu(1,"00xx",T):
+FkeyMenu(2,"7Fxx",T):
+FkeyMenu(3,"F7xx",T):
+FkeyMenu(4,"F9xx",T):
+FkeyMenu(5,"E7xx",T):
+M=0=>FkeyMenu(6,"_->_EXT",T):
+M=1=>FkeyMenu(6,"_->_ORG",T):
+
+For 0->I To 6
+ A*256+B+I->J
+ MatBase(Mat s)->S
+ Switch M
+  Case 0:' original
+   If System((-)1)<10
+    SysCall(0X7FC,J,VarPtr(Str S))
+   Else
+    SysCall(0X128F,J,VarPtr(Str S))
+   IfEnd
+   Break
+  Case 1:' extended
+   If A=0:Then 
+    MOD(J,256)->s[S,S]
+    0->s[S,S+1]
+   Else 
+    Intg (J/256)->s[S,S]
+    MOD(J,256)->s[S,S+1]
+    0->s[S,S+2]
+   IfEnd
+   Break
+ SwitchEnd
+ Locate 1,I+1,Sprintf("%04X:",%J):
+ Locate 6,I+1,Str S:
+Next
+
+Getkey2->K
+Switch K
+ Case 47:'EXIT
+  Stop:Break
+ Case 79:'F1
+  0->A:Break
+ Case 69:'F2
+  0X7F->A:Break
+ Case 59:'F3
+  0XF7->A:Break
+ Case 49:'F4
+  0XF9->A:Break
+ Case 39:'F5
+  0XE7->A:Break
+ Case 29:'F6
+  1-M->M:Break
+ Case 28:'UP
+  B>0=>B-1->B
+  Break
+ Case 37:'DOWN
+  B<249=>B+1->B
+  Break
+ Case 38:'LEFT
+  B-7->B:B<0=>0->B
+  Break
+ Case 27:'RIGHT
+  B+7->B:B>249=>249->B
+  Break
+SwitchEnd
+
+Goto 0

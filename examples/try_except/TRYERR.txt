@@ -1,0 +1,6 @@
+'ProgramMode:RUN
+?Str 1
+Try Exp(Str 1)
+ Except :' All Error
+ Disp System(-9):' Error No
+TryEnd
