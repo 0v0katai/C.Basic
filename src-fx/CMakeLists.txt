@@ -1,31 +1,31 @@
 # Configure with [fxsdk build-fx] or [fxsdk build-cg], which provide the
 # toolchain file and module path of the fxSDK
 
-set(CBASIC_VERSION "02.50.0100")
+set(CB_VERSION "02.50.0100")
 
-if(${CBASIC_VERSION} MATCHES "^0.*")
-  string(SUBSTRING ${CBASIC_VERSION} 1 1 MAJOR)
+if(${CB_VERSION} MATCHES "^0.*")
+  string(SUBSTRING ${CB_VERSION} 1 1 MAJOR)
 else()
-  string(SUBSTRING ${CBASIC_VERSION} 0 2 MAJOR)
+  string(SUBSTRING ${CB_VERSION} 0 2 MAJOR)
 endif()
 
-string(SUBSTRING ${CBASIC_VERSION} 3 2 MINOR)
+string(SUBSTRING ${CB_VERSION} 3 2 MINOR)
 
-if(${CBASIC_VERSION} MATCHES "${MAJOR}.${MINOR}.0.*")
-  string(SUBSTRING ${CBASIC_VERSION} 7 1 BUILD)
+if(${CB_VERSION} MATCHES "${MAJOR}.${MINOR}.0.*")
+  string(SUBSTRING ${CB_VERSION} 7 1 BUILD)
 else()
-  string(SUBSTRING ${CBASIC_VERSION} 6 2 BUILD)
+  string(SUBSTRING ${CB_VERSION} 6 2 BUILD)
 endif()
 
-set(CBASIC_VERSION_VALUE "${MAJOR}${MINOR}")
-set(CBASIC_VERSION_STRING "${MAJOR}.${MINOR}")
+set(CB_VERSION_VALUE "${MAJOR}${MINOR}")
+set(CB_VERSION_STRING "${MAJOR}.${MINOR}")
 
 find_package(Git REQUIRED)
 execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
                 OUTPUT_VARIABLE COMMIT_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(SUBSTRING ${COMMIT_ID} 0 7 COMMIT_ID_SHORT)
 cmake_minimum_required(VERSION 3.15)
-project(CBASIC LANGUAGES ASM C VERSION ${CBASIC_VERSION})
+project(CBASIC LANGUAGES ASM C VERSION ${CB_VERSION})
 
 include(GenerateG1A)
 include(GenerateG3A)
@@ -108,14 +108,14 @@ target_link_libraries(CBASIC PRIVATE -lm -lfx -lgcc)
 
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
-  generate_g1a(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC.g1a"
+  generate_g1a(TARGET CBASIC VERSION ${CB_VERSION} OUTPUT "CBASIC.g1a"
     NAME "CBASIC" ICON assets-fx/icon.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
-  generate_g3a(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC.g3a"
+  generate_g3a(TARGET CBASIC VERSION ${CB_VERSION} OUTPUT "CBASIC.g3a"
     NAME "CBASIC" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
-  generate_g3a(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC-fx.g3a"
+  generate_g3a(TARGET CBASIC VERSION ${CB_VERSION} OUTPUT "CBASIC-fx.g3a"
     NAME "CBASIC-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCP)
-  generate_hh2_bin(TARGET CBASIC VERSION ${CBASIC_VERSION} OUTPUT "CBASIC-hh2.bin")
+  generate_hh2_bin(TARGET CBASIC VERSION ${CB_VERSION} OUTPUT "CBASIC-hh2.bin")
 endif()
