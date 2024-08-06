@@ -2,7 +2,7 @@
 name: 'Bug report'
 about: 'Template for bug report.'
 title: ''
-ref: 'main'
+ref: ''
 labels:
   - 'Type/Bug'
 ---
