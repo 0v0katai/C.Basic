@@ -1,0 +1,31 @@
+/*------------------------------------------------------*/
+/* SH SERIES C Compiler Ver. 6.0                        */
+/* Copyright (c) 1992, 2000 Hitachi,Ltd.                */
+/* Licensed material of Hitachi,Ltd.                    */
+/*------------------------------------------------------*/
+
+/***********************************************************************/
+/* SPEC;                                                               */
+/*  NAME = new :                                                       */
+/*                                                                     */
+/*  FUNC = Include file for C++ default operator new .                 */
+/*                                                                     */
+/*  CLAS = UNIT;                                                       */
+/*                                                                     */
+/* END;                                                                */
+/***********************************************************************/
+
+#ifndef __NEW__
+#define __NEW__
+
+#ifdef __embedded_cplusplus
+
+#include <new_ecpp.h>    // include Embeded C++ Library Header
+
+#else
+
+#include <new_edg.h>     // include ANSI C++ Library Header
+
+#endif /* ifdef __embedded_cplusplus */
+
+#endif /* ifndef __NEW__ */

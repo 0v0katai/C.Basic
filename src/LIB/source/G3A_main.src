@@ -1,0 +1,41 @@
+	.SECTION P_TOP,CODE,ALIGN=4
+	
+	.MACRO BIOS_CALL FUNO, TAIL=nop
+    mov.l #h'\FUNO, r0
+    mov.l #H'80020070, r2
+    jsr @r2
+    \TAIL'
+	.ENDM
+	
+	.export G3A_main_asm
+
+outputstr	.SDATAZ "Hello world!"
+
+	.align 2
+	
+G3A_main_asm:
+	add	#-4, r15
+	mov	#1, r4	; x
+	mov #1, r5	; y
+	BIOS_CALL 1863	; locate
+	
+	mov.l	#outputstr, r4
+	mov.l	xtext, r4
+	mov	#0, r5
+	mov	#0, r6
+	BIOS_CALL 01F9	; Print
+
+final_loop:
+	mov	r15, r4
+	BIOS_CALL 0EAB	; GetKey
+	bra	final_loop
+	nop
+
+	add	#4, r15
+	rts
+	nop
+
+		.align 4
+xtext	.SDATAZ "Hello world!"
+
+

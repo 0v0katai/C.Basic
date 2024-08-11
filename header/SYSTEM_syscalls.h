@@ -1,0 +1,17 @@
+int GetMainBatteryVoltage( int one );
+void*GetStackPtr( void );
+void OS_InnerWait_ms( int );
+int EnableColor( int );
+void SMEM_maint( int );
+void TestMode( int );
+unsigned char GetSetupSetting( unsigned int SystemParameterNo );
+void SetSetupSetting( unsigned int SystemParameterNo, unsigned char SystemParameterValue );
+void CMT_Delay_micros( int );
+void CMT_Delay_100micros( int );
+int SMEM_FindFirst( const unsigned short*pattern, unsigned short*foundfile );
+int Timer_Install( int InternalTimerID, void*handler, int elapse );
+int Timer_Deinstall( int InternalTimerID );
+int Timer_Start( int InternalTimerID );
+int Timer_Stop( int InternalTimerID );
+void HourGlass( void );
+void DisplayMainMenu( void );

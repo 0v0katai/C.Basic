@@ -1,0 +1,70 @@
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+#define Bdisp_SetPoint_VRAM  BdispSetPointVRAM2
+void BdispSetPointVRAM( int px, int py, int mode);	// {0,0}-{191,383}
+void BdispSetPointVRAM2( int px, int py, int mode);	// g1m or g3m both
+void BdispSetPointVRAMx9( int px, int py, int mode);	// 3x3 dot
+
+//#define Bdisp_GetPoint_VRAM  BdispGetPointVRAM2
+int BdispGetPointVRAM( int px, int py);	// {0,0}-{191,383}
+int BdispGetPointVRAM2( int px, int py);	// g1m or g3m both
+//-----------------------------------------------------------------------------
+double MOD(double numer, double denom);
+
+void Text(int y, int x, unsigned char*str);
+
+//-----------------------------------------------------------------------------
+extern int skip_count;
+
+void DrawBusy();		// BusyInd=0: running indicator off,  BusyInd=1: on
+int Check_skip_count( void ); 	// 0:skip  1:DD
+void Bdisp_PutDisp_DD_DrawBusy();
+void Bdisp_PutDisp_DD_DrawBusy_skip();
+void Bdisp_PutDisp_DD_DrawBusy_through( char *SRC ) ;
+void Bdisp_PutDisp_DD_DrawBusy_skip_through( char *SRC ) ;
+void Bdisp_PutDisp_DD_DrawBusy_skip_through_text_stripe( char *SRC, int py, int py2 ) ;	// Locate text  py:0~191
+void Bdisp_PutDisp_DD_DrawBusy_skip_through_text( char *SRC ) ;
+//-----------------------------------------------------------------------------
+void CB_PutDispDD( char*SRC );
+int VWtoPXY(double x, double y, int *px, int *py);	// ViewWwindow(x,y) -> pixel(x,y)
+void PXYtoVW(int px, int py, double *x, double *y);	// pixel(x,y) -> ViewWwindow(x,y)
+void GraphAxesGrid();
+void ViewWindow( double xmin, double xmax, double xscl, double ymin, double ymax, double yscl);
+void ZoomIn();
+void ZoomOut();
+void PlotOn_VRAM(double x, double y);
+/*
+void PlotOn_DD(double x, double y);
+void PlotOn_DDVRAM(double x, double y);
+
+void PlotOff_VRAM(double x, double y);
+void PlotOff_DD(double x, double y);
+void PlotOff_DDVRAM(double x, double y);
+
+void PlotChg_VRAM(double x,  double y);
+void PlotChg_DDVRAM(double x, double y);
+*/
+void PlotSub(double x, double y, int mode);
+/*
+void PxlOn_VRAM(int py, int px);
+void PxlOn_DD(int py, int px);
+void PxlOn_DDVRAM(int py, int px);
+void PxlOff_VRAM(int py, int px);
+void PxlOff_DD(int py, int px);
+void PxlOff_DDVRAM(int py, int px);
+void PxlChg_VRAM(int py, int px);
+*/
+int PxlTest(int py, int px);
+void LinesubSetPoint_Thin(int px, int py, int mode) ;	// (1,1)-(379,187)
+void CB_SetPixelPointVRAM2( int px, int py, int mode);	// g1m or g3m both
+void LinesubSetPointx9(int px, int py, int mode) ;	// (1,1)-(379,187) 3*3 dot
+void LinesubSetPoint(int px, int py, int mode) ;	// (1,1)-(379,187)
+void Linesub(int px1, int py1, int px2, int py2, int style, int mode) ;
+void LinesubFX(int px1, int py1, int px2, int py2, int style, int mode) ;	// 128,64
+void LinesubCG(int px1, int py1, int px2, int py2, int style, int mode) ;	// 384,192
+void Lines(int style, int mode, int errorcheck );
+void F_Line(double x1, double y1, double x2, double y2, int style, int mode);
+void Vertical(double x ,int style, int mode);
+void Horizontal(double y, int style, int mode);
+void Circle(double x, double y, double r, int style, int drawflag, int mode);
+
