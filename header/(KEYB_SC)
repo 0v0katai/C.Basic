@@ -1,0 +1,1 @@
+void PutKey( unsigned int key, int mode );
