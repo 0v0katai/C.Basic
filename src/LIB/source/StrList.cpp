@@ -2,10 +2,10 @@ extern "C" {
 
 #include "STD_syscalls.h"
 #include "filebios.h"
-#include "BFile_syscalls.h"
+#include "BFILE_syscalls.h"
 #include "STD_tools.h"
 #include "HEAP_syscalls.h"
-#include "StrList.hpp"
+#include "STRLIST.hpp"
 
 
 /* ASCIIZZ lists of the form:

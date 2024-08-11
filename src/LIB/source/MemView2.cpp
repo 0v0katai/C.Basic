@@ -12,7 +12,7 @@ extern "C" {
 #include "keyboard.hpp"
 #include "disp_tools.hpp"
 #include "display_tools.h"
-#include "MEMVIEW2.hpp"
+#include "MemView2.hpp"
 // #include incTOOLS
 
 ////////// TMemView //////////
@@ -43,7 +43,7 @@ unsigned char c;
   for (i=2;i<8;i++){
 //    LongToAscHex( workaddr, (unsigned char*)work, 4 );
     locate_OS(1,i);
-    Print( (unsigned char*)work ); Print( " " );
+    Print( (unsigned char*)work ); Print( (unsigned char *)" " );
     for (j=0;j<8;j++){
 	/*
       switch ( FViewMode ){

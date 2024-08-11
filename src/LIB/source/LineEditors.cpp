@@ -82,9 +82,9 @@ int pos_to_clear = x + posmax - 1;
 int control;
 int lDisplay = 1;
 	locate_OS( x-1, y );
-	Print( ">" );
+	Print( (unsigned char *)">" );
 	locate_OS( pos_to_clear+1, y );
-	Print( "<" );
+	Print( (unsigned char *)"<" );
 	while( !result ){
 		if ( lDisplay ){
 			if ( xpos >= posmax ) xpos = posmax - 1; // prevent the input field from left auto scrolling

@@ -245,10 +245,5 @@ int main() {
 	}
 }
 
-
-#pragma section _BR_Size
-unsigned long BR_Size;
-#pragma section
-
 }
 

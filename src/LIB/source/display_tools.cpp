@@ -165,27 +165,27 @@ unsigned short color;
 	MsgBoxPush( h );
 	switch ( msgtyp ){
 		case mtConfirmation :
-			heading = "Confirmation!";
+			heading = (unsigned char *)"Confirmation!";
 			color = 0x001F;
 			break;
 		case mtWarning :
-			heading = "Warning!";
+			heading = (unsigned char *)"Warning!";
 			color = 0x07E0;
 			break;
 		case mtError :
-			heading = "Error!";
+			heading = (unsigned char *)"Error!";
 			color = 0xF800;
 			break;
 		case mtInformation :
-			heading = "Info!";
+			heading = (unsigned char *)"Info!";
 			color = 0x07FF;
 			break;
 		case mtDebugInt :
-			heading = "DebugInt!";
+			heading = (unsigned char *)"DebugInt!";
 			color = 0xF81F;
 			break;
 		case mtDebugStr :
-			heading = "DebugStr!";
+			heading = (unsigned char *)"DebugStr!";
 			color = 0xF81F;
 			break;
 	}
@@ -232,7 +232,7 @@ unsigned short color;
 		case mtConfirmation :
 			x = BOX_XMIN + 1;
 			y += 18;		   
-			PrintMini( &x, &y, "F1: Yes; F6: No; EXIT: cancel", 0, 
+			PrintMini( &x, &y, (unsigned char *)"F1: Yes; F6: No; EXIT: cancel", 0, 
 						PMF_UPPER_X_LIMIT_IGNORED, 
 						(int)0, (int)0, 
 						(int)0x0000, (int)0xFFFF, (int)1,  (int)0 );
@@ -245,7 +245,7 @@ unsigned short color;
 		case mtInformation :
 			x = BOX_XMIN + 1;
 			y += 18;		   
-			PrintMini( &x, &y, "EXIT to return", 0, 
+			PrintMini( &x, &y, (unsigned char *)"EXIT to return", 0, 
 						PMF_UPPER_X_LIMIT_IGNORED, 
 						(int)0, (int)0, 
 						(int)0x0000, (int)0xFFFF, (int)1,  (int)0 );

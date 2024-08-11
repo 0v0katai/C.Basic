@@ -161,7 +161,7 @@ unsigned char wh[0x55];
 	FShowLine( FYDisp, 1 );
 	FCurrentItemId = OldCurrentItemId;
 	if ( FFlags & FLAG_SHOWFKEYS ) ShowFKeys();
-	SetStatusMessage( FHeading );
+	SetStatusMessage( FHeading, 1 );
 	FFlags &= ~FLAG_REFRESH;
 }    
 
@@ -368,7 +368,7 @@ int TListView::SetFKey( int idx, const void*value, TFKeyType _fkt ){
 int TListView::vBeforeBrowse(){
 	FMessage.message = lvmINIT;
 	if ( FHeading ){
-		SetStatusMessage( FHeading );
+		SetStatusMessage( FHeading, 1 );
 	};
 	return 1;
 }
@@ -481,7 +481,7 @@ unsigned char hb[15];
 	x = BOX_XMIN + 1;
 	y = top;		   
 	MsgBoxPush( BOXHEIGHT );
-	PrintMini( &x, &y, "Test!", 0, 
+	PrintMini( &x, &y, (unsigned char *)"Test!", 0, 
 			   UPPER_X_LIMIT, (int)0, (int)0, (int)0x0000, (int)0xFFFF, (int)1,  (int)0 );
 			   
 	vSourceGetCurrentItem( w );		   

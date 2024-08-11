@@ -10,6 +10,30 @@ include(GenerateHH2Bin)
 include(Fxconv)
 
 set(SOURCES
+  src/LIB/source/strcat.s
+  src/LIB/source/memmove.s
+  src/LIB/source/memset.s
+  src/LIB/source/memsetZero.s
+  src/LIB/source/strchr.s
+  src/LIB/source/strcmp.s
+  src/LIB/source/strcpy.s
+  src/LIB/source/strncpy.s
+  src/LIB/source/display_tools.cpp
+  src/LIB/source/EditStr.cpp
+  src/LIB/source/HexToInt.cpp
+  src/LIB/source/IntToHex.cpp
+  src/LIB/source/LineEditors.cpp
+  src/LIB/source/Line.cpp
+  src/LIB/source/ListView.cpp
+  src/LIB/source/mcs.cpp
+  src/LIB/source/MemView2.cpp
+  src/LIB/source/MemViewClass.cpp
+  src/LIB/source/PRGM_GetKey.cpp
+  src/LIB/source/Print.cpp
+  src/LIB/source/random.cpp
+  src/LIB/source/STATUS_ICONS.cpp
+  src/LIB/source/StrList.cpp
+  src/LIB/source/UI.cpp
   src/CBP_bmp.cpp
   src/CBP_Color.cpp
   src/CBP_edit.cpp

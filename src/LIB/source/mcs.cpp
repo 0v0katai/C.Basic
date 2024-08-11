@@ -7,11 +7,11 @@
 extern "C" {
 #endif
 
-#include "App_syscalls.h"
+#include "APP_syscalls.h"
 #include "MCS_syscalls.h"
-#include "MCS.hpp"
-#include "StrList.hpp"
-#include "Keyboard.hpp"
+#include "mcs.hpp"
+#include "STRLIST.hpp"
+#include "keyboard.hpp"
 #include "disp_tools.hpp"
 #include "STATUS_ICONS.hpp"
 #include "MemViewClass.hpp"
@@ -194,37 +194,37 @@ TMCSItemView miv( 1,1,21,9 );
 }
 
 //
-int TMCSView::FDelete(){
-int result = 0;
-unsigned char wdir[9];
-unsigned char smsg[100];
-	memset( wdir, 0, 9 );
-	strncpy( (char*)wdir, (char*)FSource[FCurrentItemId-1].name, 8 );
+// int TMCSView::FDelete(){
+// int result = 0;
+// unsigned char wdir[9];
+// unsigned char smsg[100];
+// 	memset( wdir, 0, 9 );
+// 	strncpy( (char*)wdir, (char*)FSource[FCurrentItemId-1].name, 8 );
 	
-	memset( smsg, 0, 100 );
-	StrListCat( smsg, "Delete MCS directory?" );
-	StrListCat( smsg, wdir );
+// 	memset( smsg, 0, 100 );
+// 	StrListCat( smsg, "Delete MCS directory?" );
+// 	StrListCat( smsg, wdir );
 	
-	if ( MessageDlg( (char*)smsg, mtConfirmation, 4 ) ){
-	/*
-		result = MCS_ClearDirectory( wdir );	// this clears the MCS-handles
-		result = iMCS_DeleteDirectory( wdir );
-		if ( result ){
+// 	if ( MessageDlg( (char*)smsg, mtConfirmation, 4 ) ){
+// 	/*
+// 		result = MCS_ClearDirectory( wdir );	// this clears the MCS-handles
+// 		result = iMCS_DeleteDirectory( wdir );
+// 		if ( result ){
 		
-			memset( smsg, 0, 100 );
-			StrListCat( smsg, "MCS error" );
-			LongToAscHex( result, (unsigned char*)wdir, 4 );
+// 			memset( smsg, 0, 100 );
+// 			StrListCat( smsg, "MCS error" );
+// 			LongToAscHex( result, (unsigned char*)wdir, 4 );
 			
-			StrListCat( smsg, wdir );
+// 			StrListCat( smsg, wdir );
 			
-			MessageBox( smsg, 0 );
+// 			MessageBox( smsg, 0 );
 		
-			result = 0;
-		} result = 1;
-		*/
-	}
-	return result;
-}
+// 			result = 0;
+// 		} result = 1;
+// 		*/
+// 	}
+// 	return result;
+// }
 
 //
 int TMCSView::vShowAll(){
@@ -367,40 +367,40 @@ TMemView mv;
 }
 
 //
-int TMCSItemView::FDelete(){
-int result = 0;
-unsigned char wdir[9], witem[9];
-unsigned char smsg[100];
-	memset( wdir, 0, 9 );
-	memset( witem, 0, 9 );
+// int TMCSItemView::FDelete(){
+// int result = 0;
+// unsigned char wdir[9], witem[9];
+// unsigned char smsg[100];
+// 	memset( wdir, 0, 9 );
+// 	memset( witem, 0, 9 );
 
-	strncpy( (char*)wdir, (char*)(*parent).name, 8 );
-	strncpy( (char*)witem, (char*)FSource[FCurrentItemId-1].name, 8 );
+// 	strncpy( (char*)wdir, (char*)(*parent).name, 8 );
+// 	strncpy( (char*)witem, (char*)FSource[FCurrentItemId-1].name, 8 );
 		
-	memset( smsg, 0, 100 );
-	StrListCat( smsg, "Delete MCS item?" );
-	StrListCat( smsg, wdir );
-	StrListCat( smsg, witem );
+// 	memset( smsg, 0, 100 );
+// 	StrListCat( smsg, "Delete MCS item?" );
+// 	StrListCat( smsg, wdir );
+// 	StrListCat( smsg, witem );
 	
-	if ( MessageDlg( (char*)smsg, mtConfirmation, 4 ) ){
+// 	if ( MessageDlg( (char*)smsg, mtConfirmation, 4 ) ){
 
-/*	
-		result = MCSDelVar2( wdir, witem );
-		if ( result ){
-			memset( smsg, 0, 100 );
-			StrListCat( smsg, "MCS error" );
-			LongToAscHex( result, (unsigned char*)wdir, 4 );
-			StrListCat( smsg, wdir );
-			MessageBox( smsg, 0 );
-			result = 0;
-		}else{
-			FSize--;
-			result = 1;
-		}
-	*/
-	}
-	return result;
-}
+// /*	
+// 		result = MCSDelVar2( wdir, witem );
+// 		if ( result ){
+// 			memset( smsg, 0, 100 );
+// 			StrListCat( smsg, "MCS error" );
+// 			LongToAscHex( result, (unsigned char*)wdir, 4 );
+// 			StrListCat( smsg, wdir );
+// 			MessageBox( smsg, 0 );
+// 			result = 0;
+// 		}else{
+// 			FSize--;
+// 			result = 1;
+// 		}
+// 	*/
+// 	}
+// 	return result;
+// }
 
 //
 int TMCSItemView::vProcessMessage(){

@@ -3,8 +3,8 @@ extern "C" {
 #ifndef __STATUS_ICONS_CPP__
 #define __STATUS_ICONS_CPP__
 
-#include "STATUS_ICONS.HPP"
-#include "Disp_Tools.hpp"
+#include "STATUS_ICONS.hpp"
+#include "disp_tools.hpp"
 #include "display_syscalls.h"
 
 const unsigned char STICON_EMPTY[ 576 ] ={
