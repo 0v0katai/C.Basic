@@ -29,7 +29,7 @@ extern "C" {
 #endif
 extern void *memcpy(void *, const void *, size_t);
 extern void *memmove(void *, const void *, size_t);
-extern char *strcpy(char *, const char *);
+extern char *strcpy(char *s1, const char *s2);
 extern char *strncpy(char *, const char *, size_t);
 extern char *strcat(char *, const char *);
 extern char *strncat(char *, const char *,size_t);

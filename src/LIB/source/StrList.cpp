@@ -178,7 +178,7 @@ char*TB;
   len = 0;
   FReleaseBuffer();
   
-  handle = Bfile_OpenFile_OS( fn, _OPENMODE_READ );
+  handle = Bfile_OpenFile_OS( fn, _OPENMODE_READ, 0 );
   if (handle>0){
     len = Bfile_GetFileSize_OS( handle, 0 ); 
     FSize = len + 1;

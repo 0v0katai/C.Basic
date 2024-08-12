@@ -1,4 +1,4 @@
-int Bfile_OpenFile_OS( const unsigned short*filename, int mode );
+int Bfile_OpenFile_OS( const unsigned short*filename, int mode, int null );
 int Bfile_CloseFile_OS( int HANDLE );
 int Bfile_GetFileSize_OS( int handle, int pos );
 int Bfile_SeekFile_OS( int handle, int pos );

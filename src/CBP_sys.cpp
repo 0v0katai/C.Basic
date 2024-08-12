@@ -198,7 +198,7 @@ double sqrt(double x){
 */
 //--------------------------------------------------------------------------------------------- Bfile
 int Bfile_OpenFile(const FONTCHARACTER *filename, int mode){
-	return Bfile_OpenFile_OS( filename, mode );
+	return Bfile_OpenFile_OS( filename, mode, NULL );
 }
 int Bfile_DeleteFile(const FONTCHARACTER *filename){
 	return Bfile_DeleteEntry( filename);
