@@ -1,4 +1,4 @@
-OUTPUT_FORMAT(binary)
+OUTPUT_FORMAT(elf32-sh)
 OUTPUT_ARCH(sh3)
  
 /* Entry point.  Not really important here, since doing binary output */
