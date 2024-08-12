@@ -10,14 +10,14 @@ include(GenerateHH2Bin)
 include(Fxconv)
 
 set(SOURCES
-  src/LIB/source/strcat.s
-  src/LIB/source/memmove.s
-  src/LIB/source/memset.s
-  src/LIB/source/memsetZero.s
-  src/LIB/source/strchr.s
-  src/LIB/source/strcmp.s
-  src/LIB/source/strcpy.s
-  src/LIB/source/strncpy.s
+  # src/LIB/source/strcat.s
+  # src/LIB/source/memmove.s
+  # src/LIB/source/memset.s
+  # src/LIB/source/memsetZero.s
+  # src/LIB/source/strchr.s
+  # src/LIB/source/strcmp.s
+  # src/LIB/source/strcpy.s
+  # src/LIB/source/strncpy.s
   src/LIB/source/display_tools.cpp
   src/LIB/source/EditStr.cpp
   src/LIB/source/HexToInt.cpp
@@ -106,7 +106,7 @@ target_compile_options(CBASIC PRIVATE
                        -Wno-narrowing)
 target_link_options(CBASIC PRIVATE
                     -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld" -L ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(CBASIC PRIVATE -lm -lfxcg -lgcc)
+target_link_libraries(CBASIC PRIVATE -lm -lc -lfxcg -lgcc)
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
   generate_g1a(TARGET CBASIC OUTPUT "CBASIC.g1a"

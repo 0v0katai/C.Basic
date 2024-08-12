@@ -7,7 +7,7 @@ extern "C" {
 
 #include "UI.hpp"
 
-TFKeyRegister FKeyRegInst;
+// TFKeyRegister FKeyRegInst;
 
 ////////// TFKeyRegister //////////
 //

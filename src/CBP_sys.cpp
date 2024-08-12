@@ -10,12 +10,12 @@ int OS_Version(){	// 03.10.0010 -> 0310
 }
 
 //--------------------------------------------------------------------------------------------- std
-unsigned int lastrandom=0x12345678;
-unsigned int random( int seed ) {
-    if (seed) lastrandom=seed;
-    lastrandom = ( 0x41C64E6D*lastrandom ) + 0x3039;
-    return ( lastrandom >> 16 );
-}
+// unsigned int lastrandom=0x12345678;
+// unsigned int random( int seed ) {
+//     if (seed) lastrandom=seed;
+//     lastrandom = ( 0x41C64E6D*lastrandom ) + 0x3039;
+//     return ( lastrandom >> 16 );
+// }
 
 int rand() {
 	return random(0);
@@ -26,12 +26,12 @@ int srand( int seed ) {
 
 //--------------------------------------------------------------------------------------------- std
 
-int strncmp(const char* s1, const char* s2, size_t n){
-    while(n--)
-        if(*s1++!=*s2++)
-            return *(unsigned char*)(s1 - 1) - *(unsigned char*)(s2 - 1);
-    return 0;
-}
+// int strncmp(const char* s1, const char* s2, size_t n){
+//     while(n--)
+//         if(*s1++!=*s2++)
+//             return *(unsigned char*)(s1 - 1) - *(unsigned char*)(s2 - 1);
+//     return 0;
+// }
 
 char* strstr2(const char *str1, const char *str2){
     int i,j,k;

@@ -9,6 +9,7 @@ MEMORY
         /* Loads code at 300000, skips g3a header */
         rom (rx) : o = 0x00300000, l = 2048k
         ram (rwx) : o = 0x08100004, l = 512k  /* pretty safe guess */
+        ilram (rwx) : o = 0xE5200000, l = 4k /* According to http://www.cemetech.net/forum/viewtopic.php?t=9334 */
 }
  
 SECTIONS
@@ -19,6 +20,14 @@ SECTIONS
                 *(.text)
                 *(.text.*)
         } > rom
+
+        .ilram : {
+                _ilramld = LOADADDR(.data) ;
+                _silram = . ;
+                *(.ilram)
+                *(.ilram.*)
+                _eilram = . ;
+        } > ilram AT> rom
        
         /* Read-only data, in ROM */
         .rodata : {
@@ -27,7 +36,7 @@ SECTIONS
         } > rom
        
         /* RW initialized data, VMA in RAM but LMA in ROM */
-        .data : {
+        .data : ALIGN(4) {
                 _datald = LOADADDR(.data) ;
                 _sdata = . ;
                 *(.data)
@@ -36,9 +45,11 @@ SECTIONS
         } >ram AT>rom
        
         /* Uninitialized data (fill with 0), in RAM */
-        .bss : {
+        .bss : ALIGN(4) {
                 _bbss = . ;
-                *(.bss) *(COMMON);
+                *(.bss)
+                *(.bss*)
+                *(COMMON)
                 _ebss = . ;
         } >ram
 }

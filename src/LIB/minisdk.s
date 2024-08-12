@@ -114,7 +114,7 @@
     .global _MCSGetOpenItem
     .global _MCSOvwDat2
     .global _MCSPutVar2
-    .global _memcmp
+#    .global _memcmp
     .global _memcmp3
     .global _memcpy
     .global _memset
@@ -533,8 +533,8 @@ _MCSOvwDat2:
 _MCSPutVar2:
     BIOS_JUMP 0x154D
 
-_memcmp:
-    BIOS_JUMP 0x1DD1
+#_memcmp:
+#    BIOS_JUMP 0x1DD1
 
 _memcmp3:
     BIOS_JUMP 0x115E
