@@ -279,7 +279,7 @@ void MatAryElementSizePrints( int ElementSize ) {
 				Prints((unsigned char*)"[Dbl]");
 				break;
 			case 128:
-				Print((unsigned char*)"[CPLX]");
+				Prints((unsigned char*)"[CPLX]");
 				break;
 		}
 }
@@ -4255,10 +4255,10 @@ double determinant( double *m, int N)
     double det = 1, r;
     double tmp;
  
-    // ãOŠps—ñ‚É•ÏŠ·‚µ‚Â‚ÂA‘ÎŠp¬•ª‚ÌÏ‚ğŒvZ‚·‚éB
+    // ï¿½ï¿½Oï¿½pï¿½sï¿½ï¿½É•ÏŠï¿½ï¿½ï¿½ï¿½Â‚ÂAï¿½ÎŠpï¿½ï¿½ï¿½ï¿½ï¿½ÌÏ‚ï¿½ï¿½vï¿½Zï¿½ï¿½ï¿½ï¿½B
     for(y = 0; y < N - 1; y++){
         if(m[y * N + y] == 0){
-            // ‘ÎŠp¬•ª‚ª0‚¾‚Á‚½ê‡‚ÍA‚»‚Ì—ñ‚Ì’l‚ª0‚Å‚È‚¢s‚ÆŒğŠ·‚·‚é
+            // ï¿½ÎŠpï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍAï¿½ï¿½ï¿½Ì—ï¿½Ì’lï¿½ï¿½0ï¿½Å‚È‚ï¿½ï¿½sï¿½ÆŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             for(i = y + 1; i < N; i++){
                 if(m[i * N + y] != 0){
                     break;
@@ -4268,7 +4268,7 @@ double determinant( double *m, int N)
                 for(x = 0; x < N; x++){
                     SWAP(m[i * N + x], m[y * N + x]);
                 }
-                // —ñ‚ğŒğŠ·‚µ‚½‚Ì‚Ås—ñ®‚Ì’l‚Ì•„†‚Í”½“]‚·‚éB
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Åsï¿½ñ®‚Ì’lï¿½Ì•ï¿½ï¿½ï¿½ï¿½Í”ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½B
                 det = -det;
             }
         }

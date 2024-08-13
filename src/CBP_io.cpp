@@ -707,9 +707,9 @@ int YesNo_NoSave( char*buffer){
 	int key;
 
 	PopUpWin(4);
-	locate(3,2); Print((unsigned char *)buffer);
-	locate(3,4); Print((unsigned char *) "   Yes:[F1]");
-	locate(3,5); Print((unsigned char *) "   No :[F6]");
+	locate(3,2); Prints((unsigned char *)buffer);
+	locate(3,4); Prints((unsigned char *) "   Yes:[F1]");
+	locate(3,5); Prints((unsigned char *) "   No :[F6]");
 	while ( 1 ) {
 		GetKey(&key);
 		if ( key == KEY_CTRL_F1  ) break ;
