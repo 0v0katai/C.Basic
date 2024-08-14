@@ -44,7 +44,7 @@
     .global _Bfile_NameToStr_ncpy
     .global _Bfile_OpenFile_OS
     .global _Bfile_ReadFile_OS
-    .global _Bfile_RenameEntry
+#    .global _Bfile_RenameEntry
     .global _Bfile_SeekFile_OS
     .global _Bfile_StrToName_ncpy
     .global _Bfile_WriteFile_OS
@@ -103,11 +103,11 @@
     .global _locate_OS
     .global _LongToAscHex
     .global _malloc
-    .global _MCS_CreateDirectory
-    .global _MCS_DeleteDirectory
+#    .global _MCS_CreateDirectory
+#    .global _MCS_DeleteDirectory
     .global _MCS_GetCapa
     .global _MCS_GetMainMemoryStart
-    .global _MCS_WriteItem
+#    .global _MCS_WriteItem
     .global _MCSDelVar2
     .global _MCSGetData1
     .global _MCSGetDlen2
@@ -134,7 +134,7 @@
     .global _PrintMiniGlyph
     .global _PrintXY_2
     .global _PrintXY
-    .global _PutKey
+#    .global _PutKey
     .global _RadIcon
     .global _RealIcon
     .global _realloc

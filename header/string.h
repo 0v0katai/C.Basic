@@ -27,7 +27,7 @@
 extern "C" {
 #include <builtin.h>
 #endif
-extern void *memcpy(void *, const void *, size_t);
+//extern void *memcpy(void *, const void *, size_t);
 extern void *memmove(void *, const void *, size_t);
 extern char *strcpy(char *s1, const char *s2);
 extern char *strncpy(char *, const char *, size_t);
@@ -44,7 +44,7 @@ extern char *strrchr(const char *, int);
 extern size_t strspn(const char *, const char *);
 extern char *strstr(const char *, const char *);
 extern char *strtok(char *, const char *);
-extern void *memset(void *, int, size_t);
+//extern void *memset(void *, int, size_t);
 extern char *strerror(int);
 extern size_t strlen(const char *);
 #ifdef __cplusplus

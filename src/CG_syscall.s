@@ -1,9 +1,11 @@
-.text
+	.text
     .global _GetVRAMAddress
     .global _GetVRAMWorkBuffer
     .global _Bdisp_Fill_DD
+	.global _Bfile_RenameEntry
     .global _Cursor_SetPosition
-    .global _OpcodeToStr
+    .global _PutKey
+	.global _OpcodeToStr
     .global _Bfile_GetFileInfo
     .global _Cursor_GetSettings
     .global _ColorIndexDialog0
@@ -43,8 +45,11 @@
     .global _Bdisp_SetDDRegisterB
 #    .global _Bdisp_IsZeroDDRegisterB
     .global _MCS_SearchDirectory
+	.global _MCS_CreateDirectory
+ 	.global _MCS_DeleteDirectory
     .global _MCS_GetSystemDirectoryInfo
     .global _MCS_SearchDirectoryItem
+	.global _MCS_WriteItem
     .global _MCS_DeleteItem
     .global _MCS_GetState
     .global _Serial_GetFreeTransmitSpace
@@ -60,17 +65,18 @@
     .global _Calljmp
     .global _SysCalljmp
     .global _SysCalljmp12
-    .balign 4
+    
+	.balign 4
 
-.macro BIOS_JUMP funo
-mov.l 2f,r1
-mov.l 1f,r0
-jmp @r1
-nop
-1: .long \funo
-2: .long 0x80020070
-.endm
-.balign 4
+	.macro BIOS_JUMP funo
+	mov.l 2f,r1
+	mov.l 1f,r0
+	jmp @r1
+	nop
+	1: .long \funo
+	2: .long 0x80020070
+	.endm
+	.balign 4
 
 _GetVRAMAddress:
     BIOS_JUMP 0x01E6
@@ -81,9 +87,14 @@ _GetVRAMWorkBuffer:
 _Bdisp_Fill_DD:
     BIOS_JUMP 0x0276
 
+_Bfile_RenameEntry:
+    BIOS_JUMP 0x1DB3
+
 _Cursor_SetPosition:
     BIOS_JUMP 0x01F1
 
+_PutKey:
+	BIOS_JUMP 0x0EA9
 _OpcodeToStr:
     BIOS_JUMP 0x128F
 
@@ -160,35 +171,18 @@ _ProgressBar2:
     BIOS_JUMP 0x1809
 
 #_GetLightLevel:
-#	mov.l SYSCALL,r1
-#	mov.l 1f,r0
-#	jmp @r1
-#	nop
-#1: .long 0x1E8F
+#	BIOS_JUMP 0x1E8F
+
 #_DecLightLevel:
-#	mov.l SYSCALL,r1
-#	mov.l 1f,r0
-#	jmp @r1
-#	nop
-#1: .long 0x119A
+#	BIOS_JUMP 0x119A
+
 #_IncLightLevel:
-#	mov.l SYSCALL,r1
-#	mov.l 1f,r0
-#	jmp @r1
-#	nop
-#1: .long 0x119B
+#	BIOS_JUMP 0x119B
+
 #_ClrLightLevel:
-#	mov.l SYSCALL,r1
-#	mov.l 1f,r0
-#	jmp @r1
-#	nop
-#1: .long 0x119C
+#	BIOS_JUMP 0x119C
 #_Bdisp_SetBacklightLevel:
-#	mov.l SYSCALL,r1
-#	mov.l 1f,r0
-#	jmp @r1
-#	nop
-#1: .long 0x0199
+#	BIOS_JUMP 0x0199
 _Bdisp_WriteDDRegister5A1:
     BIOS_JUMP 0x019A
 _Bdisp_DDRegisterSelect:
@@ -208,17 +202,31 @@ _Setup_SetEntry:
 _IsCG10:
     BIOS_JUMP 0x1196
 
+
 _Bdisp_SetDDRegisterB:
     BIOS_JUMP 0x0194
+
 _Bdisp_IsZeroDDRegisterB:
     BIOS_JUMP 0x0195
 
+
 _MCS_SearchDirectory:
     BIOS_JUMP 0x1514
+
+_MCS_CreateDirectory:
+	BIOS_JUMP 0x1515
+
+_MCS_DeleteDirectory:
+	BIOS_JUMP 0x1516
+
 _MCS_GetSystemDirectoryInfo:
     BIOS_JUMP 0x1518
 _MCS_SearchDirectoryItem:
     BIOS_JUMP 0x1519
+
+_MCS_WriteItem:
+    BIOS_JUMP 0x151A
+
 _MCS_DeleteItem:
     BIOS_JUMP 0x151C
 _MCS_GetState:
@@ -245,11 +253,7 @@ _Serial_ClearTransmitBuffer:
     BIOS_JUMP 0x1bc2
 
 #_OpenFileDialog:
-#	mov.l SYSCALL,r1
-#	mov.l 1f,r0
-#	jmp @r1
-#	nop
-#1: .long 0x17E9
+#	BIOS_JUMP 0x17E9
 
 # int Calljmp( int r4, int r5, int r6, int r7, int adrs );
 
@@ -275,3 +279,4 @@ _SysCalljmp12:
     .align 4
 
 SYSCALL: .long 0x80020070
+LCDC:    .long 0xB4000000

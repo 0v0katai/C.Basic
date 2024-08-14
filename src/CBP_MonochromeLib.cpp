@@ -117,12 +117,18 @@ void CB_GetOprand2dbl( char *SRC, double *x, double *y) {
 	ExecPtr++;
 	*y=CB_EvalDbl( SRC );
 }
+void VWtoPXY_M( double x, double y, int *px, int *py ){ ;	// ViewWwindow(x,y) -> pixel(px,py)
+	VWtoPXY( x, y, &(*px), &(*py));
+	(*px)+=2;
+	(*py)+=2;
+}	 
+
 void CB_GetOprand2VW( char *SRC, int *px, int *py) {
 	double x,y;
 	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
 		ExecPtr++;
 		CB_GetOprand2dbl( SRC, &x, &y );
-		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
 	} else {
 		CB_GetOprand2( SRC, &(*px), &(*py) );
 	}
@@ -132,11 +138,11 @@ void CB_GetOprand4VW( char *SRC, int *px, int *py, int *px2, int *py2) {
 	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
 		ExecPtr++;
 		CB_GetOprand2dbl( SRC, &x, &y );
-		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		CB_GetOprand2dbl( SRC, &x, &y );
-		VWtoPXY( x, y, &(*px2), &(*py2)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x, y, &(*px2), &(*py2)) ;	// ViewWwindow(x,y) -> pixel(px,py)
 	} else {
 		CB_GetOprand4( SRC, &(*px), &(*py), &(*px2), &(*py2) );
 	}
@@ -146,7 +152,7 @@ void CB_GetOprand4VWR( char *SRC, int *px, int *py, int *radius1, int *radius2) 
 	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
 		ExecPtr++;
 		CB_GetOprand2dbl( SRC, &x, &y );
-		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		CB_GetOprand2dbl( SRC, &x, &y );
@@ -162,7 +168,7 @@ void CB_GetOprand3VWR( char *SRC, int *px, int *py, int *radius1) {
 	if ( SRC[ExecPtr] == '#' ) {	// ViewWwindow(x,y,x2,y2)->(px,py,px2,py2)
 		ExecPtr++;
 		CB_GetOprand2dbl( SRC, &x, &y );
-		VWtoPXY( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x, y, &(*px), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		x=CB_EvalDbl( SRC );
@@ -187,8 +193,8 @@ void CB_GetOprand3VWyxx( char *SRC, int *py, int *px1, int *px2) {
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		x2=CB_EvalDbl( SRC );
-		VWtoPXY( x1, y, &(*px1), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
-		VWtoPXY( x2, y, &(*px2), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x1, y, &(*px1), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x2, y, &(*px2), &(*py)) ;	// ViewWwindow(x,y) -> pixel(px,py)
 	} else {
 		CB_GetOprand2( SRC, &(*py), &(*px1) );
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
@@ -207,8 +213,8 @@ void CB_GetOprand3VWxyy( char *SRC, int *px, int *py1, int *py2) {
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
 		ExecPtr++;
 		y2=CB_EvalDbl( SRC );
-		VWtoPXY( x, y1, &(*px), &(*py1)) ;	// ViewWwindow(x,y) -> pixel(px,py)
-		VWtoPXY( x, y2, &(*px), &(*py2)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x, y1, &(*px), &(*py1)) ;	// ViewWwindow(x,y) -> pixel(px,py)
+		VWtoPXY_M( x, y2, &(*px), &(*py2)) ;	// ViewWwindow(x,y) -> pixel(px,py)
 	} else {
 		CB_GetOprand2( SRC, &(*px), &(*py1) );
 		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error

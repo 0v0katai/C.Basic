@@ -58,10 +58,10 @@
 #define CMD_MENU_GRPH_GMEM	0x10303
 #define CMD_MENU_DYNA		0x104
 #define CMD_MENU_DYNA_TYPE	0x10400
-#define CMD_MENU_TABL		0x110
+#define CMD_MENU_TABL		0x105
 #define CMD_MENU_TABL_TYPE	0x10500
 #define CMD_MENU_TABL_STYL	0x10501
-#define CMD_MENU_RECR		0x111
+#define CMD_MENU_RECR		0x106
 #define CMD_MENU_RECR_SELS	0x10600
 #define CMD_MENU_RECR_TYPE	0x10601
 #define CMD_MENU_RECR_RANG	0x10602
@@ -134,7 +134,7 @@
 #define CMD_SETUP_SWIN		0x522
 #define CMD_SETUP_LIST		0x523
 #define CMD_SETUP_LOCS		0x524
-#define CMD_SETUP_TVAR		0x530
+#define CMD_SETUP_TVAR		0x524	// <- 0x530
 #define CMD_SETUP_SDSP		0x531
 #define CMD_SETUP_RESID		0x532
 #define CMD_SETUP_CPLX		0x521	// <- 0x533
@@ -184,6 +184,8 @@ int NextLine( char *SRC, int *offset );
 int PrevOpcode( char *SRC, int *offset );
 int PrevLine( char *SRC, int *offset );
 int strlenOp( char *buffer ) ;
+int InsertOpcode1( char *buffer, int Maxstrlen, int ptr, int opcode );
+void DeleteOpcode1( char *buffer, int Maxstrlen, int *ptr);
 
 int CB_MB_ElementCount( char *str );
 int CB_MB_strlen( char *str ) ;
@@ -207,6 +209,7 @@ extern short selectCMD;
 extern short selectOPTN;
 extern short selectVARS;
 extern short selectPRGM;
+extern short selectCATALOG;
 extern int lowercase;
 extern int alphalock;
 extern int alphastatus;
@@ -219,8 +222,8 @@ int InputStrSub_status(int x, int y, int width, int ptrX, char* buffer, int MaxS
 
 double Round( double num, int round_mode, int digit);
 int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit, int cplx ) ; // + round   + i
-int sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ; 
-void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode 
+int sprintGRS( char* buffer, double num, int width, int align_mode, int round_mode, int round_digit) ;
+void sprintGR( char* buffer, double num, int width, int align_mode, int round_mode, int digit) ; // ENG mode
 void sprintGR2( char* buffer, double num, int width, int align_mode, int round_mode, int digit, int type ) ; // ENG mode +(x10)
 void sprintG( char* buffer, double num, int width, int align_mode);
 
@@ -255,6 +258,7 @@ void GetGenuineCmdF4( int *code );
 void GetGenuineCmdF5( int *code );
 void GetGenuineCmdF6( int *code );
 
+int CB_Catalog();
 //-------------------------------------------------------------
 #define OpRecentFreqMax 32
 #define OpRecentMax 32

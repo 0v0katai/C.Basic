@@ -2,7 +2,7 @@ extern "C" {
 
 /*****************************************************************/
 /*                                                               */
-/*   Genuine Command input Library  ver 1.0                      */
+/*   Genuine Command input Library  ver 1.0x                     */
 /*                                                               */
 /*   written by sentaro21                                        */
 /*                                                               */
@@ -157,7 +157,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 540 );	//	Fkey_dspRB( FKeyNo1, "Stat");		// DrawStat
 					Fkey_Icon( FKeyNo2, 541 );	//	Fkey_dspRB( FKeyNo2, "Grph");		// DrawGraph
 					FkeyClear( FKeyNo3 );
-					FkeyClear( FKeyNo4 );
+					Fkey_Icon( FKeyNo4, 545 );	//	Fkey_dspRB( FKeyNo4, "Table");		// DispF-Tbl
 					FkeyClear( FKeyNo5 );
 					Fkey_dspRB( FKeyNo6, "Disp");		// Disp
 					break;
@@ -249,7 +249,7 @@ void DispGenuineCmdMenu(){
 					Fkey_dspRB( FKeyNo1, "Split");
 					Fkey_dspRB( FKeyNo2, "Asc(");
 //					FkeyClear( FKeyNo2 );
-					FkeyClear( FKeyNo3 );
+					Fkey_dspRB( FKeyNo3, "Replc");
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
@@ -349,8 +349,8 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 205 );	//	Fkey_dspRB( FKeyNo1, "Iden");
 					Fkey_Icon( FKeyNo2, 164 );	//	Fkey_dspRB( FKeyNo2, "Dim ");
 					Fkey_Icon( FKeyNo3, 206 );	//	Fkey_dspRB( FKeyNo3, "Fill");
-					FkeyClear( FKeyNo4 );
-					Fkey_Icon( FKeyNo5, 790 );	//	Fkey_dispR( FKeyNo5, "SIZE");
+					Fkey_Icon( FKeyNo4,1042 );	//	Fkey_dspRB( FKeyNo4, "Ref ");
+					Fkey_Icon( FKeyNo5,1043 );	//	Fkey_dspRB( FKeyNo4, "Rref");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 2:
@@ -366,7 +366,7 @@ void DispGenuineCmdMenu(){
 					FkeyClear( FKeyNo2 );
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
-					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo5, 790 );	//	Fkey_dispR( FKeyNo5, "SIZE");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
@@ -403,6 +403,7 @@ void DispGenuineCmdMenu(){
 					break;
 			}
 			break;
+
 		case CMD_OPTN_CALC:
 			switch ( CommandPage ) {
 				case 1:
@@ -545,10 +546,11 @@ void DispGenuineCmdMenu(){
 		case CMD_OPTN_FMEM:
 			switch ( CommandPage ) {
 				case 0:
-					FkeyClear( FKeyNo1 );
-					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo1,  69 );	//	Fkey_dspRB( FKeyNo1, "STORE");
+					Fkey_Icon( FKeyNo2,  70 );	//	Fkey_dspRB( FKeyNo2, "RECALL");
 					Fkey_Icon( FKeyNo3, 240 );	//	Fkey_dspRB( FKeyNo3, " fn ");
-					FkeyClear( FKeyNo4 );
+//					Fkey_Icon( FKeyNo4, 241 );	//	Fkey_dispN( FKeyNo4, " SEE");
+					Fkey_Icon( FKeyNo4, 389 );	//	Fkey_dispR( FKeyNo4,"EDIT");
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );
 					break;
@@ -611,8 +613,9 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo6,   6 );	//	Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 1:
-					Fkey_Icon( FKeyNo1, 403 );	//	Fkey_DISPR( FKeyNo5, " # ");
-					Fkey_Icon( FKeyNo2, 176 );	//	Fkey_DISPR( FKeyNo6, " % ");
+					Fkey_Icon( FKeyNo1, 416 );	//	Fkey_dispR( FKeyNo1, "TABLE");
+					Fkey_Icon( FKeyNo2, 403 );	//	Fkey_DISPR( FKeyNo5, " # ");
+//					Fkey_Icon( FKeyNo2, 176 );	//	Fkey_DISPR( FKeyNo6, " % ");
 					Fkey_Icon( FKeyNo3, 400 );	//	Fkey_DISPR( FKeyNo2, " ~ ");
 					Fkey_Icon( FKeyNo4, 952 );	//	Fkey_DISPR( FKeyNo4, " $ ");
 					Fkey_Icon( FKeyNo5, 268 );	//	Fkey_dspRB( FKeyNo5, "Str ");
@@ -683,9 +686,22 @@ void DispGenuineCmdMenu(){
 		case CMD_VARS_GRPH:
 			switch ( CommandPage ) {
 				case 0:
-					Fkey_Icon( FKeyNo1, 622 );	//	Fkey_DISPR( FKeyNo1, " \xE5\xB4 ");
-					FkeyClear( FKeyNo2 );
-					FkeyClear( FKeyNo3 );
+					Fkey_Icon( FKeyNo1, 622 );	//	Fkey_DISPR( FKeyNo1, " Y ");
+					Fkey_Icon( FKeyNo2, 623 );	//	Fkey_DISPR( FKeyNo1, " r ");
+					Fkey_Icon( FKeyNo3, 624 );	//	Fkey_DISPR( FKeyNo1, " Xt ");
+					Fkey_Icon( FKeyNo4, 625 );	//	Fkey_DISPR( FKeyNo1, " Yt ");
+					Fkey_Icon( FKeyNo5, 626 );	//	Fkey_DISPR( FKeyNo1, " X ");
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
+		case CMD_VARS_TABL:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 627 );	//	Fkey_dspRB( FKeyNo1, "Start");
+					Fkey_Icon( FKeyNo2, 628 );	//	Fkey_dspRB( FKeyNo2, "End");
+					Fkey_Icon( FKeyNo3, 629 );	//	Fkey_dspRB( FKeyNo3, "Pitch");
+					Fkey_Icon( FKeyNo4, 630 );	//	Fkey_dspRB( FKeyNo3, "Result");
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );
 					FkeyClear( FKeyNo6 );
@@ -962,9 +978,19 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo1, 181 );	//	Fkey_dispR( FKeyNo1, "STAT");
 					Fkey_Icon( FKeyNo2, 179 );	//	Fkey_dispR( FKeyNo2, "MAT ");
 					Fkey_Icon( FKeyNo3, 178 );	//	Fkey_dispR( FKeyNo3, "LIST");
-					Fkey_dispN( FKeyNo4, "extc");
-					Fkey_Icon( FKeyNo5, 403 );	//	Fkey_DISPN( FKeyNo6, " # ");
-					Fkey_Icon( FKeyNo6, 176 );	//	Fkey_DISPN( FKeyNo5, " % ");
+					Fkey_Icon( FKeyNo4,   1 );	//	Fkey_dispR( FKeyNo4, "GRAPH");
+//					Fkey_Icon( FKeyNo5, 415 );	//	Fkey_dispR( FKeyNo4, "DYNA");
+					Fkey_dispN( FKeyNo5, "extc");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 1:
+					Fkey_Icon( FKeyNo1, 416 );	//	Fkey_dispR( FKeyNo1, "TABLE");
+					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+//					Fkey_Icon( FKeyNo2, 417 );	//	Fkey_dispR( FKeyNo2, "RECURSION");
+					Fkey_Icon( FKeyNo4, 403 );	//	Fkey_DISPN( FKeyNo6, " # ");
+					Fkey_Icon( FKeyNo5, 176 );	//	Fkey_DISPN( FKeyNo5, " % ");
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 			}
 			break;
@@ -1040,6 +1066,90 @@ void DispGenuineCmdMenu(){
 					break;
 			}
 			break;
+		case CMD_MENU_GRPH:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1,  15 );	//	Fkey_dispR( FKeyNo1, "SELECT");
+					FkeyClear( FKeyNo2 );
+					Fkey_Icon( FKeyNo3,  57 );	//	Fkey_dispR( FKeyNo3, "TYPE");
+					Fkey_Icon( FKeyNo4, 305 );	//	Fkey_dispR( FKeyNo4, "STYLE");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo6, 1121);	//	Fkey_dspRB( FKeyNo6, "SetG-Color");
+					break;
+			}
+			break;
+		case CMD_MENU_GRPH_SEL:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 480 );	//	Fkey_dspRB( FKeyNo1, "On ");
+					Fkey_Icon( FKeyNo2, 422 );	//	Fkey_dspRB( FKeyNo2, "Off");
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
+		case CMD_MENU_GRPH_TYPE:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 472 );	//	Fkey_dspRB( FKeyNo1, "Y=");
+					Fkey_Icon( FKeyNo2, 473 );	//	Fkey_dspRB( FKeyNo2, "r=");
+					Fkey_Icon( FKeyNo3, 474 );	//	Fkey_dspRB( FKeyNo3, "Param");
+					Fkey_Icon( FKeyNo4, 468 );	//	Fkey_dspRB( FKeyNo4, "X=");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 1:
+					Fkey_Icon( FKeyNo1, 476 );	//	Fkey_dspRB( FKeyNo1, "Y>");
+					Fkey_Icon( FKeyNo2, 477 );	//	Fkey_dspRB( FKeyNo2, "Y<");
+					Fkey_Icon( FKeyNo3, 478 );	//	Fkey_dspRB( FKeyNo3, "Y>=");
+					Fkey_Icon( FKeyNo4, 479 );	//	Fkey_dspRB( FKeyNo4, "Y<=");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+				case 2:
+					Fkey_Icon( FKeyNo1, 469 );	//	Fkey_dspRB( FKeyNo1, "X>");
+					Fkey_Icon( FKeyNo2, 470 );	//	Fkey_dspRB( FKeyNo2, "X<");
+					Fkey_Icon( FKeyNo3, 481 );	//	Fkey_dspRB( FKeyNo3, "X>=");
+					Fkey_Icon( FKeyNo4, 482 );	//	Fkey_dspRB( FKeyNo4, "X<=");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+					break;
+			}
+			break;		
+		case CMD_MENU_TABL:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 480 );	//	Fkey_dspRB( FKeyNo1, "On ");
+					Fkey_Icon( FKeyNo2, 422 );	//	Fkey_dspRB( FKeyNo2, "Off");
+					Fkey_Icon( FKeyNo3,  57 );	//	Fkey_dispR( FKeyNo3, "TYPE");
+					Fkey_Icon( FKeyNo4, 305 );	//	Fkey_dispR( FKeyNo4, "STYLE");
+					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo6, 1121);	//	Fkey_dspRB( FKeyNo6, "SetG-Color");
+					break;
+			}
+			break;
+		case CMD_MENU_TABL_TYPE:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 472 );	//	Fkey_dspRB( FKeyNo1, "Y=");
+					Fkey_Icon( FKeyNo2, 473 );	//	Fkey_dspRB( FKeyNo2, "r=");
+					Fkey_Icon( FKeyNo3, 474 );	//	Fkey_dspRB( FKeyNo3, "Param");
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
+		case CMD_MENU_GRPH_STYL:
+		case CMD_MENU_TABL_STYL:
+			switch ( CommandPage ) {
+				case 0:
+					FkeyS_L_();
+					break;
+			}
+			break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {
 				case 0:
@@ -1071,7 +1181,7 @@ void DispGenuineCmdMenu(){
 					Fkey_Icon( FKeyNo2, 180 );	//	Fkey_dispR( FKeyNo2, "CPLX");
 					Fkey_Icon( FKeyNo3, 762 );	//	Fkey_dispR( FKeyNo3, "SWin");
 					Fkey_Icon( FKeyNo4, 178 );	//	Fkey_dispR( FKeyNo3, "LIST");
-					FkeyClear( FKeyNo5 );
+					Fkey_Icon( FKeyNo5, 764 );	//	Fkey_dispR( FKeyNo5, "TBL-VAR");
 					Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 					break;
 				case 3:
@@ -1229,6 +1339,18 @@ void DispGenuineCmdMenu(){
 				case 0:
 					Fkey_Icon( FKeyNo1,  43 );	//	Fkey_dspRB( FKeyNo1, "File");
 					FkeyClear( FKeyNo2 );
+					FkeyClear( FKeyNo3 );
+					FkeyClear( FKeyNo4 );
+					FkeyClear( FKeyNo5 );
+					FkeyClear( FKeyNo6 );
+					break;
+			}
+			break;
+		case CMD_SETUP_TVAR:
+			switch ( CommandPage ) {
+				case 0:
+					Fkey_Icon( FKeyNo1, 500 );	//	Fkey_dspRB( FKeyNo1, "Range");
+					Fkey_Icon( FKeyNo2, 162 );	//	Fkey_dspRB( FKeyNo2, "List");
 					FkeyClear( FKeyNo3 );
 					FkeyClear( FKeyNo4 );
 					FkeyClear( FKeyNo5 );

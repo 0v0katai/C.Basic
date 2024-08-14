@@ -17,13 +17,19 @@ int ReadBmpHeader( unsigned char *filebase, int *bfOffBits, int *biWidth, int *b
 		*biWidth  = filebase[0x12] +filebase[0x13]*0x100 +filebase[0x14]*0x10000 +filebase[0x15]*0x1000000;
 		*biHeight = filebase[0x16] +filebase[0x17]*0x100 +filebase[0x18]*0x10000 +filebase[0x19]*0x1000000;
 		return 24;	// ok
+	} else 
+	if ( ( filebase[0x0E] == 0x38 ) && ( filebase[0x1C]==16 ) ) {	// info header & 16bit color BI_BITFIELD 
+		*bfOffBits = filebase[0x0A] +filebase[0x0B]*0x100 +filebase[0x0C]*0x10000 +filebase[0x0D]*0x1000000;
+		*biWidth  = filebase[0x12] +filebase[0x13]*0x100 +filebase[0x14]*0x10000 +filebase[0x15]*0x1000000;
+		*biHeight = filebase[0x16] +filebase[0x17]*0x100 +filebase[0x18]*0x10000 +filebase[0x19]*0x1000000;
+		return 16;	// ok
 	}
 	return 0;
 }
 
 int WriteBmpHeader( char *filebase, int biWidth, int biHeight, int bit ){	// 1 bit mono bmp file
 	int   bfSize,biSizeImage;
-	int   bfOffBits = 0x3E;
+	int   bfOffBits = 0x36;
 	int   biSize          = 0x28;
 //	short biPlanes        = 1;
 //	short biBitCount      = 1;
@@ -38,8 +44,14 @@ int WriteBmpHeader( char *filebase, int biWidth, int biHeight, int bit ){	// 1 b
 //	char  rgbRed          = 0xFF;
 //	char  rgbReserved     = 0xFF;
 	if ( bit == 1 ) biSizeImage = ((((biWidth+7)/8)+3)/4)*4 *biHeight ;	//  1bit
-	else			biSizeImage = ((biWidth*3+3)/4)*4 *biHeight ;		// 24bit
-	
+	else
+	if ( bit == 16) {
+		biSizeImage = ((biWidth*2+3)/4)*4 *biHeight ;		// 161bit
+		biSize = 0x38;
+		bfOffBits = 0x46;
+	} else {
+		biSizeImage = ((biWidth*3+3)/4)*4 *biHeight ;		// 24bit
+	}
 	bfSize = biSizeImage +bfOffBits;
 	
 	filebase[0x00]='B';
@@ -73,7 +85,7 @@ int WriteBmpHeader( char *filebase, int biWidth, int biHeight, int bit ){	// 1 b
 	filebase[0x1B]=0;
 	filebase[0x1C]=bit;		// biBitCount
 	filebase[0x1D]=0;
-	filebase[0x1E]=0;		// biCompression
+	filebase[0x1E]=3*(bit==16);		// biCompression
 	filebase[0x1F]=0;
 	
 	filebase[0x20]=0;
@@ -103,18 +115,32 @@ int WriteBmpHeader( char *filebase, int biWidth, int biHeight, int bit ){	// 1 b
 	filebase[0x36]=0xFF;	// rgbBlue
 	filebase[0x37]=0xFF;	// rgbGreen
 	filebase[0x38]=0xFF;	// rgbRed
-	filebase[0x39]=0x00;	// rgbReserved
-	filebase[0x3A]=0x00;	// rgbBlue
-	filebase[0x3B]=0x00;	// rgbGreen
-	filebase[0x3C]=0x00;	// rgbRed
-	filebase[0x3D]=0x00;	// rgbReserved
+	filebase[0x39]=0xFF;	// rgbReserved
+	
+	if ( bit != 16 ) return bfSize;
+	filebase[0x36]=0x00;	// bitfield Red
+	filebase[0x37]=0xF8;	// bitfield Red
+	filebase[0x38]=0x00;	// bitfield Red
+	filebase[0x39]=0x00;	// bitfield Red
+	filebase[0x3A]=0xE0;	// bitfield Green
+	filebase[0x3B]=0x07;	// bitfield Green
+	filebase[0x3C]=0x00;	// bitfield Green
+	filebase[0x3D]=0x00;	// bitfield Green
+	filebase[0x3E]=0x1F;	// bitfield Blue
+	filebase[0x3F]=0x00;	// bitfield Blue
+	filebase[0x40]=0x00;	// bitfield Blue
+	filebase[0x41]=0x00;	// bitfield Blue
+	filebase[0x42]=0x00;	// 
+	filebase[0x43]=0x00;	// 
+	filebase[0x44]=0x00;	// 
+	filebase[0x45]=0x00;	// 
 	return bfSize;
 }
 
 void DecodeBmp2Mat( int reg, char *buffer, int width, int height, int bit ){	//	bmpformat(buffer) -> Mat 
 	int i,x,y;
 	int xbyte,xbyte2;
-	int b,g,r,data;
+	int b,g,r,data,H,L;
 	char *buffer2;
 	char bw=buffer[-2];
 	switch ( bit ) {
@@ -125,6 +151,18 @@ void DecodeBmp2Mat( int reg, char *buffer, int width, int height, int bit ){	//	
 			for (y=0; y<height; y++) {
 				for (x=0; x<xbyte2; x++) {
 				buffer2[y*xbyte2+x] = buffer[(height-y-1)*xbyte+x] ^bw ;
+				}
+			}
+			break;
+		case 16:	// 16bit bmp
+			xbyte =((width*2+3)/4)*4;
+			xbyte2=  width;
+			for (y=0; y<height; y++) {
+				for (x=0; x<xbyte2; x++) {
+					L = buffer[(height-y-1)*xbyte+x*2+0];
+					H = buffer[(height-y-1)*xbyte+x*2+1];
+					data = (H<<8)+L;;
+					WriteMatrix( reg, y, x, data);
 				}
 			}
 			break;
@@ -149,7 +187,7 @@ int EncodeMat2Bmp( int reg , char *buffer , int width, int height, int bit ){	//
 	int i,x,y;
 	int xbyte,xbyte2;
 	int offset;
-	int b,g,r,d;
+	int b,g,r,d,H,L;
 	char *buffer2;
 	switch ( bit ) {
 		case 1:		// 1bit bmp
@@ -159,6 +197,20 @@ int EncodeMat2Bmp( int reg , char *buffer , int width, int height, int bit ){	//
 			for (y=0; y<height; y++) {
 				for (x=0; x<xbyte2; x++) {
 					buffer[(height-y-1)*xbyte+x]=buffer2[y*xbyte2+x];
+				}
+			}
+			return 1;
+			break;
+		case 16:	// 16bit bmp
+			xbyte =((width*2+3)/4)*4;
+			xbyte2=  width;
+			for (y=0; y<height; y++) {
+				for (x=0; x<xbyte2; x++) {
+					d = ReadMatrix( reg, y, x);
+					H = d >> 8;
+					L = d & 0xFF;
+					buffer[(height-y-1)*xbyte+x*2+0] = L;
+					buffer[(height-y-1)*xbyte+x*2+1] = H;
 				}
 			}
 			return 1;
@@ -200,23 +252,35 @@ void DecodeBmp2mem( char *buffer2, char *buffer, int width, int height, int bit 
 				}
 			}
 			break;
-		case 24:	// 24bit bmp
-			xbyte =((width*3+3)/4)*4;
-			xbyte2=  width;
-			for (y=0; y<height; y++) {
-				for (x=0; x<xbyte2; x++) {
-					b = buffer[(height-y-1)*xbyte+x*3+0];
-					g = buffer[(height-y-1)*xbyte+x*3+1];
-					r = buffer[(height-y-1)*xbyte+x*3+2];
-					buffer3[x*xbyte2+y] = ((r<<8)&0xF800) | ((g<<3)&0x7E0) | ((b>>3)&0x1F);
-				}
-			}
-			break;
+//		case 16:	// 16bit bmp
+//			xbyte =((width*2+3)/4)*4;
+//			xbyte2=  width;
+//			for (y=0; y<height; y++) {
+//				for (x=0; x<xbyte2; x++) {
+//					L = buffer[(height-y-1)*xbyte+x*2+0];
+//					H = buffer[(height-y-1)*xbyte+x*2+1];
+//					buffer3[x*xbyte2+y] = (H<<8)+L;;
+//				}
+//			}
+//			break;
+//		case 24:	// 24bit bmp
+//			xbyte =((width*3+3)/4)*4;
+//			xbyte2=  width;
+//			for (y=0; y<height; y++) {
+//				for (x=0; x<xbyte2; x++) {
+//					b = buffer[(height-y-1)*xbyte+x*3+0];
+//					g = buffer[(height-y-1)*xbyte+x*3+1];
+//					r = buffer[(height-y-1)*xbyte+x*3+2];
+//					buffer3[x*xbyte2+y] = ((r<<8)&0xF800) | ((g<<3)&0x7E0) | ((b>>3)&0x1F);
+//				}
+//			}
+//			break;
 		default:
 			break;
 	}
 }
 
+/*
 int EncodeBmp2mem( char *buffer , char *buffer2 , int width, int height, int bit ){	//	bmp(buffer2) -> bmpformat(buffer)
 	int i,x,y;
 	int xbyte,xbyte2;
@@ -255,12 +319,13 @@ int EncodeBmp2mem( char *buffer , char *buffer2 , int width, int height, int bit
 	}
 	return 0;
 }
+*/
 
 int EncodeVram2Bmp( char *buffer , int width, int height, int bit, int px, int py  ){	//	vram -> bmpformat(buffer)
 	int i,x,y;
 	int xbyte,xbyte2;
 	int offset;
-	int b,g,r;
+	int b,g,r,H,L;
 	unsigned char buffer2[1024];
 	DISPBOX box;
 	unsigned short d, *buffer3=(unsigned short *)PictAry[0];
@@ -277,6 +342,20 @@ int EncodeVram2Bmp( char *buffer , int width, int height, int bit, int px, int p
 			for (y=0; y<height; y++) {
 				for (x=px; x<px+xbyte2; x++) {
 					buffer[(height-y-1)*xbyte+x]=buffer2[y*xbyte2+x];
+				}
+			}
+			return 1;
+			break;
+		case 16:	// 16bit bmp
+			xbyte =((width*2+3)/4)*4;
+			xbyte2=  width;
+			for (y=0; y<height; y++) {
+				for (x=0; x<xbyte2; x++) {
+					d =buffer3[(y+py+24)*384+(x+px)];
+					H = d>>8;
+					L = d&0xFF;
+					buffer[(height-y-1)*xbyte+x*2+0] = L;
+					buffer[(height-y-1)*xbyte+x*2+1] = H;
 				}
 			}
 			return 1;
@@ -312,7 +391,7 @@ void DecodeBmp2vram( char *buffer, int width, int height, int bit, int px, int p
 	int data;
 	int tx,ty;
 	char bw=buffer[-2];
-	int b,g,r,bg_b,bg_g,bg_r;
+	int b,g,r,bg_b,bg_g,bg_r,H,L;
 	switch ( bit ) {
 		case 1:		// 1bit bmp
 			xbyte =((((width+7)/8)+3)/4)*4;
@@ -336,13 +415,42 @@ void DecodeBmp2vram( char *buffer, int width, int height, int bit, int px, int p
 				}
 			}
 			break;
+		case 16:	// 16bit bmp
+			xbyte =((width*2+3)/4)*4;
+			xbyte2=  width;
+			py+=24;
+			for (y=0; y<height; y++) {
+				for (x=0; x<xbyte2; x++) {
+					L = buffer[(height-y-1)*xbyte+x*2+0]&0xFF;
+					H = buffer[(height-y-1)*xbyte+x*2+1]&0xFF;
+					d = (H<<8)+L;
+					b = (((int)d&0x001F) << 3);
+					g = (((int)d&0x07E0) >> 3);
+					r = (((int)d&0xF800) >> 8);
+					if ( ( x+px < 384 )&&( y+py < 216 ) ) {
+						d =vram2[x+px+(y+py)*384];
+						bg_b = (((int)d&0x001F) << 3);
+						bg_g = (((int)d&0x07E0) >> 3);
+						bg_r = (((int)d&0xF800) >> 8);
+						switch ( mode ) {
+							case 0:
+								if ( d != CB_BackColorIndex ) break;
+							case 1:
+								if ( alpha<255 ) {
+									b = ( b*alpha + bg_b*(254-alpha) ) >>8;
+									g = ( g*alpha + bg_g*(254-alpha) ) >>8;
+									r = ( r*alpha + bg_r*(254-alpha) ) >>8;
+								}
+								vram2[x+px+(y+py)*384] =  ((r<<8)&0xF800) | ((g<<3)&0x7E0) | ((b>>3)&0x1F) ;
+								break;
+						}
+					}
+				}
+			}
+			break;
 		case 24:	// 24bit bmp
 			xbyte =((width*3+3)/4)*4;
 			xbyte2=  width;
-//			d =CB_BackColorIndex;
-			bg_b = (d&0x001F) << 3;
-			bg_g = (d&0x07E0) >> 3;
-			bg_r = (d&0xF800) >> 8;
 			py+=24;
 			for (y=0; y<height; y++) {
 				for (x=0; x<xbyte2; x++) {
@@ -382,7 +490,7 @@ int DecodeBmp2Vram( char *filebase, int px, int py ){	//	bmp -> vram
 	int bit;
 	bit=ReadBmpHeader( (unsigned char*)filebase, &offset, &width, &height );
 	if (  bit == 0 ) return 0;	// not bmp
-	if (  bit == 24 ) py-=24;
+	if (  bit >= 16 ) py-=24;
 	DecodeBmp2vram( filebase+offset, width, height, bit, px, py, 1, 255 );
 	return 1;
 }
@@ -421,7 +529,7 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]		BmpSave "TEST.bm
 	char* FilePtr;
 	int check=0;
 	int width,height;
-	int bfOffBits = 0x3E;
+	int bfOffBits = 0x36;
 	int bfSize;
 	char *bmpbuffer;
 	int dx,dy;
@@ -433,7 +541,7 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]		BmpSave "TEST.bm
 	int gaiji=0,no=-1,flag;
 	
 	c =SRC[ExecPtr];
-	if ( c == '@' ) { 
+	if ( c == '@' ) { 			// font mode  1bit bmp
 		c =SRC[++ExecPtr];
 		if ( c == '@' ) { 	c =SRC[++ExecPtr]; folder=1; }
 		if ( ( c=='K' )||( c=='k' ) ) { ExecPtr++; gaiji=0; }
@@ -475,7 +583,7 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]		BmpSave "TEST.bm
 		}
 	}
 	
-	if ( CB_G1MorG3M==1 ) bit=1; else bit=24;
+	if ( CB_G1MorG3M==1 ) bit=1; else bit=16;
 //	c =SRC[ExecPtr];
 //	if ( c != 0x22 ) { CB_Error(SyntaxERR); return; }  // Syntax error
 
@@ -490,7 +598,7 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]		BmpSave "TEST.bm
 		dimB =MatAry[reg].SizeB;
 		if ( ErrorNo ) return; // error
 		bit= MatAry[reg].ElementSize;
-		if ( bit != 1 ) bit==24;
+		if ( bit != 1 ) bit==16;
 		width = dimA;
 		height= dimB;
 	} else {											//	BmpSave "TEST.bmp",x1,y1,x2,y2
@@ -506,7 +614,7 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]		BmpSave "TEST.bm
 	c =SRC[ExecPtr];
 	if ( c == ',' ) {
 		c =SRC[++ExecPtr];
-		if ( ( c == 'F' ) || ( c == 'f' ) ) bit=24;
+		if ( ( c == 'F' ) || ( c == 'f' ) ) bit=16;
 		ExecPtr++;
 	}
 	if ( direct == 0 ) {
@@ -569,8 +677,10 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]		BmpSave "TEST.bm
 		width = x2-x1+1;
 		height= y2-y1+1;
 	}
-	
-	if ( bit == 1 ) bfSize = ((((width+7)/8)+3)/4)*4 *height +bfOffBits;	//  1bit
+	if ( bit == 16) bfOffBits=0x46;
+	if ( bit ==  1) bfSize = ((((width+7)/8)+3)/4)*4 *height +bfOffBits;	//  1bit
+	else
+	if ( bit == 16) bfSize = ((width*2+3)/4)*4 *height +bfOffBits;			// 16bit
 	else			bfSize = ((width*3+3)/4)*4 *height +bfOffBits;			// 24bit
 	bmpbuffer = ( char *)HiddenRAM_mallocTemp( bfSize+4 );
 	if( bmpbuffer == NULL ) { CB_Error(NotEnoughMemoryERR); return ; }	// Not enough memory error
@@ -668,7 +778,7 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST")[->Mat A]
 		base = 0;
 		ElementSize = 1;
 	} else
-	if ( bit == 24 ) {		// 24bit bmp 
+	if ( bit >= 16 ) {		// 16/24bit bmp 
 		dimA = width;
 		dimB = height;
 		base = 0;

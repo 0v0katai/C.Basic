@@ -507,7 +507,7 @@ int PortCR = P7305_SERIAL_DIRECT_PORTCR;
 //	iresult = 5000000 / iDelay;
 //	iresult = 500;
 	micro >>=1;
-	while (time-- > 0 ){
+	while ( (time-- > 0 ) && (KeyScanDown(KEYSC_AC)==0) ) {
 		CMT_Delay_micros( micro );
 //		for ( i=0; i<waitcount; i++ ) WaitTimer32768() ;
 		*(unsigned char*)SerialPortDR = *(unsigned char*)SerialPortDR & (~SerialPortOut);

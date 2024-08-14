@@ -71,8 +71,9 @@ void GetGenuineCmdF5( int *code ){
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F49;return;	// Augment(
-				case 1: CommandType=CMD_OPTN_MAT_SIZE; CommandPage=0;break;
+				case 1: (*code)=0x7F56;return;	// Rref
 				case 2: (*code)=0xF95E;return;	// UnitV(
+				case 3: CommandType=CMD_OPTN_MAT_SIZE; CommandPage=0;break;
 			} break;
 		case CMD_OPTN_CALC:
 			break;
@@ -115,6 +116,10 @@ void GetGenuineCmdF5( int *code ){
 			switch ( CommandPage ) {
 				case 0: return;	// setup mode
 				case 1: (*code)=0xF93F;return;	// Str
+			} break;
+		case CMD_VARS_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7FF4;return;	// GRAPHX
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
@@ -164,11 +169,16 @@ void GetGenuineCmdF5( int *code ){
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F5
 			switch ( CommandPage ) {
-				case 0: (*code)='#';return;	// #
+				case 0: CommandType=CMD_MENU_EXT; CommandPage=0;break;
 			} break;
 		case CMD_MENU_STAT_GRPH:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF751;return;	// xyLine
+			} break;
+		case CMD_MENU_GRPH_STYL:
+		case CMD_MENU_TABL_STYL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF9F5;return;	// ThinG
 			} break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {
@@ -179,6 +189,7 @@ void GetGenuineCmdF5( int *code ){
 			switch ( CommandPage ) {
 				case 0: CommandType=CMD_SETUP_LABL;CommandPage=0;break;
 				case 1: CommandType=CMD_SETUP_BACK;CommandPage=0;break;
+				case 2: CommandType=CMD_SETUP_TVAR;CommandPage=0;break;
 				case 3: (*code)=0xF94F;return;	// Wait
 				case 4: (*code)=0x7FDF;return;	// Version
 			} break;

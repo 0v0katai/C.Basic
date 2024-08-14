@@ -114,6 +114,8 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 				adj = 1 - minus+ floor(log10(fabs(log10fabsnum)))-1;
 				if ( ( 1e-10 <= fabsnum ) && ( fabsnum < dpoint )) adj++;
 				i=width-adj-5;
+				if ( ( 1.0e-10 < fabsnum ) && ( fabsnum < 1.0 ) ) i++;	// adjust  1.23e-08->1.234e-8   
+				if ( fabsnum >= pw ) i++;	// adjust  1.23e+09->1.234e+9  
 				if ( i > digit-1 ) i=digit-1;
 				if ( i >= 18 ) i=18;
 				if ( i <  1  ) i=0;
@@ -188,7 +190,7 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 				while ( eptr[i] == '0' ) i-- ;
 				if ( i ) {
 					j=0;
-					while ( eptr[j] != '\0' ) eptr[++i]=eptr[++j];
+					while ( eptr[j] != NULL ) eptr[++i]=eptr[++j];
 				}
 			} else {				// 1.234500000  zero cut
 				i=-1;
@@ -223,7 +225,6 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 		if ( buffer[0]=='-' ) buffer[++i]=0x99;	// (-)minus
 		if ( (buffer[1]=='1')&&(buffer[2]=='\0') ) buffer[1]='\0';
 	}
-	buffer[width]='\0';
 	while (i<width) {
 		c=buffer[++i];
 		switch ( c ) {
@@ -237,9 +238,19 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 				break;
 			case 'e':	// exp
 				buffer[i]=0x0F;	// (exp)
+				if ( buffer[i+2]=='0' ) {	// adjust  1.23e+09->1.234e9  1.23e-08->1.234e-8   
+					if ( buffer[i+1]=='+' ) {
+						buffer[i+1]=buffer[i+3];
+						buffer[i+2]='\0';
+					} else {
+						buffer[i+2]=buffer[i+3];
+						buffer[i+3]='\0';
+					}
+				}
 				break;
 		}
 	}
+	buffer[width]='\0';
   exit:
 	if ( cplx ) { 
 		buffer[  i]=0x7f;	// (i)
@@ -303,19 +314,20 @@ int sprintGRSiE( char* buffer, double num, int width, int align_mode, int round_
 	if ( ENG==1 ) { // ENG mode
 		fabsnum=fabs(num);
 		num = Round( num, round_mode, round_digit );
-		if ( ( num != 0 ) && ( 1e-15 <= fabsnum  ) && ( fabsnum < 1e21 ) ) {
-			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x0B; }	//  Exa
+		if ( ( 0== fabsnum ) || ( ( 1e-15 <= fabsnum ) && ( fabsnum < 1e21 ) ) ) {
+			if      ( fabsnum >= 1e18 ) { num/=1e18;  c=0x1B; }	//  Exa
 			else if ( fabsnum >= 1e15 ) { num/=1e15;  c=0x0A; }	//  Peta
 			else if ( fabsnum >= 1e12 ) { num/=1e12;  c=0x09; }	//  Tera
 			else if ( fabsnum >= 1e09 ) { num/=1e09;  c=0x08; }	//  Giga
 			else if ( fabsnum >= 1e06 ) { num/=1e06;  c=0x07; }	//  Mega
-			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x6B; }	//  Kiro
+			else if ( fabsnum >= 1e03 ) { num/=1e03;  c=0x06; }	//  Kiro
 			else if ( fabsnum >= 1    ) { if ( cplx==0 ) c=' ';  }
-			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x6d; }	//  milli
-			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0xE6; d=0x4B; }	//  micro
+			else if ( fabsnum == 0 )    {                c=' ';  }	//  0
+			else if ( fabsnum >= 1e-3 ) { num/=1e-3;  c=0x05; }	//  milli
+			else if ( fabsnum >= 1e-6 ) { num/=1e-6;  c=0x04; }	//  micro
 			else if ( fabsnum >= 1e-9 ) { num/=1e-9;  c=0x03; }	//  nano
-			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x70; }	//  pico
-			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x66; }	//  femto
+			else if ( fabsnum >= 1e-12) { num/=1e-12; c=0x02; }	//  pico
+			else if ( fabsnum >= 1e-15) { num/=1e-15; c=0x01; }	//  femto
 			width-- ; 
 			round_mode=Norm; round_digit=0;
 			r = sprintGRSi( buffer, num, width, align_mode, round_mode, round_digit, cplx );
@@ -323,12 +335,12 @@ int sprintGRSiE( char* buffer, double num, int width, int align_mode, int round_
 			if ( ( cplx ) && ( buffer[width-1] == 0x50 ) && c ) { 
 				width-=2;
 				buffer[width++]=c;
-				if ( d ) buffer[width++]=d;
+//				if ( d ) buffer[width++]=d;
 				buffer[width++]=0x7f;	// (i)
 				buffer[width++]=0x50;	// (i)
 			} else {
 				buffer[width++]=c;
-				buffer[width++]=d;
+//				buffer[width++]=d;
 			}
 			buffer[width]='\0';
 			return r;
@@ -416,6 +428,8 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 	char buffer2[64];
 	char buffer3[64];
 	int k,oplen,rlen,ilen,rwidth,iwidth;
+	int over=0;
+	if ( width<0 ) { width=-width; over=1; }
 	if ( ( CB_INT==0 ) || ( num.real==0 ) || (num.imag==0) ) {
 		Cplx_sprintGR1( buffer, num, width, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
 		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
@@ -443,17 +457,27 @@ void Cplx_sprintGR1cutlim( char* buffer, complex num, int width, int align_mode,
 			iwidth = width - rwidth;
 		}
 	  next:
-		sprintGRSiE( buffer, num.real, rwidth, LEFT_ALIGN, round_mode, round_digit, 0);	// real
-		sprintExpType( buffer , rwidth,   0, 0 );	// real
-		OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
-		if ( num.imag ) sprintGRSiE( buffer, num.imag, iwidth, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
-		else buffer[0]='\0';
-		sprintExpType( buffer , iwidth, 1, 0 );	// imag
-		OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
-		if ( ( num.real==0 ) && ( num.imag!=0 ) ) {
-			buffer2[0]='\0';
-			if ( buffer3[0]==0xFFFFFF89 ) strcat( buffer2, buffer3+1 );
-		} else	strcat( buffer2, buffer3 );
+	  	if ( over==0 ) {
+			sprintGRSiE( buffer, num.real, rwidth, LEFT_ALIGN, round_mode, round_digit, 0);	// real
+			sprintExpType( buffer , rwidth,   0, 0 );	// real
+			OpcodeStringToAsciiString( buffer2, buffer, 64-1 );
+			if ( num.imag ) sprintGRSiE( buffer, num.imag, iwidth, LEFT_ALIGN, round_mode, round_digit, 1);	// imag
+			else buffer[0]='\0';
+			sprintExpType( buffer , iwidth, 1, 0 );	// imag
+			OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
+			if ( ( num.real==0 ) && ( num.imag!=0 ) ) {
+				buffer2[0]='\0';
+				if ( buffer3[0]==0xFFFFFF89 ) strcat( buffer2, buffer3+1 );
+			} else	strcat( buffer2, buffer3 );
+		} else {	// 1234567>
+			strcat( buffer2, buffer3 );
+			ilen = StrLen( buffer2, &oplen );
+			if ( ilen > width ) {
+				if ( buffer2[width-2]==0x7F ) width--;
+				buffer2[width-1]='>';
+				buffer2[width]='\0';
+			}
+		}
 	}
 	strcpy( buffer, buffer2);
 	if ( align_mode == RIGHT_ALIGN ) RightAlign( buffer, width );
@@ -1081,7 +1105,7 @@ int SelectChar( int *ContinuousSelect ) {
 			case KEY_CHAR_Z:
 				Bdisp_AllClr_VRAM3(0,191);
 				CB_ColorIndex=0x001F;		// blue
-				locate(1,1);    Prints((unsigned char*)"==Char Select Help ==");
+				CB_Prints( 1, 1, (unsigned char*)"==Char Select Help ==");
 				CB_ColorIndex=0x0000;		// black
 				locate(1,2);    Prints((unsigned char*)"[OPTN] \xE5\xE9");
 				locate(1,4);    Prints((unsigned char*)"[ \x90\xE5\xC2 ] \xE5\xE9");
@@ -1338,31 +1362,43 @@ int SelectOpcodeRecent( int listselect ) {
 					cont2=0;
 					break;
 				case KEY_CTRL_F1:
+				case KEY_CHAR_1:
+				case KEY_CHAR_U:
 					select=seltop;
 					cont=0;
 					cont2=0;
 					break;
 				case KEY_CTRL_F2:
+				case KEY_CHAR_2:
+				case KEY_CHAR_V:
 					select=seltop+1;
 					cont=0;
 					cont2=0;
 					break;
 				case KEY_CTRL_F3:
+				case KEY_CHAR_3:
+				case KEY_CHAR_W:
 					select=seltop+2;
 					cont=0;
 					cont2=0;
 					break;
 				case KEY_CTRL_F4:
+				case KEY_CHAR_4:
+				case KEY_CHAR_P:
 					select=seltop+3;
 					cont=0;
 					cont2=0;
 					break;
 				case KEY_CTRL_F5:
+				case KEY_CHAR_5:
+				case KEY_CHAR_Q:
 					select=seltop+4;
 					cont=0;
 					cont2=0;
 					break;
 				case KEY_CTRL_F6:
+				case KEY_CHAR_6:
+				case KEY_CHAR_R:
 					select=seltop+5;
 					cont=0;
 					cont2=0;
@@ -1578,6 +1614,875 @@ int SelectOpcode( int listselect, int flag ) {
 	return r;
 }
 
+
+//----------------------------------------------------------------------------------------------
+//	CATALOG for C.Basic version
+//----------------------------------------------------------------------------------------------
+
+const short catalog_opcode[]={
+	
+//						A
+		0xF906, // >a+bi
+		0x97,	// Abs
+		0xF717,	// ACBreak
+		0xF90F,	// AliasVar
+		0x7FB0,	// And
+		0xBA,	// and
+		0xF96D, // Angle(	ver.2.04~
+		0x7F22,	// Arg 
+		0x7F49,	// Augment(
+		0xF7D2,	// AxesOff
+		0xF7C2,	// AxesOn
+		
+//						B
+		0xF9BE,	// Back-Color
+		0xF7FE,	// BackLight
+		0xF7DE,	// BatteryStatus
+		0xF7DD,	// Beep
+		0xF778,	// BG-None
+		0xF779,	// BG-Pict
+		0xF947,	// Bin(
+		0xF9DC,	// BmpLoad(
+		0xF9DB,	// BmpSave 
+		0xF70D,	// Break
+
+//						C
+		0xF7F5,	// Call
+		0xF7EB,	// Case
+		0x7FE9,	// CellSum(
+		0xF714,	// CloseComport38k
+		0xF7A6,	// Circle
+		0xF719,	// ClrGraph
+		0xF71A,	// ClrList
+		0xF91E,	// ClrMat
+		0xF93E,	// ClrVct	
+		0xF718,	// ClrText
+		0xD1,	// Cls
+//		0xF973,	// ColorAuto 
+//		0xF97D,	// ColorClr 
+//		0xF974,	// ColorLighter 
+//		0xF97A,	// ColorNormal 
+//		0xF978,	// ColorLinkOn
+//		0xF979,	// ColorLinkOff
+//		0xF975,	// ColorLinkX&Y
+//		0xF976,	// ColorLinkOnlyX
+//		0xF977,	// ColorLinkOnlyY
+//		0xF97E,	// ColorLinkX&Freq
+		0x7F5A,	// ColSize(
+		0x7F23,	// Conjg 
+		0xF90E,	// Const 
+		0xF7D3,	// CoordOff
+		0xF7C3,	// CoordOn
+		0xA2,	// cosh
+		0xB2,	// arccosh
+		0xF74E,	// Cross
+		0xF94A, // CrossP(	ver.2.04~
+
+//						D
+		0xF941,	// DATE
+		0xF7EC,	// Default
+		0xF7DF,	// Delete 
+//		0xF90D,	// Define 
+		0xDA,	// Deg
+		0xF7D5,	// DerivOff
+		0xF7C5,	// DerivOn
+		0x7F21, // Det
+		0x7F46,	// Dim
+		0xF7E4,	// Disp
+		0xF905,	// >DMS
+		0xF70A,	// Do
+		0xF74F,	// Dot
+		0xF73E,	// DotGet(
+		0xF7E0,	// DotLife(
+		0xF94B, // DotP("
+		0xF73B,	// DotPut(
+		0xF7F0,	// DotShape(
+		0xF73D,	// DotTrim(
+		0xF720,	// DrawGraph
+		0xF9DD,	// DrawMat
+		0xF723,	// DrawStat
+		0xF7DC,	// DrawOff
+		0xF7CC,	// DrawOn
+		0xE8,	// Dsz
+
+//						E
+		0x7F58,	// ElemSize(
+		0xF702,	// Else
+		0xF70F,	// ElseIf
+		0xDD,	// Eng
+		0xF90C,	// EngOff
+		0xF90B,	// EngOn
+		0xF738,	// Except
+		0xF937,	// Exp>Str(
+		0xF938,	// Exp(
+
+//						F
+		0xF7A7,	// F-Line
+		0x7F47,	// Fill(
+		0xF7E2,	// FillRect(
+		0xE3,	// Fix
+		0xF7FD, // FKeyMenu(
+		0xF91B,	// fn
+		0xF704,	// For
+		0xB6,	// frac
+
+//						G
+		0xF770,	// G-Connect
+		0xF771,	// G-Plot
+		0x7F3C,	// GCD(
+		0xF960,	// GetFont(
+		0xF962,	// GetFOntMini 
+		0x7F72,	// GetHSL(
+		0x7F70,	// GetHSV(
+		0x7F8F,	// Getkey
+		0x7F5D,	// GetRGB(
+		0xFA,	// Gosub
+		0xEC,	// Goto
+		0xDC,	// Grad
+		0xEE,	// Graph Y=
+		0xF5,	// Graph(X,Y)=(
+		0x7FF0,	// GraphY
+		0xF77A,	// GridOff
+		0xF77D,	// GridOn
+
+//						H
+		0xF946,	// Hex(
+		0xF7A4,	// Horizontal
+		0x7F73,	// HSL( 
+		0x7F71,	// HSV(
+
+//						I
+		0x7F48,	// Identity
+		0xF700,	// If
+		0xF703,	// IfEnd
+		0x7F25,	// ImP 
+		0xA6,	// Int
+		0xDE,	// Intg
+		0x7FBC,	// Int/
+		0x7FF5,	// IsExist(
+		0xE9,	// Isz
+
+//						J
+
+//						K
+		0x7F9F,	// KeyRow(
+
+//						L
+		0xF7C4,	// LabelOn
+		0xF7D4,	// LabelOff
+		0xE2,	// Lbl
+		0x7F3D,	// LCM(
+		0xE1,	// Line
+		0x7F4A,	// List->Mat(
+		0x7F5C,	// ListCmp(
+		0xF7EF,	// Load(
+		0xF7F1,	// Local
+		0xF710,	// Locate
+		0xF7E3,	// LocateYX
+		0x7F85,	// logab(
+		0xF70B,	// LpWhile
+
+//						M
+		0x7F5B,	// MatBase(
+		0x7F4B,	// Mat->List(
+		0x7F20,	// Max(
+		0x7F2E,	// Mean(
+		0xF79E,	// Menu
+		0x7F2D,	// Min(
+		0x7F3A,	// MOD(
+		
+//						N
+		0XF707,	// Next
+		0x7FB3,	// Not
+		0xA7,	// not
+		0xD9,	// Norm
+		0xF95B, // Norm("	ver.2.04~
+
+//						O
+		0xF713,	// OpenComport38k
+		0x7FB1,	// Or
+		0xAA,	// or
+
+//						P
+		0x7FF6,	// Peek(
+		0xE0,	// Plot
+		0xF7AA,	// PlotChg
+		0xF7A9,	// PlotOff
+		0xF7A8,	// PlotOn
+		0xF7F6,	// Poke 
+		0x80,	// Pol(
+		0xF7F2,	// PopUpWin(
+		0x7F4D,	// Prod
+		0xED,	// Prog
+		0x7FFA,	// ProgPtr(
+		0xF7FC,	// PutDispDD
+		0xF7AD,	// PxlChg
+		0xF7AC,	// PxlOff
+		0xF7AB,	// PxlOn
+		0xF7AF,	// PxlTest(
+
+//						Q
+
+//						R
+		0xDB,	// Rad
+		0xC1,	// Ran#
+		0x7F89,	// RanBin#(	
+		0x7F87,	// RanInt#(	
+		0x7F88,	// RanList#(
+		0x7F8A,	// RanNorm#(	
+		0xF79F,	// RclCapt
+		0xF794,	// RclPict
+		0xF798,	// RclV-Win
+		0xF7E8,	// ReadGraph(
+		0xA0,	// Rec(
+		0xF712,	// Receive(
+		0xF716,	// Receive38k 
+		0xF7E1,	// Rect(
+		0x7F55,	// Ref 
+		0xF7F8,	// RefreshCtrl
+		0xF7FA,	// RefreshTime
+		0x7F24,	// ReP 
+		0xF70C,	// Return
+		0x7F5E,	// RGB(
+		0xF907, // >re^Theta
+		0x7FBD,	// Rmdr
+		0xD3,	// Rnd
+		0x7F86,	// RndFix(
+		0x7F44,	// Row+
+		0x7F59,	// RowSize(
+		0x7F42,	// *Row
+		0x7F43,	// *Row+
+		0x7F56,	// Rref 
+
+
+//						S
+		0xF74A,	// S-Gph1
+		0xF74B,	// S-Gph2
+		0xF74C,	// S-Gph3
+		0xF71C,	// S-L-Normal
+		0xF71D,	// S-L-Thick
+		0xF71E,	// S-L-Broken
+		0xF71F,	// S-L-Dot
+		0xF7EE,	// Save
+		0xF750,	// Scatter
+		0xE4,	// Sci
+		0xF711,	// Send(
+		0xF715,	// Send38k 
+		0x7F2C,	// Seq(
+		0xF961,	// SetFont
+		0xF963,	// SetFontMini
+		0xF78E,	// SketchBroken
+		0xF78F,	// SketchDot
+		0xF78C,	// SketchNormal
+		0xF78D,	// SketchThick
+		0xF7FB,	// Screen
+		0xF961,	// SetFont
+		0xF963,	// SetFOntMini
+		0x7F29,	// Sigma(
+		0xA1,	// sinh
+		0xB1,	// arcsinh
+		0xF7B0,	// SortA(
+		0xF7B1,	// SortB(
+		0xF943,	// Sprintf(
+		0xF74D,	// Square
+		0xF706,	// Step
+		0xF79D,	// StoCapt
+		0xF70E,	// Stop
+		0xF793,	// StoPict
+		0xF797,	// StoV-Win
+		0xF93F,	// Str
+		0xF950,	// StrAsc(
+		0xF948,	// StrBase(
+		0xF945,	// StrCenter(
+		0xF944,	// StrChar(
+		0xF932,	// StrCmp(
+		0xF93B,	// StrInv(
+		0xF930,	// StrJoin(
+		0xF934,	// StrLeft(
+		0xF931,	// StrLen
+		0xF93A,	// StrLwr(
+		0xF936,	// StrMid(
+		0xF935,	// StrRight(
+		0xF93D,	// StrRotate(
+		0xF93C,	// StrShift(
+		0xF933,	// StrSrc(
+		0xF939,	// StrUpr(
+		0xF949,	// StrRepl(	
+		0xF94D,	// StrSplit(	
+		0x7F4C,	// Sum
+		0x7F45,	// Swap
+		0xF7EA,	// Switch
+		0xF7ED,	// SwitchEnd
+		0xF7F4,	// SysCall
+		0x7FCF,	// System(
+		
+//						T
+		0xA3,	// tanh
+		0xB3,	// arctanh
+		0xF7A5,	// Text
+		0x7F5F,	// Ticks
+		0xF942,	// TIME
+		0xF701,	// Then
+		0xF705,	// To
+		0xF940,	// ToStr(
+		0xF9BF,	// Transp-Color
+		0x7F41,	// Trn 
+		0xF737, // Try
+		0xF739,	// TryEnd
+		0x7F09,	// TThetamax
+		0x7F08,	// TThetamin
+		0x7F0A,	// TThetaptch
+
+//						U
+		0xF95E, // UnitV(	ver.2.04~
+
+//						V
+		0x7FF8,	// VarPtr(
+		0x7FDF,	// Version
+		0xF7A3,	// Vertical
+		0xEB,	// ViewWindow
+
+//						W
+		0xF94F,	// Wait 
+		0xF708,	// While
+		0xF709,	// WhileEnd
+		0xF7E9,	// WriteGraph(
+
+//						X
+		0xF921,	// Xdot
+		0x7F0B,	// Xfct
+		0x7F01,	// Xmax
+		0x7F00,	// Xmin
+		0x7FB4,	// Xor
+		0x9A,	// xor
+		0x7F02,	// Xscl
+		0xF751,	// xyLine
+
+//						Y
+		0x7F0C,	// Yfct
+		0x7F05,	// Ymax
+		0x7F04,	// Ymin
+		0x7F06,	// Yscl
+
+//						Z
+
+		0x9C,	// (deg)
+		0xAC,	// (rad)
+		0xBC,	// (grad)
+		0x8C,	// dms
+		0x3A,	// :
+		0x3F,	// ?
+		0x0C,	// dsps
+		0x3D,	// =
+		0x11,	// !=
+		0x3C,	// <
+		0x3E,	// >
+		0x10,	// <=
+		0x12,	// >=
+		0x13,	// =>
+		0x27,	// '
+//		0x22,	// "
+		0x7E,	// ~
+		0x23,	// #
+		0x24,	// $
+		0x25,	// %
+		0x26,	// &
+		0x2A,	// *
+		0x2F,	// /
+		0x7C,	// |
+
+		0x0B,	// Exa
+		0x0A,	// Peta
+		0x09,	// Tera
+		0x08,	// Giga
+		0x07,	// Mega
+		0x06,	// Kiro
+		0x05,	// milli
+		0x04,	// micro
+		0x03,	// nano
+		0x02,	// pico
+		0x01,	// femto
+
+		0x14,	// f1
+		0x15,	// f2
+		0x16,	// f3
+		0x17,	// f4
+		0x18,	// f5
+		0x19,	// f6
+
+		0x7F6A,	// List1
+		0x7F6B,	// List2
+		0x7F6C,	// List3
+		0x7F6D,	// List4
+		0x7F6E,	// List5
+		0x7F6F,	// List6
+
+//		0xF7B2,	// VarList1
+//		0xF7B3,	// VarList2
+//		0xF7B4,	// VarList3
+//		0xF7B5,	// VarList4
+//		0xF7B6,	// VarList5
+//		0xF7B7,	// VarList6
+
+		0xF7B8,	// File1
+		0xF7B9,	// File2
+		0xF7BA,	// File3
+		0xF7BB,	// File4
+		0xF7BC,	// File5
+		0xF7BD,	// File6
+
+		0xF9D5,	// _Bmp 
+		0xF9D6,	// _Bmp8
+		0xF9D7,	// _Bmp16
+		0xF9DA,	// _BmpRotate
+		0xF9D9,	// _BmpZoom
+		0xF9DE,	// _BmpZoomRotate
+		0xF9CD,	// _Circle
+		0xF9C0, // _ClrVRAM
+		0xF9C1,	// _ClrScreen
+		0xF9C3,	// _Contrast
+		0xF9C2,	// _DispVRAM
+		0xF9CF,	// _Elips 
+		0xF9D1,	// _ElipsInRct 
+		0xF9CE,	// _Fcircle 
+		0xF9D0,	// _Felips 
+		0xF9D2,	// _FelipsInRct .
+		0xF9CC, // _Fporgon 
+		0xF9C8,	// _Horizontal
+		0xF9D3,	// _Hscroll
+		0xF9C7,	// _Line 
+		0xF9DF,	// _Paint
+		0xF9C5,	// _Point 
+		0xF9C4,	// _Pixel 
+		0xF9C6,	// _PixelTest(
+		0xF9CB,	// _Polygon
+		0xF9CA,	// _Rect 
+		0xF9D8,	// _Test
+		0xF9C9,	// _Vertical
+		0xF9D4,	// _Vscroll 
+		
+		0};
+
+
+const short catalog_opcode_ext[]={
+	
+//						A
+		0xF717,	// ACBreak
+		0xF90F,	// AliasVar
+		
+//						B
+		0xF9BE,	// Back-Color
+		0xF7FE,	// BackLight
+		0xF7DE,	// BatteryStatus
+		0xF7DD,	// Beep
+		0xF947,	// Bin(
+		0xF9DB,	// BmpSave 
+		0xF9DC,	// BmpLoad(
+
+//						C
+		0xF7F5,	// Call
+		0xF7EB,	// Case
+		0x7FE9,	// CellSum(
+		0x7F5A,	// ColSize(
+		0xF90E,	// Const 
+
+//						D
+		0xF941,	// DATE
+		0xF7EC,	// Default
+//		0xF90D,	// Define 
+		0xF7DF,	// Delete 
+		0xF7E4,	// Disp
+		0xF73E,	// DotGet(
+		0xF7E0,	// DotLife(
+		0xF73B,	// DotPut(
+		0xF7F0,	// DotShape(
+		0xF73D,	// DotTrim(
+		0xF9DD,	// DrawMat
+
+//						E
+		0x7F58,	// ElemSize(
+		0xF70F,	// ElseIf
+		0xF738,	// Except
+
+//						F
+		0xF7E2,	// FillRect(
+		0xF7FD, // FKeyMenu(
+
+//						G
+		0xF960,	// GetFont(
+		0xF962,	// GetFOntMini 
+		0x7F72,	// GetHSL(
+		0x7F70,	// GetHSV(
+		0x7F5D,	// GetRGB(
+		0xFA,	// Gosub
+
+//						H
+		0xF946,	// Hex(
+		0xF7A4,	// Horizontal
+		0x7F73,	// HSL( 
+		0x7F71,	// HSV(
+
+//						I
+		0x7FF5,	// IsExist(
+
+//						J
+
+//						K
+		0x7F9F,	// KeyRow(
+
+//						L
+		0x7F5C,	// ListCmp(
+		0xF7EF,	// Load(
+		0xF7F1,	// Local
+		0xF7E3,	// LocateYX
+
+//						M
+		0x7F5B,	// MatBase(
+		
+//						N
+
+//						O
+
+//						P
+		0x7FF6,	// Peek(
+		0xF7F6,	// Poke 
+		0xF7F2,	// PopUpWin(
+		0x7FFA,	// ProgPtr(
+		0xF7FC,	// PutDispDD
+
+//						Q
+
+//						R
+		0xF7E8,	// ReadGraph(
+		0xF7E1,	// Rect(
+		0xF7F8,	// RefreshCtrl
+		0xF7FA,	// RefreshTime
+		0x7F5E,	// RGB(
+		0x7F59,	// RowSize(
+
+//						S
+		0xF7EE,	// Save
+		0xF7FB,	// Screen
+		0xF961,	// SetFont
+		0xF963,	// SetFontMini
+		0xF950,	// StrAsc(
+		0xF948,	// StrBase(
+		0xF943,	// Sprintf(
+		0xF944,	// StrChar(
+		0xF945,	// StrCenter(
+		0xF949,	// StrRepl(	
+		0xF94D,	// StrSplit(	
+		0xF7EA,	// Switch
+		0xF7ED,	// SwitchEnd
+		0xF7F4,	// SysCall
+		0x7FCF,	// System(
+
+//						T
+		0x7F5F,	// Ticks
+		0xF942,	// TIME
+		0xF940,	// ToStr(
+		0xF9BF,	// Transp-Color
+		0xF737, // Try
+		0xF739,	// TryEnd
+
+//						U
+
+//						V
+		0x7FF8,	// VarPtr(
+		0x7FDF,	// Version
+		0xF7A3,	// Vertical
+
+//						W
+		0xF94F,	// Wait 
+		0xF7E9,	// WriteGraph(
+
+		0xF9D5,	// _Bmp 
+		0xF9D6,	// _Bmp8
+		0xF9D7,	// _Bmp16
+		0xF9DA,	// _BmpRotate
+		0xF9D9,	// _BmpZoom
+		0xF9DE,	// _BmpZoomRotate
+		0xF9CD,	// _Circle
+		0xF9C0, // _ClrVRAM
+		0xF9C1,	// _ClrScreen
+		0xF9C3,	// _Contrast
+		0xF9C2,	// _DispVRAM
+		0xF9CF,	// _Elips 
+		0xF9D1,	// _ElipsInRct 
+		0xF9CE,	// _Fcircle 
+		0xF9D0,	// _Felips 
+		0xF9D2,	// _FelipsInRct .
+		0xF9CC, // _Fporgon 
+		0xF9C8,	// _Horizontal
+		0xF9D3,	// _Hscroll
+		0xF9C7,	// _Line 
+		0xF9DF,	// _Paint
+		0xF9C4,	// _Pixel 
+		0xF9C6,	// _PixelTest(
+		0xF9C5,	// _Point 
+		0xF9CB,	// _Polygon
+		0xF9CA,	// _Rect 
+		0xF9D8,	// _Test
+		0xF9C9,	// _Vertical
+		0xF9D4,	// _Vscroll 
+
+		0};
+
+
+int check_ext_opcode(int code) {	// 0:genuine	1:ext
+	int i,j,k;	
+	int	opNum=0 ;
+		while ( catalog_opcode_ext[opNum++] ) ;
+	i=0;
+	while ( i < opNum ) {
+		if ( code == catalog_opcode_ext[i++] ) return 1;
+	}
+	return 0;
+}
+
+void SetAlphalock();
+
+int CB_Catalog(void) {
+	short *select=&selectCATALOG;
+	short *oplist=(short *)catalog_opcode;
+	int opNum;
+	char buffer[22];
+	char tmpbuf[18];
+	int key;
+	int	cont,cont2=1;
+	int i,j,k,m,y;
+	int seltop;
+	char search[10]="", *search2;
+	int CursorStyle;
+	int alphalock ;
+	char alphalock_bk ;
+	int searchmode=1;
+	int csrX=0;
+
+	CB_BackPict=0;				// back image
+	CB_ColorIndex=-1;
+	CB_BackColorIndex=0xFFFF;
+	
+	Cursor_SetFlashOff(); 			// cursor flashing off
+
+ alpha_start:
+	SetAlphalock();
+
+	while ( cont2 ) {
+		
+		opNum=0 ;
+		while ( oplist[opNum++] ) ;
+		opNum-=2;
+		seltop=*select;
+		cont=1;
+
+		SaveDisp(SAVEDISP_PAGE1);
+
+		while (cont) {
+			loop:
+			Bdisp_AllClr_VRAM();
+			CB_ColorIndex=0x001F;	// Blue
+			CB_Prints( 1,1, (unsigned char*)"Catalog.CB");
+			CB_ColorIndex=0x0000;	// Black
+			Fkey_dispN( FKeyNo1, "INPUT");
+			Fkey_dispR( FKeyNo5, "Hist");
+			if (  (*select)<seltop ) seltop=(*select);
+			if ( ((*select)-seltop) > 5 ) seltop=(*select)-5;
+			if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
+			for ( i=0; i<6; i++ ) {
+//				CB_Print(1,2+i,(unsigned char *)"                     ");
+				j=oplist[seltop+i];
+//				k=0;
+//				while ( j == 0xFFFFFFFF ) { 
+//					k++;
+//					j=oplist[seltop+i+k]; 
+//				}
+				if ( j != 0xFFFFFFFF ) {
+					CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
+					tmpbuf[12]='\0'; 
+					DMS_Opcode( tmpbuf, j);
+					k=0; if ( tmpbuf[0]==' ' ) k++;
+					sprintf(buffer,"%-17s",tmpbuf+k ) ;
+					if ( check_ext_opcode( j ) ) {
+						CB_ColorIndex=0x8010;	// Magenta + black
+						CB_Prints(1,2+i,(unsigned char *)buffer);
+						CB_Prints(17,2+i,(unsigned char *)"(ext)");
+//						CB_ColorIndex=0xFFE0;	// Yellow
+//						ML_rectangle( 0, (y+1)*24, 125*3+2, (y+1)*24+23, 0, 0, ML_XOR );
+					} else {
+						CB_ColorIndex=0x0000;	// Black
+						CB_Prints(1,2+i,(unsigned char *)buffer);
+					}
+				}
+			}
+			CB_ColorIndex=0x0000;	// Black
+			if ( searchmode ) {
+				StatusArea_Run_sub( "== SEARCH MODE ==", CB_INTDefault, CB_G1MorG3MDefault );
+				locate(12, 1);Prints((unsigned char*)"[        ]");
+				CB_Prints(13, 1, (unsigned char*)search );	// search string
+//				if ( lowercase  ) Fkey_dispN_aA( FKeyNo4, "A <> a"); else Fkey_dispN_Aa( FKeyNo4, "A <> a");
+//				Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
+//				Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
+			} else {
+				StatusArea_Time();
+			}
+			
+//			if ( seltop <= opNum-6 ) { locate(19,7); Print((unsigned char*)"\xE6\x93"); } // dw
+//			if ( seltop >= 1 )       { locate(19,2); Print((unsigned char*)"\xE6\x92"); } // up
+			
+			y = ((*select)-seltop) + 1 ;
+			Bdisp_AreaReverseVRAM( 0, (y+1)*24, 125*3+2, (y+1)*24+23 );	// reverse *select line 
+			Bdisp_PutDisp_DD();
+
+			if ( searchmode ) {
+				locate(13+csrX,1);
+				Cursor_SetFlashMode(1);			// cursor flashing on
+			}
+			GetKey_DisableMenu( &key );
+			switch (key) {
+				case KEY_CTRL_SHIFT:
+					goto loop;
+					
+				case KEY_CTRL_MENU:
+				case KEY_CTRL_F5:
+					key=SelectOpcodeRecent( CMDLIST_RECENT );
+					if ( key ) return key;
+					goto loop;
+					break;
+					
+				case KEY_CTRL_QUIT:
+				case KEY_CTRL_EXIT:
+					RestoreDisp(SAVEDISP_PAGE1);
+					return 0;
+					
+				case KEY_CTRL_F1:
+				case KEY_CTRL_EXE:
+					cont=0;
+					cont2=0;
+					goto exit;
+					break;
+			
+				case KEY_CTRL_ALPHA:
+					alphalock = 0 ;
+					key = 0;
+					goto loop;
+					break;
+						
+				case KEY_CTRL_AC:
+					search[0]='\0';
+					csrX=0;
+					if  ( alphalock ) goto alpha_start;
+					key = 0;
+					goto loop;
+					break;
+
+				case KEY_CTRL_DEL:
+					if (searchmode ) {
+						if ( CursorStyle < 0x6 ) {		// insert mode
+							PrevOpcodeGB( search, &csrX );
+						}
+						DeleteOpcode1( search, 8, &csrX );
+					}
+					goto loop;
+					break;
+				
+				case KEY_CTRL_LEFT:
+					if ( searchmode ) { 
+						PrevOpcodeGB( search, &csrX ); 
+						goto loop;
+						break; 
+					}
+//					for ( i=(*select)-2; i>0; i-- ) {
+//						if ( oplist[i] == 0xFFFFFFFF ) break;
+//					}
+//					if ( i<0 ) i = 0 ;
+//					if ( i>0 ) i++ ;
+//					*select = i ;
+//					seltop = *select;
+					searchmode=1;
+					goto loop;
+					break;
+					
+				case KEY_CTRL_RIGHT:
+					if ( searchmode ) {
+						if ( search[csrX] != 0x00 )	NextOpcodeGB( search, &csrX );
+						goto loop;
+						break;
+					}
+//					for ( i=(*select)+1; i<(*select)+opNum; i++ ) {
+//						if ( oplist[i] == 0xFFFFFFFF ) break;
+//					}
+//					*select = i+1 ;
+//					if ( *select > opNum ) *select = opNum;
+//					seltop = *select;
+					searchmode=1;
+					goto loop;
+					break;
+					
+				case KEY_CTRL_UP:
+					(*select)--;
+					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)--;
+					if ( *select < 0 ) *select = opNum;
+					goto loop;
+					break;
+					
+				case KEY_CTRL_DOWN:
+					(*select)++;
+					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)++;
+					if ( *select > opNum ) *select =0;
+					goto loop;
+					break;
+					
+				default:
+					break;
+			}
+			if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
+			if ( key == ' ' ) key=0x9C;
+			if ( key == '"' ) key='_';
+			if ( ( ('A' <= key) && (key <= 'Z') ) || (key == 0x9C) || (key == '_') ) {
+				if ( CursorStyle < 0x6 ) {		// insert mode
+					i=InsertOpcode1( search, 8, csrX, key );
+				} else {					// overwrite mode
+					if ( search[csrX] != 0x00 ) DeleteOpcode1( search, 8, &csrX);
+					i=InsertOpcode1( search, 8, csrX, key );
+				}
+				if ( i==0 ) NextOpcodeGB( search, &csrX );
+			} else {
+				RestoreDisp(SAVEDISP_PAGE1);
+				return key;
+			}
+			if ( ( ( ('A' <= key) && (key <= 'Z') ) || (key == 0x9C) || (key == '_') ) && ( strlen(search) ) ) {
+				searchmode=1;
+				i=0;
+				j=strlen(search);
+				while ( i<opNum ) {
+						if ( oplist[i] == 0xFFFFFFFF ) i++;
+						else {
+							CB_OpcodeToStr( oplist[i] , tmpbuf ) ; // SYSCALL
+							tmpbuf[12]='\0'; 
+							m=0; if ( tmpbuf[0]==' ' ) m++;
+							k=0;
+							while ( k<=j ) {
+								if ( ToUpperC(tmpbuf[k+m]) != search[k] ) { k=(k>=j); break; }
+								k++;
+							}
+							if ( k>0 ) {
+								(*select) = i;
+								seltop = (*select);
+								break;
+							} else i++;
+						}
+						
+				}
+			}
+		}
+		RestoreDisp(SAVEDISP_PAGE1);
+	}
+	exit:
+	Bdisp_PutDisp_DD();
+	return oplist[(*select)] & 0xFFFF;
+}
+
 //--------------------------------------------------------------------------
 
 const short oplistOPTN[]={
@@ -1590,6 +2495,7 @@ const short oplistOPTN[]={
 		0x7F3C,	// GCD(
 		0x7F3D,	// LCM(
 		0x7F85,	// logab(
+		0x7F29,	// Sigma(
 		
 		0xFFFF,	// 				-
 		0x7FB0,	// And
@@ -1624,40 +2530,45 @@ const short oplistOPTN[]={
 
 		0xFFFF,	// 				-
 		0x7F46,	// Dim
-		0x7F41,	// Trn 
-		0x7F47,	// Fill(
-		0x7F45,	// Swap
-		0x7F42,	// *Row
-		0x7F43,	// *Row+
-		0x7F44,	// Row+
-		0x7F48,	// Identity
-		0x7F58,	// ElemSize(
-		0x7F59,	// RowSize(
-		0x7F5A,	// ColSize(
-		0x7F5B,	// MatBase(
-		0x7FE9,	// CellSum(
-
-		0xFFFF,	// 				-
-		0x7F2C,	// Seq(
-		0x7F49,	// Augment(
 		0x7F4A,	// List->Mat(
-		0x7F4B,	// Mat->List(
-		0x7F20,	// Max(
+		0x7F47,	// Fill(
+		0x7F2C,	// Seq(
 		0x7F2D,	// Min(
+		0x7F20,	// Max(
 		0x7F2E,	// Mean(
+		0x7F49,	// Augment(
 		0x7F4C,	// Sum
 		0x7F4D,	// Prod
 		0xF7B0,	// SortA(
 		0xF7B1,	// SortB(
-		0x7F29,	// Sigma(
 		0x7F5C,	// ListCmp(
 
-		0x7F84,	// Vct
-		0xF94B,	// DotP(
-		0xF94A,	// CrossP(
-		0xF96D,	// Angle(
-		0xF95E,	// UnitV(
-		0xF95B,	// Norm(
+		0xFFFF,	// 				-
+		0x7F46,	// Dim
+		0x7F4B,	// Mat->List(
+		0x7F21, // Det
+		0x7F41,	// Trn 
+		0x7F49,	// Augment(
+		0x7F48,	// Identity
+		0x7F47,	// Fill(
+		0x7F55,	// Ref 
+		0x7F56,	// Rref 
+		0xF94A, // CrossP(
+		0xF94B, // DotP("
+		0xF96D, // Angle(
+		0xF95E, // UnitV(
+		0xF95B, // Norm("
+		
+		0xFFFF,	// 				-
+		0x7F45,	// Swap
+		0x7F42,	// *Row
+		0x7F43,	// *Row+
+		0x7F44,	// Row+
+		0x7F5B,	// MatBase(
+		0x7F58,	// ElemSize(
+		0x7F59,	// RowSize(
+		0x7F5A,	// ColSize(
+		0x7FE9,	// CellSum(
 
 		0xFFFF,	// 				-
 		0xA1,	// sinh
@@ -1711,9 +2622,6 @@ const short oplistOPTN[]={
 		0xF7DD,	// Beep
 		0x7FDF,	// Version
 		0x7FCF,	// System(
-		0xF737, // Try
-		0xF738,	// Except
-		0xF739,	// TryEnd
 //		0xF95F, // IsError( 
 
 		0xFFFF,	// 				-
@@ -1793,6 +2701,9 @@ const short oplistPRGM[]={
 		0xF7F1,	// Local
 		0xFA,	// Gosub
 		0xF717,	// ACBreak
+		0xF737, // Try
+		0xF738,	// Except
+		0xF739,	// TryEnd
 
 		0xFFFF,	// 				-
 		0xF718,	// ClrText
@@ -2025,8 +2936,8 @@ const short oplistVARS[]={
 		0xF9DB,	// BmpSave 
 		0xF9DC,	// BmpLoad(
 		0xF960,	// GetFont(
-		0xF961,	// GetFontMini(
-		0xF962,	// SetFont 
+		0xF961,	// SetFont
+		0xF962,	// GetFOntMini
 		0xF963,	// SetFOntMini
 		0};
 
@@ -2114,33 +3025,63 @@ const short oplistCMD[]={		// 5800P like
 
 //											5
 		0x7F46,	// Dim	
-		0x7F49,	// Augment(
-		0x7F4B,	// Mat->List(
 		0x7F4A,	// List->Mat(
-		0x7F41,	// Trn 
 		0x7F47,	// Fill(
-		0x7F45,	// Swap
-		0x7F42,	// *Row
-		0x7F43,	// *Row+
-		0x7F44,	// Row+
-		0x7F48,	// Identity
-		0x25,	// %
-
-//											6
-		0x7F49,	// Augment(
 		0x7F2C,	// Seq(
-		0x7F20,	// Max(
 		0x7F2D,	// Min(
+		0x7F20,	// Max(
 		0x7F2E,	// Mean(
-		0x7F88,	// RanList#(
-		0xF7B0,	// SortA(
-		0xF7B1,	// SortB(
+		0x7F49,	// Augment(
 		0x7F4C,	// Sum
 		0x7F4D,	// Prod
 		0x7F5C,	// ListCmp(
 		0x25,	// %
+
+//											6
+		0x7F46,	// Dim	
+		0x7F4B,	// Mat->List(
+		0x7F21, // Det
+		0x7F41,	// Trn 
+		0x7F48,	// Identity
+		0x7F47,	// Fill(
+		0xFFFF,
+		0x7F49,	// Augment(
+		0x7F55,	// Ref 
+		0x7F56,	// Rref 
+//		0x5C,	// 
+//		0x24,	// $
+		0x23,	// #
+		0x25,	// %
 		
 //											7
+		0x7F84, // Vct
+		0xF94A, // CrossP(
+		0xF94B, // DotP("
+		0xF96D, // Angle(
+		0xF95E, // UnitV(
+		0xF95B, // Norm("
+		0xF7B0,	// SortA(
+		0xF7B1,	// SortB(
+		0x7F45,	// Swap
+		0x7F42,	// *Row
+		0x7F43,	// *Row+
+		0x7F44,	// Row+
+		
+//											8
+		0x7F5B,	// MatBase(
+		0x7F58,	// ElemSize(
+		0x7F59,	// RowSize(
+		0x7F5A,	// ColSize(
+		0x7FE9,	// CellSum(
+		0xFFFF,
+		0xFFFF,
+		0xFFFF,
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
+		0x25,	// %
+
+//											9
 		0xF711,	// Send(
 		0xF712,	// Receive(
 		0xF713,	// OpenComport38k
@@ -2154,7 +3095,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 		
-//											8
+//											10
 		0xF999,	// Plot/Line-Color
 		0xF9BE,	// Back-Color
 		0x7F5E,	// RGB(
@@ -2168,7 +3109,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											9	GR
+//											11	GR
 		0xD1,	// Cls		
 		0xF719,	// ClrGraph
 		0xEB,	// ViewWindow
@@ -2181,7 +3122,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF7A7,	// F-Line
 		0xF7A3,	// Vertical
 		0xF7A4,	// Horizontal
-//											10
+//											12
 		0xF7AB,	// PxlOn
 		0xF7AC,	// PxlOff
 		0xF7AD,	// PxlChg
@@ -2197,7 +3138,7 @@ const short oplistCMD[]={		// 5800P like
 //		0x23,	// #
 //		0x25,	// %
 
-//											11
+//											13
 		0xF5,	// Graph(X,Y)=(
 		0xF723,	// DrawStat
 		0xF7CC,	// DrawOn
@@ -2211,7 +3152,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF750,	// Scatter
 		0xF751,	// xyLine
 
-//											12
+//											14
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF78E,	// SketchBroken
@@ -2225,7 +3166,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF793,	// StoPict
 		0xF794,	// RclPict
 
-//											13
+//											15
 		0xF770,	// G-Connect
 		0xF771,	// G-Plot
 		0xF7C3,	// CoordOn
@@ -2239,7 +3180,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF797,	// StoV-Win
 		0xF798,	// RclV-Win
 		
-//											14
+//											16
 		0x7F00,	// Xmin
 		0x7F04,	// Ymin
 		0x7F01,	// Xmax
@@ -2253,7 +3194,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F09,	// TThetamax
 		0x7F0A,	// TThetaptch
 
-//											15
+//											17
 		0xF77C,	// GridLine
 		0xF99A,	// AxesScale
 		0xF973,	// ColorAuto 
@@ -2267,7 +3208,7 @@ const short oplistCMD[]={		// 5800P like
 		0xF977,	// ColorLinkOnlyY
 		0xF97E,	// ColorLinkX&Freq
 		
-//											16	FN
+//											18	FN
 		0x97,	// Abs
 		0xA6,	// Int
 		0xB6,	// frac
@@ -2281,7 +3222,7 @@ const short oplistCMD[]={		// 5800P like
 		0x7F3C,	// GCD(
 		0x7F3D,	// LCM(
 
-//											17
+//											19
 		0xA1,	// sinh
 		0xA2,	// cosh
 		0xA3,	// tanh
@@ -2295,7 +3236,7 @@ const short oplistCMD[]={		// 5800P like
 		0x26,	// &
 		0x7C,	// |
 		
-//											18
+//											20
 		0xC1,	// Ran#
 		0x7F87,	// RanInt#(
 		0x7F8A,	// RanNorm#(
@@ -2311,7 +3252,7 @@ const short oplistCMD[]={		// 5800P like
 //		0x23,	// #
 //		0x25,	// %
 
-//											19
+//											21
 		0x9C,	// deg
 		0xAC,	// rad
 		0xBC,	// grad
@@ -2325,7 +3266,7 @@ const short oplistCMD[]={		// 5800P like
 		0x80,	// Pol(
 		0xA0,	// Rec(
 
-//											20
+//											22
 		0x01,	// femto
 		0x02,	// pico
 		0x03,	// nano
@@ -2339,25 +3280,25 @@ const short oplistCMD[]={		// 5800P like
 		0x0B,	// Exa
 		0x25,	// %	
 
-//											21
+//											23
 		0x7F22,	// Arg 
 		0x7F23,	// Conjg 
 		0x7F24,	// ReP 
 		0x7F25,	// ImP 
 //		0x7F54,	// Angle
-//		0x7F55,	// Ref 
-//		0x7F56,	// Rref 
 //		0x7F57,	// Conv
-		0x7F84,	// Vct
-		0xF94B,	// DotP(
-		0xF94A,	// CrossP(
-		0xF96D,	// Angle(
-		0xF95E,	// UnitV(
-		0xF95B,	// Norm(
-		0x23,	// #
-		0x25,	// %	
+		0xF906, // >a+bi
+		0xF907, // >re^Theta		
+		0xD9,	// Norm
+		0xE3,	// Fix
+		0xE4,	// Sci
+		0xDD,	// Eng
+		0xF90B,	// EngOn
+		0xF90C,	// EngOff
+//		0x23,	// #
+//		0x25,	// %	
 
-//											22	STR
+//											24	STR
 		0xF93F,	// Str
 		0xF930,	// StrJoin(
 		0xF931,	// StrLen
@@ -2371,7 +3312,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 		
-//											23
+//											25
 		0xF937,	// Exp>Str(
 		0xF938,	// Exp(
 		0xF939,	// StrUpr(
@@ -2385,7 +3326,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											24
+//											26
 		0xF940,	// ToStr(
 		0xF943,	// Sprintf(
 		0xF946,	// Hex(
@@ -2399,7 +3340,7 @@ const short oplistCMD[]={		// 5800P like
 		0x23,	// #
 		0x25,	// %
 
-//											25	EX
+//											27	EX
 		0xF90F,	// Alias
 		0x7F5F,	// Ticks
 		0xF941,	// DATE
@@ -2492,16 +3433,16 @@ const short oplistCMD[]={		// 5800P like
 		0x25,	// %
 		
 		0xF960,	// GetFont(
-		0xF961,	// GetFontMini(
-		0xF962,	// SetFont 
+		0xF961,	// SetFont
+		0xF962,	// GetFontMini
 		0xF963,	// SetFOntMini
-		0xF737, // Try
-		0xF738,	// Except
-		0xF739,	// TryEnd
 		0xF7DE,	// BatteryStatus
 		0xF7DD,	// Beep
 		0x7FDF,	// Version
 		0x7FCF,	// System(
+		0x5C,	// 
+		0x24,	// $
+		0x23,	// #
 		0x25,	// %
 		
 		
@@ -2511,10 +3452,10 @@ const short oplistCMD[]={		// 5800P like
 		0};
 
 #define CMD_STD  0
-#define CMD_GR   9
-#define CMD_FN  16
-#define CMD_STR 22
-#define CMD_EX  25
+#define CMD_GR  11
+#define CMD_FN  18
+#define CMD_STR 24
+#define CMD_EX  27
 
 int SelectOpcode5800P( int flag ) {
 	short *select=&selectCMD;
@@ -3442,12 +4383,13 @@ short selectCMD=0;
 short selectOPTN=0;
 short selectVARS=0;
 short selectPRGM=0;
+short selectCATALOG=0;
 int  lowercase = 0;
 int  alphalock = 0;
 int  alphastatus = 0;
 
 int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrlen, char* SPC, int rev_mode, int float_mode, int exp_mode, int alpha_mode, int hex_mode, int pallet_mode, int exit_cancel, int ac_cancel, int fn_cancel, int color, int backcolor, int miniflag, int displaystatus ) {
-	char buffer2[256];
+	char buffer2[1024];
 	char buf[32];
 	char stbuf[384*2*24];
 	char Inbuf[384*2*24];
@@ -3474,6 +4416,8 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 	int H,S,V,L;
 	int StatusDisp = CB_StatusDisp;
 	int	StatusOS   = SysCalljmp(1,0,0,0,0x2B7);
+	int selectStr=0;
+	char *string;
 	
  	unsigned short col=0x0000;
 	if ( color < 0 ) color=0x0000;
@@ -3491,7 +4435,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 	if ( (px/wk+1)+width > 383/wk+1 ) width=383/wk+1-(px/wk+1);
 	csrwidth=width; if ( (px/wk+1)+csrwidth > 383/wk ) csrwidth=383/wk+1-(px/wk+1);
 
-	if ( MaxStrlen > 255 ) MaxStrlen = 255;
+	if ( MaxStrlen > 1023 ) MaxStrlen = 1023;
 	for(i=0; i<=MaxStrlen; i++) buffer2[i]=buffer[i]; // backup
 
 	CommandType=0; CommandPage=0;
@@ -3991,6 +4935,28 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 				break;
 		}
 
+		if ( key == 0x1F91B ) { 	// Graph Y Store
+			i=CommandType;
+			CB_StoreString( 1, buffer );
+			CommandType=i;
+			key=0;
+		}
+		if ( key == 0x2F91B ) { 	// Graph Y Recall
+			i=CommandType;
+			string = CB_RecallString( 1 );
+			goto pastestring;
+		}
+		if ( key == 0x4F91B ) { 	// Graph Y See
+			i=CommandType;
+			string = CB_SeeString( 1, &selectStr, buffer );
+		  pastestring:
+			CommandType=i;
+			if ( string != NULL ) {
+				EditPaste1( buffer, string, &ptrX, MaxStrlen );
+				UpdateLineNum=1;
+			}
+			key=0;
+		}
 		if ( key == 0xFFFF7F5D ) goto RGBselect;
 		if ( ( displaystatus == 0 ) && ( ( alpha_mode || exp_mode ) ) ) {
 			if ( (key&0xFF00FF00) == 0x5C005C00 ) goto gbnext;	// escape GB code
@@ -4081,7 +5047,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 				if ( hex_mode && ( KEY_CHAR_TAN == key ) ) key=KEY_CHAR_F;
 				if ( hex_mode && ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) ) key+=('a'-'A');
 //				if ( float_mode && ( key == KEY_CHAR_POW ) )    key='^';
-				if ( ( key == KEY_CTRL_XTT ) ) { if ( XInputMethod ) key='X'; else key=0x90; }	// 'X' or 0x90
+				if ( ( key == KEY_CTRL_XTT ) ) key=XTTKey( key ); 	// 'X' or 0x90 or <r> or <Theta> or T
 			  codeok:
 				if ( ClipStartPtr >= 0 ) { 
 						ClipStartPtr = -1 ;		// ClipMode cancel			
@@ -4327,10 +5293,339 @@ complex InputNumC_CB2(int px, int py, int width, int MaxStrlen, char* SPC, int R
 	else Cplx_sprintGR1s(ExpBuffer, defaultNum, MaxStrlen, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT, 0, 1 );	// input mode
 	return InputNumC_CB2_sub( px, py, width, MaxStrlen, strlenOp((char*)ExpBuffer), SPC, REV, defaultNum, miniflag);
 }
+
+//----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------
+void  CB_Input( char *SRC ){
+	int key;
+	int c;
+	complex DefaultValue={0,0};
+	int flag=0,flagint=0;
+	int reg,bptr,mptr;
+	int dimA,dimB,base;
+	char buffer[256];
+	char*	MatAryC;
+	short*	MatAryW;
+	int*	MatAryI;
+	int		width=255,length=ExpMax-1,option=0,rev=REV_OFF;
+	char	spcchr[]={0x20,0,0};
+	int	pxmode=0,miniflag=0;
+	int miniCsrX,miniCsrY;
+	char buffer2[128];
+ 	int bk_GBcode=GBcode;
+	int aryN,aryS;
+	char *StrFnPtr;
+ 	
+	KeyRecover();
+	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
+	if ( CursorX==22 ) CursorX=1;
+	if ( CursorX==23 ) Scrl_Y();
+	miniCsrX=(CursorX-1)*18;
+	miniCsrY=(CursorY-1)*24;
+
+	CB_ChangeTextMode( SRC ) ;
+//	CB_SelectTextDD();	// Select Text Screen
+	EnableDisableGB( SRC );	// GB mode enable ##    GB mode disable %%
+	c=SRC[ExecPtr];
+	if ( c=='(' ) {	// ?option([@][csrX][,csrY][,width][,spcchr][,length][,R][,M])
+		c=SRC[++ExecPtr];
+		if ( c=='@' ) { pxmode=1; c=SRC[++ExecPtr]; }	// 0~383 pixel mode
+//		else CB_SelectTextDD();	// Select Text Screen
+		if ( ( c==')' ) || ( c==0x0E ) ) goto optionexit;
+		if ( c!=',' ) {
+			if ( pxmode ) {
+				miniCsrX = CB_EvalInt( SRC );
+				if ( ( miniCsrX<0 ) || ( 360<miniCsrX ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
+			} else  { 
+				CursorX = CB_EvalInt( SRC );
+				if ( ( CursorX<1 ) || ( 21<CursorX ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
+			}
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {
+			if ( pxmode ) {
+				miniCsrY = CB_EvalInt( SRC );
+				if ( ( miniCsrY<-24 ) || ( 191<miniCsrY ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
+			} else  { 
+				CursorY = CB_EvalInt( SRC );
+				if ( ( CursorY<0 ) || ( 8<CursorY ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
+			}
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {
+			width=CB_EvalInt( SRC ); if ( ( width<1 ) || (  32<width ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {	
+			c=CB_IsStr( SRC, ExecPtr );
+			if ( c ) {	// string
+				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
+			} else { CB_Error(ArgumentERR); return ; } // Argument error
+			spcchr[0]=buffer[0];
+			spcchr[1]=buffer[1];
+			spcchr[2]=buffer[2];
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {
+			length=CB_EvalInt( SRC ); if ( ( length<1 ) || ( ExpMax-1<length ) ) { CB_Error(ArgumentERR); return ; } // Argument error
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=',' ) {	
+			if ( ( c=='R' ) || ( c=='r' ) ) { // reverse
+				ExecPtr++;
+				rev=REV_ON;
+			c=SRC[ExecPtr];
+			if ( c!=',' ) goto optionexit;
+			}
+		}
+		c=SRC[++ExecPtr];
+		if ( c!=')' ) {	
+			if ( ( c=='M' ) || ( c=='m' ) ) { // mini font
+				ExecPtr++;
+				miniflag=pxmode;
+			}
+		}
+	  optionexit:
+		option=1;
+		if ( pxmode==0 ) { miniCsrX=(CursorX-1)*18; miniCsrY=(CursorY-1)*24; }
+		if ( SRC[ExecPtr]==')' ) ExecPtr++;
+	} else {
+		locate( CursorX, CursorY); Prints((unsigned char*)"?");
+		Scrl_Y();
+	}
+	
+	c=SRC[ExecPtr];
+	bptr=ExecPtr;
+	reg=RegVar(c);
+	if ( c==0x0E ) {	// ->
+		flag=0;
+		if ( CB_IsStr( SRC, ExecPtr+1 ) ) flag=2;
+	} else 
+	if ( reg>=0 ) {
+	  regj:
+		flag=1;
+		c=SRC[ExecPtr+1];
+		if (CB_INT==1) {
+			if ( c=='#' ) {
+				DefaultValue = LocalDbl[reg][0] ;
+			} else { flagint=1; 
+				if ( c=='[' ) {
+					ExecPtr+=2;
+					MatOprandInt2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else
+				if ( ( '0'<=c )&&( c<='9' ) ) {
+					ExecPtr++;
+					dimA=c-'0';
+					MatOprand1num( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = Int2Cplx( LocalInt[reg][0] );
+			}
+		} else {
+			if ( c=='%' ) { flagint=1; 
+				DefaultValue = Int2Cplx( LocalInt[reg][0] );
+			} else {
+				if ( c=='[' ) {
+					ExecPtr+=2;
+					MatOprand2( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else
+				if ( ( '0'<=c )&&( c<='9' ) ) {
+					ExecPtr++;
+					dimA=c-'0';
+					MatOprand1num( SRC, reg, &dimA, &dimB );
+					goto Matrix;
+				} else DefaultValue = LocalDbl[reg][0] ;
+			}
+		}
+	} else
+	if ( c==0x7F ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
+			MatrixOprand( SRC, &reg, &dimA, &dimB );
+		Matrix:
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
+				return ;
+			}
+			DefaultValue = Cplx_ReadMatrix( reg, dimA, dimB);
+			ExecPtr=bptr;
+		} else if ( ( 0xFFFFFF91 <= c ) && ( c <= 0xFFFFFF93 ) ) {	// F Start~F pitch
+				ExecPtr+=2;
+				DefaultValue.real = REGf[c-0xFFFFFF90] ;
+		} else if ( c == 0x00 ) {	// Xmin
+				DefaultValue.real = Xmin ;
+		} else if ( c == 0x01 ) {	// Xmax
+				DefaultValue.real = Xmax ;
+		} else if ( c == 0x02 ) {	// Xscl
+				DefaultValue.real = Xscl ;
+		} else if ( c == 0x04 ) {	// Ymin
+				DefaultValue.real = Ymin ;
+		} else if ( c == 0x05 ) {	// Ymax
+				DefaultValue.real = Ymax ;
+		} else if ( c == 0x06) {	// Yscl
+				DefaultValue.real = Yscl ;
+		} else if ( c == 0x08) {	// Thetamin
+				DefaultValue.real  = TThetamin ;
+		} else if ( c == 0x09) {	// Thetamax
+				DefaultValue.real  = TThetamax ;
+		} else if ( c == 0x0A) {	// Thetaptch
+				DefaultValue.real  = TThetaptch ;
+		} else if ( c == 0x0B ) {	// Xfct
+				DefaultValue.real = Xfct ;
+		} else if ( c == 0x0C ) {	// Yfct
+				DefaultValue.real = Yfct ;
+		} else if ( c == 0xFFFFFFF0 ) {	// GraphY
+			reg=defaultGraphAry;
+			aryN=defaultGraphAryN;
+			aryS=defaultGraphArySize;
+		  	c=6;		// +offset
+			goto strj;
+		} else {
+			goto exitj;
+		}
+		flag=1;
+	} else
+	if ( c==0xFFFFFFF9 ) {
+		c = SRC[ExecPtr+1] ; 
+		if ( c == 0x3F ) {	// Str 1-20
+			reg=defaultStrAry;
+			aryN=defaultStrAryN;
+			aryS=defaultStrArySize;
+		  strj0:
+		  	c=0;
+		  strj:
+			ExecPtr+=2;
+			StrFnPtr = GetStrYFnPtr( SRC, reg, aryN+1-MatBase, aryS ) +c;
+			if ( ErrorNo ) return ;			// error
+			flag=3;
+			ExecPtr=bptr;
+		} else
+		if ( c == 0x1B ) {	// fn
+			reg=defaultFnAry;
+			aryN=defaultFnAryN;
+			aryS=defaultFnArySize;
+			goto strj0;
+		} else
+		if ( c == 0x41 ) {	// DATE
+			ExecPtr+=2;
+			flag=4;
+			ExecPtr=bptr;
+		} else
+		if ( c == 0x42 ) {	// TIME
+			ExecPtr+=2;
+			flag=5;
+			ExecPtr=bptr;
+		} else
+		if ( c == 0x21 ) {	// Xdot
+				DefaultValue.real = Xdot ;
+				flag=1;
+		} else goto exitj;
+	} else
+	if ( c=='$' ) {
+		ExecPtr++;
+		MatrixOprand( SRC, &reg, &dimA, &dimB );
+		if ( ErrorNo ) return ; // error
+		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
+		if ( MatAry[reg].ElementSize != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
+		flag=3;
+		ExecPtr=bptr;
+	} else {
+	  exitj:
+		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
+		CB_Error(SyntaxERR); return; }	// Syntax error
+
+	switch ( flag ) {
+		case 0:	// ? -> A value
+			if ( option ) {
+				CB_CurrentValue = InputNumC_CB2( miniCsrX, miniCsrY, width, length, spcchr, rev, Int2Cplx(0), miniflag, 0 );	// zero not disp
+			} else {
+				CB_CurrentValue = InputNumC_CB(  CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
+			}
+			ExecPtr++;
+			if ( CB_INT==1 ) flagint=1;
+		  vinp:
+			ErrorNo=0; // error cancel
+			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; goto exit; }
+			CBint_CurrentValue = CB_CurrentValue.real ;
+			if ( flagint ) {
+				CBint_Store( SRC );
+				break;
+			}
+			CB_Store( SRC );
+			break;
+		case 1:	// ?A value
+			if ( option ) {
+				CB_CurrentValue = InputNumC_CB2( miniCsrX, miniCsrY, width, length, spcchr, rev, DefaultValue, miniflag, 1 );	// zero disp
+			} else {
+				buffer2[0]='\0';
+				Cplx_sprintGR2( buffer, buffer2, DefaultValue, 22-CursorX, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+				CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer, 0x000 );	// 
+				if ( buffer2[0] != '\0' ){
+					Scrl_Y();
+					CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer2, 0x000 );	// 
+				}
+				Scrl_Y();
+				CB_CurrentValue = InputNumC_CB1( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
+			}
+			goto vinp;
+			break;
+		case 2:	// ? -> str 
+			CB_CurrentStr=buffer;
+			CB_CurrentStr[0]='\0';
+	Inpj1:	if ( option == 0 ) CursorX=1;
+			if ( option ) key=InputStr_CB2( miniCsrX, miniCsrY, width, CB_CurrentStr, length, spcchr, rev, miniflag );
+			else		  key=InputStr_CB(  CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
+			ErrorNo=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  goto exit; }
+			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
+			CB_StorStr( SRC );
+			break;
+		case 3:	// ?$Mat  ?Str1-20
+			CB_CurrentStr=buffer;
+//			OpcodeStringToAsciiString(buffer, StrFnPtr, 255);
+			strncpy( buffer,  StrFnPtr, 255);
+			if ( width > MatAry[reg].SizeB-1 ) width=MatAry[reg].SizeB-1;
+			if ( option ) key=InputStr_CB2( miniCsrX, miniCsrY, width, CB_CurrentStr, length, spcchr, rev, miniflag );
+			else		  key=InputStr_CB(  CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
+			ErrorNo=0; // error cancel
+			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  goto exit; }
+			CB_StorStr( SRC );
+			break;
+		case 4:	// ?DATE
+			CB_DateToStr();
+			CB_CurrentStr[10]='\0';	// week cancel
+	Inpj2:
+			goto Inpj1;
+			break;
+		case 5:	// ?TIME
+			CB_TimeToStr();
+			goto Inpj2;
+			break;
+	}
+	if ( option == 0 ) Scrl_Y();
+	Bdisp_PutDisp_DD_DrawBusy();
+  exit:
+	GBcode=bk_GBcode;
+	CB_ColorIndex=-1;
+	return ;
+}
+
+
 //---------------------------------------------------------------------------------------------- align dummy
 int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte

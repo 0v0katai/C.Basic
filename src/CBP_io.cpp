@@ -1044,6 +1044,16 @@ void HiddenRAM_MatAryStore(){	// MatAry ptr -> HiddenRAM
 		memcpy( buffer, MatAryCheckStr, sizeof(MatAryCheckStr) );	// dummy
 	}
 }
+void HiddenRAM_MatAryClear(){	// MatAry ptr clear
+	int *iptr1=(int*)(HIDDENRAM_TOP+12 -(IsEmu));
+	int *iptr2=(int*)(HiddenRAM_End+12 );
+	if ( IsHiddenRAM ) {
+		memset( (char *)(HIDDENRAM_TOP-(IsEmu)), 0, sizeof(MatAryCheckStr) );
+		memset( HiddenRAM_End,                   0, sizeof(MatAryCheckStr) );
+	}
+	FileListUpdate= 1;
+	HiddenRAM_MatAryInit();
+}
 int HiddenRAM_MatAryRestore(){	//  HiddenRAM -> MatAry ptr
 	char buffer[10];
 	int *iptr1=(int*)(HIDDENRAM_TOP+12 -(IsEmu));

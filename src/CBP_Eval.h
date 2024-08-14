@@ -163,3 +163,13 @@ double DmsToDec( char *SRC, double h ) ;
 //-----------------------------------------------------------------------------
 double CB_Integral( char *SRC );	// Integral( FX, start, end, tol )
 double CB_Differ( char *SRC );	// Differ( FX, tol )
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+extern short VarListRange;
+
+void CB_VarList( char *SRC ) ;
+void CB_VarRange( char *SRC ) ;
+void CB_F_Result( char *SRC ) ;
+void CB_DispF_Tbl( char *SRC ) ;

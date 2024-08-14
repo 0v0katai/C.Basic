@@ -18,7 +18,7 @@ set(SOURCES
   # src/LIB/source/strcmp.s
   # src/LIB/source/strcpy.s
   # src/LIB/source/strncpy.s
-
+  
   src/LIB/source/STATUS_ICONS.cpp
   src/CBP_bmp.cpp
   src/CBP_Color.cpp
@@ -30,6 +30,7 @@ set(SOURCES
   src/CBP_fileMCS.cpp
   src/CBP_glib.cpp
   src/CBP_glib2.cpp
+  src/CBP_GraphFunc.cpp
   src/CBP_Help.cpp
   src/CBP_icon.cpp
   src/CBP_inp.cpp
@@ -53,6 +54,7 @@ set(SOURCES
   src/CBP_serial.cpp
   src/CBP_setup.cpp
   src/CBP_Str.cpp
+  src/CBP_StrExt.cpp
   src/CBP_sys.cpp
   src/CBP_TextConv.cpp
   src/CBP_Time.cpp

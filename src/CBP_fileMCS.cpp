@@ -147,6 +147,7 @@ int MCS_SaveG3M( char *filebase ) {	// g3m file -> MCS
 
 	size = FixSrcSize(filebase);
 	size = ( ( size +10 +3 ) & 0xFFFFFFFC ) ; // file size 4byte align adjust
+	SetSrcSize( filebase, size ); 
 
 // sprintf3(buf,"size=%d r=%d",size,r);
 // sprintf3(buf,"%X %X",(int)item,flags_0);
@@ -165,7 +166,7 @@ int MCS_SaveG3M( char *filebase ) {	// g3m file -> MCS
 	if ( r>1 ) { ErrorMSG( "Can't save file", r ); return r ; }
 	r = MCS_SearchDirectoryItem( MCSdir_system, (unsigned char *)basname, &flags_0, (TDirectoryItem *)&tmp, &data_ptr, &data_length );
 	item = (TDirectoryItem*)tmp[0];
-	item->flags[0] = 0xC7;	// basic progmam
+	item->flags[0] = 0xC7;	// basic program
 	return r;
 }
 

@@ -37,7 +37,7 @@ typedef struct{
 
 extern Files *files;
 //extern Files *filesr;
-extern char folder[FOLDERMAX];
+extern char folder[FILENAMEMAX];
 extern int index;
 
 extern char FileListUpdate;
@@ -148,6 +148,8 @@ int CB_PreProcessIndent( char *filebase, int progno ) ; //
 void CB_PostProcessIndentRemove( char *filebase ) ; //
 
 int BG_OpenFileDialog( char *buffer ) ;
+
+void LoadConfig1data( int n ) ;	// config data ->List Ans
 //-----------------------------------------------------------------------------
 int DecodeBmp2Vram( char *filebase, int px, int py );	//	bmp -> vram
 char * LoadBmp( char *filebase );

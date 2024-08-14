@@ -1,4 +1,4 @@
-#define VERSION 145
+#define VERSION 147
 
 #define MINHEAP    1		// use heap default
 #define MAXHEAP  127		// use heap max kbyte
@@ -50,9 +50,12 @@ extern char  CB_EditIndent;		// indent function  0:Non  1~4:indent space
 
 extern char BG_filename[64];
 
+extern int StackPtr;
+
 //------------------------------------------------------------------------------
 void VerDispSub() ;
 void VerDisp() ;
+unsigned int XTTKey( unsigned int  key) ;
 unsigned int MathKey( unsigned int  key) ;
 
 int CB_Version() ;	// Version

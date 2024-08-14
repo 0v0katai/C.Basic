@@ -124,6 +124,9 @@ void CBint_Store( char *SRC ){	// ->
 		} else if ( c == 0x5F ) {	// Ticks
 				ExecPtr+=2;
 				goto StoreTicks;
+		} else if ( ( 0xFFFFFF91 <= c ) && ( c <= 0xFFFFFF93 ) ) {	// F Start~F pitch
+				ExecPtr+=2;
+				REGf[c-0xFFFFFF90] = CBint_CurrentValue ; ;
 		} else if ( c == 0x00 ) {	// Xmin
 				Xmin = CBint_CurrentValue ;
 				SetXdotYdot();

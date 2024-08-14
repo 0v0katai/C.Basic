@@ -124,6 +124,10 @@ void GetGenuineCmdF2( int *code ){
 				case 0: (*code)=0x0004;return;	// micro
 				case 1: (*code)=0x0007;return;	// Mega
 			} break;
+		case CMD_OPTN_FMEM:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x2F91B;return;	// RECALL
+			} break;
 		case CMD_OPTN_PICT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF794;return;	// RclPict
@@ -145,7 +149,7 @@ void GetGenuineCmdF2( int *code ){
 		case CMD_VARS:		//	------------------------------------------------------------VARS_F2
 			switch ( CommandPage ) {
 				case 0:	CommandType=CMD_VARS_FACT;CommandPage=0;break;
-				case 1: (*code)='%';return;	// '%'
+				case 1: (*code)='#';return;	// '#'
 			} break;
 		case CMD_VARS_VWIN:
 			switch ( CommandPage ) {
@@ -166,6 +170,14 @@ void GetGenuineCmdF2( int *code ){
 		case CMD_VARS_FACT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F0C;return;	// Yfct
+			} break;
+		case CMD_VARS_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7FF1;return;	// GRAPHr
+			} break;
+		case CMD_VARS_TABL:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F92;return;	// F End
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
@@ -261,6 +273,29 @@ void GetGenuineCmdF2( int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF7B1;return;	// SortB(
 			} break;
+		case CMD_MENU_GRPH_SEL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF7D8;return;	// G SleOff
+			} break;
+		case CMD_MENU_GRPH_TYPE:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF764;return;	// r=Type
+				case 1:  (*code)=0xF76B;return;	// Y<Type
+				case 2:  (*code)=0xF769;return;	// X<Type
+			} break;
+		case CMD_MENU_GRPH_STYL:
+		case CMD_MENU_TABL_STYL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF72C;return;	// ThickG
+			} break;
+		case CMD_MENU_TABL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF7D9;return;	// T SleOff
+			} break;
+		case CMD_MENU_TABL_TYPE:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF764;return;	// r=Type
+			} break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x000C;return;	// disps
@@ -329,6 +364,10 @@ void GetGenuineCmdF2( int *code ){
 		case CMD_SETUP_CPLX:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF909;return;	// a+bi
+			} break;
+		case CMD_SETUP_TVAR:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF91D;return;	// VarList
 			} break;
 
 		default:

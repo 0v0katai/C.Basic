@@ -171,7 +171,19 @@ void GetGenuineCmdF6( int *code ){
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F6
 			switch ( CommandPage ) {
-				case 0: (*code)='%';return;	// %
+				case 0: CommandPage=1;break;
+				case 1: CommandPage=0;break;
+			} break;
+		case CMD_MENU_GRPH_TYPE:
+			switch ( CommandPage ) {
+				case 0: CommandPage=1;break;
+				case 1: CommandPage=2;break;
+				case 2: CommandPage=0;break;
+			} break;
+		case CMD_MENU_GRPH:
+		case CMD_MENU_TABL:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF998;return;	// SetG-Color 
 			} break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {

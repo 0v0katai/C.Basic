@@ -39,6 +39,7 @@ short ScreenHeight=191;
 
 char CB_INTDefault=0;	// default mode  0:normal  1: integer mode
 
+char	FuncType    = 0;
 char	DrawType    = 0;	// 0:connect  1:Plot
 char	Coord       = 1;	// 0:off 1:on
 char	Grid        = 2;	// 0:off 1:on  2:Line
@@ -166,6 +167,7 @@ CchIf	CacheRem;
 
 void ClrCahche();
 
+double  REGf[4];		// F_Start  F_End  F_pitch
 double  VWIN[6][11];			// 
 char VWinflag[6];				// VWin flag
 
@@ -195,9 +197,11 @@ int CB_interpreter_sub( char *SRC ) {
 	complex	localvarDbl[ArgcMAX];	//	local var
 	int		localvarInt[ArgcMAX];	//	local var
 
+//	StackPtr = (int)&cont;
 //	if ( 0x16A000 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
 //	if ( 0x180000 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
-	if ( 0x171C00 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
+//	if ( 0x171C00 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
+	if ( 0x172C00 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
 	
 	ClrCahche();
 	
@@ -444,7 +448,6 @@ int CB_interpreter_sub( char *SRC ) {
 						break;
 					case 0xFFFFFFFB:	// Screen
 						CB_Screen(SRC);
-						dspflag=0;
 						break;
 					case 0xFFFFFFF1:	// Local
 						Skip_block(SRC);
@@ -536,6 +539,37 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x39:	// TryEnd
 						CB_TryEnd();
 						break;
+						
+					case 0x2E:			// DispF-Tbl
+						CB_DispF_Tbl( SRC );
+						break;
+					case 0xFFFFFF88:	// VarRange
+						CB_VarRange( SRC );
+						break;
+					
+					case 0x2B:			// NormalG
+					case 0x2C:			// ThickG
+					case 0x2D:			// BrokenThickG
+					case 0x3F:			// DotG
+					case 0xFFFFFFC8:	// G SelOn
+					case 0xFFFFFFC9:	// T SelOn
+					case 0xFFFFFFD8:	// G SelOff
+					case 0xFFFFFFD9:	// T SelOff
+					case 0x63:			// Y=Type
+					case 0x64:			// r=Type
+					case 0x65:			// ParamType
+//					case 0x66:			// 
+					case 0x67:			// X=Type
+					case 0x68:			// X>Type
+					case 0x69:			// X<Type
+					case 0x6A:			// Y>Type
+					case 0x6B:			// Y<Type
+					case 0x6C:			// Y>=Type
+					case 0x6D:			// Y<=Type
+					case 0x6E:			// X>=Type
+					case 0x6F:			// X<=Type
+						CB_GraphFunc(SRC,c);
+						break;
 
 					case 0x17:	// ACBreak
 						if ( ( SRC[ExecPtr]==0xFFFFFFF7 ) && ( SRC[ExecPtr+1]==0x0E ) ) {	// ACBreak Stop;
@@ -568,6 +602,8 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflagtmp=CB_MatCalc(SRC,c);
 						if ( dspflagtmp ) goto Evalexit2;
 						break;
+					case 0xFFFFFFF0:	// GraphY
+						goto fnjmp;
 					case 0x51:	// List
 					case 0x6A:	// List1
 					case 0x6B:	// List2
@@ -590,6 +626,7 @@ int CB_interpreter_sub( char *SRC ) {
 					case 0x44 :				// Row+ A,2,3
 						CB_MatRowPlus( SRC );
 						break;
+
 					case 0x34 :				// Red
 						CB_ColorIndex=0xF800;	// Red
 						break;
@@ -619,6 +656,10 @@ int CB_interpreter_sub( char *SRC ) {
 				else
 				if ( ( 0x38 != c ) && ( 0x3E != c ) && ( 0x34 <= c ) && ( c <= 0x49 ) )  goto strjp;
 				switch ( c ) {
+					case 0x1B:	// fn
+					  fnjmp:
+						if ( CB_CheckYfn( SRC ) == 0 ) goto Evalexit2;
+						break;
 					case 0x30:	// StrJoin(
 //					case 0x34:	// StrLeft(
 //					case 0x35:	// StrRight(
@@ -737,6 +778,15 @@ int CB_interpreter_sub( char *SRC ) {
 						dspflag=0;
 						UseGraphic=9;
 						break;
+					case 0xFFFFFF98:	// SetG-Color
+					case 0xFFFFFFF5:	// ThinG
+						CB_GraphFunc(SRC,c);
+						break;
+
+					case 0x10:	// VarList
+						CB_VarList( SRC );
+						break;
+					
 					default:
 						Evalexit2:
 						ExecPtr-=2;
@@ -902,6 +952,7 @@ int CB_interpreter_sub( char *SRC ) {
 			else		CB_Store(SRC);		// ->
 			dspflagtmp=dspflag+0x10; //	12:nomal  13:mat  14:list
 			c=SRC[ExecPtr];
+			if ( c == 0x0E ) goto inext1;
 		}
 		if ( c == 0x13 ) {					// =>
 		  inext2:
@@ -1219,13 +1270,15 @@ void Skip_quot( char *SRC ){ // skip "..."
 }
 
 //----------------------------------------------------------------------------------------------
-void Skip_rem( char *SRC ){	// skip '...
+void Skip_rem_sub( char *SRC, int nonopflag ){	// skip '...
 	int c,reg;
 remloop:
 	c=SRC[ExecPtr++];
 	if ( c=='/' ) { 	// '/ execute C.Basic only
 		return;
 	} else 
+	if ( nonopflag ) goto next;
+	else
 	if ( c=='#' ) {
 		c=SRC[ExecPtr++];
 		if ( c=='C') {
@@ -1371,6 +1424,7 @@ remloop:
 
 		}
 	}
+  next:
 	while (1){
 		switch ( c ) {
 			case 0x00:	// <EOF>
@@ -1401,11 +1455,16 @@ remloop:
 	}
 }
 
+void Skip_rem_no_op( char *SRC ){
+	Skip_rem_sub( SRC, 1 );
+}
+
+
 void CB_Rem( char *SRC, CchIf *Cache ){
 	int i,ii,j,execptr;
 	int c=SRC[ExecPtr];
 	if ( c=='#' ) { 	// C.Basic command
-		Skip_rem( SRC );
+		Skip_rem_sub( SRC, 0 );
 		return;
 	}
 	j=0; i=Cache->TOP;
@@ -1424,7 +1483,7 @@ void CB_Rem( char *SRC, CchIf *Cache ){
 		i++; if ( i >= IfCntMax ) i=0;
 	}
 	execptr=ExecPtr;
-	Skip_rem( SRC );
+	Skip_rem_sub( SRC, 0 );
 	if ( Cache->CNT < IfCntMax ) Cache->CNT++;
 	Cache->TOP--; if ( Cache->TOP<0 ) Cache->TOP=IfCntMax-1;
 	Cache->Ptr[Cache->TOP] =execptr;
@@ -1668,11 +1727,11 @@ int Search_ElseIfEnd( char *SRC ){
 					Search_IfEnd(SRC);
 					break;
 				} else
-				if ( c == 0x02 ) return 1 ; 	// Else
+				if ( c == 0x02 ) return c ; 	// Else
 				else
-				if ( c == 0x03 ) return 2 ; 	// IfEnd
+				if ( c == 0x03 ) return c ; 	// IfEnd
 				else
-				if ( c == 0x0F ) return 3 ; 	// ElseIf
+				if ( c == 0x0F ) return c ; 	// ElseIf
 				break;
 			case 0x0000007F:	// 
 			case 0xFFFFFFF9:	// 
@@ -1694,32 +1753,35 @@ void CB_If( char *SRC, CchIf *Cache ){
 	judge  = CB_EvalCheckZero( SRC );
 	c =SRC[ExecPtr];
 	if ( ( c == ':'  ) || ( c == 0x0D ) )  { c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
-	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c=SRC[++ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
+	if ( c == 0x27 ) { Skip_rem_no_op(SRC); c=SRC[ExecPtr]; while ( c==' ' ) c=SRC[++ExecPtr]; }
 	if ( ( c == 0xFFFFFFF7 ) && ( SRC[ExecPtr+1] == 0x01 ) ) ExecPtr+=2 ;	// "Then" skip
 	if ( judge ) return ; // true
 	
 	j=0; i=Cache->TOP;
 	while ( j<Cache->CNT ) {
 		if ( Cache->Ptr[i]==ExecPtr ) { 	// adrs ok
-			if ( i==Cache->TOP ) { ExecPtr=Cache->Adrs[i]; return ; }	// top of cache
+			if ( i==Cache->TOP ) { ExecPtr=Cache->Adrs[i]; goto exit; }	// top of cache
 			ii=i-1; if ( ii < 0 ) ii=IfCntMax-1;
 			execptr=Cache->Adrs[i];	// 2nd- of cache level up
 			Cache->Ptr[i]=Cache->Ptr[ii];
 			Cache->Adrs[i]=Cache->Adrs[ii];
 			Cache->Ptr[ii]=ExecPtr;
 			Cache->Adrs[ii]=execptr;
-			ExecPtr=execptr; return;
+			ExecPtr=execptr; 
+		  exit:
+			if ( SRC[ExecPtr-1]==0x0F ) goto loop;	// ElseIf
+			return;
 		}
 		j++;
 		i++; if ( i >= IfCntMax ) i=0;
 	}
 	execptr=ExecPtr;
 	stat=Search_ElseIfEnd( SRC );
-	if ( stat == 3 ) goto loop; 	// ElseIf
 	if ( Cache->CNT < IfCntMax ) Cache->CNT++;
 	Cache->TOP--; if ( Cache->TOP<0 ) Cache->TOP=IfCntMax-1;
 	Cache->Ptr[Cache->TOP] =execptr;
 	Cache->Adrs[Cache->TOP]=ExecPtr;
+	if ( stat == 0x0F ) goto loop; 	// ElseIf
 }
 
 void CB_Else( char *SRC, CchIf *Cache ){
@@ -1899,10 +1961,10 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 		iptr=CurrentStruct->Var[CurrentStruct->ForPtr];
 		(*iptr) += stepint;
 		if ( stepint > 0 ) { 	// step +
-			if ( *iptr > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; goto exit;} // exit
+			if ( (*iptr) > CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= stepint; goto exit;} // exit
 		}
 		else {					// step -
-			if ( *iptr < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= step; goto exit;} // exit
+			if ( (*iptr) < CurrentStruct->IntEnd[CurrentStruct->ForPtr] ) { (*iptr) -= stepint; goto exit;} // exit
 		}
 	} else {			//					------------ Double mode
 		step = CurrentStruct->Step[CurrentStruct->ForPtr];
@@ -2536,6 +2598,9 @@ void CB_Store( char *SRC ){	// ->
 		} else if ( c == 0x5F ) {	// Ticks
 				ExecPtr+=2;
 				goto StoreTicks;
+		} else if ( ( 0xFFFFFF91 <= c ) && ( c <= 0xFFFFFF93 ) ) {	// F Start~F pitch
+				ExecPtr+=2;
+				REGf[c-0xFFFFFF90] = CB_CurrentValue.real ;
 		} else if ( c == 0x00 ) {	// Xmin
 				Xmin = CB_CurrentValue.real ;
 				SetXdotYdot();
@@ -2974,6 +3039,8 @@ int CB_interpreter( char *SRC ) {
 	char	bk_RoundDIGIT  = CB_Round.DIGIT;
 	char	bk_RoundExpTYPE= CB_Round.ExpTYPE;
 	char 	bk_ENG         = ENG;	// ENG flag
+	char	bk_VarListRange= VarListRange;
+	char	bk_FuncType    = FuncType;
 	char	bk_DrawType    = DrawType;	// 0:connect  1:Plot
 	char	bk_Coord       = Coord;	// 0:off 1:on
 	char	bk_Grid        = Grid;	// 0:off 1:on
@@ -3067,6 +3134,7 @@ int CB_interpreter( char *SRC ) {
 		CB_Round.DIGIT  =bk_RoundDIGIT;
 		CB_Round.ExpTYPE=bk_RoundExpTYPE;
 		ENG         = bk_ENG;	// ENG flag
+		FuncType    = bk_FuncType;
 		DrawType    = bk_DrawType;	// 0:connect  1:Plot
 		Coord       = bk_Coord;	// 0:off 1:on
 		Grid        = bk_Grid;	// 0:off 1:on
@@ -3093,324 +3161,6 @@ int CB_interpreter( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-void  CB_Input( char *SRC ){
-	int key;
-	int c;
-	complex DefaultValue={0,0};
-	int flag=0,flagint=0;
-	int reg,bptr,mptr;
-	int dimA,dimB,base;
-	char buffer[256];
-	char*	MatAryC;
-	short*	MatAryW;
-	int*	MatAryI;
-	int		width=255,length=ExpMax-1,option=0,rev=REV_OFF;
-	char	spcchr[]={0x20,0,0};
-	int	pxmode=0,miniflag=0;
-	int miniCsrX,miniCsrY;
-	char buffer2[128];
- 	int bk_GBcode=GBcode;
-	int aryN,aryS;
-	char *StrFnPtr;
- 	
-	KeyRecover();
-	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
-	if ( CursorX==22 ) CursorX=1;
-	if ( CursorX==23 ) Scrl_Y();
-	miniCsrX=(CursorX-1)*18;
-	miniCsrY=(CursorY-1)*24;
-
-	CB_ChangeTextMode( SRC ) ;
-//	CB_SelectTextDD();	// Select Text Screen
-	EnableDisableGB( SRC );	// GB mode enable ##    GB mode disable %%
-	c=SRC[ExecPtr];
-	if ( c=='(' ) {	// ?option([@][csrX][,csrY][,width][,spcchr][,length][,R][,M])
-		c=SRC[++ExecPtr];
-		if ( c=='@' ) { pxmode=1; c=SRC[++ExecPtr]; }	// 0~383 pixel mode
-//		else CB_SelectTextDD();	// Select Text Screen
-		if ( ( c==')' ) || ( c==0x0E ) ) goto optionexit;
-		if ( c!=',' ) {
-			if ( pxmode ) {
-				miniCsrX = CB_EvalInt( SRC );
-				if ( ( miniCsrX<0 ) || ( 360<miniCsrX ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
-			} else  { 
-				CursorX = CB_EvalInt( SRC );
-				if ( ( CursorX<1 ) || ( 21<CursorX ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
-			}
-			c=SRC[ExecPtr];
-			if ( c!=',' ) goto optionexit;
-		}
-		c=SRC[++ExecPtr];
-		if ( c!=',' ) {
-			if ( pxmode ) {
-				miniCsrY = CB_EvalInt( SRC );
-				if ( ( miniCsrY<-24 ) || ( 191<miniCsrY ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
-			} else  { 
-				CursorY = CB_EvalInt( SRC );
-				if ( ( CursorY<0 ) || ( 8<CursorY ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
-			}
-			c=SRC[ExecPtr];
-			if ( c!=',' ) goto optionexit;
-		}
-		c=SRC[++ExecPtr];
-		if ( c!=',' ) {
-			width=CB_EvalInt( SRC ); if ( ( width<1 ) || (  32<width ) ) { CB_Error(OutOfDomainERR); return ; } // Out of Domain error
-			c=SRC[ExecPtr];
-			if ( c!=',' ) goto optionexit;
-		}
-		c=SRC[++ExecPtr];
-		if ( c!=',' ) {	
-			c=CB_IsStr( SRC, ExecPtr );
-			if ( c ) {	// string
-				CB_GetLocateStr( SRC, buffer, CB_StrBufferMax-1 );		// String -> buffer	return 
-			} else { CB_Error(ArgumentERR); return ; } // Argument error
-			spcchr[0]=buffer[0];
-			spcchr[1]=buffer[1];
-			spcchr[2]=buffer[2];
-			c=SRC[ExecPtr];
-			if ( c!=',' ) goto optionexit;
-		}
-		c=SRC[++ExecPtr];
-		if ( c!=',' ) {
-			length=CB_EvalInt( SRC ); if ( ( length<1 ) || ( ExpMax-1<length ) ) { CB_Error(ArgumentERR); return ; } // Argument error
-			c=SRC[ExecPtr];
-			if ( c!=',' ) goto optionexit;
-		}
-		c=SRC[++ExecPtr];
-		if ( c!=',' ) {	
-			if ( ( c=='R' ) || ( c=='r' ) ) { // reverse
-				ExecPtr++;
-				rev=REV_ON;
-			c=SRC[ExecPtr];
-			if ( c!=',' ) goto optionexit;
-			}
-		}
-		c=SRC[++ExecPtr];
-		if ( c!=')' ) {	
-			if ( ( c=='M' ) || ( c=='m' ) ) { // mini font
-				ExecPtr++;
-				miniflag=pxmode;
-			}
-		}
-	  optionexit:
-		option=1;
-		if ( pxmode==0 ) { miniCsrX=(CursorX-1)*18; miniCsrY=(CursorY-1)*24; }
-		if ( SRC[ExecPtr]==')' ) ExecPtr++;
-	} else {
-		locate( CursorX, CursorY); Prints((unsigned char*)"?");
-		Scrl_Y();
-	}
-	
-	c=SRC[ExecPtr];
-	bptr=ExecPtr;
-	reg=RegVar(c);
-	if ( c==0x0E ) {	// ->
-		flag=0;
-		if ( CB_IsStr( SRC, ExecPtr+1 ) ) flag=2;
-	} else 
-	if ( reg>=0 ) {
-	  regj:
-		flag=1;
-		c=SRC[ExecPtr+1];
-		if (CB_INT==1) {
-			if ( c=='#' ) {
-				DefaultValue = LocalDbl[reg][0] ;
-			} else { flagint=1; 
-				if ( c=='[' ) {
-					ExecPtr+=2;
-					MatOprandInt2( SRC, reg, &dimA, &dimB );
-					goto Matrix;
-				} else
-				if ( ( '0'<=c )&&( c<='9' ) ) {
-					ExecPtr++;
-					dimA=c-'0';
-					MatOprand1num( SRC, reg, &dimA, &dimB );
-					goto Matrix;
-				} else DefaultValue = Int2Cplx( LocalInt[reg][0] );
-			}
-		} else {
-			if ( c=='%' ) { flagint=1; 
-				DefaultValue = Int2Cplx( LocalInt[reg][0] );
-			} else {
-				if ( c=='[' ) {
-					ExecPtr+=2;
-					MatOprand2( SRC, reg, &dimA, &dimB );
-					goto Matrix;
-				} else
-				if ( ( '0'<=c )&&( c<='9' ) ) {
-					ExecPtr++;
-					dimA=c-'0';
-					MatOprand1num( SRC, reg, &dimA, &dimB );
-					goto Matrix;
-				} else DefaultValue = LocalDbl[reg][0] ;
-			}
-		}
-	} else
-	if ( c==0x7F ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( ( c == 0x40 ) || ( c == 0xFFFFFF84 ) || ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) {	// Mat A[a,b] or Vct A[a] or List 1[a]
-			MatrixOprand( SRC, &reg, &dimA, &dimB );
-		Matrix:
-			if ( ErrorNo ) {  // error
-				if ( MatAry[reg].SizeA == 0 ) ErrorNo=NoMatrixArrayERR;	// No Matrix Array error
-				return ;
-			}
-			DefaultValue = Cplx_ReadMatrix( reg, dimA, dimB);
-			ExecPtr=bptr;
-		} else if ( c == 0x00 ) {	// Xmin
-				DefaultValue.real = Xmin ;
-		} else if ( c == 0x01 ) {	// Xmax
-				DefaultValue.real = Xmax ;
-		} else if ( c == 0x02 ) {	// Xscl
-				DefaultValue.real = Xscl ;
-		} else if ( c == 0x04 ) {	// Ymin
-				DefaultValue.real = Ymin ;
-		} else if ( c == 0x05 ) {	// Ymax
-				DefaultValue.real = Ymax ;
-		} else if ( c == 0x06) {	// Yscl
-				DefaultValue.real = Yscl ;
-		} else if ( c == 0x08) {	// Thetamin
-				DefaultValue.real  = TThetamin ;
-		} else if ( c == 0x09) {	// Thetamax
-				DefaultValue.real  = TThetamax ;
-		} else if ( c == 0x0A) {	// Thetaptch
-				DefaultValue.real  = TThetaptch ;
-		} else if ( c == 0x0B ) {	// Xfct
-				DefaultValue.real = Xfct ;
-		} else if ( c == 0x0C ) {	// Yfct
-				DefaultValue.real = Yfct ;
-		} else if ( c == 0xFFFFFFF0 ) {	// GraphY
-			reg=defaultGraphAry;
-			aryN=defaultGraphAryN;
-			aryS=defaultGraphArySize;
-			goto strj;
-		} else {
-			goto exitj;
-		}
-		flag=1;
-	} else
-	if ( c==0xFFFFFFF9 ) {
-		c = SRC[ExecPtr+1] ; 
-		if ( c == 0x3F ) {	// Str 1-20
-			reg=defaultStrAry;
-			aryN=defaultStrAryN;
-			aryS=defaultStrArySize;
-		  strj:
-			ExecPtr+=2;
-			StrFnPtr = GetStrYFnPtr( SRC, reg, aryN+1-MatBase, aryS );
-			if ( ErrorNo ) return ;			// error
-			flag=3;
-			ExecPtr=bptr;
-		} else
-		if ( c == 0x1B ) {	// fn
-			reg=defaultFnAry;
-			aryN=defaultFnAryN;
-			aryS=defaultFnArySize;
-			goto strj;
-		} else
-		if ( c == 0x41 ) {	// DATE
-			ExecPtr+=2;
-			flag=4;
-			ExecPtr=bptr;
-		} else
-		if ( c == 0x42 ) {	// TIME
-			ExecPtr+=2;
-			flag=5;
-			ExecPtr=bptr;
-		} else
-		if ( c == 0x21 ) {	// Xdot
-				DefaultValue.real = Xdot ;
-				flag=1;
-		} else goto exitj;
-	} else
-	if ( c=='$' ) {
-		ExecPtr++;
-		MatrixOprand( SRC, &reg, &dimA, &dimB );
-		if ( ErrorNo ) return ; // error
-		if ( MatAry[reg].SizeA == 0 ) { CB_Error(NoMatrixArrayERR); return; }	// No Matrix Array error
-		if ( MatAry[reg].ElementSize != 8 ) { CB_Error(ArgumentERR); return; }	// element size error
-		flag=3;
-		ExecPtr=bptr;
-	} else {
-	  exitj:
-		reg=RegVarAliasEx( SRC ); if ( reg>=0 ) goto regj;	// variable alias
-		CB_Error(SyntaxERR); return; }	// Syntax error
-
-	switch ( flag ) {
-		case 0:	// ? -> A value
-			if ( option ) {
-				CB_CurrentValue = InputNumC_CB2( miniCsrX, miniCsrY, width, length, spcchr, rev, Int2Cplx(0), miniflag, 0 );	// zero not disp
-			} else {
-				CB_CurrentValue = InputNumC_CB(  CursorX, CursorY, width, length, spcchr, rev, Int2Cplx(0) );
-			}
-			ExecPtr++;
-			if ( CB_INT==1 ) flagint=1;
-		  vinp:
-			ErrorNo=0; // error cancel
-			if ( BreakPtr > 0 ) { ExecPtr=BreakPtr; goto exit; }
-			CBint_CurrentValue = CB_CurrentValue.real ;
-			if ( flagint ) {
-				CBint_Store( SRC );
-				break;
-			}
-			CB_Store( SRC );
-			break;
-		case 1:	// ?A value
-			if ( option ) {
-				CB_CurrentValue = InputNumC_CB2( miniCsrX, miniCsrY, width, length, spcchr, rev, DefaultValue, miniflag, 1 );	// zero disp
-			} else {
-				buffer2[0]='\0';
-				Cplx_sprintGR2( buffer, buffer2, DefaultValue, 22-CursorX, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-				CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer, 0x000 );	// 
-				if ( buffer2[0] != '\0' ){
-					Scrl_Y();
-					CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer2, 0x000 );	// 
-				}
-				Scrl_Y();
-				CB_CurrentValue = InputNumC_CB1( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
-			}
-			goto vinp;
-			break;
-		case 2:	// ? -> str 
-			CB_CurrentStr=buffer;
-			CB_CurrentStr[0]='\0';
-	Inpj1:	if ( option == 0 ) CursorX=1;
-			if ( option ) key=InputStr_CB2( miniCsrX, miniCsrY, width, CB_CurrentStr, length, spcchr, rev, miniflag );
-			else		  key=InputStr_CB(  CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
-			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  goto exit; }
-			if ( SRC[ExecPtr]==0x0E ) ExecPtr++;	// -> skip
-			CB_StorStr( SRC );
-			break;
-		case 3:	// ?$Mat  ?Str1-20
-			CB_CurrentStr=buffer;
-			OpcodeStringToAsciiString(buffer, StrFnPtr, 255);
-			if ( width > MatAry[reg].SizeB-1 ) width=MatAry[reg].SizeB-1;
-			if ( option ) key=InputStr_CB2( miniCsrX, miniCsrY, width, CB_CurrentStr, length, spcchr, rev, miniflag );
-			else		  key=InputStr_CB(  CursorX, CursorY, width, CB_CurrentStr, length, spcchr, rev);
-			ErrorNo=0; // error cancel
-			if ( key==KEY_CTRL_AC  ) { BreakPtr=ExecPtr;  goto exit; }
-			CB_StorStr( SRC );
-			break;
-		case 4:	// ?DATE
-			CB_DateToStr();
-			CB_CurrentStr[10]='\0';	// week cancel
-	Inpj2:
-			goto Inpj1;
-			break;
-		case 5:	// ?TIME
-			CB_TimeToStr();
-			goto Inpj2;
-			break;
-	}
-	if ( option == 0 ) Scrl_Y();
-	Bdisp_PutDisp_DD_DrawBusy();
-  exit:
-	GBcode=bk_GBcode;
-	CB_ColorIndex=-1;
-	return ;
-}
-//----------------------------------------------------------------------------------------------
 int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
@@ -3418,10 +3168,10 @@ int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
+int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
 //int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte

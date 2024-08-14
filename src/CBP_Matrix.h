@@ -159,3 +159,4 @@ void Cplx_CB_MatInv( char *SRC ) ;	// Inverse Mat A
 void CB_ListNo2Ptr( int n );
 void CB_ListFile( char *SRC );
 
+complex Cplx_CB_MatRefRref( char *SRC, int select );	// Ref/Rref Mat A	

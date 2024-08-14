@@ -17,12 +17,12 @@ short  defaultStrAryN=127;
 int    defaultStrArySize=255+1;	// =CB_StrBufferMax
 
 char   defaultFnAry=57;		// z
-char   defaultFnAryN=127;
-short  defaultFnArySize=255+1;
+short  defaultFnAryN=127;
+int    defaultFnArySize=255+1;
 
 char   defaultGraphAry=27;		// Theta
-char   defaultGraphAryN=127;
-short  defaultGraphArySize=255+1;
+short  defaultGraphAryN=127;
+int    defaultGraphArySize=255+1+6;
 
 char	dummychar1;
 char	dummychar2;
@@ -546,7 +546,7 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 		} else CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
 		len = strlen( (char*)tmpbuf ) ;
 		i=0;
-		if ( ptr+len > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr+len-1 > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
 	}
 	buffer[ptr]='\0' ;
@@ -565,7 +565,7 @@ void OpcodeStringToAsciiString_noESC(char *buffer, char *SRC, int Maxlen ) {	// 
 		} else CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
 		len = strlen( (char*)tmpbuf ) ;
 		i=0;
-		if ( ptr+len > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr+len-1 > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
 	}
 	buffer[ptr]='\0' ;
@@ -573,9 +573,9 @@ void OpcodeStringToAsciiString_noESC(char *buffer, char *SRC, int Maxlen ) {	// 
 //-----------------------------------------------------------------------------
 int CheckQuotCR( char *SRC, int ptr ) {
 	int c,d;
+	if ( SRC[ptr-1] != 0x22 ) return 0;	// "
 	c=SRC[ptr-2];
 	d=SRC[ptr-3];
-	if ( SRC[ptr-1] != 0x22 ) return 0;	// "
 	if ( d==0xFFFFFFF7 ) {
 		if ( ( c==0x01 ) || ( c==0x02 ) ) return 1;	// Then or Else
 	}
@@ -622,7 +622,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 				break;
 		}
 	  next:
-		if ( ptr >= Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 	}
 	return ptr;
 }
@@ -686,23 +686,40 @@ char* NewStrBuffer(){
 */
 void GetNewAry8( int reg, int aryN, int aryMax ) {
 	char *buffer;
+	int size;
 	if ( MatAry[reg].SizeA == 0 ) {
-		DimMatrixSub( reg, 8, aryN, aryMax, 1 );	// byte matrix
+		DimMatrixSub( reg, 8, aryN, aryMax, 1 );	// byte matrix	base:1
 	} else { 
-		if ( MatAry[reg].SizeA < aryN ) MatElementPlus( reg, aryN, aryMax );				// matrix +
+		if ( MatAry[reg].SizeA < aryN ) {
+			buffer=NewStrBuffer(); 
+			if ( buffer!=NULL ) {
+				size =MatAry[reg].SizeB; if ( size>CB_StrBufferMax ) size = CB_StrBufferMax;
+				memcpy( buffer, CB_CurrentStr, size );
+				CB_CurrentStr = buffer;
+			}
+			MatElementPlus( reg, aryN, aryMax );				// matrix +
+		}
 	}
 }
-char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
-	int dimA,dimB;
+char* GetStrYFnPtrSub( int reg, int dimA, int dimB ) {
 	char *buffer;
-	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
-	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
-	dimB = aryMax;
 	GetNewAry8( reg, dimA, dimB );
 	if ( ErrorNo ) return 0; // error
 	dimB = 1;
 	buffer=MatrixPtr( reg, dimA, dimB );
 	return buffer;
+}
+int GetStrYFnNo( char *SRC, int reg, int aryN, int aryMax ) {	// -> StringNo
+	int dimA,dimB;
+	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;	// str no : Mat s[n,len]
+	if ( ( dimA<1 ) || ( aryN<dimA ) ) { CB_Error(ArgumentERR); return 0; }  // Argument error
+	return dimA;
+}
+char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) {
+	int dimA,dimB;
+	char *buffer;
+	dimA = GetStrYFnNo( SRC, reg, aryN, aryMax );
+	return GetStrYFnPtrSub( reg, dimA, aryMax );
 }
 
 int SearchListnameSub( char *name ) {
@@ -770,6 +787,37 @@ int IsStrList( char *SRC, int flag ) {	// List n[0]?
 	return reg+1;
 }
 
+int CB_IsStr_noYFn( char *SRC, int execptr ) {
+	int c=SRC[execptr],extmp,f;
+	if ( c == 0x22 ) {	// String
+		return 1;
+	} else
+	if ( c=='$' ) {	// Mat String
+		return 2;
+	} else
+	if ( c == 0xFFFFFFF9 ) {	// Str
+		c=SRC[execptr+1];
+		if ( c == 0x30 ) return c;	// StrJoin(
+		else
+		if ( ( c == 0x38 ) || ( c == 0x3E ) ) return 0;	// Exp( or ClrVct
+		else
+		if ( ( 0x34 <= c ) && ( c <= 0x49 ) ) return c;
+		else
+		if ( c == 0x4D ) return c;	// StrSplit
+	} else
+	if ( c == 0x7F ) {
+		c=SRC[execptr+1];
+		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
+			extmp = ExecPtr;
+			ExecPtr+=2;
+			f = IsStrList( SRC, 0 );
+			ExecPtr = extmp;
+			if ( f>0 ) return 0x7F51;
+		}
+	}
+	return 0;
+}
+
 int CB_IsStr( char *SRC, int execptr ) {
 	int c=SRC[execptr],extmp,f;
 	if ( c == 0x22 ) {	// String
@@ -792,7 +840,7 @@ int CB_IsStr( char *SRC, int execptr ) {
 	} else
 	if ( c == 0x7F ) {
 		c=SRC[execptr+1];
-		if ( c == 0xFFFFFFF0 )  return c;	// GraphY
+		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
 		else
 		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
 			extmp = ExecPtr;
@@ -806,14 +854,14 @@ int CB_IsStr( char *SRC, int execptr ) {
 }
 
 
-char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
-	int c,d,n;
+char* CB_GetOpStrSub( char *SRC ,int *maxlen, int c ) {		// String -> buffer	return
+	int d,n;
 	int execptr,len,i=0;
 	int reg,dimA,dimB;
 	int aryN,aryMax;
 	char *buffer;
 
-	switch ( CB_IsStr( SRC, ExecPtr ) ) {
+	switch ( c ) {
 		case 1:	// """"
 			ExecPtr++;
 			buffer=NewStrBuffer(); if ( buffer==NULL ) return 0;
@@ -840,10 +888,29 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 			(*maxlen)=MatAry[reg].SizeB;
 			break;
 		case 0xFFFFFFF0:	// GraphY
+		case 0xFFFFFFF1:	// Graphr
+		case 0xFFFFFFF2:	// GraphXt
+		case 0xFFFFFFF3:	// GraphYt
+		case 0xFFFFFFF4:	// GraphX
 			reg=defaultGraphAry;
 			ExecPtr+=2;
-			buffer = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize );
-			(*maxlen)=MatAry[reg].SizeB;
+			dimA = GetStrYFnNo( SRC, reg, defaultGraphAryN, defaultGraphArySize );
+			switch ( c ) {
+				case 0xFFFFFFF0:	// GraphY
+					buffer = ReadGraphY( dimA ); break;
+				case 0xFFFFFFF1:	// Graphr
+					buffer = ReadGraphr( dimA ); break;
+				case 0xFFFFFFF2:	// GraphXt
+					buffer = ReadGraphXt( dimA ); break;
+				case 0xFFFFFFF3:	// GraphYt
+					buffer = ReadGraphYt( dimA ); break;
+				case 0xFFFFFFF4:	// GraphX
+					buffer = ReadGraphX( dimA ); break;
+				default:
+					buffer = MatrixPtr( reg, dimA, 7 );
+			}
+			if ( buffer == NULL ) CB_Error(InvalidType);
+			(*maxlen)=MatAry[reg].SizeB-6;
 			break;
 		case 0x30:	// StrJoin(
 			ExecPtr+=2;
@@ -946,12 +1013,14 @@ char* CB_GetOpStr1( char *SRC ,int *maxlen ) {		// String -> buffer	return
 	return buffer;
 }
 
-char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String 
+char* CB_GetOpStrSub1( char *SRC, int *maxoplen, int YFn ) {	// Get opcode String 
 	int c;
 	char *buffer;
 	char *CB_StrAddBuffer;
-	
-	CB_CurrentStr=CB_GetOpStr1( SRC, &(*maxoplen) ) ;		// String -> CB_CurrentStr
+
+	if ( YFn )  c=CB_IsStr( SRC, ExecPtr );
+	else		c=CB_IsStr_noYFn( SRC, ExecPtr );
+	CB_CurrentStr=CB_GetOpStrSub( SRC, &(*maxoplen), c );		// String -> CB_CurrentStr
 	if ( ErrorNo ) return 0;	// error
 	c=SRC[ExecPtr];
 	if ( c != 0xFFFFFF89 ) { // non +
@@ -962,7 +1031,7 @@ char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String
 	OpcodeCopy( CB_StrAddBuffer, CB_CurrentStr, CB_StrBufferMax-1 );		//
 	while (1) {
 		ExecPtr++;
-		CB_CurrentStr=CB_GetOpStr1( SRC, &(*maxoplen) ) ;		// String -> CB_CurrentStr
+		CB_CurrentStr=CB_GetOpStrSub( SRC, &(*maxoplen),  CB_IsStr( SRC, ExecPtr )  );		// String -> CB_CurrentStr
 		if ( ErrorNo ) return 0;	// error
 		
 		StrJoin( CB_StrAddBuffer, CB_CurrentStr, CB_StrBufferMax-1 ) ;
@@ -971,6 +1040,12 @@ char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String
 	}
 //	if ( c == ')' ) ExecPtr++;	
 	return CB_StrAddBuffer;
+}
+char* CB_GetOpStr( char *SRC, int *maxoplen ) {	// Get opcode String 
+	return CB_GetOpStrSub1( SRC, &(*maxoplen), 1 );
+}
+char* CB_GetOpStr_noYFn( char *SRC, int *maxoplen ) {	// Get opcode String 
+	return CB_GetOpStrSub1( SRC, &(*maxoplen), 0 );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -994,15 +1069,6 @@ void StorStrStr( char *SRC ) {	// "String" -> Sto 1-20
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
 }
 
-void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
-	int reg,dimA,dimB;
-	char *MatAryC;
-	reg=defaultGraphAry;
-	MatAryC = GetStrYFnPtr( SRC, reg, defaultGraphAryN, defaultGraphArySize );
-	if ( ErrorNo ) return ; // error
-	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
-}
-
 void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	int reg,dimA,dimB;
 	char *MatAryC;
@@ -1010,6 +1076,30 @@ void StorStrFn( char *SRC ) {	// "String" -> fn 1-9
 	MatAryC = GetStrYFnPtr( SRC, reg, defaultFnAryN, defaultFnArySize );
 	if ( ErrorNo ) return ; // error
 	OpcodeCopy( MatAryC, CB_CurrentStr, MatAry[reg].SizeB-1 );
+}
+
+void StorStrGraphY( char *SRC ) {	// "String" -> GraphY 1-5
+	int reg,dimA,dimB;
+	char *MatAryC,*ptr;
+	int size;
+	int c = SRC[ExecPtr-1];
+	reg=defaultGraphAry;
+	dimA = GetStrYFnNo( SRC, reg, defaultGraphAryN, defaultGraphArySize );
+//	MatAryC = GetStrYFnPtrSub( reg, dimA, defaultGraphArySize ) +6;
+	if ( ErrorNo ) return ; // error
+	switch ( c ) {
+		case 0xFFFFFFF0:	// GraphY
+			StoreGraphY(  CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF1:	// Graphr
+			StoreGraphr(  CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF2:	// GraphXt
+			StoreGraphXt( CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF3:	// GraphYt
+			StoreGraphYt( CB_CurrentStr, dimA ); break;
+		case 0xFFFFFFF4:	// GraphX
+			StoreGraphX(  CB_CurrentStr, dimA ); break;
+			break;
+	}
 }
 
 void StorStrList0( char *SRC ) {	// "String" -> List n[0]	->List "ABS"   ->List Str1
@@ -1066,9 +1156,36 @@ void StorTIME( char *buffer ) {	// "23:59:59" -> TIME
 	CB_TicksStart=RTC_GetTicks();	// init
 }
 
-void CB_StorStr( char *SRC ) {
-	int c;
-	c=CB_IsStr( SRC, ExecPtr );
+int CB_IsStrStor( char *SRC, int execptr ) {
+	int c=SRC[execptr],extmp,f;
+	if ( c=='$' ) {	// Mat String
+		return 2;
+	} else
+	if ( c == 0xFFFFFFF9 ) {
+		c=SRC[execptr+1];
+		if ( c == 0x3F ) return c;	// Str
+		else
+		if ( c == 0x41 ) return c;	// DATE
+		else
+		if ( c == 0x42 ) return c;	// TIME
+		else
+		if ( c == 0x1B ) return c;	// fn
+	} else
+	if ( c == 0x7F ) {
+		c=SRC[execptr+1];
+		if ( ( 0xFFFFFFF0 <= c ) && ( c <= 0xFFFFFFF4 ) ) return c;	// GraphY
+		else
+		if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List [0]?
+			extmp = ExecPtr;
+			ExecPtr+=2;
+			f = IsStrList( SRC, 0 );
+			ExecPtr = extmp;
+			if ( f>0 ) return 0x7F51;
+		}
+	}
+	return 0;
+}
+void CB_StorStrSub( char *SRC, int c ) {
 	switch ( c ) {
 		case 2:	// $Mat
 			ExecPtr++;
@@ -1091,6 +1208,10 @@ void CB_StorStr( char *SRC ) {
 			StorStrFn( SRC ) ;
 			break;
 		case 0xFFFFFFF0:	// GraphY
+		case 0xFFFFFFF1:	// Graphr
+		case 0xFFFFFFF2:	// GraphXt
+		case 0xFFFFFFF3:	// GraphYt
+		case 0xFFFFFFF4:	// GraphX
 			ExecPtr+=2;
 			StorStrGraphY( SRC ) ;
 			break;
@@ -1104,6 +1225,32 @@ void CB_StorStr( char *SRC ) {
 			if ( ( SRC[ExecPtr]==0x7F ) && ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) ) goto ListStrj;	// "ABCD"->List 1
 			CB_Error(SyntaxERR);  // Syntax error
 	}
+}
+void CB_StorStr( char *SRC ) {
+	CB_StorStrSub( SRC, CB_IsStrStor( SRC, ExecPtr ) );
+}
+
+//----------------------------------------------------------------------------------------------
+int CB_CheckYfn( char *SRC ) {	// Fn1->Str 1 ?
+	int	extmp=ExecPtr;
+	int c=SRC[ExecPtr-1];
+	int maxlen;
+	char *buffer;
+	EvalIntsub1( SRC );
+	if ( SRC[ExecPtr] == 0x0E ) {	// ->
+		ExecPtr=extmp;
+		ExecPtr-=2;
+		CB_CurrentStr = CB_GetOpStrSub( SRC, &(maxlen),  CB_IsStrStor( SRC, ExecPtr ) );
+		ExecPtr++;
+		c = CB_IsStrStor( SRC, ExecPtr );
+		if ( c ) {
+			CB_StorStrSub( SRC, c );
+			dspflag=0;
+			return 1;	// string
+		}
+	}
+	ExecPtr=extmp;
+	return 0;	// expression
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1291,36 +1438,10 @@ double CB_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> double
 	int execptr=ExecPtr;
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = EvalIntsub14( buffer );
-		else
-		if (CB_INT==0)	result = Evalsub14( buffer );
-		else			result = Cplx_Evalsub14( buffer ).real;
+		result = EvalsubTop( buffer );
 	}
     else {
-		if (CB_INT==1)	result = ListEvalIntsubTop( buffer );	// List calc
-		else
-		if (CB_INT==0)	result = ListEvalsubTop( buffer );			// List calc
-		else			result = Cplx_ListEvalsubTop( buffer ).real;	// List calc
-	}
-    ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
-	return result;
-}
-double CB_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> double
-	double result;
-	int execptr=ExecPtr;
-	ExecPtr = 0;
-    if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = EvalIntsubTop( buffer );
-		else
-		if (CB_INT==0)	result = EvalsubTop( buffer );
-		else			result = Cplx_EvalsubTop( buffer ).real;
-	}
-    else {
-		if (CB_INT==1)	result = ListEvalIntsubTop( buffer );	// List calc
-		else
-		if (CB_INT==0)	result = ListEvalsubTop( buffer );	// List calc
-		else			result = Cplx_ListEvalsubTop( buffer ).real;	// List calc
+		result = ListEvalsubTop( buffer );	// List calc
 	}
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
@@ -1332,36 +1453,10 @@ complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ) {		// Eval str -> doubl
 	int execptr=ExecPtr;
 	ExecPtr = 0;
     if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = Int2Cplx( EvalIntsub14( buffer ) );
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( Evalsub14( buffer ) );
-		else			result = Cplx_Evalsub14( buffer );
+		result = Cplx_EvalsubTop( buffer );
 	}
     else {
-		if (CB_INT==1)	result = Int2Cplx( ListEvalIntsubTop( buffer ) );	// List calc
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( ListEvalsubTop( buffer ) );	// List calc
-		else			result = Cplx_ListEvalsubTop( buffer );	// List calc
-	}
-    ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return Int2Cplx(0); }
-	return result;
-}
-complex CB_Cplx_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> double
-	complex result;
-	int execptr=ExecPtr;
-	ExecPtr = 0;
-    if ( calcflag == 0 ) {
-		if (CB_INT==1)	result = Int2Cplx( EvalIntsubTop( buffer ) );
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( EvalsubTop( buffer ) );
-		else			result = Cplx_EvalsubTop( buffer );
-	}
-    else {
-		if (CB_INT==1)	result = Int2Cplx( ListEvalIntsubTop( buffer ) );	// List calc
-		else
-		if (CB_INT==0)	result = Dbl2Cplx( ListEvalsubTop( buffer ) );	// List calc
-		else			result = Cplx_ListEvalsubTop( buffer );	// List calc
+		result = Cplx_ListEvalsubTop( buffer );	// List calc
 	}
     ExecPtr=execptr;
 	if ( ErrorNo ) { ErrorPtr=ExecPtr; return Int2Cplx(0); }
@@ -1369,20 +1464,6 @@ complex CB_Cplx_EvalStrDBL2( char *buffer, int calcflag ) {		// Eval str -> doub
 }
 
 int CB_EvalStrInt( char *buffer, int calcflag ) {		// Eval str -> Int
-	int result;
-	int execptr=ExecPtr;
-	ExecPtr = 0;
-    if ( calcflag == 0 ) {
-		result = EvalIntsub14( buffer );
-	}
-    else {
-		result = ListEvalIntsubTop( buffer );	// List calc
-	}
-    ExecPtr=execptr;
-	if ( ErrorNo ) { ErrorPtr=ExecPtr; return 0; }
-	return result;
-}
-int CB_EvalStrInt2( char *buffer, int calcflag ) {		// Eval str -> Int
 	int result;
 	int execptr=ExecPtr;
 	ExecPtr = 0;
@@ -1440,12 +1521,45 @@ int CBint_EvalStr( char *SRC, int calcflag ) {		// Exp(			Eval str -> int
 	return result;
 }
 
-char* CB_GraphYStrSub( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnAry
+int CB_GraphFnStrNo( char *SRC, int reg ) {	//  defaultGraphAry or  defaultFnAry
 	int dimA,dimB;
 	int base=MatAry[reg].Base;
-	dimA=Eval_atoi( SRC, SRC[ExecPtr] );
+	if (CB_INT==1) dimA = EvalIntsub1( SRC ); else if (CB_INT==0) dimA = Evalsub1( SRC ); else dimA = Cplx_Evalsub1( SRC ).real;
 	if ( ( dimA < base ) || ( dimA > MatAry[reg].SizeA-1+base ) ) { CB_Error(MemoryERR); }  // Memory error
-	return MatrixPtr( reg, dimA, base );
+	return dimA;
+}
+char* CB_FnStrSub( char *SRC ) {	//  efaultFnAry
+	int dimA,dimB;
+	int reg=defaultFnAry;
+	int base=MatAry[reg].Base;
+	dimA = CB_GraphFnStrNo( SRC, reg );
+	if ( ErrorNo ) return 0;
+	return MatrixPtr( reg, dimA, base )+ ( reg==defaultGraphAry )*6;
+}
+char* CB_GraphStrSub( char *SRC ) {	//  defaultGraphAry
+	int dimA,dimB;
+	int reg=defaultGraphAry;
+	int base=MatAry[reg].Base;
+	int c = SRC[ExecPtr-1];
+	char *ptr;
+	dimA = CB_GraphFnStrNo( SRC, reg );
+	if ( ErrorNo ) return 0;
+	switch ( c ) {
+		case 0xFFFFFFF0:	// GraphY
+			ptr = ReadGraphY( dimA ); break;
+		case 0xFFFFFFF1:	// Graphr
+			ptr = ReadGraphr( dimA ); break;
+		case 0xFFFFFFF2:	// GraphXt
+			ptr = ReadGraphXt( dimA ); break;
+		case 0xFFFFFFF3:	// GraphYt
+			ptr = ReadGraphYt( dimA ); break;
+		case 0xFFFFFFF4:	// GraphX
+			ptr = ReadGraphX( dimA ); break;
+		default:
+			ptr = MatrixPtr( defaultGraphAry, dimA, 7 );
+	}
+	if ( ptr == NULL ) CB_Error(InvalidType);
+	return ptr;
 }
 void GraphFnEQ( char *SRC ){
 	int c=SRC[ExecPtr];
@@ -1453,10 +1567,75 @@ void GraphFnEQ( char *SRC ){
 		if ( SRC[ExecPtr+1] == '=' ) ExecPtr+=2;
 	}
 }
+
 double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	double result;
 	double tmpX = regX.real;
-	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
+	double tmpY = regY.real;
+	double tmpT = regT.real;
+	double tmpTheta = reg_Theta.real;
+	char *ptr = CB_GraphStrSub( SRC ) ;
+	if ( ErrorNo ) return 0;
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		GraphFnEQ( SRC );
+		regX.real = CB_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_EvalStrDBL( ptr, calcflag );
+	regX.real = tmpX;
+	regY.real = tmpY;
+	regT.real = tmpT;
+	reg_Theta.real = tmpTheta;
+	return result;
+}
+complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
+	complex result;
+	complex tmpX = regX;
+	complex tmpY = regY;
+	complex tmpT = regT;
+	complex tmpTheta = reg_Theta;
+	char *ptr = CB_GraphStrSub( SRC ) ;
+	if ( ErrorNo ) return Int2Cplx(0);
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		GraphFnEQ( SRC );
+		regX = CB_Cplx_EvalDbl(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_Cplx_EvalStrDBL( ptr, calcflag );
+	regX = tmpX;
+	regY = tmpY;
+	regT = tmpT;
+	reg_Theta = tmpTheta;
+	return result;
+}
+int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
+	int result;
+	int tmpintX = regintX;
+	int tmpintY = regintY;
+	int tmpintT = regintT;
+	int tmpintTheta= regint_Theta;
+	char *ptr = CB_GraphStrSub( SRC ) ;
+	if ( ErrorNo ) return 0;
+	if ( SRC[ExecPtr] == '(' ) {
+		ExecPtr++;
+		GraphFnEQ( SRC );
+		regintX = CB_EvalInt(SRC);
+		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+	}
+	result = CB_EvalStrInt( ptr, calcflag );
+	regintX = tmpintX;
+	regintY = tmpintY;
+	regintT = tmpintT;
+	regint_Theta = tmpintTheta;
+	return result;
+}
+
+double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
+	double result;
+	double tmpX = regX.real;
+	char *ptr = CB_FnStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
@@ -1468,26 +1647,10 @@ double CB_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	regX.real = tmpX;
 	return result;
 }
-double CB_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
-	double result;
-	double tmpX = regX.real;
-	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
-	if ( ErrorNo ) return 0;
-	if ( SRC[ExecPtr] == '(' ) {
-		ExecPtr++;
-		GraphFnEQ( SRC );
-		regX.real = CB_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	}
-	result = CB_EvalStrDBL2( ptr, calcflag );
-	regX.real = tmpX;
-	return result;
-}
-
-complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
+complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	complex result;
 	complex tmpX = regX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
+	char *ptr = CB_FnStrSub( SRC ) ;
 	if ( ErrorNo ) return Int2Cplx(0);
 	if ( SRC[ExecPtr] == '(' ) {
 		ExecPtr++;
@@ -1499,41 +1662,10 @@ complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
 	regX = tmpX;
 	return result;
 }
-complex CB_Cplx_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
-	complex result;
-	complex tmpX = regX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
-	if ( ErrorNo ) return Int2Cplx(0);
-	if ( SRC[ExecPtr] == '(' ) {
-		ExecPtr++;
-		GraphFnEQ( SRC );
-		regX = CB_Cplx_EvalDbl(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	}
-	result = CB_Cplx_EvalStrDBL2( ptr, calcflag );
-	regX = tmpX;
-	return result;
-}
-
-int CBint_GraphYStr( char *SRC, int calcflag ) {	// defaultGraphAry
-	int result;
-	int tmpintX = regintX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultGraphAry ) ;
-	if ( ErrorNo ) return 0;
-	if ( SRC[ExecPtr] == '(' ) {
-		ExecPtr++;
-		GraphFnEQ( SRC );
-		regintX = CB_EvalInt(SRC);
-		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	}
-	result = CB_EvalStrInt( ptr, calcflag );
-	regintX = tmpintX;
-	return result;
-}
 int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 	int result;
 	int tmpintX = regintX;
-	char *ptr = CB_GraphYStrSub( SRC, defaultFnAry ) ;
+	char *ptr = CB_FnStrSub( SRC ) ;
 	if ( ErrorNo ) return 0;
 	if ( calcflag == 0 ) return 0;
 	if ( SRC[ExecPtr] == '(' ) {
@@ -1542,7 +1674,7 @@ int CBint_FnStr( char *SRC, int calcflag ) {	// defaultFnAry
 		regintX = CB_EvalInt(SRC);
 		if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	}
-	result = CB_EvalStrInt2( ptr, calcflag );
+	result = CB_EvalStrInt( ptr, calcflag );
 	regintX = tmpintX;
 	return result;
 }
@@ -1713,7 +1845,7 @@ int CB_StrRotate( char *SRC ) {	// StrRotate( str1 [,n] )
 int CB_ExpToStr( char *SRC ) {	//  Exp->Str(
 	int maxoplen;
 	char *buffer;
-	buffer = CB_GetOpStr( SRC, &maxoplen );
+	buffer = CB_GetOpStrSub( SRC, &maxoplen,  CB_IsStrStor( SRC, ExecPtr )  );
 	if ( ErrorNo ) return 0 ;  // error
 	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	ExecPtr++;
@@ -2250,11 +2382,11 @@ int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int StrObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
+int StrObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 
 }

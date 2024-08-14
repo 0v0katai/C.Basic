@@ -19,7 +19,7 @@ unsigned int Explorer( int size, char *folder );
 static int FileCmp( const void *p1, const void *p2 );
 
 static int size=0;
-char folder[FOLDERMAX] = "", tmpfolder[FOLDERMAX] = "";
+char folder[FILENAMEMAX] = "", tmpfolder[FOLDERMAX] = "";
 static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 static Files Favoritesfiles[FavoritesMAX];
@@ -70,7 +70,8 @@ void SetFullfilenameNoExtFolder( char *filename, char *dir, char *sname ) {
 	sprintf3( filename, "\\\\%s\\%s\\%s", root[StorageMode], dir, sname);
 }
 void SetFullfilenameNoExtsub( char *filename, char *dir, char *sname ) {
-	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+//	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+	if ( ( strlen(dir) == 0 ) )
 		SetFullfilenameNoExtNoFolder( filename, sname ) ;
 	else
 		SetFullfilenameNoExtFolder( filename, dir, sname ) ;
@@ -86,7 +87,8 @@ void SetFullfilenameExtFolder( char *filename, char *dir, char *sname, char *ext
 	sprintf3( filename, "\\\\%s\\%s\\%s.%s", root[StorageMode], dir, sname, extname );
 }
 void SetFullfilenameExtsub( char *filename, char *dir, char *sname, char *extname ) {
-	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+//	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
+	if ( ( strlen(dir) == 0 ) )
 		SetFullfilenameExtNoFolder( filename, sname, extname );
 	else
 		SetFullfilenameExtFolder( filename, dir, sname, extname );
@@ -523,10 +525,10 @@ int Check_Favorite( char*folder, char *sname ) {
 	char buf1[32];
 	char buf2[32];
 	strcpy( buf1, sname );
-	ToLower( buf1 );
+	if ( ( StorageMode & 2 ) ==0 ) ToLower( buf1 );	// non MCS mode
 	while ( i < FavoritesMAX ) {	// file matching search
 		strcpy( buf2, Favoritesfiles[i].filename );
-		ToLower( buf2 );
+		if ( ( StorageMode & 2 ) ==0 ) ToLower( buf2 );	// non MCS mode
 		if ( strcmp( buf1, buf2 )== 0 ) 
 		if ( strcmp( Favoritesfiles[i].folder  ,  folder)== 0 ) break; // already favorite exist
 		i++;
@@ -543,6 +545,8 @@ void Check_Favorite_size( char*folder, char *oldsname, char *newsname, int size 
 		CopyFilesToFavorites();
 	}
 }
+
+void SetAlphalock();
 
 unsigned int Explorer( int size, char *folder )
 {
@@ -561,6 +565,14 @@ unsigned int Explorer( int size, char *folder )
 	int	scrbar1,scrbar2;
 	char fname[256];
 	char ext[5];
+	char search[10]="",*search2;
+	int ContinuousSelect=0;
+	int searchmode=0;
+	int csrX=0;
+	int InsertMode;
+	int n_line=N_LINE;
+	int yk;
+	int miniflag=(EditFontSize & 0x07);
 	
 	long FirstCount;		// pointer to repeat time of first repeat
 	long NextCount; 		// pointer to repeat time of second repeat
@@ -613,11 +625,13 @@ unsigned int Explorer( int size, char *folder )
 //	GetKey(&key);
 //	Bdisp_PutDisp_DD();
 //	DisplayStatusArea();
-
+	SetAlphalock();
 	while( cont && (FileListUpdate==0) )
-	{
+	{	
+		if ( miniflag ) { n_line=8; yk=18; } else { n_line=6; yk=24; }
 //		EnableColor( 1 );	// full color mode 
 //		DrawFrame( 0xFFFF  );
+		InsertMode = Setup_GetEntry(0x15) == 02 ;	// 01:OverWrite   02:Insert
 
 		FavCount=0;
 		for( i=0; i<FavoritesMAX; i++){			//	count Favorites list
@@ -640,9 +654,8 @@ unsigned int Explorer( int size, char *folder )
 			CB_G1MorG3M=3;
 			if ( (strcmp(ext, "g1m") == 0 ) ) CB_G1MorG3M=1;	// FX mode
 		}
-//		StatusArea_Run_sub( buffer, CB_INTDefault, CB_G1MorG3MDefault );
-		StatusArea_Time();
 
+		if ( searchmode ) filemode=0; 
 		switch ( filemode ) {
 			case 0:
 				Fkey_Icon( FKeyNo1, 388 );	//	Fkey_dispN( FKeyNo1,"EXE ");
@@ -681,6 +694,7 @@ unsigned int Explorer( int size, char *folder )
 				Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
 				break;
 		}
+		
 //		locate(1, 1);Prints((unsigned char*)"File List  [        ]");
 //		locate(13,1);Prints( strlen( folder ) ? (unsigned char*)folder : (unsigned char*)"/");	// root
 		locate(1, 1);Prints((unsigned char*)"[        ]");
@@ -693,8 +707,24 @@ unsigned int Explorer( int size, char *folder )
 			sprintf3( buffer, "%-8s", folder );
 			locate(2,1);Prints( strlen( folder ) ? (unsigned char*)buffer : (unsigned char*)"/");	// root
 		}
-														PrintMinix3(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
-		sprintf3(buffer, "(%d)", size-FavoritesMAX-1);	PrintMinix3(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
+		if ( searchmode ) {
+			StatusArea_Run_sub( "== SEARCH MODE ==", CB_INTDefault, CB_G1MorG3MDefault );
+			locate(12, 1);Prints((unsigned char*)"[        ]");
+			CB_Prints(13, 1, (unsigned char*)search );	// search string
+			if ( lowercase  ) Fkey_dispN_aA( FKeyNo4, "A <> a"); else Fkey_dispN_Aa( FKeyNo4, "A <> a");
+			Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
+//			Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
+			if ( StorageMode < 2 ) {
+				if ( search[0]=='/' ) Fkey_dispN( FKeyNo6, "\xE6\x91\x46ile"); else Fkey_dispN( FKeyNo6, "\xE6\x91\x46lder");
+			} else {
+				FkeyClear( FKeyNo6 );
+			}
+		} else {
+			StatusArea_Time();
+			PrintMinix3(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
+			sprintf3(buffer, "(%d)", size-FavoritesMAX-1);
+			PrintMinix3(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
+		}
 		
 		if( size < 2+FavoritesMAX-FavCount ){
 			locate( 8, 4 );
@@ -709,29 +739,40 @@ unsigned int Explorer( int size, char *folder )
 				index = StartLine;
 			if( top > index )
 				top = index;
-			if( index > top + N_LINE - 1 )
-				top = index - N_LINE + 1;
+			if( index > top + n_line - 1 )
+				top = index - n_line + 1;
 			if( top < StartLine )
 				top = StartLine;
-			if( size - StartLine <= N_LINE )
+			if( size - StartLine <= n_line )
 				top = StartLine;
 
-			for(i = 0;i < N_LINE && i + top < size; ++i ){
+			for(i = 0;i < n_line && i + top < size; ++i ){
 
+//				CB_ColorIndex=-1;
+				CB_ColorIndex=0x0000;	// Black
 				if( files[i + top].filesize == 0 ) {
 					sprintf3( buf, "---------------------");
 					goto dsp1;
 				} else
 				if ( files[i + top].filesize == FOLDER_SEPALATOR ) {
-					sprintf3( buf, "------Favorites------");
+				  	if ( miniflag ) {
+						sprintf3( buf, "----------Favorites-----------");
+					} else {
+						sprintf3( buf, "------Favorites------");
+					}
 					CB_ColorIndex=CB_FavoriteColorIndex;
 					goto dsp1;
 				} else
 				if( files[i + top].filesize == FOLDER_FLAG ) {
 						sprintf3( buf, " [%s]", files[i + top].filename );
 				  dsp1:
-					CB_Prints( 1, i + 2, (unsigned char*)buf );
-					CB_ColorIndex=-1;
+				  	if ( miniflag ) {
+						CB_PrintMini_Fix( 8, (i+1)*yk+6, (unsigned char*)buf, MINI_OVER ) ;	// fixed 12 dot
+					} else {
+						CB_Prints( 1, i + 2, (unsigned char*)buf );
+					}
+//					CB_ColorIndex=-1;
+					CB_ColorIndex=0x0000;	// Black
 				} else {
 					strncpy( buf2, files[i + top].filename, FILENAMEMAX );
 					j=strlenOp(files[i + top].filename); if (j<4) j=4;
@@ -757,21 +798,37 @@ unsigned int Explorer( int size, char *folder )
 						strcat(buf2,buf); buf2[14]=0;
 						sprintf3( buf, "%-14s ", buf2 );
 					}
-					CB_ColorIndex=-1;
+//					CB_ColorIndex=-1;
+					CB_ColorIndex=0x0000;	// Black
 					if ( i + top <= FavoritesMAX ) CB_ColorIndex=CB_FavoriteColorIndex;
-					CB_Prints(  1, i + 2, (unsigned char*)buf );
-					if ( k<=999999 ) 	sprintf3( buf, ":%6u ", k );
-					else				sprintf3( buf, ":%5uk", k/1024 );
-					CB_Prints( 15, i + 2, (unsigned char*)buf );
-					CB_ColorIndex=-1;
+					if ( miniflag ) {
+						CB_PrintMini_Fix( 8, (i+1)*yk+6, (unsigned char*)buf, MINI_OVER ) ;	// fixed 12 dot
+					} else {
+						CB_Prints(  1, i + 2, (unsigned char*)buf );
+					}
+					if ( miniflag ) {
+							sprintf3( buf, ":%8u ", k );
+					} else {
+						if ( k<=999999 ) 	sprintf3( buf, ":%6u ", k );
+						else				sprintf3( buf, ":%5uk", k/1024 );
+					}
+					if ( miniflag ) {
+						CB_PrintMini_Fix( (23-1)*12+0, (i+1)*yk+6, (unsigned char*)buf, MINI_OVER ) ;	// fixed 12 dot
+					} else {
+						CB_Prints( 15, i + 2, (unsigned char*)buf );
+					}
 				}
 			}
 
 //			if( top > 0 )
 //				CB_PrintXY(   120*3, 8*3, (unsigned char*)"\xE6\x92", top == index );
-//			if( top + N_LINE < size  )
-//				CB_PrintXY(   120*3, N_LINE*8*3, (unsigned char*)"\xE6\x93" , top + N_LINE - 1 == index );
-			Bdisp_AreaReverseVRAMx3( 0, (index-top+1)*8 , 125, (index-top+2)*8-1 );
+//			if( top + n_line < size  )
+//				CB_PrintXY(   120*3, n_line*8*3, (unsigned char*)"\xE6\x93" , top + n_line - 1 == index );
+			if ( miniflag ) {
+				Bdisp_AreaReverseVRAM( 0, (index-top+1+1)*yk+9+2 , 125*3+2, (index-top+2+1)*yk+9+2-1 );
+			} else {
+				Bdisp_AreaReverseVRAM( 0, (index-top+1+1)*yk , 125*3+2, (index-top+2+1)*yk-1 );
+			}
 		}
 
 //		CB_ScrollBar( size, index );
@@ -792,78 +849,73 @@ unsigned int Explorer( int size, char *folder )
 //		EnableColor( 0 );	// C3 color mode	(reduce idol current consumption)
 //		Bdisp_SetDDRegisterB(0);	// C3 mode
 		EnableDisplayStatusArea();
-		GetKey_DisableCatalog( &key );
+		if ( searchmode ) {
+			locate(13+csrX,1);
+			Cursor_SetFlashMode(1);			// cursor flashing on
+		}
+		if ( ContinuousSelect ) ContinuousSelect=0; else GetKey_DisableCatalog( &key );
 //		Bdisp_SetDDRegisterB(1);	// 16bit mode
 //		EnableColor( 1 );	// full color mode 
-		if ( ( 'a' <= key ) && ( key <= 'z' ) ) key -= 'a'-'A';
-		if ( KEY_CTRL_XTT  == key ) key='A';
-		if ( KEY_CHAR_LOG  == key ) key='B';
-		if ( KEY_CHAR_LN   == key ) key='C';
-		if ( KEY_CHAR_SIN  == key ) key='D';
-		if ( KEY_CHAR_COS  == key ) key='E';
-		if ( KEY_CHAR_TAN  == key ) key='F';
-		if ( KEY_CHAR_FRAC == key ) key='G';
-		if ( KEY_CTRL_FD   == key ) key='H';
-		if ( KEY_CHAR_LPAR == key ) key='I';
-		if ( KEY_CHAR_RPAR == key ) key='J';
-		if ( KEY_CHAR_COMMA== key ) key='K';
-		if ( KEY_CHAR_STORE== key ) key='L';
-		if ( KEY_CHAR_7    == key ) key='M';
-		if ( KEY_CHAR_8    == key ) key='N';
-		if ( KEY_CHAR_9    == key ) key='O';
-		if ( KEY_CHAR_4    == key ) key='P';
-		if ( KEY_CHAR_5    == key ) key='Q';
-		if ( KEY_CHAR_6    == key ) key='R';
-		if ( KEY_CHAR_MULT == key ) key='S';
-		if ( KEY_CHAR_DIV  == key ) key='T';
-		if ( KEY_CHAR_1    == key ) key='U';
-		if ( KEY_CHAR_2    == key ) key='V';
-		if ( KEY_CHAR_3    == key ) key='W';
-		if ( KEY_CHAR_PLUS == key ) key='X';
-		if ( KEY_CHAR_MINUS== key ) key='Y';
-		if ( KEY_CHAR_0    == key ) key='Z';
-		if ( KEY_CHAR_DP   == key ) key='~';
-		if ( KEY_CHAR_EXP  == key ) key='@';
-		if ( ( '@' == key ) ) {
-			i=FavoritesMAX;
-			while ( i<size ) {
-				if ( files[i].filesize == FOLDER_FLAG ) {
-						index = i;
-						top = index;
-					break;
-				}
-				i++;
-			}
-			
-		} else 
-		if ( ( ( 'A' <= key ) && ( key <= 'Z' ) ) || ( key == '~' ) ) {
-			i=FavoritesMAX;
-			while ( i<size ) {
-				if ( files[i].filesize == FOLDER_FLAG ) i++;
-				else if ( files[i].filename[0]==key ) {
-						index = i;
-						top = index;
-						break;
-				} else i++; // folder skip
-			}
+		Cursor_SetFlashOff(); 			// cursor flashing off
+
+		if ( KeyCheckPMINUS() ) {
+			key = '@';
 		}
+
 		switch ( key ) {
 			case KEY_CTRL_ALPHA:
-					if ( alphastatus ) { 
-						alphastatus = 0;
-						alphalock = 0 ; 
-						Setup_SetEntry(0x14, 0x00); 	// clear
-					} else { 
-						SetAlphaStatus( alphalock, lowercase ); 
-						alphastatus = 1; 
-					}
+				if ( alphastatus ) { 
+					alphastatus = 0;
+					alphalock = 0 ; 
+					Setup_SetEntry(0x14, 0x00); 	// clear
+				} else { 
+					SetAlphaStatus( alphalock, lowercase ); 
+					alphastatus = 1; 
+				}
+				key = 0;
+				break;
+				
+			case KEY_CTRL_EXIT:
+				if ( ( searchmode==0 ) && ( ( nofile ) || ( index == StartLine ) ) ) {
+					key=KEY_CTRL_QUIT;
+					cont =0 ;
 					break;
+				}
+				if ( searchmode==0 ) index = 0;
+				searchmode=0;
+			case KEY_CTRL_AC:
+				search[0]='\0';
+				csrX=0;
+				if ( alphalock ) goto set_alphalock;
+				key = 0;
+				break;
+
+			case KEY_CTRL_LEFT:
+				if ( searchmode == 0 ) break;
+				PrevOpcodeGB( search, &csrX );
+				break;
+				
+			case KEY_CTRL_RIGHT:
+				if ( searchmode == 0 ) break;
+				if ( search[csrX] != 0x00 )	NextOpcodeGB( search, &csrX );
+				break;
+
+			case KEY_CTRL_DEL:
+				if (searchmode ) {
+					if ( InsertMode ) {		// insert mode
+						PrevOpcodeGB( search, &csrX );
+					}
+					DeleteOpcode1( search, 8, &csrX );
+				}
+				break;
+
 			case KEY_CTRL_UP:
 				if ( nofile ) break;
 				do {
 					if( --index < StartLine  )
 						index = size - 1;
 				} while ( files[index].filesize == FOLDER_SEPALATOR ) ;
+				key = 0;
 				break;
 			case KEY_CTRL_DOWN:
 				if ( nofile ) break;
@@ -871,6 +923,7 @@ unsigned int Explorer( int size, char *folder )
 					if( ++index > size - 1 )
 						index = StartLine ;
 				} while ( files[index].filesize == FOLDER_SEPALATOR ) ;
+				key = 0;
 				break;
 			case KEY_CTRL_EXE:
 //				if ( filemode != 0 ) break;
@@ -936,10 +989,10 @@ unsigned int Explorer( int size, char *folder )
 				switch ( filemode ) {
 					case 0:
 						key=FileCMD_NEW;
-						if ( Isfolder ) {
-							strcpy( folder, files[index].filename );
-							index = 0;
-						}
+//						if ( Isfolder ) {
+//							strcpy( folder, files[index].filename );
+//							index = 0;
+//						}
 						cont =0 ;
 						break;
 					case 1:
@@ -948,6 +1001,12 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F4:	// Copy file
+				if ( searchmode ) {
+					lowercase=1-lowercase;
+					if ( alphastatus ) SetAlphaStatus( alphalock, lowercase );
+					key = 0;
+					break;
+				} 
 				switch ( filemode ) {
 					case 0:
 						if ( Isfolder ) break;
@@ -973,6 +1032,11 @@ unsigned int Explorer( int size, char *folder )
 				}
 				break;
 			case KEY_CTRL_F5:	// delete file
+				if ( searchmode ) {
+					key=SelectChar( &ContinuousSelect);
+					if ( ( alphastatus ) || ( alphalock ) ) SetAlphaStatus( alphalock, lowercase );
+					break;
+				} 
 				switch ( filemode ) {
 					case 0:
 						if ( nofile ) break;
@@ -998,15 +1062,16 @@ unsigned int Explorer( int size, char *folder )
 				break;
 
 			case KEY_CTRL_F6:		// ------- change function
+				if ( StorageMode < 2 ) {
+					if ( searchmode ) {
+					key='/';
+					break;
+					}
+				} 
 				filemode ++;
 				if ( filemode >2 ) filemode=0;
 				break;
-			
-			case KEY_CTRL_EXIT:
-				if ( ( nofile ) || ( index == StartLine ) ) key=KEY_CTRL_QUIT;
-				index = size;
-				cont =0 ;
-				break;
+
 
 			case KEY_CTRL_OPTN:		// ------- Favorites list
 			  key_fav:
@@ -1022,7 +1087,8 @@ unsigned int Explorer( int size, char *folder )
 				break;
 
 //			case KEY_CHAR_SQUARE:
-			case KEY_CHAR_VALR:
+			case KEY_CHAR_ROOT:
+//			case KEY_CHAR_VALR:
 			  textmodejp:
 				strcpy(buffer,files[index].filename);
 				if ( buffer[0] == 0 ) break;
@@ -1033,6 +1099,8 @@ unsigned int Explorer( int size, char *folder )
 
 			case KEY_CTRL_SHIFT:
 				filemode = 0 ;
+				alphalock = 0 ;
+				alphastatus = 0; 
 				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
 				Fkey_Icon( FKeyNo2, 286 );	//	Fkey_dispN( FKeyNo2, "Mat");
 				Fkey_Icon( FKeyNo3, 560 );	//	Fkey_dispR( FKeyNo3, "VWIN");
@@ -1042,15 +1110,20 @@ unsigned int Explorer( int size, char *folder )
 //				FkeyClear( FKeyNo5 );
 				Fkey_dispN( FKeyNo6, "Debug");
 				GetMemFreeStr10(buffer3);
-				PrintMinix3(10*6+1, 1, (unsigned char*)buffer3, MINI_OVER);  // memory free area
+				if ( searchmode == 0 ) PrintMinix3(10*6+1, 1, (unsigned char*)buffer3, MINI_OVER);  // memory free area
 				CB_ScrollBar( scrbar1, scrbar2, 6, 384-6, 0, 168, 6 ) ;
 
 				GetKey_DisableCatalog( &key );
 				switch (key) {
+					case KEY_CTRL_SHIFT:
+							key = 0;
+							break;
 					case KEY_CTRL_ALPHA:
+					   set_alphalock:
 							alphalock = 1 ;
 							alphastatus = 1;
 							SetAlphaStatus( alphalock, lowercase );
+							key = 0;
 							break;
 					case KEY_CTRL_QUIT:
 						update:
@@ -1060,6 +1133,7 @@ unsigned int Explorer( int size, char *folder )
 					case KEY_CTRL_SETUP:
 							i = StorageMode ;
 							selectSetup=SetupG(selectSetup, 0);
+							miniflag=(EditFontSize & 0x07);
 							if ( (FileListUpdate ) || ( i != StorageMode ) ) { key = KEY_CTRL_EXIT; goto update; }
 							break;
 					case KEY_CTRL_F1:
@@ -1111,16 +1185,138 @@ unsigned int Explorer( int size, char *folder )
 							goto key_fav;
 					case KEY_CHAR_ROOT:
 							goto textmodejp;
-					default:
+					case KEY_CTRL_CATALOG:
+//							StatusArea_Run_sub( "== SEARCH MODE ==", CB_INTDefault, CB_G1MorG3MDefault );
+							Bdisp_AllClr_VRAM3(0,191);
+							CB_ColorIndex=0x001F;		// blue
+							CB_Prints( 1, 1, (unsigned char*)"== File mode Help ===");
+							CB_ColorIndex=0x0000;		// black
+							locate(1,2); Prints((unsigned char*)"[OPTN]:Favorite");
+							locate(1,3); Prints((unsigned char*)"[VARS]:Variable list");
+							locate(1,4); Prints((unsigned char*)"[ \x90\xE5\xC2 ]:Input ~");
+							locate(1,5); Prints((unsigned char*)"[ ^  ]:Input '");
+							locate(1,6); Prints((unsigned char*)"[(-) ]:Input @");
+							locate(1,7); Prints((unsigned char*)"[\xE6\xFB\x31\x30\xE5\xDD]:\x22 or FolderTop");
+							if ( IsCG20 ) { locate(1,7); Prints((unsigned char*)"[EXP "); }
+							locate(5,8); Prints((unsigned char*)"Press:[EXIT]");
+							ExitKey();
+							break;
+							
+//					case 0x756E:	// SHIFT + <-
+					case KEY_SHIFT_LEFT:
+							miniflag=1;
 						break;
-				}
+//					case 0x756F:	// SHIFT + ->
+					case KEY_SHIFT_RIGHT:
+							miniflag=0;
+						break;
+						
+					default:
+							break;
+					}
 				break;
 			default:
 				break;
 		}
+
+		if ( KEY_CHAR_DIV  == key ) key='/'*( StorageMode < 2 );
+		if ( KEY_CHAR_PLUS == key ) key='+';
+		if ( KEY_CHAR_MINUS== key ) key='-';
+//		if ( KEY_CHAR_DP   == key ) key='.';
+		if ( KEY_CHAR_SQUARE  == key ) key='~';
+		if ( KEY_CHAR_VALR    == key ) key='~';
+		if ( KEY_CHAR_POW     == key ) key='^';
+		if ( KEY_CHAR_THETA   == key ) key=0x27;
+		if ( KEY_CHAR_EXP  == key ) key=0x0C;
+		if ( KEY_CHAR_PMINUS  == key ) key='@';
+		if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
+		
+		if ( key == '/' ) {
+			if ( searchmode ) {
+				if (search[0]=='/') {
+					for (i=0; i<8; i++ ) search[i]=search[i+1];
+					csrX--;
+					goto fileSRC;
+				} else {
+					if ( strlen(search) ) {
+						for (i=7; i>0; i-- ) search[i]=search[i-1];
+						search[8]='\0';
+						search[0]='/';
+						csrX++;
+						if ( search[1]==0 ) goto foldertop; else goto fileSRC;
+					}
+				}
+			}
+		}
+
+		if ( ( 0x20 <= key ) && ( key <= 0x7E ) ) {
+			if ( InsertMode ) {		// insert mode
+				i=InsertOpcode1( search, 8, csrX, key );
+			} else {					// overwrite mode
+				if ( search[csrX] != 0x00 ) DeleteOpcode1( search, 8, &csrX);
+				i=InsertOpcode1( search, 8, csrX, key );
+			}
+			if ( i==0 ) NextOpcodeGB( search, &csrX );
+		}
+
+		if ( ( 0x0C == key ) ) {
+		  foldertop:
+			i=FavoritesMAX;
+			while ( i<size ) {
+				if ( files[i].filesize == FOLDER_FLAG ) {
+						index = i;
+						top = index;
+					break;
+				}
+				i++;
+			}
+		} else
+		if ( ( 0x20 < key ) && ( key < 0x7E ) &&( strlen(search) ) ) {
+			searchmode=1;
+		  fileSRC:
+			j=strlen(search);
+			if ( search[0]=='/' ) {;	// folder search
+				j--; if ( j==0 ) goto foldertop;
+			}
+			i=FavoritesMAX;
+			while ( i<size ) {
+				if ( search[0]=='/' ) {
+					if ( files[i].filesize != FOLDER_FLAG ) i++;
+					else {		// folder search
+						k=0;
+						search2=search+1;
+						while ( k<=j ) {
+							if ( files[i].filename[k] != search2[k] ) { k=(k>=j); break; }
+							k++;
+						}
+						if ( k>0 ) {
+							index = i;
+							top = index;
+							break;
+						} else i++; // FavoritesMAX skip
+					}
+				} else {		// file search
+					if ( files[i].filesize == FOLDER_FLAG ) i++;
+					else {
+						k=0;
+						while ( k<=j ) {
+							if ( files[i].filename[k] != search[k] ) { k=(k>=j); break; }
+							k++;
+						}
+						if ( k>0 ) {
+							index = i;
+							top = index;
+							break;
+						} else i++; // FavoritesMAX skip
+					}
+				}
+			}
+		}
+
+		SaveFavorites();
 	}
 	
-	SaveFavorites();
+	Setup_SetEntry(0x14, 0x00); 	// clear alpha mode
 
 	Bkey_Set_RepeatTime(FirstCount,NextCount);		// restore repeat time
 	return key;
@@ -1254,40 +1450,6 @@ int deleteFile( FONTCHARACTER *filename, int size ){
 	return 0;	// ok
 }
 
-/* store bytecode into file */
-int storeFile( const char *name, unsigned char* codes, int size )
-{
-	int handle;
-	FONTCHARACTER filename[FONTCHARACTER_MAX];
-	FONTCHARACTER filename2[FONTCHARACTER_MAX];
-	int r,s;
-	unsigned int freehigh,freelow;
-
-	/* disable, just for call "Bfile_FindFirst_NON_SMEM" */
-	FONTCHARACTER buffer[FONTCHARACTER_MAX];
-	FILE_INFO info;
-	/* end */
-
-	CharToFont( name, filename );
-	CharToFont( name, filename2 );
-	r = deleteFile( filename2, size ) ;
-	if ( r ) return r;
-	
-	FileListUpdate=1;
-	handle = Bfile_CreateFile( filename, size );
-	if( handle < 0 ) { ErrorMSGfile( "Can't create file", (char*)name, handle ); return 1 ; }
-	r = Bfile_CloseFile( handle );
-
-	handle = Bfile_OpenFile( filename, _OPENMODE_WRITE );
-	if( handle < 0 ) { ErrorMSG( "Can't open file", handle ); return 1 ; }
-	Bfile_WriteFile( handle, codes, size );
-	r = Bfile_CloseFile( handle );
-	if( r ) { ErrorMSG( "Close error", handle ); return 1 ; }
-
-	return 0 ;
-}
-
-
 int GetFileSize( const char *fname ) {
 	int handle;
 	FONTCHARACTER filename[FONTCHARACTER_MAX];
@@ -1312,6 +1474,42 @@ int GetFileSize( const char *fname ) {
 	r = Bfile_CloseFile( handle );
 	return size;
 }
+
+/* store bytecode into file */
+int storeFile( const char *name, unsigned char* codes, int size )
+{
+	int handle;
+	FONTCHARACTER filename[FONTCHARACTER_MAX];
+	FONTCHARACTER filename2[FONTCHARACTER_MAX];
+	int r,s,fsize;
+	unsigned int freehigh,freelow;
+
+	/* disable, just for call "Bfile_FindFirst_NON_SMEM" */
+	FONTCHARACTER buffer[FONTCHARACTER_MAX];
+	FILE_INFO info;
+	/* end */
+
+	CharToFont( name, filename );
+	CharToFont( name, filename2 );
+	
+	FileListUpdate=1;
+	fsize = GetFileSize( name );
+	if ( ( fsize > size ) || ( fsize==0 ) ) {	// delete & create file
+		r = deleteFile( filename2, size ) ;
+		if ( r ) return r;
+		handle = Bfile_CreateFile( filename, size );
+		if( handle < 0 ) { ErrorMSGfile( "Can't create file", (char*)name, handle ); return 1 ; }
+		r = Bfile_CloseFile( handle );
+	}
+	handle = Bfile_OpenFile( filename, _OPENMODE_WRITE );
+	if( handle < 0 ) { ErrorMSG( "Can't open file", handle ); return 1 ; }
+	Bfile_WriteFile( handle, codes, size );
+	r = Bfile_CloseFile( handle );
+	if( r ) { ErrorMSG( "Close error", handle ); return 1 ; }
+
+	return 0 ;
+}
+
 
 /* file exist? */
 int ExistFile( char *fname, int replace ) {
@@ -1402,7 +1600,7 @@ void SetAlphalock(){
 	EnableDisplayStatusArea();
 	alphastatus = 1;
 	alphalock = 1;
-	lowercase = 0;
+//	lowercase = 0;
 	SetAlphaStatus( alphalock, lowercase );
 }
 
@@ -2742,6 +2940,7 @@ void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extna
 	char fname[32];
 	int handle;
 	FONTCHARACTER filename[50];
+	FILE_INFO fileinfo;
 	int fsize;
 	char ext[8];
 
@@ -2756,7 +2955,11 @@ void CB_LoadSubBuffer( char *buffer, char *sname, int ptr, int size, char* extna
 	if( handle < 0 ) {
 		CB_Error(CantFindFileERR);  goto exit;
 	}
-	fsize = Bfile_GetFileSize( handle ) -(ptr) ;
+	
+//	fsize = Bfile_GetFileSize( handle ) -(ptr) ;
+	Bfile_GetFileInfo( filename, &fileinfo );
+	fsize = fileinfo.fsize -(ptr) ;
+	
 	if ( fsize > size ) fsize=size;
 	if ( type == SERIAL_STRING ) memset( buffer, 0, size);
 	Bfile_ReadFile( handle, buffer, fsize, ptr );
@@ -3210,9 +3413,37 @@ void ChangeFavorites( int oldStorageMode, int newStorageMode ){	// old <> new fa
 void ChangeStorageMode( int newMode ) {
 	ChangeFavorites( StorageMode, newMode );	// old -> new favorites
 	StorageMode = newMode;
+	FileListUpdate = 1;
 }
 
 //------------------------------------------------------------------------ load from main memory
+void LoadConfig1data( int n ) {	// config data ->List Ans
+	unsigned char fname[8] ="CBasic";
+	unsigned char buffer[ConfigMAX];
+	int fsize;
+	switch ( n ) {
+		case 1:
+			fsize=ConfigMAX;
+			break;
+		case 2:
+			fsize=ConfigMAX2;
+			fname[6]='2';
+			break;
+		case 3:
+			fsize=ConfigMAX3;
+			fname[6]='3';
+			break;
+		default:
+			return ;
+	}
+	if  ( LoadConfigReadFile( buffer, fname, fsize ) < 0 ) { CB_Error(CantFindFileERR); return ; }
+	
+	NewMatListAns( fsize, 1, 0, 8 );		// List Ans
+	if ( ErrorNo ) return ;
+	memcpy( MatAry[CB_MatListAnsreg].Adrs,  buffer , fsize );
+	dspflag=4; 	// List Ans;
+}
+
 void LoadConfig1(){
 	const unsigned char fname[]="CBasic";
 	unsigned char buffer[ConfigMAX];
@@ -3224,7 +3455,7 @@ void LoadConfig1(){
 	int handle,state;
 
 	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX ) < 0 ) return;
-	
+		
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
 	bufdbl=(double*)buffer;
@@ -3241,6 +3472,7 @@ void LoadConfig1(){
 		 ( buffer[ 9]=='0' ) &&
 		 ( buffer[10]=='0' ) ) {
 									// load config & memory
+
 		CB_G1MorG3MDefault =buffer[11];
 		ExtendPict    =buffer[12];			UseHiddenRAM  =buffer[12+1];	ExtendList    =buffer[ 14];		CB_INTDefault=buffer[14+1];
 		RefreshCtrl   =bufshort[8];											EditListChar  =buffer[ 18];		DrawType     =buffer[18+1];
@@ -3309,8 +3541,15 @@ void LoadConfig2(){
 	double *bufdbl;
 	int size,i;
 	int handle,state;
+	char folder[32]="CBasic";		// default C.Basic working folder
 
-	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX2 ) < 0 ) return;
+	if  ( LoadConfigReadFile( buffer, fname, ConfigMAX2 ) < 0 ) {
+		CreateDirectorySub( folder, 1 );		// creat default C.Basic folder for III model
+		root2[0]='\\';
+		strcpy( root2+1, folder );				// current folder
+		return;
+	}
+
 	
 	bufshort=(short*)buffer;
 	bufint=(int*)buffer;
@@ -3405,6 +3644,7 @@ int PP_Search_CR_SPACE(char *SRC ){
 				PP_Search_CR_SPACE_Skip_quot(SRC, &ptr);
 				break ;
 			case 0x27:	// "
+			case 0x13:  // =>
 				PP_Search_CR_SPACE_Skip_comment(SRC, &ptr);
 				break ;
 			case 0x0C:	// <Disps>
@@ -3429,7 +3669,8 @@ int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 	int c,d=0,flag=((*sptr)==1);
 	c=SRC[(*sptr)-2];
 	if ( CheckQuotCR( SRC, (*sptr) ) ) flag=1;	// "   "
-	if ( SRC[(*sptr)-1] == 0x27 ) { d=1; flag=0; }
+	if ( SRC[(*sptr)-1] == 0x27 ) { d=1; flag=0; }	// '
+	if ( SRC[(*sptr)-1] == 0x13 ) { d=1; flag=0; }	// =>
 	while (1){
 		c=SRC[(*sptr)++];
 		dest[(*dptr)++]=c;
@@ -3460,12 +3701,16 @@ int PP_Indent_Skip_quot(char *SRC, char *dest, int *sptr, int *dptr){
 int CB_PreProcessIndent( char *filebase, int progno ) { //
 	char *dest,*SRC;
 	int ptr;
-	int c,i;
+	int c,i,j;
 	int size,maxsize,newsize;
 	int editMax;
 	int sptr=0,dptr=0;
 	int indent = 0;
 	int editIndent=(CB_EditIndent&0x07);
+	int switchflag=0;
+	int switch_nest=0;
+	int switch_indent[16];
+	for( i=0;i<16;i++) switch_indent[i]=0;
 
 	if ( editIndent == 0 ) return 0;
 	if ( PP_Search_CR_SPACE( filebase+0x56 ) ) return 0;	// already exist indent
@@ -3517,18 +3762,48 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 					case 0x04:	// For
 					case 0x08:	// While
 					case 0x0A:	// Do
-					case 0x0FFFFFFEA:	// Switch
-//					case 0x0FFFFFFEB:	// Case
 						indent += editIndent;
 						break;
 					case 0x01:	// Then
 						if ( SRC[sptr] == ':' ) SRC[sptr]=0x0D;
 						break;
+					case 0x0FFFFFFEA:	// Switch
+						indent += editIndent;
+						if ( switch_nest<16 ) switch_nest++;
+						switch_indent[switch_nest]=indent;
+						break;
+					case 0x0FFFFFFEB:	// Case
+					case 0x0FFFFFFEC:	// Default
+						if ( switch_indent[switch_nest]==0 ) break;
+						if ( dest[dptr-3]==' ' ) {
+							indent = switch_indent[switch_nest];
+							j = editIndent;
+							goto jindent;
+						}
+						break;
+					case 0x0FFFFFFED:	// SwitchEnd
+						j = 0;
+						if ( dest[dptr-3]==' ' ) {
+							indent = switch_indent[switch_nest]-editIndent;
+							if ( switch_nest>1 ) switch_nest--;
+						  jindent:
+							dptr -= 3;
+							while ( dest[--dptr] == ' ') ;
+							dptr++;
+							i = 1 ;
+							while ( i <= indent ) {
+								dest[dptr++]=' ';
+								i++;
+							}
+							dest[dptr++]=0xF7;
+							dest[dptr++]=c;
+						}
+						indent += j;
+						break;
 					case 0x03:	// IfEnd
 					case 0x07:	// Next
 					case 0x09:	// WhileEnd
 					case 0x0B:	// LpWhile
-					case 0x0FFFFFFED:	// SwitchEnd
 						indent -= editIndent;
 						if ( indent < 0 ) indent =0 ;
 					case 0x02:	// Else
@@ -3540,10 +3815,10 @@ int CB_PreProcessIndent( char *filebase, int progno ) { //
 								if ( i >= editIndent ) break;
 								dptr--;
 								i++;
-							} while ( dest[dptr]==' ' ) ;
+							} while ( dest[dptr] == ' ' ) ;
 							dest[dptr++]=0xF7;
 							dest[dptr++]=c;
-						} 
+						}
 						break;
 				}
 				break;
@@ -3588,6 +3863,7 @@ void CB_PostProcessIndentRemove( char *filebase ) { //
 		switch ( c ) {
 			case 0x00:	// <EOF>
 				goto exit;
+			case 0x13:  // =>
 			case 0x22:	// "
 			case 0x27:	// '
 				PP_Indent_Skip_quot(SRC, dest, &sptr, &dptr);
@@ -3637,34 +3913,6 @@ void CB_Local( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-void Skip_rem_no_op( char *SRC ){
-	int c=SRC[ExecPtr];
-	if ( c=='/' ) { 	// '/ execute C.Basic only
-		ExecPtr++;
-		return;
-	}
-	while (1){
-		switch ( c ) {
-			case 0x00:	// <EOF>
-				ExecPtr--;
-			case 0x0C:	// dsps
-			case 0x0D:	// <CR>
-				return ;
-				break;
-			case 0x7F:	// 
-			case 0xFFFFFFF7:	// 
-			case 0xFFFFFFF9:	// 
-			case 0xFFFFFFE5:	// 
-			case 0xFFFFFFE6:	// 
-			case 0xFFFFFFE7:	// 
-//			case 0xFFFFFFFF:	// 
-				ExecPtr++;
-				break;
-		}
-		c=SRC[ExecPtr++];
-	}
-}
-
 int PP_Search_IfEnd( char *SRC ){
 	int c,i;
 	int PP_ptr;
@@ -3996,7 +4244,7 @@ void WaitKeyEXE(){
 
 //--------------------------------------------------------------
 void CB_StatusDisp_Run(){
-	if ( CB_StatusDisp ) {
+	if ( ( CB_StatusDisp ) && (SysCalljmp(1,0,0,0,0x2B7)==0 ) ) {
 		StatusArea_Run();
 //		EnableDisplayStatusArea();
 	}
@@ -4019,7 +4267,7 @@ int fileObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
@@ -4032,23 +4280,23 @@ int fileObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
 int fileObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-//int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
+int fileObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //int fileObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
@@ -4166,6 +4414,7 @@ void FavoritesDowndummy6( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
+/*
 void FavoritesDowndummy7( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];
@@ -4246,7 +4495,6 @@ void FavoritesDowndummyB( int *index ) {
 	files[(*index)].filesize=tmp;
 	SaveFavorites();
 }
-/*
 void FavoritesDowndummyC( int *index ) {
 	unsigned short tmp;
 	char tmpname[FILENAMEMAX];

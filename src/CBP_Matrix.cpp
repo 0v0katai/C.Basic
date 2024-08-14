@@ -1064,6 +1064,8 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 	int bk_CB_ColorIndex=CB_ColorIndex;						// current color index 
 	unsigned short bk_CB_BackColorIndex=CB_BackColorIndex;	// current backcolor index 
 	unsigned short bk_CB_ColorIndexPlot=CB_ColorIndexPlot;	// Plot color index (default blue)
+	int toolflag=0;
+	char bk_ENG = ENG;
 
 	CB_INT=2;	//	CPLX mode
 	CB_ColorIndex=-1;
@@ -1188,7 +1190,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				adjX=2;
 			}
 		} else
-		if ( ElementSize == 64 ) {
+		if ( ( ElementSize == 64 ) || ( ElementSize == 128 ) ){
 			MaxDX=4; if (MaxDX>dimA) MaxDX=dimA;
 			dx=27;
 			MaxX=3;
@@ -1199,31 +1201,44 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				MaxX=0;
 				adjX=0;
 			}
-		} else
-		if ( ElementSize == 128 ) {
-			MaxDX=3; if (MaxDX>dimA) MaxDX=dimA;
-			dx=36;
-			MaxX=2;
-			adjX=3;
-			if ( bit==64 ) {	// 16hex
-				MaxDX=0;
-				dx=69;
-				MaxX=0;
-				adjX=0;
-			}
 		}
 		
+		Bdisp_AllClr_VRAM();
+
+		if ( ( strdisp ) && ( ElementSize > 4 ) )  {
+			if ( GBcode==0 ) GBcode = EditGBFont; 
+			if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectY+base, selectX+base), 128-1 );
+			else				OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectX+base, selectY+base), 128-1 );
+			CB_PrintMode( 0, 6*24, (unsigned char *)buffer, MINI_OVER | 0x100 | 0x10000000, 383 );
+		} else {
+			if ( MatXYmode ) value=Cplx_ReadMatrix( reg, selectX+base, selectY+base);
+			else			 value=Cplx_ReadMatrix( reg, selectY+base, selectX+base);
+			Cplx_sprintGR2(buffer, buffer2, value, 21, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+			OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
+			if ( buffer2[0] != '\0' ) {
+				locate(1,6); Prints((unsigned char*)buffer3);
+				OpcodeStringToAsciiString( buffer3, buffer2, 64-1 );
+				if ( ( dotedit==0 ) && ( strdisp==0 ) && ( MaxDY>=4 ) ) {
+					MaxDY=4; if ( MaxDY==4 ) MaxY=3;
+				}
+			}
+			if ( list==1 ) {
+				if ( MatXYmode ) locate(1,6); else locate(13,1);
+				Prints((unsigned char*)MatAry[reg].name);
+			}
+			locate(1,7); Prints((unsigned char*)buffer3);
+		}
+
+
 		if (  selectY<seltopY ) seltopY = selectY;
 		if ( (selectY-seltopY) > MaxY ) seltopY = selectY-MaxY;
 		if ( (dimB -seltopY) < MaxY ) seltopY = dimB -MaxY; 
 		if ( seltopY < 0 ) seltopY=0;
-	  dspjp:
 		if (  selectX<seltopX ) seltopX = selectX;
 		if ( (selectX-seltopX) > MaxX ) seltopX = selectX-MaxX;
 		if ( (dimA -seltopX) < MaxX ) seltopX = dimA -MaxX; 
 		if ( seltopX < 0 ) seltopX=0;
 
-		Bdisp_AllClr_VRAM();
 		j=0;
 		if ( reg<110 ) {
 			switch( list ) {
@@ -1273,10 +1288,11 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 				else 			sprintf3((char*)buffer,"%3d",seltopX+x+base);
 				PrintMinix3(x*dx+16+(dx-5)/2,1,(unsigned char*)buffer,MINI_OVER);
 			}
-			ML_line_FX( 16,8,16,14+MaxDY*8, 1, -1, CB_BackColorIndex);
+			i=14+(MaxDY-(dimB>MaxY))*8;
+			ML_line_FX( 16, 8, 16, i, 1, -1, CB_BackColorIndex);
 			x=(dimA+1)*dx+20-adjX/2 ;
 			if ( dimA == seltopX+MaxX ) x=(MaxX+1)*dx+20-adjX/2 ;
-			if ( x < 128 ) ML_line_FX( x, 8, x, 14+MaxDY*8, 1, -1, CB_BackColorIndex);
+			if ( x < 128 ) ML_line_FX( x, 8, x, i, 1, -1, CB_BackColorIndex);
 		}
 
 		if ( dotedit ) {
@@ -1342,7 +1358,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			MiniDotCursorflag=0;		// mini cursor initialize
 			MatDotEditCursorFlashing();
 		} else {
-			for ( y=0; y<=MaxDY; y++ ) {
+			for ( y=0; y<=MaxDY-(dimB>MaxY); y++ ) {
 				sprintf3((char*)buffer,"%4d",seltopY+y+base);
 				PrintMinix3(0,y*8+10,(unsigned char*)buffer,MINI_OVER);
 				x=(dimA+1)*dx+20-adjX/2 ;
@@ -1351,7 +1367,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 						if ( x < 128 )	 {	ML_line_FX(  x, 8,     x,10    , 0, -1, CB_BackColorIndex); ML_line_FX(  x,10,   x-2,10    , 1, -1, CB_BackColorIndex); }
 				}
 				if ( seltopY+y == dimB ) {	ML_line_FX( 16,14+y*8,16,16+y*8, 0, -1, CB_BackColorIndex); ML_line_FX( 16,14+y*8,18, 14+y*8, 1, -1, CB_BackColorIndex);
-						if ( x < 128 )	 {	ML_line_FX(  x,14+y*8, x,16+y*8, 0, -1, CB_BackColorIndex); ML_line_FX(  x,14+y*8,x-2,14+y*8, 1, -1, CB_BackColorIndex); }
+						if ( x < 128 )	 {	ML_line_FX(  x,14+y*8, x,15+y*8, 0, -1, CB_BackColorIndex); ML_line_FX(  x,14+y*8,x-2,14+y*8, 1, -1, CB_BackColorIndex); }
 				}
 				if ( ( strdisp ) && (ElementSize > 4 ) )  {
 					if ( GBcode==0 ) GBcode = EditGBFont; 
@@ -1366,12 +1382,12 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 							if ( MatXYmode ) value=Cplx_ReadMatrix( reg, seltopX+x+base, seltopY+y+base);
 							else			 value=Cplx_ReadMatrix( reg, seltopY+y+base, seltopX+x+base);
 							
-							i=0;
-							if ( ( bit==0 ) && ( MaxX==7 ) ) {	sprintG(buffer, value.real, 2,RIGHT_ALIGN);
+							i=0;ENG=0;
+							if ( ( bit==0 ) && ( MaxX==3 ) && ( ElementSize == 128 ) ) {	Cplx_sprintGR1cutlim( buffer, value, -6, RIGHT_ALIGN, Norm, 6 );
 							} else 
 							if ( ( bit==0 ) && ( MaxX==3 ) ) {	sprintG(buffer, value.real, 6,RIGHT_ALIGN);
 							} else 
-							if ( ( bit==0 ) && ( MaxX==2 ) ) {	Cplx_sprintGR1cutlim( buffer, value, 8, RIGHT_ALIGN, Norm, 8 );
+							if ( ( bit==0 ) && ( MaxX==7 ) ) {	sprintG(buffer, value.real, 2,RIGHT_ALIGN);
 							} else 
 							if ( bit== 1 ) {	NumToBin(buffer, value.real, 8);	i=1;
 							} else 
@@ -1391,6 +1407,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 							if ( bit==64 ) {	DNumToHex(buffer, value.real, 16);	i=1;
 							} else { 	sprintG(buffer, value.real, 4,RIGHT_ALIGN);	i=3-adjX;
 							}
+							ENG=bk_ENG;
 							PrintMinix3(x*dx+20+i,y*8+10,(unsigned char*)buffer,MINI_OVER);
 //							Bdisp_PutDisp_DD();
 						}
@@ -1402,33 +1419,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		CB_ColorIndex=0xF81F;	// Magenta
 		if ( ( seltopX ) )				CB_PrintMinix3( 16,1,(unsigned char*)"\xE6\x90",MINI_OVER);	// <-
 		if ( ( seltopX+MaxX < dimA ) ) CB_PrintMinix3(122,1,(unsigned char*)"\xE6\x91",MINI_OR);	// ->
-
 		CB_ColorIndex=-1;
-		if ( ( strdisp ) && ( ElementSize > 4 ) )  {
-			if ( GBcode==0 ) GBcode = EditGBFont; 
-			if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectY+base, selectX+base), 128-1 );
-			else				OpcodeStringToAsciiString( buffer, MatrixPtr(reg, selectX+base, selectY+base), 128-1 );
-			locate(1,7); PrintLine((unsigned char *)" ",21);
-			CB_PrintMode( 0, 6*24, (unsigned char *)buffer, MINI_OVER | 0x100 | 0x10000000, 383 );
-		} else {
-			if ( MatXYmode ) value=Cplx_ReadMatrix( reg, selectX+base, selectY+base);
-			else			 value=Cplx_ReadMatrix( reg, selectY+base, selectX+base);
-			Cplx_sprintGR2(buffer, buffer2, value, 21, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-			OpcodeStringToAsciiString( buffer3, buffer, 64-1 );
-			if ( buffer2[0] != '\0' ) {
-				locate(1,6); Prints((unsigned char*)buffer3);
-				OpcodeStringToAsciiString( buffer3, buffer2, 64-1 );
-				if ( (selectY-seltopY)==4 ) { seltopY++; goto dspjp; }
-			}
-			if ( list==1 ) {
-				if ( MatXYmode ) locate(1,6); else locate(13,1);
-				Prints((unsigned char*)MatAry[reg].name);
-			}
-			locate(1,7); Prints((unsigned char*)buffer3);
-		}
-		y = (selectY-seltopY) ;
-		x = (selectX-seltopX) ;
-		if ( dotedit == 0 ) Bdisp_AreaReverseVRAMx3(x*dx+20, y*8+9, x*dx+20+dx-4, y*8+15);	// reverse select element
 
 		if ( ans==0 ) {
 			if ( dotedit ) 	{
@@ -1444,6 +1435,9 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 		if ( MatXYmode ) Fkey_dispN( FKeyNo4, "\xE6\x91m,n"); else Fkey_dispN( FKeyNo4, "\xE6\x91x,y"); 
 		locate(16, 8); MatAryElementSizePrints( ElementSize ) ;
 
+		y = (selectY-seltopY) ;
+		x = (selectX-seltopX) ;
+		if ( dotedit == 0 ) Bdisp_AreaReverseVRAMx3(x*dx+20, y*8+9, x*dx+20+dx-4, y*8+15);	// reverse select element
 		
 		if ( dotedit  ) {
 			MiniDotCursorX = x*dx+20;
@@ -1670,6 +1664,9 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 						goto ToDotEdit;
 					case KEY_CTRL_F3:	// str edit
 						goto ToStrDisp;
+					case KEY_CTRL_F4:	// tool
+						toolflag=1;
+						break;
 					case KEY_CTRL_F5:	// bin
 						goto ToBin;
 					case KEY_CTRL_F6:	// hex
@@ -2332,7 +2329,7 @@ int MatGetOpcode(char *SRC, char *buffer, int Maxlen ) {
 			if ( IsGBCode2(c,SRC[ExecPtr]) ) goto next2;	// GB code
 		} else buffer[ptr++] = c & 0xFF;
 
-		if ( ptr >= Maxlen-1 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr > Maxlen-2 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
 	}
 	buffer[ptr]='\0' ;
 	return ptr;
@@ -2806,6 +2803,7 @@ void CB_MatSwap( char *SRC ) {	// Swap Mat A,2,3
 	if ( a == b ) return;
 
 	switch ( ElementSize ) {
+		case 128:
 		case 64:
 			for ( n=base; n<dimB; n++ ) {
 				dtmp  = Cplx_ReadMatrix( reg, a, n );
@@ -3114,18 +3112,18 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 	int base=MatBase;
 	int ElementSize;
 
-	exptr=ExecPtr;
-	c=SkipSpcCR(SRC);
-	n=1;
-	while ( 0 ) {
-		data=CB_Cplx_EvalDbl( SRC );
-		c=SkipSpc(SRC);
-		if ( c != ',' ) break;
-		ExecPtr++;
-		SkipSpcCR(SRC);
-		n++;
-	}
-	ExecPtr=exptr;
+//	exptr=ExecPtr;
+//	c=SkipSpcCR(SRC);
+//	n=1;
+//	while ( 0 ) {
+//		data=CB_Cplx_EvalDbl( SRC );
+//		c=SkipSpc(SRC);
+//		if ( c != ',' ) break;
+//		ExecPtr++;
+//		SkipSpcCR(SRC);
+//		n++;
+//	}
+//	ExecPtr=exptr;
 
 
 	dimA=64;
@@ -3147,7 +3145,7 @@ void CB_List( char *SRC ) { //	{1.2,3,4,5,6} -> List Ans
 		ExecPtr++;	// "," skip
 		SkipSpcCR(SRC);
 		m++;
-		if ( m >= dimA ) MatElementPlus( reg, m, 1 );	// List element +
+		if ( m >= dimA ) MatElementPlus( reg, m+1-base, 1 );	// List element +
 	}
 	if ( c == '}' ) ExecPtr++;
 	MatAry[reg].SizeA = m+1-base;
@@ -3976,7 +3974,7 @@ void CB_Seq( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 	int fxreg,reg;
 	int exptr,exptr2;
 	complex data,databack;
-	double start,end,step;
+	double start,end,step,tmp;
 	int dataint,databackint;
 	int startint,endint,stepint;
 	int m,n;
@@ -3987,7 +3985,7 @@ void CB_Seq( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 	SeqOprand( SRC, &fxreg, &start, &end, &step );
 	if ( ErrorNo ) return ;
 
-	dimA = (end-start)/step +1;
+	dimA = (end-start)/step +1.5;
 	dimB = 1;
 
 	ElementSize=ElementSizeSelect( SRC, &base, 0) & 0xFF;
@@ -3999,7 +3997,7 @@ void CB_Seq( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 	base=MatAry[reg].Base;
 	m=base; n=base;
 	databack=LocalDbl[fxreg][0];
-	LocalDbl[fxreg][0].real = start;
+	LocalDbl[fxreg][0].real=start;
 	while ( m < dimA+base ) {
 		ExecPtr=exptr;
 		data=CB_Cplx_EvalDbl( SRC );	//
@@ -4012,6 +4010,8 @@ void CB_Seq( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 	ExecPtr=exptr2;
 	dspflag =4 ;	// List data
 }
+
+
 void SeqOprandInt( char *SRC, int *fxreg, int *start, int *end, int *step ){	// Seq(X^2,X,1,10[,1])
 	int exptr=ExecPtr;
 	int errflag;
@@ -4407,7 +4407,7 @@ complex Cplx_CB_MatDet( char *SRC ) {	// Det Mat A
 	else			  result.real = Mat_determinant( reg );
 
 	DeleteMatListAns();
-	dspflag=dspflagtmp; 
+	dspflag=dspflag; 
 	return result;
 }
 
@@ -4625,6 +4625,7 @@ void Cplx_CB_MatInv2( char *SRC ) {	// Inverse Mat A	***duumy2***
 	Cplx_Mat_inverse( reg );
 	dspflag=3; 
 }
+/*
 void Cplx_CB_MatInv3( char *SRC ) {	// Inverse Mat A	***duumy2***
 	int reg,reg2;
 	int sizeA,sizeB;
@@ -4646,6 +4647,183 @@ void Cplx_CB_MatInv3( char *SRC ) {	// Inverse Mat A	***duumy2***
 
 	Cplx_Mat_inverse( reg );
 	dspflag=3; 
+}
+*/
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+void Mat_Sort_leading_entry( int reg ) {
+    complex p,d,tmp1,tmp2;
+	int i,j,k,m,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base,b;
+	short w[1000];
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+	if ( ( sizeA < 2 ) || ( sizeB < 2 ) ) return;
+
+	for ( m = base; m < M; m++) {
+		for( i = base; i < N; i++) {
+			p = Cplx_ReadMatrix( reg, i,m );
+        	if ( ( p.real == 0 ) && ( p.imag == 0 ) ) {
+
+				for( k = i+1; k < N; k++){
+					d = Cplx_ReadMatrix( reg, k,m );
+					if ( ( d.real != 0 ) || ( d.imag != 0 ) ) {
+						for ( x=base; x<M; x++) {				// swap
+							tmp1 = Cplx_ReadMatrix( reg, i,x);
+							tmp2 = Cplx_ReadMatrix( reg, k,x);
+							Cplx_WriteMatrix( reg, k,x,  tmp1);
+							Cplx_WriteMatrix( reg, i,x,  tmp2);
+						}
+						break;
+					}
+					
+				}
+				
+			}
+		}
+	}
+
+}
+
+void Mat_Refto1( int reg ) {	// 
+    complex p,d;
+	int i,j,k,m,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+	for( i = base; i < N; i++) {
+		for(j = base; j < M; j++){
+			p = Cplx_ReadMatrix( reg,i,j);	
+    		if (  ( ( p.real != 0 ) || ( p.imag != 0 ) )  ) {
+				for(x = j; x < M; x++){
+					Cplx_WriteMatrix( reg,i,x, Cplx_fDIV( Cplx_ReadMatrix( reg,i,x) , p) );
+				}
+				break;
+			}
+		}
+	}
+}
+
+
+void Mat_Ref( int reg ) {	// Ref Mat A		Row echelon form
+    complex p,d;
+	int i,j,k,m,n,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+
+	n=base;
+	for( n = base; n < N-1; n++){
+		Mat_Refto1( reg );
+		for( i = n+1; i < N; i++) {
+			p = Cplx_ReadMatrix( reg,i,n);	
+			if ( ( p.real != 0 ) || ( p.imag != 0 ) ) {
+				for(x = n; x < M; x++){
+					Cplx_WriteMatrix( reg,i,x, Cplx_fSUB( Cplx_ReadMatrix( reg,i,x) , Cplx_ReadMatrix( reg,n,x) ) );
+				}
+			}
+		}
+		Mat_Sort_leading_entry( reg );
+	}
+	Mat_Refto1( reg );
+
+
+}
+
+void Mat_Rref( int reg ) {	// Ref Mat A		Reduced row echelon form (Gauss-Jordan elimination)
+    complex p,d;
+	int i,j,k,m,x,y,N,M;
+ 	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+
+
+	sizeA        = MatAry[reg ].SizeA;
+	sizeB        = MatAry[reg ].SizeB;
+	base         = MatAry[reg ].Base;
+	ElementSize  = MatAry[reg ].ElementSize;
+
+	N = sizeA +base ;
+	M = sizeB +base ;
+
+	for( i = base; i < N; i++) {
+		p = Cplx_ReadMatrix( reg,i,i);
+		
+    	if ( ( p.real != 0 ) || ( p.imag != 0 ) ){
+			for(j = base; j < M; j++){
+				Cplx_WriteMatrix( reg,i,j, Cplx_fDIV( Cplx_ReadMatrix( reg,i,j) , p) );
+			}
+
+			for(j = base; j < N; j++) {
+				if (i != j) {
+					d = Cplx_ReadMatrix( reg,j,i);
+
+					if ( ( d.real != 0 ) || ( d.imag != 0 ) ) {
+						for (k = i; k < M; k++)	Cplx_WriteMatrix( reg,j,k, Cplx_fSUB( Cplx_ReadMatrix( reg,j,k) , Cplx_fMUL( d , Cplx_ReadMatrix( reg,i,k) ) ) );	
+					}
+				}
+			}
+		}
+	}
+ 
+}
+
+complex Cplx_CB_MatRefRref( char *SRC, int select ) {	// Rref Mat A	
+	int reg,reg2;
+	int sizeA,sizeB;
+	int ElementSize;
+	int base;
+	int dspflagtmp=dspflag;
+	complex result={0,0};
+	
+//	{ CB_Error(NotSupportERR); return ; }	// Not support error
+
+	Cplx_ListEvalsub1(SRC);
+	if ( dspflag != 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
+	reg = CB_MatListAnsreg;
+
+	Mat_Sort_leading_entry( reg );
+	switch( select ) {
+		case 0:		// Ref
+			Mat_Ref( reg );
+			break;
+		case 1:		// Pref
+			Mat_Ref( reg );
+			Mat_Rref( reg );
+			break;
+	}
+	
+	return result;
 }
 
 
@@ -5287,14 +5465,47 @@ int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte
 int MatrixObjectAlign4MU( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MV( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MW( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MX( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MY( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4MZ( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4Ma( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4Mb( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4Mc( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MV( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MW( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MX( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MY( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4MZ( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Ma( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mb( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mc( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Md( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Me( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mf( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mg( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mh( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mi( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mj( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mk( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Ml( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mm( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mn( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mo( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mp( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mq( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mr( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Ms( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mt( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mu( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mv( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mw( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mx( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4My( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4Mz( unsigned int n ){ return n; }	// align +4byte
+int MatrixObjectAlign4N1( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N2( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N3( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N4( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N5( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N6( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N7( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N8( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N9( unsigned int n ){ return n; }	// align +4byte
+//int MatrixObjectAlign4N0( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 }

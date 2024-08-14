@@ -1268,7 +1268,7 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	
 		key= InputStrSubFn( 1, 3, 21, strlenOp(searchstr), searchstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_ON );
 	} while ( key == KEY_CTRL_AC ) ;	// AC
 	CB_G1MorG3M = bk_G1MorG3M;
-	if ( key == KEY_CTRL_EXIT ) return 0;	// exit
+	if ( key == KEY_CTRL_EXIT ) { srcmode=0; goto exit; }	// exit
 	if ( strlenOp(searchstr) == 0 ) goto loop;
 	if ( key == KEY_CTRL_F2 ) {
 		CB_ColorIndex=0x001F;	// Blue
@@ -1282,16 +1282,21 @@ int SearchForText( char *SrcBase, char *searchstr, int *csrptr, char *repstr ){	
 			key= InputStrSubFn( 1, 5, 21, strlenOp(repstr), repstr, 63, " ", REV_OFF, FLOAT_ON, EXP_ON, ALPHA_ON, HEX_OFF, PAL_ON, EXIT_CANCEL_OFF, AC_CANCEL_ON );
 		} while ( key == KEY_CTRL_AC ) ;	// AC
 		CB_G1MorG3M = bk_G1MorG3M;
-		if ( key == KEY_CTRL_EXIT ) return 0;	// exit
+		if ( key == KEY_CTRL_EXIT ) { srcmode=0; goto exit; }	// exit
 		srcmode=2;	// replace
 	}
 
 	i = SearchOpcodeEdit( SrcBase, searchstr, &(*csrptr), 0 );
 	CB_G1MorG3M = bk_G1MorG3M;
-	if ( i ) return srcmode;	// ok
-	EnableDisplayStatusArea();
-	ErrorMSGstr1(" Not Found ");
-	goto loop;	//  not found loop
+	if ( i==0 ) {
+		EnableDisplayStatusArea();
+		ErrorMSGstr1(" Not Found ");
+		goto loop;	//  not found loop
+	}
+  exit:
+	Setup_SetEntry(0x14, 0x00 ); alphastatus = 0; alphalock = 0;
+	return srcmode;	//
+
 }
 
 //---------------------------------------------------------------------------------------------
@@ -1402,6 +1407,8 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 	int help_code=0;
 	int indent;
 	int execptr;
+	int selectStr=0;
+	char *string;
 
 	cUndo Undo;
  
@@ -1434,7 +1441,10 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 	reentrant_SetRGBColor = 0;	//	reentrant ok
 		
 	KeyRecover();
+	Setup_SetEntry(0x14, 0x00 ); alphastatus = 0; alphalock = 0;
+
 	while ( cont ) {
+		if ( ( alphastatus ) || ( alphalock ) ) SetAlphaStatus( alphalock, lowercase );
 		if ( DebugMode==0 ) DebugMenuSw=0; 
 		MiniCursorClipMode = 0;
 		GBcode = EditGBFont;
@@ -1503,6 +1513,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 						CB_ScrollBar( alllinenum, EditLineNum-1, ymax, 384-6, 0, 168, 6 ) ;
 
 						CB_Help( help_code, cy>(ymax/2+1) );	// help display
+						KeyRecover();
 						help_code = 0;
 
 						break;
@@ -1658,9 +1669,9 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 					if ( ContinuousSelect & 0xFF ) {
 						MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 						goto F5Continue;
-					} else { GetKey_DisableMenu(&key); }
+					} else { GetKey_DisableMenuCatalog(&key); }
 				}
-			} else { GetKey_DisableMenu(&key); }
+			} else { GetKey_DisableMenuCatalog(&key); }
 		}						
 		
 		if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
@@ -2296,7 +2307,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 				CB_PrintMini_Fix10( 384-10*8-15, -21, (unsigned char *)buffer3, MINI_OR); 	// display current line number 
 				CB_ColorIndex=-1;					// current color index reset
 //				if ( (dumpflg==2) ) MiniCursorSetFlashMode( 1 );		// mini cursor flashing on
-				GetKey_DisableMenu(&key);
+				GetKey_DisableMenuCatalog(&key);
 				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
 				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
 				KeyRecover();
@@ -2477,7 +2488,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 							MsgBoxPush( 1 );
 							locate(3,4); Prints((unsigned char*)"Hit GetKey Code");
 							KeyRecover();
-							GetKey_DisableMenu(&key);
+							GetKey_DisableMenuCatalog(&key);
 							MsgBoxPop();
 							sprintf3(buffer,"%d",CB_KeyCodeCnvt( key ) );
 							EditPaste( filebase, buffer, &csrPtr, &Undo );
@@ -2662,6 +2673,9 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CTRL_CAPTURE:
 							SysCalljmp( 4,5,6,7,0x17E6);	// CAPTURE
 							break;
+					case KEY_CTRL_CATALOG:
+							key=CB_Catalog();
+							break;
 					default:
 							break;
 				}
@@ -2743,6 +2757,29 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 				UpdateLineNum=1;
 			}
 		}
+		
+		if ( key == 0x1F91B ) { 	// Graph Y Store
+			i=CommandType;
+			CB_StoreString( 1, ClipBuffer );
+			CommandType=i;
+			key=0;
+		}
+		if ( key == 0x2F91B ) { 	// Graph Y Recall
+			i=CommandType;
+			string = CB_RecallString( 1 );
+			goto pastestring;
+		}
+		if ( key == 0x4F91B ) { 	// Graph Y See
+			i=CommandType;
+			string = CB_SeeString( 1, &selectStr, ClipBuffer );
+		  pastestring:
+			CommandType=i;
+			if ( string != NULL ) {
+				EditPaste( filebase, string, &csrPtr, &Undo );
+				UpdateLineNum=1;
+			}
+			key=0;
+		}
 		if ( dumpflg==2 ) {
 			if ( (key&0xFF00FF00) == 0x5C005C00 ) goto gbnext;	// escape GB code 4byte
 			keyH=(key&0xFF00) >>8 ;
@@ -2813,7 +2850,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 							ptr++;
 							indent++;
 						}
-						indent += CheckIndentCommand( SrcBase, ptr );
+					  	if ( csrPtr != ptr ) indent += CheckIndentCommand( SrcBase, ptr );
 					}
 			}
 			if ( ( 0x00 < key ) && ( key < 0xFF ) || ( key == KEY_CTRL_XTT ) ) {		// ----- 1 byte code -----
@@ -2821,7 +2858,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 						ClipStartPtr = -1 ;		// ClipMode cancel			
 				} else {
 //					if ( key == KEY_CHAR_POW )   key='^';
-					if ( key == KEY_CTRL_XTT  )  { if ( ( CB_G1MorG3M==1 )||( XInputMethod ) ) key='X'; else key=0x90; }	// 'X' or 0x90
+					if ( key == KEY_CTRL_XTT  )  key=XTTKey( key ); 	// 'X' or 0x90 or <r> or <Theta> or T
 
 					help_code=key;
 					do {
@@ -2884,7 +2921,7 @@ int CB_BreakStop(char * SRC) {
 	
 	if ( BreakPtr == -7 ) return BreakPtr;	// return to main program
 	if ( ErrorNo == StackERR ) { BreakPtr=-999; TryFlag=0; return BreakPtr; }	// stack error
-	if ( TryFlag ) return 0;
+	if ( ( BreakPtr == 0 ) && ( TryFlag ) ) return 0;
 	
 	CB_ColorIndex=-1;				// current color index reset
 	CB_BackColorIndex=0xFFFF;		// Back color index (default White)

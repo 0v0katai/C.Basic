@@ -5,10 +5,11 @@ extern "C" {
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void Cplx_WriteListAns2( complex x, complex y ) {
+	int base=MatBase;
 	dspflag=4;	// List ans
-	NewMatListAns( 2, 1, 1, 128 );		// List Ans[2]
-	Cplx_WriteMatrix( CB_MatListAnsreg, 1,1, x ) ;	//
-	Cplx_WriteMatrix( CB_MatListAnsreg, 2,1, y ) ;	// 
+	NewMatListAns( 2, 1, base, 128 );		// List Ans[2]
+	Cplx_WriteMatrix( CB_MatListAnsreg, base,   base, x ) ;	//
+	Cplx_WriteMatrix( CB_MatListAnsreg, base+1, base, y ) ;	// 
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -117,7 +118,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 	int resultreg;
 	int resultflag;
 
-	dspflag=2;		// 2:value		3:list    4:mat
+	dspflag=2;		// 2:value		3:Mat    4:List
 
 	c = SRC[ExecPtr++];
   topj:
@@ -288,6 +289,10 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 					return result ;
 					
 				case 0xFFFFFFF0 :		// GraphY str
+				case 0xFFFFFFF1:		// Graphr
+				case 0xFFFFFFF2:		// GraphXt
+				case 0xFFFFFFF3:		// GraphYt
+				case 0xFFFFFFF4:		// GraphX
 					return CB_Cplx_GraphYStr( SRC, 1 );
 					
 				case 0xFFFFFFF5 :		// IsExist(
@@ -360,6 +365,11 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 				case 0x21:	// Det
 					return Cplx_CB_MatDet(SRC);
 				
+				case 0x55 :				// Ref Mat A
+					return Cplx_CB_MatRefRref( SRC, 0 );
+				case 0x56 :				// Rref Mat A
+					return Cplx_CB_MatRefRref( SRC, 1 );
+
 				case 0x46 :				// Dim
 					result.real = CB_Dim( SRC );
 					result.imag = 0;
@@ -405,6 +415,14 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 					return Int2Cplx( CB_System( SRC ) );
 				case 0xFFFFFFDF :				// Version
 					return Int2Cplx( CB_Version() );		//
+
+				case 0xFFFFFF90 :				// F Result
+					CB_F_Result( SRC );
+				case 0xFFFFFF91 :				// F Start
+				case 0xFFFFFF92 :				// F End
+				case 0xFFFFFF93 :				// F pitch
+					return Dbl2Cplx( REGf[c-0xFFFFFF90] );
+
 				default:
 					ExecPtr--;	// error
 					break;
@@ -525,10 +543,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=Cplx_NoListEvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 128 );		// List Ans[2]
-			Cplx_WriteMatrix( CB_MatListAnsreg, 1,1, Cplx_fpolr(tmp,tmp2) ) ;	// r
-			Cplx_WriteMatrix( CB_MatListAnsreg, 2,1, Cplx_fpolt(tmp,tmp2) ) ;	// Theta
+			Cplx_WriteListAns2( Cplx_fpolr(tmp,tmp2) , Cplx_fpolt(tmp,tmp2) ) ;
 			return Int2Cplx( 0 );
 		case 0xFFFFFFA0 :	// Rec( r, Theta ) -> X,Y
 			tmp=Cplx_NoListEvalsubTop( SRC );
@@ -536,10 +551,7 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 			ExecPtr++;
 			tmp2=Cplx_NoListEvalsubTop( SRC );
 			if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-			dspflag=4;	// List ans
-			NewMatListAns( 2, 1, 1, 128 );		// List Ans[2]
-			Cplx_WriteMatrix( CB_MatListAnsreg, 1,1, Cplx_frecx(tmp,tmp2) ) ;	// x
-			Cplx_WriteMatrix( CB_MatListAnsreg, 2,1, Cplx_frecy(tmp,tmp2) ) ;	// y
+			Cplx_WriteListAns2( Cplx_frecx(tmp,tmp2) , Cplx_frecy(tmp,tmp2) ) ;
 			return Int2Cplx( 0 );
 
 		case 0xFFFFFFF9:	// F9..
@@ -788,66 +800,10 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 			 ( c == 0xFFFFFF8D )) { // integral
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
 		} else if ( c == 0x7F ) { // 7F..
-			c = SRC[ExecPtr+1];
-			switch ( c ) {
-				case 0x40:	// Mat A[a,b]
-				case 0xFFFFFF84 :	// Vct A[a,b]
-				case 0x50:	// i
-				case 0x51:	// List 1[a]
-				case 0x3A:	// MOD(a,b)
-				case 0x3C:	// GCD(a,b)
-				case 0x3D:	// LCM(a,b)
-				case 0xFFFFFF8F:	// Getkey
-				case 0xFFFFFF85:	// logab(a,b)
-				case 0xFFFFFF86:	// RndFix(n,digit)
-				case 0xFFFFFF87:	// RanInt#(st,en)
-				case 0xFFFFFF88 :	// RanList#(n) ->ListAns
-				case 0xFFFFFF89 :	// RanBin#(n,p[,m]) ->ListAns
-				case 0xFFFFFF8A :	// RanNorm#(sd,mean[,n]) ->ListAns
-				case 0xFFFFFFB3 :	// Not
-				case 0xFFFFFFF0:	// GraphY
-				case 0x00:	// Xmin
-				case 0x01:	// Xmax
-				case 0x02:	// Xscl
-				case 0x04:	// Ymin
-				case 0x05:	// Ymax
-				case 0x06:	// Yscl
-				case 0x08:	// Thetamin
-				case 0x09:	// Thetamax
-				case 0x0A:	// Thetaptch
-				case 0x0B:	// Xfct
-				case 0x0C:	// Yfct
-				case 0x20 :			// Max( List 1 )	Max( { 1,2,3,4,5 } )
-				case 0x21 :			// Det Mat A
-				case 0x29 :			// Sigma( X, X, 1, 1000)
-				case 0x2D :			// Min( List 1 )	Min( { 1,2,3,4,5 } )
-				case 0x2E :			// Mean( List 1 )	Mean( { 1,2,3,4,5 } )
-				case 0x47 :			// Fill(
-				case 0x4A :			// List>Mat( List 1, List 2,..) -> List 5
-				case 0x4B :			// Mat>List( Mat A, m) -> List n
-				case 0x4C :			// Sum List 1
-				case 0x4D :			// Prod List 1
-				case 0x58 :			// ElemSize( Mat A )
-				case 0x59 :			// RowSize( Mat A )
-				case 0x5A :			// ColSize( Mat A )
-				case 0x5B :			// MatBase( Mat A )
-				case 0x22 :				// Arg
-				case 0x23 :				// Conjg
-				case 0x24 :				// ReP
-				case 0x25 :				// ImP
-				case 0x6A :		// List1
-				case 0x6B :		// List2
-				case 0x6C :		// List3
-				case 0x6D :		// List4
-				case 0x6E :		// List5
-				case 0x6F :		// List6
-				case 0x26 :				// dx/dy
+				if ( ErrorNo ) goto exitj;
+				c = SRC[ExecPtr+1];
+				if ( ( 0xFFFFFFB0 <= c ) && ( c <= 0xFFFFFFBD ) && ( c != 0xFFFFFFB3 ) ) goto exitj;	// And Or xor
 				result = Cplx_EvalFxDbl2( &Cplx_fMUL, &resultflag, &resultreg, result, Cplx_ListEvalsub4( SRC ) ) ;
-					break;
-				default:
-					goto exitj;
-					break;
-			}
 		} else if ( c == 0xFFFFFFF7 ) { // F7..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
@@ -861,6 +817,7 @@ complex Cplx_ListEvalsub5(char *SRC) {	//  5th Priority abbreviated multiplicati
 		} else if ( c == 0xFFFFFFF9 ) { // F9..
 			c = SRC[ExecPtr+1];
 			switch ( c ) {
+				case 0x1B:	// fn
 				case 0x21:	// Xdot
 				case 0x31:	// StrLen(
 				case 0x32:	// StrCmp(

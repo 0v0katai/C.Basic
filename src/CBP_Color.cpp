@@ -269,7 +269,7 @@ int CB_RGBlistsub( char *SRC, int*r, int*g, int*b ){
 	int dspflagtmp=dspflag;
 	int execptr=ExecPtr;
 	ListEvalsubTop(SRC);
-	if ( dspflag <  3 )  { ExecPtr=execptr; return 1; } // List 1[0] etc
+	if ( dspflag <  3 )  { ExecPtr=execptr; dspflag=dspflagtmp; return 1; } // List 1[0] etc
 	if ( dspflag != 4 )  { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg = CB_MatListAnsreg;
 	base=MatAry[reg].Base;

@@ -46,9 +46,11 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
+//int StackPtr;
+
 char BG_filename[64]="";
 
-const char VerMSG[]="C.Basic CG v1.45\xE6\x41";	// VERSION
+const char VerMSG[]="C.Basic CG v1.47\xE6\x41";	// VERSION
 //---------------------------------------------------------------------------------------------
 
 void VBattDispSub( int x, int y) {
@@ -64,9 +66,9 @@ void VerDispSub() {
 //	locate( 3, 3 ); Prints( (unsigned char*)"(C.Basic FX" );
 //	locate( 3, 4 ); Prints( (unsigned char*)"     compatible+)" );
 	locate( 3, 5 ); Prints( (unsigned char*)"     by sentaro21" );
-	locate( 3, 6 ); Prints( (unsigned char*)"          (c)2020" );
+	locate( 3, 6 ); Prints( (unsigned char*)"          (c)2023" );
 
-	PrintMinix3(13*6+2, 2*8+1, (unsigned char*)" build 07", MINI_OVER );
+	PrintMinix3(13*6+2, 2*8+1, (unsigned char*)" build 02 ", MINI_OVER );
 	PrintMinix3( 2*6+2, 3*8+1, (unsigned char*)"(C.Basic FX compatible+)", MINI_OVER );
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
@@ -94,9 +96,14 @@ int GetMemFree() ;
 int CB_Version() {	// Version
 	return VERSION;
 }
+int OS_VersionMinor() {
+	int OS1,OS2,OS3,OS4;
+	SysCalljmp( 0, 0, (int)&OS3, 0, 0x002B);	// GlibGetOSVersionInfo
+	return (OS3>>28)*1000 + ((OS3>>24)&0xF)*100 + ((OS3>>20)&0xF)*10 + ((OS3>>16)&0xF);
+}
 
 int System( int n ) {
-	int r=0;
+	int a,r=0;
 	if (( 101<=n)&&(n<120)) {	// Pict
 		return (int)PictAry[n-100];
 	}
@@ -119,15 +126,22 @@ int System( int n ) {
 		case -3:
 			r=MaxHeapRam;
 			break;
+		case -22:
+			r=OS_VersionMinor();
+			break;
 		case -2:
 			r=OS_Version();
 			break;
 		case -1:	// CG1020 / CG50
 			r=0;
-			if ( (int)PictAry[0] == 0xA8000000 ) {
+			a=(int)GetVRAMAddress();
+			if ( a == 0xA8000000 ) {
 				r=20; if ( IsCG10() ) r=10;
 			}
-			if ( (int)PictAry[0] == 0xAC000000 ) r=50;
+			if ( a == 0xAC000000 ) {
+				r=50;
+				if ( OS_VersionMinor()/1000 == 2 ) r=90;	// Graph 90+e
+			}
 			break;
 		case 0:	// Version
 			r=VERSION;
@@ -200,6 +214,9 @@ int System( int n ) {
 			r = (int)MatAry;
 			break;
 
+//		case 999:	//
+//			r =StackPtr;
+//			break;
 		case 1000:	//
 			r = (int)HiddenRAM_Top;
 			break;
@@ -218,6 +235,9 @@ int System( int n ) {
 		case 1011:	//
 			r = (int)ProgfileMax[1];
 			break;
+		case 10001:	//
+			r = FuncType;
+			break;
 		default:
 			r = 0;
 	}
@@ -228,7 +248,15 @@ int CB_System( char *SRC ) {	// System( n )
 	int r;
 	int c = SRC[ExecPtr];
 	int n = CB_EvalInt( SRC );
+	if ( n==10000 ) {	// load config data to ListAns   Ststem(10000,1) Ststem(10000,2) Ststem(10000,3)
+		if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+		ExecPtr++;
+		c = CB_EvalInt( SRC );
+		LoadConfig1data( c );
+		goto exit;
+	}
 	r = System( n );
+  exit:
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return r;
 }
@@ -331,6 +359,27 @@ void SetVeiwWindowSTD(){	// STD Initialize
 }
 
 
+unsigned int XTTKey( unsigned int  key) {
+	switch ( FuncType ) {
+		case 1:
+			key=0xCE;	// Theta
+			break;
+		case 2:
+			key='T';
+			break;
+		case 3:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+			key='Y';
+			break;
+		default:
+			if ( ( CB_G1MorG3M==1 ) || ( XInputMethod ) ) key='X'; else key=0x90; // 'X' or 0x90
+	}
+	return key;
+}
+
 unsigned int MathKey( unsigned int  key) {
 	switch ( key ) {
 			case KEY_CHAR_IMGNRY:
@@ -378,7 +427,7 @@ unsigned int MathKey( unsigned int  key) {
 			case KEY_CHAR_RBRACE: //
 			case KEY_CHAR_RECIP: //
 			case KEY_CHAR_DQUATE: //
-				if ( key == KEY_CTRL_XTT ) { if ( XInputMethod ) key='X'; else key=0x90; }	// 'X' or 0x90
+				if ( key == KEY_CTRL_XTT ) key=XTTKey( key ); 	// 'X' or 0x90 or <r> or <Theta> or T
 //				if ( key == KEY_CHAR_PLUS  )  key='+';
 //				if ( key == KEY_CHAR_MINUS )  key='-';
 //				if ( key == KEY_CHAR_PMINUS ) key=0x87; // (-)
@@ -993,6 +1042,9 @@ int SetVar(int select){		// ----------- Set Variable
 	CB_ColorIndexPlot=0x001F;	// Blue
 	Cursor_SetFlashOff(); 		// cursor flashing off
 
+	KeyRecover();
+	Setup_SetEntry(0x14, 0x00 ); alphastatus = 0; alphalock = 0;
+
 	if ( VarMode==2 ) VarMode=0;	// complex ->double
 
 	if ( select >= IsExtVar ) select=IsExtVar;
@@ -1094,8 +1146,12 @@ int SetVar(int select){		// ----------- Set Variable
 
 //			case KEY_CTRL_SHIFT:
 			case KEY_CTRL_OPTN:
+				miniflag=1;
+				goto VARjp;
 			case KEY_CTRL_VARS:
+				miniflag=0;
 //				if ( small == 58  ) {	// extended variable
+				  VARjp:
 					FkeyClearAll();
 					sprintf3(buffer,"Alias Var:%2d      Extended Var(_):%2d",IsExtVar-57, AliasVarMAX+1 );
 //					CB_PrintMini( 16*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OVER);
@@ -1118,10 +1174,12 @@ int SetVar(int select){		// ----------- Set Variable
 //				}
 //				break;
 
-			case 0x756E:	// SHIFT + <-
+//			case 0x756E:	// SHIFT + <-
+			case KEY_SHIFT_LEFT:
 				miniflag=1;
 				break;
-			case 0x756F:	// SHIFT + ->
+//			case 0x756F:	// SHIFT + ->
+			case KEY_SHIFT_RIGHT:
 				miniflag=0;
 				break;
 
@@ -1810,12 +1868,12 @@ void TimePrintSetMode(int set){	// 1:on  0:off
 	}
 }
 //--------------------------------------------------------------
-int SelectNum1( char*msg, int n ,int min, int max, int *key ) {		//
+int SelectNum1sub( char *msg0, char*msg, int n ,int min, int max, int *key ) {		//
 	char buffer[32];
 	int n0=n;
 	PopUpWin(3);
 	FkeyClearAll();
-	locate( 3,3); Prints((unsigned char *)"Select Number");
+	locate( 3,3); Prints((unsigned char *)msg0);
 	locate( 3,5); sprintf3(buffer,"%s[%d~%d]:",msg,min,max); Prints((unsigned char *)buffer);
 	while (1) {
 		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &(*key));		// 0123456789
@@ -1824,6 +1882,9 @@ int SelectNum1( char*msg, int n ,int min, int max, int *key ) {		//
 		n=n0;
 	}
 	return n ; // ok
+}
+int SelectNum1( char*msg, int n ,int min, int max, int *key ) {		//
+	return SelectNum1sub( "Select Number", msg, n ,min, max, &(*key) );
 }
 int SelectNum2( char*msg, int n ,int min, int max ) {		//
 	int key;
@@ -1865,66 +1926,68 @@ int SelectNum4( int n ) {		//
 
 #define SETUP_Angle			0
 #define SETUP_ComplexMode	1
-#define SETUP_DrawType		2
-#define SETUP_Coord			3
-#define SETUP_Grid			4
-#define SETUP_Axes			5
-#define SETUP_Label			6
-#define SETUP_Derivative	7
-#define SETUP_Background	8
-#define SETUP_PlotLineColor	9
-#define SETUP_Sketch		10
-#define SETUP_Display		11
-#define SETUP_ExpDisplay	12
-#define SETUP_Help			13
-#define SETUP_RecoverSetup	14
-#define SETUP_CMDINPUT		15
-#define SETUP_XINPUT		16
-#define SETUP_EnableExtFONT	17
-#define SETUP_EditExtFont	18
-#define SETUP_EditGBFONT	19
-#define SETUP_EditFontSize	20
-#define SETUP_EditIndent	21
-#define SETUP_EditLineNum	22
-#define SETUP_EditListChar	23
-#define SETUP_EditColorBack 24
-#define SETUP_EditColorBase 25
-#define SETUP_EditColorNum  26
-#define SETUP_EditColorCMD  27
-#define SETUP_EditColorQuot 28
-#define SETUP_EditColorComt 29
-#define SETUP_EditColorLine 30
-#define SETUP_EnableOC		31
-#define SETUP_MaxHeapRam	32
-#define SETUP_UseHidnRam	33
-#define SETUP_HidnRamInit	34
-#define SETUP_ExtendPict	35
-#define SETUP_ExtendList	36
-#define SETUP_DisableDebugMode	37
-#define SETUP_ExitDebugModeCheck	38
-#define SETUP_BreakStop		39
-#define SETUP_ExecTimeDsp	40
-#define SETUP_IfEndCheck	41
-#define SETUP_ACBreak		42
-#define SETUP_ForceReturnMode	43
-#define SETUP_Key1sttime	44
-#define SETUP_KeyReptime	45
-#define SETUP_SkipUpDown	46
-#define SETUP_MatDspmode	47
-#define SETUP_Matrixbase	48
-#define SETUP_DATE			49
-#define SETUP_TIME			50
-#define SETUP_RootFolder	51
-#define SETUP_FavoriteColor	52
-#define SETUP_AutoSaveMode	53
-#define SETUP_Forceg1msave	54
-#define SETUP_DirectGBconvert	55
-#define SETUP_Pictmode		56
-#define SETUP_Storagemode	57
-#define SETUP_RefrshCtlDD	58
-#define SETUP_DefaultWaitcount	59
-#define SETUP_G1MorG3M		60
-#define SETUP_Executemode	61
+#define SETUP_Variable		2
+#define SETUP_FuncType		3
+#define SETUP_DrawType		4
+#define SETUP_Coord			5
+#define SETUP_Grid			6
+#define SETUP_Axes			7
+#define SETUP_Label			8
+#define SETUP_Derivative	9
+#define SETUP_Background	10
+#define SETUP_PlotLineColor	11
+#define SETUP_Sketch		12
+#define SETUP_Display		13
+#define SETUP_ExpDisplay	14
+#define SETUP_Help			15
+#define SETUP_RecoverSetup	16
+#define SETUP_CMDINPUT		17
+#define SETUP_XINPUT		18
+#define SETUP_EnableExtFONT	19
+#define SETUP_EditExtFont	20
+#define SETUP_EditGBFONT	21
+#define SETUP_EditFontSize	22
+#define SETUP_EditIndent	23
+#define SETUP_EditLineNum	24
+#define SETUP_EditListChar	25
+#define SETUP_EditColorBack 26
+#define SETUP_EditColorBase 27
+#define SETUP_EditColorNum  28
+#define SETUP_EditColorCMD  29
+#define SETUP_EditColorQuot 30
+#define SETUP_EditColorComt 31
+#define SETUP_EditColorLine 32
+#define SETUP_EnableOC		33
+#define SETUP_MaxHeapRam	34
+#define SETUP_UseHidnRam	35
+#define SETUP_HidnRamInit	36
+#define SETUP_ExtendPict	37
+#define SETUP_ExtendList	38
+#define SETUP_DisableDebugMode	39
+#define SETUP_ExitDebugModeCheck	40
+#define SETUP_BreakStop		41
+#define SETUP_ExecTimeDsp	42
+#define SETUP_IfEndCheck	43
+#define SETUP_ACBreak		44
+#define SETUP_ForceReturnMode	45
+#define SETUP_Key1sttime	46
+#define SETUP_KeyReptime	47
+#define SETUP_SkipUpDown	48
+#define SETUP_MatDspmode	49
+#define SETUP_Matrixbase	50
+#define SETUP_DATE			51
+#define SETUP_TIME			52
+#define SETUP_RootFolder	53
+#define SETUP_FavoriteColor	54
+#define SETUP_AutoSaveMode	55
+#define SETUP_Forceg1msave	56
+#define SETUP_DirectGBconvert	57
+#define SETUP_Pictmode		58
+#define SETUP_Storagemode	59
+#define SETUP_RefrshCtlDD	60
+#define SETUP_DefaultWaitcount	61
+#define SETUP_G1MorG3M		62
+#define SETUP_Executemode	63
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
 
@@ -1955,6 +2018,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
     const char *Returnmode[]  ={"None","F1","EXE","F1&EXE"};
     const char *ExecTimemode[]={"off","on","off%","on reset","  %","on%","  % reset","on%reset"};
     const char *EditIndent[]  ={"off","1","2","3","4","5","6","7","off sav-","1 save-","2 save-","3 save-","4 save-","D","E","F"};
+    const char *FuncTypeStr[]  ={"Y=","r=","Param","X=","Y>","Y<","Y\x12","Y\x10","X>","X<","X\x12","X\x10"};
 	char buffer[22];
 	char folderbuf[16];
 	int key;
@@ -1970,6 +2034,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 	unsigned short us,backcoloetmp=CB_BackColorIndex;
 	CB_ColorIndex=-1;
 	CB_BackColorIndex=0xFFFF;
+	int subselect=0;
 
 	strcpy( folderbuf, folder );	// current folder
 
@@ -2003,53 +2068,67 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			locate(14, cnt-scrl); Prints((unsigned char*)cplxmode[ComplexMode]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Draw Type   :");		// 2
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Variable    :");		// 2
+			locate(14, cnt-scrl); 
+			if ( VarListRange==0 ) {
+				Prints((unsigned char*)"Range");
+			} else {
+				sprintf3((char*)buffer,"List%d", VarListRange);
+				Prints((unsigned char*)buffer);
+			}
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Func Type   :");		// 3
+			locate(14, cnt-scrl); Prints((unsigned char*)FuncTypeStr[(int)FuncType]);
+		} cnt++;
+		if ( scrl <=(cnt-1) ) {
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Draw Type   :");		// 4
 			locate(14, cnt-scrl); Prints((unsigned char*)draw[(int)DrawType]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Coord       :");		// 3
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Coord       :");		// 5
 			locate(14, cnt-scrl); Prints((unsigned char*)onoff[Coord]);
 		} cnt++;
 		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Grid        :");		// 4
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Grid        :");		// 6
 			locate(14, cnt-scrl); Prints((unsigned char*)gridonoff[Grid]);
 		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Axes        :");		// 5
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Axes        :");		// 7
 			locate(14, cnt-scrl); Prints((unsigned char*)axesonoff[Axes]);
 		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Label       :");		// 6
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Label       :");		// 8
 			locate(14, cnt-scrl); Prints((unsigned char*)onoff[Label]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Derivative  :");		// 7
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Derivative  :");		// 9
 			locate(14, cnt-scrl); Prints((unsigned char*)onoff[Derivative]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			if ( BG_Pict_No == 21+ExtendPict )	{
-				locate( 1, cnt-scrl); Prints((unsigned char*)"BG:");		// 8
+				locate( 1, cnt-scrl); Prints((unsigned char*)"BG:");			// 10
 				i=strlen(BG_filename); if ( i>25 ) i-=25;
 				y=(cnt-scrl-1)*24;
 				CB_ColorIndex=0x0000;
 				CB_PrintMini( 4*18, y+4, (unsigned char*)BG_filename, MINI_OVER );
 			} else {
-				locate( 1, cnt-scrl); Prints((unsigned char*)"Background  :");		// 8
+				locate( 1, cnt-scrl); Prints((unsigned char*)"Background  :");
 				if ( BG_Pict_No == 0 )	sprintf3((char*)buffer,"None");
 				else					sprintf3((char*)buffer,"Pict%d",BG_Pict_No);
 				locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 			}
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Plot/LineCol:");		// 9
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Plot/LineCol:");		// 11
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexPlot );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Sketch Line :");		// 10
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Sketch Line :");		// 12
 			locate(14, cnt-scrl); Prints((unsigned char*)style[S_L_Style]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Display     :");		// 11
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Display     :");		// 13
 			locate(14, cnt-scrl); Prints((unsigned char*)display[CB_Round.MODE]);
 			buffer[0]='\0';
 			sprintf3((char*)buffer,"%d",CB_Round.DIGIT);
@@ -2058,11 +2137,11 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			Prints((unsigned char*)ENGmode[ENG]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Exp Display :");		// 12
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Exp Display :");		// 14
 			locate(14, cnt-scrl); Prints((unsigned char*)expdisplay[CB_Round.ExpTYPE]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Syntax Help :");		// 13
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Syntax Help :");		// 15
 			locate(14, cnt-scrl); Prints((unsigned char*)onoff[CB_HelpOn]);
 			if ( CB_HelpOn ) {
 				disp_setupcolor( select, scrl, cnt, CB_HelpFrameColorIndex );
@@ -2072,32 +2151,32 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			}
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"SetupRecover:");		// 14
+			locate( 1, cnt-scrl); Prints((unsigned char*)"SetupRecover:");		// 16
 			locate(14, cnt-scrl); Prints((unsigned char*)onoff[CB_RecoverSetup]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Command Inpt:");		// 15
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Command Inpt:");		// 17
 			locate(14, cnt-scrl); Prints((unsigned char*)CMDinput[ (CommandInputMethod + CB_fx5800P*2) & 3 ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"[\x90]character:");	// 16
+			locate( 1, cnt-scrl); Prints((unsigned char*)"[\x90]character:");	// 18
 			locate(14, cnt-scrl); Prints((unsigned char*)Xinput[XInputMethod]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"EnableExFont:");		// 17
+			locate( 1, cnt-scrl); Prints((unsigned char*)"EnableExFont:");		// 19
 			locate(14, cnt-scrl); Prints((unsigned char*)onoff[EnableExtFont]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit ExtFont:");		// 18
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit ExtFont:");		// 20
 //			CB_Prints_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont*0x100 );		// extflag
 			CB_Prints_ext(14,cnt-scrl,(unsigned char*)onoff[EditExtFont], EditExtFont*0x100 );	// extflag
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit GB Font:");		// 19
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit GB Font:");		// 21
 			locate(14, cnt-scrl); Prints((unsigned char*)GBonoff[EditGBFont]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"EditFontSize:");		// 20
+			locate( 1, cnt-scrl); Prints((unsigned char*)"EditFontSize:");		// 22
 			y=(cnt-scrl-1)*24;
 			CB_ColorIndex=0x0000;
 			switch ( EditFontSize & 0x07 ) {
@@ -2129,137 +2208,137 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			}
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit +Indent:");		// 21
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit +Indent:");		// 23
 			locate(14, cnt-scrl); Prints((unsigned char*)EditIndent[CB_EditIndent]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit LineNum:");		// 22
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit LineNum:");		// 24
 			locate(14, cnt-scrl); Prints((unsigned char*)onoff[(EditFontSize & 0xF0)>>4 ]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"EditListChar:");		// 23
+			locate( 1, cnt-scrl); Prints((unsigned char*)"EditListChar:");		// 25
 			CB_Prints(14, cnt-scrl, (unsigned char*)ListChar[EditListChar]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit-backCol:");		// 24
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit-backCol:");		// 26
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexEditBack );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit-baseCol:");		// 25
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Edit-baseCol:");		// 27
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexEditBase );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"E-NumericCol:");		// 26
+			locate( 1, cnt-scrl); Prints((unsigned char*)"E-NumericCol:");		// 28
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexEditNum );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"E-CommandCol:");		// 27
+			locate( 1, cnt-scrl); Prints((unsigned char*)"E-CommandCol:");		// 29
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexEditCMD );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Ed-QuotColor:");		// 28
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Ed-QuotColor:");		// 30
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexEditQuot );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"E-CommentCol:");		// 29
+			locate( 1, cnt-scrl); Prints((unsigned char*)"E-CommentCol:");		// 31
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexEditComt );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"E-LineNumCol:");		// 30
+			locate( 1, cnt-scrl); Prints((unsigned char*)"E-LineNumCol:");		// 32
 			disp_setupcolor( select, scrl, cnt, CB_ColorIndexEditLine );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Auto OverClk:");		// 31
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Auto OverClk:");		// 33
 			locate(14, cnt-scrl);
 			if ( System( -1 ) <50 ) Prints((unsigned char*)onoff[CB_disableOC==0]);
 			else                    Prints((unsigned char*)"---");
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"HeapRAM Size:");		// 32
+			locate( 1,cnt-scrl); Prints((unsigned char*)"HeapRAM Size:");		// 34
 			sprintf3((char*)buffer,"%dKbyte",MaxHeapRam);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Use Hidn RAM:");		// 33
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Use Hidn RAM:");		// 35
 			locate(14,cnt-scrl); Prints((unsigned char*)onoff[UseHiddenRAM&0x0F]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"HidnRAM Init:");		// 34
+			locate( 1,cnt-scrl); Prints((unsigned char*)"HidnRAM Init:");		// 36
 			locate(14,cnt-scrl);
 			if ( UseHiddenRAM&0x0F ) Prints((unsigned char*)onoff[!(UseHiddenRAM&0xF0)]);
 			else                     Prints((unsigned char*)"---");
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Max Pict No :");		// 35
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Max Pict No :");		// 37
 			sprintf3((char*)buffer,"%d",20+ExtendPict);
 			locate(14, cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Max List 52\xA9:");	// 36
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Max List 52\xA9:");	// 38
 			sprintf3((char*)buffer,"%d (%d)", ExtendList+1, 52+ExtendList*52);
 			locate(14, cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"AT DebugMode:");		// 37
+			locate( 1,cnt-scrl); Prints((unsigned char*)"AT DebugMode:");		// 39
 			locate(14,cnt-scrl); Prints((unsigned char*)onoff[!DisableDebugMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"ExitDM PopUp:");		// 38
+			locate( 1,cnt-scrl); Prints((unsigned char*)"ExitDM PopUp:");		// 40
 			locate(14,cnt-scrl); Prints((unsigned char*)onoff[ExitDebugModeCheck&1]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Break Stop  :");		// 39
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Break Stop  :");		// 41
 			locate(14,cnt-scrl); Prints((unsigned char*)onoff[BreakCheckDefault]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Exec TimeDsp:");		// 40
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Exec TimeDsp:");		// 42
 			locate(14,cnt-scrl); Prints((unsigned char*)ExecTimemode[TimeDsp]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"IfEnd Check :");		// 41
+			locate( 1,cnt-scrl); Prints((unsigned char*)"IfEnd Check :");		// 43
 			locate(14,cnt-scrl); Prints((unsigned char*)onoff[CheckIfEnd]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"ACBreak     :");		// 42
+			locate( 1,cnt-scrl); Prints((unsigned char*)"ACBreak     :");		// 44
 			locate(14,cnt-scrl); Prints((unsigned char*)onoff[ACBreak]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Force Return:");		// 43
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Force Return:");		// 45
 			locate(14,cnt-scrl); Prints((unsigned char*)Returnmode[ForceReturnMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Key 1st time:");		// 44
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Key 1st time:");		// 46
 			sprintf3((char*)buffer,"%dms",KeyRepeatFirstCount*25);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Key Rep time:");		// 45
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Key Rep time:");		// 47
 			sprintf3((char*)buffer,"%dms",KeyRepeatNextCount*25);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"SkipUp/Down :");		// 46
+			locate( 1,cnt-scrl); Prints((unsigned char*)"SkipUp/Down :");		// 48
 			sprintf3((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Mat Dsp mode:");		// 47
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Mat Dsp mode:");		// 49
 			locate(14,cnt-scrl); Prints((unsigned char*)Matmode[MatXYmode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Matrix base :");		// 48
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Matrix base :");		// 50
 			locate(14,cnt-scrl); Prints((unsigned char*)Matbase[MatBaseDefault]);
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 49
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 51
 			DateCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 50
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 52
 			TimeCursorY = cnt-scrl+0x900;
 			DateTimePrintSub();
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Root Folder:");		// 51
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Root Folder:");		// 53
 			locate(13,cnt-scrl);
 			if ( root2[0] == '\0' ) {
 				Prints((unsigned char*)"/");
@@ -2268,33 +2347,33 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			}
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Prints((unsigned char*)"Favorite Col:");		// 52
+			locate( 1, cnt-scrl); Prints((unsigned char*)"Favorite Col:");		// 54
 			disp_setupcolor( select, scrl, cnt, CB_FavoriteColorIndex );
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Auto file save:");		// 53
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Auto file save:");		// 55
 			locate(16,cnt-scrl); Prints((unsigned char*)onoff[AutoSaveMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Force g1m save:");		// 54
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Force g1m save:");		// 56
 			locate(16,cnt-scrl); Prints((unsigned char*)onoff[ForceG1Msave]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Direct GB cnvt:");		// 55
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Direct GB cnvt:");		// 57
 			locate(16,cnt-scrl); Prints((unsigned char*)onoff[DirectGBconvert]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Pict mode   :");		// 56
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Pict mode   :");		// 58
 			locate(14,cnt-scrl); Prints((unsigned char*)Pictmode[PictMode]);
 			if ( CB_ClrPict==0) { locate( 19,cnt-scrl); Prints((unsigned char*)(unsigned char*)"[C]"); }
 
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Storage mode:");		// 57
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Storage mode:");		// 59
 			locate(14,cnt-scrl); Prints((unsigned char*)Storagemode[StorageMode]);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"RefrshCtl DD:");		// 58
+			locate( 1,cnt-scrl); Prints((unsigned char*)"RefrshCtl DD:");		// 60
 			locate(14,cnt-scrl); Prints((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
 			sprintf3((char*)buffer,"%2d/128",Refreshtime+1);
@@ -2302,19 +2381,19 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			if ( RefreshCtrl ) CB_PrintMini_Fix10( 17*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OR);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Wait count  :");		// 59
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Wait count  :");		// 61
 			if ( DefaultWaitcount == 0 )	sprintf3((char*)buffer,"No Wait");
 			else					sprintf3((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"G1M/G3M mode:");		// 60
+			locate( 1,cnt-scrl); Prints((unsigned char*)"G1M/G3M mode:");		// 62
 			locate(14,cnt-scrl); Prints((unsigned char*)G1MG3Mmode[CB_G1MorG3MDefault]);
 			CB_ColorIndex=0x0000;
 			if ( CB_G3M_TEXT ) CB_PrintMini( 16*18+6, (cnt-scrl)*24-18,(unsigned char*)"Text(x3)",MINI_OR);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Prints((unsigned char*)"Execute mode:");		// 61
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Execute mode:");		// 63
 			locate(14,cnt-scrl); Prints((unsigned char*)CBmode[CB_INTDefault]);
 		}
 		y = select-scrl;
@@ -2323,6 +2402,10 @@ int SetupG(int select, int limit ){		// ----------- Setup
 
 		Fkey_Icon( FKeyNo6, 991 );	//	Fkey_dispN( FKeyNo6, "Ver.");
 		switch (select) {
+			case SETUP_Variable:
+				Fkey_Icon( FKeyNo1, 376 );	//	Fkey_dispN( FKeyNo1, "Range");
+				Fkey_Icon( FKeyNo2, 178 );	//	Fkey_dispR( FKeyNo2, "LIST");
+				break;
 			case SETUP_DrawType: // Draw Type
 				Fkey_Icon( FKeyNo1, 357 );	//	Fkey_dispN( FKeyNo1, "Con");
 				Fkey_Icon( FKeyNo2, 358 );	//	Fkey_dispN( FKeyNo2, "Plot");
@@ -2338,6 +2421,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			case SETUP_Axes: // Axes
 				Fkey_Icon( FKeyNo3, 1108 );	//	Fkey_dispN( FKeyNo3, "Scale");
 				goto onoffj;
+			case SETUP_HidnRamInit: // HiddenRAMInit
 			case SETUP_Coord: // Coord
 			case SETUP_Label: // Label
 			case SETUP_Derivative: // Derivative
@@ -2345,7 +2429,6 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			case SETUP_EditExtFont: // Use Ext Font (edit)
 			case SETUP_EditLineNum: // Line number (edit)
 			case SETUP_UseHidnRam: // UseHiddenRAM
-			case SETUP_HidnRamInit: // HiddenRAMInit
 			case SETUP_DisableDebugMode: // DisableDebugMode
 			case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
 			case SETUP_BreakStop: // BreakCheck
@@ -2533,10 +2616,54 @@ int SetupG(int select, int limit ){		// ----------- Setup
 				Fkey_dispN( FKeyNo4, " 4");
 				Fkey_dispN( FKeyNo5, "Save-");
 				break;
+			case SETUP_FuncType: //
+				switch ( subselect ) {
+					case 0:
+						Fkey_Icon( FKeyNo1,  61 );	//	Fkey_dispN( FKeyNo1, "Y=");
+						Fkey_Icon( FKeyNo2,  62 );	//	Fkey_dispN( FKeyNo2, "r=");
+						Fkey_Icon( FKeyNo3,  63 );	//	Fkey_dispN( FKeyNo3, "Param");
+						Fkey_Icon( FKeyNo4, 723 );	//	Fkey_dispN( FKeyNo4, "X=");
+						FkeyClear( FKeyNo5 );
+						Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+						break;
+					case 1:
+						Fkey_Icon( FKeyNo1,  65 );	//	Fkey_dispN( FKeyNo1, "Y>");
+						Fkey_Icon( FKeyNo2,  66 );	//	Fkey_dispN( FKeyNo2, "Y<");
+						Fkey_Icon( FKeyNo3,  67 );	//	Fkey_dispN( FKeyNo3, "Y>=");
+						Fkey_Icon( FKeyNo4,  68 );	//	Fkey_dispN( FKeyNo4, "Y<=");
+						FkeyClear( FKeyNo5 );
+						Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+						break;
+					case 2:
+						Fkey_Icon( FKeyNo1, 724 );	//	Fkey_dispN( FKeyNo1, "X>");
+						Fkey_Icon( FKeyNo2, 725 );	//	Fkey_dispN( FKeyNo2, "X<");
+						Fkey_Icon( FKeyNo3, 726 );	//	Fkey_dispN( FKeyNo3, "X>=");
+						Fkey_Icon( FKeyNo4, 727 );	//	Fkey_dispN( FKeyNo4, "X<=");
+						FkeyClear( FKeyNo5 );
+						Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+						break;
+				}
+				break;
 			default:
 				break;
 		}
-
+		
+		if ( ( limit ) && ( ( select==SETUP_ExtendList ) || ( select==SETUP_MaxHeapRam ) ) ) goto mask;
+		if ( ( limit ) || ( IsCG20 ) || ( select==SETUP_HidnRamInit ) ) {
+			switch ( select ) {
+				case SETUP_UseHidnRam:		// Hidden RAM
+					if ( IsHiddenRAM ) break;
+				case SETUP_ExtendPict:		// Max Pict
+				case SETUP_HidnRamInit: 	// HiddenRAMInit
+				  mask:
+					FkeyMask( FKeyNo1 );
+					FkeyMask( FKeyNo2 );
+					FkeyMask( FKeyNo3 );
+					FkeyMask( FKeyNo4 );
+					FkeyMask( FKeyNo5 );
+					break;
+			}
+		}
 //		Bdisp_PutDisp_DD();
 
 		DateCursorY = y*0x100+(DateCursorY&0xFF);
@@ -2604,6 +2731,22 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						break;
 					case SETUP_ComplexMode: // complex mode
 						ComplexMode = 0;	// Real
+						break;
+					case SETUP_Variable:
+						VarListRange=0;
+						break;
+					case SETUP_FuncType: // function Type
+						switch ( subselect ) {
+							case 0:
+								FuncType = 0;
+								break;
+							case 1:
+								FuncType = 4;
+								break;
+							case 2:
+								FuncType = 8;
+								break;
+						}
 						break;
 					case SETUP_DrawType: // Draw Type connect
 						DrawType = 0 ;
@@ -2731,13 +2874,14 @@ int SetupG(int select, int limit ){		// ----------- Setup
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
 						if ( IsHiddenRAM ) UseHiddenRAM = 1 ; // on
+						if ( YesNo("Initialize Ok?")==0 ) break;
 						ExtendList=(6-1);
-						HiddenRAM_MatAryInit();
+						HiddenRAM_MatAryClear();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
 						if ( UseHiddenRAM ) UseHiddenRAM &= 0x0F;	// on
-						HiddenRAM_MatAryInit();
+						HiddenRAM_MatAryClear();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
 						DisableDebugMode = 0 ; // on
@@ -2844,6 +2988,25 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						break;
 					case SETUP_ComplexMode: // complex mode
 						if ( CB_INTDefault == 2 ) ComplexMode = 1;	// a+bi
+						break;
+					case SETUP_Variable:
+						i = VarListRange; if ( i==0 ) i=1;
+						i = SelectNum1sub("Select List No.","List",i,0,ExtListMax,&key);
+						if ( key==KEY_CTRL_EXIT ) break;
+						VarListRange = i;
+						break;
+					case SETUP_FuncType: // function Type
+						switch ( subselect ) {
+							case 0:
+								FuncType = 1;
+								break;
+							case 1:
+								FuncType = 5;
+								break;
+							case 2:
+								FuncType = 9;
+								break;
+						}
 						break;
 					case SETUP_DrawType: // Draw Type Plot
 						DrawType = 1 ;
@@ -2971,6 +3134,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
+						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM = 0 ; // off
 						ExtendPict=0;
 						ExtendList=(6-1);
@@ -2978,8 +3142,8 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
-						if ( UseHiddenRAM ) UseHiddenRAM |= 0x10;	// off
-						HiddenRAM_MatAryInit();
+//						if ( UseHiddenRAM ) UseHiddenRAM |= 0x10;	// off
+//						HiddenRAM_MatAryClear();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
 						DisableDebugMode = 1 ; // disable
@@ -3085,6 +3249,19 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			case KEY_CTRL_F3:
 //				Bdisp_AreaReverseVRAMx3(0, y*8, 125, y*8+7);	// reverse select line
 				switch (select) {
+					case SETUP_FuncType: // function Type
+						switch ( subselect ) {
+							case 0:
+								FuncType = 2;
+								break;
+							case 1:
+								FuncType = 6;
+								break;
+							case 2:
+								FuncType =10;
+								break;
+						}
+						break;
 					case SETUP_Angle: // Angle
 						Angle = 2 ; // Grad
 						break;
@@ -3105,7 +3282,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						S_L_Style = S_L_Broken ;
 						break;
 					case SETUP_Display: // Display
-						i = SelectNum1("Nrm",CB_Round.DIGIT,0,15,&key);
+						i = SelectNum1("Norm",CB_Round.DIGIT,0,15,&key);
 						if ( key==KEY_CTRL_EXIT ) break;
 						CB_Round.DIGIT=i;
 						CB_Round.MODE =Norm;
@@ -3200,6 +3377,19 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			case KEY_CTRL_F4:
 //				Bdisp_AreaReverseVRAMx3(0, y*8, 125, y*8+7);	// reverse select line
 				switch (select) {
+					case SETUP_FuncType: // function Type
+						switch ( subselect ) {
+							case 0:
+								FuncType = 3;
+								break;
+							case 1:
+								FuncType = 7;
+								break;
+							case 2:
+								FuncType =11;
+								break;
+						}
+						break;
 					case SETUP_Sketch: // Sketch  Line	Dot
 						S_L_Style = S_L_Dot ;
 						break;
@@ -3314,6 +3504,19 @@ int SetupG(int select, int limit ){		// ----------- Setup
 				break;
 			case KEY_CTRL_F6:
 				switch (select) {
+					case SETUP_FuncType: // function Type
+						switch ( subselect ) {
+							case 0:
+								subselect = 1;
+								break;
+							case 1:
+								subselect = 2;
+								break;
+							case 2:
+								subselect = 0;
+								break;
+						}
+						break;
 					case SETUP_EditFontSize: // Edit Font Size +Gap
 						if ( EditFontSize & 0x08 )	EditFontSize -= 0x08;	// ->normal
 						else 						EditFontSize += 0x08;	// ->+Gap

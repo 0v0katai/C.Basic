@@ -5,7 +5,7 @@ extern char  *CB_CurrentStr2;	//
 #define CB_StrBufferMax defaultStrArySize
 //#define CB_StrBufferMax 256
 extern char   CB_StrBufferCNT;
-extern int   CB_StrBufferMax;
+extern int    CB_StrBufferMax;
 extern char   *CB_StrBufPtr;	//[CB_StrBufferCNTMax][CB_StrBufferMax];	//
 
 extern char   defaultStrAry;
@@ -13,12 +13,12 @@ extern short  defaultStrAryN;
 extern int    defaultStrArySize;	// =CB_StrBufferMax
 
 extern char   defaultFnAry;
-extern char   defaultFnAryN;
-extern short  defaultFnArySize;
+extern short  defaultFnAryN;
+extern int    defaultFnArySize;
 
 extern char   defaultGraphAry;
-extern char   defaultGraphAryN;
-extern short  defaultGraphArySize;
+extern short  defaultGraphAryN;
+extern int    defaultGraphArySize;
 //-----------------------------------------------------------------------------
 int StrGetOpcode( char *SRC, int ptr );
 
@@ -36,7 +36,7 @@ int StrUpr( char *str1, char *str2 ) ;		// Upr$(str2, n) -> str1
 int OpcodeCopy(char *buffer, char *SRC, int Maxlen) ;
 void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) ;	// Opcode String  ->  Ascii String
 
-void StrDMSsub( char *buffer, double a ) ;	// 
+void StrDMSsub( char *buffer, double a ) ;	//
 //-----------------------------------------------------------------------------
 // Casio Basic
 //-----------------------------------------------------------------------------
@@ -48,23 +48,26 @@ void GetNewAry8( int reg, int aryN, int aryMax ) ;
 int CheckQuotCR( char *SRC, int ptr ) ;
 int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) ;
 
+int CB_CheckYfn(char *SRC ) ;	// 0:string   1:function
+int GetStrYFnNo( char *SRC, int reg, int aryN, int aryMax ) ;	// -> StringNo
 char* GetStrYFnPtr( char *SRC, int reg, int aryN, int aryMax ) ;
-int CB_IsStrGB( char *SRC, int *execptr ) ;
+char* GetStrYFnPtrSub( int reg, int dimA, int dimB ) ;
 int CB_IsStr( char *SRC, int execptr ) ;
-char* CB_GetOpStr1( char *SRC ,int *maxlen ) ;		// String -> buffer	return
-char* CB_GetOpStr( char *SRC, int *maxoplen ) ;	// Get opcode String 
+int CB_IsStr_noYFn( char *SRC, int execptr ) ;
+char* CB_GetOpStr( char *SRC, int *maxoplen ) ;	// Get opcode String
+char* CB_GetOpStr_noYFn( char *SRC, int *maxoplen ) ;	// Get opcode String 
 double CB_EvalStrDBL( char *buffer, int calcflag ); //
 double CB_EvalStr( char *SRC, int calcflag) ;		// Eval str -> double
 complex CB_Cplx_EvalStrDBL( char *buffer, int calcflag ); //
 complex CB_Cplx_EvalStr( char *SRC, int calcflag) ;		// Eval str -> complex
 int CBint_EvalStr( char *SRC, int calcflag) ;		// Eval str -> int
 void CB_GetLocateStr(char *SRC, char *buffer, int Maxlen ) ;
-void CB_GetFileStr(char *SRC, char *buffer, int Maxlen ) ; 
+void CB_GetFileStr(char *SRC, char *buffer, int Maxlen ) ;
 
 double CB_GraphYStr( char *SRC, int calcflag ) ;	//
-int CBint_GraphYStr( char *SRC, int calcflag ) ;	// 
+int CBint_GraphYStr( char *SRC, int calcflag ) ;	//
 double CB_FnStr( char *SRC, int calcflag ) ;	//
-int CBint_FnStr( char *SRC, int calcflag ) ;	// 
+int CBint_FnStr( char *SRC, int calcflag ) ;	//
 complex CB_Cplx_GraphYStr( char *SRC, int calcflag ) ;	//
 complex CB_Cplx_FnStr( char *SRC, int calcflag ) ;	//
 
@@ -102,11 +105,30 @@ int CB_TimeToStr() ;	// -> "23:59:59"
 
 int CB_StrChar( char *SRC ) ;	// StrChar("*"[,n])
 int CB_StrCenter( char *SRC );	// StrCenter( Str1,max[,"SpaceChar"])
-int CB_EvalToStr( char *SRC );	// Str( n 
+int CB_EvalToStr( char *SRC );	// Str( n
 int CB_Hex( char *SRC );		// Hex(
 int CB_Bin( char *SRC );		// Bin(
 int CB_StrBase( char *SRC );	// StrBase( Str1,base1,base2 )->str2
 int CB_StrRepl( char *SRC );	// StrRepl( Str1,Str2,Str3,n )->str4
 
+int	StrSplit( char *buffer, char *srcstr, int ptr, int maxlen );	// ptr:1-	->MatAns
 int CB_StrSplit( char *SRC ) ;	// StrStip( "123,4567,89","[n,]) -> MatAns[["1232]["4567"]["89"]]
+
+
+char* CB_RecallString(int type );				// ----------- Recall String  type: 0:string  1:fn   2:GraphY
+int CB_StoreString(int type, char *clipbuffer );		// ----------- Store  String  type: 0:string  1:fn   2:GraphY
+char* CB_SeeString(int type, int *select, char *clipbuffer );	// ----------- See    String  type: 0:string  1:fn   2:GraphY
+
+//-----------------------------------------------------------------------------
+void StoreGraphY(  char *fstring, int FuncNo );
+void StoreGraphr(  char *fstring, int FuncNo );
+void StoreGraphXt( char *fstring, int FuncNo );
+void StoreGraphYt( char *fstring, int FuncNo );
+void StoreGraphX(  char *fstring, int FuncNo );
+
+char* ReadGraphY(  int FuncNo );
+char* ReadGraphr(  int FuncNo );
+char* ReadGraphXt( int FuncNo );
+char* ReadGraphYt( int FuncNo );
+char* ReadGraphX(  int FuncNo );
 

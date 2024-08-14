@@ -33,6 +33,7 @@ extern char	Axes      ;	// 0:off 1:on
 extern char	Label     ;	// 0:off 1:on
 extern char	Derivative     ;	// 0:off 1:on
 extern char	PlotLineColor	;	// default:green
+extern char FuncType;
 
 #define S_L_Normal   0
 #define S_L_Thick    1
@@ -80,6 +81,7 @@ extern complex  REG[VARMAXSIZE];
 extern double  REGv[11];
 extern double  VWIN[6][11];
 extern char VWinflag[6];		// VWin flag
+extern double  REGf[4];		// F_Start  F_End  F_pitch
 
 #define regA REG[ 0]
 #define regB REG[ 1]
@@ -127,6 +129,11 @@ extern char VWinflag[6];		// VWin flag
 
 #define Xdot REGv[ 9]
 #define Ydot REGv[10]
+
+#define F_Result REGf[ 0]
+#define F_Start  REGf[ 1]
+#define F_End    REGf[ 2]
+#define F_pitch  REGf[ 3]
 
 
 extern	double Xfct;
@@ -419,6 +426,9 @@ void WriteVram_fx( unsigned char *pDATA , int Kind );
 void EnableDisableGB( char *SRC ) ;	// GB mode enable ##    GB mode disable %%
 int CB_ChangeTextMode( char *SRC ) ;
 
+void CB_GraphFunc( char *SRC, int c ) ;
+
+int ToUpperC( int c );
 //-----------------------------------------------------------------------------
 #define MAXNAMELEN 8
 

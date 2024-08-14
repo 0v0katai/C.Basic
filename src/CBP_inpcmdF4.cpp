@@ -31,6 +31,10 @@ void GetGenuineCmdF4( int *code ){
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF91E;return;	// ClrMat
 			} break;
+		case CMD_PRGM_DISP:
+			switch ( CommandPage ) {
+				case 0: (*code)=0xF72E;return;	// DispF-Tbl
+			} break;
 		case CMD_PRGM_REL:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x3C;return;	// <
@@ -72,6 +76,7 @@ void GetGenuineCmdF4( int *code ){
 		case CMD_OPTN_MAT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F41;return;	// Trn
+				case 1: (*code)=0x7F55;return;	// ref
 				case 2: (*code)=0xF96D;return;	// Angle(
 			} break;
 		case CMD_OPTN_MAT_SIZE:
@@ -113,6 +118,10 @@ void GetGenuineCmdF4( int *code ){
 				case 0: (*code)=0x0002;return;	// pico
 				case 1: (*code)=0x0009;return;	// Tera
 			} break;
+		case CMD_OPTN_FMEM:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x4F91B;return;	// SEE
+			} break;
 		case CMD_OPTN_LOGIC:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7FB4;return;	// Xor
@@ -131,6 +140,14 @@ void GetGenuineCmdF4( int *code ){
 		case CMD_VARS_VWIN_X:
 			switch ( CommandPage ) {
 				case 0: (*code)=0xF921;return;	// Xdot
+			} break;
+		case CMD_VARS_GRPH:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7FF3;return;	// GRAPHYt
+			} break;
+		case CMD_VARS_TABL:
+			switch ( CommandPage ) {
+				case 0: (*code)=0x7F90;return;	// F Result
 			} break;
 		case CMD_VARS_EXT:
 			switch ( CommandPage ) {
@@ -188,7 +205,7 @@ void GetGenuineCmdF4( int *code ){
 
 		case CMD_MENU:		//	------------------------------------------------------------MENU_F4
 			switch ( CommandPage ) {
-				case 0: CommandType=CMD_MENU_EXT; CommandPage=0;break;
+				case 0: CommandType=CMD_MENU_GRPH; CommandPage=0;break;
 			} break;
 		case CMD_MENU_STAT:
 			switch ( CommandPage ) {
@@ -203,6 +220,25 @@ void GetGenuineCmdF4( int *code ){
 		case CMD_MENU_MAT:
 			switch ( CommandPage ) {
 				case 0: (*code)=0x7F44;return;	// Row+
+			} break;
+		case CMD_MENU_GRPH:
+			switch ( CommandPage ) {
+				case 0: CommandType=CMD_MENU_GRPH_STYL;CommandPage=0;break;
+			} break;
+		case CMD_MENU_GRPH_TYPE:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF767;return;	// X=Type
+				case 1:  (*code)=0xF76D;return;	// Y<=Type
+				case 2:  (*code)=0xF76F;return;	// X<=Type
+			} break;
+		case CMD_MENU_GRPH_STYL:
+		case CMD_MENU_TABL_STYL:
+			switch ( CommandPage ) {
+				case 0:  (*code)=0xF73F;return;	// DotG
+			} break;
+		case CMD_MENU_TABL:
+			switch ( CommandPage ) {
+				case 0: CommandType=CMD_MENU_TABL_STYL;CommandPage=0;break;
 			} break;
 		case CMD_MENU_EXT:
 			switch ( CommandPage ) {
