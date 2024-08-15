@@ -19,7 +19,7 @@ typedef struct {
   char flags[4];
 } TDirectoryItem;
 
-int MCS_SearchDirectory( unsigned char*dir, TMainMemoryDirectoryEntry*pdir, char*dirno );
+int MCS_SearchDirectory(unsigned char *dir, TMainMemoryDirectoryEntry **pdir, char *dirno);
 //int MCS_CreateDirectory( unsigned char*dir, char*dirno );
 //int MCS_DeleteDirectory( unsigned char*dir );
 int MCS_GetSystemDirectoryInfo( unsigned char*dir, unsigned int*pdir, char*dirno );
@@ -31,19 +31,17 @@ static unsigned char MCSdir_system[]="system";
 
 int MCS_ReadFileList() {	// MSC file list -> files
 	TMainMemoryDirectoryEntry *pdir;
-	int tmp[4];
 	TDirectoryItem *item;
-	char *dirno;
+	char dirno;
 	char fbuf[32];
 	char *cg3m=".g3m";
 	int i,j,r;
 	int size;
 
-	r = MCS_SearchDirectory( MCSdir_system, (TMainMemoryDirectoryEntry *)&tmp, dirno );
+	r = MCS_SearchDirectory( MCSdir_system, &pdir, &dirno );
 	if ( r == 0x40 ) { ErrorMSG( "Can't find dir", r); return 0; }
 	if ( r != 0    ) { ErrorMSG( "MCS dir error",  r); return 0; }
 
-	pdir = (TMainMemoryDirectoryEntry *)tmp[0];
 	item = (TDirectoryItem*)pdir->addr;
 
 	size = pdir->count + FavoritesMAX + 1 ;
