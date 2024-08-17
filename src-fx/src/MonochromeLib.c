@@ -159,7 +159,7 @@ void ML_clear_vram()
 #ifdef ML_CLEAR_SCREEN
 void ML_clear_screen()
 {
-	char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000;
+	volatile char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000;
 	int i, j;
 	for(i=0 ; i<64 ; i++)
 	{
@@ -176,7 +176,8 @@ void ML_clear_screen()
 #ifdef ML_DISPLAY_VRAM
 void ML_display_vram()
 {
-	char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000, *vram;
+	volatile char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000;
+	char *vram;
 	int i, j;
 	vram = ML_vram_adress();
 	for(i=0 ; i<64 ; i++)
@@ -194,7 +195,7 @@ void ML_display_vram()
 #ifdef ML_SET_CONTRAST
 void ML_set_contrast(unsigned char contrast)
 {
-	char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000;
+	volatile char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000;
 	*LCD_register_selector = 6;
 	*LCD_data_register = contrast;
 }
@@ -203,7 +204,7 @@ void ML_set_contrast(unsigned char contrast)
 #ifdef ML_GET_CONTRAST
 unsigned char ML_get_contrast()
 {
-	char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000;
+	volatile char *LCD_register_selector = (char*)0xB4000000, *LCD_data_register = (char*)0xB4010000;
 	*LCD_register_selector = 6;
 	return *LCD_data_register;
 }
