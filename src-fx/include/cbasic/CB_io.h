@@ -14,11 +14,11 @@ extern char ENG;	// ENG flag  1:ENG  3:3digit separate
 extern char UseHiddenRAM;		// 0: no use   1: use hiddenRAM
 extern char IsHiddenRAM;		// 0: hiddenRAM not exist   1: exist
 
-extern volatile char * HiddenRAM_Top ;			// Hidden RAM TOP
-extern volatile char * HiddenRAM_End ;			// Hidden RAM END
+extern char * HiddenRAM_Top ;			// Hidden RAM TOP
+extern char * HiddenRAM_End ;			// Hidden RAM END
 
-extern volatile char * HiddenRAM_ProgNextPtr;	// Hidden RAM Prog next ptr
-extern volatile char * HiddenRAM_MatTopPtr;		// Hidden RAM Mat top ptr
+extern char * HiddenRAM_ProgNextPtr;	// Hidden RAM Prog next ptr
+extern char * HiddenRAM_MatTopPtr;		// Hidden RAM Mat top ptr
 
 extern char IsSH3;	//	1:SH3   0:SH4
 extern char Is35E2;	//	35+EII :1
