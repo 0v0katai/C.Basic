@@ -93,8 +93,9 @@ target_compile_options(CBASIC PRIVATE
                        -Wall -Wextra -Os -g -flto=auto
                        -Wno-narrowing)
 target_link_options(CBASIC PRIVATE
-                    -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld" -L ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(CBASIC PRIVATE -lm -lc -lfxcg -lgcc)
+                    -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
+                    -Wl,--print-memory-usage -Wl,-Map=map)
+target_link_libraries(CBASIC PRIVATE -lm #[[-lc2]] -lc -lfxcg -lgcc)
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
   generate_g1a(TARGET CBASIC OUTPUT "CBASIC.g1a"
