@@ -64,10 +64,10 @@ void RestoreRoot2(){
 }
 
 void SetFullfilenameNoExtNoFolder( char *filename, char *sname ) {
-	sprintf3( filename, "\\\\%s\\%s", root[StorageMode], sname);
+	sprintf( filename, "\\\\%s\\%s", root[StorageMode], sname);
 }
 void SetFullfilenameNoExtFolder( char *filename, char *dir, char *sname ) {
-	sprintf3( filename, "\\\\%s\\%s\\%s", root[StorageMode], dir, sname);
+	sprintf( filename, "\\\\%s\\%s\\%s", root[StorageMode], dir, sname);
 }
 void SetFullfilenameNoExtsub( char *filename, char *dir, char *sname ) {
 //	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
@@ -81,10 +81,10 @@ void SetFullfilenameNoExt( char *filename, char *sname ) {
 }
 
 void SetFullfilenameExtNoFolder( char *filename, char *sname, char *extname ) {
-	sprintf3( filename, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
+	sprintf( filename, "\\\\%s\\%s.%s", root[StorageMode], sname, extname );
 }
 void SetFullfilenameExtFolder( char *filename, char *dir, char *sname, char *extname ) {
-	sprintf3( filename, "\\\\%s\\%s\\%s.%s", root[StorageMode], dir, sname, extname );
+	sprintf( filename, "\\\\%s\\%s\\%s.%s", root[StorageMode], dir, sname, extname );
 }
 void SetFullfilenameExtsub( char *filename, char *dir, char *sname, char *extname ) {
 //	if ( ( strlen(dir) == 0 ) || ( StorageMode & 2 ) )
