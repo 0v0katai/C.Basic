@@ -23,3 +23,8 @@ objects
 *.SH3
 *.G3A
 *.BAK
+
+src-cg/BaseOptions/BaseOptions.ini
+src-cg/LIB/MyOutPut.TXT
+src-cg/projects/setup.prj
+src-cg/tools/pCGSDK.INI
