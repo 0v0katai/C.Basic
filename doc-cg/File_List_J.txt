@@ -1,0 +1,107 @@
+\\CBasicCG.G3A
+　C.Basic for CGアドイン
+
+\\C.Basic_application\SYSMNG130
+　Colon様により制作されたシステムマネージャアプリです。
+
+\\C.Basic_application\FFM0124
+　Colon様により制作されたフォントマネージャアプリです。
+
+\\FontEdit
+　Tsuru様、Sentaro、Colon様による外部フォントエディタです。
+
+\\@Help
+　Helpファイルです。
+　カレントフォルダにコピーしてお使いください。
+　g3m形式なので自由に編集できます。
+
+\\@Font
+　フォントファイルです。
+　カレントフォルダ、または"@Font"フォルダに転送してお使いください。
+　BMPファイルなので自由に編集できますが外部フォントエディタを使うと簡単に編集できます。
+
+\\CBCGxx
+　C.Basicのソースファイルです。
+
+
+\\C.Basic_sample\BMP_sample
+\\C.Basic_sample\BMP_sample\BMPDRAW.g1m
+  BMPイメージをスクロールするサンプルプログラム。
+\\C.Basic_sample\BMP_sample\BMPROTE.g1m
+  BMPイメージを90度回転するサンプルプログラム。
+\\C.Basic_sample\BMP_sample\DRAWMAT.g1m
+　DrawMatコマンドとDotPutコマンドの表示サンプルプログラム。
+
+
+\\C.Basic_sample\BMP_sample_CG\BMP16A.g3m
+　_Bmp16コマンドを使った16x16の16ビットカラービットマップ表示サンプルプログラム。
+\\C.Basic_sample\BMP_sample_CG\BMPTRSP.g3m
+　16ビットカラービットマップの透過表示サンプルプログラム。
+\\C.Basic_sample\BMP_sample_CG\WBMP.g3m
+\\C.Basic_sample\BMP_sample_CG\WBMPV.g3m
+　24ビットカラーBMPイメージを表示するサンプルプログラム。
+
+
+\\C.Basic_sample\FKeyMenu_sample\Dialogue.g3m
+　ファンクションキーエリアでメッセージ表示するサンプルプログラム。(CalkLoveHK様作成)
+
+\\C.Basic_sample\FKeyMenu_sample\FKEYMENU.g1m
+\\C.Basic_sample\FKeyMenu_sample\FKeyMenu.g3m
+　ファンクションキーの機能確認サンプルプログラム。(やす@Krtyski様作成)
+
+
+\\C.Basic_sample\GRAPHXY_sample\GRAPHXY1.txt
+\\C.Basic_sample\GRAPHXY_sample\GRAPHXY2.txt
+  Graph(X,Y)=コマンドを使ったサンプルプログラム。
+
+\\C.Basic_sample\GRAPHXY_sample\LISSAJ.g1m
+\\C.Basic_sample\GRAPHXY_sample\LISSAJ.g3m
+\\C.Basic_sample\GRAPHXY_sample\LISSAJ.txt
+  Graph(X,Y)=コマンドを使ったリサージュ表示サンプルプログラム。
+
+
+\\C.Basic_sample\List_sample\List.txt
+　Listコマンドを使ったサンプルプログラム。
+
+
+\\C.Basic_sample\ML_sample\BMP.txt
+　_Bmp8コマンドを使ったサンプルプログラム。
+\\C.Basic_sample\ML_sample\MLELIPS1.g1m
+　_Elips/_FillElips/_ElipsInRct/_FElipsInRctコマンドを使った楕円表示サンプルプログラム。
+\\C.Basic_sample\ML_sample\MLPOLY1.g1m
+　星型ポリゴンを回転拡大縮小表示するサンプルプログラム。
+\\C.Basic_sample\ML_sample\MLRECT1.g1m
+　矩形を回転拡大縮小合成表示するサンプルプログラム。
+\\C.Basic_sample\ML_sample\PIXEL.txt
+  _Pixelコマンドを使ったサンプルプログラム。
+\\C.Basic_sample\ML_sample\POLY.txt
+　_Polygonコマンドを使ったサンプルプログラム。
+
+\\C.Basic_sample\ML_sample_CG\ML_Poly.g3m
+　星型ポリゴンを回転拡大縮小表示するサンプルプログラム。
+\\C.Basic_sample\ML_sample_CG\ML_Poly5.g3m
+　星型ポリゴンと背景を合成して回転表示するサンプルプログラム。
+\\C.Basic_sample\ML_sample_CG\ML_Rect.g3m
+　矩形を回転拡大縮小合成表示するサンプルプログラム。
+
+
+\\C.Basic_sample\Opcodes_sample\OPCODEX.g1m
+\\C.Basic_sample\Opcodes_sample\OPCODEX.g3m
+\\C.Basic_sample\Opcodes_sample\OPCODEX.txt
+　純正CasioBasicとC.Basicで使われている予約語の表示サンプルプログラム。
+
+\\C.Basic_sample\Recursive_sample\FIBO.txt
+\\C.Basic_sample\Recursive_sample\FIBOSB.txt
+　フィボナッチ数を再帰的に求めるサンプルプログラム。
+
+\\C.Basic_sample\SERIAL_sample
+  電卓2台を接続してシリアル通信をするサンプルプログラム。
+
+\\C.Basic_sample\System_sample
+　System()コマンドで全てのオプションを使ったサンプルプログラム。(やす@Krtyski様作成)
+
+\\C.Basic_sample\Tryp_Except\TRYERR.txt
+\\C.Basic_sample\Tryp_Except\TRYTEST.txt
+　Try～Exceptコマンドのサンプルプログラム。
+
+

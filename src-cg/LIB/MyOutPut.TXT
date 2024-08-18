@@ -1,0 +1,4 @@
+
+** L1200 (W) Backed up file "fxCG_library.lib" into "fxCG_library.lbk"
+
+Optimizing Linkage Editor Completed

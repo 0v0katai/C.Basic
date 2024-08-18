@@ -1,0 +1,27 @@
+//Embedded C++ Library
+//Copyright (c) Hitachi,Ltd. 1997
+//Licensed material of Hitachi,Ltd
+
+//
+// Standard iostream objects
+// Embeded C++ Library Header <iostream>
+//
+
+//====================================================================
+//  File:	iostream
+//  Purpose:	Definition of class iostream
+//  Create:     1997.09.20 Rev. 1.0
+//====================================================================
+
+#ifndef _IOSTREAM_
+#define _IOSTREAM_
+
+#include <mystrbuf>
+#include <istream>
+#include <ostream>
+
+extern istream cin;
+extern ostream cout;
+// extern ostream cerr;		// EC++, not implemented
+
+#endif

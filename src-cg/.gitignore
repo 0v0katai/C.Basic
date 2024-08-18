@@ -1,0 +1,11 @@
+debug
+workspace
+bitmaps
+objects
+*.CGI
+*.log
+*.lst
+*.lbk
+.*LIB
+*.SH3
+*.G3A

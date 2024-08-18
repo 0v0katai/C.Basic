@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _Bdisp_SetPoint_DD
+
+	.SECTION P,CODE,ALIGN=4
+_Bdisp_SetPoint_DD:
+	BIOS_JUMP #h'026B
+
+	.END

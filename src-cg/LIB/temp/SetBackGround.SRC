@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _SetBackGround
+
+	.SECTION P,CODE,ALIGN=4
+_SetBackGround:
+	BIOS_JUMP #h'1EF8
+
+	.END

@@ -1,0 +1,57 @@
+EXIT_IF=TOOLS_INVOKED
+INCLUDE="$(PROJECTDIR)\SETUP.PRJ"
+INCLUDE="$(PROJECTDIR)\SYSCALLS.PRJ"
+LIBRARY=fxCG_TOOLS
+CONVERT_H=convert_tools.h
+DELFILE="$(HEADERDIR)\$(CONVERT_H).TMP"
+DISP_H=display_tools.h
+DELFILE="$(HEADERDIR)\$(DISP_H).TMP"
+KEYB_H=keyboard_tools.h
+DELFILE="$(HEADERDIR)\$(KEYB_H).TMP"
+MISC_H=misc_tools.h
+DELFILE="$(HEADERDIR)\$(MISC_H).TMP"
+LINEDS_H=LineEditors.h
+DELFILE="$(HEADERDIR)\$(LINEDS_H).TMP"
+STD_SC=STD_tools.h
+DELFILE="$(HEADERDIR)\$(STD_SC).TMP"
+DEPENDENCY=
+DEPENDENCY="$(PROJECTDIR)\SHCPP_OPTIONS.PRJ"
+ASM_OPT=
+INCLUDE="$(PROJECTDIR)\ASMSH_OPTIONS.PRJ"
+OPTION=
+INCLUDE="$(PROJECTDIR)\SHCPP_OPTIONS.PRJ"
+SETENV=
+SETENV=SHC_LIB;$(BINDIR)
+SETENV=SHC_TMP;$(DEBUGDIR)
+LIB_MOD_OPT=
+LIB_MOD_OPT=-REP="$(OBJECTDIR)\$(PROG).OBJ"
+LIB_MOD_OPT=-LIB="$(LIBDIR)\$(LIBRARY).LIB"
+LIB_OPT=
+LIB_OPT=-NOPRE
+LIB_OPT=-SH=SY,SE
+LIB_OPT=-LIS="$(DEBUGDIR)\$(LIBRARY).LBP"
+LIB_OPT=-FO=Library
+LIB_OPT=-OU="$(LIBDIR)\$(LIBRARY).LIB"
+CONSTANT_DEPENDENCY_FILE="$(LIBDIR)\$(LIBRARY).LIB"
+SOURCEDIR="$(LIBDIR)\SOURCE"
+TOOLS=void IntToHex( unsigned int value, unsigned char*result );$(CONVERT_H);20110412140907
+TOOLS=int HexToInt( unsigned char*value );$(CONVERT_H);20110412140907
+TOOLS=void Print( unsigned char*msg );$(DISP_H);20110412140907
+TOOLS=int PRGM_GetKey( void );$(KEYB_H);20110412140907
+TOOLS=unsigned int random( int seed = 0 );$(MISC_H);20110412140907
+TOOLS=unsigned int AsmLibTest( void );$(MISC_H);20110411121802
+TOOLS=int InputAny( unsigned char*buffer, int x, int y, int posmax, int&xpos, int etype = 0 );$(LINEDS_H);20110512130516
+TOOLS=int strcmp( const char*, const char* );$(STD_SC);20110624163200
+TOOLS=int strcpy( const char*, const char* );$(STD_SC);20110624164506
+TOOLS=void *memmove(void *s1, const void *s2, int n);$(STD_SC);20110624165651
+TOOLS=void *strchr(const char *s, int c);$(STD_SC);20110624170539
+TOOLS=char *strcat(char *s1, const char *s2);$(STD_SC);20110625111856
+TOOLS=char *strncpy(char *s1, const char *s2, int n);$(STD_SC);20110625112210
+TOOLS=void Line( int x1, int y1, int x2, int y2, int color );$(DISP_H);20110625141238
+CONSTANT_DEPENDENCY_FILE=
+LIB_OPT=
+LIB_MOD_OPT=
+OPTION=
+ASM_OPT=
+UPDATEHEADERFILES=$(HEADERDIR)
+TOOLS_INVOKED=TRUE

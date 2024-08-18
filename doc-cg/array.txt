@@ -1,0 +1,106 @@
+------------------------------------------------------------
+ 0:	Mat A
+ 1:	Mat B
+ 2:	Mat C
+ 3:	Mat D
+ 4:	Mat E
+ 5:	Mat F
+ 6:	Mat G
+ 7:	Mat H
+ 8:	Mat I
+ 9:	Mat J
+10:	Mat K
+11:	Mat L
+12:	Mat M
+13:	Mat N
+14:	Mat O
+15:	Mat P
+16:	Mat Q
+17:	Mat R
+18:	Mat S
+19:	Mat T
+20:	Mat U
+21:	Mat V
+22:	Mat W
+23:	Mat X
+24:	Mat Y
+25:	Mat Z
+
+26:	Mat <r>		List <r>
+27:	Mat <theta>	List <theta>
+28:	Mat Ans		List Ans
+29:
+30:
+31:
+
+32:	Mat a		List 27
+33:	Mat b           List 28
+34:	Mat c           List 29
+35:	Mat d           List 30
+36:	Mat e           List 31
+37:	Mat f		List 32
+38:	Mat g		List 33
+39:	Mat h		List 34
+40:	Mat i		List 35
+41:	Mat j		List 36
+42:	Mat k		List 37
+43:	Mat l		List 38
+44:	Mat m		List 39
+45:	Mat n		List 40
+46:	Mat o		List 41
+47:	Mat p		List 42
+48:	Mat q		List 43
+49:	Mat r		List 44
+50:	Mat s		List 45
+51:	Mat t		List 46
+52:	Mat u		List 47
+53:	Mat v		List 48
+54:	Mat w		List 49
+55:	Mat x		List 50
+56:	Mat y		List 51
+57:	Mat z		List 52
+
+58:			List  1
+59:			List  2
+60:			List  3
+61:			List  4
+62:			List  5
+63:			List  6
+64:			List  7
+65:			List  8
+66:			List  9
+67:			List 10
+68:			List 11
+69:			List 12
+70:			List 13
+71:			List 14
+72:			List 15
+73:			List 16
+74:			List 17
+75:			List 18
+76:			List 19
+77:			List 20
+78:			List 21
+79:			List 22
+80:			List 23
+81:			List 24
+82:			List 25
+83:			List 26
+
+84:	Mat 53		List 53
+85:	Mat 54		List 54
+86:	Mat 55		List 55
+87:	Mat 56		List 56
+88:	Mat 57		List 57
+89:	Mat 58		List 58
+90:	Mat 59		List 59
+91:	Mat 60		List 60
+92:
+93:
+94:
+95:
+96:
+97:
+98:
+99:
+

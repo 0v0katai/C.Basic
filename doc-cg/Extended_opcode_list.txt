@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------------
-C.Basic for CG Ver 1.00beta   Extended Opcode List
+C.Basic for CG Ver 1.28beta   Extended Opcode List
 
-Last edited by sentaro21/Colon, 15 Jun 2019(UTC)
+Last edited by sentaro21/Colon, 25 July 2019(UTC)
 
 ---------------------------------------------------------------------------------
  0x00A7  "not "                 // Not -> not
@@ -18,6 +18,10 @@ Last edited by sentaro21/Colon, 15 Jun 2019(UTC)
  0x7F5D  "GetRGB("              // for CG
  0x7F5E  "RGB("                 // for CG
  0x7F5F  "Ticks"
+ 0x7F70  "GetHSV("		// for CG
+ 0x7F71  "HSV("			// for CG
+ 0x7F72  "GetHSL("		// for CG
+ 0x7F73  "HSL("			// for CG
  0x7F9F  "KeyRow("
  0x7FCF  "System("
  0x7FDF  "Version"

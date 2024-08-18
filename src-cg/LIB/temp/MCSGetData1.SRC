@@ -1,0 +1,14 @@
+	.MACRO BIOS_JUMP FUNO, TAIL=nop
+	mov.l \FUNO', r0
+	mov.l #h'80020070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	.export _MCSGetData1
+
+	.SECTION P,CODE,ALIGN=4
+_MCSGetData1:
+	BIOS_JUMP #h'1563
+
+	.END

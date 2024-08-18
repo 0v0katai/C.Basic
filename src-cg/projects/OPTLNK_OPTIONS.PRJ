@@ -1,0 +1,19 @@
+OPTION=-noprelink
+OPTION=-rom D=R
+OPTION=-nomessage
+OPTION=-list "$(DEBUGDIR)\$(PROG).map"
+OPTION=-show symbol
+OPTION=-nooptimize
+OPTION=-fsymbol P
+OPTION=-nologo
+OPTION=-input "$(OBJECTDIR)\$(PROG).obj"
+OPTION=-library "$(LIBDIR)\fxCG_SYSCALLS.LIB"
+OPTION=-library "$(LIBDIR)\fxCG_TOOLS.LIB"
+OPTION=-input "$(BINDIR)\setup.obj"
+OPTION=-library "$(LIBDIR)\fxCG_library.lib"
+OPTION=-output "$(WORKDIR)\$(PROG).abs"
+OPTION=-nomessage=1100
+OPTION=-end
+OPTION=-input "$(WORKDIR)\$(PROG).abs"
+OPTION=-form binary
+OPTION=-output "$(DEPENDANT)"

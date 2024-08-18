@@ -1,5 +1,7 @@
 --------------------------------------------------------
-CBasic setup format	ver.0.56
+CBasic setup format	ver.1.00
+--------------------------------------------------------
+CBasic setup format	1280 bytes
 --------------------------------------------------------
 offset	type  name
 --------------------------------------------------------
@@ -49,7 +51,7 @@ offset	type  name
 57	char  1-MatBaseDefault
 58	char  (reserved)
 59	char  MatXYmode
-60	char  (reserved)
+60	char  CB_HelpOn				// 0.80 new
 61	char  CheckIfEnd
 62	char  (reserved)
 63	char  PictMode
@@ -110,8 +112,9 @@ offset	type  name
 
 1278-1279 short version	(0.56 -> 56)		// 0.56 new
 
+
 --------------------------------------------------------
-CBasic2 setup format
+CBasic2 setup format	512 bytes
 --------------------------------------------------------
 offset	type  name
 --------------------------------------------------------
@@ -119,3 +122,15 @@ offset	type  name
 11-47   char  (reserved)
 
 48-511	double REG.A...z.image
+
+
+--------------------------------------------------------
+CBasic3 setup format	620 bytes
+--------------------------------------------------------
+offset	type  name
+--------------------------------------------------------
+00-08	 char  folder[9] // Storage
+10-18    char  folder[9] // SD
+32-227   char  FavoriteName	// Storage	sizeof(Files) * FavoritesMAX	// 28*7=196
+228-423  char  FavoriteName	// SD        	sizeof(Files) * FavoritesMAX	// 28*7=196
+424-619  char  FavoriteName	// MainMem	sizeof(Files) * FavoritesMAX	// 28*7=196
