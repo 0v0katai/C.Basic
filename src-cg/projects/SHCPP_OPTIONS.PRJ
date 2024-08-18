@@ -4,7 +4,7 @@ OPTION=-cpu=sh3
 OPTION=-OB="$(DEPENDANT)"
 OPTION=-L="$(DEBUGDIR)\$(PROG).LST"
 OPTION=-show=source
-OPTION=-speed
+OPTION=-size
 OPTION=-noinline
 OPTION=-chgincpath
 OPTION=-errorpath

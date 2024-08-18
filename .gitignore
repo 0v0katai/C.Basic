@@ -9,3 +9,17 @@
 src-fx/Debug
 src-fx/INIT
 src-fx/SDCard
+
+debug
+workspace
+bitmaps
+objects
+*.CGI
+*.log
+*.LIB
+*.lst
+*.lbk
+*.LIB
+*.SH3
+*.G3A
+*.BAK
