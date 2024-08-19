@@ -3,17 +3,6 @@
 *.dlr
 *.G1A
 *.bat
-
-# Directory
-.vscode/
-src-fx/Debug
-src-fx/INIT
-src-fx/SDCard
-
-debug
-workspace
-bitmaps
-objects
 *.CGI
 *.log
 *.LIB
@@ -23,8 +12,16 @@ objects
 *.SH3
 *.G3A
 *.BAK
+*.PRJ
 
-src-cg/BaseOptions/BaseOptions.ini
-src-cg/LIB/MyOutPut.TXT
-src-cg/projects/setup.prj
-src-cg/tools/pCGSDK.INI
+# Directory
+.vscode
+src-fx/Debug
+src-fx/INIT
+src-fx/SDCard
+src-cg/debug
+src-cg/workspace
+src-cg/bitmaps
+src-cg/objects
+src-cg/tools
+src-cg/LIB
