@@ -329,4 +329,4 @@ int MCS_GetState( int*maxspace, int*currentload, int*remainingspace );
 //
 //
 int Bdisp_FkeyColor( int p1, short p2);
-
+int EnableColor( int );

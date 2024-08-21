@@ -36,6 +36,7 @@
     .global _IsCG10
     .global _Bkey_ClrFlag
     .global _OpCodeToStr
+    .global _EnableColor
 
     .global _Calljmp
     .global _SysCalljmp
@@ -143,19 +144,24 @@ _Bdisp_FkeyColor:
 
 _Serial_GetFreeTransmitSpace:
     BIOS_JUMP 0x1bc0
+
 _Serial_BufferedTransmitOneByte:
     BIOS_JUMP 0x1bbc
+
 _Serial_ReadOneByte:
     BIOS_JUMP 0x1bb9
+
 _Serial_GetReceivedBytesAvailable:
     BIOS_JUMP 0x1bbf
+
 _Serial_ClearReceiveBuffer:
     BIOS_JUMP 0x1bc1
+
 _Serial_ClearTransmitBuffer:
     BIOS_JUMP 0x1bc2
 
-#_OpenFileDialog:
-#	BIOS_JUMP 0x17E9
+_EnableColor:
+    BIOS_JUMP 0x0921
 
 _Calljmp:
     mov.l	@r15,r1

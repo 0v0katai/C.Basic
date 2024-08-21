@@ -114,7 +114,7 @@ void main() {
 	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
 
 	while (1) {
-		// EnableColor( 1 );
+		EnableColor( 1 );
 		CB_BackPict=0;				// back image
 		CB_ColorIndex=-1;			// current color index reset
 		CB_BackColorIndex=0xFFFF;	// Back color index (default White)
