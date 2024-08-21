@@ -161,7 +161,7 @@ typedef int32_t register_t;
  */
 
 #ifndef __CYGWIN__	/* which defines these types in it's own types.h. */
-typedef _off_t	off_t;
+// typedef _off_t	off_t;
 typedef __dev_t dev_t;
 typedef __uid_t uid_t;
 typedef __gid_t gid_t;
