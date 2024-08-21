@@ -2,7 +2,7 @@
 # toolchain file and module path of the fxSDK
 
 cmake_minimum_required(VERSION 3.15)
-project(CBASIC LANGUAGES ASM C)
+project(CBASICPS LANGUAGES ASM C)
 
 include(GenerateG1A)
 include(GenerateG3A)
@@ -73,28 +73,28 @@ set(ASSETS_cg
 
 fxconv_declare_assets(${ASSETS} ${ASSETS_fx} ${ASSETS_cg} WITH_METADATA)
 
-add_executable(CBASIC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
-include_directories(CBASIC PRIVATE
+add_executable(CBASICPS ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
+include_directories(CBASICPS PRIVATE
                     "${CMAKE_CURRENT_SOURCE_DIR}/include"
                     "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_compile_options(CBASIC PRIVATE
+target_compile_options(CBASICPS PRIVATE
                        -nostdlib -I include
                        -Wall -Wextra -Os -g -flto=auto
                        -Wno-narrowing)
-target_link_options(CBASIC PRIVATE
+target_link_options(CBASICPS PRIVATE
                     -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
                     -Wl,--print-memory-usage -Wl,-Map=map)
-target_link_libraries(CBASIC PRIVATE -lm #[[-lc2]] -lc -lfxcg -lgcc)
+target_link_libraries(CBASICPS PRIVATE -lm #[[-lc2]] -lc -lfxcg -lgcc)
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
-  generate_g1a(TARGET CBASIC OUTPUT "CBASIC.g1a"
-    NAME "CBASIC" ICON assets-fx/icon.png)
+  generate_g1a(TARGET CBASICPS OUTPUT "CBASICPS.g1a"
+    NAME "CBASICPS" ICON assets-fx/icon.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
-  generate_g3a(TARGET CBASIC OUTPUT "CBASIC.g3a"
-    NAME "CBASIC" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
+  generate_g3a(TARGET CBASICPS OUTPUT "CBASICPS.g3a"
+    NAME "CBASICPS" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
-  generate_g3a(TARGET CBASIC OUTPUT "CBASIC-fx.g3a"
-    NAME "CBASIC-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
+  generate_g3a(TARGET CBASICPS OUTPUT "CBASICPS-fx.g3a"
+    NAME "CBASICPS-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCP)
-  generate_hh2_bin(TARGET CBASIC OUTPUT "CBASIC-hh2.bin")
+  generate_hh2_bin(TARGET CBASICPS OUTPUT "CBASICPS-hh2.bin")
 endif()
