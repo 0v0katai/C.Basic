@@ -29,4 +29,3 @@ typedef struct  {
 
 #include "CBP_MonochromeLib.h"
 #include "MonochromeLibCG.h"
-

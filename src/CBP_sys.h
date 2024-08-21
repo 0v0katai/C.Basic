@@ -1,5 +1,4 @@
-#include "dispbios.h"
-#include "filebios.h"
+#include "fx9860.h"
 
 #define VRAMSIZE 0x28800
 #define VRAMSIZE_FX 1024
@@ -37,9 +36,8 @@ void *memcpy2(void *buf1, const void *buf2, size_t n);
 
 int OpcodeToStr2( int opcode, unsigned char *string ) ; //
 int rand() ;
-int srand( int seed ) ;
 //----------------------------------------------------------------------------- math
-double atof( char* buf ) ;
+double atof2( char* buf ) ;
 /*
 
 double fmod(double x,double y);
@@ -242,7 +240,7 @@ void StatusArea_SetGlyph( int mode ) ;	// mode:0 file   1:edit   2:run
 
 int Bfile_OpenFile(const FONTCHARACTER *filename, int mode);
 int Bfile_WriteFile(int HANDLE, const void *buf, int size);
-int Bfile_GetMediaFree(enum DEVICE_TYPE devicetype, int *freebytes);
+int Bfile_GetMediaFree(DEVICE_TYPE devicetype, int *freebytes);
 int Bfile_GetFileSize(int HANDLE);
 int Bfile_CreateFile(const FONTCHARACTER *filename, int size);
 int Bfile_CreateDirectory(const FONTCHARACTER *pathname);
@@ -308,7 +306,7 @@ void IncLightLevel(void);
 void ClrLightLevel(void);
 void Bdisp_SetBacklightLevel(char level);
 void Bdisp_WriteDDRegister5A1( unsigned char finelevel );
-void Bdisp_DDRegisterSelect( unsigned short reg );
+
 void SetRawBacklightSubLevel(int level);
 
 //-----------------------------------------------------------------------------

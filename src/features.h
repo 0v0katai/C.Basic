@@ -22,7 +22,7 @@
 #define _SYS_FEATURES_H
 
 #ifdef __cplusplus
-extern "C" {
+
 #endif
 
 /* RTEMS adheres to POSIX -- 1003.1b with some features from annexes.  */

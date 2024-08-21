@@ -81,7 +81,7 @@
 /**************************/
 
 #ifdef __cplusplus
-extern "C" {
+
 #endif
 
 #define ML_SCREEN_WIDTH     128

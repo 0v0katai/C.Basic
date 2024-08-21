@@ -1,6 +1,4 @@
 //------------------------------------------- source code refer to (WSC) file.c
-#include "filebios.h"
-
 /* return a filename */
 unsigned int SelectFile (char *filename);
 void FileListfree() ;

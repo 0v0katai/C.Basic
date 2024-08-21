@@ -1,5 +1,3 @@
-#include "dispbios.h"
-
 //-----------------------------------------------------------------------------
 struct st_round {
 	char MODE;	//    mode :   0:normal  1:Fix   2: Sci
