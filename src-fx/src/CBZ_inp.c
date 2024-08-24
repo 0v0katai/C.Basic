@@ -86,8 +86,13 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 //			num = Round( num, round_mode, digit);
 		 	w=15; if ( w > width )  w=width;
 		 	pw=pow(10,w+minus);
-			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
+			if ( fabsnum==0 ) {
+				w = 15-digit;
+				goto zero_case;
+			}
+			if ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) {
 				w = floor((log10(fabsnum))) + (15-digit);
+			  zero_case:
 				if ( digit >= width ) w= w+(digit-width);
 				i=14-w;
 				if ( i >= 18 ) i=18;
