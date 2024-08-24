@@ -48,12 +48,11 @@ void VerDispSub( int flag ) {
 	locate( 3, 2 ); Print( (unsigned char*)VerMSG );
 //	locate( 3, 3 ); Print( (unsigned char*)"(Casio Basic" );
 //	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
-	locate( 3, 5 ); Print( (unsigned char*)"     by sentaro21" );
-	locate( 3, 6 ); Print( (unsigned char*)"          (c)2024" );
-
+//	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 	PrintMini(10*6+2, 2*8+1, (unsigned char*)"(" COMMIT_ID ")", MINI_OVER);
-	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
-
+	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"Copyright (C) 2015-2024", MINI_OVER );
+	PrintMini( 2*6+2, 4*8+1, (unsigned char*)"Sentaro21 & CalcLoverHK", MINI_OVER );
+	PrintMini( 2*6+2, 5*8+1, (unsigned char*)"Licensed under GPLv2.", MINI_OVER );
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 //		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
 //		sprintf(buffer,"%d bytes free",freearea);

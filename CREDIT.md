@@ -1,18 +1,19 @@
 # Credit
 
-C.Basic would not be possible without the following open source softwares and websites. We express our greatest appreciation to these authors.
+C.Basic would not be possible without the following softwares and websites. We express our greatest appreciation to these authors.
 
-We tried our best to gather the license information of all materials we used, but unfortunately we cannot retrieve some of them due to inaccessibility at the time of writing this CREDIT.md or difficulty in contacting authors for further confirmation.
+We tried our best to gather the license information of all materials we used, but unfortunately we cannot retrieve some of them due to inaccessibility at the time of writing this credit or difficulty in contacting authors for further confirmation.
 
 If you are one of the copyright holders of these materials and would like to inform us of your license information, please open an issue ticket to do so. We apologize for the inconveniences caused.
 
-## Original author
+## Lead developers
 
-[Sentaro21](mailto:sentaro21@pm.matrix.jp)
+- [Sentaro21](mailto:sentaro21@pm.matrix.jp)
+- CalcLoverHK
 
-## Application developers
+## Application
 
-Application         | Developers
+Application         | Authors
 ---                 | ---
 Help File           | Sentaro21
 Font File Manager   | Sentaro21, Colon
@@ -67,7 +68,7 @@ Copyright © 2011 Simon Lothar. All rights reserved.
 ## fx-9860G SDK
 
 [Download](https://edu.casio.com/support/en/agreement.html#2)  
-Official CASIO SDK for creating _C.Basic for FX_.
+Official CASIO SDK for creating _C.Basic for FX_ prior to v2.47-β2.
 
 <details><summary>License</summary>
 
@@ -75,7 +76,7 @@ Copyright © 2006 CASIO Co., Ltd. All rights reserved.
 
 </details>
 
-## miniSDK
+## fxCG miniSDK
 
 [Homepage](https://bible.planet-casio.com/simlo/chm/v20/fxCG20_SDK.htm)  
 Community fx-CG SDK for creating _C.Basic for CG_.
@@ -83,6 +84,23 @@ Community fx-CG SDK for creating _C.Basic for CG_.
 <details><summary>License</summary>
 
 Copyright © 2011 Simon Lothar. All rights reserved.
+
+</details>
+
+## fxSDK
+
+[Homepage](https://git.planet-casio.com/Lephenixnoir/fxsdk)  
+Community SDK for building fx-9860 and fx-CG add-ins.
+
+<details><summary>License</summary>
+
+Copyright © 2015-2022 gint/fxSDK contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 </details>
 
@@ -147,7 +165,7 @@ Implementation of integration using the Gauss-Kronrod 25-51 points rule.
 
 <details><summary>License</summary>
 
-Adapted from the HP41 INTDIFFEQ module by [Jean-Marc Baillard](https://hp41programs.yolasite.com), by [acapde](https://community.casiocalc.org/user/30287-acapde), 2020. Adapted with permission.
+Adapted from the HP41 INTDIFFEQ module by [Jean-Marc Baillard](https://hp41programs.yolasite.com), by acapde @ Universal Casio Forum, 2020. Adapted with permission.
 
 </details>
 
