@@ -40,7 +40,10 @@ double Round( double num, int round_mode, int digit){
 		case Sci: // sci
 			if ( digit==0 ) break;
 			if ( digit>=16 ) break;
-			exf=log10(fabsnum);
+			if (fabsnum == 0)
+				exf = 0;
+			else 
+				exf = log10(fabsnum);
 			exp=exf;
 			if ( exf > 0 ) exp++;
 			exf=pow(10,exp);
@@ -118,7 +121,7 @@ void sprintGRSi( char* buffer, double num, int width, int align_mode, int round_
 				if ( fabsnum == 0 ) minus=0;
 				if ( fabsnum < 1e17 ) {
 					i=digit;
-					if ( fabsnum >=0 ) j=log10(fabsnum); else j=0;
+					if ( fabsnum > 0 ) j=log10(fabsnum); else j=0;
 					if (j+i>15) i=15-j;
 					if (i<0) i=0;
 					c='f';
