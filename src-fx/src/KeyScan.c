@@ -11,10 +11,10 @@
 //0B                  DIAG     OSUPD     0B    A44B000B
 //0A                                     0A    A44B000A
 //09  F1    F2   F3   F4   F5   F6       09    A44B0009
-//08  SHIFT OPTN VARS MENU ©  ª        08    A44B0008
-//07  ALPHA ^2   ^    EXIT «   ¨       07    A44B0007
+//08  SHIFT OPTN VARS MENU ï¿½ï¿½  ï¿½ï¿½        08    A44B0008
+//07  ALPHA ^2   ^    EXIT ï¿½ï¿½   ï¿½ï¿½       07    A44B0007
 //06  XTT   log  ln   sin  cos  tan      06    A44B0006
-//05  ab/c  F<>D  (    )    ,   ¨       05    A44B0005
+//05  ab/c  F<>D  (    )    ,   ï¿½ï¿½       05    A44B0005
 //04  7     8    9    DEL                04    A44B0004
 //03  4     5    6    x    div           03    A44B0003
 //02  1     2    3    +    -             02    A44B0002
@@ -592,29 +592,5 @@ int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) {			// CasioBasic Getke
 }
 
 //----------------------------------------------------------------------------------------------
-int kObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int kObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int kObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 

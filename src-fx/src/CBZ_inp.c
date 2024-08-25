@@ -8,9 +8,6 @@
 #include "CB.h"
 
 //----------------------------------------------------------------------------------------------
-//int inpObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int inpObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int inpObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 void RoundZero( double num, int digit ){	// dummy
 	if ( num < pow(10,-digit) ) num=0;
@@ -5098,12 +5095,3 @@ void  CB_Input( char *SRC ){
 }
 */
 //---------------------------------------------------------------------------------------------- align dummy
-int InpObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int InpObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int InpObjectAlign4o( unsigned int n ){ return n; }	// align +4byte

@@ -68,11 +68,6 @@ complex Cplx_ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 
 	return result;
 }
 //-----------------------------------------------------------------------------
-int EvalObjectAlignEC4a0( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignEC4a1( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignEC4a2( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignEC4a3( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignEC4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 void Cplx_WriteMatrix( int reg, int dimA, int dimB, complex value){		// base:0  0-    base:1 1-
@@ -672,8 +667,6 @@ complex Cplx_RoundSci( complex num, complex digit){
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4cee( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4cff( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 int Cplx_Get2Eval( char *SRC, complex *tmp, complex *tmp2){
@@ -1173,10 +1166,6 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 }
 
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4cgg( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4chh( unsigned int n ){ return n+n; }	// align +6byte
-int EvalObjectAligncE4ii( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAligncE4jj( unsigned int n ){ return n ; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...

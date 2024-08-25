@@ -617,8 +617,6 @@ complex Cplx_ListEvalsub1(char *SRC) {	// 1st Priority
 }
 
 //-----------------------------------------------------------------------------
-//int Cplx_ListEvalObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
-//int Cplx_ListEvalObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 complex Cplx_ListEvalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...

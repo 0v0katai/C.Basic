@@ -22,8 +22,6 @@
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlignE4a( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -69,11 +67,6 @@ int ReadMatrixInt( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	}
 }
 //-----------------------------------------------------------------------------
-int EvalIntObjectAlign4c0( unsigned int n ){ return n; }	// align +4byte
-int EvalIntObjectAlign4c1( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign4c2( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign4c3( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign6d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    base:1 1-
 	char*	MatAryC;
@@ -126,8 +119,6 @@ void WriteMatrixInt( int reg, int dimA, int dimB, int value){		// base:0  0-    
 	}
 }
 //-----------------------------------------------------------------------------
-//int MatrixObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
-//int MatrixObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int MatOperandIntSub( int c ) {
@@ -202,12 +193,6 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	if ( SRC[g_exec_ptr] == ']' ) g_exec_ptr++ ;	// 
 }
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalIntObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 int rand2() {
@@ -370,7 +355,6 @@ int CB_rand( char *SRC ) {
 }
 
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int CB_EvalInt( char *SRC ) {
@@ -480,8 +464,6 @@ int EvalIntsubTop( char *SRC ) {	// eval 1
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalintObjectAlignE4c( unsigned int n ){ return n; }	// align +4byte
-//int EvalintObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 int Eval_atoi(char *SRC, int c ) {
 	int	result=0;
@@ -948,8 +930,6 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 	return 0 ;
 }
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
-//int EvalIntObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 int EvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
@@ -1465,10 +1445,3 @@ void CB_Wait( char *SRC ) {
 
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalIntObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalIntObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-//int EvalIntObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
