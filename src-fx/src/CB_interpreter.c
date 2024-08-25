@@ -133,10 +133,6 @@ char VWinflag[6];				// VWin flag
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int ObjectAlign4( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign6a( unsigned int n ){ return n+n; }	// align +6byte
-//int ObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 int CB_F7sub( char *SRC, int c ) ;
 
@@ -1081,15 +1077,6 @@ void InitLocalVar() {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-//int ObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
-//int ObjectAlign6f( unsigned int n ){ return n+n; }	// align +6byte
 //----------------------------------------------------------------------------------------------
 
 void Skip_block( char *SRC ){
@@ -1536,9 +1523,6 @@ void CB_Goto( char *SRC, int *StackGotoAdrs, CurrentStk *CurrentStruct ) {
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int ObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 void Search_IfEnd( char *SRC ){
 	int c;
@@ -1859,10 +1843,6 @@ void CB_Next( char *SRC ,CurrentStk *CurrentStruct ){
 }
 
 //----------------------------------------------------------------------------------------------
-//int ObjectAligni4( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAligni6a( unsigned int n ){ return n+n; }	// align +6byte
-int ObjectAligni4b( unsigned int n ){ return n; }	// align +4byte
-int ObjectAligni4c( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int Search_WhileEnd( char *SRC ){
@@ -2988,30 +2968,5 @@ int CB_interpreter( char *SRC ) {
 }
 
 //----------------------------------------------------------------------------------------------
-int iObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int iObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int iObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------

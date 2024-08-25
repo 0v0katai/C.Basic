@@ -73,9 +73,6 @@ double ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 1-
 	return result;
 }
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4a0( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4a1( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4b1( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 void WriteMatrix( int reg, int dimA, int dimB, double value){		// base:0  0-    base:1 1-
@@ -545,9 +542,6 @@ void MatOprand1( char *SRC, int reg, int *dimA, int *dimB ){	// base:0  0-    ba
 }
 
 //----------------------------------------------------------------------------------------------
-int EvalObjectAlignE4d( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAlignE4e( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4f( unsigned int n ){ return n; }	// align +4byte
 //-----------------------------------------------------------------------------
 double CB_EvalDbl( char *SRC ) {
 	double value;
@@ -722,10 +716,6 @@ double EvalsubTop(char *SRC) {	// eval 1
 }
 
 //----------------------------------------------------------------------------------------------
-int EvalObjectAlignE4g( unsigned int n ){ return n; }	// align +4byte
-int EvalObjectAlignE4h( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4i( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4j( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
 void _div_check(double div) {
 	if (div == 0)
@@ -1152,10 +1142,6 @@ double RoundSci( double x, double digit){
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//int EvalObjectAlignE4ee( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4ef( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4ff( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAlignE4fg( unsigned int n ){ return n+n; }	// align +6byte
 //-----------------------------------------------------------------------------
 
 unsigned int Eval_atofNumDiv(char *SRC, int c, double *num ){
@@ -1730,10 +1716,6 @@ double DmsToDec( char *SRC, double h ) {	// 12"34"56 -> 12.5822222
 	return (h + m/60 + s/3600)*f ;
 }
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4gg( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4hh( unsigned int n ){ return n+n; }	// align +6byte
-int EvalObjectAlignE4ii( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4jj( unsigned int n ){ return n ; }	// align +4byte
 //-----------------------------------------------------------------------------
 
 double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
@@ -2180,12 +2162,4 @@ int CB_IsError( char *SRC ){ //	IsError (...)
 */
 
 //-----------------------------------------------------------------------------
-int EvalObjectAlignE4s( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4t( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAlignE4u( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4v( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4w( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4x( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4y( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAlignE4z( unsigned int n ){ return n ; }	// align +4byte
 //-----------------------------------------------------------------------------

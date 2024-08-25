@@ -1119,40 +1119,4 @@ void ML_circle2(int x, int y, int radius, ML_Color color, int start, int end, in
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-int MLObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-//int MLObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
 //----------------------------------------------------------------------------------------------
