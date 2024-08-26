@@ -182,3 +182,13 @@ void Emu_check();
 void Getfolder( char *sname ) ;
 void SetFullfilenameExt( char *filename, char *sname, char *extname );
 void Restorefolder();
+
+/**
+ * Main function to retrieve the free space of the current storage media.
+ * Note that it uses global variable `StorageMode` which is non-standard. As such,
+ * this function automatically converts the variable to `DEVICE_TYPE` values.
+ * In the future, we should refactor this variable to comply with SDK standards.
+ * 
+ * @return Free space in bytes.
+ */
+int get_current_media_free();
