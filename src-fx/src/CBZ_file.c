@@ -489,47 +489,46 @@ void FavoritesUpDown( int *index, int updw ) {	// up:-1	down:1
 
 //--------------------------------------------------------------
 
-int GetMediaFree( unsigned int *high, unsigned int *low) {
-	int freespace[2];
-	(*high)=0;
-	switch ( StorageMode ) {
-		case 0:		// Storage memory
-			if ( Bfile_GetMediaFree(DEVICE_STORAGE,freespace) != 0 ) Abort() ;
-			if ( IsSH3 ) {
-				(*low) =freespace[0];
-			} else {
-				(*high)=freespace[0];
-				(*low) =freespace[1];
-			}
+static const unsigned short sd_card_id[] = {'\\','\\','c','r','d','0',0};
+
+int get_current_media_free() {
+    int free_bytes[2];
+	int media_type;
+
+	/* Convert StorageMode to DEVICE_TYPE macros. */
+	/* In long term, `StorageMode` should totally comply with SDK standards (^^;) */
+	switch (StorageMode) {
+		case 1:
+			media_type = DEVICE_SD_CARD;
 			break;
-		case 1:		// SD
-			if ( Bfile_GetMediaFree(DEVICE_SD_CARD,freespace) != 0 ) Abort() ;
-			if ( IsSH3 ) {
-				(*low) =freespace[0];
-			} else {
-				(*high)=freespace[0];
-				(*low) =freespace[1];
-			}
+		case 2:
+		case 3:
+			media_type = DEVICE_MAIN_MEMORY;
 			break;
-		case 2:		// main memory
-			(*low) =MCS_Free();
-			break;
+		default:
+			/* `StorageMode` = 0 and failsafe measure */
+			media_type = DEVICE_STORAGE;
 	}
-	return (*low);
+
+	if (media_type == DEVICE_SD_CARD) {
+		/* `Bfile_GetMediaFree` is broken for SD card, so we go for the syscall approach here. */
+		if (Bfile_GetMediaFree_OS(sd_card_id, free_bytes) != 0)
+			Abort();
+	} else if (Bfile_GetMediaFree(media_type, free_bytes) != 0)
+        Abort();
+
+	if (media_type == DEVICE_MAIN_MEMORY)
+		return free_bytes[0];
+	else
+		return free_bytes[!IsSH3];
 }
-void GetMediaFreeStr10( char *buffer ) {
-	unsigned int high,low;
-	unsigned int k;
-	GetMediaFree( &high, &low);
-	k=low/0x400+ high*0x400000;
-	if ( k < 1000*1024 ) {
-		sprintf(buffer,"%10d",low );
-//	} else
-//	if ( k < 1000*1024*1024 ) {
-//		sprintf(buffer,"%10dK",k);
-	} else {
-		sprintf(buffer,"%9.3fM",(double)k/1024.0);
-	}
+
+void GetMediaFreeStr10(char *buffer) {
+	int free_bytes = get_current_media_free();
+	if ( free_bytes < 1000*1024*1024 )
+		sprintf(buffer,"%10d", free_bytes);
+	else
+		sprintf(buffer,"%9.3fM",(double)free_bytes/1024.0/1024.0);
 }
 
 int GetMemFree() {
@@ -545,10 +544,10 @@ void GetMemFreeStr10( char *buffer ) {
 	sprintf(buffer,"%7d bytes free ",GetMemFree() );
 }
 
-int CheckSD(){	// SD model  return : 1
+int CheckSD() {
 	int freespace[2];
-	if ( Bfile_GetMediaFree(DEVICE_SD_CARD,freespace) != 0 ) return 0;
-	return 1 ;
+	if (Bfile_GetMediaFree_OS(sd_card_id, freespace) != 0) return 0;
+	return 1;
 }
 
 
@@ -1390,7 +1389,6 @@ int deleteFile( FONTCHARACTER *filename, int size ){
 	int handle;
 	FONTCHARACTER filename2[FONTCHARACTER_MAX];
 	int r,s;
-	unsigned int freehigh,freelow;
 
 	/* disable, just for call "Bfile_FindFirst" */
 	FONTCHARACTER buffer[FONTCHARACTER_MAX];
@@ -1403,8 +1401,11 @@ int deleteFile( FONTCHARACTER *filename, int size ){
 	CharToFont( fname, filename );
 	r = alreadyExistedFile( filename, buffer );
 	if( r == 0 ) { //already existed, delete it
-		GetMediaFree(&freehigh,&freelow);
-		if ( ( freehigh == 0 ) && ( freelow < size+256 ) ){ ErrorMSG( "Not enough MEM", freelow ); return 2 ; }
+		int free_bytes = get_current_media_free();
+		if (free_bytes < size+256) {
+			ErrorMSG("Not enough MEM", free_bytes);
+			return 2;
+		}
 		r = Bfile_DeleteFile( filename );
 		if( r < 0 ) { ErrorMSG( "Can't delete file", r );	return 1 ; }
 	}

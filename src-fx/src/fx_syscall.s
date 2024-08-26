@@ -189,6 +189,8 @@ _GetVRAMAddress:
     BIOS_JUMP 0x135
 _Bdisp_ShapeToVRAM:
     BIOS_JUMP 0x02F
+_Bfile_GetMediaFree_OS:
+    BIOS_JUMP 0x42E
 _GetFKeyIconPointer:
     BIOS_JUMP 0x268
 _DisplayFKeyIcon:

@@ -182,3 +182,5 @@ void Emu_check();
 void Getfolder( char *sname ) ;
 void SetFullfilenameExt( char *filename, char *sname, char *extname );
 void Restorefolder();
+
+int get_current_media_free();

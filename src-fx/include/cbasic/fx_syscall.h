@@ -43,6 +43,8 @@ void GUI_ProgressBar( int current, int max);
 
 void System_GetOSVersion( unsigned char*version );
 
+int Bfile_GetMediaFree_OS(unsigned short *media_id, int *free_bytes);
+
 //------------------------------------------------------- MCS
 typedef struct {
   unsigned char name[8];
