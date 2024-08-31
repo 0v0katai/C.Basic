@@ -16,6 +16,22 @@ Translated with www.DeepL.com/Translator (free version)
 -------------------------------------------------------------------------------------
 
 v2.50beta
+    (build02)   2024.8.31
+# Changes
+* Version pop-up changes:
+    - Copyright notice now uses mini font
+    - Credited CalcLoverHK as developer
+    - Explicitly included license info
+* Minor refactoring on syscalls
+* Toggling hidden RAM settings no longer prompts user for initialization
+
+# Fixes
+* `_DispVram` does not update VRAM properly (#21)
+* `Nrm` notation shows `0.E0` (#19)
+* `Sci` notation shows undefined result (878cee1)
+* Incorrect display of free space when switching between SD and Main Mem (#20)
+* Initializing hidden RAM twice causes MCS memory full error and restart (#17)
+
     (build01)   2024.8.4
 # Additions
 * Added error value indicator on the bottom-left corner of error prompt
