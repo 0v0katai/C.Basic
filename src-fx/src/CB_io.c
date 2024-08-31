@@ -161,8 +161,8 @@ void HiddenRAM_MatAryClear(){	// MatAry ptr clear
 	int *iptr1=(int*)(HIDDENRAM_Top+12);
 	int *iptr2=(int*)(HiddenRAM_End+12);
 	if ( IsHiddenRAM ) {
-		memset( (char *)HIDDENRAM_Top, 0, sizeof(MatAryCheckStr) );
-		memset( HiddenRAM_End,         0, sizeof(MatAryCheckStr) );
+		memset( HIDDENRAM_Top, 0, sizeof(MatAryCheckStr) );
+		memset( HiddenRAM_End, 0, sizeof(MatAryCheckStr) );
 	}
 	FileListUpdate= 1;
 	HiddenRAM_MatAryInit();

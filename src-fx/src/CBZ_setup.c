@@ -1980,10 +1980,10 @@ int SetupG(int select, int limit){		// ----------- Setup
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
 						if ( IsHiddenRAM == 0 ) break;
-						if ( YesNo("Initialize Ok?")==0 ) break;
+						// if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM = 1 ; // on
 						ExtendList=(6-1);
-						HiddenRAM_MatAryClear();
+						// HiddenRAM_MatAryClear();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
@@ -1991,7 +1991,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						if ( Is35E2 ) break;
 //						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM &= 0x0F;	// on
-						HiddenRAM_MatAryClear();
+						// HiddenRAM_MatAryClear();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
 						DisableDebugMode = 0 ; // on
@@ -2197,11 +2197,11 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
-						if ( YesNo("Initialize Ok?")==0 ) break;
+						// if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM = 0 ; // off
 						ExtendPict=0;
 						ExtendList=0;
-						HiddenRAM_MatAryClear();
+						// HiddenRAM_MatAryClear();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
@@ -2209,7 +2209,7 @@ int SetupG(int select, int limit){		// ----------- Setup
 						if ( Is35E2 ) break;
 //						if ( YesNo("Initialize Ok?")==0 ) break;
 						UseHiddenRAM |= 0x10;	// off
-						HiddenRAM_MatAryInit();
+						// HiddenRAM_MatAryInit();
 						break;
 					case SETUP_DisableDebugMode: // DisableDebugMode
 						DisableDebugMode = 1 ; // disable
