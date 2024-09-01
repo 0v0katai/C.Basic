@@ -173,7 +173,7 @@ unsigned int SelectFile (char *filename)
 //--------------------------------------------------------------
 void Abort(){		// abort program
 	unsigned int key;
-	MSG2("Not enough Memory","Please Restart");
+	MSG2("Aborted","Quit by [MENU]");
 	while (1) GetKey(&key); // [MENU]-to-Main
 }
 void ToLower( char *str ){
