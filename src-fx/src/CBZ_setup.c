@@ -1979,11 +1979,13 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
-						if ( IsHiddenRAM == 0 ) break;
-						// if ( YesNo("Initialize Ok?")==0 ) break;
-						UseHiddenRAM = 1 ; // on
+						if ( !IsHiddenRAM ) break;
+						if ( UseHiddenRAM ) break; 
+						if ( !YesNo2("Abort required", "Proceed?") ) break;
+						UseHiddenRAM = 1;
 						ExtendList=(6-1);
-						// HiddenRAM_MatAryClear();
+						SaveConfig();
+						Abort();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
 						if ( limit ) break;
@@ -2197,10 +2199,13 @@ int SetupG(int select, int limit){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
-						// if ( YesNo("Initialize Ok?")==0 ) break;
+						if ( !UseHiddenRAM ) break;
+						if ( !YesNo2("Abort required", "Proceed?") ) break;
 						UseHiddenRAM = 0 ; // off
 						ExtendPict=0;
 						ExtendList=0;
+						SaveConfig();
+						Abort();
 						// HiddenRAM_MatAryClear();
 						break;
 					case SETUP_HidnRamInit: // HiddenRAMInit
