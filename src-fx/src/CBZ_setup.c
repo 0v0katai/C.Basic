@@ -74,8 +74,8 @@ void VerDisp( int flag ) {
 }
 
 int IsG3or35E2() {
-	unsigned char version[16];
-	System_GetOSVersion( &version[0] );		//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
+	unsigned char version[11];
+	System_GetOSVersion(version);		//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
 	if ( version[6]=='2' ) return 4;	//  35+EII
 	if ( version[6]=='3' ) return 6;	//  9750GIII
 	return 5;							//	9860GIII
@@ -88,107 +88,75 @@ int CB_Version() {	// Version
 	return VERSION;
 }
 int OS_VersionMinor() {
-	int ver;
-	unsigned char version[16];
-	System_GetOSVersion( &version[0] );		//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
-	return (version[6]-'0')*1000 + (version[7]-'0')*100 + (version[8]-'0')*10 + (version[9]-'0');
-}
-
-int System( int n ) {
-	int r=0;
-	switch ( n ) {
-		case -9:
-			r=TryFlag; if ( r>1 ) r--;
-			break;
-		case -7:
-			r=IsEmu;
-			break;
-		case -5:
-			r=GetMemFree();
-			break;
-//		case -4:
-//			r=0;
-//			break;
-//		case -3:
-//			r=MAXHEAP/1024;
-//			break;
-		case -22:
-			r=OS_VersionMinor();
-			break;
-		case -2:
-			r=OS_Version();
-			break;
-		case -1:	// 9860G:0  slim:1  9860GII(SH3):2   9860GII(SH4A):3	Graph35+EII:4  9860GIII:5
-			r = ( IsSH3==0 );
-			if ( IsHiddenRAM ) r |= 0x2;;
-			if ( IsSH3==2 ) r = 1 ;
-			if ( Is35E2 ) r = IsG3or35E2() ;
-			break;
-		case 0:	// Version
-			r = VERSION;
-			break;
-		case 1:	// VRAM
-			r = (int)PictAry[0];
-			break;
-		case 2:	// TVRAM
-			r = (int)TVRAM;
-			break;
-		case 3:	// GVRAM
-			r = (int)GVRAM;
-			break;
-		case 9:	// HeapRAM
-			r = (int)HeapRAM;
-			break;
-		case 10:	//
-			r = (int)ClipBuffer;
-			break;
-		case 12:	//
-			r = (int)files;
-			break;
-
-		case 999:	//
-			r =StackPtr;
-			break;
-		case 1000:	//
-			r = (int)HiddenRAM_Top;
-			break;
-		case 1001:	//
-			r = (int)HiddenRAM_End;
-			break;
-		case 1002:	//
-			r = (int)HiddenRAM_ProgNextPtr;
-			break;
-		case 1003:	//
-			r = (int)HiddenRAM_MatTopPtr;
-			break;
-		case 1010:	//
-			r = (int)ProgfileMax[0];
-			break;
-		case 1011:	//
-			r = (int)ProgfileMax[1];
-			break;
-
-		default:
-			r = 0;
+	unsigned char version[11];
+	System_GetOSVersion(version);		//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
+	int minor = 0;
+	for (int i = 6; i <= 9; i++) {
+		minor *= 10;
+		minor += (version[i]-'0');
 	}
-	return r;
+	return minor;
 }
 
-int CB_System( char *SRC ) {	// System( n )
-	int r;
-	int c = SRC[g_exec_ptr];
-	int n = CB_EvalInt( SRC );
-	if ( n==10000 ) {	// load config data to ListAns   Ststem(10000,1) Ststem(10000,2) Ststem(10000,3)
-		if ( SRC[g_exec_ptr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
+int CB_System(char *SRC) {
+	int n = CB_EvalInt(SRC);
+	if (n == 10000) {
+		if (SRC[g_exec_ptr] != ',')
+			CB_Error(SyntaxERR);
 		g_exec_ptr++;
-		c = CB_EvalInt( SRC );
-		LoadConfig1data( c );
-		goto exit;
+		LoadConfig1data(CB_EvalInt(SRC));
 	}
-	r = System( n );
-  exit:
-	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
-	return r;
+	if (SRC[g_exec_ptr] == ')') g_exec_ptr++;
+	switch (n) {
+		case -22:
+			return OS_VersionMinor();
+		case -9:
+			if (TryFlag > 1)
+				return TryFlag - 1;
+			return TryFlag;
+		case -7:
+			return IsEmu;
+		case -5:
+			return GetMemFree();
+		case -2:
+			return OS_Version();
+		case -1:	// 9860G:0  slim:1  9860GII(SH3):2   9860GII(SH4A):3	Graph35+EII:4  9860GIII:5
+			if (IsSH3 == 2)
+				return 1;
+			if (Is35E2)
+				return IsG3or35E2();
+			return (!IsSH3) + IsHiddenRAM * 2;
+		case 0:	// Version
+			return VERSION;
+		case 1:	// VRAM
+			return (int)PictAry[0];
+		case 2:	// TVRAM
+			return (int)TVRAM;
+		case 3:	// GVRAM
+			return (int)GVRAM;
+		case 9:	// HeapRAM
+			return (int)HeapRAM;
+		case 10:
+			return (int)ClipBuffer;
+		case 12:
+			return (int)files;
+		case 999:
+			return StackPtr;
+		case 1000:	
+			return (int)HiddenRAM_Top;
+		case 1001:
+			return (int)HiddenRAM_End;
+		case 1002:
+			return (int)HiddenRAM_ProgNextPtr;
+		case 1003:
+			return (int)HiddenRAM_MatTopPtr;
+		case 1010:
+			return (int)ProgfileMax[0];
+		case 1011:
+			return (int)ProgfileMax[1];
+		default:
+			return 0;
+	}
 }
 
 //----------------------------------------------------------------------------------------------

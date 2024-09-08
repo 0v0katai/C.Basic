@@ -55,9 +55,8 @@ int CPU_check(void) {					// SH3:1 SH4A:0   2:Slim
 }
 
 int OS_Version(){
-	int ver;
-	unsigned char version[16];
-	System_GetOSVersion( &version[0] );
+	unsigned char version[11];
+	System_GetOSVersion(version);
 	return (version[1]-'0')*100 + (version[3]-'0')*10 + (version[4]-'0');
 }
 //---------------------------------------------------------------------------------------------
