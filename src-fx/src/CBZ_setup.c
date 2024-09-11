@@ -73,14 +73,6 @@ void VerDisp( int flag ) {
 	GetKey_DisableMenu(&key);
 }
 
-int IsG3or35E2() {
-	unsigned char version[11];
-	System_GetOSVersion(version);		//System_GetOSVersion( &version[0] ); // "03.00.2200" etc
-	if ( version[6]=='2' ) return 4;	//  35+EII
-	if ( version[6]=='3' ) return 6;	//  9750GIII
-	return 5;							//	9860GIII
-}
-
 //----------------------------------------------------------------------------------------------
 int GetMemFree() ;
 
@@ -111,21 +103,29 @@ int CB_System(char *SRC) {
 		case -22:
 			return OS_VersionMinor();
 		case -9:
-			if (TryFlag > 1)
-				return TryFlag - 1;
-			return TryFlag;
+			return TryFlag > 1 ? TryFlag - 1 : TryFlag;
 		case -7:
 			return IsEmu;
 		case -5:
 			return GetMemFree();
 		case -2:
 			return OS_Version();
-		case -1:	// 9860G:0  slim:1  9860GII(SH3):2   9860GII(SH4A):3	Graph35+EII:4  9860GIII:5
-			if (IsSH3 == 2)
-				return 1;
-			if (Is35E2)
-				return IsG3or35E2();
-			return (!IsSH3) + IsHiddenRAM * 2;
+		case -1:
+			/* fx-9860G        : 0
+			   fx-9860G Slim   : 1
+			   fx-9860GII SH3  : 2
+			   fx-9860GII SH4A : 3
+			   Graph 35+EII    : 4
+			   fx-9860GIII     : 5
+			   fx-9750GIII     : 6 */
+			if (Is35E2) {
+				unsigned char version[11];
+				System_GetOSVersion(version);
+				if (version[6]=='2') return 4;
+				if (version[6]=='3') return 6;
+				return 5;
+			}
+			return (IsSH3 == 2) ? 1 : (!IsSH3) + IsHiddenRAM * 2;
 		case 0:	// Version
 			return VERSION;
 		case 1:	// VRAM
