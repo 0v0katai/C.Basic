@@ -1148,33 +1148,30 @@ int SetVar(int select){		// ----------- Set Variable
 
 //-----------------------------------------------------------------------------
 //--------------------------------------------------------------
-int DateCursorY;
-int TimeCursorY;
+int DateCursorY, TimeCursorY;
 
-void DateTimePrintSub(){		// timer IRQ handler
-	char buffer[32];
-	char DateStr[16];
-	char TimeStr[16];
-	int cy,y;
-	cy=DateCursorY & 0xFF;
-	y =DateCursorY / 0x100;
-	if ( ( 1<=cy ) && ( cy<=7 ) ) {
-			DateToStr(DateStr);
-			sprintf(buffer,"DATE : %s ",DateStr);
-			locate( 1, cy); Print((unsigned char*)buffer);
-			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-	}
-	cy=TimeCursorY & 0xFF;
-	y =TimeCursorY / 0x100;
-	if ( ( 1<=cy ) && ( cy<=7 ) ) {
-			TimeToStr(TimeStr);
-			sprintf(buffer,"TIME : %s       ",TimeStr);
-			locate( 1, cy); Print((unsigned char*)buffer);
-			if ( (y+1)==cy ) Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-	}
+static void date_time_print() {
+    char str[16];
+    int y;
+    y = DateCursorY & 0xF;
+    if ((1 <= y) && (y <= 7)) {
+        DateToStr(str);
+        locate(8, y); Print((unsigned char *)str);
+        if (DateCursorY >> 4)
+            Bdisp_AreaReverseVRAM(42, y*8-8, 127, y*8-1);
+    }
+    y = TimeCursorY & 0xF;
+    if ((1 <= y) && (y <= 7)) {
+        TimeToStr(str);
+        locate(8, y); Print((unsigned char *)str);
+        if (TimeCursorY >> 4)
+            Bdisp_AreaReverseVRAM(42, y*8-8, 89, y*8-1);
+    }
+
 }
-void DateTimePrint(){		// timer IRQ handler
-	DateTimePrintSub();
+
+void DateTimePrint() {		// timer IRQ handler
+	date_time_print();
 	Bdisp_PutDisp_DD();
 }
 
@@ -1305,7 +1302,23 @@ int SelectNum4( int n ) {		//
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
 
-int SetupG(int select, int limit){		// ----------- Setup
+int SetupG(int select, int limit) {
+
+    /* Text for each setting */
+    const char *settings_text[] = {
+        "Angle       :", "Complex Mode:", "Variable    :", "Func Type   :", "Draw Type   :",
+        "Coord       :", "Grid        :", "Axes        :", "Label       :", "Derivative  :",
+		"Background  :", "Sketch Line :", "Display     :", "Syntax Help :", "SetupRecover:",
+        "Command Inpt:", "Max Mem Mode:", "EnableExFont:", "Edit ExtFont:", "EditFontSize:",
+        "Hide StatBar:", "Edit +Indent:", "Edit LineNum:", "EditListChar:", "Use Hidn RAM:",
+        "HidnRAM Init:", "Max Pict No :", "Max List    :", "AT DebugMode:", "ExitDM PopUp:",
+        "Break Stop  :", "Exec TimeDsp:", "IfEnd Check :", "ACBreak     :", "Force Return:",
+        "Key 1st time:", "Key Rep time:", "SkipUp/Down :", "Mat Dsp mode:", "Matrix base :",
+        "DATE :"       , "TIME :"       , "Root Folder :", "Auto save   :", "Save as g1m :",
+        "Pict mode   :", "Storage mode:", "RefrshCtl DD:", "Wait count  :", "Execute mode:"
+    };
+
+    /* Arguments */
     const char *degrad[]      ={"Deg","Rad","Grad"};
     const char *cplxmode[]    ={"Real","a+b\x7F\x50","r\x7F\x54\xE6\x47"};
     const char *onoff[]       ={"off","on"};
@@ -1326,1164 +1339,1045 @@ int SetupG(int select, int limit){		// ----------- Setup
     const char *ExecTimemode[]={"off","on","off%","on reset","  %","on%","  % reset","on%reset"};
     const char *EditIndent[]  ={"off","1","2","3","4","5","6","7","off sav-","1 save-","2 save-","3 save-","4 save-","D","E","F"};
     const char *FuncTypeStr[]  ={"Y=","r=","Param","X=","Y>","Y<","Y\x12","Y\x10","X>","X<","X\x12","X\x10"};
-	char buffer[22];
-	char folderbuf[16];
-	unsigned int key;
-	int	cont=1;
-	int scrl=select-6;
-	int i,y,cnt;
-	char DateStr[16];
-	char TimeStr[16];
-	int year,month,day,hour,min,sec;
-	int listmax=SETUP_Executemode;
-	int subselect=0;
+    char buffer[22];
+    char folderbuf[16];
+    unsigned int key;
+    int	cont=1;
+    int i;
+    char DateStr[16];
+    char TimeStr[16];
+    int year,month,day,hour,min,sec;
+	int cursor_pos = min(select, 6), scroll = max(0, select-6);
+	const int scroll_max = 43;
+    int func_select = 0;
 
-	strcpy( folderbuf, folder );	// current folder
+    strcpy( folderbuf, folder );	// current folder
 
-	Cursor_SetFlashMode(0); 		// cursor flashing off
+    Cursor_SetFlashMode(0); 		// cursor flashing off
 
-	if ( select > listmax ) select=0;
-	if ( select < scrl ) scrl-=1;
-	if ( scrl < 0 ) scrl=0;
+    while (cont) {
+        Bdisp_AllClr_VRAM();
 
-	DateCursorY=-1;
-	TimeCursorY=-1;
+        DateCursorY = -1;
+        TimeCursorY = -1;
 
-	while (cont) {
-		Bdisp_AllClr_VRAM();
+        for (i=1; i<=7; i++) {
+            int setting = scroll + i - 1;
+            locate(1, i); Print((unsigned char*)settings_text[setting]);
+            switch (setting) {
+                case SETUP_Angle:
+                    Print((unsigned char*)degrad[Angle]);
+                	break;
+        		case SETUP_ComplexMode:
+                    Print((unsigned char*)cplxmode[ComplexMode]);
+        			break;
+        		case SETUP_Variable:
+                    if (!VarListRange) {
+                        Print((unsigned char*)"Range");
+                    } else {
+                        sprintf((char*)buffer, "List%d", VarListRange);
+                        Print((unsigned char*)buffer);
+                    }
+        			break;
+        		case SETUP_FuncType:
+            		Print((unsigned char*)FuncTypeStr[(int)FuncType]);
+        			break;
+        		case SETUP_DrawType:
+            		Print((unsigned char*)draw[(int)DrawType]);
+        			break;
+        		case SETUP_Coord:
+            		Print((unsigned char*)onoff[Coord]);
+        			break;
+        		case SETUP_Grid:
+            		Print((unsigned char*)onoff[Grid]);
+        			break;
+        		case SETUP_Axes:
+            		Print((unsigned char*)onoff[Axes]);
+        			break;
+        		case SETUP_Label:
+            		Print((unsigned char*)onoff[Label]);
+        			break;
+        		case SETUP_Derivative:
+            		Print((unsigned char*)onoff[Derivative]);
+        			break;
+        		case SETUP_Background:
+            		if (!BG_Pict_No) {
+						Print((unsigned char*)"None");
+					} else {
+						sprintf(buffer, "Pict%d", BG_Pict_No);
+						Print((unsigned char*)buffer);
+					}
+        			break;
+        		case SETUP_Sketch:
+            		Print((unsigned char*)style[S_L_Style]);
+        			break;
+        		case SETUP_Display:
+            		sprintf(buffer, "%s%d%s", display[CB_Round.MODE], CB_Round.DIGIT, ENGmode[ENG]);
+					Print((unsigned char*)buffer);
+        			break;
+        		case SETUP_Help:
+            		Print((unsigned char*)onoff[CB_HelpOn]);
+        			break;
+        		case SETUP_RecoverSetup:
+            		Print((unsigned char*)onoff[CB_RecoverSetup]);
+        			break;
+        		case SETUP_CMDINPUT:
+            		Print((unsigned char*)CMDinput[CommandInputMethod + 2*CB_fx5800P]);
+        			break;
+        		case SETUP_MaxMemMode:
+            		Print((unsigned char*)onoff[MaxMemMode]);
+        			break;
+        		case SETUP_EnableExtFONT:
+            		Print((unsigned char*)onoff[EnableExtFont]);
+        			break;
+        		case SETUP_EditExtFont:
+					CB_Print_ext(14, i,(unsigned char*)onoff[EditExtFont], EditExtFont);
+        			break;
+        		case SETUP_EditFontSize:
+            		Print((unsigned char*)CharSize[EditFontSize & 0x0F]);
+        			break;
+        		case SETUP_EditTopLine:
+            		Print((unsigned char*)onoff[EditTopLine]);
+        			break;
+        		case SETUP_EditIndent:
+            		Print((unsigned char*)EditIndent[CB_EditIndent]);
+        			break;
+        		case SETUP_EditLineNum:
+            		Print((unsigned char*)onoff[(EditFontSize & 0xF0)>>4 ]);
+        			break;
+        		case SETUP_EditListChar:
+           		 	CB_Print(14, i, (unsigned char*)ListChar[EditListChar]);
+        			break;
+        		case SETUP_UseHidnRam:
+            		Print((unsigned char*)onoff[UseHiddenRAM&0x0F]);
+        			break;
+        		case SETUP_HidnRamInit:
+            		if (UseHiddenRAM & 0x0F)
+						Print((unsigned char*)onoff[!(UseHiddenRAM&0xF0)]);
+            		else
+						Print((unsigned char*)"---");
+        			break;
+        		case SETUP_ExtendPict:
+            		sprintf(buffer, "%d", 20+ExtendPict);
+            		Print((unsigned char*)buffer);
+        			break;
+        		case SETUP_ExtendList:
+            		sprintf((char*)buffer,"%d", 52+ExtendList*52);
+            		Print((unsigned char*)buffer);
+        			break;
+        		case SETUP_DisableDebugMode:
+            		Print((unsigned char*)onoff[!DisableDebugMode]);
+        			break;
+        		case SETUP_ExitDebugModeCheck:
+            		Print((unsigned char*)onoff[ExitDebugModeCheck&1]);
+        			break;
+        		case SETUP_BreakStop:
+            		Print((unsigned char*)onoff[BreakCheckDefault]);
+        			break;
+        		case SETUP_ExecTimeDsp:
+            		Print((unsigned char*)ExecTimemode[TimeDsp]);
+        			break;
+        		case SETUP_IfEndCheck:
+            		Print((unsigned char*)onoff[CheckIfEnd]);
+        			break;
+        		case SETUP_ACBreak:
+            		Print((unsigned char*)onoff[ACBreak]);
+        			break;
+        		case SETUP_ForceReturnMode:
+            		Print((unsigned char*)Returnmode[ForceReturnMode]);
+        			break;
+        		case SETUP_Key1sttime:
+                    sprintf(buffer, "%dms", KeyRepeatFirstCount*25);
+					Print((unsigned char*)buffer);
+        			break;
+        		case SETUP_KeyReptime:
+                    sprintf(buffer, "%dms", KeyRepeatNextCount*25);
+					Print((unsigned char*)buffer);
+        			break;
+        		case SETUP_SkipUpDown:
+                    sprintf(buffer,"%d",PageUpDownNum);
+					Print((unsigned char*)buffer);
+        			break;
+        		case SETUP_MatDspmode:
+            		Print((unsigned char*)Matmode[MatXYmode]);
+        			break;
+        		case SETUP_Matrixbase:
+            		Print((unsigned char*)Matbase[MatBaseDefault]);
+        			break;
+        		case SETUP_DATE:
+            		DateCursorY = i;
+        			break;
+        		case SETUP_TIME:
+            		TimeCursorY = i;
+        			break;
+        		case SETUP_RootFolder:
+            		if ( root2[0] == '\0' )
+               	 		Print((unsigned char*)"/");
+            		else
+                		Print((unsigned char*)root2);
+        			break;
+        		case SETUP_AutoSaveMode:
+            		Print((unsigned char*)onoff[AutoSaveMode]);
+        			break;
+        		case SETUP_Forceg1msave:
+            		Print((unsigned char*)onoff[ForceG1Msave]);
+        			break;
+        		case SETUP_Pictmode:
+            		if (StorageMode & 1)
+						Print((unsigned char*)PictmodeSD[PictMode]);
+					else
+						Print((unsigned char*)Pictmode[PictMode]);
+        			break;
+        		case SETUP_Storagemode:
+            		Print((unsigned char*)Storagemode[StorageMode]);
+        			break;
+        		case SETUP_RefrshCtlDD:
+            		Print((unsigned char*)DDmode[RefreshCtrl]);
+            		sprintf(buffer,"%2d/128",Refreshtime+1);
+            		if (RefreshCtrl)
+						PrintMini(17*6+2,i*8-6, (unsigned char*)buffer, MINI_OVER);
+        			break;
+        		case SETUP_DefaultWaitcount:
+                    if (!DefaultWaitcount)
+						Print((unsigned char *)"No Wait");
+            		else {
+						sprintf((char*)buffer,"%d",DefaultWaitcount);
+						Print((unsigned char*)buffer);
+					}
+        			break;
+        		case SETUP_Executemode:
+            		Print((unsigned char*)CBmode[CB_INTDefault]);
+        	}
+        }
 
-		DateToStr(DateStr);
-		TimeToStr(TimeStr);
-		DateCursorY = 0x909;
-		TimeCursorY = 0x909;
-
-		cnt=1;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Angle       :");		// 0
-			locate(14, cnt-scrl); Print((unsigned char*)degrad[Angle]);
-		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Complex Mode:");		// 1
-			locate(14, cnt-scrl); Print((unsigned char*)cplxmode[ComplexMode]);
-		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Variable    :");		// 2
-			locate(14, cnt-scrl); 
-			if ( VarListRange==0 ) {
-				Print((unsigned char*)"Range");
-			} else {
-				sprintf((char*)buffer,"List%d", VarListRange);
-				Print((unsigned char*)buffer);
-			}
-		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Func Type   :");		// 3
-			locate(14, cnt-scrl); Print((unsigned char*)FuncTypeStr[(int)FuncType]);
-		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Draw Type   :");		// 4
-			locate(14, cnt-scrl); Print((unsigned char*)draw[(int)DrawType]);
-		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Coord       :");		// 5
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[Coord]);
-		} cnt++;
-		if ( scrl <=(cnt-1) ) {
-			locate( 1, cnt-scrl); Print((unsigned char*)"Grid        :");		// 6
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[Grid]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Axes        :");		// 7
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[Axes]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Label       :");		// 8
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[Label]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Derivative  :");		// 9
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[Derivative]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Background  :");		// 10
-			if ( BG_Pict_No == 0 )	sprintf((char*)buffer,"None");
-			else					sprintf((char*)buffer,"Pict%d",BG_Pict_No);
-			locate(14,cnt-scrl); Print((unsigned char*)buffer);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Sketch Line :");		// 11
-			locate(14, cnt-scrl); Print((unsigned char*)style[S_L_Style]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Display     :");		// 12
-			locate(14, cnt-scrl); Print((unsigned char*)display[CB_Round.MODE]);
-			buffer[0]='\0';
-			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
-			locate(17, cnt-scrl); Print((unsigned char*)buffer);
-			locate(19, cnt-scrl);
-			Print((unsigned char*)ENGmode[ENG]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Syntax Help :");		// 13
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[CB_HelpOn]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"SetupRecover:");		// 14
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[CB_RecoverSetup]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Command Inpt:");		// 15
-			locate(14, cnt-scrl); Print((unsigned char*)CMDinput[CommandInputMethod + 2*CB_fx5800P]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Max Mem Mode:");		// 16
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[MaxMemMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EnableExFont:");		// 17
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[EnableExtFont]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			CB_Print_ext( 1,cnt-scrl,(unsigned char*)"Edit ExtFont:", EditExtFont );		// 18
-			CB_Print_ext(14,cnt-scrl,(unsigned char*)onoff[EditExtFont], EditExtFont );
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditFontSize:");		// 19
-			locate(14, cnt-scrl); Print((unsigned char*)CharSize[EditFontSize & 0x0F ]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Hide StatBar:");		// 20
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[EditTopLine]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit +Indent:");		// 21
-			locate(14, cnt-scrl); Print((unsigned char*)EditIndent[CB_EditIndent]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Edit LineNum:");		// 22
-			locate(14, cnt-scrl); Print((unsigned char*)onoff[(EditFontSize & 0xF0)>>4 ]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"EditListChar:");		// 23
-			CB_Print(14, cnt-scrl, (unsigned char*)ListChar[EditListChar]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Use Hidn RAM:");		// 24
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[UseHiddenRAM&0x0F]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"HidnRAM Init:");		// 25
-			locate(14,cnt-scrl);
-			if ( UseHiddenRAM&0x0F ) Print((unsigned char*)onoff[!(UseHiddenRAM&0xF0)]);
-			else                     Print((unsigned char*)"---");
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max Pict No:");		// 26
-			sprintf((char*)buffer,"%d",20+ExtendPict);
-			locate(14, cnt-scrl); Print((unsigned char*)buffer);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1, cnt-scrl); Print((unsigned char*)"Max List 52\xA9:");	// 27
-			sprintf((char*)buffer,"%d (%d)", ExtendList+1, 52+ExtendList*52);
-			locate(14, cnt-scrl); Print((unsigned char*)buffer);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"AT DebugMode:");		// 28
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[!DisableDebugMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ExitDM PopUp:");		// 29
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[ExitDebugModeCheck&1]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Break Stop  :");		// 30
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[BreakCheckDefault]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Exec TimeDsp:");		// 31
-			locate(14,cnt-scrl); Print((unsigned char*)ExecTimemode[TimeDsp]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"IfEnd Check :");		// 32
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[CheckIfEnd]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"ACBreak     :");		// 33
-			locate(14,cnt-scrl); Print((unsigned char*)onoff[ACBreak]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force Return:");		// 34
-			locate(14,cnt-scrl); Print((unsigned char*)Returnmode[ForceReturnMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key 1st time:");		// 35
-			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
-			locate(14,cnt-scrl); Print((unsigned char*)buffer);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Key Rep time:");		// 36
-			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
-			locate(14,cnt-scrl); Print((unsigned char*)buffer);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"SkipUp/Down :");		// 37
-			sprintf((char*)buffer,"%d",PageUpDownNum);
-			locate(14,cnt-scrl); Print((unsigned char*)buffer);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Mat Dsp mode:");		// 38
-			locate(14,cnt-scrl); Print((unsigned char*)Matmode[MatXYmode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Matrix base :");		// 39
-			locate(14,cnt-scrl); Print((unsigned char*)Matbase[MatBaseDefault]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// DATE						// 40
-			DateCursorY = cnt-scrl+0x900;
-			DateTimePrintSub();
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){		// TIME						// 41
-			TimeCursorY = cnt-scrl+0x900;
-			DateTimePrintSub();
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Root Folder:");		// 42
-			locate(13,cnt-scrl);
-			if ( root2[0] == '\0' ) {
-				Print((unsigned char*)"/");
-			} else {
-				Print((unsigned char*)root2);
-			}
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Auto file save:");		// 43
-			locate(16,cnt-scrl); Print((unsigned char*)onoff[AutoSaveMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Force g1m save:");		// 44
-			locate(16,cnt-scrl); Print((unsigned char*)onoff[ForceG1Msave]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Pict mode   :");		// 45
-			locate(14,cnt-scrl); if ( StorageMode & 1 ) Print((unsigned char*)PictmodeSD[PictMode]); else Print((unsigned char*)Pictmode[PictMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Storage mode:");		// 46
-			locate(14,cnt-scrl); Print((unsigned char*)Storagemode[StorageMode]);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"RefrshCtl DD:");		// 47
-			locate(14,cnt-scrl); Print((unsigned char*)DDmode[RefreshCtrl]);
-			buffer[0]='\0';
-			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
-			if ( RefreshCtrl ) PrintMini(17*6+2,(cnt-scrl)*8-6,(unsigned char*)buffer,MINI_OVER);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Wait count  :");		// 48
-			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
-			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
-			locate(14,cnt-scrl); Print((unsigned char*)buffer);
-		} cnt++;
-		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
-			locate( 1,cnt-scrl); Print((unsigned char*)"Execute mode:");		// 49
-			locate(14,cnt-scrl); Print((unsigned char*)CBmode[CB_INTDefault]);
-		}
-		y = select-scrl;
-		Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-//		VBattDispSub( 14*6+2, 7*8+2 );
-		switch (select) {
-			case SETUP_Variable:
-				Fkey_Icon( FKeyNo1, 376 );	//	Fkey_dispN( FKeyNo1, "Range");
-				Fkey_Icon( FKeyNo2, 178 );	//	Fkey_dispR( FKeyNo2, "LIST");
-				break;
-			case SETUP_DrawType: // Draw Type
-				Fkey_Icon( FKeyNo1, 357 );	//	Fkey_dispN( FKeyNo1, "Con");
-				Fkey_Icon( FKeyNo2, 358 );	//	Fkey_dispN( FKeyNo2, "Plot");
-				break;
-			case SETUP_ComplexMode: // complex mode
-				Fkey_Icon( FKeyNo1, 942 );	//	Fkey_dispN( FKeyNo1, "Real");
-				Fkey_Icon( FKeyNo2, 125 );	//	Fkey_dispN( FKeyNo2, "a+bi");
-				Fkey_Icon( FKeyNo3, 126 );	//	Fkey_dispN( FKeyNo3, "r_theta");
-				break;
+        switch (select) {
+            case SETUP_Variable:
+                Fkey_Icon( FKeyNo1, 376 );	//	Fkey_dispN( FKeyNo1, "Range");
+                Fkey_Icon( FKeyNo2, 178 );	//	Fkey_dispR( FKeyNo2, "LIST");
+                break;
+            case SETUP_DrawType: // Draw Type
+                Fkey_Icon( FKeyNo1, 357 );	//	Fkey_dispN( FKeyNo1, "Con");
+                Fkey_Icon( FKeyNo2, 358 );	//	Fkey_dispN( FKeyNo2, "Plot");
+                break;
+            case SETUP_ComplexMode: // complex mode
+                Fkey_Icon( FKeyNo1, 942 );	//	Fkey_dispN( FKeyNo1, "Real");
+                Fkey_Icon( FKeyNo2, 125 );	//	Fkey_dispN( FKeyNo2, "a+bi");
+                Fkey_Icon( FKeyNo3, 126 );	//	Fkey_dispN( FKeyNo3, "r_theta");
+                break;
+            case SETUP_ExecTimeDsp: // TimeDsp
+                Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
+                Fkey_Icon( FKeyNo2, 18 );	//	Fkey_dispN( FKeyNo2, " Off");
+                if ( IsSH3 == 0 ) Fkey_dispN( FKeyNo3, " %HR ");
+                Fkey_dispN( FKeyNo4, "reset");
+                break;
+            case SETUP_Background: // BG pict
+                Fkey_Icon( FKeyNo1, 362 );	//	Fkey_dispN( FKeyNo1, "None");
+                Fkey_Icon( FKeyNo2, 183 );	//	Fkey_dispR( FKeyNo2, "PICT");
+                break;
+            case SETUP_CMDINPUT: // Command input method
+                Fkey_dispN( FKeyNo1, "CBas");
+                Fkey_dispN( FKeyNo2, "Std");
+                if ( CB_fx5800P )
+					Fkey_dispN( FKeyNo4, ">98G");
+				else
+					Fkey_dispN( FKeyNo4, ">58P");
+                break;
+            case SETUP_EditFontSize: // Edit Char Size
+                Fkey_dispN( FKeyNo1, "Std");
+                Fkey_dispN( FKeyNo2, "Mini");
+                Fkey_dispN( FKeyNo3, "Rev");
+                Fkey_dispN( FKeyNo4, "___");
+                Fkey_dispN( FKeyNo5, "Rev_");
+                break;
+            case SETUP_Sketch: // S_L_ Line	normal
+                FkeyS_L_();
+                break;
+            case SETUP_Angle: // Angle
+                Fkey_Icon( FKeyNo1, 359 );	//	Fkey_dispN( FKeyNo1, "Deg ");
+                Fkey_Icon( FKeyNo2, 360 );	//	Fkey_dispN( FKeyNo2, "Rad ");
+                Fkey_Icon( FKeyNo3, 361 );	//	Fkey_dispN( FKeyNo3, "Grad");
+                FkeyClear( FKeyNo4 );
+                break;
+            case SETUP_Display: // Display
+                Fkey_Icon( FKeyNo1, 372 );	//	Fkey_dispR( FKeyNo1, "Fix ");
+                Fkey_Icon( FKeyNo2, 373 );	//	Fkey_dispR( FKeyNo2, "Sci ");
+                Fkey_Icon( FKeyNo3, 374 );	//	Fkey_dispR( FKeyNo3, "Norm ");
+                Fkey_Icon( FKeyNo4, 375 );	//	Fkey_dispN( FKeyNo4, "Eng ");
+                break;
+            case SETUP_Key1sttime:	// Key Repeat mode
+            case SETUP_KeyReptime:	// Key Repeat mode
+            case SETUP_ExtendPict:		// Max Pict
+            case SETUP_ExtendList:		// Max List
+                Fkey_DISPN( FKeyNo1," +");
+                Fkey_DISPN( FKeyNo2," -");
+                Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispN( FKeyNo4, "Init");
+                break;
+            case SETUP_SkipUpDown: // SkipUp/Down number
+            case SETUP_DefaultWaitcount: // Wait count number
+                Fkey_DISPN( FKeyNo1," +");
+                Fkey_DISPN( FKeyNo2," -");
+                Fkey_dispR( FKeyNo3, "Num");
+                Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispN( FKeyNo4, "Init");
+                break;
+            case SETUP_MatDspmode: // Mat display mode
+                Fkey_dispN( FKeyNo1, "m,n ");
+                Fkey_dispN( FKeyNo2, "x,y ");
+                break;
+            case SETUP_Matrixbase: // Mat base
+                Fkey_dispN( FKeyNo1, " 0 ");
+                Fkey_dispN( FKeyNo2, " 1 ");
+                break;
+            case SETUP_DATE: // DATE
+                DateCursorY |= 0x10;
+                TimeCursorY &= 0x0F;
+                Fkey_dispR( FKeyNo1, "Year");
+                Fkey_dispR( FKeyNo2, "Mth");
+                Fkey_dispR( FKeyNo3, "Day");
+                break;
+            case SETUP_TIME: // TIME
+                TimeCursorY |= 0x10;
+                DateCursorY &= 0x0F;
+                Fkey_dispR( FKeyNo1, "Hour");
+                Fkey_dispR( FKeyNo2, "Min");
+                Fkey_dispR( FKeyNo3, "Sec");
+                break;
+            case SETUP_Pictmode: // Pict mode
+                if (StorageMode & 1)
+					Fkey_dispN( FKeyNo1, " SD ");
+				else
+					Fkey_dispN( FKeyNo1, "MEM ");
+                Fkey_dispN( FKeyNo2, "Heap");
+                Fkey_dispN( FKeyNo3, "Both");
+                Fkey_dispN( FKeyNo4, "Main");
+                break;
+            case SETUP_Storagemode: // Storage mode
+                Fkey_dispN( FKeyNo1, "SMEM");
+                Fkey_dispN( FKeyNo2, " SD ");
+                Fkey_dispN( FKeyNo3, "Main");
+                break;
+            case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
+                Fkey_Icon( FKeyNo1, 18 );	//	Fkey_dispN( FKeyNo1, "off ");
+                Fkey_dispN( FKeyNo2, "Grph");
+                Fkey_dispN( FKeyNo3, "All ");
+                if (RefreshCtrl)
+					Fkey_dispR( FKeyNo4, "time");
+                Fkey_Icon( FKeyNo5,  95 );	//	Fkey_dispN( FKeyNo5, "Init");
+                break;
+            case SETUP_Executemode: // Execute Mode
+                Fkey_dispN( FKeyNo1, "DBL#");
+                Fkey_dispN( FKeyNo2, "INT%");
+                Fkey_dispN( FKeyNo3, "CPLX");
+                break;
+            case SETUP_EditListChar:
+                Fkey_dispN( FKeyNo1, "List");
+                Fkey_dispN( FKeyNo2, " \xE5\xB7");
+                Fkey_dispN( FKeyNo3, " \xFF\xE0");
+                ML_vertical_line( 2*21+4+4, 7*8+2, 7*8+6, ML_BLACK);
+                break;
+            case SETUP_ForceReturnMode:
+                Fkey_Icon( FKeyNo1, 362 );	//	Fkey_dispN( FKeyNo1, "None");
+                Fkey_dispN( FKeyNo2, " F1");
+                Fkey_dispN( FKeyNo3, "EXE");
+                Fkey_dispN( FKeyNo4, "Both");
+                break;
+            case SETUP_RootFolder:
+                Fkey_dispN( FKeyNo1, "  / ");
+                Fkey_dispN( FKeyNo2, "cur.f");
+                break;
+            case SETUP_EditIndent: //
+                Fkey_Icon( FKeyNo1, 18 );	//	Fkey_dispN( FKeyNo1, "off ");
+                Fkey_dispN( FKeyNo2, " 1");
+                Fkey_dispN( FKeyNo3, " 2");
+                Fkey_dispN( FKeyNo4, " 4");
+                Fkey_dispN( FKeyNo5, "sv-");
+                break;
+            case SETUP_FuncType: //
+                switch ( func_select ) {
+                    case 0:
+					    Fkey_Icon(FKeyNo1, 61);	//	Fkey_dispN( FKeyNo1, "Y=");
+                        Fkey_Icon(FKeyNo2, 62);	//	Fkey_dispN( FKeyNo2, "r=");
+                        Fkey_Icon(FKeyNo3, 63);	//	Fkey_dispN( FKeyNo3, "Param");
+                        Fkey_Icon(FKeyNo4, 723);//	Fkey_dispN( FKeyNo4, "X=");
+                        break;
+                    case 1:
+					    Fkey_Icon(FKeyNo1, 65);	//	Fkey_dispN( FKeyNo1, "Y>");
+                        Fkey_Icon(FKeyNo2, 66);	//	Fkey_dispN( FKeyNo2, "Y<");
+                        Fkey_Icon(FKeyNo3, 67);	//	Fkey_dispN( FKeyNo3, "Y>=");
+                        Fkey_Icon(FKeyNo4, 68);	//	Fkey_dispN( FKeyNo4, "Y<=");
+                        break;
+                    case 2:
+						Fkey_Icon(FKeyNo1, 724);//	Fkey_dispN( FKeyNo1, "X>");
+                        Fkey_Icon(FKeyNo2, 725);//	Fkey_dispN( FKeyNo2, "X<");
+                        Fkey_Icon(FKeyNo3, 726);//	Fkey_dispN( FKeyNo3, "X>=");
+                        Fkey_Icon(FKeyNo4, 727);//	Fkey_dispN( FKeyNo4, "X<=");
+                        break;
+                }
+				Fkey_Icon(FKeyNo5, 6); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
+                break;
 			case SETUP_HidnRamInit: // HiddenRAMInit
-				if ( ( UseHiddenRAM == 0 ) || (Is35E2 != 0 ) ) {
-					Fkey_dispN( FKeyNo1, "---" );
-					Fkey_dispN( FKeyNo2, "---" );
-					break;
-				}
-			case SETUP_Coord: // Coord
-			case SETUP_Grid: // Grid
-			case SETUP_Axes: // Axes
-			case SETUP_Label: // Label
-			case SETUP_Derivative: // Derivative
-			case SETUP_Help:	// Help
-			case SETUP_EnableExtFONT: // Enable External Font
-			case SETUP_EditTopLine: // Use Top of Line (edit)
-			case SETUP_EditExtFont: // Use Ext Font (edit)
-			case SETUP_EditLineNum: // Line number (edit)
-			case SETUP_MaxMemMode: // Maximam Memory mode
-			case SETUP_UseHidnRam: // UseHiddenRAM
-			case SETUP_DisableDebugMode: // DisableDebugMode
-			case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
-			case SETUP_BreakStop: // BreakCheck
-			case SETUP_IfEndCheck: // IfEnd Check
-			case SETUP_ACBreak: // ACBreak Check
-			case SETUP_AutoSaveMode: // Auto save
-			case SETUP_Forceg1msave: // Force g1m save
-			case SETUP_RecoverSetup: // Setup Mode
-				Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
-				Fkey_Icon( FKeyNo2, 18 );	//	Fkey_dispN( FKeyNo2, " Off");
-				break;
-			case SETUP_ExecTimeDsp: // TimeDsp
-				Fkey_Icon( FKeyNo1, 17 );	//	Fkey_dispN( FKeyNo1, " On ");
-				Fkey_Icon( FKeyNo2, 18 );	//	Fkey_dispN( FKeyNo2, " Off");
-				if ( IsSH3 == 0 ) Fkey_dispN( FKeyNo3, " %HR ");
-				Fkey_dispN( FKeyNo4, "reset");
-				break;
-			case SETUP_Background: // BG pict
-				Fkey_Icon( FKeyNo1, 362 );	//	Fkey_dispN( FKeyNo1, "None");
-				Fkey_Icon( FKeyNo2, 183 );	//	Fkey_dispR( FKeyNo2, "PICT");
-				break;
-			case SETUP_CMDINPUT: // Command input method
-				Fkey_dispN( FKeyNo1, "CBas");
-				Fkey_dispN( FKeyNo2, "Std");
-				if ( CB_fx5800P ) Fkey_dispN( FKeyNo4, ">98G"); else Fkey_dispN( FKeyNo4, ">58P");
-				break;
-			case SETUP_EditFontSize: // Edit Char Size
-				Fkey_dispN( FKeyNo1, "Std");
-				Fkey_dispN( FKeyNo2, "Mini");
-				Fkey_dispN( FKeyNo3, "Rev");
-				Fkey_dispN( FKeyNo4, "___");
-				Fkey_dispN( FKeyNo5, "Rev_");
-				break;
-			case SETUP_Sketch: // S_L_ Line	normal
-				FkeyS_L_();
-				break;
-			case SETUP_Angle: // Angle
-				Fkey_Icon( FKeyNo1, 359 );	//	Fkey_dispN( FKeyNo1, "Deg ");
-				Fkey_Icon( FKeyNo2, 360 );	//	Fkey_dispN( FKeyNo2, "Rad ");
-				Fkey_Icon( FKeyNo3, 361 );	//	Fkey_dispN( FKeyNo3, "Grad");
-				FkeyClear( FKeyNo4 );
-				break;
-			case SETUP_Display: // Display
-				Fkey_Icon( FKeyNo1, 372 );	//	Fkey_dispR( FKeyNo1, "Fix ");
-				Fkey_Icon( FKeyNo2, 373 );	//	Fkey_dispR( FKeyNo2, "Sci ");
-				Fkey_Icon( FKeyNo3, 374 );	//	Fkey_dispR( FKeyNo3, "Norm ");
-				Fkey_Icon( FKeyNo4, 375 );	//	Fkey_dispN( FKeyNo4, "Eng ");
-				break;
-			case SETUP_Key1sttime:	// Key Repeat mode
-			case SETUP_KeyReptime:	// Key Repeat mode
-			case SETUP_ExtendPict:		// Max Pict
-			case SETUP_ExtendList:		// Max List
-				Fkey_DISPN( FKeyNo1," +");
-				Fkey_DISPN( FKeyNo2," -");
-				Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispN( FKeyNo4, "Init");
-				break;
-			case SETUP_SkipUpDown: // SkipUp/Down number
-			case SETUP_DefaultWaitcount: // Wait count number
-				Fkey_DISPN( FKeyNo1," +");
-				Fkey_DISPN( FKeyNo2," -");
-				Fkey_dispR( FKeyNo3, "Num");
-				Fkey_Icon( FKeyNo4,  95 );	//	Fkey_dispN( FKeyNo4, "Init");
-				break;
-			case SETUP_MatDspmode: // Mat display mode
-				Fkey_dispN( FKeyNo1, "m,n ");
-				Fkey_dispN( FKeyNo2, "x,y ");
-				break;
-			case SETUP_Matrixbase: // Mat base
-				Fkey_dispN( FKeyNo1, " 0 ");
-				Fkey_dispN( FKeyNo2, " 1 ");
-				break;
-			case SETUP_DATE: // DATE
-				Fkey_dispR( FKeyNo1, "Year");
-				Fkey_dispR( FKeyNo2, "Mth");
-				Fkey_dispR( FKeyNo3, "Day");
-				break;
-			case SETUP_TIME: // TIME
-				Fkey_dispR( FKeyNo1, "Hour");
-				Fkey_dispR( FKeyNo2, "Min");
-				Fkey_dispR( FKeyNo3, "Sec");
-				break;
-			case SETUP_Pictmode: // Pict mode
-				if ( StorageMode & 1 ) Fkey_dispN( FKeyNo1, " SD "); else Fkey_dispN( FKeyNo1, "MEM ");
-				Fkey_dispN( FKeyNo2, "Heap");
-				Fkey_dispN( FKeyNo3, "Both");
-				Fkey_dispN( FKeyNo4, "Main");
-				break;
-			case SETUP_Storagemode: // Storage mode
-				Fkey_dispN( FKeyNo1, "SMEM");
-				Fkey_dispN( FKeyNo2, " SD ");
-				Fkey_dispN( FKeyNo3, "Main");
-				break;
-			case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
-				Fkey_Icon( FKeyNo1, 18 );	//	Fkey_dispN( FKeyNo1, "off ");
-				Fkey_dispN( FKeyNo2, "Grph");
-				Fkey_dispN( FKeyNo3, "All ");
-				if ( RefreshCtrl ) Fkey_dispR( FKeyNo4, "time");
-				Fkey_Icon( FKeyNo5,  95 );	//	Fkey_dispN( FKeyNo5, "Init");
-				break;
-			case SETUP_Executemode: // Execute Mode
-				Fkey_dispN( FKeyNo1, "DBL#");
-				Fkey_dispN( FKeyNo2, "INT%");
-				Fkey_dispN( FKeyNo3, "CPLX");
-				break;
-			case SETUP_EditListChar:
-				Fkey_dispN( FKeyNo1, "List");
-				Fkey_dispN( FKeyNo2, " \xE5\xB7");
-				Fkey_dispN( FKeyNo3, " \xFF\xE0");
-				ML_vertical_line( 2*21+4+4, 7*8+2, 7*8+6, ML_BLACK);
-				break;
-			case SETUP_ForceReturnMode:
-				Fkey_Icon( FKeyNo1, 362 );	//	Fkey_dispN( FKeyNo1, "None");
-				Fkey_dispN( FKeyNo2, " F1");
-				Fkey_dispN( FKeyNo3, "EXE");
-				Fkey_dispN( FKeyNo4, "Both");
-				break;
-			case SETUP_RootFolder:
-				Fkey_dispN( FKeyNo1, "  / ");
-				Fkey_dispN( FKeyNo2, "cur.f");
-				break;
-			case SETUP_EditIndent: //
-				Fkey_Icon( FKeyNo1, 18 );	//	Fkey_dispN( FKeyNo1, "off ");
-				Fkey_dispN( FKeyNo2, " 1");
-				Fkey_dispN( FKeyNo3, " 2");
-				Fkey_dispN( FKeyNo4, " 4");
-				Fkey_dispN( FKeyNo5, "sv-");
-				break;
-			case SETUP_FuncType: //
-				switch ( subselect ) {
-					case 0:
-						Fkey_Icon( FKeyNo1,  61 );	//	Fkey_dispN( FKeyNo1, "Y=");
-						Fkey_Icon( FKeyNo2,  62 );	//	Fkey_dispN( FKeyNo2, "r=");
-						Fkey_Icon( FKeyNo3,  63 );	//	Fkey_dispN( FKeyNo3, "Param");
-						Fkey_Icon( FKeyNo4, 723 );	//	Fkey_dispN( FKeyNo4, "X=");
-						FkeyClear( FKeyNo5 );
-						Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
-						break;
-					case 1:
-						Fkey_Icon( FKeyNo1,  65 );	//	Fkey_dispN( FKeyNo1, "Y>");
-						Fkey_Icon( FKeyNo2,  66 );	//	Fkey_dispN( FKeyNo2, "Y<");
-						Fkey_Icon( FKeyNo3,  67 );	//	Fkey_dispN( FKeyNo3, "Y>=");
-						Fkey_Icon( FKeyNo4,  68 );	//	Fkey_dispN( FKeyNo4, "Y<=");
-						FkeyClear( FKeyNo5 );
-						Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
-						break;
-					case 2:
-						Fkey_Icon( FKeyNo1, 724 );	//	Fkey_dispN( FKeyNo1, "X>");
-						Fkey_Icon( FKeyNo2, 725 );	//	Fkey_dispN( FKeyNo2, "X<");
-						Fkey_Icon( FKeyNo3, 726 );	//	Fkey_dispN( FKeyNo3, "X>=");
-						Fkey_Icon( FKeyNo4, 727 );	//	Fkey_dispN( FKeyNo4, "X<=");
-						FkeyClear( FKeyNo5 );
-						Fkey_Icon(FKeyNo6, 6 ); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
-						break;
-				}
-				break;
-			default:
-				break;
-		}
-
-		Fkey_Icon( FKeyNo6, 991 );	//	Fkey_dispN( FKeyNo6, "Ver.");
+                if ((!UseHiddenRAM) || (Is35E2 != 0)) {
+                    for (int i=0; i<2; i++)
+						Fkey_dispN(i, "---");
+                    break;
+                }
+            default:
+			    Fkey_Icon(FKeyNo1, 17);	//	Fkey_dispN( FKeyNo1, " On ");
+                Fkey_Icon(FKeyNo2, 18);	//	Fkey_dispN( FKeyNo2, " Off");
+                break;
+        }
+        Bdisp_AreaReverseVRAM(0, cursor_pos*8, 127, cursor_pos*8+7);
+        date_time_print();
+        
+//		VBattDispSub( 14*6+2, 7*8+2 );
+        Fkey_Icon( FKeyNo6, 991 );	//	Fkey_dispN( FKeyNo6, "Ver.");
 //		Bdisp_PutDisp_DD();
 
-		DateCursorY = y*0x100+(DateCursorY&0xFF);
-		TimeCursorY = y*0x100+(TimeCursorY&0xFF);
-		TimePrintSetMode( 1 ) ;			// Date/Time print IRQ on
-		GetKey_DisableMenu(&key);
-		TimePrintSetMode( 0 ) ;			// Date/Time print IRQ off
-		DateToStr(DateStr);
-		TimeToStr(TimeStr);
-		switch (key) {
-			case KEY_CTRL_EXIT:
-			case KEY_CTRL_EXE:
-				cont=0;
-				break;
+        DateToStr(DateStr);
+        TimeToStr(TimeStr);
+        TimePrintSetMode( 1 ) ;			// Date/Time print IRQ on
+        GetKey_DisableMenu(&key);
+        TimePrintSetMode( 0 ) ;			// Date/Time print IRQ off
 
-			case KEY_CTRL_UP:
-				select-=1;
-				if ( select < 0 ) {select=(listmax); scrl=select-6;}
-			  upj:
-				if ( select < scrl ) scrl-=1;
-				if ( scrl < 0 ) scrl=0;
-				break;
-			case KEY_CTRL_DOWN:
-				select+=1;
-				if ( select > (listmax) ) {select=0; scrl=0;}
-			  downj:
-				if ((select - scrl) > 6 ) scrl+=1;
-				if ( scrl > (listmax) ) scrl=(listmax)-6;
-				break;
-			case KEY_CTRL_LEFT:
-				select=0;
-				scrl=0;
-				break;
-			case KEY_CTRL_RIGHT:
-				select=(listmax);
-				scrl=select-6;
-				break;
+        switch (key) {
+            case KEY_CTRL_EXIT:
+            case KEY_CTRL_EXE:
+                cont=0;
+                break;
 
-			case KEY_CTRL_PAGEUP:
-				for ( i=0; i<7; i++) {
-					select--;
-					if ( select < 0 ) {select=0; scrl=0; break;}
-					if ( select < scrl ) scrl-=1;
-					if ( scrl < 0 ) scrl=0;
-				}
-				break;
-			case KEY_CTRL_PAGEDOWN:
-				for ( i=0; i<7; i++) {
-					select++;
-					if ( select > (listmax) ) {select=listmax; scrl=select-6; break; }
-					if ((select - scrl) > 6 ) scrl+=1;
-					if ( scrl > (listmax) ) scrl=(listmax)-6;
-				}
-				break;
+            case KEY_CTRL_UP:
+                if (cursor_pos)
+                    cursor_pos--;
+                else if (scroll)
+                    scroll--;
+                else {
+                    cursor_pos = 6;
+                    scroll = scroll_max;
+                }
+                break;
+            case KEY_CTRL_DOWN:
+                if (cursor_pos != 6)
+                    cursor_pos++;
+                else if (scroll != scroll_max)
+                    scroll++;
+                else {
+                    cursor_pos = 0;
+                    scroll = 0;
+                }
+                break;
+            case KEY_CTRL_LEFT:
+                cursor_pos = 0;
+                scroll = 0;
+                break;
+            case KEY_CTRL_RIGHT:
+                cursor_pos = 6;
+                scroll = scroll_max;
+                break;
+            case KEY_CTRL_PAGEUP:
+                scroll = max(0, scroll - 7 + cursor_pos);
+                cursor_pos = 0;
+                break;
+            case KEY_CTRL_PAGEDOWN:
+                scroll = min(scroll_max, scroll + cursor_pos + 1);
+                cursor_pos = 6;
+                break;
 
-			case KEY_CTRL_F1:
+            case KEY_CTRL_F1:
 //				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-				switch (select) {
-					case SETUP_Angle: // Angle
-						Angle = 0 ; // Deg
-						break;
-					case SETUP_ComplexMode: // complex mode
-						ComplexMode = 0;	// Real
-						break;
-					case SETUP_Variable:
-						VarListRange=0;
-						break;
-					case SETUP_FuncType: // function Type
-						switch ( subselect ) {
-							case 0:
-								FuncType = 0;
-								break;
-							case 1:
-								FuncType = 4;
-								break;
-							case 2:
-								FuncType = 8;
-								break;
-						}
-						break;
-					case SETUP_DrawType: // Draw Type connect
+                switch (select) {
+                    case SETUP_Angle: // Angle
+                        Angle = 0 ; // Deg
+                        break;
+                    case SETUP_ComplexMode: // complex mode
+                        ComplexMode = 0;	// Real
+                        break;
+                    case SETUP_Variable:
+                        VarListRange = 0;
+                        break;
+                    case SETUP_FuncType: // function Type
+                        /* Func Type: 0, 4, 8 */
+						FuncType = func_select*4;
+                        break;
+                    case SETUP_DrawType: // Draw Type connect
 						DrawType = 0 ;
-						break;
-					case SETUP_Coord: // Coord	on
+                        break;
+                    case SETUP_Coord: // Coord	on
 						Coord = 1 ;
-						break;
-					case SETUP_Grid: // Grid		on
+                        break;
+                    case SETUP_Grid: // Grid		on
 						Grid = 1 ;
-						break;
-					case SETUP_Axes: // Axes		on
+                        break;
+                    case SETUP_Axes: // Axes		on
 						Axes = 1 ;
-						break;
-					case SETUP_Label: // Label	on
+                        break;
+                    case SETUP_Label: // Label	on
 						Label = 1 ;
-						break;
-					case SETUP_Derivative: // 	Derivative on
+                        break;
+                    case SETUP_Derivative: // 	Derivative on
 						Derivative = 1 ;
-						break;
-					case SETUP_Background: // BG pict
+                        break;
+                    case SETUP_Background: // BG pict
 						BG_Pict_No = 0 ;
-						break;
-					case SETUP_Sketch: // Sketch Line	normal
+                        break;
+                    case SETUP_Sketch: // Sketch Line	normal
 						S_L_Style = 0 ;
-						break;
-					case SETUP_Display: // Display
-						i = SelectNum1("Fix",CB_Round.DIGIT,0,15,&key);
-						if ( key==KEY_CTRL_EXIT ) break;
-						CB_Round.DIGIT=i;
-						CB_Round.MODE =Fix;
-						break;
-					case SETUP_Help:	// Help
-						CB_HelpOn = 1;	// help on
-						break;
-					case SETUP_RecoverSetup: // Setup Mode
-						CB_RecoverSetup = 1 ; // recover on
-						break;
-					case SETUP_EnableExtFONT: // Enable External Font
-						if ( limit ) break;
-						EnableExtFont=1;
-						HiddenRAM_MatAryInit();
-						break;
-					case SETUP_CMDINPUT: // Command input method
-						CommandInputMethod=0;
-						break;
-					case SETUP_EditIndent: //
-						i = CB_EditIndent&0x8;
-						CB_EditIndent = 0 | i;
-						break;
-					case SETUP_EditTopLine: // Use Top of Line (edit)
-						EditTopLine=1;		// Hide Status Bar
-						break;
-					case SETUP_EditExtFont: // Use Ext Font (edit)
-						if ( EnableExtFont ) EditExtFont=1;
-						break;
-					case SETUP_EditFontSize: // Edit Char Size
-						EditFontSize &= 0xF0;	// Standard
-						UpdateLineNum=1;
-						break;
-					case SETUP_EditLineNum: // Line number (edit)
-						EditFontSize |= 0x10;	// on
-						break;
-					case SETUP_EditListChar:
-						EditListChar=0;		// normal
-						break;
-					case SETUP_ExtendPict:		// Max Pict
-						if ( limit ) break;
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
-						ExtendPict+=10;
-						if ( 79<ExtendPict ) ExtendPict=79;
-						HiddenRAM_MatAryInit();
-						break;
-					case SETUP_ExtendList:		// Max List
-						if ( limit ) break;
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
-						ExtendList++;
-						if ( 19<ExtendList ) ExtendList=19;
-						HiddenRAM_MatAryInit();
-						break;
-					case SETUP_MaxMemMode: // Maximam Memory mode
-						MaxMemMode = 1 ; // on
-						FileListUpdate=1;
-						break;
-					case SETUP_UseHidnRam: // Hidden RAM
-						if ( limit ) break;
-						if ( !IsHiddenRAM ) break;
-						if ( UseHiddenRAM ) break; 
-						if ( !YesNo2("Abort required", "Proceed?") ) break;
-						UseHiddenRAM = 1;
-						ExtendList=(6-1);
-						SaveConfig();
-						Abort();
-						break;
-					case SETUP_HidnRamInit: // HiddenRAMInit
-						if ( limit ) break;
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
-						if ( Is35E2 ) break;
+                        break;
+                    case SETUP_Display: // Display
+                        i = SelectNum1("Fix",CB_Round.DIGIT,0,15,&key);
+                        if ( key==KEY_CTRL_EXIT ) break;
+                        CB_Round.DIGIT=i;
+                        CB_Round.MODE =Fix;
+                        break;
+                    case SETUP_Help:	// Help
+                        CB_HelpOn = 1;	// help on
+                        break;
+                    case SETUP_RecoverSetup: // Setup Mode
+                        CB_RecoverSetup = 1 ; // recover on
+                        break;
+                    case SETUP_EnableExtFONT: // Enable External Font
+                        if ( limit ) break;
+                        EnableExtFont=1;
+                        HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_CMDINPUT: // Command input method
+                        CommandInputMethod=0;
+                        break;
+                    case SETUP_EditIndent: //
+                        i = CB_EditIndent&0x8;
+                        CB_EditIndent = 0 | i;
+                        break;
+                    case SETUP_EditTopLine: // Use Top of Line (edit)
+                        EditTopLine=1;		// Hide Status Bar
+                        break;
+                    case SETUP_EditExtFont: // Use Ext Font (edit)
+                        if ( EnableExtFont ) EditExtFont=1;
+                        break;
+                    case SETUP_EditFontSize: // Edit Char Size
+                        EditFontSize &= 0xF0;	// Standard
+                        UpdateLineNum=1;
+                        break;
+                    case SETUP_EditLineNum: // Line number (edit)
+                        EditFontSize |= 0x10;	// on
+                        break;
+                    case SETUP_EditListChar:
+                        EditListChar=0;		// normal
+                        break;
+                    case SETUP_ExtendPict:		// Max Pict
+                        if ( limit ) break;
+                        if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+                        ExtendPict+=10;
+                        if ( 79<ExtendPict ) ExtendPict=79;
+                        HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_ExtendList:		// Max List
+                        if ( limit ) break;
+                        if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+                        ExtendList++;
+                        if ( 19<ExtendList ) ExtendList=19;
+                        HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_MaxMemMode: // Maximam Memory mode
+                        MaxMemMode = 1 ; // on
+                        FileListUpdate=1;
+                        break;
+                    case SETUP_UseHidnRam: // Hidden RAM
+                        if ( limit ) break;
+                        if ( !IsHiddenRAM ) break;
+                        if ( UseHiddenRAM ) break; 
+                        if ( !YesNo2("Abort required", "Proceed?") ) break;
+                        UseHiddenRAM = 1;
+                        ExtendList=(6-1);
+                        SaveConfig();
+                        Abort();
+                        break;
+                    case SETUP_HidnRamInit: // HiddenRAMInit
+                        if ( limit ) break;
+                        if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+                        if ( Is35E2 ) break;
 //						if ( YesNo("Initialize Ok?")==0 ) break;
-						UseHiddenRAM &= 0x0F;	// on
-						// HiddenRAM_MatAryClear();
-						break;
-					case SETUP_DisableDebugMode: // DisableDebugMode
-						DisableDebugMode = 0 ; // on
-						break;
-					case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
-						ExitDebugModeCheck = 1 ; // on
-						break;
-					case SETUP_BreakStop: // Break
-						BreakCheckDefault = 1 ; // on
-						BreakCheck = 1 ; // on
-						break;
-					case SETUP_ExecTimeDsp: // TimeDsp
-						TimeDsp = 1 ; // on
-						break;
-					case SETUP_IfEndCheck: // IfEnd Check
-						CheckIfEnd = 1 ; // on
-						break;
-					case SETUP_ACBreak: // ACBreak
-						ACBreak = 1 ; // on
-						break;
-					case SETUP_ForceReturnMode:
-						ForceReturnMode = 0;
-						break;
-					case SETUP_Key1sttime: // Key Repeat First Count *ms
-						KeyRepeatFirstCount += 1 ;
-						if ( KeyRepeatFirstCount > 40 ) KeyRepeatFirstCount=40;
-						break;
-					case SETUP_KeyReptime: // Key Repeat Next Count *ms
-						KeyRepeatNextCount += 1 ;
-						if ( KeyRepeatNextCount > 20 ) KeyRepeatNextCount=20;
-						break;
-					case SETUP_SkipUpDown: // Skipup/down count +
-						PageUpDownNum++; if ( PageUpDownNum > 9999 ) PageUpDownNum = 9999;
-						break;
-					case SETUP_MatDspmode: // Matrix Display mode
-						MatXYmode = 0 ; // m,n
-						break;
-					case SETUP_Matrixbase: // Matrix base
-						MatBaseDefault = 0 ; //
-						MatBase = MatBaseDefault;
-						break;
-					case SETUP_DATE: // DATE year
-						year = (DateStr[0]-'0')*1000+(DateStr[1]-'0')*100+(DateStr[2]-'0')*10+(DateStr[3]-'0');
-						year = SelectNum2("Year",year,0,9999);
-						DateStr[0]=(year/1000)+'0';
-						DateStr[1]=(year/100)%10+'0';
-						DateStr[2]=(year/10)%10+'0';
-						DateStr[3]=(year)%10+'0';
-						StorDATE( DateStr );
-						break;
-					case SETUP_TIME: // Time hour
-						hour = (TimeStr[0]-'0')*10+(TimeStr[1]-'0');
-						hour = SelectNum2("Hour",hour,0,23);
-						TimeStr[0]=(hour/10)%10+'0';
-						TimeStr[1]=(hour)%10+'0';
-						StorTIME( TimeStr );
-						break;
-					case SETUP_RootFolder:
-						if ( StorageMode & 2 ) break;
-						root2[0]='\0';	// default root folder
-						folder[0]='\0';
-						FileListUpdate= 1;
-						break;
-					case SETUP_AutoSaveMode: // Auto save
-						AutoSaveMode = 1;
-						break;
-					case SETUP_Forceg1msave: // Force g1m save
-						ForceG1Msave = 1 ; // g1m and text
-						break;
-					case SETUP_Pictmode: // Pict mode
-						PictMode = 0 ; // Storage Memory mode
-						break;
-					case SETUP_Storagemode: // Storage mode
-						ChangeStorageMode( 0 ); // Memory mode
-						break;
-					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
-						RefreshCtrl = 0 ; // off  (default)
-						break;
-					case SETUP_DefaultWaitcount: // Wait count +
-						DefaultWaitcount+=10; if ( DefaultWaitcount > 9999 ) DefaultWaitcount = 9999;
-						Waitcount=DefaultWaitcount;
-						break;
-					case SETUP_Executemode: // CB mode
-						CB_INTDefault = 0 ; // normal
-						CB_INT = CB_INTDefault;
-						ComplexMode = 0;	// real
-						break;
-					default:
-						break;
-				}
-				break;
-			case KEY_CTRL_F2:
+                        UseHiddenRAM &= 0x0F;	// on
+                        // HiddenRAM_MatAryClear();
+                        break;
+                    case SETUP_DisableDebugMode: // DisableDebugMode
+                        DisableDebugMode = 0 ; // on
+                        break;
+                    case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
+                        ExitDebugModeCheck = 1 ; // on
+                        break;
+                    case SETUP_BreakStop: // Break
+                        BreakCheckDefault = 1 ; // on
+                        BreakCheck = 1 ; // on
+                        break;
+                    case SETUP_ExecTimeDsp: // TimeDsp
+                        TimeDsp = 1 ; // on
+                        break;
+                    case SETUP_IfEndCheck: // IfEnd Check
+                        CheckIfEnd = 1 ; // on
+                        break;
+                    case SETUP_ACBreak: // ACBreak
+                        ACBreak = 1 ; // on
+                        break;
+                    case SETUP_ForceReturnMode:
+                        ForceReturnMode = 0;
+                        break;
+                    case SETUP_Key1sttime: // Key Repeat First Count *ms
+                        KeyRepeatFirstCount += 1 ;
+                        if ( KeyRepeatFirstCount > 40 ) KeyRepeatFirstCount=40;
+                        break;
+                    case SETUP_KeyReptime: // Key Repeat Next Count *ms
+                        KeyRepeatNextCount += 1 ;
+                        if ( KeyRepeatNextCount > 20 ) KeyRepeatNextCount=20;
+                        break;
+                    case SETUP_SkipUpDown: // Skipup/down count +
+                        PageUpDownNum++; if ( PageUpDownNum > 9999 ) PageUpDownNum = 9999;
+                        break;
+                    case SETUP_MatDspmode: // Matrix Display mode
+                        MatXYmode = 0 ; // m,n
+                        break;
+                    case SETUP_Matrixbase: // Matrix base
+                        MatBaseDefault = 0 ; //
+                        MatBase = MatBaseDefault;
+                        break;
+                    case SETUP_DATE: // DATE year
+                        year = (DateStr[0]-'0')*1000+(DateStr[1]-'0')*100+(DateStr[2]-'0')*10+(DateStr[3]-'0');
+                        year = SelectNum2("Year",year,0,9999);
+                        DateStr[0]=(year/1000)+'0';
+                        DateStr[1]=(year/100)%10+'0';
+                        DateStr[2]=(year/10)%10+'0';
+                        DateStr[3]=(year)%10+'0';
+                        StorDATE( DateStr );
+                        break;
+                    case SETUP_TIME: // Time hour
+                        hour = (TimeStr[0]-'0')*10+(TimeStr[1]-'0');
+                        hour = SelectNum2("Hour",hour,0,23);
+                        TimeStr[0]=(hour/10)%10+'0';
+                        TimeStr[1]=(hour)%10+'0';
+                        StorTIME( TimeStr );
+                        break;
+                    case SETUP_RootFolder:
+                        if ( StorageMode & 2 ) break;
+                        root2[0]='\0';	// default root folder
+                        folder[0]='\0';
+                        FileListUpdate= 1;
+                        break;
+                    case SETUP_AutoSaveMode: // Auto save
+                        AutoSaveMode = 1;
+                        break;
+                    case SETUP_Forceg1msave: // Force g1m save
+                        ForceG1Msave = 1 ; // g1m and text
+                        break;
+                    case SETUP_Pictmode: // Pict mode
+                        PictMode = 0 ; // Storage Memory mode
+                        break;
+                    case SETUP_Storagemode: // Storage mode
+                        ChangeStorageMode( 0 ); // Memory mode
+                        break;
+                    case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
+                        RefreshCtrl = 0 ; // off  (default)
+                        break;
+                    case SETUP_DefaultWaitcount: // Wait count +
+                        DefaultWaitcount+=10; if ( DefaultWaitcount > 9999 ) DefaultWaitcount = 9999;
+                        Waitcount=DefaultWaitcount;
+                        break;
+                    case SETUP_Executemode: // CB mode
+                        CB_INTDefault = 0 ; // normal
+                        CB_INT = CB_INTDefault;
+                        ComplexMode = 0;	// real
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_CTRL_F2:
 //				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-				switch (select) {
-					case SETUP_Angle: // Angle
-						Angle = 1 ; // Rad
-						break;
-					case SETUP_ComplexMode: // complex mode
-						ComplexMode = 1;	// a+bi
-						break;
-					case SETUP_Variable:
-						i = VarListRange; if ( i==0 ) i=1;
-						i = SelectNum1sub("Select List No.","List",i,0,ExtListMax,&key);
-						if ( key==KEY_CTRL_EXIT ) break;
-						VarListRange = i;
-						break;
-					case SETUP_FuncType: // function Type
-						switch ( subselect ) {
-							case 0:
-								FuncType = 1;
-								break;
-							case 1:
-								FuncType = 5;
-								break;
-							case 2:
-								FuncType = 9;
-								break;
-						}
-						break;
-					case SETUP_DrawType: // Draw Type Plot
-						DrawType = 1 ;
-						break;
-					case SETUP_Coord: // Coord	off
-						Coord = 0 ;
-						break;
-					case SETUP_Grid: // Grid		off
-						Grid = 0 ;
-						break;
-					case SETUP_Axes: // Axes		off
-						Axes = 0 ;
-						break;
-					case SETUP_Label: // Label	off
-						Label = 0 ;
-						break;
-					case SETUP_Derivative: // 	Derivative off
-						Derivative = 0 ;
-						break;
-					case SETUP_Background: // BG pict
-						BG_Pict_No = SelectNum2("Pict",BG_Pict_No,1,20);
-						break;
-					case SETUP_Sketch: // Sketch Line	Thick
-						S_L_Style = 1 ;
-						break;
-					case SETUP_Display: // Display
-						i = SelectNum1("Sci",CB_Round.DIGIT,0,15,&key);
-						if ( key==KEY_CTRL_EXIT ) break;
-						CB_Round.DIGIT=i;
-						CB_Round.MODE =Sci;
-						break;
-					case SETUP_Help:	// Help
-						CB_HelpOn = 0;	// help off
-						break;
-					case SETUP_RecoverSetup: // Setup Mode
-						CB_RecoverSetup = 0 ; // recover off
-						break;
-					case SETUP_EnableExtFONT: // Enable External Font
-						if ( limit ) break;
-						EnableExtFont=0;
-						EditExtFont=0;
-						HiddenRAM_MatAryInit();
-						break;
-					case SETUP_CMDINPUT: // Command input method
-						CommandInputMethod=1;
-						break;
-					case SETUP_EditIndent: //
-						i = CB_EditIndent&0x8;
-						CB_EditIndent = 1 | i;
-						break;
-					case SETUP_EditTopLine: // Use Top of Line (edit)
-						EditTopLine=0;		// Status Bar ON
-						break;
-					case SETUP_EditExtFont: // Use Ext Font (edit)
-						EditExtFont=0;
-						break;
-					case SETUP_EditFontSize: // Edit Char Size
-						EditFontSize &= 0xF0;	// Standard
-						EditFontSize |= 0x01;	// mini
-						break;
-					case SETUP_EditLineNum: // Line number (edit)
-						EditFontSize &= 0x0F;	// off (default)
-						UpdateLineNum=1;
-						break;
-					case SETUP_EditListChar:
-						EditListChar=1;		//
-						break;
-					case SETUP_ExtendPict:		// Max Pict
-						if ( limit ) break;
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
-						if (ExtendPict>70) ExtendPict=70; else ExtendPict-=10;
-						if (ExtendPict<0) ExtendPict=0;
-						HiddenRAM_MatAryInit();
-						break;
-					case SETUP_ExtendList:		// Max List
-						if ( limit ) break;
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
-						ExtendList--;
-						if (ExtendList<0) ExtendList=0;
-						HiddenRAM_MatAryClear();
-						break;
-					case SETUP_MaxMemMode: // Maximam Memory mode
-						MaxMemMode = 0 ; // off
-						FileListUpdate=1;
-						break;
-					case SETUP_UseHidnRam: // Hidden RAM
-						if ( limit ) break;
-						if ( !UseHiddenRAM ) break;
-						if ( !YesNo2("Abort required", "Proceed?") ) break;
-						UseHiddenRAM = 0 ; // off
-						ExtendPict=0;
-						ExtendList=0;
-						SaveConfig();
-						Abort();
-						// HiddenRAM_MatAryClear();
-						break;
-					case SETUP_HidnRamInit: // HiddenRAMInit
-						if ( limit ) break;
-						if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
-						if ( Is35E2 ) break;
+                switch (select) {
+                    case SETUP_Angle: // Angle
+                        Angle = 1 ; // Rad
+                        break;
+                    case SETUP_ComplexMode: // complex mode
+                        ComplexMode = 1;	// a+bi
+                        break;
+                    case SETUP_Variable:
+                        i = VarListRange; if ( i==0 ) i=1;
+                        i = SelectNum1sub("Select List No.","List",i,0,ExtListMax,&key);
+                        if ( key==KEY_CTRL_EXIT ) break;
+                        VarListRange = i;
+                        break;
+                    case SETUP_FuncType: // function Type
+                        /* Func Type: 1, 5, 9 */
+						FuncType = func_select*4 + 1;
+                        break;
+                    case SETUP_DrawType: // Draw Type Plot
+                        DrawType = 1 ;
+                        break;
+                    case SETUP_Coord: // Coord	off
+                        Coord = 0 ;
+                        break;
+                    case SETUP_Grid: // Grid		off
+                        Grid = 0 ;
+                        break;
+                    case SETUP_Axes: // Axes		off
+                        Axes = 0 ;
+                        break;
+                    case SETUP_Label: // Label	off
+                        Label = 0 ;
+                        break;
+                    case SETUP_Derivative: // 	Derivative off
+                        Derivative = 0 ;
+                        break;
+                    case SETUP_Background: // BG pict
+                        BG_Pict_No = SelectNum2("Pict",BG_Pict_No,1,20);
+                        break;
+                    case SETUP_Sketch: // Sketch Line	Thick
+                        S_L_Style = 1 ;
+                        break;
+                    case SETUP_Display: // Display
+                        i = SelectNum1("Sci",CB_Round.DIGIT,0,15,&key);
+                        if ( key==KEY_CTRL_EXIT ) break;
+                        CB_Round.DIGIT=i;
+                        CB_Round.MODE =Sci;
+                        break;
+                    case SETUP_Help:	// Help
+                        CB_HelpOn = 0;	// help off
+                        break;
+                    case SETUP_RecoverSetup: // Setup Mode
+                        CB_RecoverSetup = 0 ; // recover off
+                        break;
+                    case SETUP_EnableExtFONT: // Enable External Font
+                        if ( limit ) break;
+                        EnableExtFont=0;
+                        EditExtFont=0;
+                        HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_CMDINPUT: // Command input method
+                        CommandInputMethod=1;
+                        break;
+                    case SETUP_EditIndent: //
+                        i = CB_EditIndent&0x8;
+                        CB_EditIndent = 1 | i;
+                        break;
+                    case SETUP_EditTopLine: // Use Top of Line (edit)
+                        EditTopLine=0;		// Status Bar ON
+                        break;
+                    case SETUP_EditExtFont: // Use Ext Font (edit)
+                        EditExtFont=0;
+                        break;
+                    case SETUP_EditFontSize: // Edit Char Size
+                        EditFontSize &= 0xF0;	// Standard
+                        EditFontSize |= 0x01;	// mini
+                        break;
+                    case SETUP_EditLineNum: // Line number (edit)
+                        EditFontSize &= 0x0F;	// off (default)
+                        UpdateLineNum=1;
+                        break;
+                    case SETUP_EditListChar:
+                        EditListChar=1;		//
+                        break;
+                    case SETUP_ExtendPict:		// Max Pict
+                        if ( limit ) break;
+                        if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+                        if (ExtendPict>70) ExtendPict=70; else ExtendPict-=10;
+                        if (ExtendPict<0) ExtendPict=0;
+                        HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_ExtendList:		// Max List
+                        if ( limit ) break;
+                        if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+                        ExtendList--;
+                        if (ExtendList<0) ExtendList=0;
+                        HiddenRAM_MatAryClear();
+                        break;
+                    case SETUP_MaxMemMode: // Maximam Memory mode
+                        MaxMemMode = 0 ; // off
+                        FileListUpdate=1;
+                        break;
+                    case SETUP_UseHidnRam: // Hidden RAM
+                        if ( limit ) break;
+                        if ( !UseHiddenRAM ) break;
+                        if ( !YesNo2("Abort required", "Proceed?") ) break;
+                        UseHiddenRAM = 0 ; // off
+                        ExtendPict=0;
+                        ExtendList=0;
+                        SaveConfig();
+                        Abort();
+                        // HiddenRAM_MatAryClear();
+                        break;
+                    case SETUP_HidnRamInit: // HiddenRAMInit
+                        if ( limit ) break;
+                        if ( UseHiddenRAM == 0 )  break;	// Hidden RAM only
+                        if ( Is35E2 ) break;
 //						if ( YesNo("Initialize Ok?")==0 ) break;
-						UseHiddenRAM |= 0x10;	// off
-						// HiddenRAM_MatAryInit();
-						break;
-					case SETUP_DisableDebugMode: // DisableDebugMode
-						DisableDebugMode = 1 ; // disable
-						break;
-					case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
-						ExitDebugModeCheck = 0 ; // off
-						break;
-					case SETUP_BreakStop: // Break
-						BreakCheckDefault = 0 ; // off
-						BreakCheck = 0 ; // off
-						break;
-					case SETUP_ForceReturnMode:
-						ForceReturnMode = 1;
-						break;
-					case SETUP_ExecTimeDsp: // TimeDsp
-						TimeDsp = 0 ; // off
-						break;
-					case SETUP_IfEndCheck: // IfEnd Check
-						CheckIfEnd = 0 ; // off
-						break;
-					case SETUP_ACBreak: // ACBreak
-						ACBreak = 0 ; // off
-						break;
-					case SETUP_Key1sttime: // Key Repeat First Count *ms
-						KeyRepeatFirstCount -= 1 ;
-						if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=1;
-						break;
-					case SETUP_KeyReptime: // Key Repeat Next Count *ms
-						KeyRepeatNextCount -= 1 ;
-						if ( KeyRepeatNextCount < 1 ) KeyRepeatNextCount=1;
-						break;
-					case SETUP_SkipUpDown: // Skipup/down count -
-						PageUpDownNum--; if ( PageUpDownNum < PageUpDownNumDefault ) PageUpDownNum = PageUpDownNumDefault;
-						break;
-					case SETUP_MatDspmode: // Matrix display mode
-						MatXYmode = 1 ; // x,y
-						break;
-					case SETUP_Matrixbase: // Matrix base
-						MatBaseDefault = 1 ; // base
-						MatBase = MatBaseDefault;
-						break;
-					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
-						RefreshCtrl = 1 ; // graphics
-						break;
-					case SETUP_DATE: // DATE month
-						month = (DateStr[5]-'0')*10+(DateStr[6]-'0');
-						month = SelectNum2("Month",month,1,12);
-						DateStr[5]=(month/10)%10+'0';
-						DateStr[6]=(month)%10+'0';
-						StorDATE( DateStr );
-						break;
-					case SETUP_TIME: // Time min
-						min = (TimeStr[3]-'0')*10+(TimeStr[4]-'0');
-						min = SelectNum2("Min",min,0,59);
-						TimeStr[3]=(min/10)%10+'0';
-						TimeStr[4]=(min)%10+'0';
-						StorTIME( TimeStr );
-						break;
-					case SETUP_RootFolder:
-						if ( Is35E2 == 0 ) break;
-						if ( StorageMode & 2 ) break;
-						if ( strlen( folderbuf ) ) {
-							root2[0]='\\';
-							strcpy( root2+1, folderbuf );	// current folder
-						} else root2[0]='\0';	// root folder
-						folder[0]='\0';
-						FileListUpdate= 1;
-						break;
-					case SETUP_AutoSaveMode: // Auto save
-						AutoSaveMode = 0;
-						break;
-					case SETUP_Forceg1msave: // Force g1m save
-						ForceG1Msave = 0 ; // text only
-						break;
-					case SETUP_Pictmode: // Pict mode
-						PictMode = 1 ; // heap mode
-						break;
-					case SETUP_Storagemode: // Storage mode
-						ChangeStorageMode( CheckSD() ); // SD mode
-						break;
-					case SETUP_DefaultWaitcount: // Wait count -
-						DefaultWaitcount-=10; if ( DefaultWaitcount < 0 ) DefaultWaitcount = 0;
-						Waitcount=DefaultWaitcount;
-						break;
-					case SETUP_Executemode: // CB mode
-						CB_INTDefault = 1 ; // int
-						CB_INT = CB_INTDefault;
-						ComplexMode = 0;	// real
-						break;
-					default:
-						break;
-				}
-				break;
-			case KEY_CTRL_F3:
+                        UseHiddenRAM |= 0x10;	// off
+                        // HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_DisableDebugMode: // DisableDebugMode
+                        DisableDebugMode = 1 ; // disable
+                        break;
+                    case SETUP_ExitDebugModeCheck: // ExitDebugModeCheck
+                        ExitDebugModeCheck = 0 ; // off
+                        break;
+                    case SETUP_BreakStop: // Break
+                        BreakCheckDefault = 0 ; // off
+                        BreakCheck = 0 ; // off
+                        break;
+                    case SETUP_ForceReturnMode:
+                        ForceReturnMode = 1;
+                        break;
+                    case SETUP_ExecTimeDsp: // TimeDsp
+                        TimeDsp = 0 ; // off
+                        break;
+                    case SETUP_IfEndCheck: // IfEnd Check
+                        CheckIfEnd = 0 ; // off
+                        break;
+                    case SETUP_ACBreak: // ACBreak
+                        ACBreak = 0 ; // off
+                        break;
+                    case SETUP_Key1sttime: // Key Repeat First Count *ms
+                        KeyRepeatFirstCount -= 1 ;
+                        if ( KeyRepeatFirstCount < 1 ) KeyRepeatFirstCount=1;
+                        break;
+                    case SETUP_KeyReptime: // Key Repeat Next Count *ms
+                        KeyRepeatNextCount -= 1 ;
+                        if ( KeyRepeatNextCount < 1 ) KeyRepeatNextCount=1;
+                        break;
+                    case SETUP_SkipUpDown: // Skipup/down count -
+                        PageUpDownNum--; if ( PageUpDownNum < PageUpDownNumDefault ) PageUpDownNum = PageUpDownNumDefault;
+                        break;
+                    case SETUP_MatDspmode: // Matrix display mode
+                        MatXYmode = 1 ; // x,y
+                        break;
+                    case SETUP_Matrixbase: // Matrix base
+                        MatBaseDefault = 1 ; // base
+                        MatBase = MatBaseDefault;
+                        break;
+                    case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
+                        RefreshCtrl = 1 ; // graphics
+                        break;
+                    case SETUP_DATE: // DATE month
+                        month = (DateStr[5]-'0')*10+(DateStr[6]-'0');
+                        month = SelectNum2("Month",month,1,12);
+                        DateStr[5]=(month/10)%10+'0';
+                        DateStr[6]=(month)%10+'0';
+                        StorDATE( DateStr );
+                        break;
+                    case SETUP_TIME: // Time min
+                        min = (TimeStr[3]-'0')*10+(TimeStr[4]-'0');
+                        min = SelectNum2("Min",min,0,59);
+                        TimeStr[3]=(min/10)%10+'0';
+                        TimeStr[4]=(min)%10+'0';
+                        StorTIME( TimeStr );
+                        break;
+                    case SETUP_RootFolder:
+                        if ( Is35E2 == 0 ) break;
+                        if ( StorageMode & 2 ) break;
+                        if ( strlen( folderbuf ) ) {
+                            root2[0]='\\';
+                            strcpy( root2+1, folderbuf );	// current folder
+                        } else root2[0]='\0';	// root folder
+                        folder[0]='\0';
+                        FileListUpdate= 1;
+                        break;
+                    case SETUP_AutoSaveMode: // Auto save
+                        AutoSaveMode = 0;
+                        break;
+                    case SETUP_Forceg1msave: // Force g1m save
+                        ForceG1Msave = 0 ; // text only
+                        break;
+                    case SETUP_Pictmode: // Pict mode
+                        PictMode = 1 ; // heap mode
+                        break;
+                    case SETUP_Storagemode: // Storage mode
+                        ChangeStorageMode( CheckSD() ); // SD mode
+                        break;
+                    case SETUP_DefaultWaitcount: // Wait count -
+                        DefaultWaitcount-=10; if ( DefaultWaitcount < 0 ) DefaultWaitcount = 0;
+                        Waitcount=DefaultWaitcount;
+                        break;
+                    case SETUP_Executemode: // CB mode
+                        CB_INTDefault = 1 ; // int
+                        CB_INT = CB_INTDefault;
+                        ComplexMode = 0;	// real
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_CTRL_F3:
 //				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-				switch (select) {
-					case SETUP_FuncType: // function Type
-						switch ( subselect ) {
-							case 0:
-								FuncType = 2;
-								break;
-							case 1:
-								FuncType = 6;
-								break;
-							case 2:
-								FuncType =10;
-								break;
-						}
-						break;
-					case SETUP_Angle: // Angle
-						Angle = 2 ; // Grad
-						break;
-					case SETUP_ComplexMode: // complex mode
-						ComplexMode = 2;	// r_theta
-						break;
-					case SETUP_Sketch: // Sketch Line	Broken
-						S_L_Style = 2 ;
-						break;
-					case SETUP_Display: // Display
-						i = SelectNum1("Nrm",CB_Round.DIGIT,0,15,&key);
-						if ( key==KEY_CTRL_EXIT ) break;
-						CB_Round.DIGIT=i;
-						CB_Round.MODE =Norm;
-						break;
-					case SETUP_EditIndent: //
-						i = CB_EditIndent&0x8;
-						CB_EditIndent = 2 | i;
-						break;
-					case SETUP_EditFontSize: // Edit Char Size
-						EditFontSize &= 0xF0;	// mini
-						EditFontSize |= 0x02;	// reverse
-						break;
-					case SETUP_EditListChar:
-						EditListChar=2;		// reverse L
-						break;
-					case SETUP_ExecTimeDsp: // TimeDsp
-						if ( TimeDsp == 0 ) break;
-						if ( TimeDsp & 0x4 )    TimeDsp &= ~0x4 ; // hires timer off
-						else	{ if ( IsSH3 == 0 ) TimeDsp |=  0x4 ; } // hires timer on
-						break;
-					case SETUP_ForceReturnMode:
-						ForceReturnMode = 2;
-						break;
-					case SETUP_SkipUpDown: // Skipup/down count init
-						PageUpDownNum = SelectNum3( PageUpDownNum );
-						break;
-					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
-						RefreshCtrl = 2 ; // graphics+text
-						break;
-					case SETUP_DATE: // DATE day
-						day = (DateStr[8]-'0')*10+(DateStr[9]-'0');
-						day = SelectNum2("Day",day,1,31);
-						DateStr[8]=(day/10)%10+'0';
-						DateStr[9]=(day)%10+'0';
-						StorDATE( DateStr );
-						break;
-					case SETUP_TIME: // Time sec
-						sec = (TimeStr[6]-'0')*10+(TimeStr[7]-'0');
-						sec = SelectNum2("Sec",sec,0,59);
-						TimeStr[6]=(sec/10)%10+'0';
-						TimeStr[7]=(sec)%10+'0';
-						StorTIME( TimeStr );
-						break;
-					case SETUP_Pictmode: // Pict mode
-						PictMode = 2 ; // Memory(read) & Smem(save) mode
-						break;
-					case SETUP_Storagemode: // Storage mode
-						ChangeStorageMode( StorageMode | 2 );	// main memory
-						break;
-					case SETUP_DefaultWaitcount: // Wait count set
-						DefaultWaitcount =  SelectNum2( "Wait", DefaultWaitcount, 0, 9999);
-						Waitcount=DefaultWaitcount;
-						break;
-					case SETUP_Executemode: // CB mode
-						CB_INTDefault = 2 ; // complex
-						CB_INT = CB_INTDefault;
-						break;
-					default:
-						break;
-				}
-				break;
-			case KEY_CTRL_F4:
+                switch (select) {
+                    case SETUP_FuncType: // function Type
+                        /* Func Type: 2, 6, 10 */
+						FuncType = func_select*4 + 2;
+                        break;
+                    case SETUP_Angle: // Angle
+                        Angle = 2 ; // Grad
+                        break;
+                    case SETUP_ComplexMode: // complex mode
+                        ComplexMode = 2;	// r_theta
+                        break;
+                    case SETUP_Sketch: // Sketch Line	Broken
+                        S_L_Style = 2 ;
+                        break;
+                    case SETUP_Display: // Display
+                        i = SelectNum1("Nrm",CB_Round.DIGIT,0,15,&key);
+                        if ( key==KEY_CTRL_EXIT ) break;
+                        CB_Round.DIGIT=i;
+                        CB_Round.MODE =Norm;
+                        break;
+                    case SETUP_EditIndent: //
+                        i = CB_EditIndent&0x8;
+                        CB_EditIndent = 2 | i;
+                        break;
+                    case SETUP_EditFontSize: // Edit Char Size
+                        EditFontSize &= 0xF0;	// mini
+                        EditFontSize |= 0x02;	// reverse
+                        break;
+                    case SETUP_EditListChar:
+                        EditListChar=2;		// reverse L
+                        break;
+                    case SETUP_ExecTimeDsp: // TimeDsp
+                        if ( TimeDsp == 0 ) break;
+                        if ( TimeDsp & 0x4 )    TimeDsp &= ~0x4 ; // hires timer off
+                        else	{ if ( IsSH3 == 0 ) TimeDsp |=  0x4 ; } // hires timer on
+                        break;
+                    case SETUP_ForceReturnMode:
+                        ForceReturnMode = 2;
+                        break;
+                    case SETUP_SkipUpDown: // Skipup/down count init
+                        PageUpDownNum = SelectNum3( PageUpDownNum );
+                        break;
+                    case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
+                        RefreshCtrl = 2 ; // graphics+text
+                        break;
+                    case SETUP_DATE: // DATE day
+                        day = (DateStr[8]-'0')*10+(DateStr[9]-'0');
+                        day = SelectNum2("Day",day,1,31);
+                        DateStr[8]=(day/10)%10+'0';
+                        DateStr[9]=(day)%10+'0';
+                        StorDATE( DateStr );
+                        break;
+                    case SETUP_TIME: // Time sec
+                        sec = (TimeStr[6]-'0')*10+(TimeStr[7]-'0');
+                        sec = SelectNum2("Sec",sec,0,59);
+                        TimeStr[6]=(sec/10)%10+'0';
+                        TimeStr[7]=(sec)%10+'0';
+                        StorTIME( TimeStr );
+                        break;
+                    case SETUP_Pictmode: // Pict mode
+                        PictMode = 2 ; // Memory(read) & Smem(save) mode
+                        break;
+                    case SETUP_Storagemode: // Storage mode
+                        ChangeStorageMode( StorageMode | 2 );	// main memory
+                        break;
+                    case SETUP_DefaultWaitcount: // Wait count set
+                        DefaultWaitcount =  SelectNum2( "Wait", DefaultWaitcount, 0, 9999);
+                        Waitcount=DefaultWaitcount;
+                        break;
+                    case SETUP_Executemode: // CB mode
+                        CB_INTDefault = 2 ; // complex
+                        CB_INT = CB_INTDefault;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_CTRL_F4:
 //				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-				switch (select) {
-					case SETUP_FuncType: // function Type
-						switch ( subselect ) {
-							case 0:
-								FuncType = 3;
-								break;
-							case 1:
-								FuncType = 7;
-								break;
-							case 2:
-								FuncType =11;
-								break;
-						}
-						break;
-					case SETUP_Sketch: // Sketch  Line	Dot
-						S_L_Style = 3 ;
-						break;
-					case SETUP_Display: // Display
-						ENG++;
-						if ( ENG>3 ) ENG=0;
-						if ( ENG>1 ) ENG=3;
-						break;
-					case SETUP_CMDINPUT: // Command input method (fx5800P mode change)
-						CB_fx5800P = 1-CB_fx5800P;
-						break;
-					case SETUP_EditIndent: //
-						i = CB_EditIndent&0x8;
-						CB_EditIndent = 4 | i;
-						break;
-					case SETUP_EditFontSize: // Edit Char Size
-						EditFontSize &= 0xF0;	// mini
-						EditFontSize |= 0x03;	// underbar cursor
-						break;
-					case SETUP_ExtendPict:		// Max Pict
-						if ( limit ) break;
-						ExtendPict=0;
-						HiddenRAM_MatAryInit();
-						break;
-					case SETUP_ExecTimeDsp: // TimeDsp
-						if ( TimeDsp == 0 ) break;
-						if ( TimeDsp & 0x2 )    TimeDsp &= ~0x2 ; // off reset GetKey1/2
-						else					TimeDsp |=  0x2 ; // on  reset GetKey1/2
-						break;
-					case SETUP_ExtendList:		// Max List
-						if ( limit ) break;
-						ExtendList=0;
-						ExtListMax=0;
-						HiddenRAM_MatAryInit();
-						break;
-					case SETUP_ForceReturnMode:
-						ForceReturnMode = 3;
-						break;
-					case SETUP_Key1sttime: // Key Repeat First Count *ms
-						KeyRepeatFirstCount = 20 ;
-						break;
-					case SETUP_KeyReptime: // Key Repeat Next Count *ms
-						KeyRepeatNextCount  = 5 ;
-						break;
-					case SETUP_SkipUpDown: // Skipup/down count init
-						PageUpDownNum = PageUpDownNumDefault ;
-						break;
-					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
-						if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
-						break;
-					case SETUP_Pictmode: // Pict mode
-						PictMode = 3 ; // MCS mode (default)
-						break;
-					case SETUP_DefaultWaitcount: // Wait count init
-						DefaultWaitcount = 0;
-						Waitcount=DefaultWaitcount;
-						break;
-					default:
-						break;
-				}
-				break;
-			case KEY_CTRL_F5:
+                switch (select) {
+                    case SETUP_FuncType: // function Type
+                        /* Func Type: 3, 7, 11 */
+						FuncType = func_select*4 + 3;
+                        break;
+                    case SETUP_Sketch: // Sketch  Line	Dot
+                        S_L_Style = 3 ;
+                        break;
+                    case SETUP_Display: // Display
+                        ENG++;
+                        if ( ENG>3 ) ENG=0;
+                        if ( ENG>1 ) ENG=3;
+                        break;
+                    case SETUP_CMDINPUT: // Command input method (fx5800P mode change)
+                        CB_fx5800P = 1-CB_fx5800P;
+                        break;
+                    case SETUP_EditIndent: //
+                        i = CB_EditIndent&0x8;
+                        CB_EditIndent = 4 | i;
+                        break;
+                    case SETUP_EditFontSize: // Edit Char Size
+                        EditFontSize &= 0xF0;	// mini
+                        EditFontSize |= 0x03;	// underbar cursor
+                        break;
+                    case SETUP_ExtendPict:		// Max Pict
+                        if ( limit ) break;
+                        ExtendPict=0;
+                        HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_ExecTimeDsp: // TimeDsp
+                        if ( TimeDsp == 0 ) break;
+                        if ( TimeDsp & 0x2 )    TimeDsp &= ~0x2 ; // off reset GetKey1/2
+                        else					TimeDsp |=  0x2 ; // on  reset GetKey1/2
+                        break;
+                    case SETUP_ExtendList:		// Max List
+                        if ( limit ) break;
+                        ExtendList=0;
+                        ExtListMax=0;
+                        HiddenRAM_MatAryInit();
+                        break;
+                    case SETUP_ForceReturnMode:
+                        ForceReturnMode = 3;
+                        break;
+                    case SETUP_Key1sttime: // Key Repeat First Count *ms
+                        KeyRepeatFirstCount = 20 ;
+                        break;
+                    case SETUP_KeyReptime: // Key Repeat Next Count *ms
+                        KeyRepeatNextCount  = 5 ;
+                        break;
+                    case SETUP_SkipUpDown: // Skipup/down count init
+                        PageUpDownNum = PageUpDownNumDefault ;
+                        break;
+                    case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode
+                        if ( RefreshCtrl ) Refreshtime = SelectNum4( Refreshtime+1 )-1;
+                        break;
+                    case SETUP_Pictmode: // Pict mode
+                        PictMode = 3 ; // MCS mode (default)
+                        break;
+                    case SETUP_DefaultWaitcount: // Wait count init
+                        DefaultWaitcount = 0;
+                        Waitcount=DefaultWaitcount;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_CTRL_F5:
 //				Bdisp_AreaReverseVRAM(0, y*8, 127, y*8+7);	// reverse select line
-				switch (select) {
-					case SETUP_EditIndent: //
-						CB_EditIndent^=0x08;
-						break;
-					case SETUP_EditFontSize: // Edit Char Size
-						EditFontSize &= 0xF0;	// mini
-						EditFontSize |= 0x04;	// underbar cursor & reverse
-						break;
-					case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode init
-						RefreshCtrl = 1 ; // graphics only
-						Refreshtime = 3-1 ; // 3/128
-						break;
-					default:
-						break;
-				}
-				break;
-			case KEY_CTRL_F6:
-				switch (select) {
+                switch (select) {
 					case SETUP_FuncType: // function Type
-						switch ( subselect ) {
-							case 0:
-								subselect = 1;
-								break;
-							case 1:
-								subselect = 2;
-								break;
-							case 2:
-								subselect = 0;
-								break;
-						}
-						break;
-					default:
-						VerDisp( limit );
-						break;
-				}
-				break;
-			default:
-				break;
-		}
-		Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
-	}
-	SaveConfig();
-	return select;
+                        /* Func Type: 1, 5, 9 */
+						func_select = (func_select+1) % 3;
+                        break;
+                    case SETUP_EditIndent: //
+                        CB_EditIndent^=0x08;
+                        break;
+                    case SETUP_EditFontSize: // Edit Char Size
+                        EditFontSize &= 0xF0;	// mini
+                        EditFontSize |= 0x04;	// underbar cursor & reverse
+                        break;
+                    case SETUP_RefrshCtlDD: // Refresh Ctrl DD Mode init
+                        RefreshCtrl = 1 ; // graphics only
+                        Refreshtime = 3-1 ; // 3/128
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case KEY_CTRL_F6:
+                VerDisp( limit );
+            default:
+                break;
+        }
+        select = cursor_pos + scroll;
+        Bkey_Set_RepeatTime(KeyRepeatFirstCount,KeyRepeatNextCount);		// set cursor rep
+    }
+    SaveConfig();
+    return select;
 }
