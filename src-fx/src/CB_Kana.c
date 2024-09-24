@@ -146,12 +146,11 @@ int KPrintCharMini(
     int px,
     int py,
     unsigned char *str,
-    int mode,
-    int ext_flag
+    int mode
 ) {
     DISPGRAPH mini_char;
     GRAPHDATA mini_font;
-    unsigned char *font_data = _char_mini_font_lookup(str, ext_flag);
+    unsigned char *font_data = _char_mini_font_lookup(str, mode & FLAG_EXT_FONT);
 
     /* Check if the font is left unfinished */
     if (font_data[1])
@@ -188,15 +187,14 @@ void CB_PrintMini(
     int px,
     int py,
     const unsigned char *str,
-    int mode,
-    int ext_flag
+    int mode
 ) {
     unsigned char mod,kind;
     int i;
     int c = (char)*str;
 
     while (c) {
-        i = KPrintCharMini(px, py, str++ , mode, ext_flag);
+        i = KPrintCharMini(px, py, str++ , mode);
         if ((c == 0x7F)       || (c == 0xFFFFFFF9) ||
             (c == 0xFFFFFFE5) || (c == 0xFFFFFFE6) ||
             (c == 0xFFFFFFE7) || (c == 0xFFFFFFFF)  )
@@ -212,10 +210,9 @@ int CB_PrintMiniC(
     int px,
     int py,
     const unsigned char *str,
-    int mode,
-    int ext_flag
+    int mode
 ) {
-    return KPrintCharMini(px, py, str, mode, ext_flag);
+    return KPrintCharMini(px, py, str, mode);
 }
 
 int CB_PrintMiniLength(
@@ -388,10 +385,10 @@ int CB_GetFontMini( char *SRC ){    // GetFont(0xFFA0)->Mat C
             
             memcpy( vbuf, vram, 16*8 );
             if ( cstr==NULL ) {
-                                CB_PrintMiniC(0, 0, (unsigned char *)" ", MINI_OVER, false);
+                                CB_PrintMiniC(0, 0, (unsigned char *)" ", MINI_OVER);
             } else {
-                if ( orgflag )    CB_PrintMiniC(0, 0, cstr, MINI_OVER, false);
-                else            CB_PrintMiniC(0, 0, cstr, MINI_OVER, true);
+                if ( orgflag )    CB_PrintMiniC(0, 0, cstr, MINI_OVER);
+                else            CB_PrintMiniC(0, 0, cstr, MINI_OVER | FLAG_EXT_FONT);
             }
             x=1;
             y=1;

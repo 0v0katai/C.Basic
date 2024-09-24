@@ -165,7 +165,7 @@ int MatElementPlus( int reg, int m, int n ) {	// 1-
 	int ElementSize=MatAry[reg].ElementSize;
 	int maxbyte=MatAry[reg].Maxbyte;
 
-	if ( ( ElementSize!= 1 )&&( ElementSize!= 4 )&&( ElementSize!= 8 )&&( ElementSize!= 16 )&&( ElementSize!= 32 )&&( ElementSize!= 64 )&&( ElementSize!=128 ) ) { CB_Error(InvalidSize); return; }	// Illegal Element size
+	if ( ( ElementSize!= 1 )&&( ElementSize!= 4 )&&( ElementSize!= 8 )&&( ElementSize!= 16 )&&( ElementSize!= 32 )&&( ElementSize!= 64 )&&( ElementSize!=128 ) ) { CB_Error(InvalidSize); return 0; }	// Illegal Element size
 	if ( ElementSize==4 ) {	// 4 bit matrix
 			matsize=( ((m-1)>>1)+1 )*n;
 	} else 
@@ -1277,7 +1277,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 					if ( MatXYmode==0 ) OpcodeStringToAsciiString( buffer, MatrixPtr(reg, seltopY+y+base, seltopX  +base), 64-1 );
 					else				OpcodeStringToAsciiString( buffer, MatrixPtr(reg, seltopX  +base, seltopY+y+base), 64-1 );
 //					PrintMini( 20,y*8+10, (unsigned char*)buffer,MINI_OVER );	// string disp
-					CB_PrintMini( 20,y*8+10, (unsigned char*)buffer , MINI_OVER | 0x100 );
+					CB_PrintMini( 20,y*8+10, (unsigned char*)buffer , MINI_OVER | FLAG_EXT_FONT);
 				} else {
 					for ( x=0; x<=MaxDX; x++ ) {
 						if ( ( x >= 8 ) ) break;
@@ -3381,7 +3381,7 @@ int CB_EvalSortAD( char *SRC, int flagAD) {	// SortA( List 1 ) or 	// SortD( Lis
 	reg=CB_MatListAnsreg;
 	if ( reg>=0 ) {
 		if ( MatAry[reg].SizeA == 0 ) { CB_Error(DimensionERR); return 0; }	// Dimension error
-	} else { CB_Error(SyntaxERR); return; }	// Syntax error
+	} else { CB_Error(SyntaxERR); return 0; }	// Syntax error
 
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
@@ -3552,7 +3552,7 @@ int CB_MinMaxInt( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
@@ -3561,7 +3561,7 @@ int CB_MinMaxInt( char *SRC, int flag) {	// Min( List 1 )	flag  0:min  1:max
 	if ( SRC[g_exec_ptr] == ',' ) { 
 		g_exec_ptr++;
 		ListEvalIntsub1(SRC);
-		if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+		if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 		reg2=CB_MatListAnsreg;
 		if ( sizeA != MatAry[reg2].SizeA ) { CB_Error(DimensionERR); return 0 ; }	// Dimension error
 		for ( m=base; m<sizeA+base; m++) {
@@ -3599,7 +3599,7 @@ int CB_MeanInt( char *SRC ) {	// Mean( List 1 )
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 	sizeA        = MatAry[reg ].SizeA;
 	sizeB        = MatAry[reg ].SizeB;
@@ -3625,7 +3625,7 @@ int CB_SumInt( char *SRC ) {	// Sum List 1
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 
 	sizeA        = MatAry[reg ].SizeA;
@@ -3651,7 +3651,7 @@ int CB_ProdInt( char *SRC ) {	// Prod List 1
 	int dspflagtmp=dspflag;
 	
 	ListEvalIntsub1(SRC);
-	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return ; } // Argument error
+	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 
 	sizeA        = MatAry[reg ].SizeA;
@@ -3991,10 +3991,10 @@ double determinant( double *m, int N)
     double det = 1, r;
     double tmp;
  
-    // ��O�p�s��ɕϊ����A�Ίp�����̐ς��v�Z����B
+    // 上三角行列に変換しつつ、対角成分の積を計算する。
     for(y = 0; y < N - 1; y++){
         if(m[y * N + y] == 0){
-            // �Ίp������0�������ꍇ�́A���̗�̒l��0�łȂ��s�ƌ�������
+            // 対角成分が0だった場合は、その列の値が0でない行と交換する
             for(i = y + 1; i < N; i++){
                 if(m[i * N + y] != 0){
                     break;
@@ -4004,7 +4004,7 @@ double determinant( double *m, int N)
                 for(x = 0; x < N; x++){
                     SWAP(m[i * N + x], m[y * N + x]);
                 }
-                // ������������̂ōs�񎮂̒l�̕����͔��]����B
+                // 列を交換したので行列式の値の符号は反転する。
                 det = -det;
             }
         }

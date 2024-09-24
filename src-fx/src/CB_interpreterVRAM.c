@@ -148,13 +148,13 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 			break;
 		case 10:	// YesNo
 			c=SRC[g_exec_ptr];
-			if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			if ( c != ',' ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 			c=SRC[++g_exec_ptr];
 			c=CB_IsStr( SRC, g_exec_ptr );
 			if ( c ) {	// string
 				CB_GetLocateStr( SRC, buffer, 64-1 );		// String -> buffer	return 
 			} else {	// expression
-				{ CB_Error(SyntaxERR); return; }	// Syntax error
+				{ CB_Error(SyntaxERR); return 0; }	// Syntax error
 			}
 			c=SRC[g_exec_ptr];
 			if ( c != ',' ) { 
@@ -165,20 +165,20 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 				if ( c ) {	// string
 					CB_GetLocateStr( SRC, buffer2, 64-1 );		// String -> buffer	return 
 				} else {	// expression
-					{ CB_Error(SyntaxERR); return; }	// Syntax error
+					{ CB_Error(SyntaxERR); return 0; }	// Syntax error
 				}
 				result=YesNo2sub(buffer, buffer2); 
 			}
 			break;
 		case 11:	// exit
 			c=SRC[g_exec_ptr];
-			if ( c != ',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+			if ( c != ',' ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 			c=SRC[++g_exec_ptr];
 			c=CB_IsStr( SRC, g_exec_ptr );
 			if ( c ) {	// string
 				CB_GetLocateStr( SRC, buffer, 64-1 );		// String -> buffer	return 
 			} else {	// expression
-				{ CB_Error(SyntaxERR); return; }	// Syntax error
+				{ CB_Error(SyntaxERR); return 0; }	// Syntax error
 			}
 			c=SRC[g_exec_ptr];
 			if ( c != ',' ) { 
@@ -189,13 +189,13 @@ int CB_PopUpWin( char *SRC ){	// PopUpWin(
 				if ( c ) {	// string
 					CB_GetLocateStr( SRC, buffer2, 64-1 );		// String -> buffer	return 
 				} else {	// expression
-					{ CB_Error(SyntaxERR); return; }	// Syntax error
+					{ CB_Error(SyntaxERR); return 0; }	// Syntax error
 				}
 				OkMSGstr2(buffer, buffer2); 
 			}
 			break;
 		default:
-			{ CB_Error(ArgumentERR); return; }	// Argument error
+			{ CB_Error(ArgumentERR); return 0; }	// Argument error
 			break;
 	}
   exit:
@@ -283,7 +283,7 @@ int CB_LocateMode( char *SRC) {
 		if ( mode ) mode = 1;
 		return mode;
 	}
-	g_exec_ptr--; CB_Error(SyntaxERR); return;   // Syntax error
+	g_exec_ptr--; CB_Error(SyntaxERR); return 0;   // Syntax error
 }
 
 void CB_Locate( char *SRC ){
@@ -548,7 +548,7 @@ void CB_Text( char *SRC ) { //	Text
 		}
 		else { g_exec_ptr--; CB_Error(SyntaxERR); return; }  // Syntax error
 	}
-	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode | 0x100 );		// ext
+	if ( kanamini ) CB_PrintMini( px, py, (unsigned char*)buffer, mode | FLAG_EXT_FONT);		// ext
 		else 	       PrintMini( px, py, (unsigned char*)buffer, mode);
 	Bdisp_PutDisp_DD_DrawBusy_skip_through_text( SRC );
 }
@@ -1006,7 +1006,7 @@ void CB_BG_Pict( char *SRC ) { //	BG_Pict
 int CB_DotOprandRect( char *SRC, int *px, int *py) {
 	int x,y;
 	*px=CB_EvalInt( SRC );
-	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	g_exec_ptr++;
 	*py=CB_EvalInt( SRC );
 }
@@ -1615,7 +1615,7 @@ int CB_Fix( char *SRC ){
 	int tmp;
 	tmp=CB_EvalInt( SRC );
 	if ( tmp < 0 ) if ( CB_Round.MODE == Fix ) return CB_Round.DIGIT; else return -1;
-	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	CB_Round.MODE = Fix ;
 	CB_Round.DIGIT= tmp ;
 	return tmp ;
@@ -1624,7 +1624,7 @@ int CB_Sci( char *SRC ){
 	int tmp;
 	tmp=CB_EvalInt( SRC );
 	if ( tmp < 0 ) if ( CB_Round.MODE == Sci ) return CB_Round.DIGIT; else return -1;
-	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	CB_Round.MODE = Sci ;
 	CB_Round.DIGIT= tmp ;
 	return tmp ;
@@ -1634,7 +1634,7 @@ int CB_Norm( char *SRC ){
 	if ( EvalEndCheck(SRC[g_exec_ptr]) == 0 ) { 
 		tmp=CB_EvalInt( SRC );
 		if ( tmp < 0 ) if ( CB_Round.MODE == Norm ) return CB_Round.DIGIT; else return -1;
-		if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return; }	// Syntax error
+		if ( ( tmp < 0 ) || ( tmp > 15 ) ) { CB_Error(SyntaxERR); return 0; }	// Syntax error
 	} else tmp=1;
 	CB_Round.MODE = Norm ;
 	CB_Round.DIGIT= tmp ;

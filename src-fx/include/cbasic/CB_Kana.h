@@ -19,6 +19,9 @@
 
 /* ANK means "Alpha, Numeric and Katakana" in JIS encoding system. */
 
+/* External font flag. */
+#define FLAG_EXT_FONT 0x100
+
 /* Indicator of external ASCII standard font bitmap file. */
 extern bool g_ext_asc;
 
@@ -125,7 +128,7 @@ void KPrintRevChar( int px, int py, unsigned char *c);
  * Subsidiary function to display an extended/external mini character.
  * @return The width of the mini character.
  */
-int KPrintCharMini(int px, int py, unsigned char *str, int mode, int ext_flag);
+int KPrintCharMini(int px, int py, unsigned char *str, int mode);
 
 /**
  * Subsidiary function to return the font data of a mini character.
