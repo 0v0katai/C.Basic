@@ -203,7 +203,7 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 					resultreg=CB_MatListAnsreg;
 					if ( SRC[g_exec_ptr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					g_exec_ptr++;
-					result = EvalFxInt2( &fGCDint, &resultflag, &resultreg, result, ListEvalIntsubTop( SRC ) ) ;
+					result = EvalFxInt2( &CB_gcd_int, &resultflag, &resultreg, result, ListEvalIntsubTop( SRC ) ) ;
 					if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 					return result ;
 						

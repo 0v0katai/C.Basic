@@ -334,13 +334,16 @@ int fMODint(int x, int y) {
 	return result;
 }
 
-int fGCDint(int x, int y) {	// GCD(x,y)
+static int gcd_int(int x, int y) {
 	if (y == 0)
-		return abs(x);
-	return abs(fGCDint(y, x % y)); 
+		return x;
+	return gcd_int(y, x % y); 
+}
+int CB_gcd_int(int x, int y) {	// GCD(x,y)
+	return abs(gcd_int(x, y)); 
 }
 int fLCMint( int x, int y ) {	// LCM(x,y)
-	return abs(fDIVint(x*y, fGCDint(x,y) + (y == 0)));
+	return abs(fDIVint(x*y, CB_gcd_int(x,y) + (y == 0)));
 }
 
 int CB_rand( char *SRC ) {
@@ -605,7 +608,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					
 				case 0x3C :				// GCD(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);
-					return fGCDint(tmp,tmp2);
+					return CB_gcd_int(tmp,tmp2);
 
 				case 0x3D :				// LCM(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);

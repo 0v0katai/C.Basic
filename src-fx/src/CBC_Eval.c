@@ -554,7 +554,7 @@ complex Cplx_fRanBin( complex n, complex p) {	// RanBin#
 }
 complex Cplx_fGCD( complex x, complex y ) {	// GCD(x,y)
 	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
-	return Dbl2Cplx( fGCD(x.real, y.real) );
+	return Dbl2Cplx( CB_gcd_float(x.real, y.real) );
 }
 complex Cplx_fLCM( complex x, complex y ) {	// LCM(x,y)
 	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
