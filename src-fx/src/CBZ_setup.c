@@ -1402,7 +1402,10 @@ int SetupG(int select, int limit) {
            		 	CB_Print(14, i, (unsigned char*)ListChar[EditListChar]);
         			break;
         		case SETUP_UseHidnRam:
-            		Print((unsigned char*)onoff[UseHiddenRAM&0x0F]);
+            		if (IsHiddenRAM)
+						Print((unsigned char*)onoff[UseHiddenRAM&0x0F]);
+					else
+						Print((unsigned char*)"---");
         			break;
         		case SETUP_HidnRamInit:
             		if (UseHiddenRAM & 0x0F)
@@ -1667,12 +1670,6 @@ int SetupG(int select, int limit) {
                 }
 				Fkey_Icon(FKeyNo5, 6); //Fkey_DISPN( FKeyNo6," \xE6\x9E ");
                 break;
-			case SETUP_HidnRamInit: // HiddenRAMInit
-                if ((!UseHiddenRAM) || (Is35E2 != 0)) {
-                    for (int i=0; i<2; i++)
-						Fkey_dispN(i, "---");
-                    break;
-                }
             default:
 			    Fkey_Icon(FKeyNo1, 17);	//	Fkey_dispN( FKeyNo1, " On ");
                 Fkey_Icon(FKeyNo2, 18);	//	Fkey_dispN( FKeyNo2, " Off");
