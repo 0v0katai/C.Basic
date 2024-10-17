@@ -61,25 +61,17 @@ int OS_Version(){
 }
 //---------------------------------------------------------------------------------------------
 void * HiddenRAM(void){	// Check HiddenRAM 
-	volatile unsigned int *NorRAM=(volatile unsigned int*)0xA8000000;	// Nomarl RAM TOP (no cache area)
-	volatile unsigned int *HidRAM=(volatile unsigned int*)0x88040000;	// Hidden RAM TOP (cache area)
-	int a,b;
-	int K55=0x55555555;
-	int KAA=0xAAAAAAAA;
-	char * HidAddress=NULL;
+	volatile unsigned char *b1 = (void *)0x88000000;
+	volatile unsigned char *b2 = (void *)0x88040000;
+	volatile unsigned char before, after;
 
-	IsHiddenRAM=0;
-	a= *NorRAM;
-	b= *HidRAM;
-	*NorRAM=K55;
-	*HidRAM=KAA;
-	if ( *NorRAM != *HidRAM ) {
-			HidAddress=(char*)HidRAM;	// Hidden RAM Exist
-			IsHiddenRAM=1;
-	}
-	*NorRAM=a;
-	*HidRAM=b;
-	return HidAddress;
+	before = *b1;
+	*b2 ^= 0xff;
+	after = *b1;
+	*b2 ^= 0xff;
+
+	IsHiddenRAM = (before == after);
+	return IsHiddenRAM ? (char *)b2 : NULL;
 }
 
 void * HiddenRAM_mallocProg( size_t size ){
