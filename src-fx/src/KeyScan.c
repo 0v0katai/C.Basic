@@ -172,11 +172,9 @@ int KeyConvert2Slim( int code ) {
 
 int CB_Getkey() {			// CasioBasic Getkey compatible
 	unsigned int key;
-	int i,row,c,SH3;
+	int i,row,c;
 	int code=0;
 	row=1;
-	SH3= IsSH3 ;
-
 	
 	if ( Recent_code ) {
 		if ( KeyScanDown(Recent_rowcode) ) return Recent_code ;
@@ -187,7 +185,7 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	}
 
 	for ( row=1; row<10; row++) {
-		if (SH3) c=CheckKeyRow(row);  else  c=CheckKeyRow7305(row);
+		c = IsSH3 ? CheckKeyRow(row) : CheckKeyRow7305(row);
 		if ( c & 0x40 ) { code=70+row; break; }	//
 		if ( c & 0x20 ) { code=60+row; break; }	//
 		if ( c & 0x10 ) { code=50+row; break; }	//
@@ -215,7 +213,7 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 		Getkey_shift=0;
 		if ( code == 68 ) {	// 68
 			Keyboard_ClrBuffer();
-			if ( SH3 == 0 ) BackLight(2);	// SH4 only
+			if ( IsSH3 == 0 ) BackLight(2);	// SH4 only
 		}
 //		if ( code == 34 ) {	// AC
 //			PutKey( KEY_CTRL_SHIFT,1);	GetKey(&key);
