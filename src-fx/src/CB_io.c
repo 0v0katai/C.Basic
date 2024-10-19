@@ -61,8 +61,8 @@ int OS_Version(){
 }
 //---------------------------------------------------------------------------------------------
 void * HiddenRAM(void){	// Check HiddenRAM 
-	volatile unsigned char *b1 = (void *)0x88000000;
-	volatile unsigned char *b2 = (void *)0x88040000;
+	volatile unsigned char *b1 = (void *)0xa8000000;
+	volatile unsigned char *b2 = (void *)0xa8040000;
 	volatile unsigned char before, after;
 
 	before = *b1;
