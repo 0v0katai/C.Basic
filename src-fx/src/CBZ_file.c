@@ -33,7 +33,7 @@ unsigned int Explorer( int size, char *folder );
 static int FileCmp( const void *p1, const void *p2 );
 
 static int size=0;
-char folder[FOLDERMAX] = "", tmpfolder[FOLDERMAX] = "";	//, name[FILENAMEMAX] = "";
+char folder[FILENAMEMAX] = "", tmpfolder[FOLDERMAX] = "";	//, name[FILENAMEMAX] = "";
 static char renamename[FILENAMEMAX] = "";
 static char renamefolder[FOLDERMAX] = "";
 static Files Favoritesfiles[FavoritesMAX];
@@ -551,13 +551,8 @@ void GetMediaFreeStr10(char *buffer) {
 }
 
 int GetMemFree() {
-	int k;
-	if ( MaxMemMode ) {
-		k = HiddenRAM_MatTopPtr - HiddenRAM_Top ;
-	} else {
-		k = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
-	}
-	return k;
+	return MaxMemMode ? HiddenRAM_MatTopPtr - HiddenRAM_Top
+	                  : HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr;
 }
 void GetMemFreeStr10( char *buffer ) {
 	sprintf(buffer,"%7d bytes free ",GetMemFree() );
@@ -1573,8 +1568,6 @@ unsigned int InputStrFilename(int x, int y, int width, int maxLen, char* buffer 
 	return ( key );
 }
 
-void Getfolder( char *sname ) ;
-
 int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 	int key;
 	char msg1[32];
@@ -1688,13 +1681,13 @@ void G1M_header( char *filebase ,int *size ) {
 	filebase[0x0B]=0xFF;
 	filebase[0x0C]=0xEF;
 	filebase[0x0D]=0xFF;
-	filebase[0x0E]=(0xBE-*size)&0xFF;
+	filebase[0x0E]=(0xBE - *size)&0xFF;
 	filebase[0x0F]=0xFE;
-	filebase[0x10]=((0xFFFFFFFF-*size)>>24)&0xFF;	//
-	filebase[0x11]=((0xFFFFFFFF-*size)>>16)&0xFF;	//
-	filebase[0x12]=((0xFFFFFFFF-*size)>>8)&0xFF;	//
-	filebase[0x13]=((0xFFFFFFFF-*size))&0xFF;		//
-	filebase[0x14]=(0x47-*size)&0xFF;			//
+	filebase[0x10]=((0xFFFFFFFF - *size)>>24)&0xFF;	//
+	filebase[0x11]=((0xFFFFFFFF - *size)>>16)&0xFF;	//
+	filebase[0x12]=((0xFFFFFFFF - *size)>>8)&0xFF;	//
+	filebase[0x13]=((0xFFFFFFFF - *size))&0xFF;		//
+	filebase[0x14]=(0x47 - *size)&0xFF;			//
 	filebase[0x15]=0x00;
 	filebase[0x16]=0x00;
 	filebase[0x17]=0x00;
@@ -1843,7 +1836,7 @@ void ConvertToOpcode( char *filebase, char *sname, int editsize){
 	textsize=strlen(filebase);
 	memcpy( filebase+editsize, filebase, textsize);
 	memset( filebase, 0, editsize );
-	codesize=TextToOpcode( filebase, filebase+editsize, textsize+editsize );
+	codesize = TextToOpcode( filebase, filebase+editsize, textsize+editsize );
 	size=codesize+0x56+1;
 	G1M_header( filebase, &size );	// G1M header set
 	G1M_Basic_header( filebase );	// G1M Basic header set
@@ -3580,7 +3573,7 @@ int PP_Search_IfEnd( char *SRC ){
 				if ( c == 0x00 ) { 			// If
 					PP_ptr=g_exec_ptr-2;
 					i=PP_Search_IfEnd(SRC) ;
-					if ( g_error_type ) return;
+					if ( g_error_type ) return 0;
 					if ( i != 1  ) { g_exec_ptr=PP_ptr; CB_Error(MissingIfEnd); CB_ErrMsg(g_error_type); return 0; } // not IfEnd error
 					break;
 				} else
@@ -3888,7 +3881,7 @@ int GetBatteryStatus( int battery, int*firstlevel, int*secondlevel ){
 	        };
 	        break;
 	};
-	if (CPU_check()==2){	// IsSlim
+	if (IsSH3 == 2) {	// IsSlim
 	    *firstlevel = 0x2AA;
 	    *secondlevel = 0x288;
 	}
@@ -3898,15 +3891,11 @@ int GetBatteryStatus( int battery, int*firstlevel, int*secondlevel ){
 }
 
 
-int GetMainBatteryVoltage( int battery ) {
-	int firstlevel, secondlevel;
-	if ( IsEmu ) return 500;
-	return GetBatteryStatus( battery, &firstlevel, &secondlevel );
-}
-
 int CB_BatteryStatus( char *SRC ){
-	int r = GetMainBatteryVoltage( 1 ) ;
-	switch  ( CPU_check() ) {
+	if (IsEmu) return 500;
+	int firstlevel, secondlevel;
+	int r = GetBatteryStatus(1, &firstlevel, &secondlevel);
+	switch  (IsSH3) {
 //		case 0:	// SH4A
 //			break;
 		case 1: // SH3
@@ -3923,14 +3912,8 @@ int CB_BatteryStatus( char *SRC ){
 }
 
 //----------------------------------------------------------------------------------------------
-int Emu_check() {
-//	int i,t,s=RTC_GetTicks();
-//	for(i=0;i<140;i++){
-//		Bdisp_PutDisp_DD();
-//	}
-//	t=RTC_GetTicks()-s;
-//	if ( t<6) IsEmu=1;
-	if ( *(int*)0x8000FFD0 == 0 ) IsEmu=1;	// is emulator
+void Emu_check() {
+	IsEmu = !(*(int*)0x8000FFD0);	// is emulator
 }
 
 void WaitKeyAC(){
@@ -3945,183 +3928,3 @@ void WaitKeyF1(){
 void WaitKeyEXE(){
 	while ( KeyScanDown(KEYSC_EXE) ) ;
 }
-
-//---------------------------------------------------------------------------------------------- align dummy
-void FavoritesDowndummy( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	files[(*index)].filesize=tmp;
-	(*index)++;
-	SaveFavorites();
-}
-void FavoritesDowndummy2( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummy3( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummy4( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummy5( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummy6( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-/*
-void FavoritesDowndummy7( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummy8( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummy9( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummyA( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-void FavoritesDowndummyB( int *index ) {
-	unsigned short tmp;
-	char tmpname[FILENAMEMAX];
-	char tmpfolder[FOLDERMAX];
-	strncpy( tmpname,   files[(*index)+1].filename, FILENAMEMAX );
-	strncpy( tmpfolder, files[(*index)+1].folder,   FOLDERMAX );
-	tmp=files[(*index)+1].filesize;
-	strncpy( files[(*index)+1].filename, files[(*index)].filename, FILENAMEMAX );
-	strncpy( files[(*index)+1].folder,   files[(*index)].folder,   FOLDERMAX );
-	files[(*index)+1].filesize=files[(*index)].filesize;
-	strncpy( files[(*index)].filename, tmpname, FILENAMEMAX );
-	strncpy( files[(*index)].folder, tmpfolder, FOLDERMAX );
-	(*index)++;
-	files[(*index)].filesize=tmp;
-	SaveFavorites();
-}
-*/

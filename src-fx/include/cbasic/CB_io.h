@@ -32,7 +32,7 @@ extern char IsEmu;
 #define FKeyNo6	5
 
 //-----------------------------------------------------------------------------
-int CPU_check(void);
+void CPU_check();
 int OS_Version();
 void * HiddenRAM(void);
 void * HiddenRAM_mallocMat( size_t size );

@@ -64,7 +64,7 @@ int AddIn_main(int isAppli, unsigned short OptionNum)
 	if ( HeapRAM == NULL )  { Abort(); }
 
 	Emu_check();
-	IsSH3=CPU_check();
+	CPU_check();
 	if ( HiddenRAM() == NULL ) {	;	// Check HiddenRAM
 		ExtendList   = 0;
 		UseHiddenRAM = 0;

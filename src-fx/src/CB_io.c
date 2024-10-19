@@ -17,7 +17,7 @@ char * HiddenRAM_End        =(char*)HIDDENRAM_END;				// Hidden RAM END
 char * HiddenRAM_ProgNextPtr=(char*)HIDDENRAM_TOP+16+256;		// Hidden RAM Prog next ptr
 char * HiddenRAM_MatTopPtr  =(char*)HIDDENRAM_END;				// Hidden RAM Mat top ptr
 
-char IsSH3;	//	3:SH3   4:SH4
+char IsSH3=0;	//	0:SH4   1:SH3   2:Slim
 char Is35E2=0;	//
 char IsEmu=0;
 
@@ -41,23 +41,25 @@ HiddenRAM_Top(0x88040000)
 ----------------------------------------
 */
 //---------------------------------------------------------------------------------------------
-int CPU_check(void) {					// SH3:1 SH4A:0   2:Slim
-	int slim = 0;
-	if  ( OS_Version() >= 300 ) { Is35E2 = 1;
+void CPU_check() {					// SH3:1 SH4A:0   2:Slim
+	char *os_version = (void *)0xa0010020;
+	if  ( os_version[1] == 3 ) {
+		Is35E2 = 1;
 		HIDDENRAM_Top =(char*)HIDDENRAM_TOP2;
 	}
-	if ( *(unsigned int*)0x80000300 == 0x80005D7C ){
-		if ( ( *(unsigned char*)0xA4000128 & 0x08 ) == 0 ) {
-			slim = 1;;
-		}
-	}
-	return ! ( ( *(unsigned short*)0xFFFFFF80 == 0 ) && ( *(unsigned short*)0xFFFFFF84 == 0 ) ) + slim;
+	volatile unsigned short *PLCR = (void *)0xa4050114;
+	unsigned short old = *PLCR;
+	*PLCR = 0xffff;
+	unsigned short tested = *PLCR;
+	*PLCR = old;
+
+	if ( tested == 0x00ff || tested == 0x0fff )
+		IsSH3 = !(*(unsigned char*)0xA4000128 & 0x08) ? 2 : 1;
 }
 
-int OS_Version(){
-	unsigned char version[11];
-	System_GetOSVersion(version);
-	return (version[1]-'0')*100 + (version[3]-'0')*10 + (version[4]-'0');
+int OS_Version() {
+	char *os_version = (void *)0xa0010020;
+	return (os_version[1]-'0')*100 + (os_version[3]-'0')*10 + (os_version[4]-'0');
 }
 //---------------------------------------------------------------------------------------------
 void * HiddenRAM(void){	// Check HiddenRAM 
@@ -285,8 +287,8 @@ void CB_PrintRev_ext( int x, int y, const unsigned char *str, int extflag ){
 }
 
 int CB_PrintC2( int px, int py, unsigned char *str, int extflag ){	// extflag 0x1000:fx6*8fontmode  0x100:ExtAnkChar
-	int i;
-	i=KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
+	int i=1;
+	KPrintCharSub( px, py, str, MINI_OVER | extflag ); 
 	return i;
 }
 void CB_Prints2( int px, int py, unsigned char *str, int extflag ){

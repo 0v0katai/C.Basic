@@ -72,14 +72,14 @@ void Fkey_Icon(int n, int IconNo){
 		case 1112: pBitmap=FKEYICON_1112;break;	// VCT
 		default:
 			v = OS_Version();
-			if ( ( v <= 103 ) && ( 1017 <= IconNo ) ) IconNo = 0;
-			else
+			// if ( ( v <= 103 ) && ( 1017 <= IconNo ) ) IconNo = 0;
+			// else
 			if ( ( v <= 104 ) && ( 1017 <= IconNo ) ) IconNo = 0;
 			else
 			if ( ( v <= 200 ) && ( 1044 <= IconNo ) ) IconNo = 0;
 			else
-			if ( ( v <= 201 ) && ( 1101 <= IconNo ) ) IconNo = 0;
-			else
+			// if ( ( v <= 201 ) && ( 1101 <= IconNo ) ) IconNo = 0;
+			// else
 			if ( ( v <= 202 ) && ( 1101 <= IconNo ) ) IconNo = 0;
 			else
 			if ( ( v <= 204 ) && ( 1113 <= IconNo ) ) IconNo = 0;

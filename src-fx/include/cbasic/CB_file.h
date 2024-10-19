@@ -166,7 +166,6 @@ int MCS_SaveCAPT( char *pictname, char *filebase  ) ;
 int MCS_SavePICT( char *pictname, char *filebase  ) ;
 
 //-----------------------------------------------------------------------------
-int GetMainBatteryVoltage( int battery ) ;
 int CB_BatteryStatus(char *SRC);
 
 //----------------------------------------------------------------------------------------------

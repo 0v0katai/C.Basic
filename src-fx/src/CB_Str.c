@@ -20,10 +20,6 @@ char   defaultGraphAry=27;		// Theta
 short  defaultGraphAryN=127;
 int    defaultGraphArySize=255+1;
 
-//char	dummychar1;
-//char	dummychar2;
-//char	dummychar3;
-//char	dummychar4;
 //----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int StrGetOpcode( char *SRC, int ptr ){
