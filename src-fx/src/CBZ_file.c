@@ -3896,19 +3896,13 @@ int CB_BatteryStatus( char *SRC ){
 	int firstlevel, secondlevel;
 	int r = GetBatteryStatus(1, &firstlevel, &secondlevel);
 	CPU_check();
-	switch  (IsSH3) {
-//		case 0:	// SH4A
-//			break;
-		case 1: // SH3
-			if ( IsHiddenRAM == 0 ) r = r*111/100;	// fx-9860G
-			else					r = r*101/100;	// fx-9860GII
-			break;
-		case 2: // Slim
-			r = r* 30/100;
-			break;
-		default:
-			break;
-	}
+	if (IsSH3 == 1) {
+		/* fx-9860G: x1.11, fx-9860GII: x1.01 */
+		r *= !IsHiddenRAM ? 111 : 101;
+		r /= 100;
+	} else if (IsSH3 == 2)
+		/* Slim: x0.3 */
+		r = r*30/100;
 	return r;
 }
 
