@@ -3895,6 +3895,7 @@ int CB_BatteryStatus( char *SRC ){
 	if (IsEmu) return 500;
 	int firstlevel, secondlevel;
 	int r = GetBatteryStatus(1, &firstlevel, &secondlevel);
+	CPU_check();
 	switch  (IsSH3) {
 //		case 0:	// SH4A
 //			break;
