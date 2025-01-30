@@ -3416,9 +3416,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF9DE, "_BmpZmRotate " },
 	{ 0x00FA, "Gosub "},
 	{ 0x00A7, "not "}, 			// small
-	{ 0x009A, " xor "}, 		// add space
-	{ 0x00AA, " or "}, 			// add space
-	{ 0x00BA, " and "}, 		// add space
+	{ 0x009A, "xor"},
+	{ 0x00AA, "or"},
+	{ 0x00BA, "and"},
 	{ 0x000F, "\x0F"}, 		// exp
 	{ 0, "" }
 };
