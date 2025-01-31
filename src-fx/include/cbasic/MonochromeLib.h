@@ -104,6 +104,7 @@ char* ML_vram_adress();
 
 void ML_clear_vram();
 void ML_clear_screen();
+void ML_clear_screen_35e2();
 void ML_display_vram();
 void ML_display_vram_35e2();
 

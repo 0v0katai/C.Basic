@@ -183,6 +183,19 @@ void ML_clear_screen()
 			*cmd = 0;
 	}
 }
+
+void ML_clear_screen_35e2()
+{
+	int i, j;
+	for(i=0 ; i<64 ; i++)
+	{
+		command(8, i | 0x80);
+		command(8, 4);
+		*sel = 10;
+		for(j=0; j<16; j++)
+			*cmd = 0;
+	}
+}
 #endif
 
 #ifdef ML_DISPLAY_VRAM

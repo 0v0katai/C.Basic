@@ -66,9 +66,12 @@ ML_BmpRotate
 //void CB_ML_ClrVRAM() { // ML_ClrVRAM
 //	ML_clear_vram();
 //}
-//void CB_ML_ClrScreen() { // ML_ClrScreen
-//	ML_clear_screen();
-//}
+void CB_ML_ClrScreen() { // ML_ClrScreen
+	if (Is35E2)
+		ML_clear_screen_35e2();
+	else
+		ML_clear_screen();
+}
 void CB_ML_DispVRAM( char*SRC ){	// ML_DispVRAM
 	int y1,y2,i;
 	int c=SRC[g_exec_ptr];
@@ -1033,8 +1036,7 @@ void CB_ML_command( char *SRC, int c ) { // ML_command
 			ML_clear_vram();
 			break;
 		case 0xFFFFFFC1:	// _ClrScreen
-//			CB_ML_ClrScreen();
-			if ( Is35E2 == 0 ) ML_clear_screen();
+			CB_ML_ClrScreen();
 			break;
 		case 0xFFFFFFC2:	// _DispVRAM
 			CB_ML_DispVRAM( SRC );
