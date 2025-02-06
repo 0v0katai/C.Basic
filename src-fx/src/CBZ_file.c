@@ -3895,7 +3895,7 @@ int CB_BatteryStatus( char *SRC ){
 	if (IsEmu) return 500;
 	int firstlevel, secondlevel;
 	int r = GetBatteryStatus(1, &firstlevel, &secondlevel);
-	CPU_check();
+	// CPU_check();
 	if (IsSH3 == 1) {
 		/* fx-9860G: x1.11, fx-9860GII: x1.01 */
 		r *= !IsHiddenRAM ? 111 : 101;
