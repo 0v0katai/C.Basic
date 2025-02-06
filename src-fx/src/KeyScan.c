@@ -35,11 +35,11 @@ int i;
 //
 int CheckKeyRow( int row ){
   int result=0;
-  short*PORTB_CTRL=(void*)0xA4000102;
-  short*PORTM_CTRL=(void*)0xA4000118;
-  char*PORTB=(void*)0xA4000122;
-  char*PORTM=(void*)0xA4000138;
-  char*PORTA=(void*)0xA4000120;
+  volatile short*PORTB_CTRL=(void*)0xA4000102;
+  volatile short*PORTM_CTRL=(void*)0xA4000118;
+  volatile char*PORTB=(void*)0xA4000122;
+  volatile char*PORTM=(void*)0xA4000138;
+  volatile char*PORTA=(void*)0xA4000120;
   short smask;
   char cmask;
   char PORTBtmp = *PORTB;
@@ -80,7 +80,7 @@ int CheckKeyRow( int row ){
 
 
 int CheckKeyRow7305( int row ){
-	short*KEYPORT=(void*)0xA44B0000;
+	volatile short*KEYPORT=(void*)0xA44B0000;
 	short result=KEYPORT[row>>1];
 	if ( row & 1 ) result/=0x100;
 	return result & 0xFF ;
