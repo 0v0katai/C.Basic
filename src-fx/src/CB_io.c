@@ -42,8 +42,7 @@ HiddenRAM_Top(0x88040000)
 */
 //---------------------------------------------------------------------------------------------
 void CPU_check() {					// SH3:1 SH4A:0   2:Slim
-	char *os_version = (void *)0xa0010020;
-	if  ( os_version[1] == 3 ) {
+	if  ( OS_Version() >= 300 ) {
 		Is35E2 = 1;
 		HIDDENRAM_Top =(char*)HIDDENRAM_TOP2;
 	}
