@@ -3495,7 +3495,7 @@ complex CB_Sum( char *SRC ) {	// Sum List 1
 	complex result;
 	int dspflagtmp=dspflag;
 	
-	ListEvalsub1(SRC);
+	ListEvalsub5(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
 	reg=CB_MatListAnsreg;
 
@@ -3522,7 +3522,7 @@ complex CB_Prod( char *SRC ) {	// Prod List 1
 	complex result;
 	int dspflagtmp=dspflag;
 	
-	ListEvalsub1(SRC);
+	ListEvalsub5(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return Int2Cplx(0); } // Argument error
 	reg=CB_MatListAnsreg;
 
@@ -3624,7 +3624,7 @@ int CB_SumInt( char *SRC ) {	// Sum List 1
 	int result;
 	int dspflagtmp=dspflag;
 	
-	ListEvalIntsub1(SRC);
+	ListEvalIntsub5(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 
@@ -3650,7 +3650,7 @@ int CB_ProdInt( char *SRC ) {	// Prod List 1
 	int result;
 	int dspflagtmp=dspflag;
 	
-	ListEvalIntsub1(SRC);
+	ListEvalIntsub5(SRC);
 	if ( dspflag < 3 ) { CB_Error(ArgumentERR); return 0; } // Argument error
 	reg=CB_MatListAnsreg;
 
