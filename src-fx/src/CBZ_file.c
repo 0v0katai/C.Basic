@@ -1,6 +1,6 @@
 /* *****************************************************************************
  * CBZ_file.c -- File handling
- * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ * Copyright (C) 2015-2025 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
  * C.Basic is free software; you can redistribute it and/or modify it

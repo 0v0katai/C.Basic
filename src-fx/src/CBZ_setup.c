@@ -1,6 +1,6 @@
 /* *****************************************************************************
  * CBZ_setup.c -- Settings file
- * Copyright (C) 2015-2024 Sentaro21 <sentaro21@pm.matrix.jp>
+ * Copyright (C) 2015-2025 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
  * C.Basic is free software; you can redistribute it and/or modify it
@@ -68,7 +68,7 @@ void VerDispSub( int flag ) {
 //	locate( 3, 4 ); Print( (unsigned char*)"     compatible+)" );
 //	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"(Casio Basic compatible+)", MINI_OVER );
 	PrintMini(10*6+2, 2*8+1, (unsigned char*)"(" COMMIT_ID ")", MINI_OVER);
-	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"Copyright (C) 2015-2024", MINI_OVER );
+	PrintMini( 2*6+2, 3*8+1, (unsigned char*)"Copyright (C) 2015-2025", MINI_OVER );
 	PrintMini( 2*6+2, 4*8+1, (unsigned char*)"Sentaro21 & CalcLoverHK", MINI_OVER );
 	PrintMini( 2*6+2, 5*8+1, (unsigned char*)"Licensed under GPLv2.", MINI_OVER );
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
