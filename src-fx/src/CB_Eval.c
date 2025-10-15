@@ -867,10 +867,15 @@ double fpolr( double x, double y ) {	// Pol(x,y) -> r
 	CheckMathERR(&x); // Math error ?
 	return x ;
 }
-double fpolt( double x, double y ) {	// Pol(x,y) -> Theta
-	if ( ( x==0 ) && ( y==0 ) ) return 0;
-	if ( x != 0 ) x = finvradian(atan2(y,x));
-	else x = 2*fatan(1);
+double fpolt(double x, double y) {		// Pol(x,y) -> Theta
+	x = finvradian(atan2(y,x));
+	if (x == 0)
+	{
+		if (y > 0)
+			return 90;
+		else if (y < 0)
+			return -90;
+	}
 	CheckMathERR(&x); // Math error ?
 	return x ;
 }
