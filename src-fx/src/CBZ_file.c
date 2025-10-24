@@ -1742,7 +1742,10 @@ int InputPassname( int y, char* inputpassname, char *msg) {		// password input
 	FkeyClear( FKeyNo3 );
 	key=InputStrFilename( 2, y+1, 8, 8, inputpassname ) ;
 	if (key==KEY_CTRL_AC) return 1;
-	if (key==KEY_CTRL_EXIT) { WaitKeyEXIT(); return 1; }
+	if (key == KEY_CTRL_EXIT || key == KEY_CTRL_QUIT) {
+		WaitKeyEXIT();
+		return 1;
+	}
 	return 0; // ok
 }
 
