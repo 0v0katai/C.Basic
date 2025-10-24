@@ -4749,10 +4749,12 @@ void  CB_Input( char *SRC ){
 			} else {
 				buffer2[0]='\0';
 				Cplx_sprintGR2( buffer, buffer2, DefaultValue, 22-CursorX, RIGHT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-				CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer, 0x000 );	// 
+				locate( CursorX, CursorY); Print((unsigned char*)buffer);
+				// CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer, 0x000 );	// 
 				if ( buffer2[0] != '\0' ){
 					Scrl_Y();
-					CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer2, 0x000 );	// 
+					locate( CursorX, CursorY); Print((unsigned char*)buffer2);
+					// CB_Prints_ext( CursorX, CursorY, (unsigned char*)buffer2, 0x000 );	// 
 				}
 				Scrl_Y();
 				CB_CurrentValue = InputNumC_CB1( CursorX, CursorY, width, length, spcchr, rev, DefaultValue );
