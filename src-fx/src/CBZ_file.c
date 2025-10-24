@@ -1771,7 +1771,7 @@ int CheckPassWordmsg( char *filebase, char *msg ){	// 1:cancel  0:Ok  -1:no pass
 	return 0;	// ok
 }
 int CheckPassWord( char *filebase ){	// 1:cancel  0:Ok  -1:no pass
-	CheckPassWordmsg( filebase, "Password?" );
+	return CheckPassWordmsg(filebase, "Password?");
 }
 
 int SetPassWord( int y, char *filebase, char *basname ,char* msg){	// 1:no password   0:Ok
