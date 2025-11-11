@@ -832,40 +832,26 @@ double ffcos( double x ) {
 	return cos( x );
 }
 double fsin( double x ) {
-	x = ffsin( fradian(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(ffsin(fradian(x)));
 }
 double fcos( double x ) {
-	x = ffcos( fradian(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(ffcos(fradian(x)));
 }
 double ftan( double x ) {
-	x = tan( fradian(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(tan(fradian(x)));
 }
 double fasin( double x ) {
-	x = finvradian( asin(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(finvradian(asin(x)));
 }
 double facos( double x ) {
-	x = finvradian( acos(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(finvradian(acos(x)));
 }
 double fatan( double x ) {
-	x = finvradian( atan(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(finvradian(atan(x)));
 }
 
 double fpolr( double x, double y ) {	// Pol(x,y) -> r
-	x = sqrt(x*x+y*y);
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(sqrt(x*x+y*y));
 }
 double fpolt(double x, double y) {		// Pol(x,y) -> Theta
 	x = finvradian(atan2(y,x));
@@ -876,88 +862,59 @@ double fpolt(double x, double y) {		// Pol(x,y) -> Theta
 		else if (y < 0)
 			return -90;
 	}
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(x);
 }
 double frecx( double r, double t ) {	// Rec(r,Theta) -> x
-	r = r*fcos(t);
-	CheckMathERR(&r); // Math error ?
-	return r ;
+	return CheckMathERR(r*fcos(t));
 }
 double frecy( double r, double t ) {	// Rec(r,Theta) -> y
-	r = r*fsin(t);
-	CheckMathERR(&r); // Math error ?
-	return r ;
+	return CheckMathERR(r*fsin(t));
 }
 
-int CheckMathERR(double *result) {
-	char *pt;
-	pt=(char *)(result);
-	if ((pt[1] == 0xFFFFFFF0) && ((pt[0] == 0x7F) || (pt[0] == 0xFFFFFFFF))) {
+double CheckMathERR(double result) {
+	if (isnan(result) || isinf(result)) {
 		CB_Error(MathERR);
-		return 1;
+		return 0;
 	}
-	return 0;
+	return result;
 }
 
 double asinh( double x ) {
-	x = ( (exp(x)+exp(-x))/2. );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR((exp(x)+exp(-x))/2.);
 }
 double acosh( double x ) {
-	x = ( (exp(x)-exp(-x))/2. );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR((exp(x)-exp(-x))/2.);
 }
 double atanh( double x ) {
-	double ep=exp(x);
-	double em=exp(-x);
-	x = ( (ep-em)/(ep+em) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR((exp(x)-exp(-x))/(exp(x)+exp(-x)));
 }
 
 double fsqu( double x ) {
-	return x*x;
+	return CheckMathERR(x*x);
 }
 double fsqrt( double x ) {
-	x = sqrt( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(sqrt(x));
 }
 double fcuberoot( double x ) {
 	return fpow(x, 1./3.);
 }
 double flog10( double x ) {
-	x = log10( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(log10(x));
 }
 double fpow10( double x ) {
-	x = pow( 10, x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(pow(10,x));
 }
 double fln( double x ) {
-	x = log( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(log(x));
 }
 double fexp( double x ) {
-	x = exp( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(exp(x));
 }
 double flogab(double x, double y) {	// flogab(x,y)
-	x = fDIV(log(y), log(x));
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(fDIV(log(y),log(x)));
 }
 double fpow(double x, double y) {	// pow(x,y)
-	x = pow(x,y);
-	CheckMathERR(&x);
-	return x;
+	return CheckMathERR(pow(x,y));
 }
 double fpowroot(double x, double y) {	// powroot(x,y)
 	return fpow(x, frecip(y));
@@ -1000,7 +957,7 @@ double ffact(int x) {
 		CB_Error(MathERR);
 	while (x > 1) {
 		sum *= x--;
-		if (CheckMathERR(&sum))
+		if (CheckMathERR(sum) == 0)
 			break;
 	}
 	return sum;
@@ -1010,7 +967,7 @@ double f_nPr(double n, double r) {
 	_nPCr_check(&n, &r);
 	for (i = n; i > n-r; i--) {
 		sum *= i;
-		if (CheckMathERR(&sum))
+		if (CheckMathERR(sum) == 0)
 			break;
 	}
 	return sum;
@@ -1021,7 +978,7 @@ double f_nCr(double n, double r) {
 	r = min(r, n-r);
 	for (i = 1; i <= r; i++) {
 		sum = sum * (n-i+1) / i;
-		if (CheckMathERR(&sum))
+		if (CheckMathERR(sum) == 0)
 			break;
 	}
 	return sum;

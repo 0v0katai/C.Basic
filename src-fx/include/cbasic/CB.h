@@ -25,6 +25,7 @@
 #include <math.h>
 #include <timer.h>
 
+#include "openlibm_math.h"
 #include "_h_c_lib.h"
 #include "assert.h"
 #include "endian.h"

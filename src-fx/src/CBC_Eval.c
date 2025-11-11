@@ -240,9 +240,7 @@ double fImP( complex z ) {
 	return z.imag;
 }
 double farg( complex z ) {
-	double x = finvradian( atan2( z.imag, z.real ) );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(finvradian(atan2(z.imag, z.real)));
 }
 complex Cplx_fReP( complex z ) {
 	return Dbl2Cplx(z.real);
@@ -452,7 +450,7 @@ complex Cplx_fln( complex z ) {
 }
 complex Cplx_fexp( complex z ) {	// e^z = e^(z.real)*(cos(z.imag) + e^(z.real)*sin(z.imag)*i
 	double x = exp( z.real );
-	CheckMathERR(&x); // Math error ?
+	CheckMathERR(x); // Math error ?
 	if ( z.imag==0 ) return Dbl2Cplx(x);
 	return Dbl2Cplx2( x*ffcos(z.imag), x*ffsin(z.imag) );
 }
@@ -1256,11 +1254,11 @@ complex Cplx_Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = Cplx_fpow( result, Cplx_Evalsub2( SRC ) );
-				CheckMathERR(&result.real); // Math error ?
+				CheckMathERR(result.real); // Math error ?
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = Cplx_fpow( Cplx_Evalsub2( SRC ), Cplx_frecip( result ) );
-				CheckMathERR(&result.real); // Math error ?
+				CheckMathERR(result.real); // Math error ?
 				break;
 			case ' ':	// Skip Space
 				break;
