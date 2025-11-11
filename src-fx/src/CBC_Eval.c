@@ -1606,6 +1606,9 @@ complex Cplx_Eval2(char *SRC, int *ptr) {		// Eval temp mat
 	g_exec_ptr= *ptr;
 	CB_StrBufferCNT=0;			// Quot String buffer clear
 	result = Cplx_ListEvalsubTop( SRC );
+	result.real = CheckMathERR(result.real);
+	result.imag = CheckMathERR(result.imag);
+	if (g_error_type == MathERR) g_error_ptr--;
 	if ( ( EvalEndCheck( SRC[g_exec_ptr] ) == 0 ) && ( g_exec_ptr < oplen ) ) CB_Error(SyntaxERR) ; // Syntax error 
 //	if ( ( ComplexMode==0 ) && ( result.imag != 0 ) ) CB_Error(NonRealERR) ; // Non Real error 
 	if ( g_error_type ) { CB_ErrMsg( g_error_type ); }
