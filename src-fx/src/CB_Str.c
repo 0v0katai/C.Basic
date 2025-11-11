@@ -2026,6 +2026,10 @@ void StrDMSsub( char *buffer, double a ) {	//
 	int i=0, coeff=1;
 	bool frac;
 
+	if (a > INT_MAX)
+		a = INT_MAX;
+	if (a < INT_MIN)
+		a = INT_MIN;
 	if (a < 0) {
 		coeff = -1;
 		a = -a;
@@ -2035,7 +2039,7 @@ void StrDMSsub( char *buffer, double a ) {	//
 	minute = (int)((a - degree) * 60.);
 	second = ((a - degree) * 60. - minute) * 60.;
 
-	sprintf(buffer, "%d %02d  %05.2f", degree * coeff, minute, second);
+	sprintf(buffer, "%d\x9C%02d\xE5\x96%05.2f", degree * coeff, minute, second);
 	if (coeff == -1) {
 		if (frac)
 			memmove(buffer+1, buffer, strlen(buffer) + 1);
@@ -2044,11 +2048,6 @@ void StrDMSsub( char *buffer, double a ) {	//
 	}
 
 	i += frac ? 1 : floor(log10(a)) + 1;
-
-	buffer[i] = 0x9C;
-
-	buffer[i+3] = 0xE5;
-	buffer[i+4] = 0x96;
 
 	if (buffer[i+9] == '0')
 		i -= buffer[i+8] == '0' ? 3 : 1;
