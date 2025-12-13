@@ -13,8 +13,8 @@ void free(void *p);
 void *malloc(size_t sz);
 void *realloc(void *p, size_t sz);
 
-int rand(void);
-void srand(unsigned seed);
+#define rand sys_rand
+#define srand sys_srand
 int sys_rand(void);
 void sys_srand(unsigned seed);
 
