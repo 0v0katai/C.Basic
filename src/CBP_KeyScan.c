@@ -41,7 +41,7 @@
 
 
 int CheckKeyRow7305( int row ){
-	short*KEYPORT=(short*)0xA44B0000;
+	volatile short *KEYPORT = (void *)0xA44B0000;
 	short result=KEYPORT[row>>1];
 	if ( row & 1 ) result/=0x100;
 	return result & 0xFF ;
