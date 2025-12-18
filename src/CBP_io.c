@@ -1122,30 +1122,3 @@ void HeapRAM_malloc( int sizeK ){
 	MaxHeapRam = sizeK;
 	HiddenRAM_MatAryInit();
 }
-//---------------------------------------------------------------------------------------------- align dummy
-int ioObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int ioObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-//int ioObjectAlign4z( unsigned int n ){ return n; }	// align +4byte

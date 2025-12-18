@@ -5,11 +5,6 @@
 
 char IsDispsMat=0;
 
-//----------------------------------------------------------------------------------------------
-//int VGObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int VGObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int VGObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------
 void CB_PutDispDD( char*SRC ){	// 
 	int y1=24,y2=215,i;
 	int c=SRC[ExecPtr];
@@ -881,9 +876,6 @@ void CB_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn  0:PxlOff  2:PxlChg
 	CB_ColorIndex=-1;
 }
 
-//----------------------------------------------------------------------------------------------
-//int ObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------
 void PlotXYtoPrevPXY() {
 		Previous_X = Previous_X2;
 		Previous_Y = Previous_Y2;
@@ -3026,58 +3018,3 @@ void CB_RclVWin( char *SRC ) {
 	RclVwin( n );
 	CB_ChangeViewWindow() ;
 }
-
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-int GObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4u( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4v( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4w( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4x( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4y( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4z( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4A( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4B( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4C( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4D( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4E( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4F( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4G( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4H( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4I( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4J( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4K( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4L( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4M( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4N( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4O( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4P( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4Q( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4R( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4S( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4T( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4U( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4V( unsigned int n ){ return n; }	// align +4byte
-int GObjectAlign4W( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4X( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4Y( unsigned int n ){ return n; }	// align +4byte
-//int GObjectAlign4Z( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------
-
-

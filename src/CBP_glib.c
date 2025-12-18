@@ -1200,14 +1200,3 @@ void Circle(double x, double y, double r, int style, int drawflag, int mode ) {
 	regY.real=Plot_Y;
 	regintX=regX.real; regintY=regY.real;
 }
-
-//----------------------------------------------------------------------------------------------
-int ObjectAlignG1( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG2( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG3( unsigned int n ){ return n; }	// align +4byte
-int ObjectAlignG4( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG5( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG6( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG7( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG8( unsigned int n ){ return n; }	// align +4byte
-//int ObjectAlignG9( unsigned int n ){ return n; }	// align +4byte

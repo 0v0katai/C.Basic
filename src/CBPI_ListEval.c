@@ -540,11 +540,6 @@ int ListEvalIntsub1(char *SRC) {	// 1st Priority
 	return 0 ;
 }
 
-//-----------------------------------------------------------------------------
-//int ListEvalIntObjectAlignE4g( unsigned int n ){ return n ; }	// align +4byte
-//int ListEvalIntObjectAlignE4h( unsigned int n ){ return n+n; }	// align +6byte
-//-----------------------------------------------------------------------------
-
 int ListEvalIntsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;
 	int result,tmp;

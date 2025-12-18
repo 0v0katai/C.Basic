@@ -291,13 +291,6 @@ void Bdisp_PutDisp_DD_stripe_BG( int y1, int y2 ) {
 	}
 	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
 }
-//------------------------------------------------------------------------
-int SysObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int SysObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int SysObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int SysObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int SysObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//------------------------------------------------------------------------
 
 void Bdisp_AllClr_VRAM1(){
 	unsigned short *vram=(unsigned short *)PictAry[0]+24*384;

@@ -52,12 +52,6 @@ complex Cplx_ReadMatrix( int reg, int dimA, int dimB){		// base:0  0-    base:1 
 	}
 	return result;
 }
-//-----------------------------------------------------------------------------
-int EvalCObjectAlignE4a0( unsigned int n ){ return n; }	// align +4byte
-int EvalCObjectAlignE4a1( unsigned int n ){ return n; }	// align +4byte
-//int EvalCObjectAlignE4a2( unsigned int n ){ return n; }	// align +4byte
-//int EvalObjectAlignE4b( unsigned int n ){ return n+n; }	// align +6byte
-//-----------------------------------------------------------------------------
 
 void Cplx_WriteMatrix( int reg, int dimA, int dimB, complex value){		// base:0  0-    base:1 1-
 	char*	MatAryC;
@@ -655,12 +649,6 @@ complex Cplx_RoundSci( complex num, complex digit){
 	return Dbl2Cplx2( Round( num.real, Sci, digit.real+.5 ),Round( num.imag, Sci, digit.real+.5 ) );
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-int EvalObjectAlignE4cee( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4cff( unsigned int n ){ return n+n; }	// align +6byte
-//-----------------------------------------------------------------------------
-
 int Cplx_Get2Eval( char *SRC, complex *tmp, complex *tmp2){
 	int c;
 	(*tmp) = Cplx_EvalsubTop( SRC );
@@ -1156,15 +1144,6 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 	CB_Error(SyntaxERR) ; // Syntax error
 	return Int2Cplx( 0 );
 }
-
-//-----------------------------------------------------------------------------
-//int EvalObjectAlignE4cgg( unsigned int n ){ return n ; }	// align +4byte
-int EvalObjectAlignE4chh( unsigned int n ){ return n+n; }	// align +6byte
-//int EvalObjectAligncE4ii( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAligncE4jk( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAligncE4jl( unsigned int n ){ return n ; }	// align +4byte
-//int EvalObjectAligncE4jm( unsigned int n ){ return n ; }	// align +4byte
-//-----------------------------------------------------------------------------
 
 complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 	int cont=1;

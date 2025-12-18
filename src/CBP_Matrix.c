@@ -15,13 +15,6 @@ char	MatBase=1;
 char	ListFileNo=0;	// 0:normal	 1~:file mode
 short	ListFilePtr=0;
 
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//int MatrixObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 char * MatrixPtr( int reg, int m, int n ){		// base:0  0-    base:1 1-
 	char*	MatAryC;
 	short*	MatAryW;
@@ -5431,77 +5424,3 @@ void CB_ListFile( char *SRC ){
 	if ( ExtendList < n) { CB_Error(MemoryERR); return ; } // memory error
 	CB_ListNo2Ptr( ListFileNo );
 }
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-int MatrixObjectAlign4M1( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M2( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M3( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M4( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M5( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M6( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M7( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M8( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4M9( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MA( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MB( unsigned int n ){ return n; }	// align +4byteS
-int MatrixObjectAlign4MC( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MD( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4ME( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MF( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MG( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MH( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MI( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MJ( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MK( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4ML( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MM( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MN( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MO( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MP( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MQ( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MR( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MS( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MT( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MU( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MV( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MW( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MX( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MY( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4MZ( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Ma( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mb( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mc( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Md( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Me( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mf( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mg( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mh( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mi( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mj( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mk( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Ml( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mm( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mn( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mo( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mp( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mq( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mr( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Ms( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mt( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mu( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mv( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mw( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mx( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4My( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4Mz( unsigned int n ){ return n; }	// align +4byte
-int MatrixObjectAlign4N1( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N2( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N3( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N4( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N5( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N6( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N7( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N8( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N9( unsigned int n ){ return n; }	// align +4byte
-//int MatrixObjectAlign4N0( unsigned int n ){ return n; }	// align +4byte
-//-----------------------------------------------------------------------------

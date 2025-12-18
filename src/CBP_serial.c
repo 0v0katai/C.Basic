@@ -574,13 +574,3 @@ void CB_Beep( char *SRC ){
   next:
   	ExecBeep( a, n );
 }
-
-//----------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//int SerialObjectAlign6e( unsigned int n ){ return n+n; }	// align +6byte
-//int SerialObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-//int SerialObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-//int SerialObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-//int SerialObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int SerialObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int SerialObjectAlign4f( unsigned int n ){ return n; }	// align +4byte

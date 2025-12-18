@@ -522,10 +522,3 @@ int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) {			// CasioBasic Getke
 	}
 	return key;
 }
-//---------------------------------------------------------------------------------------------- align dummy
-int keyObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int ketObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int keyObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int keyObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-//int keyObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-//int keyObjectAlign4f( unsigned int n ){ return n; }	// align +4byte

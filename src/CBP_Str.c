@@ -2375,16 +2375,3 @@ int CB_TimeToStr() {	// "23:59:59"
 	TimeToStr( CB_CurrentStr );
 	return CB_StrBufferMax-1;
 }
-
-
-//----------------------------------------------------------------------------------------------
-int StrObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int StrObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------

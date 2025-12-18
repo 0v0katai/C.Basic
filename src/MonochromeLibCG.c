@@ -2518,25 +2518,3 @@ int MLTest_filled_ellipse_in_rect(int x1, int y1, int x2, int y2)
 	radius2 = (y2-y1)/2;
 	return MLTest_filled_ellipse(x1+radius1, y1+radius2, radius1, radius2);
 }
-//----------------------------------------------------------------------------------------------
-int MLLObjectAlign4a( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4b( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4c( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4g( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4h( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4i( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4j( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4k( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4l( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4m( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4n( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4o( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4p( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4q( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4r( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4s( unsigned int n ){ return n; }	// align +4byte
-int MLLObjectAlign4t( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------

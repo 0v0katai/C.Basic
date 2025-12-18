@@ -1249,10 +1249,3 @@ void ML_circle2(int x, int y, int radius, ML_Color color, int start, int end, in
 		if ( minus>0 ) { if ( i>end ) i=end; } else { if ( i<end ) i=end; } 
 	} ;
 }
-
-//----------------------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------
-int MLObjectAlign4d( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4e( unsigned int n ){ return n; }	// align +4byte
-int MLObjectAlign4f( unsigned int n ){ return n; }	// align +4byte
-//----------------------------------------------------------------------------------------------
