@@ -79,12 +79,11 @@ include_directories(CBASICPS PRIVATE
                     "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(CBASICPS PRIVATE
                        -nostdlib -I include
-                       -Wall -Wextra -Os -g -flto=auto
-                       -Wno-narrowing)
+                       -Wall -Wextra -Os -g -flto=auto)
 target_link_options(CBASICPS PRIVATE
                     -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
-                    -Wl,--print-memory-usage -Wl,-Map=map)
-target_link_libraries(CBASICPS PRIVATE -lm #[[-lc2]] -lc -lfxcg -lgcc)
+                    -Wl,--print-memory-usage -Wl,-Map=map -Wl,--gc-sections)
+target_link_libraries(CBASICPS PRIVATE -lm -lc -lfxcg -lgcc)
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
   generate_g1a(TARGET CBASICPS OUTPUT "CBASICPS.g1a"
