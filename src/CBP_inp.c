@@ -101,8 +101,13 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 //			num = Round( num, round_mode, digit);
 		 	w=15; if ( w > width )  w=width;
 		 	pw=pow(10,w+minus);
-			if ( ( fabsnum==0 ) || ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) ) {
+			if ( fabsnum==0 ) {
+				w = 15-digit;
+				goto zero_case;
+			}
+			if ( ( dpoint <= fabsnum ) && ( fabsnum < pw ) ) {
 				w = floor(log10fabsnum) + (15-digit);
+			  zero_case:
 				if ( digit >= width ) w= w+(digit-width);
 				i=14-w;
 				if ( i >= 18 ) i=18;
@@ -125,10 +130,10 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 			break;
 		case Fix:
 				num = Round( num, round_mode, digit);
-				if ( num==0 ) minus=0;
+				if ( fabsnum == 0 ) minus=0;
 				if ( fabsnum < 1e17 ) {
 					i=digit;
-					if ( fabsnum >=0 ) j=log10(fabsnum); else j=0;
+					if ( fabsnum > 0 ) j=log10fabsnum; else j=0;
 					if (j+i>15) i=15-j;
 					if (i<0) i=0;
 					c='f';
@@ -155,7 +160,7 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 	fstr[p++]='0'+i%10;
 	fstr[p++]=c;
 	fstr[p++]='\0';
-	sprintf((char*)buffer, fstr, num);
+	sprintf3(buffer, fstr, num);
 	
 	i=0; if ( ( buffer[0]=='-' )||( buffer[0]=='+' ) ) i=1;		// 0087.6 -> 87.6    -05.76 -> -5.76
 	if ( buffer[i+0]=='0' ) { 
@@ -180,17 +185,17 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 	}
 
 	if ( round_mode == Norm ) {
-		dptr=(char *)strchr((char*)buffer,'.');
+		dptr=strchr(buffer,'.');
 		if ( dptr ) {
-			eptr=(char *)strchr((char*)buffer,'e');
-			i=strlen((char*)buffer); 
+			eptr=strchr(buffer,'e');
+			i=strlen(buffer); 
 			nptr=buffer+i;
-			if (  eptr != NULL ) {	// 1.234500000e123  zero cut
+			if (  eptr != '\0' ) {	// 1.234500000e123  zero cut
 				eptr--; i=0;
 				while ( eptr[i] == '0' ) i-- ;
 				if ( i ) {
 					j=0;
-					while ( eptr[j] != NULL ) eptr[++i]=eptr[++j];
+					while ( eptr[j] != '\0' ) eptr[++i]=eptr[++j];
 				}
 			} else {				// 1.234500000  zero cut
 				i=-1;
@@ -198,24 +203,24 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 				if ( nptr[i]=='.' ) nptr[i]='\0';
 			}
 		}
-	} else
+	} else 
 	if ( ( round_mode == Fix ) && ( digit == 0 ) ) {
-		i=strlen((char*)buffer); 
+		i=strlen(buffer); 
 		buffer[i++]='.';
 		buffer[i]  ='\0';
 	}
-	
+
 	if ( ENG==3 )  {	// 3 digit separate
 		for(i=0; i<22; i++) buffer2[i]=buffer[i]; // 
-		nptr=(char *)strchr(buffer,'.');
+		nptr=strchr(buffer,'.');
 		if ( nptr==NULL ) w=strlen(buffer)+minus; else w=nptr-buffer+minus;
 		if ( w < 4  ) goto align;
 		i=0; j=0;
-		if ( minus ) buffer[(i++)]=buffer2[j++];
+		if ( minus ) buffer[i++]=buffer2[j++];
 		do {
 			buffer[i++]=buffer2[j++];
 			w--;
-			if ( ( w==3 ) || ( w==6 )|| ( w==9 )|| ( w==12 )|| ( w==15 ) ) buffer[(i++)] = ',';
+			if ( ( w==3 ) || ( w==6 )|| ( w==9 )|| ( w==12 )|| ( w==15 ) ) buffer[i++] = ',';
 		} while ( buffer2[j] ) ;
 		buffer[i]='\0';
 	}
