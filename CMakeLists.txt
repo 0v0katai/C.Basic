@@ -79,7 +79,8 @@ include_directories(CBASICPS PRIVATE
                     "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(CBASICPS PRIVATE
                        -nostdlib -I include
-                       -Wall -Wextra -Os -g -flto=auto)
+                       -Wall -Wextra -Os -g -flto=auto
+                       -mpretend-cmove)
 target_link_options(CBASICPS PRIVATE
                     -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
                     -Wl,--print-memory-usage -Wl,-Map=map -Wl,--gc-sections)
