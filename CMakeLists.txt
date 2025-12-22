@@ -59,6 +59,7 @@ src/qsort.c
 src/snprintf.c
 src/crt0.s
 src/syscall.s
+src/va_lib.c
 )
 # Shared assets, fx-9860G-only assets and fx-CG-50-only assets
 set(ASSETS

@@ -54,9 +54,11 @@ unsigned short hsl( int H, int S, int L){	//  h:0~359  s:0~255  l:0~255  ->color
 	return rgb(r,g,b);
 }
 
-void hsvhsl2rgb( int H, int S, int V, int *R, int *G, int *B, int hsvhsl ){	//  h:0~359  s:0~255  v:0~255  ->RGB(0~255)
+enum {HSV, HSL};
+
+void hsvhsl2rgb( int H, int S, int V, int *R, int *G, int *B, int mode ){	//  h:0~359  s:0~255  v:0~255  ->RGB(0~255)
 	int max,min;
-	if ( hsvhsl==248 ) {	// HSV
+	if ( mode == HSV ) {	// HSV
 		max = V;
 		min = ((max*255)-(S*max))/255;
 	} else {				// HSL
@@ -111,50 +113,42 @@ void hsvhsl2rgb( int H, int S, int V, int *R, int *G, int *B, int hsvhsl ){	//  
 }
 
 void hsv2rgb( int H, int S, int V, int *R, int *G, int *B ){	//  h:0~359  s:0~255  v:0~255  ->RGB(0~255)
-	hsvhsl2rgb( H, S, V, &(*R), &(*G), &(*B), 248 );
+	hsvhsl2rgb( H, S, V, &(*R), &(*G), &(*B), HSV );
 }
 void hsl2rgb( int H, int S, int L, int *R, int *G, int *B ){	//  H:0~359  s:0~255  l:0~255  ->RGB(0~255)
-	hsvhsl2rgb( H, S, L, &(*R), &(*G), &(*B), 124 );
+	hsvhsl2rgb( H, S, L, &(*R), &(*G), &(*B), HSL );
 }
 
+void rgb2hsvhsl( int R, int G, int B, int *H, int *S, int *V, bool mode ){	//  RGB(0~255) ->  H:0~359  S:0~255  V:0~255  L:0~255
+	int cmax = max(3, R, G, B);
+	int cmin = min(3, R, G, B);
+	int delta = cmax - cmin;
 
-void rgb2hsvhsl( int R, int G, int B, int *H, int *S, int *V, int hsvhsl ){	//  RGB(0~255) ->  H:0~359  S:0~255  V:0~255  L:0~255
-	int max,min;
-	max = R;
-	if ( G > max ) max = G;
-	if ( B > max ) max = B;
-	min = R;
-	if ( G < min ) min = G;
-	if ( B < min ) min = B;
-	if ( R==max ) *H = (G-B)*60/(max-min);
+	if (delta == 0)
+		*H = 0;
+	else if (cmax == R)
+		*H = (G - B) * 60 / delta;
+	else if (cmax == G)
+		*H = (B - R) * 60 / delta + 120;
 	else
-	if ( G==max ) *H = (B-R)*60/(max-min)+120;
-	else
-	if ( B==max ) *H = (R-G)*60/(max-min)+240;
-	if ( *H < 0 ) *H += 360;
-
-	if ( hsvhsl == 248 ) {	// ->HSV
-		if ( max==0 ) *S = 0;
-		else		  *S = (max-min)*255/max;
-		*V = max;
-	} else {				// ->HSL
-		*V = (max+min)/2;
-		if ( max==min ) *S = 0;
-		else {
-			if ( *V < 128 ) {
-				*S = ((max-min)*255)/(max+min);
-			} else {
-				*S = ((max-min)*255)/(510-max-min);
-			}
-		}
+		*H = (R - G) * 60 / delta + 240;
+	if (*H < 0)
+		*H += 360;
+	
+	if (mode == HSV) {
+		*V = cmax;
+		*S = cmax == 0 ? 0 : (delta * 255) / cmax;
+	} else {
+		*V = (cmax + cmin) / 2;
+		*S = delta == 0 ? 0 : (delta * 255) / (1 - abs(2 * (*V) - 255) / 255);
 	}
 }
 
 void rgb2hsv( int R, int G, int B, int *H, int *S, int *V ){	//  RGB(0~255) ->  H:0~359  S:0~255  V:0~255
-	rgb2hsvhsl( R, G, B, &(*H), &(*S), &(*V), 248 );
+	rgb2hsvhsl( R, G, B, &(*H), &(*S), &(*V), HSV );
 }
 void rgb2hsl( int R, int G, int B, int *H, int *S, int *L ){	//  RGB(0~255) ->  H:0~359  S:0~255  L:0~255
-	rgb2hsvhsl( R, G, B, &(*H), &(*S), &(*L), 124 );
+	rgb2hsvhsl( R, G, B, &(*H), &(*S), &(*L), HSL );
 }
 
 
