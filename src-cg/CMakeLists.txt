@@ -2,7 +2,7 @@
 # toolchain file and module path of the fxSDK
 
 cmake_minimum_required(VERSION 3.15)
-project(CBASIC LANGUAGES ASM CXX C)
+project(CBASICPS LANGUAGES ASM C)
 
 include(GenerateG1A)
 include(GenerateG3A)
@@ -10,66 +10,56 @@ include(GenerateHH2Bin)
 include(Fxconv)
 
 set(SOURCES
-  # src/LIB/source/strcat.s
-  # src/LIB/source/memmove.s
-  # src/LIB/source/memset.s
-  # src/LIB/source/memsetZero.s
-  # src/LIB/source/strchr.s
-  # src/LIB/source/strcmp.s
-  # src/LIB/source/strcpy.s
-  # src/LIB/source/strncpy.s
-  
-  src/LIB/source/STATUS_ICONS.cpp
-  src/CBP_bmp.cpp
-  src/CBP_Color.cpp
-  src/CBP_edit.cpp
-  src/CBP_error.cpp
-  src/CBP_Eval_ext.cpp
-  src/CBP_Eval.cpp
-  src/CBP_file.cpp
-  src/CBP_fileMCS.cpp
-  src/CBP_glib.cpp
-  src/CBP_glib2.cpp
-  src/CBP_GraphFunc.cpp
-  src/CBP_Help.cpp
-  src/CBP_icon.cpp
-  src/CBP_inp.cpp
-  src/CBP_inpcmdF1.cpp
-  src/CBP_inpcmd.cpp
-  src/CBP_inpcmdF2.cpp
-  src/CBP_inpcmdF3.cpp
-  src/CBP_inpcmdF4.cpp
-  src/CBP_inpcmdF5.cpp
-  src/CBP_inpcmdF6.cpp
-  src/CBP_interpreter.cpp
-  src/CBP_interpreterVRAM.cpp
-  src/CBP_io_fkeyicon.cpp
-  src/CBP_io.cpp
-  src/CBP_KeyScan.cpp
-  src/CBP_Kana.cpp
-  src/CBP_ListEval.cpp
-  src/CBP_main.cpp
-  src/CBP_Matrix.cpp
-  src/CBP_MonochromeLib.cpp
-  src/CBP_serial.cpp
-  src/CBP_setup.cpp
-  src/CBP_Str.cpp
-  src/CBP_StrExt.cpp
-  src/CBP_sys.cpp
-  src/CBP_TextConv.cpp
-  src/CBP_Time.cpp
-  src/CBPC_Eval.cpp
-  src/CBPC_ListEval.cpp
-  src/CBPI_Eval.cpp
-  src/CBPI_interpreter.cpp
-  src/CBPI_ListEval.cpp
-  src/MonochromeLibCG.cpp
-  src/Ptune2_direct.cpp
-  src/qsort.cpp
-  src/snprintf.cpp
-  src/crt0.s
-  src/CG_syscall.s
-  src/LIB/minisdk.s
+src/CBP_bmp.c
+src/CBP_Color.c
+src/CBP_edit.c
+src/CBP_error.c
+src/CBP_Eval_ext.c
+src/CBP_Eval.c
+src/CBP_file.c
+src/CBP_fileMCS.c
+src/CBP_glib.c
+src/CBP_glib2.c
+src/CBP_GraphFunc.c
+src/CBP_Help.c
+src/CBP_icon.c
+src/CBP_inp.c
+src/CBP_inpcmdF1.c
+src/CBP_inpcmd.c
+src/CBP_inpcmdF2.c
+src/CBP_inpcmdF3.c
+src/CBP_inpcmdF4.c
+src/CBP_inpcmdF5.c
+src/CBP_inpcmdF6.c
+src/CBP_interpreter.c
+src/CBP_interpreterVRAM.c
+src/CBP_io_fkeyicon.c
+src/CBP_io.c
+src/CBP_KeyScan.c
+src/CBP_Kana.c
+src/CBP_ListEval.c
+src/CBP_main.c
+src/CBP_Matrix.c
+src/CBP_MonochromeLib.c
+src/CBP_serial.c
+src/CBP_setup.c
+src/CBP_Str.c
+src/CBP_StrExt.c
+src/CBP_sys.c
+src/CBP_TextConv.c
+src/CBP_Time.c
+src/CBPC_Eval.c
+src/CBPC_ListEval.c
+src/CBPI_Eval.c
+src/CBPI_interpreter.c
+src/CBPI_ListEval.c
+src/MonochromeLibCG.c
+src/Ptune2_direct.c
+src/qsort.c
+src/snprintf.c
+src/crt0.s
+src/syscall.s
+src/va_lib.c
 )
 # Shared assets, fx-9860G-only assets and fx-CG-50-only assets
 set(ASSETS
@@ -84,27 +74,35 @@ set(ASSETS_cg
 
 fxconv_declare_assets(${ASSETS} ${ASSETS_fx} ${ASSETS_cg} WITH_METADATA)
 
-add_executable(CBASIC ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
-include_directories(CBASIC PRIVATE
-                    "${CMAKE_CURRENT_SOURCE_DIR}/header"
+add_executable(CBASICPS ${SOURCES} ${ASSETS} ${ASSETS_${FXSDK_PLATFORM}})
+include_directories(CBASICPS PRIVATE
+                    "${CMAKE_CURRENT_SOURCE_DIR}/include"
                     "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_compile_options(CBASIC PRIVATE
+target_compile_options(CBASICPS PRIVATE
                        -nostdlib -I include
                        -Wall -Wextra -Os -g -flto=auto
-                       -Wno-narrowing)
-target_link_options(CBASIC PRIVATE
-                    -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld" -L ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(CBASIC PRIVATE -lm -lc -lfxcg -lgcc)
+                       -mpretend-cmove)
+target_link_options(CBASICPS PRIVATE
+                    -nostdlib -L ${CMAKE_CURRENT_SOURCE_DIR}/lib
+                    -Wl,--print-memory-usage -Wl,-Map=map -Wl,--gc-sections)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "FastLoad")
+  target_link_options(CBASICPS PRIVATE
+                      -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm_fastload.ld")
+else()
+  target_link_options(CBASICPS PRIVATE
+                      -T "${CMAKE_CURRENT_SOURCE_DIR}/prizm.ld")
+endif()
+target_link_libraries(CBASICPS PRIVATE -lm -lc -lfxcg -lgcc)
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
-  generate_g1a(TARGET CBASIC OUTPUT "CBASIC.g1a"
-    NAME "CBASIC" ICON assets-fx/icon.png)
+  generate_g1a(TARGET CBASICPS OUTPUT "CBASICPS.g1a"
+    NAME "CBASICPS" ICON assets-fx/icon.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
-  generate_g3a(TARGET CBASIC OUTPUT "CBASIC.g3a"
-    NAME "CBASIC" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
+  generate_g3a(TARGET CBASICPS OUTPUT "CBASICPS.g3a"
+    NAME "CBASICPS" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
-  generate_g3a(TARGET CBASIC OUTPUT "CBASIC-fx.g3a"
-    NAME "CBASIC-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
+  generate_g3a(TARGET CBASICPS OUTPUT "CBASICPS-fx.g3a"
+    NAME "CBASICPS-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCP)
-  generate_hh2_bin(TARGET CBASIC OUTPUT "CBASIC-hh2.bin")
+  generate_hh2_bin(TARGET CBASICPS OUTPUT "CBASICPS-hh2.bin")
 endif()

@@ -1,4 +1,4 @@
-﻿Please look at this site that made by Krtyski.(e-Gadget administrator)
+Please look at this site that made by Krtyski.(e-Gadget administrator)
 https://egadget2.web.fc2.com/CBasic/Interpreter/CBasic_interpreter.html
 This site and following text is translated by Krtyski(e-Gadget administrator) & Lephenixnoir(Planet-Casio administrator).
 Thanks very much for your support.
