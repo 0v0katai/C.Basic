@@ -1268,7 +1268,8 @@ void AddOpcodeRecent( int opcode ) {
 		OplistRecentFreq[i].code =opcode;
 		OplistRecentFreq[i].count=1;
 	}
-	qsort( OplistRecentFreq,  OpRecentFreqMax, sizeof(toplistrecentfreq),  qsort_OpRecentFreq );
+	/* This line crashes GCC C.Basic CG */
+	// qsort( OplistRecentFreq,  OpRecentFreqMax, sizeof(toplistrecentfreq),  qsort_OpRecentFreq );
 }
 
 int SelectOpcodeRecent( int listselect ) {
