@@ -14,6 +14,7 @@
 #include "CBP.h"
 #include "SH7305_CPG_BSC.h"
 #include "Ptune2_direct.h"
+#include <fxlibc/printf.h>
 
 //----------------------------------------------------------------------------------------------
 
@@ -33,7 +34,7 @@ void CG20_overclock(){
 	if ( *(int*)0x8001FFD0 == -1 ) IsEmu=EmuRAMdiff;	// is emulator
 	if ( CB_disableOC ) return ;
 	if ( dd < 5000 ) {	//  < 50fps
-		   sprintf3( buffer, "RefreshRate%3dfps",dd/100);
+		   sprintf( buffer, "RefreshRate%3dfps",dd/100);
 		if ( YesNo2( buffer, "Auto OverClock ?" ) ) LoadDataF3();	// ->118MHz
 	}
 }
@@ -63,6 +64,7 @@ void main() {
 	
 	WorkBuf = (char*)wbuf;
 
+	__printf_enable_fp();
 	Set_Timer_id();
 	
 	SetVeiwWindowInit();

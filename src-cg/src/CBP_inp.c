@@ -155,7 +155,7 @@ int sprintGRSi( char* buffer, double num, int width, int align_mode, int round_m
 	fstr[p++]='0'+i%10;
 	fstr[p++]=c;
 	fstr[p++]='\0';
-	sprintf3(buffer, fstr, num);
+	sprintf(buffer, fstr, num);
 	
 	i=0; if ( ( buffer[0]=='-' )||( buffer[0]=='+' ) ) i=1;		// 0087.6 -> 87.6    -05.76 -> -5.76
 	if ( buffer[i+0]=='0' ) { 
@@ -498,8 +498,8 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 		} else {		// real + imag
 			StrDMSsub( buffer,  a ) ;
 			StrDMSsub( buffer3, b ) ;
-			if ( b>=0 ) sprintf3( buffer2, "+%s\x7F\x50", buffer3 );
-			else		sprintf3( buffer2, "-%s\x7F\x50", buffer3 );
+			if ( b>=0 ) sprintf( buffer2, "+%s\x7F\x50", buffer3 );
+			else		sprintf( buffer2, "-%s\x7F\x50", buffer3 );
 			w=100;
 		}
 		goto GR2j;
@@ -747,15 +747,15 @@ int SelectChar( int *ContinuousSelect ) {
 				case 2:
 				case 1:
 					if ( *ContinuousSelect ) {
-						sprintf3( buf, "===Continuous Select=%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
+						sprintf( buf, "===Continuous Select=%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
 						CB_PrintMinix3( 1,1, (unsigned char*)buf, MINI_REV  );
 					} else {
-						sprintf3( buf, "===Character Select==%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
+						sprintf( buf, "===Character Select==%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
 						CB_PrintMinix3( 1,1, (unsigned char*)buf, MINI_OVER  );
 					}
 					break;
 				default:
-					sprintf3( buf, "==%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
+					sprintf( buf, "==%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
 					locate(1,1);
 					if ( *ContinuousSelect ) {
 					    PrintRevs((unsigned char*)buf);
@@ -1315,7 +1315,7 @@ int SelectOpcodeRecent( int listselect ) {
 			if ( seltop < 0 ) seltop=0;
 			for ( i=0; i<6; i++ ) {
 				CB_Prints(3,2+i,(unsigned char *)"                 ");
-				sprintf3(buffer, "F%d:", i+1 ) ;
+				sprintf(buffer, "F%d:", i+1 ) ;
 				CB_ColorIndex=CB_ColorIndexEditLine;	//
 //				CB_ColorIndex=COLOR_BLACK;
 				CB_PrintMinix3( 13, 8*i+10, (unsigned char *)buffer, MINI_OVER ) ;
@@ -1329,10 +1329,10 @@ int SelectOpcodeRecent( int listselect ) {
 				DMS_Opcode( tmpbuf, j);
 				j=0; if ( tmpbuf[0]==' ' ) j++;
 				if ( listselect == CMDLIST_RECENT ) {
-					sprintf3(buffer, "%-15s", tmpbuf+j ) ;
+					sprintf(buffer, "%-15s", tmpbuf+j ) ;
 				} else {
 					k=OplistRecentFreq[seltop+i].count;
-					sprintf3(buffer, "%s (%d)", tmpbuf+j, (unsigned short)k ) ;
+					sprintf(buffer, "%s (%d)", tmpbuf+j, (unsigned short)k ) ;
 					if ( k==0 ) buffer[0]='\0';
 				}
 //				CB_ColorIndex=CB_ColorIndexEditCMD;	//
@@ -1515,8 +1515,8 @@ int SelectOpcode( int listselect, int flag ) {
 					tmpbuf[12]='\0'; 
 					DMS_Opcode( tmpbuf, j);
 					j=0; if ( tmpbuf[0]==' ' ) j++;
-//	//				sprintf3(buffer,"%04X:%-12s",(unsigned short)oplist[seltop+i],tmpbuf+j ) ;
-					sprintf3(buffer,"%-17s",tmpbuf+j ) ;
+//	//				sprintf(buffer,"%04X:%-12s",(unsigned short)oplist[seltop+i],tmpbuf+j ) ;
+					sprintf(buffer,"%-17s",tmpbuf+j ) ;
 					CB_Prints(3,2+i,(unsigned char *)buffer);
 				}
 			}
@@ -3502,9 +3502,9 @@ int SelectOpcode5800P( int flag ) {
 			len=strlenOp( tmpbuf );
 			n=i+1; if (n>9) n=0;
 			j=0; if ( tmpbuf[0]==' ' ) j++;
-			if ( i< 10 ) sprintf3(buffer,"%d:%-9s",n,tmpbuf+j ) ;
-			if ( i==10 ) sprintf3(buffer,".:%-9s",tmpbuf+j ) ;
-			if ( i==11 ) sprintf3(buffer,"\x0F:%-9s",tmpbuf+j ) ;
+			if ( i< 10 ) sprintf(buffer,"%d:%-9s",n,tmpbuf+j ) ;
+			if ( i==10 ) sprintf(buffer,".:%-9s",tmpbuf+j ) ;
+			if ( i==11 ) sprintf(buffer,"\x0F:%-9s",tmpbuf+j ) ;
 			locate(1+(i%2)*11,2+i/2); Prints((unsigned char *)buffer);
 			if ( len>7+j ) { 
 				locate(3+(i%2)*11,2+i/2); Prints((unsigned char *)"         ");
@@ -4520,7 +4520,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 			if ( CommandInputMethod ) DispGenuineCmdMenu();
 		}
 	
-//		sprintf3(buf,"len=%2d ptr=%2d off=%2d   csr=%2d  ",length,ptrX,offsetX,csrX); PrintMinix3( 0,7*8+2,(unsigned char *)buf, MINI_OVER);
+//		sprintf(buf,"len=%2d ptr=%2d off=%2d   csr=%2d  ",length,ptrX,offsetX,csrX); PrintMinix3( 0,7*8+2,(unsigned char *)buf, MINI_OVER);
 
 		if ( ( alphastatus ) || ( alphalock ) ) SetAlphaStatus( alphalock, lowercase );	
 
@@ -4832,7 +4832,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 							KeyRecover();
 							GetKey_DisableMenu(&key);
 							MsgBoxPop();
-							sprintf3(buf,"%d",CB_KeyCodeCnvt( key ) );
+							sprintf(buf,"%d",CB_KeyCodeCnvt( key ) );
 							EditPaste1( buffer, buf, &ptrX, MaxStrlen );
 						  key0:
 							key=0;
@@ -4845,15 +4845,15 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 							if ( key != KEY_CTRL_EXE ) goto key0;
 							switch ( SetRGBColorMode ) {
 								case 0:	// RGB
-									sprintf3(buf,"\x7F\x5E%d,%d,%d)",((col&0xF800) >> 8),((col&0x07E0) >> 3),((col&0x001F) << 3) );
+									sprintf(buf,"\x7F\x5E%d,%d,%d)",((col&0xF800) >> 8),((col&0x07E0) >> 3),((col&0x001F) << 3) );
 									break;
 								case 1:	// HSV -> HSL
 									rgb2hsv( ((col&0xF800) >> 8), ((col&0x07E0) >> 3), ((col&0x001F) << 3), &H,&S,&V);
-									sprintf3(buf,"\x7F\x71%d,%d,%d)",H,S,V );
+									sprintf(buf,"\x7F\x71%d,%d,%d)",H,S,V );
 									break;
 								case 2:	// HSL -> RGB
 									rgb2hsl( ((col&0xF800) >> 8), ((col&0x07E0) >> 3), ((col&0x001F) << 3), &H,&S,&L);
-									sprintf3(buf,"\x7F\x73%d,%d,%d)",H,S,L );
+									sprintf(buf,"\x7F\x73%d,%d,%d)",H,S,L );
 									break;
 							}
 							EditPaste1( buffer, buf, &ptrX, MaxStrlen );

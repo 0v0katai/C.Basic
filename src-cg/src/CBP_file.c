@@ -292,7 +292,7 @@ void ErrorMSGfile( char *buffer, char *filename, int err){
 	char buf[256];
 	SetShortName( sname, filename);
 	if ( err ) {
-		sprintf3(buf, "%s (%d)", sname, err);
+		sprintf(buf, "%s (%d)", sname, err);
 		ErrorMSGstr( buffer, buf);
 	} else {
 		ErrorMSGstr( buffer, sname);
@@ -302,7 +302,7 @@ void ErrorMSGfiletmp( char *buffer, char *buffer2, int err){
 	int key;
 	char buf[256];
 	locate(1,1); Prints((unsigned char *)buffer);
-	sprintf3(buf, "%s (%d)", buffer2, err);
+	sprintf(buf, "%s (%d)", buffer2, err);
 	locate(1,2); Prints((unsigned char *)buf);
 	
 }
@@ -333,7 +333,7 @@ static int ReadFile( char *folder )
 			strncpy( files[i].folder, folder, FOLDERMAX);
 			files[i].filesize = (file_info.type == DT_DIRECTORY ? FOLDER_FLAG : file_info.dsize);
 			if ( ( i & 0x3 ) == 0 ) {
-				sprintf3( str, "%3d", i );
+				sprintf( str, "%3d", i );
 				CB_Prints( 17, 4,  (unsigned char *)str);
 				Bdisp_PutDisp_DD_stripe( 4*24, 4*24+23);
 			}
@@ -505,13 +505,13 @@ int GetMediaFree( unsigned int *high, unsigned int *low) {
 void GetMediaFreeStr10( char *buffer ) {
 	unsigned int high,low;
 	GetMediaFree( &high, &low);
-	sprintf3(buffer,"%6.1fKB free",(double)low/1024.0);
+	sprintf(buffer,"%6.1fKB free",(double)low/1024.0);
 }
 int GetMemFree() {
 	return  HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
 }
 void GetMemFreeStr10( char *buffer ) {
-	sprintf3(buffer,"%8d bytes free  ", GetMemFree() );
+	sprintf(buffer,"%8d bytes free  ", GetMemFree() );
 }
 
 //----------------------------------------------------------------------------------------------
@@ -704,7 +704,7 @@ unsigned int Explorer( int size, char *folder )
 			CB_ColorIndex=-1;
 		} else {
 			if ( root2[0] ) PrintMinix3(13, 1, (unsigned char*)(root2+1), MINI_OVER); 
-			sprintf3( buffer, "%-8s", folder );
+			sprintf( buffer, "%-8s", folder );
 			locate(2,1);Prints( strlen( folder ) ? (unsigned char*)buffer : (unsigned char*)"/");	// root
 		}
 		if ( searchmode ) {
@@ -722,7 +722,7 @@ unsigned int Explorer( int size, char *folder )
 		} else {
 			StatusArea_Time();
 			PrintMinix3(10*6+1, 1, (unsigned char*)buffer2, MINI_OVER);  // free area
-			sprintf3(buffer, "(%d)", size-FavoritesMAX-1);
+			sprintf(buffer, "(%d)", size-FavoritesMAX-1);
 			PrintMinix3(18*6  , 1, (unsigned char*)buffer , MINI_OVER);  // number of file 
 		}
 		
@@ -751,20 +751,20 @@ unsigned int Explorer( int size, char *folder )
 //				CB_ColorIndex=-1;
 				CB_ColorIndex=0x0000;	// Black
 				if( files[i + top].filesize == 0 ) {
-					sprintf3( buf, "---------------------");
+					sprintf( buf, "---------------------");
 					goto dsp1;
 				} else
 				if ( files[i + top].filesize == FOLDER_SEPALATOR ) {
 				  	if ( miniflag ) {
-						sprintf3( buf, "----------Favorites-----------");
+						sprintf( buf, "----------Favorites-----------");
 					} else {
-						sprintf3( buf, "------Favorites------");
+						sprintf( buf, "------Favorites------");
 					}
 					CB_ColorIndex=CB_FavoriteColorIndex;
 					goto dsp1;
 				} else
 				if( files[i + top].filesize == FOLDER_FLAG ) {
-						sprintf3( buf, " [%s]", files[i + top].filename );
+						sprintf( buf, " [%s]", files[i + top].filename );
 				  dsp1:
 				  	if ( miniflag ) {
 						CB_PrintMini_Fix( 8, (i+1)*yk+6, (unsigned char*)buf, MINI_OVER ) ;	// fixed 12 dot
@@ -784,7 +784,7 @@ unsigned int Explorer( int size, char *folder )
 							k = (k+21) & 0xFFFFFFFC;	// file size adjust G1M
 						}
 					}
-					sprintf3( buf, " %-12s ", buf2 );
+					sprintf( buf, " %-12s ", buf2 );
 
 					if ( strcmp( files[i+top].folder, folder ) != 0 )
 					if ( i+top < FavoritesMAX ) {
@@ -796,7 +796,7 @@ unsigned int Explorer( int size, char *folder )
 						j=strlenOp(files[i + top].filename); if (j<4) j=4;
 						if ( buf[j-3]=='g' ) buf[j-4]='\0';
 						strcat(buf2,buf); buf2[14]=0;
-						sprintf3( buf, "%-14s ", buf2 );
+						sprintf( buf, "%-14s ", buf2 );
 					}
 //					CB_ColorIndex=-1;
 					CB_ColorIndex=0x0000;	// Black
@@ -807,10 +807,10 @@ unsigned int Explorer( int size, char *folder )
 						CB_Prints(  1, i + 2, (unsigned char*)buf );
 					}
 					if ( miniflag ) {
-							sprintf3( buf, ":%8u ", k );
+							sprintf( buf, ":%8u ", k );
 					} else {
-						if ( k<=999999 ) 	sprintf3( buf, ":%6u ", k );
-						else				sprintf3( buf, ":%5uk", k/1024 );
+						if ( k<=999999 ) 	sprintf( buf, ":%6u ", k );
+						else				sprintf( buf, ":%5uk", k/1024 );
 					}
 					if ( miniflag ) {
 						CB_PrintMini_Fix( (23-1)*12+0, (i+1)*yk+6, (unsigned char*)buf, MINI_OVER ) ;	// fixed 12 dot
@@ -1617,14 +1617,14 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 //	lowercase = 0;
   loop:
   	if ( ext[0]=='M' ) {
-		sprintf3( msg1, "%s to       ", pmsg );
-		sprintf3( msg2, "     Main Memory." );
+		sprintf( msg1, "%s to       ", pmsg );
+		sprintf( msg2, "     Main Memory." );
 		Fkey_dispN( FKeyNo1, ">SMEM");
 		FkeyClear( FKeyNo2 );
 		FkeyClear( FKeyNo3 );
 	} else {
-		sprintf3( msg1, "%s as %s to ", pmsg, ext);
-		sprintf3( msg2, "  Storage Memory." );
+		sprintf( msg1, "%s as %s to ", pmsg, ext);
+		sprintf( msg2, "  Storage Memory." );
 		Fkey_dispN( FKeyNo1, ">Main");
 		Fkey_dispN( FKeyNo2, "g1m");
 		Fkey_dispN( FKeyNo3, "g3m");
@@ -1779,7 +1779,7 @@ void InputPassPrintbasnamefile( char *basname, char *msg) {		// print basname
 	char buffer[32];
 	Bdisp_AllClr_VRAM();
 	locate(1,1); Prints((unsigned char *)msg);
-	sprintf3(buffer,"[%-8s]",basname);
+	sprintf(buffer,"[%-8s]",basname);
 	locate(1,2); Prints((unsigned char *)buffer);
 }
 
@@ -2067,7 +2067,7 @@ int SaveProgfile( int progNo ){
 	G1MHeaderTobasname8( filebase, basname);
 
 	if ( textmode ) {
-		sprintf3( buffer, "Save %s Name?", textmodeExt );
+		sprintf( buffer, "Save %s Name?", textmodeExt );
 		if ( InputFilename( basname, buffer, 1 ) ) return 1 ;
 		SetFullfilenameExt( fname, basname, textmodeExt );
 		strcpy( fname2, fname) ;
@@ -2086,7 +2086,7 @@ int SaveProgfile( int progNo ){
 			if ( ExistG1Mext( basname2, ext ) ==0 ) if ( YesNoOverwrite() ) goto loop;
 		}
 		basname8ToG1MHeader( filebase, basname);
-		sprintf3(sname, "%s.%s", basname, ext );
+		sprintf(sname, "%s.%s", basname, ext );
 		G1M_Basic_header( filebase );	// G1M Basic header set
 		r=SaveBasG1MorG3M( filebase, ext );	// S.mem / MCS
 	  	FileListUpdate = 1;
@@ -2113,7 +2113,7 @@ int SaveProgfile( int progNo ){
 		SetShortName( sname, fname);
 		r=0;
 	}
-	if ( ext[0] == 'M' ) sprintf3(sname, "%s.g3m", basname );
+	if ( ext[0] == 'M' ) sprintf(sname, "%s.g3m", basname );
 	strncpy( renamename, sname, FILENAMEMAX);
 	strncpy( renamefolder, folder, FOLDERMAX);
 	
@@ -2791,9 +2791,9 @@ int CB_FileList( char *ext ) {
 	if ( n<1 ) { files=filesr; return 0; }	// no file
 	for ( i=0; i<n; i++ ) {
 		if( strlen( folder ) == 0 )
-			sprintf3( fname, "%s", files[i].filename );
+			sprintf( fname, "%s", files[i].filename );
 		else
-			sprintf3( fname, "/%s/%s", folder, files[i].filename );
+			sprintf( fname, "/%s/%s", folder, files[i].filename );
 		strncpy( MatrixPtr( CB_MatListAnsreg, i+1, 1 ), fname, 32 );
 	}
 	dspflag=4;	// List ans
@@ -2861,8 +2861,8 @@ void CB_SaveSub( char *sname, char* FilePtr, int size, int check, char* extname 
 		}
 		DeleteFileFav( fname2 , 0 );	// delete file
 	}
-//sprintf3(buf ,"%s %d ", sname2, size );
-//sprintf3(buf2,"%s", fname );
+//sprintf(buf ,"%s %d ", sname2, size );
+//sprintf(buf2,"%s", fname );
 //OkMSGstr2(buf,buf2);
 	if ( storeFile( fname, (unsigned char*)FilePtr, size )!=0 ) CB_Error(FileERR);
 	SetShortName( sname2, fname);	//
@@ -2914,8 +2914,8 @@ char * CB_LoadSub( char *sname, int ptr, int *size, char* extname ) {	// load to
 	CharToFont( fname, filename );
 	
 	handle = Bfile_OpenFile( filename, _OPENMODE_READ_SHARE );
-//sprintf3(buf ,"%s %d ", sname, handle );
-//sprintf3(buf2,"%s", fname );
+//sprintf(buf ,"%s %d ", sname, handle );
+//sprintf(buf2,"%s", fname );
 //OkMSGstr2(buf,buf2);
 	if( handle < 0 ) {
 		CB_Error(CantFindFileERR);  goto exit;
@@ -4020,7 +4020,7 @@ void CB_ProgEntry( char *SRC ) { //	Prog "..." into memory
 	int progno=ProgNo;
 
 //	locate( 1, 1); PrintLine(" ",21);						//
-//	sprintf3(buffer,"==%-8s==%08X",SRC-0x56+0x3C, SRC-0x56);
+//	sprintf(buffer,"==%-8s==%08X",SRC-0x56+0x3C, SRC-0x56);
 //	locate (1, 1); Prints( (unsigned char*)buffer );
 
 	if ( textmode ) return ;

@@ -30,7 +30,6 @@ extern char *strtok(char *, const char *);
 int strlenOp( char *buffer ) ;
 //extern void *memset(void *, int, size_t);
 int sprintf(char *str,const char *fmt,...);
-int sprintf3(char *str,const char *fmt,...);
 void qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *));
 void *memcpy2(void *buf1, const void *buf2, size_t n);
 

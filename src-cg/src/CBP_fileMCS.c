@@ -147,8 +147,8 @@ int MCS_SaveG3M( char *filebase ) {	// g3m file -> MCS
 	size = ( ( size +10 +3 ) & 0xFFFFFFFC ) ; // file size 4byte align adjust
 	SetSrcSize( filebase, size ); 
 
-// sprintf3(buf,"size=%d r=%d",size,r);
-// sprintf3(buf,"%X %X",(int)item,flags_0);
+// sprintf(buf,"size=%d r=%d",size,r);
+// sprintf(buf,"%X %X",(int)item,flags_0);
 // OkMSGstr2(buf,buf2);
 
 	if ( data_length == size ) {

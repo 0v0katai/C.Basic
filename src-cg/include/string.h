@@ -26,7 +26,7 @@ int strcoll(const char *s1, const char *s2);
 char *strcpy(char *s1, const char *s2);
 size_t strcspn(const char *s1, const char *s2);
 char *strdup(const char *s1);
-//char *strerror(int errnum);
+char *strerror(int e);
 size_t strlen(const char *s);
 char *strncat(char *s1, const char *s2, size_t n);
 int strncmp(const char *s1, const char *s2, size_t n);

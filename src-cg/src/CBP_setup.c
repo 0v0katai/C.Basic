@@ -55,7 +55,7 @@ const char VerMSG[]="C.Basic CG v1.47\xE6\x41";	// VERSION
 
 void VBattDispSub( int x, int y) {
 	char buffer[32];
-	sprintf3(buffer,"%4.2fv",(float)CB_BatteryStatus(buffer)/100);
+	sprintf(buffer,"%4.2fv",(float)CB_BatteryStatus(buffer)/100);
 	PrintMinix3( x, y, (unsigned char*)buffer, MINI_OVER );
 }
 
@@ -73,7 +73,7 @@ void VerDispSub() {
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
-		sprintf3(buffer,"%d bytes free",freearea);
+		sprintf(buffer,"%d bytes free",freearea);
 		PrintMinix3( 2*6+2, 6*8+3, (unsigned char*)buffer, MINI_OVER );
 		VBattDispSub( 15*6+2, 6*8+3 );
 //		locate( 3, 5 ); Prints( (unsigned char*)buffer );
@@ -851,7 +851,7 @@ void SetVarSel(int VarMode, int y, int miniflag ) {
 
 void SetVarDblToHex( char * buffer, double n ) {
 	if ( ( (n-floor(n))==0 ) && ( -2147483648. <= n ) && ( n <= 2147483647. ) ) {
-		sprintf3(buffer,"0x%08X        ",(int)n);
+		sprintf(buffer,"0x%08X        ",(int)n);
 	} else {
 		sprintG(buffer, n,      18,LEFT_ALIGN);
 	}
@@ -1079,7 +1079,7 @@ int SetVar(int select){		// ----------- Set Variable
 
 			if ( VarMode ) {
 				locate(x, 1+i);		// int
-				if ( hex )	sprintf3(buffer,"0x%08X        ",(int)LocalInt[k][0]);
+				if ( hex )	sprintf(buffer,"0x%08X        ",(int)LocalInt[k][0]);
 					else	sprintG(buffer, (double)LocalInt[k][0], 18,LEFT_ALIGN);
 			} else {
 				locate(x, 1+i);		// dbl
@@ -1099,7 +1099,7 @@ int SetVar(int select){		// ----------- Set Variable
 
 //		if ( small == 58  ) {	// extended variable
 //			Fkey_dispN( FKeyNo1, "_Var");
-//			sprintf3(buffer,"%2d:%2d",IsExtVar-57, AliasVarMAX+1 );
+//			sprintf(buffer,"%2d:%2d",IsExtVar-57, AliasVarMAX+1 );
 //			Fkey_dispN( FKeyNo1, buffer );
 //		}
 		Fkey_Icon( FKeyNo2,  95 );	//	Fkey_dispN( FKeyNo2, "Init");
@@ -1153,7 +1153,7 @@ int SetVar(int select){		// ----------- Set Variable
 //				if ( small == 58  ) {	// extended variable
 				  VARjp:
 					FkeyClearAll();
-					sprintf3(buffer,"Alias Var:%2d      Extended Var(_):%2d",IsExtVar-57, AliasVarMAX+1 );
+					sprintf(buffer,"Alias Var:%2d      Extended Var(_):%2d",IsExtVar-57, AliasVarMAX+1 );
 //					CB_PrintMini( 16*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OVER);
 					PrintMinix3(0*6+2, 7*8+1, (unsigned char*)buffer, MINI_OVER );
 //					Fkey_dispN( FKeyNo1, buffer );
@@ -1828,7 +1828,7 @@ void DateTimePrintSub(){		// timer IRQ handler
 	y =DateCursorY / 0x100;
 	if ( ( 1<=cy ) && ( cy<=7 ) ) {
 			DateToStr(DateStr);
-			sprintf3(buffer,"DATE : %s",DateStr);
+			sprintf(buffer,"DATE : %s",DateStr);
 			locate( 1, cy);
 			if ( (y+1)!=cy ) Prints((unsigned char*)buffer);
 			else 			 PrintRevs((unsigned char*)buffer);
@@ -1838,7 +1838,7 @@ void DateTimePrintSub(){		// timer IRQ handler
 	y =TimeCursorY / 0x100;
 	if ( ( 1<=cy ) && ( cy<=7 ) ) {
 			TimeToStr(TimeStr);
-			sprintf3(buffer,"TIME : %s      ",TimeStr);
+			sprintf(buffer,"TIME : %s      ",TimeStr);
 			locate( 1, cy);
 			if ( (y+1)!=cy ) Prints((unsigned char*)buffer);
 			else 			 PrintRevs((unsigned char*)buffer);
@@ -1874,7 +1874,7 @@ int SelectNum1sub( char *msg0, char*msg, int n ,int min, int max, int *key ) {		
 	PopUpWin(3);
 	FkeyClearAll();
 	locate( 3,3); Prints((unsigned char *)msg0);
-	locate( 3,5); sprintf3(buffer,"%s[%d~%d]:",msg,min,max); Prints((unsigned char *)buffer);
+	locate( 3,5); sprintf(buffer,"%s[%d~%d]:",msg,min,max); Prints((unsigned char *)buffer);
 	while (1) {
 		n=InputNumD(3+strlen(buffer), 5, log10(max)+1, n, " ", REV_OFF, FLOAT_OFF, EXP_OFF, &(*key));		// 0123456789
 		if ( n == n0 ) break;
@@ -2073,7 +2073,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			if ( VarListRange==0 ) {
 				Prints((unsigned char*)"Range");
 			} else {
-				sprintf3((char*)buffer,"List%d", VarListRange);
+				sprintf((char*)buffer,"List%d", VarListRange);
 				Prints((unsigned char*)buffer);
 			}
 		} cnt++;
@@ -2114,8 +2114,8 @@ int SetupG(int select, int limit ){		// ----------- Setup
 				CB_PrintMini( 4*18, y+4, (unsigned char*)BG_filename, MINI_OVER );
 			} else {
 				locate( 1, cnt-scrl); Prints((unsigned char*)"Background  :");
-				if ( BG_Pict_No == 0 )	sprintf3((char*)buffer,"None");
-				else					sprintf3((char*)buffer,"Pict%d",BG_Pict_No);
+				if ( BG_Pict_No == 0 )	sprintf((char*)buffer,"None");
+				else					sprintf((char*)buffer,"Pict%d",BG_Pict_No);
 				locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 			}
 		} cnt++;
@@ -2131,7 +2131,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			locate( 1, cnt-scrl); Prints((unsigned char*)"Display     :");		// 13
 			locate(14, cnt-scrl); Prints((unsigned char*)display[CB_Round.MODE]);
 			buffer[0]='\0';
-			sprintf3((char*)buffer,"%d",CB_Round.DIGIT);
+			sprintf((char*)buffer,"%d",CB_Round.DIGIT);
 			locate(17+(CB_Round.MODE==0), cnt-scrl); Prints((unsigned char*)buffer);
 			locate(20, cnt-scrl);
 			Prints((unsigned char*)ENGmode[ENG]);
@@ -2255,7 +2255,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Prints((unsigned char*)"HeapRAM Size:");		// 34
-			sprintf3((char*)buffer,"%dKbyte",MaxHeapRam);
+			sprintf((char*)buffer,"%dKbyte",MaxHeapRam);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
@@ -2270,12 +2270,12 @@ int SetupG(int select, int limit ){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1, cnt-scrl); Prints((unsigned char*)"Max Pict No :");		// 37
-			sprintf3((char*)buffer,"%d",20+ExtendPict);
+			sprintf((char*)buffer,"%d",20+ExtendPict);
 			locate(14, cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1, cnt-scrl); Prints((unsigned char*)"Max List 52\xA9:");	// 38
-			sprintf3((char*)buffer,"%d (%d)", ExtendList+1, 52+ExtendList*52);
+			sprintf((char*)buffer,"%d (%d)", ExtendList+1, 52+ExtendList*52);
 			locate(14, cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
@@ -2308,17 +2308,17 @@ int SetupG(int select, int limit ){		// ----------- Setup
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Prints((unsigned char*)"Key 1st time:");		// 46
-			sprintf3((char*)buffer,"%dms",KeyRepeatFirstCount*25);
+			sprintf((char*)buffer,"%dms",KeyRepeatFirstCount*25);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Prints((unsigned char*)"Key Rep time:");		// 47
-			sprintf3((char*)buffer,"%dms",KeyRepeatNextCount*25);
+			sprintf((char*)buffer,"%dms",KeyRepeatNextCount*25);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Prints((unsigned char*)"SkipUp/Down :");		// 48
-			sprintf3((char*)buffer,"%d",PageUpDownNum);
+			sprintf((char*)buffer,"%d",PageUpDownNum);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
@@ -2376,14 +2376,14 @@ int SetupG(int select, int limit ){		// ----------- Setup
 			locate( 1,cnt-scrl); Prints((unsigned char*)"RefrshCtl DD:");		// 60
 			locate(14,cnt-scrl); Prints((unsigned char*)DDmode[RefreshCtrl]);
 			buffer[0]='\0';
-			sprintf3((char*)buffer,"%2d/128",Refreshtime+1);
+			sprintf((char*)buffer,"%2d/128",Refreshtime+1);
 			CB_ColorIndex=0x0000;
 			if ( RefreshCtrl ) CB_PrintMini_Fix10( 17*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OR);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Prints((unsigned char*)"Wait count  :");		// 61
-			if ( DefaultWaitcount == 0 )	sprintf3((char*)buffer,"No Wait");
-			else					sprintf3((char*)buffer,"%d",DefaultWaitcount);
+			if ( DefaultWaitcount == 0 )	sprintf((char*)buffer,"No Wait");
+			else					sprintf((char*)buffer,"%d",DefaultWaitcount);
 			locate(14,cnt-scrl); Prints((unsigned char*)buffer);
 		} cnt++;
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){

@@ -990,7 +990,7 @@ int PrintOpcodeLineN( int *csry, int ynum, int ymax, int *n, char *buffer, int o
 			CB_BackColorIndex=CB_ColorIndexEditBack;	// back color
 			if ( y == (*n) ) {
 				if ( ( Numflag==0 ) && ( EDITpxNum ) ) { Numflag=1;
-					sprintf3( (char*)buff, "%4d", CurrentLine );
+					sprintf( (char*)buff, "%4d", CurrentLine );
 					CB_ColorIndex=CB_ColorIndexEditLine;	// Blue
 					k=((*csry)-1)*yk;
 					switch ( mini&7 ) {
@@ -1321,13 +1321,13 @@ int JumpGoto( char * SrcBase, int *offset, int *offset_y, int cy) {
 	locate( 3,3); Prints((unsigned char *)"Goto Line Number");
 	Bdisp_PutDisp_DD_DrawBusy();
 
-	sprintf3(buffer,"current:%d",CurrentLineNum);
+	sprintf(buffer,"current:%d",CurrentLineNum);
 	locate( 3,4); Prints((unsigned char *)buffer);
 	Bdisp_PutDisp_DD_DrawBusy();
 	
 	lineAll=AllLineNum( SrcBase );
 	
-	sprintf3(buffer,"[1~%d]:",lineAll);
+	sprintf(buffer,"[1~%d]:",lineAll);
 	locate( 3,5); Prints((unsigned char *)buffer);
 	i=strlen(buffer)+3;
 	n=0;
@@ -1488,10 +1488,10 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 			if (dumpflg==2) {
 				if ( DebugMode >=1 ) { i=CB_INT;        j=MatBase; }
 					else             { i=CB_INTDefault; j=MatBaseDefault; }
-				sprintf3(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
+				sprintf(buffer, "==%-8s==%s%d%s", buffer2, i ? " [INT%" : " [DBL#", j, "]");
 			} else {
 				Bdisp_AllClr_VRAM2();
-				sprintf3(buffer, "==%-8s==%08X", buffer2, SrcBase);
+				sprintf(buffer, "==%-8s==%08X", buffer2, SrcBase);
 				locate (1,1); Prints(    (unsigned char*)buffer );
 				if ( DebugMode >=1 ) // debug mode
 					Bdisp_AreaReverseVRAMx3(0, 0, 125,7);	// reverse top line 
@@ -1536,11 +1536,11 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 			if ( DebugScreen == 0 )	StatusArea_Run();
 //			strncpy(buffer3,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
 //			buffer3[8]='\0';
-//			sprintf3(buffer2, "%-8s (%d)", buffer3, CurrentLineNum);
+//			sprintf(buffer2, "%-8s (%d)", buffer3, CurrentLineNum);
 //			StatusArea_Run_sub( buffer2, CB_INT, CB_G1MorG3M );
 
 			EnableDisplayStatusArea();
-			sprintf3(buffer3, "%4d/%d", CurrentLineNum, alllinenum);
+			sprintf(buffer3, "%4d/%d", CurrentLineNum, alllinenum);
 			CB_ColorIndex=0xFFFE;	// 
 			CB_PrintMini_Fix10( 385-10*8, -20, (unsigned char *)buffer3, MINI_OR); 	// display current line number 
 			CB_ColorIndex=CB_ColorIndexEditLine;	// 
@@ -1621,8 +1621,8 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 			if ( (CommandType==CMD_SHIFT_VWIN ) && (CommandPage==0) ) {
 				Fkey_dispN( FKeyNo4, "VWIN");
 				i=ProgfileMax[ProgNo]-SrcSize(filebase);
-				if ( i>9999 ) 	sprintf3(buffer, "%dk",  i/1024 );
-				else 			sprintf3(buffer, "%d",  i );
+				if ( i>9999 ) 	sprintf(buffer, "%dk",  i/1024 );
+				else 			sprintf(buffer, "%d",  i );
 				Fkey_dispN( FKeyNo5, buffer);
 				Fkey_Icon( FKeyNo6, 563 );	//	Fkey_dispN( FKeyNo6, "G<>T");
 			}
@@ -2278,8 +2278,8 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 				} else {
 //					FkeyClear( FKeyNo4 );
 					i=ProgfileMax[ProgNo]-SrcSize(filebase);
-					if ( i>9999 ) 	sprintf3(buffer, "%dk",  i/1024 );
-					else 			sprintf3(buffer, "%d",  i );
+					if ( i>9999 ) 	sprintf(buffer, "%dk",  i/1024 );
+					else 			sprintf(buffer, "%d",  i );
 					Fkey_dispN( FKeyNo4, buffer);
 				}
 				Fkey_Icon( FKeyNo1, 877 );	//	Fkey_dispN( FKeyNo1, "Var");
@@ -2298,9 +2298,9 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 				CB_ColorIndex=0xFFFE;	// 
 
 				i=ProgfileMax[ProgNo]-SrcSize(filebase);
-//				if ( i>9999 ) 	sprintf3(buffer3, "%dk",  i/1024 );
-//				else 			sprintf3(buffer3, "%d",  i );
-				sprintf3(buffer3, "%5d free",  i );
+//				if ( i>9999 ) 	sprintf(buffer3, "%dk",  i/1024 );
+//				else 			sprintf(buffer3, "%d",  i );
+				sprintf(buffer3, "%5d free",  i );
 
 				CB_PrintMini_Fix10( 385-10*8-15, -20, (unsigned char *)buffer3, MINI_OR); 	// display current line number 
 				CB_ColorIndex=CB_ColorIndexEditLine;	// 
@@ -2490,7 +2490,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 							KeyRecover();
 							GetKey_DisableMenuCatalog(&key);
 							MsgBoxPop();
-							sprintf3(buffer,"%d",CB_KeyCodeCnvt( key ) );
+							sprintf(buffer,"%d",CB_KeyCodeCnvt( key ) );
 							EditPaste( filebase, buffer, &csrPtr, &Undo );
 							key=0;
 							UpdateLineNum=1;
@@ -2501,15 +2501,15 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 							if ( key != KEY_CTRL_EXE ) break;
 							switch ( SetRGBColorMode ) {
 								case 0:	// RGB
-									sprintf3(buffer,"\x7F\x5E%d,%d,%d)",((color&0xF800) >> 8),((color&0x07E0) >> 3),((color&0x001F) << 3) );
+									sprintf(buffer,"\x7F\x5E%d,%d,%d)",((color&0xF800) >> 8),((color&0x07E0) >> 3),((color&0x001F) << 3) );
 									break;
 								case 1:	// HSV -> HSL
 									rgb2hsv( ((color&0xF800) >> 8), ((color&0x07E0) >> 3), ((color&0x001F) << 3), &H,&S,&V);
-									sprintf3(buffer,"\x7F\x71%d,%d,%d)",H,S,V );
+									sprintf(buffer,"\x7F\x71%d,%d,%d)",H,S,V );
 									break;
 								case 2:	// HSL -> RGB
 									rgb2hsl( ((color&0xF800) >> 8), ((color&0x07E0) >> 3), ((color&0x001F) << 3), &H,&S,&L);
-									sprintf3(buffer,"\x7F\x73%d,%d,%d)",H,S,L );
+									sprintf(buffer,"\x7F\x73%d,%d,%d)",H,S,L );
 									break;
 							}
 							EditPaste( filebase, buffer, &csrPtr, &Undo );
@@ -2958,7 +2958,7 @@ int CB_BreakStop(char * SRC) {
 		locate(6,5); Prints((unsigned char *) "Press:[EXIT]");
 		PrintMinix3(26,46,(unsigned char *)"Continue : [EXE]/[F1]",MINI_OVER);
 		if ( ProgfileAdrs[ProgNo] == 0 ) {
-			sprintf3( buf, "%08X  ProgNo=%d ",ProgfileAdrs[ProgNo], ProgNo );
+			sprintf( buf, "%08X  ProgNo=%d ",ProgfileAdrs[ProgNo], ProgNo );
 			PrintMinix3(26,46,(unsigned char *)buf,MINI_OVER);
 		}
 		

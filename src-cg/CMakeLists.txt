@@ -56,7 +56,6 @@ src/CBPI_ListEval.c
 src/MonochromeLibCG.c
 src/Ptune2_direct.c
 src/qsort.c
-src/snprintf.c
 src/crt0.s
 src/syscall.s
 src/va_lib.c

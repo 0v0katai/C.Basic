@@ -887,8 +887,8 @@ int LoadG3Psub( char *fname ){
 		for( i=0; i<192*384/2; i++) *vram++ = *data2++;
 	}
 
-sprintf3(buf,"%d %d %d %d",loadg3p_array.c2,loadg3p_array.c3, loadg3p_array.c4, loadg3p_array.i3 );
-sprintf3(buf2,"%d %d %d",loadg3p_array.width,loadg3p_array.height, loadg3p_array.i5 );
+sprintf(buf,"%d %d %d %d",loadg3p_array.c2,loadg3p_array.c3, loadg3p_array.c4, loadg3p_array.i3 );
+sprintf(buf2,"%d %d %d",loadg3p_array.width,loadg3p_array.height, loadg3p_array.i5 );
 //OkMSGstr2(buf,buf2);
 
 	return 0;	// ok

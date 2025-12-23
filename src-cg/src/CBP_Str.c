@@ -1926,7 +1926,7 @@ int CB_Hex( char *SRC ){		// Hex(
 	int n,tmp;
 	int value = CB_EvalInt( SRC );
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-//	sprintf3(CB_CurrentStr, "%X",value);
+//	sprintf(CB_CurrentStr, "%X",value);
 	n=8;
 	tmp=value;
 	if (value) { while ( (tmp&0xF0000000)==0 ) { tmp=tmp<<4; n--; } } else n=1;
@@ -2046,76 +2046,76 @@ int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
 			switch ( type[1] ) {
 				case 0:		// dbl
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],dblval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],dblval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],dblval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, dblval[0],dblval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1]); break;
 					} break;
 				case 1:		// int
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, dblval[0],intval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1]); break;
 					} break;
 				case 2:		// str
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, dblval[0],strval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],strval[1]); break;
 					} break;
-				default:         i=sprintf3( CB_CurrentStr, buffer, dblval[0]); break;
+				default:         i=sprintf( CB_CurrentStr, buffer, dblval[0]); break;
 			} break;
 		case 1:			// int
 			switch ( type[1] ) {
 				case 0:		// dbl
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, intval[0],dblval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, intval[0],dblval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, intval[0],dblval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, intval[0],dblval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1]); break;
 					} break;
 				case 1:		// int
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, intval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, intval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, intval[0],intval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, intval[0],intval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1]); break;
 					} break;
 				case 2:		// str
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, intval[0],strval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, intval[0],strval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, intval[0],strval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, intval[0],strval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1]); break;
 					} break;
-				default:         i=sprintf3( CB_CurrentStr, buffer, intval[0]); break;
+				default:         i=sprintf( CB_CurrentStr, buffer, intval[0]); break;
 			} break;
 		case 2:			// str
 			switch ( type[1] ) {
 				case 0:		// dbl
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, strval[0],dblval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, strval[0],dblval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, strval[0],dblval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, strval[0],dblval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1]); break;
 					} break;
 				case 1:		// int
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, strval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, strval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, strval[0],intval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, strval[0],intval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1]); break;
 					} break;
 				case 2:		// str
 					switch ( type[2] ) {
-						case 0:  i=sprintf3( CB_CurrentStr, buffer, strval[0],strval[1],dblval[2]); break;
-						case 1:  i=sprintf3( CB_CurrentStr, buffer, strval[0],strval[1],intval[2]); break;
-						case 2:  i=sprintf3( CB_CurrentStr, buffer, strval[0],strval[1],strval[2]); break;
-						default: i=sprintf3( CB_CurrentStr, buffer, strval[0],strval[1]); break;
+						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],dblval[2]); break;
+						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],intval[2]); break;
+						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],strval[2]); break;
+						default: i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1]); break;
 					} break;
-				default:         i=sprintf3( CB_CurrentStr, buffer, strval[0]); break;
+				default:         i=sprintf( CB_CurrentStr, buffer, strval[0]); break;
 			} break;
 		default: i=0; break;
 	}
@@ -2227,7 +2227,7 @@ void StrDMSsub( char *buffer, double a ) {	//
 	c=floor(b);
 	d=(b-c)*60.;
 	
-	sprintf3(buffer, "%d %02d  %05.2f", (int)a*f, (int)c, d);
+	sprintf(buffer, "%d %02d  %05.2f", (int)a*f, (int)c, d);
 
 	i=floor(log10(a));
 	if ( i<0 ) i=0;
@@ -2266,7 +2266,7 @@ int CB_StrDMS( char *SRC ) {
 	
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
 
-	sprintf3(CB_CurrentStr, "%d %02d  %05.2f", (int)a*f, (int)c, d);
+	sprintf(CB_CurrentStr, "%d %02d  %05.2f", (int)a*f, (int)c, d);
 
 	i=floor(log10(a));
 	if ( i<0 ) i=0;

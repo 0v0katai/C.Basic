@@ -476,8 +476,8 @@ int Trace(int *index ) {
 		if ( fabs(regX.real)*1e10<Xdot ) regX.real=0;	// zero adjust
 		VWtoPXY( regX.real, regY.real, &GCursorX, &GCursorY);	// VW(X,Y) to  graphic cursor XY
 		if ( Coord ) {
-//			sprintf3((char*)buffer, "PX=%d", GCursorX);	PrintMinix3orWB(  0,-7,(unsigned char*)buffer);
-//			sprintf3((char*)buffer, "PY=%d", GCursorY);	PrintMinix3orWB( 32,-7,(unsigned char*)buffer);
+//			sprintf(buffer, "PX=%d", GCursorX);	PrintMinix3orWB(  0,-7,(unsigned char*)buffer);
+//			sprintf(buffer, "PY=%d", GCursorY);	PrintMinix3orWB( 32,-7,(unsigned char*)buffer);
 			PrintMinix3orWB(  0,58,(unsigned char*)"X=");
 			sprintGRS(buffer, regX.real,        13,LEFT_ALIGN, Norm,10); PrintMinix3orWB(  8,58,(unsigned char*)buffer);
 			PrintMinix3orWB( 64,58,(unsigned char*)"Y=");

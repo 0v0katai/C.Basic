@@ -3,7 +3,7 @@ CC=$(TOOLCHAIN_PREFIX)gcc
 AS=$(TOOLCHAIN_PREFIX)as
 AR=$(TOOLCHAIN_PREFIX)gcc-ar
 CFLAGS=-c -ffunction-sections -fdata-sections -Os -Lr -I../../include \
-	   -mhitachi -m4a-nofpu -flto -ffat-lto-objects -std=c99 -Wall -Wextra \
+	   -mhitachi -m4a-nofpu -flto=auto -ffat-lto-objects -std=c99 -Wall -Wextra \
 	   -Wno-implicit-function-declaration
 ARFLAGS=rs
 VPATH=syscalls

@@ -1121,8 +1121,8 @@ void RclPict( int pictNo, int errorcheck){
 	unsigned char *pict;
 	unsigned char *pict2;
 	char sname[64];
-	if ( pictNo == 21+ExtendPict ) sprintf3( sname, "%s", BG_filename );
-	else                           sprintf3( sname, "Pict%02d", pictNo );
+	if ( pictNo == 21+ExtendPict ) sprintf( sname, "%s", BG_filename );
+	else                           sprintf( sname, "Pict%02d", pictNo );
 	
 	if ( PictMode == 0 ) {	// strage memory mode
 		if ( CB_G1MorG3M == 1 ) {
@@ -1175,7 +1175,7 @@ void StoCapt( int pictNo, int colormode ){
 	unsigned char *pict;
 	int i;
 	char sname[32];
-	sprintf3( sname, "Capt%02d", pictNo );
+	sprintf( sname, "Capt%02d", pictNo );
 	if ( CB_G1MorG3M == 3 ) {
 		if ( SavePictCaptCG( "Capt", sname, (char *)PictAry[0]+384*2*24, colormode ) ) { CB_Error(MemoryERR); return; }	// Memory error
 	}
@@ -1187,7 +1187,7 @@ void RclCapt( int pictNo ){
 	int i;
 	char sname[32];
 	if ( pictNo >= 0 ) {	// filename
-		sprintf3( sname, "Capt%02d", pictNo );
+		sprintf( sname, "Capt%02d", pictNo );
 	}
 	if ( CB_G1MorG3M == 3 ) LoadPictCaptCG( "Capt", sname );
 	else {
@@ -1223,7 +1223,7 @@ void CB_StoPict( char *SRC ) { //	StoPict		// StoPict "filename"[,G]
 		if ( ( CB_G1MorG3M == 1 ) || ( PictMode == 1 ) ) {
 			StoPict(n);
 		} else {
-			sprintf3( buffer, "Pict%02d", n );
+			sprintf( buffer, "Pict%02d", n );
 			if ( SavePictCaptCG( "Pict", buffer, (char *)PictAry[0]+384*2*24, f+1 ) ) { CB_Error(MemoryERR); return; }	// Memory error
 		}
 	}
@@ -2511,7 +2511,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 			CB_ColorIndex=CB_ColorIndexPlot;
 //			CB_ColorIndex=colortmp;
 			for ( i=scrl; i<n; i++) {
-				sprintf3(buffer,"%d:%s", i+1, &BranchName[i][0]) ;
+				sprintf(buffer,"%d:%s", i+1, &BranchName[i][0]) ;
 				CB_PrintLocateXY( 8*3, (y*8+14)*3, (unsigned char*)buffer, 0, 0x100 );	// normal, extflag
 				y++;
 			}
@@ -2529,7 +2529,7 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 			y=0;
 			CB_ColorIndex=-1;
 			for ( i=scrl; i<n; i++) {
-				sprintf3(buffer, "%d:%s", i+1, &BranchName[i][0]) ;
+				sprintf(buffer, "%d:%s", i+1, &BranchName[i][0]) ;
 				CB_PrintMini_wx( 39, y*20+51, (unsigned char*)buffer, MINI_OVER + 0x100, 332 ); // extflag	with width limit
 				y++;
 			}

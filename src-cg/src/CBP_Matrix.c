@@ -494,11 +494,11 @@ unsigned int GotoMatrixElement(int reg, int *m, int *n ){	// base:0  0-    base:
 
 	while (cont) {
 		locate( 3,3); Prints((unsigned char *)"Goto Element");
-		if ( MatXYmode ) sprintf3( (char*)buffer," x(%d~%3d)  ", base, dimA); else sprintf3( (char*)buffer," m(%d~%3d)  ", base, dimA);
+		if ( MatXYmode ) sprintf( buffer," x(%d~%3d)  ", base, dimA); else sprintf( (char*)buffer," m(%d~%3d)  ", base, dimA);
 		locate( 3,4); Prints((unsigned char*)buffer);
 		locate(13,4); Prints((unsigned char *)":      ");
 		sprintG(buffer,*m,  5,LEFT_ALIGN); locate(14, 4); Prints((unsigned char*)buffer);
-		if ( MatXYmode ) sprintf3( (char*)buffer," y(%d~%3d)  ", base, dimB); else sprintf3( (char*)buffer," n(%d~%3d)  ", base, dimB);
+		if ( MatXYmode ) sprintf( buffer," y(%d~%3d)  ", base, dimB); else sprintf( (char*)buffer," n(%d~%3d)  ", base, dimB);
 		locate( 3,5); Prints((unsigned char*)buffer);
 		
 		locate(13,5); Prints((unsigned char *)":      ");
@@ -1263,9 +1263,9 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 
 		if ( dotedit ) {
 			ML_line_FX( 20,7,MaxDX*dx+22,7, 1, -1, CB_BackColorIndex);
-			sprintf3((char*)buffer,"%d",seltopX+base);
+			sprintf((char*)buffer,"%d",seltopX+base);
 			PrintMinix3(     0*dx+22,1,(unsigned char*)buffer,MINI_OVER);
-			sprintf3((char*)buffer,"%3d",seltopX+MaxDX+base);
+			sprintf((char*)buffer,"%3d",seltopX+MaxDX+base);
 			PrintMinix3( MaxDX*dx+14,1,(unsigned char*)buffer,MINI_OVER);
 			ML_line_FX( 16,8,16,12+MaxDY*dy, 1, -1, CB_BackColorIndex);
 			x=(dimA+1)*dx+23 ;
@@ -1275,8 +1275,8 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			for ( x=0; x<=MaxDX; x++ ) { 
 				if ( ( x >= 8 ) ) break;
 				ML_line_FX( x*dx+20,7,x*dx+20+dx-5,7, 1, -1, CB_BackColorIndex);
-				if ( MaxX==7 ) 	sprintf3((char*)buffer,"%2d",seltopX+x+base);
-				else 			sprintf3((char*)buffer,"%3d",seltopX+x+base);
+				if ( MaxX==7 ) 	sprintf((char*)buffer,"%2d",seltopX+x+base);
+				else 			sprintf((char*)buffer,"%3d",seltopX+x+base);
 				PrintMinix3(x*dx+16+(dx-5)/2,1,(unsigned char*)buffer,MINI_OVER);
 			}
 			i=14+(MaxDY-(dimB>MaxY))*8;
@@ -1290,7 +1290,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			CB_ColorIndex=-1;
 			for ( y=0; y<=MaxDY; y++) {
 				if ( ( y==0 ) || ( y==MaxDY ) ) {
-					sprintf3((char*)buffer,"%4d",seltopY+y+base);
+					sprintf((char*)buffer,"%4d",seltopY+y+base);
 					PrintMinix3(0,8+dy*y,(unsigned char*)buffer,MINI_OVER);
 				}
 				x=(dimA+1)*dx+23;
@@ -1350,7 +1350,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 			MatDotEditCursorFlashing();
 		} else {
 			for ( y=0; y<=MaxDY-(dimB>MaxY); y++ ) {
-				sprintf3((char*)buffer,"%4d",seltopY+y+base);
+				sprintf((char*)buffer,"%4d",seltopY+y+base);
 				PrintMinix3(0,y*8+10,(unsigned char*)buffer,MINI_OVER);
 				x=(dimA+1)*dx+20-adjX/2 ;
 				if ( dimA == seltopX+MaxX ) x=(MaxX+1)*dx+20-adjX/2 ;
@@ -1821,10 +1821,10 @@ int SetMatrix(int select){		// ----------- Set Matrix
 						if ( reg<58 ) k-=3;
 						if ( reg>=110 ) k=reg-58;
 						if ( ListFilePtr ) reg = k+ListFilePtr;
-						sprintf3( buffer,"L%d",k+1);
+						sprintf( buffer,"L%d",k+1);
 						locate( 1, 1+i); Prints((unsigned char*)buffer);
 						if ( MatAry[reg].name[0] !='\0' ) {
-							sprintf3( buffer,"%s",MatAry[reg].name);
+							sprintf( buffer,"%s",MatAry[reg].name);
 							j=strlen(buffer);
 						} else j=0;
 					}
@@ -1842,12 +1842,12 @@ int SetMatrix(int select){		// ----------- Set Matrix
 			locate( x, 1+i); MatAryElementSizePrints( MatAry[reg].ElementSize ) ;
 			if ( MatAry[reg].SizeA ) {
 				locate( 4, 1+i); if ( MatAry[reg].Maxbyte <= 0 ) Prints((unsigned char*)"*");	// Adrs redefinition
-				sprintf3((char*)buffer,"%3d",MatAry[reg].SizeA);
+				sprintf((char*)buffer,"%3d",MatAry[reg].SizeA);
 				locate(14,1+i); Prints((unsigned char*)buffer);
 				len=strlen((char*)buffer)-3;
 				locate(17+len,1+i); Prints((unsigned char*)"\xA9");
-				if (len) sprintf3((char*)buffer,"%2d",MatAry[reg].SizeB);
-				else	 sprintf3((char*)buffer,"%3d",MatAry[reg].SizeB);
+				if (len) sprintf((char*)buffer,"%2d",MatAry[reg].SizeB);
+				else	 sprintf((char*)buffer,"%3d",MatAry[reg].SizeB);
 				locate(18+len,1+i); Prints((unsigned char*)buffer);
 			} else {
 				locate(14,1+i); Prints((unsigned char*)"None");

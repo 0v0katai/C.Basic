@@ -1080,7 +1080,7 @@ void StatusArea_Edit( char *name, int num ){
     EnableStatusArea(0);	// enable StatusArea
     DefineStatusAreaFlags(DSA_SETDEFAULT, 0, 0, 0);
     DefineStatusAreaFlags(3, SAF_BATTERY | SAF_TEXT | SAF_GLYPH | SAF_ALPHA_SHIFT , 0, 0);
-    sprintf3(buf,"%s  free:%d", name, num);
+    sprintf(buf,"%s  free:%d", name, num);
 	StatusArea_( buf,TEXT_COLOR_PURPLE);
 	EnableStatusArea(3);	// disable StatusArea
 }
@@ -1091,7 +1091,7 @@ void StatusArea_Run_sub( char *str, int intmode, int g1morg3m ){
     DefineStatusAreaFlags(DSA_SETDEFAULT, 0, 0, 0);
     DefineStatusAreaFlags(3, SAF_BATTERY | SAF_TEXT | SAF_GLYPH | SAF_ALPHA_SHIFT , 0, 0);
 	StatusArea_SetGlyph( 0 );
-//	sprintf3(buf, "[%s %s%d %s] %-8s", angle[Angle], CBmode[CB_INT], MatBase, CB_G1MorG3M==1 ? "g1m" : "g3m", str);
+//	sprintf(buf, "[%s %s%d %s] %-8s", angle[Angle], CBmode[CB_INT], MatBase, CB_G1MorG3M==1 ? "g1m" : "g3m", str);
 	StatusArea_( str,TEXT_COLOR_PURPLE);
 	EnableStatusArea(3);	// disable StatusArea
 }
@@ -1107,7 +1107,7 @@ void StatusArea_Time(){
 	char buf3[32];
 	DateToStr( buf1 );
 	TimeToStr( buf2 ); buf2[5]='\0';
-    sprintf3(buf3,"%s %s", buf1+5, buf2);
+    sprintf(buf3,"%s %s", buf1+5, buf2);
 	StatusArea_Run_sub( buf3, CB_INT, CB_G1MorG3M );
 }
 

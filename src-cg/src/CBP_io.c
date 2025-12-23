@@ -617,17 +617,17 @@ int CB_PrintMiniMiniFXC_ed( int px, int py, unsigned char *str, int mode ) {	// 
 
 void Hex8PrintXY(int x, int y, char *str, unsigned int hex){
 	char buffer[22];
-	sprintf3(buffer,"%08X",hex);
+	sprintf(buffer,"%08X",hex);
 	locate(x,y); Prints((unsigned char *)str); Prints((unsigned char *)buffer);
 }
 void Hex4PrintXY(int x, int y, char *str, unsigned int hex){
 	char buffer[22];
-	sprintf3(buffer,"%04X",hex);
+	sprintf(buffer,"%04X",hex);
 	locate(x,y); Prints((unsigned char *)str); Prints((unsigned char *)buffer);
 }
 void Hex2PrintXY(int x, int y, char *str, unsigned int hex){
 	char buffer[22];
-	sprintf3(buffer,"%02X",hex);
+	sprintf(buffer,"%02X",hex);
 	locate(x,y); Prints((unsigned char *)str); Prints((unsigned char *)buffer);
 }
 
@@ -777,7 +777,7 @@ void ErrorMSG(char*buffer,int err){
 
 	SaveDisp(SAVEDISP_PAGE1);
 	PopUpWin(5);
-	sprintf3(buf,"code:%d",err);
+	sprintf(buf,"code:%d",err);
 	locate(3,2); Prints((unsigned char *)buffer);
 	locate(3,4); Prints((unsigned char *)buf);
 	locate(3,6); Prints((unsigned char *) "   Press:[EXIT]");
