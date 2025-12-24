@@ -1,7 +1,7 @@
 # Configure with [fxsdk build-fx] or [fxsdk build-cg], which provide the
 # toolchain file and module path of the fxSDK
 
-set(CB_VERSION "01.47.0200")
+set(CB_VERSION "01.50.0100")
 cmake_policy(SET CMP0048 NEW)
 project(CBASIC LANGUAGES ASM C VERSION ${CB_VERSION})
 
