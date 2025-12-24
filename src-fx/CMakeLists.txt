@@ -92,10 +92,10 @@ include_directories(CBASIC PRIVATE
 target_compile_options(CBASIC PRIVATE
                         -nostdlib -I include
                         -Wall -Wextra -Os -g -flto=auto
-                        )
+                        -mpretend-cmove)
 target_link_options(CBASIC PRIVATE
                         -nostdlib -T "${CMAKE_CURRENT_SOURCE_DIR}/addin.ld" -L ${CMAKE_CURRENT_SOURCE_DIR}
-                        -Wl,--print-memory-usage -Wl,-Map=map)
+                        -Wl,--print-memory-usage -Wl,-Map=map -Wl,--gc-sections)
 target_link_libraries(CBASIC PRIVATE -lm -lfx -lgcc)
 
 
