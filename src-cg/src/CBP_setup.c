@@ -50,7 +50,7 @@ int selectMatrix=0;
 
 char BG_filename[64]="";
 
-const char VerMSG[]="C.Basic CG v1.47\xE6\x41";	// VERSION
+const char VerMSG[]="CBCG " VERSTR;
 //---------------------------------------------------------------------------------------------
 
 void VBattDispSub( int x, int y) {
@@ -62,14 +62,12 @@ void VBattDispSub( int x, int y) {
 void VerDispSub() {
 	int freearea;
 	char buffer[32];
-	locate( 3, 2 ); Prints( (unsigned char*)VerMSG );
-//	locate( 3, 3 ); Prints( (unsigned char*)"(C.Basic FX" );
-//	locate( 3, 4 ); Prints( (unsigned char*)"     compatible+)" );
-	locate( 3, 5 ); Prints( (unsigned char*)"     by sentaro21" );
-	locate( 3, 6 ); Prints( (unsigned char*)"          (c)2023" );
-
-	PrintMinix3(13*6+2, 2*8+1, (unsigned char*)" build 02 ", MINI_OVER );
-	PrintMinix3( 2*6+2, 3*8+1, (unsigned char*)"(C.Basic FX compatible+)", MINI_OVER );
+	locate( 3, 2 ); Prints( (unsigned char*)"C.Basic" );
+	PrintMinix3(10*6+2, 1*8+2, (unsigned char*)"CG Edition", MINI_OVER);
+	PrintMinix3( 8*6  , 2*8+2, (unsigned char*)VERSTR " (" COMMIT_ID ")", MINI_OVER);
+	PrintMinix3( 2*6+2, 3*8+2, (unsigned char*)"Copyright \xE5\x9E 2017-2025", MINI_OVER);
+	PrintMinix3( 2*6+2, 4*8+2, (unsigned char*)"Sentaro21 & CalcLoverHK", MINI_OVER);
+	PrintMinix3( 2*6+2, 5*8+2, (unsigned char*)"Licensed under GPLv2+.", MINI_OVER);
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
@@ -447,26 +445,31 @@ void AllClr_GRAM(){
 	for (i=0; i<216*384/2; i++ ) *(vram++) = backcolor;
 }
 
-int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no change  -1 : change
+int SetViewWindow() {		// ----------- Set  View Window variable	return 0: no change  -1 : change
 	char buffer[32];
-	int key;
+	unsigned int key;
 	int	cont=1;
-	int select=0;
-	int scrl=0;
 	int y,n;
 	double tmp;
 
-	double	xmin      = Xmin      ;
-	double	xmax      = Xmax      ;
-	double	xscl      = Xscl      ;
-	double	xdot      = Xdot      ;
-	double	ymin      = Ymin      ;
-	double	ymax      = Ymax      ;
-	double	ydot      = Ydot      ;
-	double	yscl      = Yscl      ;
-	double	tThetamin = TThetamin ;
-	double	tThetamax = TThetamax ;
-	double	tThetaptch= TThetaptch;
+	const char *settings_text[] = {
+		"Xmin  :",
+		" max  :",
+		" scale:",
+		" dot  :",
+		"Ymin  :",
+		" max  :",
+		" scale:",
+		"T\xE6\x47min :",
+		"  max :",
+		"  ptch:"
+	};
+	int cursor_pos = 0, scroll = 0;
+	const int cursor_pos_max = 5, scroll_max = 4;
+
+	double REGv_bk[11];
+	for (int i=0; i<11; i++)
+		REGv_bk[i] = REGv[i];
 
 	int bk_CB_ColorIndex=CB_ColorIndex;						// current color index
 	unsigned short bk_CB_BackColorIndex=CB_BackColorIndex;	// current backcolor index
@@ -477,52 +480,23 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 
 	Cursor_SetFlashOff(); 		// cursor flashing off
 	while (cont) {
+		int select = cursor_pos + scroll;
 		Bdisp_AllClr_VRAM2();
 		CB_ColorIndex=0x001F;	// Blue
 		CB_Prints( 1, 1, (unsigned char*)"View Window");
 
-		if ( scrl <=0 ) {
-			locate( 1, 2-scrl); Prints((unsigned char*)"Xmin  :");
-			sprintG(buffer,Xmin,  10,LEFT_ALIGN); locate( 8, 2-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl <=1 ) {
-			locate( 1, 3-scrl); Prints((unsigned char*)" max  :");
-			sprintG(buffer,Xmax,  10,LEFT_ALIGN); locate( 8, 3-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl <=2 ) {
-			locate( 1, 4-scrl); Prints((unsigned char*)" scale:");
-			sprintG(buffer,Xscl,10,LEFT_ALIGN); locate( 8, 4-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl <=3 ) {
-			locate( 1, 5-scrl); Prints((unsigned char*)" dot  :");
-			sprintG(buffer,Xdot,  10,LEFT_ALIGN); locate( 8, 5-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl <=4 ) {
-			locate( 1, 6-scrl); Prints((unsigned char*)"Ymin  :");
-			sprintG(buffer,Ymin,  10,LEFT_ALIGN); locate( 8, 6-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl <=5 ) {
-			locate( 1, 7-scrl); Prints((unsigned char*)" max  :");
-			sprintG(buffer,Ymax,  10,LEFT_ALIGN); locate( 8, 7-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl >=1 ) {
-			locate( 1, 8-scrl); Prints((unsigned char*)" scale:");
-			sprintG(buffer,Yscl,10,LEFT_ALIGN); locate( 8, 8-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl >=2 ) {
-			locate( 1, 9-scrl); Prints((unsigned char*)"T\xE6\x47min :");
-			sprintG(buffer,TThetamin,  10,LEFT_ALIGN); locate( 8, 9-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl >=3 ) {
-			locate( 1, 10-scrl); Prints((unsigned char*)"  max :");
-			sprintG(buffer,TThetamax,  10,LEFT_ALIGN); locate( 8, 10-scrl); Prints((unsigned char*)buffer);
-		}
-		if ( scrl >=4 ) {
-			locate( 1, 11-scrl); Prints((unsigned char*)"  ptch:");
-			sprintG(buffer,TThetaptch,  10,LEFT_ALIGN); locate( 8, 11-scrl); Prints((unsigned char*)buffer);
-		}
+		for (int i=2; i<=7; i++) {
+            int index = scroll + i - 2;
+            locate(1, i); Prints((unsigned char*)settings_text[index]);
+			if (index > 3)
+				index--;
+			else if (index == 3)
+				index = 9;
+			sprintG(buffer, REGv[index], 10, LEFT_ALIGN);
+			Prints((unsigned char*)buffer);
+        }
 
-		y = select-scrl+1;
+		y = cursor_pos + 1;
 		Bdisp_AreaReverseVRAMx3(0, y*8, 127, y*8+7);	// reverse select line
 
 		Fkey_Icon( FKeyNo1,  95 );	//	Fkey_dispN( FKeyNo1, "Init");
@@ -534,28 +508,33 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 		EnableDisplayStatusArea();
 		GetKey_DisableCatalog( &key );
 		switch (key) {
-//			case KEY_CTRL_SHIFT:
-//				GetKey_DisableCatalog( &key );
-//				break;
 			case KEY_CTRL_EXIT:
-				goto exit;	// no change
+				return 0;	// no change
 				break;
 			case KEY_CTRL_EXE:
 				cont=0;
 				break;
 
-			case KEY_CTRL_UP:
-				select-=1;
-				if ( select < 0 ) {select=9; scrl=4;}
-				if ( select < scrl ) scrl-=1;
-				if ( scrl < 0 ) scrl=0;
-				break;
-			case KEY_CTRL_DOWN:
-				select+=1;
-				if ( select > 9 ) {select=0; scrl=0;}
-				if ((select - scrl) > 5 ) scrl+=1;
-				if ( scrl > 4 ) scrl=4;
-				break;
+            case KEY_CTRL_UP:
+                if (cursor_pos)
+                    cursor_pos--;
+                else if (scroll)
+                    scroll--;
+                else {
+                    cursor_pos = cursor_pos_max;
+                    scroll = scroll_max;
+                }
+                break;
+            case KEY_CTRL_DOWN:
+                if (cursor_pos != cursor_pos_max)
+                    cursor_pos++;
+                else if (scroll != scroll_max)
+                    scroll++;
+                else {
+                    cursor_pos = 0;
+                    scroll = 0;
+                }
+                break;
 
 			case KEY_CTRL_F1:	// Initialize
 				SetVeiwWindowInit();
@@ -584,45 +563,25 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 				Bdisp_AreaReverseVRAMx3(0, y*8, 127, y*8+7);	// reverse select line
 				FkeyClearAll();
 				y++;
+				
+				int index = (select == 3) ? 9 : select - (select > 3);
+				tmp = InputNumD_full(8, y, 14, REGv[index]);
+				
+				if ((select == 9) && (tmp == 0)) {
+					CB_ErrMsg(RangeERR);
+					break;
+				} else if ((select == 2) || (select == 6))
+					tmp = fabs(tmp);
+				REGv[index] = tmp;
 				switch (select) {
-					case 0: // Xmin
-						Xmin      =InputNumD_full( 8, y, 14, Xmin);	//
+					case 0:
+					case 1:
+					case 4:
+					case 5:
 						SetXdotYdot();
-						break;
-					case 1: // Xmax
-						Xmax      =InputNumD_full( 8, y, 14, Xmax);	//
-						SetXdotYdot();
-						break;
-					case 2: // Xscl
-						Xscl      =fabs(InputNumD_full( 8, y, 14, Xscl));	//
 						break;
 					case 3: // Xdot
-						Xdot      =InputNumD_full( 8, y, 14, Xdot);	//
 						Xmax = Xmin + Xdot*126.*CB_G1MorG3M;
-						break;
-					case 4: // Ymin
-						Ymin      =InputNumD_full( 8, y, 14, Ymin);	//
-						SetXdotYdot();
-						break;
-					case 5: // Ymax
-						Ymax      =InputNumD_full( 8, y, 14, Ymax);	//
-						SetXdotYdot();
-						break;
-					case 6: // Yscl
-						Yscl      =fabs(InputNumD_full( 8, y, 14, Yscl));	//
-						break;
-					case 7: // TThetamin
-						TThetamin =InputNumD_full( 8, y, 14, TThetamin);	//
-						break;
-					case 8: // TThetamax
-						TThetamax =InputNumD_full( 8, y, 14, TThetamax);	//
-						break;
-					case 9: // TThetaptch
-						tmp = InputNumD_full( 8, y, 14, TThetaptch);	//
-						if ( tmp == 0 ) { CB_ErrMsg(OutOfDomainERR); break ; } // // Out of Domain error
-						TThetaptch = tmp;
-						break;
-					default:
 						break;
 				}
 				break;
@@ -631,72 +590,41 @@ int SetViewWindow(void){		// ----------- Set  View Window variable	return 0: no 
 		}
 		key=MathKey( key );
 		if ( key ) {
-				Bdisp_AreaReverseVRAMx3(0, y*8, 127, y*8+7);	// reverse select line
-				FkeyClearAll();
-				y++;
-				switch (select) {
-					case 0: // Xmin
-						Xmin      =InputNumD_Char( 8, y, 14, Xmin, key);	//
-						SetXdotYdot();
-						break;
-					case 1: // Xmax
-						Xmax      =InputNumD_Char( 8, y, 14, Xmax, key);	//
-						SetXdotYdot();
-						break;
-					case 2: // Xscl
-						Xscl      =fabs(InputNumD_Char( 8, y, 14, Xscl, key));	//
-						break;
-					case 3: // Xdot
-						Xdot      =InputNumD_Char( 8, y, 14, Xdot, key);	//
-						Xmax = Xmin + Xdot*126.*CB_G1MorG3M;
-						break;
-					case 4: // Ymin
-						Ymin      =InputNumD_Char( 8, y, 14, Ymin, key);	//
-						SetXdotYdot();
-						break;
-					case 5: // Ymax
-						Ymax      =InputNumD_Char( 8, y, 14, Ymax, key);	//
-						SetXdotYdot();
-						break;
-					case 6: // Yscl
-						Yscl      =fabs(InputNumD_Char( 8, y, 14, Yscl, key));	//
-						break;
-					case 7: // TThetamin
-						TThetamin =InputNumD_Char( 8, y, 14, TThetamin, key);	//
-						break;
-					case 8: // TThetamax
-						TThetamax =InputNumD_Char( 8, y, 14, TThetamax, key);	//
-						break;
-					case 9: // TThetaptch
-						tmp = InputNumD_Char( 8, y, 14, TThetaptch, key);	//
-						if ( tmp == 0 ) { CB_ErrMsg(OutOfDomainERR); break ; } // // Out of Domain error
-						TThetaptch = tmp;
-						break;
-					default:
-						break;
-				}
+			Bdisp_AreaReverseVRAMx3(0, y*8, 127, y*8+7);	// reverse select line
+			FkeyClearAll();
+			y++;
+
+			int index = (select == 3) ? 9 : select - (select > 3);
+			tmp = InputNumD_Char(8, y, 14, REGv[index], key);
+				
+			if ((select == 9) && (tmp == 0)) {
+				CB_ErrMsg(RangeERR);
+				break;
+			} else if ((select == 2) || (select == 6))
+				tmp = fabs(tmp);
+			REGv[index] = tmp;
+			switch (select) {
+				case 0:
+				case 1:
+				case 4:
+				case 5:
+					SetXdotYdot();
+					break;
+				case 3: // Xdot
+					Xmax = Xmin + Xdot*126.*CB_G1MorG3M;
+					break;
 			}
+		}
 	}
-  exit:
 	CB_ColorIndex    =bk_CB_ColorIndex;		// current color index
 	CB_BackColorIndex=bk_CB_BackColorIndex;	// current backcolor index
 	CB_ColorIndexPlot=bk_CB_ColorIndexPlot;	// Plot color index (default blue)
-	if( ( xmin      != Xmin      ) ||
-	    ( xmax      != Xmax      ) ||
-	    ( xscl      != Xscl      ) ||
-	    ( xdot      != Xdot      ) ||
-	    ( ymin      != Ymin      ) ||
-	    ( ymax      != Ymax      ) ||
-	    ( ydot      != Ydot      ) ||
-	    ( yscl      != Yscl      ) ||
-	    ( tThetamin != TThetamin ) ||
-	    ( tThetamax != TThetamax ) ||
-	    ( tThetaptch!= TThetaptch) )  {
-			AllClr_GRAM();
+	for (int i=0; i<11; i++)
+		if (REGv_bk[i] != REGv[i]) {
 			ViewWindow( Xmin, Xmax, Xscl, Ymin, Ymax, Yscl);
 			SaveConfig();
 			return -1; // change value
-	}
+		}
 	return 0;	// no change
 }
 

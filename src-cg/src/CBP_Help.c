@@ -412,7 +412,7 @@ void CB_Except( char*SRC ) {
 
   loop:
   	r = Search_ExceptTryEnd( SRC ) ;
-	if ( r == 0 ) { CB_Error(TryWithoutExceptERR); return; } //  Try Without Except ERR
+	if ( r == 0 ) { CB_Error(TryWithoutExceptERR); TryFlag = 0; return; } //  Try Without Except ERR
 	else
 	if ( r == 0x38 ) {	// Except
 		ErrorNo = 0;

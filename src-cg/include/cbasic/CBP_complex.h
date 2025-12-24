@@ -1,4 +1,9 @@
 //----------------------------------------------------------------------------- complex
+typedef struct {
+	double real;
+	double imag;
+} complex;
+
 double fReP( complex z ) ;
 double fImP( complex z ) ;
 double farg( complex z ) ;

@@ -1,7 +1,8 @@
 # Build files
-/build*/
-/*.g1a
-/*.g3a
+build*/
+*.g1a
+*.g3a
+2.50/
 
 # Python bytecode
 __pycache__/

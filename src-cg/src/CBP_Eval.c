@@ -581,102 +581,134 @@ double EvalsubTopReal( char *SRC ) {	// eval real only
 }
 
 int EvalEndCheck( int c ) {
-	if ( c==':' ) return c;
-	if ( c==0x0E ) return c;	// ->
-	if ( c==0x13 ) return c;	// =>
-	if ( c==',' ) return c;
-	if ( c==')' ) return c;
-	if ( c==']' ) return c;
-	if ( c=='}' ) return c;
-	if ( c==0x0D ) return c;	// <CR>
-	if ( c==0x0C ) return c;	// <Dsps>
-	return ( c==0 );
+	switch (c) {
+		case ':':
+		case 0x0E:
+		case 0x13:
+		case ',':
+		case ')':
+		case ']':
+		case '}':
+		case 0x0D:
+		case 0x0C:
+			return c;
+		default:
+			return (c == 0);
+	}
 }
 
-double EvalsubTop( char *SRC ) {	// eval 1
-	double  result,dst;
+int eval_end_check_2(int c) {
+	switch (c) {
+		case ':':
+		case 0x0E:
+		case 0x13:
+		case ',':
+		case ')':
+		case ']':
+		case 0x0D:
+		case 0:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+double EvalsubTop(char *SRC) {	// eval 1
+	double result;
 	int c;
 	int excptr=ExecPtr;
 	int ansreg=CB_MatListAnsreg;
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
-	result=Evalsub1(SRC);
-	c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
-	else 
-	if ( c==0xFFFFFF89 ) { // +
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result+dst;
-	} else
-	if ( c==0xFFFFFF99 ) { // -
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result-dst;
-	} else
-	if ( c=='=') { // ==
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result == dst;
-	} else
-	if ( c=='>') { // >
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result > dst;
-	} else
-	if ( c=='<') { // <
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result < dst;
-	} else
-	if ( c==0x11) { // !=
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result != dst;
-	} else
-	if ( c==0x12) { // >=
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result >= dst;
-	} else
-	if ( c==0x10) { // <=
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result <= dst;
-	} else
-	if ( c==0xFFFFFFA9 ) { // *
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
-	} else
-	if ( c==0xFFFFFFB9 ) { // /
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fDIV(result,dst);
-	} else
-	if ( c==0xFFFFFF9A ) { // xor
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result ^ (int)dst;
-	} else
-	if ( ( c=='|' ) || ( c==0xFFFFFFAA ) ) { // or
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result | (int)dst;
-	} else
-	if ( ( c=='&' ) || ( c==0xFFFFFFBA ) ) { // and
-		ExecPtr++; dst=Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result & (int)dst;
-	} else
-	if ( c==0xFFFFFF8B ) { // ^2
-		ExecPtr++;
-		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*result;
-	} else
-	if ( c==0xFFFFFF9B ) { // ^(-1) RECIP
-		ExecPtr++;
-		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fDIV(1,result);
-	} else
-	if ( c==0x7F ) { // 
-		c=SRC[++ExecPtr];
-		if ( c==0xFFFFFFB0 ) { // And
-			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result && dst;
-		} else
-		if ( c==0xFFFFFFB1 ) { // Or
-			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result || dst;
-		} else
-		if ( c==0xFFFFFFB4 ) { // Xor
-			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (result!=0) ^ (dst!=0);
-		} else
-		if ( c==0xFFFFFFBC ) { // Int/
-			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fIDIV(result,dst);
-		} else
-		if ( c==0xFFFFFFBD ) { // Rmdr
-			ExecPtr++; dst=Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMOD(result,dst);
+	result = Evalsub1(SRC);
+	c = SRC[ExecPtr++];
+	
+	if (c == 0xFFFFFF89) { // +
+		result += Evalsub1(SRC);
+	}
+	else if (c == 0xFFFFFF99) { // -
+		result -= Evalsub1(SRC);
+	}
+	else if (c == '=') { // ==
+		result = (result == Evalsub1(SRC));
+	}
+	else if (c == '>') { // >
+		result = (result > Evalsub1(SRC));
+	}
+	else if (c == '<') { // < 
+		result = (result < Evalsub1(SRC));
+	}
+	else if (c == 0x11) { // != 
+		result = (result != Evalsub1(SRC));
+	}
+	else if (c == 0x12) { // >= 
+		result = (result >= Evalsub1(SRC));
+	}
+	else if (c == 0x10) { // <= 
+		result = (result <= Evalsub1(SRC));
+	}
+	else if (c == 0xFFFFFFA9) { // * 
+		result *= Evalsub1(SRC);
+	}
+	else if (c == 0xFFFFFFB9) { // / 
+		result = fDIV(result, Evalsub1(SRC));
+	}
+	else if (c == 0xFFFFFF9A) { // xor 
+		result = (int)result ^ (int)Evalsub1(SRC);
+	}
+	else if (( c == '|' ) || (c == 0xFFFFFFAA)) { // or 
+		result = (int)result | (int)Evalsub1(SRC);
+	}
+	else if (( c == '&' ) || (c == 0xFFFFFFBA)) { // and 
+		result = (int)result & (int)Evalsub1(SRC);
+	}
+	else if (c == 0xFFFFFF8B) { // ^2
+		result *= result;
+	}
+	else if (c == 0xFFFFFF9B) { // ^(-1) RECIP
+		result = frecip(result);
+	}
+	else if (c == 0x7F) { // 
+		c = SRC[ExecPtr++];
+		if (c == 0xFFFFFFB0) { // And
+			result = (result) && Evalsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB1 ) { // Or
+			result = (result) || Evalsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB4 ) { // Xor
+			result = (result != 0) ^ (Evalsub1(SRC) != 0);
+		}
+		else if ( c==0xFFFFFFBC ) { // Int/
+			result = fIDIV(result, Evalsub1(SRC));
+		}
+		else if ( c==0xFFFFFFBD ) { // Rmdr
+			result = fMOD(result, Evalsub1(SRC));
+		}
+		else {
+			ExecPtr--;
 		}
 	}
-	
+	else {
+		ExecPtr--;
+	}
+	c = SRC[ExecPtr];
+	if (eval_end_check_2(c))
+		return result;
 	ExecPtr=excptr;
 	CB_MatListAnsreg=ansreg;
 	return Evalsub14( SRC );
+}
+
+void _div_check(double div) {
+	if (div == 0)
+		CB_Error(DivisionByZeroERR);
+}
+void _nPCr_check(double *n, double *r) {
+	*n = (int)(*n);
+	*r = (int)(*r);
+	if (*n < *r)
+		CB_Error(MathERR);
 }
 
 double frac( double x ) {
@@ -784,138 +816,98 @@ double ffcos( double x ) {
 	return cos( x );
 }
 double fsin( double x ) {
-	x = ffsin( fradian(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(ffsin(fradian(x)));
 }
 double fcos( double x ) {
-	x = ffcos( fradian(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(ffcos(fradian(x)));
 }
 double ftan( double x ) {
-	x = tan( fradian(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(tan(fradian(x)));
 }
 double fasin( double x ) {
-	x = finvradian( asin(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(finvradian(asin(x)));
 }
 double facos( double x ) {
-	x = finvradian( acos(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(finvradian(acos(x)));
 }
 double fatan( double x ) {
-	x = finvradian( atan(x) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(finvradian(atan(x)));
 }
 
 double fpolr( double x, double y ) {	// Pol(x,y) -> r
-	x = sqrt(x*x+y*y);
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR(sqrt(x*x+y*y));
 }
-double fpolt( double x, double y ) {	// Pol(x,y) -> Theta
-	if ( ( x==0 ) && ( y==0 ) ) return 0;
-	if ( x != 0 ) x = finvradian(atan2(y,x));
-	else x = 2*fatan(1);
-	CheckMathERR(&x); // Math error ?
-	return x ;
+double fpolt(double x, double y) {		// Pol(x,y) -> Theta
+	x = finvradian(atan2(y,x));
+	if (x == 0)
+	{
+		if (y > 0)
+			return 90;
+		else if (y < 0)
+			return -90;
+	}
+	return CheckMathERR(x);
 }
 double frecx( double r, double t ) {	// Rec(r,Theta) -> x
-	r = r*fcos(t);
-	CheckMathERR(&r); // Math error ?
-	return r ;
+	return CheckMathERR(r*fcos(t));
 }
 double frecy( double r, double t ) {	// Rec(r,Theta) -> y
-	r = r*fsin(t);
-	CheckMathERR(&r); // Math error ?
-	return r ;
+	return CheckMathERR(r*fsin(t));
 }
 
-void CheckMathERR( double *result ) {
-	char * pt;
-	pt=(char *)(result); if (pt[1]==0xFFFFFFF0) if ( (pt[0]==0x7F)||(pt[0]==0xFFFFFFFF) ) CB_Error(MathERR) ; // Math error
+int __builtin_isinf(double x);
+int __builtin_isnan(double x);
+
+double CheckMathERR(double result) {
+	if (__builtin_isnan(result) || __builtin_isinf(result)) {
+		CB_Error(MathERR);
+		return 0;
+	}
+	return result;
 }
 
 double asinh( double x ) {
-	x = ( (exp(x)+exp(-x))/2. );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR((exp(x)+exp(-x))/2.);
 }
 double acosh( double x ) {
-	x = ( (exp(x)-exp(-x))/2. );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR((exp(x)-exp(-x))/2.);
 }
 double atanh( double x ) {
-	double ep=exp(x);
-	double em=exp(-x);
-	x = ( (ep-em)/(ep+em) );
-	CheckMathERR(&x); // Math error ?
-	return x ;
+	return CheckMathERR((exp(x)-exp(-x))/(exp(x)+exp(-x)));
 }
 
 double fsqu( double x ) {
-	return x*x;
+	return CheckMathERR(x*x);
 }
 double fsqrt( double x ) {
-	x = sqrt( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(sqrt(x));
 }
 double fcuberoot( double x ) {
-	x = pow( x, 1.0/3.0 );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return fpow(x, 1./3.);
 }
 double flog10( double x ) {
-	x = log10( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(log10(x));
 }
 double fpow10( double x ) {
-	x = pow( 10, x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(pow(10,x));
 }
 double fln( double x ) {
-	x = log( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(log(x));
 }
 double fexp( double x ) {
-	x = exp( x );
-	CheckMathERR(&x); // Math error ?
-	return x;
+	return CheckMathERR(exp(x));
 }
-double flogab( double x, double y ) {	// flogab(x,y)
-	double base,tmp,result;
-	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	base  = log(x);
-	result = log(y)/base;
-	CheckMathERR(&result); // Math error ?
-	return result ;
+double flogab(double x, double y) {	// flogab(x,y)
+	return CheckMathERR(fDIV(log(y),log(x)));
 }
-double fpow( double x, double y ) {	// pow(x,y)
-	x = pow( x, y );
-	CheckMathERR(&x); // Math error ?
-	return x;
+double fpow(double x, double y) {	// pow(x,y)
+	return CheckMathERR(pow(x,y));
 }
-double fpowroot( double x, double y ) {	// powroot(x,y)
-	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = pow( x, 1/y );
-	CheckMathERR(&x); // Math error ?
-	return x;
+double fpowroot(double x, double y) {	// powroot(x,y)
+	return fpow(x, frecip(y));
 }
-
-double frecip( double x ) {	// ^(-1) RECIP
-	if ( x == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
-	return 1 / x ;
+double frecip(double x) {	// ^(-1) RECIP
+	return fDIV(1., x);
 }
 
 double fsign( double x ) {	// -x
@@ -931,64 +923,53 @@ double fMUL( double x, double y ) {	// x * y
 	return x*y;
 }
 double fDIV( double x, double y ) {	// x / y
-	if ( y == 0 ) { CB_Error(DivisionByZeroERR); return 0; } // Division by zero error 
+	_div_check(y);
 	return x/y;
 }
-void fDIVcheck( double *x, double *y ) {	//
-	double tmp,tmp2,result;
-	(*x)  = floor( (*x) +.5);
-	(*y) = floor( (*y) +.5);
-	if ( (*y) == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-}
 
-double fMOD( double x, double y ) {	// fMOD(x,y)
+double fMOD(double x, double y) {	// fMOD(x,y)
 	double result;
-	fDIVcheck( &x, &y );
-	result= floor(fabs(fmod( x, y ))+.5);
-	if ( x < 0 ) {
-		result = fabs(y)-result;
-		if ( ( result == fabs(y)  ) || ( x == y  ) ) result=0;
+	_div_check(y);
+	result = fmod(x,y);
+	if (result < 0)
+		result += fabs(y);
+	return result;
+}
+double fIDIV(double x, double y) {
+	return floor(fDIV(x,y));
+}
+double ffact(double x) {
+	double sum=1;
+	x = (int)x;
+	if (x < 0)
+		CB_Error(MathERR);
+	while (x > 1) {
+		sum *= x--;
+		if (CheckMathERR(sum) == 0)
+			break;
 	}
-	return result ;
+	return sum;
 }
-
-double fIDIV( double x, double y ) {	// floor( floor(x) / floor(y) )
-	double result;
-	fDIVcheck( &x, &y );
-	return floor((x/y));
+double f_nPr(double n, double r) {
+	double i, sum=1;
+	_nPCr_check(&n, &r);
+	for (i = n; i > n-r; i--) {
+		sum *= i;
+		if (CheckMathERR(sum) == 0)
+			break;
+	}
+	return sum;
 }
-double ffact( double x ) {
-	double tmp;
-	tmp = floor( x );
-	if ( ( tmp < 0 ) || ( 170 < tmp ) ) { CB_Error(OutOfDomainERR) ; return 0; } // Out of Domain error
-	x = 1;
-	while ( tmp > 0 ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return x;
-}
-double f_nPr( double n, double r ) {
-	double x,tmp;
-	n = floor( n );
-	r = floor( r );
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return x;
-}
-double f_nCr( double n, double r ) {
-	double x,tmp;
-	n = floor( n );
-	r = floor( r );
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = 1;
-	while ( tmp <= r ) { x /= tmp; tmp++; }
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	CheckMathERR(&x); // Math error ?
-	return floor( x +.05 );
+double f_nCr(double n, double r) {
+	double i, sum=1;
+	_nPCr_check(&n, &r);
+	r = min(r, n-r);
+	for (i = 1; i <= r; i++) {
+		sum = sum * (n-i+1) / i;
+		if (CheckMathERR(sum) == 0)
+			break;
+	}
+	return sum;
 }
 double frand() {
 	return (double)rand()/(double)(RAND_MAX+1.0);
@@ -1012,21 +993,16 @@ double fRanBin( double n, double p) {	// RanBin#
 	for ( i=0; i<n; i++ ) if ( rand() <= r ) m++;
 	return m;
 }
-double fGCD( double x, double y ) {	// GCD(x,y)
-	double tmp;
-	if ( x<y ) { tmp=x; x=y; y=tmp; }
-	tmp=fMOD(x,y);
-	while( tmp != 0 ) {
-		x=y;
-		y=tmp;
-		tmp=fMOD(x,y);
-	}
-	return fabs(y);
+static double gcd_float(double x, double y) {	// GCD(x,y)
+	if (y == 0)
+		return x;
+	return gcd_float(y, fmod(x,y)); 
 }
-double fLCM( double x, double y ) {	// LCM(x,y)
-	if ( ( x == 0 ) || ( y == 0 ) ) return 0;
-	if ( ( x < 0 ) || ( y < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
-	return x/fGCD(x,y)*y;
+double CB_gcd_float(double x, double y) {
+	return fabs(gcd_float(x,y));
+}
+double fLCM(double x, double y) {	// LCM(x,y)
+	return fabs(fDIV(x*y,CB_gcd_float(x,y) + (y == 0)));
 }
 
 double fnot( double x ) {
@@ -1275,7 +1251,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					
 				case 0x3C :				// GCD(a,b)
 					Get2Eval( SRC, &tmp, &tmp2);
-					return fGCD(tmp,tmp2);
+					return gcd_float(tmp,tmp2);
 
 				case 0x3D :				// LCM(a,b)
 					Get2Eval( SRC, &tmp, &tmp2);
@@ -1700,8 +1676,7 @@ double Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result *= result ;
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				if ( result == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				result = 1 / result ;
+				result = frecip(result);
 				break;
 			case  0xFFFFFFAB  :	//  !
 				result = ffact( result );
@@ -1774,12 +1749,10 @@ double Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 		c = SRC[ExecPtr++];
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
-				result = pow( result, Evalsub2( SRC ) );
-				CheckMathERR(&result); // Math error ?
+				result = fpow(result, Evalsub2(SRC));
 				break;
 			case  0xFFFFFFB8  :	// powroot
-				result = pow( Evalsub2( SRC ), 1/result );
-				CheckMathERR(&result); // Math error ?
+				result = fpowroot(Evalsub2(SRC), result);
 				break;
 			case ' ':	// Skip Space
 				break;
@@ -1804,11 +1777,9 @@ double Evalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 		if ( c == 0xFFFFFFBB ) {
 			ExecPtr++;
 			frac3 = Evalsub3( SRC );
-			if ( frac3 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = frac1 + ( frac2 / frac3 ) ;
+			result = frac1 + fDIV(frac2, frac3);
 		} else {
-			if ( frac2 == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-			result = ( frac1 / frac2 ) ;
+			result = fDIV(frac1, frac2) ;
 		}
 	}
 	return result;
@@ -1932,8 +1903,7 @@ double Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				break;
 			case 0xFFFFFFB9 :		// ��
 				tmp = Evalsub7( SRC );
-				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-				result /= tmp ;
+				result = fDIV(result, tmp);
 				break;
 			case 0x7F:
 				c = SRC[ExecPtr++];

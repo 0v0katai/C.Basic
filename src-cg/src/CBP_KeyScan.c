@@ -47,10 +47,6 @@ int CheckKeyRow7305( int row ){
 	return result & 0xFF ;
 }
 
-int CheckKeyRow( int row ){
-	return CheckKeyRow7305( row );
-}
-
 int KeyScanDown(int keyscan_code){
 	int row,col,rowdata;
 	row = keyscan_code & 0x0F;
@@ -82,7 +78,7 @@ short  Recent_code=0;
 
 int CB_Getkey() {			// CasioBasic Getkey compatible
 	int key;
-	int i,row,c,SH3;
+	int i,row,c;
 	int code=0;
 	row=1;
 	
@@ -95,7 +91,7 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	}
 
 	for ( row=1; row<10; row++) {
-		if (SH3) c=CheckKeyRow(row);  else  c=CheckKeyRow7305(row);
+		c=CheckKeyRow7305(row);
 		if ( c & 0x40 ) { code=70+row; break; }	//
 		if ( c & 0x20 ) { code=60+row; break; }	//
 		if ( c & 0x10 ) { code=50+row; break; }	//

@@ -36,6 +36,7 @@
 #include <keyboard.hpp>
 // #include <LineEditors.hpp>
 // #include <ListView.hpp>
+#include <limits.h>
 #include <locale.h>
 #include <math.h>
 #include <MCS_syscalls.h>

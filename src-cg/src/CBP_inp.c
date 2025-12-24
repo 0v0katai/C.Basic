@@ -2241,8 +2241,6 @@ int check_ext_opcode(int code) {	// 0:genuine	1:ext
 	return 0;
 }
 
-void SetAlphalock();
-
 int CB_Catalog(void) {
 	short *select=&selectCATALOG;
 	short *oplist=(short *)catalog_opcode;
@@ -2250,13 +2248,10 @@ int CB_Catalog(void) {
 	char buffer[22];
 	char tmpbuf[18];
 	int key;
-	int	cont,cont2=1;
 	int i,j,k,m,y;
 	int seltop;
 	char search[10]="", *search2;
 	int CursorStyle;
-	int alphalock ;
-	char alphalock_bk ;
 	int searchmode=1;
 	int csrX=0;
 
@@ -2265,23 +2260,17 @@ int CB_Catalog(void) {
 	CB_BackColorIndex=0xFFFF;
 	
 	Cursor_SetFlashOff(); 			// cursor flashing off
-
- alpha_start:
-	SetAlphalock();
-
-	while ( cont2 ) {
 		
 		opNum=0 ;
 		while ( oplist[opNum++] ) ;
 		opNum-=2;
 		seltop=*select;
-		cont=1;
 
 		SaveDisp(SAVEDISP_PAGE1);
 
-		while (cont) {
-			loop:
+		while (1) {
 			Bdisp_AllClr_VRAM();
+			SetAlphalock();
 			CB_ColorIndex=0x001F;	// Blue
 			CB_Prints( 1,1, (unsigned char*)"Catalog.CB");
 			CB_ColorIndex=0x0000;	// Black
@@ -2300,7 +2289,7 @@ int CB_Catalog(void) {
 //				}
 				if ( j != 0xFFFFFFFF ) {
 					CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
-					tmpbuf[12]='\0'; 
+					// tmpbuf[12]='\0'; 
 					DMS_Opcode( tmpbuf, j);
 					k=0; if ( tmpbuf[0]==' ' ) k++;
 					sprintf(buffer,"%-17s",tmpbuf+k ) ;
@@ -2341,40 +2330,28 @@ int CB_Catalog(void) {
 			}
 			GetKey_DisableMenu( &key );
 			switch (key) {
-				case KEY_CTRL_SHIFT:
-					goto loop;
 					
 				case KEY_CTRL_MENU:
 				case KEY_CTRL_F5:
 					key=SelectOpcodeRecent( CMDLIST_RECENT );
 					if ( key ) return key;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_QUIT:
 				case KEY_CTRL_EXIT:
+					alphastatus = 0;
+					alphalock = 0 ; 
+					Setup_SetEntry(0x14, 0x00);
 					RestoreDisp(SAVEDISP_PAGE1);
 					return 0;
 					
 				case KEY_CTRL_F1:
 				case KEY_CTRL_EXE:
-					cont=0;
-					cont2=0;
-					goto exit;
-					break;
-			
-				case KEY_CTRL_ALPHA:
-					alphalock = 0 ;
-					key = 0;
-					goto loop;
-					break;
+					return oplist[(*select)] & 0xFFFF;
 						
 				case KEY_CTRL_AC:
 					search[0]='\0';
 					csrX=0;
-					if  ( alphalock ) goto alpha_start;
-					key = 0;
-					goto loop;
 					break;
 
 				case KEY_CTRL_DEL:
@@ -2384,13 +2361,11 @@ int CB_Catalog(void) {
 						}
 						DeleteOpcode1( search, 8, &csrX );
 					}
-					goto loop;
 					break;
 				
 				case KEY_CTRL_LEFT:
 					if ( searchmode ) { 
 						PrevOpcodeGB( search, &csrX ); 
-						goto loop;
 						break; 
 					}
 //					for ( i=(*select)-2; i>0; i-- ) {
@@ -2401,13 +2376,11 @@ int CB_Catalog(void) {
 //					*select = i ;
 //					seltop = *select;
 					searchmode=1;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_RIGHT:
 					if ( searchmode ) {
 						if ( search[csrX] != 0x00 )	NextOpcodeGB( search, &csrX );
-						goto loop;
 						break;
 					}
 //					for ( i=(*select)+1; i<(*select)+opNum; i++ ) {
@@ -2417,21 +2390,18 @@ int CB_Catalog(void) {
 //					if ( *select > opNum ) *select = opNum;
 //					seltop = *select;
 					searchmode=1;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_UP:
 					(*select)--;
 					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)--;
 					if ( *select < 0 ) *select = opNum;
-					goto loop;
 					break;
 					
 				case KEY_CTRL_DOWN:
 					(*select)++;
 					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)++;
 					if ( *select > opNum ) *select =0;
-					goto loop;
 					break;
 					
 				default:
@@ -2448,9 +2418,6 @@ int CB_Catalog(void) {
 					i=InsertOpcode1( search, 8, csrX, key );
 				}
 				if ( i==0 ) NextOpcodeGB( search, &csrX );
-			} else {
-				RestoreDisp(SAVEDISP_PAGE1);
-				return key;
 			}
 			if ( ( ( ('A' <= key) && (key <= 'Z') ) || (key == 0x9C) || (key == '_') ) && ( strlen(search) ) ) {
 				searchmode=1;
@@ -2477,12 +2444,7 @@ int CB_Catalog(void) {
 				}
 			}
 		}
-		RestoreDisp(SAVEDISP_PAGE1);
 	}
-	exit:
-	Bdisp_PutDisp_DD();
-	return oplist[(*select)] & 0xFFFF;
-}
 
 //--------------------------------------------------------------------------
 
@@ -4093,9 +4055,9 @@ const topcodes OpCodeStrList[] = {
 	{ 0xF9DF, "_Paint " },
 	{ 0x00FA, "Gosub "},
 	{ 0x00A7, "not "}, 			// small
-	{ 0x009A, " xor "}, 		// add space
-	{ 0x00AA, " or "}, 			// add space
-	{ 0x00BA, " and "}, 		// add space
+	{ 0x009A, "xor"},
+	{ 0x00AA, "or"},
+	{ 0x00BA, "and"},
 	{ 0, "" }
 };
 
@@ -4363,19 +4325,18 @@ int PrintOpcode(int px, int py, char *buffer, int width, int ofst, int ptrX, int
 //----------------------------------------------------------------------------------------------
 
 void SetAlphaStatus( int alphalock, int lowercase ){
-	int key;
 //	int	alphastatus = Setup_GetEntry(0x14);	// 00:SHIFT and ALPHA off, 01:SHIFT on, 02:Clip  04:ALPHA on, 0x84:SHIFT and ALPHA on  // 0x08 0x88 lowercase
-	if ( ( alphalock != 0 ) && ( lowercase != 0 ) ) Setup_SetEntry(0x14, 0x88);		// lowercase  alpha lock
-	else
-	if ( ( alphalock != 0 ) && ( lowercase == 0 ) ) Setup_SetEntry(0x14, 0x84);		// upperrcase alpha lock
-	else
-	if ( ( alphalock == 0 ) && ( lowercase != 0 ) ) Setup_SetEntry(0x14, 0x08);		// lowercase 
-	else
-	if ( ( alphalock == 0 ) && ( lowercase == 0 ) ) Setup_SetEntry(0x14, 0x04);		// upperrcase
+	// if ( ( alphalock != 0 ) && ( lowercase != 0 ) ) Setup_SetEntry(0x14, 0x88);		// lowercase  alpha lock
+	// else
+	// if ( ( alphalock != 0 ) && ( lowercase == 0 ) ) Setup_SetEntry(0x14, 0x84);		// upperrcase alpha lock
+	// else
+	// if ( ( alphalock == 0 ) && ( lowercase != 0 ) ) Setup_SetEntry(0x14, 0x08);		// lowercase 
+	// else
+	// if ( ( alphalock == 0 ) && ( lowercase == 0 ) ) Setup_SetEntry(0x14, 0x04);		// upperrcase
+	Setup_SetEntry(0x14, alphalock << 7 | 1 << (2 + lowercase));
 //	PutKey( KEY_CTRL_NOP, 1 );
 }
 void PutAlphamode1( int lowercase ){
-	int key;
 //	PutKey( KEY_CTRL_ALPHA, 1 );
 	SetAlphaStatus( 0, lowercase );
 }

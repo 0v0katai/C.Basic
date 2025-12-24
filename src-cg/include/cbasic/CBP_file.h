@@ -194,7 +194,7 @@ void WaitKeyAC();
 void WaitKeyEXIT();
 void WaitKeyF1();
 void WaitKeyEXE();
-
+void SetAlphalock();
 
 //----------------------------------------------------------------------------------------------
 void CB_StatusDisp_Run();

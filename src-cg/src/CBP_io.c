@@ -711,7 +711,7 @@ int YesNo_NoSave( char*buffer){
 	locate(3,4); Prints((unsigned char *) "   Yes:[F1]");
 	locate(3,5); Prints((unsigned char *) "   No :[F6]");
 	while ( 1 ) {
-		GetKey(&key);
+		GetKey_DisableMenu(&key);
 		if ( key == KEY_CTRL_F1  ) break ;
 		if ( key == KEY_CTRL_F6  ) break ;
 		if ( key == KEY_CTRL_EXIT) break ;

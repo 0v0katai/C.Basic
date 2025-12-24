@@ -546,8 +546,6 @@ void Check_Favorite_size( char*folder, char *oldsname, char *newsname, int size 
 	}
 }
 
-void SetAlphalock();
-
 unsigned int Explorer( int size, char *folder )
 {
 	int cont=1;
@@ -1623,7 +1621,7 @@ int InputFilenameG1MorG3M( char *buffer, char* pmsg, char *ext ) {		//
 		FkeyClear( FKeyNo2 );
 		FkeyClear( FKeyNo3 );
 	} else {
-		sprintf( msg1, "%s as %s to ", pmsg, ext);
+		sprintf( msg1, "%s as %s to", pmsg, ext);
 		sprintf( msg2, "  Storage Memory." );
 		Fkey_dispN( FKeyNo1, ">Main");
 		Fkey_dispN( FKeyNo2, "g1m");

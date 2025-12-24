@@ -126,86 +126,87 @@ int CB_Cplx_EvalDblCheckZero( char *SRC ) {
 }
 
 complex Cplx_EvalsubTop( char *SRC ) {	// eval 1
-	complex  result,dst;
+	complex result;
 	int c;
 	int excptr=ExecPtr;
 	int ansreg=CB_MatListAnsreg;
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
-	result= Cplx_Evalsub1(SRC);
-	c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
-	else
-	if ( c==0xFFFFFF89 ) { // +
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fADD(result,dst);
-	} else
-	if ( c==0xFFFFFF99 ) { // -
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fSUB(result,dst);
-	} else
-	if ( c=='=') { // ==
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fcmpEQ(result,dst);
-	} else
-	if ( c=='>') { // >
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fcmpGT(result,dst);
-	} else
-	if ( c=='<') { // <
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fcmpLT(result,dst);
-	} else
-	if ( c==0x11) { // !=
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fcmpNE(result,dst);
-	} else
-	if ( c==0x12) { // >=
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fcmpGE(result,dst);
-	} else
-	if ( c==0x10) { // <=
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fcmpLE(result,dst);
-	} else
-	if ( c==0xFFFFFFA9 ) { // *
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fMUL(result,dst);
-	} else
-	if ( c==0xFFFFFFB9 ) { // /
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fDIV(result,dst);
-	} else
-	if ( c==0xFFFFFF9A ) { // xor
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fXOR(result,dst);
-	} else
-	if ( ( c=='|' ) || ( c==0xFFFFFFAA ) ) { // or
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fOR(result,dst);
-	} else
-	if ( ( c=='&' ) || ( c==0xFFFFFFBA ) ) { // and
-		ExecPtr++; dst=Cplx_Evalsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fAND(result,dst);
-	} else
-	if ( c==0xFFFFFF8B ) { // ^2
-		ExecPtr++;
-		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fMUL(result,result);
-	} else
-	if ( c==0xFFFFFF9B ) { // ^(-1) RECIP
-		ExecPtr++;
-		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_frecip(result);
-	} else
-	if ( c==0x7F ) { //
-		c=SRC[++ExecPtr];
-		if ( c==0xFFFFFFB0 ) { // And
-			ExecPtr++; dst=Cplx_Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fAND_logic(result,dst);
-		} else
-		if ( c==0xFFFFFFB1 ) { // Or
-			ExecPtr++; dst=Cplx_Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fOR_logic(result,dst);
-		} else
-		if ( c==0xFFFFFFB4 ) { // Xor
-			ExecPtr++; dst=Cplx_Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fXOR_logic(result,dst);
-		} else
-		if ( c==0xFFFFFFBC ) { // Int/
-			ExecPtr++; dst=Cplx_Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fIDIV(result,dst);
-		} else
-		if ( c==0xFFFFFFBD ) { // Rmdr
-			ExecPtr++; dst=Cplx_Evalsub1(SRC);
-			c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return Cplx_fMOD(result,dst);
+	result = Cplx_Evalsub1(SRC);
+	c = SRC[ExecPtr++];
+
+	if (c == 0xFFFFFF89) { // +
+		result = Cplx_fADD(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0xFFFFFF99) { // -
+		result = Cplx_fSUB(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == '=') { // ==
+		result = Cplx_fcmpEQ(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == '>') { // >
+		result = Cplx_fcmpGT(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == '<') { // < 
+		result = Cplx_fcmpLT(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0x11) { // != 
+		result = Cplx_fcmpNE(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0x12) { // >= 
+		result = Cplx_fcmpGE(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0x10) { // <= 
+		result = Cplx_fcmpLE(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0xFFFFFFA9) { // * 
+		result = Cplx_fMUL(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0xFFFFFFB9) { // / 
+		result = Cplx_fDIV(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0xFFFFFF9A) { // xor 
+		result = Cplx_fXOR(result, Cplx_Evalsub1(SRC));
+	}
+	else if (( c == '|' ) || (c == 0xFFFFFFAA)) { // or 
+		result = Cplx_fOR(result, Cplx_Evalsub1(SRC));
+	}
+	else if (( c == '&' ) || (c == 0xFFFFFFBA)) { // and 
+		result = Cplx_fAND(result, Cplx_Evalsub1(SRC));
+	}
+	else if (c == 0xFFFFFF8B) { // ^2
+		result = Cplx_fMUL(result, result);
+	}
+	else if (c == 0xFFFFFF9B) { // ^(-1) RECIP
+		result = Cplx_frecip(result);
+	}
+	else if (c == 0x7F) { // 
+		c = SRC[ExecPtr++];
+		if (c == 0xFFFFFFB0) { // And
+			result = Cplx_fAND_logic(result, Cplx_Evalsub1(SRC));
+		}
+		else if ( c==0xFFFFFFB1 ) { // Or
+			result = Cplx_fOR_logic(result, Cplx_Evalsub1(SRC));
+		}
+		else if ( c==0xFFFFFFB4 ) { // Xor
+			result = Cplx_fXOR_logic(result, Cplx_Evalsub1(SRC));
+		}
+		else if ( c==0xFFFFFFBC ) { // Int/
+			result = Cplx_fIDIV(result, Cplx_Evalsub1(SRC));
+		}
+		else if ( c==0xFFFFFFBD ) { // Rmdr
+			result = Cplx_fMOD(result, Cplx_Evalsub1(SRC));
+		}
+		else {
+			ExecPtr--;
 		}
 	}
-
+	else {
+		ExecPtr--;
+	}
+	c = SRC[ExecPtr];
+	if (eval_end_check_2(c))
+		return result;
 	ExecPtr=excptr;
 	CB_MatListAnsreg=ansreg;
 	return Cplx_Evalsub14( SRC );
@@ -223,7 +224,7 @@ double fImP( complex z ) {
 }
 double farg( complex z ) {
 	double x = finvradian( atan2( z.imag, z.real ) );
-	CheckMathERR(&x); // Math error ?
+	CheckMathERR(x); // Math error ?
 	return x;
 }
 complex Cplx_fReP( complex z ) {
@@ -434,7 +435,7 @@ complex Cplx_fln( complex z ) {
 }
 complex Cplx_fexp( complex z ) {	// e^z = e^(z.real)*(cos(z.imag) + e^(z.real)*sin(z.imag)*i
 	double x = exp( z.real );
-	CheckMathERR(&x); // Math error ?
+	CheckMathERR(x); // Math error ?
 	if ( z.imag==0 ) return Dbl2Cplx(x);
 	return Dbl2Cplx2( x*ffcos(z.imag), x*ffsin(z.imag) );
 }
@@ -456,11 +457,10 @@ complex Cplx_fpowroot( complex x, complex y ) {	// powroot(x,y)
 complex Cplx_frecip( complex z ) {	// ^(-1) RECIP
 	double c;
 	if ( z.imag==0 ) {
-		if ( z.real==0 ) CB_Error(DivisionByZeroERR); // Division by zero error
-		z.real = 1 / z.real ;
+		z.real = frecip(z.real);
 	} else {
 		c = z.real*z.real + z.imag*z.imag;
-		if ( c == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
+		_div_check(c);
 		z.real =  z.real / c;
 		z.imag = -z.imag / c;
 	}
@@ -498,12 +498,11 @@ complex Cplx_fDIV( complex x, complex y ) {	// x / y
 	double tmp;
 	complex z;
 	if ( (x.imag==0)&&(y.imag==0) ) {
-		if ( y.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
-		z.real = x.real / y.real;
+		z.real = fDIV(x.real, y.real);
 		z.imag = 0;
 	} else {
 		tmp = y.real*y.real + y.imag*y.imag;
-		if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
+		_div_check(tmp);
 		z.real = (x.real * y.real + x.imag * y.imag) /tmp;
 		z.imag = (x.imag * y.real - x.real * y.imag) /tmp;
 	}
@@ -538,7 +537,7 @@ complex Cplx_fRanBin( complex n, complex p) {	// RanBin#
 }
 complex Cplx_fGCD( complex x, complex y ) {	// GCD(x,y)
 	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
-	return Dbl2Cplx( fGCD(x.real, y.real) );
+	return Dbl2Cplx( CB_gcd_float(x.real, y.real) );
 }
 complex Cplx_fLCM( complex x, complex y ) {	// LCM(x,y)
 	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
@@ -1157,7 +1156,7 @@ complex Cplx_Evalsub2(char *SRC) {	//  2nd Priority  ( type B function ) ...
 				result = Cplx_fMUL( result, result ) ;
 				break;
 			case  0xFFFFFF9B  :	// ^(-1) RECIP
-				if ( result.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
+				// _div_check(result.real);
 				result = Cplx_frecip( result );
 				break;
 			case  0xFFFFFFAB  :	//  !
@@ -1233,11 +1232,11 @@ complex Cplx_Evalsub3(char *SRC) {	//  3rd Priority  ( ^ ...)
 		switch ( c ) {
 			case  0xFFFFFFA8  :	// a ^ b
 				result = Cplx_fpow( result, Cplx_Evalsub2( SRC ) );
-				CheckMathERR(&result.real); // Math error ?
+				CheckMathERR(result.real); // Math error ?
 				break;
 			case  0xFFFFFFB8  :	// powroot
 				result = Cplx_fpow( Cplx_Evalsub2( SRC ), Cplx_frecip( result ) );
-				CheckMathERR(&result.real); // Math error ?
+				CheckMathERR(result.real); // Math error ?
 				break;
 			case ' ':	// Skip Space
 				break;
@@ -1262,10 +1261,10 @@ complex Cplx_Evalsub4(char *SRC) {	//  4th Priority  (Fraction) a/b/c
 		if ( c == 0xFFFFFFBB ) {
 			ExecPtr++;
 			frac3 = Cplx_Evalsub3( SRC );
-			if ( frac3.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
+			// _div_check(frac3.real);
 			result = Cplx_fADD( frac1, Cplx_fDIV( frac2, frac3 ) );
 		} else {
-			if ( frac2.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
+			// _div_check(frac2.real);
 			result = Cplx_fDIV( frac1, frac2 );
 		}
 	}
@@ -1424,7 +1423,7 @@ complex Cplx_Evalsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				break;
 			case 0xFFFFFFB9 :		// ��
 				tmp = Cplx_Evalsub8( SRC );
-				if ( tmp.real == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error
+				// _div_check(tmp.real);
 				result = Cplx_fDIV( result, tmp );
 				break;
 			case 0x7F:

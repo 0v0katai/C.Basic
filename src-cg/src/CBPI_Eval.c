@@ -170,6 +170,15 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 }
 
+int rand2() {
+	return ((rand() % 2) << 30) + (rand() << 15) + rand();
+}
+
+void _div_check_int(int div) {
+	if (div == 0)
+		CB_Error(DivisionByZeroERR);
+}
+
 int fintint( int x ) {
 	return x;
 }
@@ -206,27 +215,17 @@ int fcuberootint( int x ) {
 int fsquint( int x ) {
 	return x*x;
 }
-int ffactint( int x ) {
-	int tmp;
-	tmp = x ;
-	x = 1;
-	while ( tmp > 0 ) { x *= tmp; tmp--; }
-	return x;
+int ffactint(int x) {
+	return ffact(x);
 }
-int f_nPrint( int n, int r ) {
-	int x,tmp;
-	if ( n<r ) { CB_Error(MathERR) ; return 0; } // Math error
-	x = 1;
-	tmp = n;
-	while ( tmp > n-r ) { x *= tmp; tmp--; }
-	return x;
+int f_nPrint(int n, int r) {
+	return f_nPr(n,r);
 }
 int f_nCrint( int n, int r ) {
 	return f_nCr( n, r);
 }
 int frecipint( int x ) {	// ^(-1) RECIP
-	if ( x == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
-	return 1 / x ;
+	return fDIVint(1, x);
 }
 
 int fsignint( int x ) {	// -x
@@ -242,7 +241,7 @@ int fMULint( int x, int y ) {	// x * y
 	return x*y;
 }
 int fDIVint( int x, int y ) {	// x / y
-	if ( y == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+	_div_check_int(y);
 	return x/y;
 }
 int fANDint( int x, int y ) {	// x and y
@@ -292,51 +291,34 @@ int fpowint( int x, int y ) {	// pow(x,y)
 	return pow( x, y );
 }
 int fpowrootint( int x, int y ) {	// powroot(x,y)
-	if ( y == 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	return pow( x, 1/(double)y );
+	return fpowroot(x, y);
 }
-int flogabint( int x, int y ) {	// flogab(x,y)
-	double base;
-	int result;
-	if ( x <= 0 ) { CB_Error(MathERR) ; return 0; } // Math error
-	base  = log(x);
-	result = log(y)/base;
-	return result ;
+int flogabint(int x, int y) {	// flogab(x,y)
+	return flogab(x,y);
 }
-int frandint() {
-	return rand();
-}
-int frandIntint( int x, int y ) {
-	int i;
-	if ( x>y ) { i=x; x=y; y=i; }
-	return rand()*(y-x+1)/(RAND_MAX+1) +x ;
+int frandIntint(int x, int y) {
+	return rand2() % (abs(y-x)+1) + min(x,y);
 }
 
-int fMODint( int x, int y ) {	// fMODint(x,y)
+int fMODint(int x, int y) {
 	int result;
-	if ( y == 0 )  CB_Error(DivisionByZeroERR); // Division by zero error 
-	result= abs(x % y);
-	if ( x < 0 ) {
-		result = abs(y)-result;
-		if ( ( result == abs(y)  ) || ( x == y  ) ) result=0;
-	}
-	return result ;
+	_div_check_int(y);
+	result = x % y;
+	if (result < 0)
+		result += abs(y);
+	return result;
 }
 
-int fGCDint( int x, int y ) {	// GCD(x,y)
-	int tmp;
-	if ( x<y ) { tmp=x; x=y; y=tmp; }
-	tmp=fMODint(x,y);
-	while( tmp != 0 ) {
-		x=y;
-		y=tmp;
-		tmp=fMODint(x,y);
-	}
-	return y;
+static int gcd_int(int x, int y) {
+	if (y == 0)
+		return x;
+	return gcd_int(y, x % y); 
+}
+int CB_gcd_int(int x, int y) {	// GCD(x,y)
+	return abs(gcd_int(x, y)); 
 }
 int fLCMint( int x, int y ) {	// LCM(x,y)
-	if ( ( x < 0 ) || ( x < 0 ) ) { CB_Error(ArgumentERR) ; return 0; } // Argumenterror
-	return x/fGCDint(x,y)*y;
+	return abs(fDIVint(x*y, CB_gcd_int(x,y) + (y == 0)));
 }
 
 int CB_rand( char *SRC ) {
@@ -368,77 +350,87 @@ int EvalIntEndCheck( int c ) {
 }
 */
 int EvalIntsubTop( char *SRC ) {	// eval 1
-	int  result,dst;
+	int result;
 	int c;
 	int excptr=ExecPtr;
 	int ansreg=CB_MatListAnsreg;
 
 //	while ( SRC[ExecPtr]==0x20 ) ExecPtr++; // Skip Space
-	result=EvalIntsub1(SRC);
-	c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result;
-	else 
-	if ( c==0xFFFFFF89 ) { // +
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result+dst;
-	} else
-	if ( c==0xFFFFFF99 ) { // -
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result-dst;
-	} else
-	if ( c=='=') { // ==
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result == dst;
-	} else
-	if ( c=='>') { // >
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result > dst;
-	} else
-	if ( c=='<') { // <
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result < dst;
-	} else
-	if ( c==0x11) { // !=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result != dst;
-	} else
-	if ( c==0x12) { // >=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result >= dst;
-	} else
-	if ( c==0x10) { // <=
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result <= dst;
-	} else
-	if ( c==0xFFFFFFA9 ) { // *
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*dst;
-	} else
-	if ( c==0xFFFFFFB9 ) { // /
-	  divj:
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fDIVint(result,dst);
-	} else
-	if ( c==0xFFFFFF9A ) { // xor
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result ^ dst;
-	} else
-	if ( ( c=='|' ) || ( c==0xFFFFFFAA ) ) { // or
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result | dst;
-	} else
-	if ( ( c=='&' ) || ( c==0xFFFFFFBA ) ) { // and
-		ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result & dst;
-	} else
-	if ( c==0xFFFFFF8B ) { // ^2
-		ExecPtr++;
-		c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return result*result;
-	} else
-	if ( c==0x7F ) { // 
-		c=SRC[++ExecPtr];
-		if ( c==0xFFFFFFB0 ) { // And
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result && (int)dst;
-		} else
-		if ( c==0xFFFFFFB1 ) { // Or
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return (int)result || (int)dst;
-		} else
-		if ( c==0xFFFFFFB4 ) { // Xor
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return ((int)result!=0) ^ ((int)dst!=0);
-		} else
-		if ( c==0xFFFFFFBC ) { // Int/
-			goto divj;
-		} else
-		if ( c==0xFFFFFFBD ) { // Rmdr
-			ExecPtr++; dst=EvalIntsub1(SRC); c=SRC[ExecPtr]; if ( (c==':')||(c==0x0E)||(c==0x13)||(c==',')||(c==')')||(c==']')||(c==0x0D)||(c==0) ) return fMODint(result,dst);
+	result = EvalIntsub1(SRC);
+	c = SRC[ExecPtr++];
+	
+	if (c == 0xFFFFFF89) { // +
+		result += EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFF99) { // -
+		result -= EvalIntsub1(SRC);
+	}
+	else if (c == '=') { // ==
+		result = (result == EvalIntsub1(SRC));
+	}
+	else if (c == '>') { // >
+		result = (result > EvalIntsub1(SRC));
+	}
+	else if (c == '<') { // < 
+		result = (result < EvalIntsub1(SRC));
+	}
+	else if (c == 0x11) { // != 
+		result = (result != EvalIntsub1(SRC));
+	}
+	else if (c == 0x12) { // >= 
+		result = (result >= EvalIntsub1(SRC));
+	}
+	else if (c == 0x10) { // <= 
+		result = (result <= EvalIntsub1(SRC));
+	}
+	else if (c == 0xFFFFFFA9) { // * 
+		result *= EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFFB9) { // / 
+		result = fDIVint(result, EvalIntsub1(SRC));
+	}
+	else if (c == 0xFFFFFF9A) { // xor 
+		result = result ^ EvalIntsub1(SRC);
+	}
+	else if (( c == '|' ) || (c == 0xFFFFFFAA)) { // or 
+		result = result | EvalIntsub1(SRC);
+	}
+	else if (( c == '&' ) || (c == 0xFFFFFFBA)) { // and 
+		result = result & EvalIntsub1(SRC);
+	}
+	else if (c == 0xFFFFFF8B) { // ^2
+		result *= result;
+	}
+	else if (c == 0xFFFFFF9B) { // ^(-1) RECIP
+		result = frecipint(result);
+	}
+	else if (c == 0x7F) { // 
+		c = SRC[ExecPtr++];
+		if (c == 0xFFFFFFB0) { // And
+			result = (result) && EvalIntsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB1 ) { // Or
+			result = (result) || EvalIntsub1(SRC);
+		}
+		else if ( c==0xFFFFFFB4 ) { // Xor
+			result = (result != 0) ^ (EvalIntsub1(SRC) != 0);
+		}
+		else if ( c==0xFFFFFFBC ) { // Int/
+			result = fDIVint(result, EvalIntsub1(SRC));
+		}
+		else if ( c==0xFFFFFFBD ) { // Rmdr
+			result = fMODint(result, EvalIntsub1(SRC));
+		}
+		else {
+			ExecPtr--;
 		}
 	}
+	else {
+		ExecPtr--;
+	}
+	c = SRC[ExecPtr];
+	if (eval_end_check_2(c))
+		return result;
 
 	ExecPtr=excptr;
 	CB_MatListAnsreg=ansreg;
@@ -585,7 +577,7 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					
 				case 0x3C :				// GCD(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);
-					return fGCDint(tmp,tmp2);
+					return CB_gcd_int(tmp,tmp2);
 
 				case 0x3D :				// LCM(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);
@@ -1063,7 +1055,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				break;
 			case 0xFFFFFFB9 :		// ��
 				tmp = EvalIntsub7( SRC );
-				if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+				_div_check_int(tmp);
 				result /= tmp ;
 				break;
 			case 0x7F:
@@ -1071,7 +1063,7 @@ int EvalIntsub10(char *SRC) {	//  10th Priority  ( *,/, int.,Rmdr )
 				switch ( c ) {
 					case 0xFFFFFFBC:	// Int��
 						tmp = EvalIntsub7( SRC );
-						if ( tmp == 0 ) CB_Error(DivisionByZeroERR); // Division by zero error 
+						_div_check_int(tmp);
 						result /= tmp ;
 						break;
 					case 0xFFFFFFBD:	// Rmdr

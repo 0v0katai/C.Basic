@@ -1,8 +1,3 @@
-typedef struct  {
-	double real;
-	double imag;
-} complex;
-
 #include "CBP_complex.h"
 #include "CBP_KeyScan.h"
 #include "CBP_sys.h"
@@ -30,3 +25,4 @@ typedef struct  {
 #include "CBP_MonochromeLib.h"
 #include "MonochromeLibCG.h"
 #include "va_lib.h"
+#include "config.h"

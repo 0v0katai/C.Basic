@@ -2218,37 +2218,40 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89",","[,n]) -> MatAns[["12
 
 //----------------------------------------------------------------------------------------------
 void StrDMSsub( char *buffer, double a ) {	// 
-	double b,c,d;
-	int i=0,j=3,f=1;
+	int degree, minute;
+	double second;
+	int i=0, coeff=1;
+	bool frac;
 
-	if ( a<0 ) { f=-1; a=-a; }
-	b=floor(a);
-	b=(a-b)*60.;
-	c=floor(b);
-	d=(b-c)*60.;
-	
-	sprintf(buffer, "%d %02d  %05.2f", (int)a*f, (int)c, d);
+	if (a > INT_MAX)
+		a = INT_MAX;
+	if (a < INT_MIN)
+		a = INT_MIN;
+	if (a < 0) {
+		coeff = -1;
+		a = -a;
+	}
+	frac = (a < 1);
+	degree = (int)a;
+	minute = (int)((a - degree) * 60.);
+	second = ((a - degree) * 60. - minute) * 60.;
 
-	i=floor(log10(a));
-	if ( i<0 ) i=0;
-	if ( f<0 ) i++;
-
-	if ( buffer[0] == '-' ) buffer[0]=0x87;	// (-)
-
-	buffer[i+1]=0x9C;
-	
-	buffer[i+4]=0xE5;
-	buffer[i+5]=0x96;
-
-	if ( buffer[i+10] == '0' ) {
-		j--;
-		if ( buffer[i+9] == '0' ) j-=2;
+	sprintf(buffer, "%d\x9C%02d\xE5\x96%05.2f", degree * coeff, minute, second);
+	if (coeff == -1) {
+		if (frac)
+			memmove(buffer+1, buffer, strlen(buffer) + 1);
+		buffer[0] = 0x87;
+		i++;
 	}
 
-	buffer[ 8+i+j]=0xE5;
-	buffer[ 9+i+j]=0x98;
-	buffer[10+i+j]='\0';
+	i += frac ? 1 : floor(log10(a)) + 1;
 
+	if (buffer[i+9] == '0')
+		i -= buffer[i+8] == '0' ? 3 : 1;
+
+	buffer[i+10] = 0xE5;
+	buffer[i+11] = 0x98;
+	buffer[i+12] = '\0';
 }
 /*
 int CB_StrDMS( char *SRC ) {

@@ -11,7 +11,9 @@
 #define ExpMax 255
 extern char ExpBuffer[];
 //-----------------------------------------------------------------------------
-void CheckMathERR( double *result ) ;
+double CheckMathERR( double result ) ;
+void _div_check(double div);
+void _div_check_int(int div);
 double asinh( double x ) ;
 double acosh( double x ) ;
 double atanh( double x ) ;
@@ -85,7 +87,7 @@ double fMOD( double x, double y ) ;	// fMOD(x,y)
 double fIDIV( double x, double y ) ;	// (int)x / (int)y
 double flogab( double x, double y ) ;	// flogab(x,y)
 double frand() ;
-double fGCD( double x, double y ) ;	// GCD(x,y)
+double CB_gcd_float( double x, double y ) ;	// GCD(x,y)
 double fLCM( double x, double y ) ;	// LCM(x,y)
 double fRanNorm( double sd, double mean) ;	// RanNorm#
 double fRanBin( double n, double p) ;	// RanBin#
@@ -99,6 +101,7 @@ double RoundSci( double x, double digit);
 double Eval_atof(char *SRC, int c) ;
 double DmsToDec( char *SRC, double h ) ;	// 12"34"56 -> 12.5822222
 
+int eval_end_check_2(int c);
 double Eval(char *SRC);
 double Eval2(char *SRC, int *ptr);
 double Evalsub1(char *SRC);
