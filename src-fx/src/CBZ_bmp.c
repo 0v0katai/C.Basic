@@ -283,10 +283,12 @@ void CB_BmpSave( char *SRC ) { //	BmpSave "TEST.bmp",Mat A[,Q]
 			g_exec_ptr++;
 		}
 		switch ( gaiji ) {	
+			// case 0:
+			// 	SaveExtFontKana(  flag, sname, folder, no, check ); return ;
+			// case 1:
+			// 	SaveExtFontGaiji( flag, sname, folder, no, check ); return ;
 			case 0:
-				SaveExtFontKana(  flag, sname, folder, no, check ); return ;
-			case 1:
-				SaveExtFontGaiji( flag, sname, folder, no, check ); return ;
+				SaveExtFontFF(    flag, sname, folder, no, check ); return ;
 			case 2:
 				SaveExtFontAnk(   flag, sname, folder, no, check ); return ;
 		}
@@ -410,9 +412,11 @@ void CB_BmpLoad( char *SRC ) { //	BmpLoad("TEST.bmp")[->Mat A]
 		if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 		switch ( gaiji ) {	
 			case 0:
-				LoadExtFontKanafolder(  flag, sname, folder, no ); return ;
-			case 1:
-				LoadExtFontGaijifolder( flag, sname, folder, no ); return ;
+				LoadExtFontFFfolder(    flag, sname, folder, no ); return ;
+			// case 0:
+			// 	LoadExtFontKanafolder(  flag, sname, folder, no ); return ;
+			// case 1:
+			// 	LoadExtFontGaijifolder( flag, sname, folder, no ); return ;
 			case 2:
 				LoadExtFontAnkfolder(   flag, sname, folder, no ); return ;
 		}

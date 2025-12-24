@@ -1555,7 +1555,7 @@ int CB_StrRight( char *SRC ) {	// StrRight( str1, n  )
 	int maxoplen;
 	char *buffer;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( g_error_type ) return ;  // error
+	if ( g_error_type ) return 0;  // error
 	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	g_exec_ptr++;
 	n = CB_EvalInt( SRC );	//
@@ -1677,7 +1677,7 @@ int CB_StrChar( char *SRC ) {	// StrChar("*"[,n]) StrChar( code [,n])
 		code[i++] = '\0';
 		buffer=code;
 	}
-	if ( g_error_type ) return ;  // error
+	if ( g_error_type ) return 0;  // error
 	if ( SRC[g_exec_ptr] == ',' ) { 
 		g_exec_ptr++;
 		n = CB_EvalInt( SRC );	//
@@ -1697,7 +1697,7 @@ int CB_StrCenter( char *SRC ) {	// StrCenter( Str1,max[,"SpaceChar"])
 	int  charflag=0;
 	char spc[]=" ";
 	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( g_error_type ) return ;  // error
+	if ( g_error_type ) return 0;  // error
 	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	g_exec_ptr++;
 	max = CB_EvalInt( SRC );	//
@@ -1758,7 +1758,7 @@ int CB_StrBase( char *SRC ){		// StrBase( Str1,base1,base2 )->str2
 	char *buffer;
 	int base1=10,base2=10;
 	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( g_error_type ) return ;  // error
+	if ( g_error_type ) return 0;  // error
 	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
 	g_exec_ptr++;
 	base1 = CB_EvalInt( SRC );	//

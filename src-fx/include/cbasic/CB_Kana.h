@@ -143,3 +143,5 @@ void CB_SetFontMini( char *SRC );    // SetFont 0xFFA0,Mat C
 
 /* Reads external font bitmaps in the current folder. */
 void ReadExtFont();
+
+void KPrintCharSub( int px, int py, unsigned char *c, int modify );

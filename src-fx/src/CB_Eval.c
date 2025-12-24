@@ -951,8 +951,9 @@ double fMOD(double x, double y) {	// fMOD(x,y)
 double fIDIV(double x, double y) {
 	return floor(fDIV(x,y));
 }
-double ffact(int x) {
+double ffact(double x) {
 	double sum=1;
+	x = (int)x;
 	if (x < 0)
 		CB_Error(MathERR);
 	while (x > 1) {
@@ -1303,7 +1304,7 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					
 				case 0xFFFFFFE9 :		// CellSum(Mat A[x,y])
 					MatrixOprand( SRC, &reg, &x, &y );
-					if ( g_error_type ) return ; // error
+					if ( g_error_type ) return 0; // error
 					if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
 					return Cellsum( reg, x, y );
 	

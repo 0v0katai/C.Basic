@@ -1,4 +1,4 @@
-﻿"NormalG ",		// F72B
+"NormalG ",		// F72B
 "ThickG ",		// F72C
 "BrokenThickG ",	// F72D
 "DotG ",		// F73F
