@@ -1,4 +1,4 @@
-﻿===============================================================================
+===============================================================================
 C.Basic font editor FEINT for fx-CG10/20/50/Graph90+E
 Font File Manager (FFM) subroutine  Version 1.24 Manual
 by Colon/sentaro21
