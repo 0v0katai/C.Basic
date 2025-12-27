@@ -111,12 +111,12 @@ int OS_VersionMinor() {
 int CB_System(char *SRC) {
 	int n = CB_EvalInt(SRC);
 	if (n == 10000) {
-		if (SRC[g_exec_ptr] != ',')
+		if (SRC[ExecPtr] != ',')
 			CB_Error(SyntaxERR);
-		g_exec_ptr++;
+		ExecPtr++;
 		LoadConfig1data(CB_EvalInt(SRC));
 	}
-	if (SRC[g_exec_ptr] == ')') g_exec_ptr++;
+	if (SRC[ExecPtr] == ')') ExecPtr++;
 	switch (n) {
 		case -22:
 			return OS_VersionMinor();

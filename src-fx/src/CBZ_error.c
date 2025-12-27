@@ -19,9 +19,9 @@
 
 #include "CB.h"
 
-int g_error_ptr=0;
-int g_error_prog=0;
-int g_error_type;
+int ErrorPtr=0;
+int ErrorProg=0;
+int ErrorNo;
 
 void ERROR(char *buffer) {
 	unsigned int key;
@@ -41,7 +41,7 @@ void ERROR(char *buffer) {
 
 	PopUpWin(4);
 	locate(3+pad,3); Print((unsigned char *)buffer);
-	sprintf(msg, "(%d)", g_error_type);
+	sprintf(msg, "(%d)", ErrorNo);
 	locate(3,5); Print((unsigned char *)msg);
 	locate(14,5); Print((unsigned char *)"[EXIT]");
 
@@ -211,14 +211,14 @@ void CB_ErrMsg(int ErrNo) {
 void CB_Error(int error_macro) {
 
 	/* exit this function if another error occured earlier */
-	if (g_error_type)
+	if (ErrorNo)
 		return;
 	
-	g_error_type = error_macro;
-	g_error_ptr = g_exec_ptr;
-	g_error_prog = g_current_prog;
+	ErrorNo = error_macro;
+	ErrorPtr = ExecPtr;
+	ErrorProg = g_current_prog;
 
 	/* mimic Casio Basic behaviour */
 	if (error_macro == MathERR)
-		g_error_ptr--;
+		ErrorPtr--;
 }

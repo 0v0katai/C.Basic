@@ -263,20 +263,20 @@ int CB_GetFontSub(
     int getmode
 ) {
     int opcode;
-    int c = SRC[g_exec_ptr];
+    int c = SRC[ExecPtr];
 
     if (c == ')') {
-        g_exec_ptr++;
+        ExecPtr++;
         return -1;
     }
 
     *orgflag = false;
     if (c == '@') {
-        g_exec_ptr++;
+        ExecPtr++;
         *orgflag = true;
     }
     
-    c = CB_IsStr(SRC, g_exec_ptr);
+    c = CB_IsStr(SRC, ExecPtr);
     if (c) {    // string
         CB_GetLocateStr(SRC, cstr, 256-1);        // String -> buffer    return 
         GetOpcodeLen(cstr, 0, &opcode);
@@ -323,16 +323,16 @@ int CB_GetFont(char *SRC) {    // GetFont(0xFFA0)->Mat C
     c = CB_GetFontSub(SRC, (char*)cstr, &orgflag, true) ;
     if (c == -1)
         goto exit;
-    if (SRC[g_exec_ptr] == ')')
-        g_exec_ptr++;
-    if (SRC[g_exec_ptr] == 0x0E) {  // -> Mat C
-        g_exec_ptr++;
+    if (SRC[ExecPtr] == ')')
+        ExecPtr++;
+    if (SRC[ExecPtr] == 0x0E) {  // -> Mat C
+        ExecPtr++;
         MatrixOprand(SRC, &reg, &x, &y);
-        if (g_error_type == UndefinedMatrix) {
-            g_error_type = 0;
+        if (ErrorNo == UndefinedMatrix) {
+            ErrorNo = 0;
         }
         DimMatrixSub(reg, 1, width, height, ElementSize);    // 1bit
-        if (g_error_type)
+        if (ErrorNo)
             return 0;
         memcpy(vbuf, vram, 16*8);
         if (cstr == NULL)
@@ -372,17 +372,17 @@ int CB_GetFontMini( char *SRC ){    // GetFont(0xFFA0)->Mat C
 
     c = CB_GetFontSub( SRC, (char*)cstr, &orgflag, 1 ) ;
     if ( c == -1 ) goto exit;
-    if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
-    if ( SRC[g_exec_ptr] == 0x0E ) {  // -> Mat C
-            g_exec_ptr++;
+    if ( SRC[ExecPtr] == ')' ) ExecPtr++;
+    if ( SRC[ExecPtr] == 0x0E ) {  // -> Mat C
+            ExecPtr++;
             width=CB_PrintMiniLength( cstr, (orgflag==0) );
             if ( width<2 ) width=2;
             MatrixOprand( SRC, &reg, &x, &y );
-            if ( g_error_type == UndefinedMatrix ) {     // No Matrix Array
-                g_error_type=0;    // error cancel
+            if ( ErrorNo == UndefinedMatrix ) {     // No Matrix Array
+                ErrorNo=0;    // error cancel
             }
             DimMatrixSub( reg, 1, width, height, ElementSize ) ;    // 1bit
-            if ( g_error_type ) return 0; // error
+            if ( ErrorNo ) return 0; // error
             
             memcpy( vbuf, vram, 16*8 );
             if ( cstr==NULL ) {
@@ -453,10 +453,10 @@ char* CB_SetFontSub( char *SRC, int *reg, int mini ) {
             g_ext_ff = true;
         }
     }
-    if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return NULL; }  // Syntax error
-    g_exec_ptr++;
+    if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return NULL; }  // Syntax error
+    ExecPtr++;
     MatrixOprand( SRC, &(*reg), &width, &height );
-    if ( g_error_type ) return NULL; // error
+    if ( ErrorNo ) return NULL; // error
     if ( MatAry[*reg].ElementSize != 1 ) {  CB_Error(InvalidSize); return NULL; }
     return fontptr;
 }
@@ -467,7 +467,7 @@ void CB_SetFont( char *SRC ){    // SetFont 0xFFA0,Mat C
     char *matptr,*fontptr;
 
     fontptr=CB_SetFontSub( SRC, &reg, 0 );
-    if ( ( fontptr==NULL ) || ( g_error_type ) ) return ;
+    if ( ( fontptr==NULL ) || ( ErrorNo ) ) return ;
     if ( EnableExtFont==0 ) return ;
     matptr=(char*)MatAry[reg].Adrs;
     for ( py=0; py<8 ; py++) {
@@ -482,7 +482,7 @@ void CB_SetFontMini( char *SRC ){    // SetFont 0xFFA0,Mat C
     char *matptr,*fontptr;
     
     fontptr=CB_SetFontSub( SRC, &reg, 1 );
-    if ( ( fontptr==NULL ) || ( g_error_type ) ) return ;
+    if ( ( fontptr==NULL ) || ( ErrorNo ) ) return ;
     if ( EnableExtFont==0 ) return ;
     matptr=(char*)MatAry[reg].Adrs;
     width=MatAry[reg].SizeA;
@@ -538,13 +538,13 @@ int LoadExtFontKana_sub( char* name, char *font, int line ){        // LFONTK.bm
 
     if ( name[0]=='/' ) FilePtr = CB_LoadSub( name, 0, &size, "bmp" ) ;
     else    FilePtr = Load1st2nd( name, "FONT", "bmp" );
-    if ( g_error_type == FileNotFound ) g_error_type=0;
+    if ( ErrorNo == FileNotFound ) ErrorNo=0;
     if ( FilePtr == NULL ) return 0;
 
     bit=ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );
     if ( ( bit != 1 ) || ( width > 8*16 ) || ( height > 8*line ) ) { return 0; }
     DimMatrixSub( reg, 1, width, height, 0 ) ;    // ElementSize=1  base=0
-    if ( g_error_type ) { return 0; } // error
+    if ( ErrorNo ) { return 0; } // error
     matptr=(char*)MatAry[reg].Adrs;
     DecodeBmp2mem( matptr , FilePtr+offset, width, height );    //    bmpformat -> bmp
 
@@ -572,13 +572,13 @@ int LoadExtFontKanaMini_sub( char* name, char *font, int line ){            // M
 
     if ( name[0]=='/' ) FilePtr = CB_LoadSub( name, 0, &size, "bmp" ) ;
     else    FilePtr = Load1st2nd( name, "FONT", "bmp" );
-    if ( g_error_type == FileNotFound ) g_error_type=0;
+    if ( ErrorNo == FileNotFound ) ErrorNo=0;
     if ( FilePtr == NULL ) return 0;
 
     bit=ReadBmpHeader( (unsigned char*)FilePtr, &offset, &width, &height );
     if ( ( bit != 1 ) || ( width > 8*16 ) || ( height > 8*line ) ) { return 0; }
     DimMatrixSub( reg, 1, width, height, 0 ) ;    // ElementSize=1  base=0
-    if ( g_error_type ) { return 0; } // error
+    if ( ErrorNo ) { return 0; } // error
     matptr=(char*)MatAry[reg].Adrs;
     DecodeBmp2mem( matptr , FilePtr+offset, width, height );    //    bmpformat -> bmp
 
@@ -718,7 +718,7 @@ void SaveExtFontKana_sub( char* sname, char *font, int line, int check ){       
     height=8*line;
     bit=1;
     DimMatrixSub( reg, ElementSize, width, height, base ) ;
-    if ( g_error_type ) return ; // error
+    if ( ErrorNo ) return ; // error
 
     i=0;
     for ( y=0; y<line; y++ ) {
@@ -751,7 +751,7 @@ void SaveExtFontKanaMini_sub( char* sname, char *font, int line, int check ){   
     height=8*line;
     bit=1;
     DimMatrixSub( reg, ElementSize, width, height, base ) ;
-    if ( g_error_type ) return ; // error
+    if ( ErrorNo ) return ; // error
 
     i=0;
     for ( y=0; y<line; y++ ) {

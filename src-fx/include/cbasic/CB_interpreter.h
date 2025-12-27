@@ -186,7 +186,7 @@ extern int CursorX;	// text cursor X
 extern int CursorY;	// text cursor X
 
 extern int CB_INT;		// current mode  0:normal  1: integer mode
-extern int g_exec_ptr;
+extern int ExecPtr;
 extern int BreakPtr;
 
 extern int CBint_CurrentValue;	// Ans

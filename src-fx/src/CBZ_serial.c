@@ -15,7 +15,7 @@ int send_data( unsigned char *buffer, int n ){
 	while ( n>i ) {
 	  loop:
 		while ( Serial_GetFreeTransmitSpace() < 128 ) {
-			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=g_exec_ptr; return 0; }	// [AC] break?
+			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
 			if ( serial_exitflag ) if ( KeyScanDown(KEYSC_EXIT) ) return -9;	// [EXIT]
 		}
 		r=Serial_BufferedTransmitOneByte( buffer[0] );
@@ -40,7 +40,7 @@ int receive_data( unsigned char *buffer, int n ){
 	while ( n>i ) {
 	  loop:
 		while ( Serial_GetReceivedBytesAvailable() < 1 ) {
-			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=g_exec_ptr; return 0; }	// [AC] break?
+			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
 			if ( serial_exitflag ) if ( KeyScanDown(KEYSC_EXIT) ) return -9;	// [EXIT]
 		}
 		r=Serial_ReadOneByte( buffer );
@@ -105,37 +105,37 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 	int c,result,maxoplen;
 	int reg,dimA, dimB,ElementSize,m,n;
 	int base;
-	c=SRC[g_exec_ptr];
+	c=SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
-		g_exec_ptr++;
+		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[g_exec_ptr];
-		if ( c=='%' ) { g_exec_ptr++; result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; }
+		c=SRC[ExecPtr];
+		if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; }
 		else
 		if ( c=='[' ) { goto Matrix; }		// A[1]
 		else
 		if ( ( '0'<=c )&&( c<='9' ) ) {		// A1
-				g_exec_ptr++;
+				ExecPtr++;
 				dimA=c-'0';
 				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 		} else
-		if ( c=='#' ) { g_exec_ptr++; result=(int)&LocalDbl[reg][0]; (*length)=type_DBLorCPLX(&(*type)); }
+		if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; (*length)=type_DBLorCPLX(&(*type)); }
 		else
 		if (CB_INT==1)	{ result=(int)&LocalInt[reg][0]; (*length)=4; *type=SERIAL_LONG; } else { result=(int)&LocalDbl[reg][0]; (*length)=type_DBLorCPLX(&(*type)); }
 	} else
-	if ( ( c==0x7F ) && ( ( SRC[g_exec_ptr+1]==0x40 ) || ( SRC[g_exec_ptr+1]==0xFFFFFF84 ) ) ) {	// Mat or Vct
-		g_exec_ptr+=2;
-		c=SRC[g_exec_ptr];
-		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; g_exec_ptr++; } 
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) ) {	// Mat or Vct
+		ExecPtr+=2;
+		c=SRC[ExecPtr];
+		if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 		else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
-		if ( SRC[g_exec_ptr] == '[' ) {
+		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
-			g_exec_ptr++;
+			ExecPtr++;
 			MatOprand2( SRC, reg, &dimA, &dimB );	// Mat A[a,b]
 		Matrix2:	
-			if ( g_error_type ) return 0 ; // error
+			if ( ErrorNo ) return 0 ; // error
 			result=(int)MatrixPtr( reg, dimA, dimB );
 			goto Matrix3;
 		Matrix3base:
@@ -152,15 +152,15 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 			goto Matrix3base;
 		}
 	} else
-	if ( ( c==0x7F ) && ( SRC[g_exec_ptr+1]==0x51 ) ) {	// List
-		g_exec_ptr+=2;
-		c=SRC[g_exec_ptr];
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
+		ExecPtr+=2;
+		c=SRC[ExecPtr];
 		reg=ListRegVar( SRC );
 		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
-		if ( SRC[g_exec_ptr] == '[' ) {
-			g_exec_ptr++;
+		if ( SRC[ExecPtr] == '[' ) {
+			ExecPtr++;
 			MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
-			if ( g_error_type ) return 0 ; // error
+			if ( ErrorNo ) return 0 ; // error
 			result=(int)MatrixPtr( reg, dimA, dimB );
 			goto Matrix3;
 		} else {
@@ -168,7 +168,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 			goto Matrix3base;
 		}
 	} else {
-		c=CB_IsStr( SRC, g_exec_ptr );
+		c=CB_IsStr( SRC, ExecPtr );
 		if ( c ) {	// string
 			if ( ( flag ) && (c==0x22) ) CB_Error(SyntaxERR) ;  // Syntax error 
 			result=(int)CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
@@ -181,7 +181,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 			if (CB_INT==1) { 
 				if ( c=='#' ) goto cdbl;
 				else {
-				if ( c=='%' ) g_exec_ptr++;
+				if ( c=='%' ) ExecPtr++;
 				  cint:
 					CBint_CurrentValue=CB_EvalInt(SRC); *type=SERIAL_LONG;
 					result=(int)&CBint_CurrentValue; (*length)=4;
@@ -189,7 +189,7 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 			} else	{
 				if ( c=='%' ) goto cint;
 				else {
-				if ( c=='#' ) g_exec_ptr++;
+				if ( c=='#' ) ExecPtr++;
 				  cdbl:
 					(*length)=type_DBLorCPLX(&(*type));
 					CB_CurrentValue=CB_Cplx_EvalDbl(SRC);
@@ -202,20 +202,20 @@ int VarPtrLength( char *SRC, int *length, int *type, int flag) {
 }
 
 int CB_baudrate( char *SRC, unsigned char *baud ){
-	int b,c=SRC[g_exec_ptr];
+	int b,c=SRC[ExecPtr];
 	if ( c!=',' ) return 0;
-	g_exec_ptr++;
-	if ( SRC[g_exec_ptr]==',' ) return 0;
+	ExecPtr++;
+	if ( SRC[ExecPtr]==',' ) return 0;
 	b=CB_EvalInt(SRC);
 	if ( ( b<0 ) || ( 9<b ) ) { CB_Error(ArgumentERR) ; } // Argument error 
 	*baud=b;
 	return 1;
 }
 int CB_length( char *SRC, int *length ){
-	int len,c=SRC[g_exec_ptr];
+	int len,c=SRC[ExecPtr];
 	if ( c!=',' ) return 0;
-	g_exec_ptr++;
-	if ( SRC[g_exec_ptr]==',' ) return 0;
+	ExecPtr++;
+	if ( SRC[ExecPtr]==',' ) return 0;
 	len=CB_EvalInt(SRC);
 	if ( ( len<0 ) ) { CB_Error(ArgumentERR) ; } // Argument error 
 	*length=len;
@@ -239,7 +239,7 @@ void CB_Send( char *SRC ){				// Send( data )
 	int r;
 
 	ptr=VarPtrLength(SRC, &length, &type, 0 );
-	if ( g_error_type ) return;
+	if ( ErrorNo ) return;
 	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
 	serial_exitflag=0;
@@ -249,10 +249,10 @@ void CB_Send( char *SRC ){				// Send( data )
 //	while ( Serial_Close(0)==5 );	// transmissions are under way?
 //	Serial_Close( 1 );	// close
 	Serial_Close_sub();
-	if ( r == -9 ) { g_error_type=0; r=0; }	//
-	if ( g_error_type ) return;
+	if ( r == -9 ) { ErrorNo=0; r=0; }	//
+	if ( ErrorNo ) return;
 	if ( r ) CB_Error(TransmitERR);
-	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 }
 void CB_Receive( char *SRC ){			// Receive( data )
 	int ptr;
@@ -262,7 +262,7 @@ void CB_Receive( char *SRC ){			// Receive( data )
 	short actbytes;
 
 	ptr=VarPtrLength(SRC, &length, &type, 1 );
-	if ( g_error_type ) return;
+	if ( ErrorNo ) return;
 	Serial_Close_sub();
 	CB_baudrate( SRC, &mode[1] );
 	serial_exitflag=0;
@@ -273,11 +273,11 @@ void CB_Receive( char *SRC ){			// Receive( data )
 //	while ( Serial_Close(0)==5 );	// transmissions are under way?
 //	Serial_Close( 1 );	// close
 	Serial_Close_sub();
-	if ( r == -9 ) { g_error_type=0; r=0; }	//
-	if ( g_error_type ) return;
+	if ( r == -9 ) { ErrorNo=0; r=0; }	//
+	if ( ErrorNo ) return;
 	if ( type2 != type ) CB_Error(InvalidType);
 	if ( r ) CB_Error(ReceiveERR);
-	if ( SRC[g_exec_ptr] == ')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 }
 
 void CB_OpenComport38k( char *SRC ){	// OpenComport38k
@@ -302,7 +302,7 @@ void CB_Send38k( char *SRC ){			// Send38k
 	int r;
 
 	ptr=VarPtrLength(SRC, &length, &type, 0 );
-	if ( g_error_type ) return;
+	if ( ErrorNo ) return;
 	CB_length( SRC, &length );
 	if ( Transfermode == 0 ) {
 		r=send_data( (unsigned char*)ptr, length );
@@ -320,7 +320,7 @@ void CB_Receive38k( char *SRC ){		// Receive38k
 	int r;
 	
 	ptr=VarPtrLength(SRC, &length, &type, 1 );
-	if ( g_error_type ) return;
+	if ( ErrorNo ) return;
 	CB_length( SRC, &length );
 	if ( Transfermode == 0 ) {
 		r=receive_data( (unsigned char*)ptr, length );
@@ -439,13 +439,13 @@ void CB_Beep( char *SRC ){
 	int r,a=1000, n=500;
 	int listreg1,listreg2;
 	int size1,size2,base1,base2,ptr1,ptr2;
-	int c=SRC[g_exec_ptr];
+	int c=SRC[ExecPtr];
 	if ( ( c==':' )||( c==0x0D )||( c==0x0C )||( c==0 ) ) goto next;
 	if ( CB_MatListAnsreg >=28 ) CB_MatListAnsreg=28;
 	listreg1 = CB_BeepEval(SRC, &a);	// List calc
 	if ( listreg1 ) {
-		if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-		g_exec_ptr++;
+		if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+		ExecPtr++;
 		listreg2 = CB_BeepEval( SRC, &n );
 		if ( listreg2 ) {
 			size1=MatAry[listreg1].SizeA;

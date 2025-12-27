@@ -25,9 +25,9 @@
 
     Changing these values affects the output of `System(-9)`. */
 
-extern int g_error_prog;
-extern int g_error_ptr;
-extern int g_error_type;
+extern int ErrorProg;
+extern int ErrorPtr;
+extern int ErrorNo;
 
 #define SyntaxERR           1       // Syntax ERROR
 #define MathERR             2       // Math ERROR
@@ -103,9 +103,9 @@ extern int g_error_type;
 /**
  * Main function to raise error for exceptions.
  * The following error information will be saved:
- * - Input to `g_error_type`;
- * - current interpreter cursor position to `g_error_ptr`;
- * - current program position to `g_error_prog`
+ * - Input to `ErrorNo`;
+ * - current interpreter cursor position to `ErrorPtr`;
+ * - current program position to `ErrorProg`
  */
 void CB_Error(int error_macro);
 

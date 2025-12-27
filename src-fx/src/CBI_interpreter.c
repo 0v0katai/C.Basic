@@ -23,92 +23,92 @@ void CBint_Store( char *SRC ){	// ->
 	int*	MatAryI;
 	int dimdim=0;
 	
-	int c=SRC[g_exec_ptr],d;
+	int c=SRC[ExecPtr],d;
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
 		reg=c-'A';
-		g_exec_ptr++;
+		ExecPtr++;
 	  aliasj:
-		c=SRC[g_exec_ptr];
+		c=SRC[ExecPtr];
 		if ( c == 0x7E ) {		// '~'
-			g_exec_ptr++;
+			ExecPtr++;
 			en=RegVarAliasEx(SRC);
 			if ( en>=0 ) {
 				if ( en<reg ) { CB_Error(SyntaxERR); return; }	// Syntax error
-				c=SRC[g_exec_ptr];
-				if ( c=='#' ) { g_exec_ptr++;  for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalDbl[ i ][0] = Int2Cplx( CBint_CurrentValue ); }
+				c=SRC[ExecPtr];
+				if ( c=='#' ) { ExecPtr++;  for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalDbl[ i ][0] = Int2Cplx( CBint_CurrentValue ); }
 				} else
-				if ( c=='%' ) g_exec_ptr++;
+				if ( c=='%' ) ExecPtr++;
 				for ( i=reg; i<=en; i++) { if ( REGtype[reg] == 0 ) LocalInt[ i ][0] = CBint_CurrentValue; }
 			}
 		} else {
 			if ( REGtype[reg] == 1 ) { CB_Error(AssignERR); return; }	// Duplicate Definition	// const Var
-			if ( c=='#' ) { g_exec_ptr++;  LocalDbl[ reg ][0] = Int2Cplx( CBint_CurrentValue ); }
+			if ( c=='#' ) { ExecPtr++;  LocalDbl[ reg ][0] = Int2Cplx( CBint_CurrentValue ); }
 			else
 			if ( c=='[' ) { goto Matrix; }
 			else
 			if ( ( '0'<=c )&&( c<='9' ) ) {
-				g_exec_ptr++;
+				ExecPtr++;
 				dimA=c-'0';
 				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 			} else {
-				if ( c=='%' ) g_exec_ptr++;
+				if ( c=='%' ) ExecPtr++;
 				LocalInt[ reg ][0] = CBint_CurrentValue;
 			}
 		}
 	} else
 	if ( c==0x7F ) {
-		c = SRC[g_exec_ptr+1] ; 
+		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x40 ) {	// Mat A[a,b]
-			g_exec_ptr+=2;
-			c=SRC[g_exec_ptr];
-			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; g_exec_ptr++; } 
+			ExecPtr+=2;
+			c=SRC[ExecPtr];
+			if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) { reg=c-'A'; ExecPtr++; } 
 			else { reg=MatRegVar(SRC); if ( reg<0 ) CB_Error(SyntaxERR) ; } // Syntax error 
 			Matrix0:
-			if ( SRC[g_exec_ptr] != '[' ) { 
+			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==3 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; return ; }	// MatAns -> Mat A
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(UndefinedMatrix); return; }	// No Matrix Array error
 				InitMatSub( reg, Int2Cplx( CBint_CurrentValue ) );		// 10 -> Mat A
 			} else {
 			Matrix:
-				g_exec_ptr++;
+				ExecPtr++;
 				MatOprandInt2( SRC, reg, &dimA, &dimB);
 			Matrix2:
-				if ( g_error_type ) {  // error
-					if ( MatAry[reg].SizeA == 0 ) g_error_type=UndefinedMatrix;	// No Matrix Array error
+				if ( ErrorNo ) {  // error
+					if ( MatAry[reg].SizeA == 0 ) ErrorNo=UndefinedMatrix;	// No Matrix Array error
 					return ;
 				}
 				WriteMatrixInt( reg, dimA, dimB, CBint_CurrentValue);
 			}
 		} else if ( c == 0xFFFFFF84 ) {	// Vct A[a,b]
-			g_exec_ptr+=2;
+			ExecPtr+=2;
 			reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 			goto Matrix0;
 		} else if ( ( c == 0x51 ) || ( (0x6A<=c)&&(c<=0x6F) ) ) {	// List or List1~List6
-			g_exec_ptr+=2;
+			ExecPtr+=2;
 			reg=ListRegVar( SRC );
 		  Listj:
-			if ( SRC[g_exec_ptr] != '[' ) { 
+			if ( SRC[ExecPtr] != '[' ) { 
 				if ( dspflag ==4 ) { CopyAns2MatList( SRC, reg ) ; MatdspNo=reg; dspflag=0; return ; }	// ListAns -> List 1
 				if ( MatAry[reg].SizeA == 0 ) { CB_Error(UndefinedMatrix); return; }	// No Matrix Array error
 				InitMatSub( reg, Int2Cplx( CBint_CurrentValue ) );		// 10 -> List 1
 			} else {
-				g_exec_ptr++;
+				ExecPtr++;
 				MatOprandInt1( SRC, reg, &dimA, &dimB );	// List 1[a]
 				goto Matrix2;
 			}
 			
 		} else if ( c == 0x46 ) {	// -> Dim
-				g_exec_ptr+=2;
-				c = SRC[g_exec_ptr];
-				d = SRC[g_exec_ptr+1];
+				ExecPtr+=2;
+				c = SRC[ExecPtr];
+				d = SRC[ExecPtr+1];
 				if ( ( c==0x7F ) && ( d==0x46 ) ) {	// {24,18}->dim dim
-					g_exec_ptr+=2; dimdim=1; 
-					c = SRC[g_exec_ptr];
-					d = SRC[g_exec_ptr+1];
+					ExecPtr+=2; dimdim=1; 
+					c = SRC[ExecPtr];
+					d = SRC[ExecPtr+1];
 					}
 				if ( ( c==0x7F ) && ( ( d==0x51 ) || ( (0x6A<=d)&&(d<=0x6F) ) ) ) {	// n -> Dim List
-					g_exec_ptr+=2;
+					ExecPtr+=2;
 					if ( CBint_CurrentValue )  		// 15->Dim List 1
 							CB_ListInitsub( SRC, &reg, CBint_CurrentValue, 0, dimdim );
 					else {							//  0->Dim List 1
@@ -129,10 +129,10 @@ void CBint_Store( char *SRC ){	// ->
 					}
 				}
 		} else if ( c == 0x5F ) {	// Ticks
-				g_exec_ptr+=2;
+				ExecPtr+=2;
 				goto StoreTicks;
 		} else if ( ( 0xFFFFFF91 <= c ) && ( c <= 0xFFFFFF93 ) ) {	// F Start~F pitch
-				g_exec_ptr+=2;
+				ExecPtr+=2;
 				REGf[c-0xFFFFFF90] = CBint_CurrentValue ; ;
 		} else if ( c == 0x00 ) {	// Xmin
 				Xmin = CBint_CurrentValue ;
@@ -172,40 +172,40 @@ void CBint_Store( char *SRC ){	// ->
 		} else if ( c == 0x0C ) {	// Yfct
 				Yfct = CBint_CurrentValue ;
 			Graphj:
-				g_exec_ptr+=2;
+				ExecPtr+=2;
 				CB_ChangeViewWindow() ;
 		} else goto exitj;
 	} else
 	if ( c==0xFFFFFFF7 ) {
-		c = SRC[g_exec_ptr+1] ; 
+		c = SRC[ExecPtr+1] ; 
 		if ( c == 0xFFFFFFF6 ) {	// Poke(A)
-			g_exec_ptr+=2;
+			ExecPtr+=2;
 			CB_PokeSubInt( SRC, CBint_CurrentValue, EvalIntsubTop( SRC ) );
 		} else goto exitj;
 	} else
-	if ( c=='*' ) { g_exec_ptr++;
+	if ( c=='*' ) { ExecPtr++;
 			CB_PokeSubInt( SRC, CBint_CurrentValue, EvalIntsub1( SRC ) );
 	} else
-	if ( c=='%' ) { g_exec_ptr++;
+	if ( c=='%' ) { ExecPtr++;
 		StoreTicks:
 		CB_StoreTicks( SRC, CBint_CurrentValue );
 	} else
 	if ( c==0xFFFFFFF9 ) {
-		c = SRC[g_exec_ptr+1] ; 
+		c = SRC[ExecPtr+1] ; 
 		if ( c == 0x21 ) {	// Xdot
 				if ( CBint_CurrentValue == 0 ) { CB_Error(RangeERR); return; }	// Range error
-				g_exec_ptr+=2;
+				ExecPtr+=2;
 				Xdot = CBint_CurrentValue ;
 				Xmax = Xmin + Xdot*126.;
 		} else
 		if ( c == 0x0E ) {	// 123->Const _ABC
-			g_exec_ptr+=2;
+			ExecPtr+=2;
 			reg=RegVarAliasEx( SRC ) ;
 			REGtype[reg]=1;		// const
-			if ( c=='#' ) { g_exec_ptr++;
+			if ( c=='#' ) { ExecPtr++;
 				LocalDbl[reg][0] = Int2Cplx( CBint_CurrentValue );
 			} else {
-				if ( c=='%' ) g_exec_ptr++;
+				if ( c=='%' ) ExecPtr++;
 				LocalInt[reg][0] = CBint_CurrentValue ;
 			}
 		} else goto exitj;
@@ -229,38 +229,38 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	c=SRC[g_exec_ptr];
+	c=SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
-		g_exec_ptr++;
+		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[g_exec_ptr];
+		c=SRC[ExecPtr];
 		if ( c=='#' ) {
-			g_exec_ptr++;
+			ExecPtr++;
 			LocalDbl[reg][0].real --;
 			CBint_CurrentValue = LocalDbl[reg][0].real ;
 		} else
 		if ( c=='[' ) { 
-			g_exec_ptr++;
+			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else
 		if ( ( '0'<=c )&&( c<='9' ) ) {
-			g_exec_ptr++;
+			ExecPtr++;
 			dimA=c-'0';
 			MatOprand1num( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
-			if ( c=='%' ) g_exec_ptr++;
+			if ( c=='%' ) ExecPtr++;
 			LocalInt[reg][0] --;
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( ( c==0x7F ) && ( ( SRC[g_exec_ptr+1]==0x40 ) || ( SRC[g_exec_ptr+1]==0xFFFFFF84 ) || ( SRC[g_exec_ptr+1]==0x51 ) ) ) {	// Mat or Vct or List
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( g_error_type ) {  // error
-				if ( MatAry[reg].SizeA == 0 ) g_error_type=UndefinedMatrix;	// No Matrix Array error
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=UndefinedMatrix;	// No Matrix Array error
 				return ;
 			}
 			CBint_CurrentValue = ReadMatrixInt( reg, dimA,dimB ) ;
@@ -271,16 +271,16 @@ void CBint_Dsz( char *SRC ) { //	Dsz
 		{ CB_Error(SyntaxERR); return; }	// Syntax error
 	}
 
-	c=SRC[g_exec_ptr];
+	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
-		g_exec_ptr++;
+		ExecPtr++;
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
 		}
 	} else if ( c==0x0C ) {  // dsps
-		g_exec_ptr++;
-		if ( CB_Disps(SRC, 2) ) { BreakPtr=g_exec_ptr ; return ; }  // [AC] break
+		ExecPtr++;
+		if ( CB_Disps(SRC, 2) ) { BreakPtr=ExecPtr ; return ; }  // [AC] break
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
@@ -295,38 +295,38 @@ void CBint_Isz( char *SRC ) { //	Isz
 	char*	MatAryC;
 	short*	MatAryW;
 	int*	MatAryI;
-	c=SRC[g_exec_ptr];
+	c=SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {
-		g_exec_ptr++;
+		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[g_exec_ptr];
+		c=SRC[ExecPtr];
 		if ( c=='#' ) {
-			g_exec_ptr++;
+			ExecPtr++;
 			LocalDbl[reg][0].real ++;
 			CBint_CurrentValue = LocalDbl[reg][0].real ;
 		} else
 		if ( c=='[' ) { 
-			g_exec_ptr++;
+			ExecPtr++;
 			MatOprandInt2( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else
 		if ( ( '0'<=c )&&( c<='9' ) ) {
-			g_exec_ptr++;
+			ExecPtr++;
 			dimA=c-'0';
 			MatOprand1num( SRC, reg, &dimA, &dimB );
 			goto Matrix;
 		} else {
-			if ( c=='%' ) g_exec_ptr++;
+			if ( c=='%' ) ExecPtr++;
 			LocalInt[reg][0] ++;
 			CBint_CurrentValue = LocalInt[reg][0] ;
 		}
 	} else 
-	if ( ( c==0x7F ) && ( ( SRC[g_exec_ptr+1]==0x40 ) || ( SRC[g_exec_ptr+1]==0xFFFFFF84 ) || ( SRC[g_exec_ptr+1]==0x51 ) ) ) {	// Mat or Vct or List
+	if ( ( c==0x7F ) && ( ( SRC[ExecPtr+1]==0x40 ) || ( SRC[ExecPtr+1]==0xFFFFFF84 ) || ( SRC[ExecPtr+1]==0x51 ) ) ) {	// Mat or Vct or List
 			MatrixOprand( SRC, &reg, &dimA, &dimB );
 		Matrix:
-			if ( g_error_type ) {  // error
-				if ( MatAry[reg].SizeA == 0 ) g_error_type=UndefinedMatrix;	// No Matrix Array error
+			if ( ErrorNo ) {  // error
+				if ( MatAry[reg].SizeA == 0 ) ErrorNo=UndefinedMatrix;	// No Matrix Array error
 				return ;
 			}
 			CBint_CurrentValue = ReadMatrixInt( reg, dimA,dimB ) ;
@@ -337,16 +337,16 @@ void CBint_Isz( char *SRC ) { //	Isz
 		{ CB_Error(SyntaxERR); return; }	// Syntax error
 	}
 	
-	c=SRC[g_exec_ptr];
+	c=SRC[ExecPtr];
 	if ( ( c==':' ) || ( c==0x0D ) ) {
-		g_exec_ptr++;
+		ExecPtr++;
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
 		}
 	} else if ( c==0x0C ) {  // dsps
-		g_exec_ptr++;
-		if ( CB_Disps(SRC, 2) ) { BreakPtr=g_exec_ptr ; return ; }  // [AC] break
+		ExecPtr++;
+		if ( CB_Disps(SRC, 2) ) { BreakPtr=ExecPtr ; return ; }  // [AC] break
 		if ( CBint_CurrentValue ) return ;
 		else {
 			Skip_block(SRC);
@@ -364,7 +364,7 @@ int RangeErrorCKint( char *SRC ) {
 		Bdisp_AllClr_VRAM();
 		GraphAxesGrid();
 	}
-	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { ErrorNo=RangeERR; PrevOpcode( SRC, &ExecPtr ); g_error_ptr=ExecPtr; return ErrorNo; }	// Range error
+	if ( ( Xdot == 0 ) || ( Ydot == 0 )  ) { ErrorNo=RangeERR; PrevOpcode( SRC, &ExecPtr ); ErrorPtr=ExecPtr; return ErrorNo; }	// Range error
 	return 0;
 }
 */
@@ -375,8 +375,8 @@ void CBint_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn   0:PxlOff   2:PxlCh
 	if ( RangeErrorCK(SRC) ) return;
 	py = (EvalIntsubTop( SRC ));
 	if ( ( py<MatBase ) || ( py>63 ) ) { CB_Error(ArgumentERR); return; }  // Argument error
-	if ( SRC[g_exec_ptr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
-	g_exec_ptr++;
+	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return; }  // Syntax error
+	ExecPtr++;
 	px = (EvalIntsubTop( SRC ));
 	if ( ( px<MatBase ) || ( px>127 ) ) { CB_Error(ArgumentERR); return; }  // Argument error}
 	CB_SelectGraphVRAM();	// Select Graphic Screen
@@ -392,18 +392,18 @@ void CBint_PxlSub( char *SRC, int mode ) { //	mode  1:PxlOn   0:PxlOff   2:PxlCh
 int WordSizeSelect( char *SRC ) {
 	int c,d;
 	int WordSize=8;
-	c =SRC[g_exec_ptr];
+	c =SRC[ExecPtr];
 	if ( c=='.' ) {
-		c =SRC[++g_exec_ptr];
-		if ( ( c=='B' ) || ( c=='b' ) ) { g_exec_ptr++; }
+		c =SRC[++ExecPtr];
+		if ( ( c=='B' ) || ( c=='b' ) ) { ExecPtr++; }
 		else
-		if ( ( c=='W' ) || ( c=='w' ) ) { g_exec_ptr++; WordSize=16; }
+		if ( ( c=='W' ) || ( c=='w' ) ) { ExecPtr++; WordSize=16; }
 		else
-		if ( ( c=='L' ) || ( c=='l' ) ) { g_exec_ptr++; WordSize=32; }
+		if ( ( c=='L' ) || ( c=='l' ) ) { ExecPtr++; WordSize=32; }
 		else
-		if ( ( c=='F' ) || ( c=='f' ) ) { g_exec_ptr++; WordSize=64; }
+		if ( ( c=='F' ) || ( c=='f' ) ) { ExecPtr++; WordSize=64; }
 		else
-		if ( ( c=='C' ) || ( c=='c' ) ) { g_exec_ptr++; WordSize=128; }
+		if ( ( c=='C' ) || ( c=='c' ) ) { ExecPtr++; WordSize=128; }
 	}
 	return WordSize;
 }
@@ -430,7 +430,7 @@ complex CB_Peek( char *SRC, int adrs ) {	// Peek(123456).f
 	int *iptr;
 	double *dptr;
 	complex *cplxptr;
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
 	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AddressERR); return Int2Cplx(0); } // Address Alignment error
 	switch ( wsize ) {
@@ -459,7 +459,7 @@ int CB_PeekInt( char *SRC, int adrs ) {	// Peek(123456).w
 	int *iptr;
 	double *dptr;
 	complex *cplxptr;
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
 	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AddressERR); return 0; } // Address Alignment error
 	switch ( wsize ) {
@@ -488,7 +488,7 @@ void CB_PokeSub( char *SRC, complex data, int adrs ) {	// Poke(123456).f
 	int *iptr;
 	double *dptr;
 	complex *cplxptr;
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
 	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AddressERR); return ; } // Address Alignment error
 	switch ( wsize ) {
@@ -521,7 +521,7 @@ void CB_PokeSubInt( char *SRC, int data, int adrs ) {	// Poke(123456).w
 	int *iptr;
 	double *dptr;
 	complex *cplxptr;
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
 	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AddressERR); return ; } // Address Alignment error
 	switch ( wsize ) {
@@ -556,12 +556,12 @@ void CB_Poke( char *SRC ) {	// Poke(123456).w,123,...
 	int *iptr;
 	double *dptr;
 	complex *cplxptr;
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	wsize=WordSizeSelect( SRC );
 	if ( CheckAdrsAlignError( wsize, adrs ) ) { CB_Error(AddressERR); return ; } // Address Alignment error
-	if ( SRC[g_exec_ptr]!=',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
+	if ( SRC[ExecPtr]!=',' ) { CB_Error(SyntaxERR); return; }	// Syntax error
 	do {
-		g_exec_ptr++;
+		ExecPtr++;
 		switch ( wsize ) {
 			case 128:
 				cplxptr=(complex *)adrs;
@@ -589,7 +589,7 @@ void CB_Poke( char *SRC ) {	// Poke(123456).w,123,...
 				adrs++;
 				break;
 		}
-	} while ( SRC[g_exec_ptr] == ',' );
+	} while ( SRC[ExecPtr] == ',' );
 }
 
 int CB_EvalIntStrPtr( char *SRC ) {
@@ -597,10 +597,10 @@ int CB_EvalIntStrPtr( char *SRC ) {
 	int result;
 	int maxoplen;
 	char *buffer;
-	c=CB_IsStr( SRC, g_exec_ptr );
+	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
 		buffer = CB_GetOpStr( SRC, &maxoplen );	
-		if ( g_error_type ) return 0;			// error
+		if ( ErrorNo ) return 0;			// error
 		return (int)buffer;	//  return buffer ptr
 	} else {	// expression
 		return CB_EvalInt( SRC );
@@ -638,12 +638,12 @@ int CB_SysCall( char *SRC ) {	// SysCall( No,r4,r5,r6,r7 )
 	char buf1[32],buf2[32];
 	int para=0;
 	r[4]=1000;
-	while ( SRC[g_exec_ptr]==',' ) {
-		g_exec_ptr++;
+	while ( SRC[ExecPtr]==',' ) {
+		ExecPtr++;
 		r[para++]=CB_EvalIntStrPtr( SRC );
 		if ( para > 12-1 ) { CB_Error(TooMuchData); return 0; } // Too much data error
 	} 
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	
 	if ( para < 4 ) return SysCalljmp(r[0],r[1],r[2],r[3],callNo);	//		CallNo -> SysCallNo
 	return SysCalljmp12(r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9],r[10],r[11],callNo);	//		CallNo -> SysCallNo
@@ -652,23 +652,23 @@ int CB_Call( char *SRC ) {	// Call( adrs,r5,r6,r7 )
 	int adrs=CB_EvalInt( SRC );
 	int r4=0,r5=0,r6=0,r7=0;
 	if ( adrs & 1 ) { CB_Error(AddressERR); return 0; } // Address Alignment error
-	if ( SRC[g_exec_ptr]==',' ) { 
-		g_exec_ptr++;
+	if ( SRC[ExecPtr]==',' ) { 
+		ExecPtr++;
 		r4=CB_EvalIntStrPtr( SRC );
-		if ( SRC[g_exec_ptr]==',' ) { 
-			g_exec_ptr++;
+		if ( SRC[ExecPtr]==',' ) { 
+			ExecPtr++;
 			r5=CB_EvalIntStrPtr( SRC );
-			if ( SRC[g_exec_ptr]==',' ) {
-				g_exec_ptr++;
+			if ( SRC[ExecPtr]==',' ) {
+				ExecPtr++;
 				r6=CB_EvalIntStrPtr( SRC );
-				if ( SRC[g_exec_ptr]==',' ) {
-					g_exec_ptr++;
+				if ( SRC[ExecPtr]==',' ) {
+					ExecPtr++;
 					r7=CB_EvalIntStrPtr( SRC );
 				}
 			}
 		}
 	}
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	return Calljmp(r4,r5,r6,r7,adrs);
 }
 
@@ -679,69 +679,69 @@ int CB_VarPtr( char *SRC ) {
 	int maxoplen;
 	char *buffer;
 	
-	c=SRC[g_exec_ptr];
+	c=SRC[ExecPtr];
 	if ( ( ( 'A'<=c )&&( c<='Z' ) ) || ( ( 'a'<=c )&&( c<='z' ) ) ) {	// variable
-		g_exec_ptr++;
+		ExecPtr++;
 		reg=c-'A';
 	  regj:
-		c=SRC[g_exec_ptr];
-		if ( c=='%' ) { g_exec_ptr++; result=(int)&LocalInt[reg][0]; }
+		c=SRC[ExecPtr];
+		if ( c=='%' ) { ExecPtr++; result=(int)&LocalInt[reg][0]; }
 		else
 		if ( c=='[' ) { goto Matrix; }		// A[1]
 		else
 		if ( ( '0'<=c )&&( c<='9' ) ) {		// A1
-				g_exec_ptr++;
+				ExecPtr++;
 				dimA=c-'0';
 				MatOprand1num( SRC, reg, &dimA, &dimB );
 				goto Matrix2;
 		} else
-		if ( c=='#' ) { g_exec_ptr++; result=(int)&LocalDbl[reg][0]; }
+		if ( c=='#' ) { ExecPtr++; result=(int)&LocalDbl[reg][0]; }
 		else
 		if (CB_INT==1)	result=(int)&LocalInt[reg][0]; else result=(int)&LocalDbl[reg][0];
 	} else
-	if ( ( c==0x7F ) && ( SRC[g_exec_ptr+1]==0x40 ) ) {	// Mat or Vct
-		g_exec_ptr+=2;
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x40 ) ) {	// Mat or Vct
+		ExecPtr+=2;
 		reg=MatRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 		Matrix0:
-		if ( SRC[g_exec_ptr] == '[' ) {
+		if ( SRC[ExecPtr] == '[' ) {
 		Matrix:	
-			g_exec_ptr++;
+			ExecPtr++;
 			if (CB_INT==1) MatOprandInt2( SRC, reg, &dimA, &dimB); else MatOprand2( SRC, reg, &dimA, &dimB);
 		Matrix2:	
-			if ( g_error_type ) return 1 ; // error
+			if ( ErrorNo ) return 1 ; // error
 			result=(int)MatrixPtr( reg, dimA, dimB );
 		} else {
 			result=(int)MatAry[reg].Adrs;	// Mat A
 		}
 	} else
-	if ( ( c==0x7F ) && ( SRC[g_exec_ptr+1]==0xFFFFFF84 ) ) {	// Vct
-		g_exec_ptr+=2;
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0xFFFFFF84 ) ) {	// Vct
+		ExecPtr+=2;
 		reg=VctRegVar( SRC ); if ( reg<0 ) CB_Error(SyntaxERR) ; // Syntax error 
 		goto Matrix0;
 	} else
-	if ( ( c==0x7F ) && ( SRC[g_exec_ptr+1]==0x51 ) ) {	// List
-		g_exec_ptr+=2;
+	if ( ( c==0x7F ) && ( SRC[ExecPtr+1]==0x51 ) ) {	// List
+		ExecPtr+=2;
 		reg=ListRegVar( SRC );
 		if ( reg<0 ) CB_Error(SyntaxERR) ;  // Syntax error 
-		if ( SRC[g_exec_ptr] == '[' ) {
-			g_exec_ptr++;
+		if ( SRC[ExecPtr] == '[' ) {
+			ExecPtr++;
 			if (CB_INT==1) MatOprandInt1( SRC, reg, &dimA, &dimB ); else MatOprand1( SRC, reg, &dimA, &dimB );	// List 1[a]
 			goto Matrix2;
 		} else {
 			result=(int)MatAry[reg].Adrs;	// List 1
 		}
 	} else {
-		c=CB_IsStr( SRC, g_exec_ptr );
+		c=CB_IsStr( SRC, ExecPtr );
 		if ( c ) {	// string
 			buffer=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
-			if ( g_error_type ) return 1;			// error
+			if ( ErrorNo ) return 1;			// error
 			result=(int)buffer;	//  return buffer ptr
 		} else {
 			reg=RegVarAliasEx(SRC); if ( reg>=0 ) goto regj;
 			CB_Error(SyntaxERR) ; return 0; // Syntax error 
 		}
 	}
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	return result;
 }
 
@@ -751,17 +751,17 @@ int CB_ProgPtr( char *SRC ) { //	ProgPtr(
 	int maxoplen;
 	int progno;
 
-	c=CB_IsStr( SRC, g_exec_ptr );
+	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
 		buffer=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
-		if ( g_error_type ) return 1;			// error
+		if ( ErrorNo ) return 1;			// error
 		Setfoldername16( folder16, buffer );
 		progno = CB_SearchProg( folder16 );
 		if ( progno < 0 ) { CB_Error(ProgNotFound); return 0 ; }  // Not found Prog
 	} else {
 		progno=CB_EvalInt( SRC );
-		if ( g_error_type ) return 1;			// error
+		if ( ErrorNo ) return 1;			// error
 	}
-	if ( SRC[g_exec_ptr]==')' ) g_exec_ptr++;
+	if ( SRC[ExecPtr]==')' ) ExecPtr++;
 	return  (int)ProgfileAdrs[progno];
 }

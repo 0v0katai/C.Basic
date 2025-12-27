@@ -54,7 +54,7 @@ char* GetStringPtr(int type, int n ){			// ----------- Store  String  type: 0:st
 
 	LoadStringType( type, &reg, &opNum );
 	if ( n>opNum ) return NULL;
-	g_error_type=0;
+	ErrorNo=0;
 	switch ( type ) {
 		case 0:	// string
 			str = GetStrYFnPtrSub( reg, n, defaultStrArySize  );
@@ -66,7 +66,7 @@ char* GetStringPtr(int type, int n ){			// ----------- Store  String  type: 0:st
 			str = GetStrYFnPtrSub( reg, n, defaultGraphArySize  );
 			break;
 	}
-	if ( g_error_type ) return NULL; // error
+	if ( ErrorNo ) return NULL; // error
 	return str;
 }
 
@@ -104,10 +104,10 @@ int CB_StoreStringSub(int type, int n, char *clipbuffer ){			// ----------- Stor
 	char *str;
 
 	if ( clipbuffer == NULL ) return 0;
-	g_error_type=0;
+	ErrorNo=0;
 	LoadStringType( type, &reg, &opNum );
 	str = GetStringPtr( type, n );
-	if ( g_error_type ) return 0; // error
+	if ( ErrorNo ) return 0; // error
 	OpcodeCopy( str, clipbuffer , MatAry[reg].SizeB-1 );
 	return 0;
 }

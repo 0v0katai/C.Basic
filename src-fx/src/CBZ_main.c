@@ -81,7 +81,7 @@ int main()
 		}
 
 		CB_INT = CB_INTDefault;
-		g_exec_ptr=0;	
+		ExecPtr=0;	
 		DebugMode=0;
 		DebugScreen=0;
 		ForceDebugMode=0;
@@ -128,27 +128,27 @@ int main()
 				run=2;
 				i=LoadProgfile( filename, 0, EditMaxfree, 1 ) ;
 			  bejmp1:
-				g_exec_ptr=0;
+				ExecPtr=0;
 				if ( i==0 )	{
 				  bejmp2:
 					PP_ReplaceCode( ProgfileAdrs[0] + 0x56 );	//
-					g_exec_ptr=0;
+					ExecPtr=0;
 					for (j=0; j<BE_MAX; j++) {
 						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { 
-							g_exec_ptr = befiles[j].execptr;
+							ExecPtr = befiles[j].execptr;
 							break;
 						}
 					}
 					EditRun(run);			// Program listing & edit
 				} else
-				if ( i==ProgNotFound ) { g_current_prog=g_error_prog; g_exec_ptr=g_error_ptr; if (g_current_prog>=0) EditRun(2); }	// Program listing & edit
+				if ( i==ProgNotFound ) { g_current_prog=ErrorProg; ExecPtr=ErrorPtr; if (g_current_prog>=0) EditRun(2); }	// Program listing & edit
 					for (j=0; j<BE_MAX; j++) {
 						if ( strncmp( befiles[j].sname, sname, 12) == 0 ) { j++; break; }
 					}
 					j--;
 					if ( j ) memcpy2( befiles[1].sname, befiles[0].sname, sizeof(beFiles)*j );
 					strncpy( befiles[0].sname, sname, 12);
-					befiles[0].execptr = g_exec_ptr;
+					befiles[0].execptr = ExecPtr;
 				break;
 
 			case FileCMD_NEW:
