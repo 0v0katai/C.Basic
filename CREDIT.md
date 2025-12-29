@@ -8,7 +8,7 @@ If you are one of the copyright holders of these materials and would like to inf
 
 ## Lead developers
 
-- [Sentaro21](mailto:sentaro21@pm.matrix.jp)
+- Sentaro21
 - CalcLoverHK
 
 ## Application
@@ -65,36 +65,14 @@ Copyright © 2011 Simon Lothar. All rights reserved.
 
 </details>
 
-## fx-9860G SDK
-
-[Download](https://edu.casio.com/support/en/agreement.html#2)  
-Official CASIO SDK for creating _C.Basic for FX_ prior to v2.47-β2.
-
-<details><summary>License</summary>
-
-Copyright © 2006 CASIO Co., Ltd. All rights reserved.
-
-</details>
-
-## fxCG miniSDK
-
-[Homepage](https://bible.planet-casio.com/simlo/chm/v20/fxCG20_SDK.htm)  
-Community fx-CG SDK for creating _C.Basic for CG_.
-
-<details><summary>License</summary>
-
-Copyright © 2011 Simon Lothar. All rights reserved.
-
-</details>
-
-## fxSDK
+## gint/fxSDK
 
 [Homepage](https://git.planet-casio.com/Lephenixnoir/fxsdk)  
-Community SDK for building fx-9860 and fx-CG add-ins.
+Community SDK for creating fx-9860 and fx-CG add-ins.
 
 <details><summary>License</summary>
 
-Copyright © 2015-2022 gint/fxSDK contributors
+Copyright © 2015 gint/fxSDK contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -134,18 +112,6 @@ SOFTWARE.
 
 </details>
 
-## Sprintf
-
-Advanced string processing.
-
-<details><summary>License</summary>
-
-Copyright © 1995 [Patrick Powel](mailto:papowell@astart.com).  
-This code is based on code written by Patrick Powel.
-It may be used for any purpose as long as this notice remains intact on all source code distributions.
-
-</details>
-
 ## MonochromeLib
 
 [Homepage](https://www.planet-casio.com/Fr/logiciels/voir_un_logiciel_casio.php?showid=86)  
@@ -172,8 +138,8 @@ Adapted from the HP41 INTDIFFEQ module by [Jean-Marc Baillard](https://hp41progr
 ## Ptune2
 
 [Homepage](https://pm.matrix.jp/ftune2e.html)  
-[Gitea page](https://gitea.planet-casio.com/CalcLoverHK/Ftune-Ptune)
-Overclocking in fx-CG10 and fx-CG20.
+[Git page](https://git.planet-casio.com/CalcLoverHK/Ftune-Ptune)
+Overclocking add-in for fx-CG10/20.
 
 <details><summary>License</summary>
 

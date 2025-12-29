@@ -2,6 +2,7 @@
 build*/
 *.g1a
 *.g3a
+*.o
 
 # Python bytecode
 __pycache__/

@@ -194,7 +194,7 @@ extern complex CB_CurrentValue;	// Ans
 
 #define ProgMax 40
 extern char ProgEntryN;		// how many subroutin
-extern char g_current_prog;			// current Prog No
+extern char ProgNo;			// current Prog No
 extern char *ProgfileAdrs[ProgMax+1];
 extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
