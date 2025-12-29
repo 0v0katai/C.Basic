@@ -71,7 +71,7 @@ set(LIBS -lm -lgcc)
 if("${CB_BUILD_TYPE}" STREQUAL fx)
   list(APPEND LIBS -lfx)
 elseif("${CB_BUILD_TYPE}" STREQUAL cg)
-  list(APPEND LIBS -lc -lfxcg)
+  list(APPEND LIBS -lc -lfxcg -lqsort)
 endif()
 target_link_libraries(CBASIC PRIVATE ${LIBS})
 
