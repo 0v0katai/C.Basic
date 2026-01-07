@@ -1,5 +1,3 @@
-#define VERSION 147
-
 #define MINHEAP    1		// use heap default
 #define MAXHEAP  127		// use heap max kbyte
 #define MAXHEAP1 117		// use heap max kbyte
