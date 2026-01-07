@@ -120,8 +120,8 @@ void hsl2rgb( int H, int S, int L, int *R, int *G, int *B ){	//  H:0~359  s:0~25
 }
 
 void rgb2hsvhsl( int R, int G, int B, int *H, int *S, int *V, bool mode ){	//  RGB(0~255) ->  H:0~359  S:0~255  V:0~255  L:0~255
-	int cmax = max(3, R, G, B);
-	int cmin = min(3, R, G, B);
+	int cmax = va_max(3, R, G, B);
+	int cmin = va_min(3, R, G, B);
 	int delta = cmax - cmin;
 
 	if (delta == 0)

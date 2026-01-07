@@ -71,12 +71,10 @@ typedef char bool;
 #include "CB_Str.h"
 #include "CB_Help.h"
 #include "config.h"
+#include "minmax.h"
 #include "CB_error.h"
 #include "fx_syscall.h"
 #include "fxCG_Registers.h"
 #include "MonochromeLib.h"
 #include "CB_MonochromeLib.h"
 #include "CB_TextConv.h"
-
-#define min(X, Y)  ((X) < (Y) ? (X) : (Y))
-#define max(X, Y)  ((X) > (Y) ? (X) : (Y))
