@@ -164,11 +164,6 @@ unsigned int SelectFile (char *filename)
 
 
 //--------------------------------------------------------------
-void Abort(){		// abort program
-	int key;
-	MSG2("Not enough Memory","Please Restart");
-	while (1) GetKey_DisableCatalog( &key );
-}
 void ToLower( char *str ){
 	while( (*str) != '\0' ) {
 		if ( ( 'A' <= *str ) && ( *str <= 'Z' ) ) *str +=('z'-'Z');
@@ -338,7 +333,7 @@ static int ReadFile( char *folder )
 				Bdisp_PutDisp_DD_stripe( 4*24, 4*24+23);
 			}
 			++i;
-			if ( i+1 > FILEMAX ) Abort();
+			if ( i+1 > FILEMAX ) abort();
 		}
 		r = Bfile_FindNext_NON_SMEM(find_h, find_name, &file_info);
 		
@@ -1409,7 +1404,7 @@ char * loadFile( const char *name, int *editMax, int disperror, int *filesize )
 		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)name, handle);
 		CB_Error(NotEnoughMemoryERR); 
 		return NULL;
-//		Abort();
+//		abort();
 	}
 	memset( buffer, 0x00,     size*sizeof(char)+(*editMax)+4 );
 

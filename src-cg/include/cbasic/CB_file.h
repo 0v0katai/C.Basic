@@ -131,7 +131,6 @@ int RenameFiles( char * sname );	// select:0 rename  serect:1 copy
 int CopyFiles( char * sname );
 int CreateDirectorySub( char *newfolder, int dsperror );
 int MakeDirectory();
-void Abort();
 
 void SetShortName( char *sname, char *filename) ;	// fullpath filename -> short name
 void ErrorMSGfile( char *buffer, char *filename, int err);

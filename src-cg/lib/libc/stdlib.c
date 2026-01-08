@@ -55,7 +55,7 @@ __attribute__((noreturn)) void exit(int status) {
 }
 
 __attribute__((noreturn)) void abort() {
-    fprintf(stderr, "ABORT CALLED\nPress menu key to exit\n");
+    // fprintf(stderr, "ABORT CALLED\nPress menu key to exit\n");
 #ifndef STDERR_TO_VRAM
     /* Initialize the status area so that it can display text
      * (the user code may have set the flags in some other way, or

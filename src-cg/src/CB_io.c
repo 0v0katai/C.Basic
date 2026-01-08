@@ -1117,7 +1117,7 @@ void HeapRAM_malloc( int sizeK ){
 	while ( 1 ) {
 		HeapRAM = (char *)malloc( sizeK*1024 );		// ???KB C.Basic area (program & Mat)
 		if ( HeapRAM != NULL )  break; 
-		sizeK--; if (sizeK<MINHEAP) Abort(); 
+		sizeK--; if (sizeK<MINHEAP) abort(); 
 	}
 	MaxHeapRam = sizeK;
 	HiddenRAM_MatAryInit();

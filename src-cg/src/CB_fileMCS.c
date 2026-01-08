@@ -58,7 +58,7 @@ int MCS_ReadFileList() {	// MSC file list -> files
 		strncpy( files[i].folder, folder, FOLDERMAX);
 		files[i].filesize = item[j].length;
 		i++; j++;
-		if ( i+1 > FILEMAX ) Abort();
+		if ( i+1 > FILEMAX ) abort();
 	}
 	return size;
 }
@@ -113,7 +113,7 @@ char * MCS_LoadG3M( char *fname , int *editMax, int disperror, int *filesize  ) 
 		if ( disperror ) ErrorMSGfile( "Can't load file", (char*)basname, 0 );
 		CB_Error(NotEnoughMemoryERR); 
 		return NULL;
-//		Abort();
+//		abort();
 	}
 	memset( filebase+0x56, 0x00,     size*sizeof(char)+(*editMax)+4 );
 	memcpy( filebase+0x56-10, (char*)data_ptr, data_length );
