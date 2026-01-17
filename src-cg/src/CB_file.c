@@ -26,10 +26,8 @@ static Files Favoritesfiles[FavoritesMAX];
 char FileListUpdate=1;
 char StorageMode=0;						// 0:Storage memory   1:SD	2:main memory
 char redrawsubfolder=0;
-int recentsize=0;
 char ForceG1Msave=0;		//    1: force g1m save 
 char AutoSaveMode=0;		//    1: Auto save ( not pop up )
-unsigned int sumfilesize;
 
 const char root[][5]={"fls0","crd0","fls0"};
 const char extG1MorG3M[][4]={"g3m","g1m","MCS","g3m"};
@@ -165,25 +163,21 @@ unsigned int SelectFile (char *filename)
 
 //--------------------------------------------------------------
 void ToLower( char *str ){
-	while( (*str) != '\0' ) {
-		if ( ( 'A' <= *str ) && ( *str <= 'Z' ) ) *str +=('z'-'Z');
-		str++;
-	}
+	for (int i = 0; str[i] != '\0'; i++)
+		str[i] = tolower((uint8_t)str[i]);
 }
 
-void GetExtName( char *sname, char *ext ){	// sname -> sname.ext
-	char *cptr;
-	int i;
-	cptr=(char*)strstr2(sname,".");
-	if ( cptr!=NULL ) {
-		i=strlen(sname);
-		while ( sname[i]!='.' ) i--;
-		cptr=sname+i;
-		strncpy( ext, cptr+1, 3 );
-		*cptr='\0';
-	} else ext[0]='\0';
-	ext[3]='\0';
-	ToLower( ext );
+void GetExtName(char *sname, char *ext) {
+    char *dot = strrchr(sname,'.');
+    if ( dot != NULL ) {
+        strncpy(ext, dot+1, 3);
+        // TODO: Unnecessary but needed because sname somehow comes with double
+        // extension name like ".g3m.g3m"
+        *dot='\0';
+    } else
+        ext[0]='\0';
+    ext[3]='\0';
+    ToLower(ext);
 }
 
 static int IsFileNeeded( FONTCHARACTER *find_name )
@@ -194,7 +188,11 @@ static int IsFileNeeded( FONTCHARACTER *find_name )
 	if ( buffer[0]=='.' ) return 0;	//
 	GetExtName( buffer, ext );
 	if ( strlen( folder ) ) return 1;	// all of sub folder
-	return ( (strcmp(ext, "g3m") == 0) || (strcmp(ext, "g1m") == 0) || (strcmp(ext, "txt") == 0) || (strcmp(ext, "bmp") == 0) || (strcmp(ext, "csv") == 0) || (strcmp(ext, "bin") == 0) || (strcmp(ext, "g3p") == 0) || (strcmp(ext, "csv") == 0) );
+	char *extlist[7] = {"g3m", "g1m", "txt", "bmp", "csv", "bin", "g3p"};
+	for (int i = 0; i < 7; i++)
+		if (!strcmp(ext, extlist[i]))
+			return true;
+	return false;
 }
 
 static int FileCmp( const void *p1, const void *p2 )
@@ -319,9 +317,7 @@ static int ReadFile( char *folder )
 	r =	Bfile_FindFirst_NON_SMEM(find_path, &find_h, find_name, &file_info);
 //FontToChar(find_name, str);
 //ErrorMSG(str,r);
-	sumfilesize = 0;	// sum all filesize
 	while ( r == 0 ) {
-		sumfilesize += (file_info.dsize+511)/512*512;
 		if( file_info.type == DT_DIRECTORY ||  IsFileNeeded( find_name ) ){
 			FontToChar(find_name, str);
 			strncpy( files[i].filename, str, FILENAMEMAX);
@@ -382,9 +378,7 @@ static int ReadFile2( char *folder, char *ext )
 	r =	Bfile_FindFirst_NON_SMEM(find_path, &find_h, find_name, &file_info);
 //FontToChar(find_name, str);
 //ErrorMSG(str,r);
-	sumfilesize = 0;	// sum all filesize
 	while ( r == 0 ) {
-		sumfilesize += (file_info.dsize+511)/512*512;
 		if( ( ext[0] == '*' ) || ( ( file_info.type != DT_DIRECTORY ) && ( IsFileNeeded2( find_name, ext ) ) ) ){
 			FontToChar(find_name, str);
 			strncpy( files[i].filename, str, FILENAMEMAX);
@@ -1858,7 +1852,7 @@ void NewPassWord( char *fname ){	// New Password command
 
 	SetShortName( sname, fname);
 	GetExtName( sname, ext );
-	if ( ( ( strcmp( ext, "g1m") == 0 ) || ( strcmp( ext, "g3m") == 0 ) ) == 0  ) return ;	// not g3mfile
+	if (strcmp(ext, "g1m") && strcmp(ext, "g3m")) return ;	// not g3mfile
 	if ( LoadProgfile( fname, 0, 0, 1 ) ) return ; // error
 	filebase = ProgfileAdrs[0];
 	if ( CheckG1M( filebase ) ) return ; // not support g1m
