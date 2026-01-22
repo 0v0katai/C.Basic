@@ -1,5 +1,5 @@
 
-all: lib/libmpm.a lib/libfxcg.a lib/libc.a
+all: lib/libmpm.a lib/libfxcg.a
 
 lib/libmpm.a: libmpm/libmpm.a
 	mv libmpm/libmpm.a .
@@ -13,13 +13,6 @@ lib/libfxcg.a: libfxcg/libfxcg.a
 libfxcg/libfxcg.a:
 	make -C libfxcg
 
-lib/libc.a: libc/libc.a
-	mv libc/libc.a .
-
-libc/libc.a:
-	make -C libc
-
 clean:
 	make -C libmpm clean
 	make -C libfxcg clean
-	make -C libc clean

@@ -9,8 +9,54 @@
     return -1; \
   }
 
+#define KEY_CTRL_PREVTAB    30075
+#define KEY_CTRL_UP         30018
+#define KEY_CTRL_NEXTTAB    30074
+#define KEY_CTRL_PGUP       30065
+#define KEY_CTRL_SETUP      30037
+#define KEY_CTRL_SETTINGS   KEY_CTRL_SETUP // reused from old API
+#define KEY_CTRL_EXIT       30002
+#define KEY_CTRL_BACK       KEY_CTRL_EXIT // reused from old API
+#define KEY_CTRL_LEFT       30020
+#define KEY_CTRL_EXE        30004
+#define KEY_CTRL_OK         KEY_CTRL_EXE // cannot be distinguished from EXE
+#define KEY_CTRL_RIGHT      30021
+#define KEY_CTRL_PGDOWN     30066
+#define KEY_CTRL_SHIFT      30006
+#define KEY_CTRL_ALPHA      30007
+#define KEY_CTRL_VARS       30016
+#define KEY_CTRL_DOWN       30023
+#define KEY_CTRL_CATALOG    30100
+#define KEY_CTRL_TOOLS      30068
+#define KEY_CTRL_FORMAT     30067
+#define KEY_CTRL_MENU       30003
+#define KEY_CTRL_F1         30009
+#define KEY_CTRL_F2         30010
+#define KEY_CTRL_F3         30011
+#define KEY_CTRL_F4         30012
+#define KEY_CTRL_F5         30013
+#define KEY_CTRL_F6         30014
+
+int GetKey(int *key) {
+  int (*ptr)(int *) = 0x801d2bba;
+  int res = ptr(key);
+
+  if (*key==KEY_CTRL_SETUP) // can we intercept ON?
+    *key=KEY_CTRL_F1;
+  if (*key==KEY_CTRL_MENU) // 
+    *key=KEY_CTRL_F2;
+  if (*key==KEY_CTRL_PREVTAB) // should also handle shift-3
+    *key=KEY_CTRL_F3;
+  if (*key==KEY_CTRL_PGDOWN)
+    *key=KEY_CTRL_F4;
+  if (*key==KEY_CTRL_NEXTTAB)
+    *key=KEY_CTRL_F5;
+  if (*key==KEY_CTRL_PGUP) // should also handle shift-6
+    *key=KEY_CTRL_F6;
+  return res;
+}
+
 CAST(0x8007a6b0, Bdisp_AllClr_VRAM)
-CAST(0x801d2bba, GetKey)
 CAST(0x80366708, sys_malloc)
 CAST(0x803664d4, sys_free)
 CAST(0x803672c8, sys_realloc)
@@ -107,7 +153,6 @@ CAST(0x8029a518, ProgressBar2)
 CAST(0x802a5616, PrintLine)
 CAST(0x80075acc, Print_OS)
 CAST(0x802a5434, locate_OS)
-CAST(0x800a5bda, strlen)
 CAST(0x8007a78c, Bdisp_Fill_DD)
 CAST(0x80073fa6, Bdisp_WriteDDRegister5A1)
 CAST(0x80333b78, Bfile_GetFileInfo)
