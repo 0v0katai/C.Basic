@@ -6,11 +6,8 @@ CFLAGS=-c -ffunction-sections -fdata-sections -Os -Lr -I../../include \
 	   -mhitachi -m4a-nofpu -flto=auto -ffat-lto-objects -std=c99 -Wall -Wextra \
 	   -Wno-implicit-function-declaration
 ARFLAGS=rs
-VPATH=syscalls
-SHSOURCES=$(wildcard syscalls/*.S) $(wildcard misc/*.S)
-CSOURCES=$(wildcard misc/*.c)
-#CXXSOURCES=$(wildcard misc/*.cpp)
-OBJECTS=$(SHSOURCES:.S=.o) $(CSOURCES:.c=.o) $(CXXSOURCES:.cpp=.o)
+SOURCES=$(wildcard syscalls/*.S) crt0.S
+OBJECTS=$(SOURCES:.S=.o)
 LIBRARY=libfxcg.a
 
 all: $(SOURCES) $(LIBRARY)
