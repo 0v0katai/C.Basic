@@ -6,7 +6,7 @@ ENTRY(initialize)
  
 MEMORY
 {
-        rom (rx) : o = 0x8c200000, l = 2048k /* Add-in Push */
+        rom (rx) : o = 0x8C200000, l = 2048k /* Add-in Push */
         ram (rwx) : o = 0x08100004, l = 512k  /* pretty safe guess */
         ilram (rwx) : o = 0xE5200000, l = 4k /* According to http://www.cemetech.net/forum/viewtopic.php?t=9334 */
 }

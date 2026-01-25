@@ -3,8 +3,7 @@ CC=$(TOOLCHAIN_PREFIX)gcc
 AS=$(TOOLCHAIN_PREFIX)as
 AR=$(TOOLCHAIN_PREFIX)ar
 CFLAGS=-c -ffunction-sections -fdata-sections \
-       -m4a-nofpu -mb -Os -mhitachi -nostdlib \
-       -Wall -Wno-int-conversion
+       -Os -mhitachi -m4a-nofpu -mb -Wall -Wextra
 ARFLAGS=rs
 SOURCES=crt0.S syscalls.c
 OBJECTS=crt0.o syscalls.o

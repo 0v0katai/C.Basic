@@ -1,10 +1,9 @@
 TOOLCHAIN_PREFIX=sh-elf-
 CC=$(TOOLCHAIN_PREFIX)gcc
 AS=$(TOOLCHAIN_PREFIX)as
-AR=$(TOOLCHAIN_PREFIX)gcc-ar
-CFLAGS=-c -ffunction-sections -fdata-sections -Os -Lr -I../../include \
-	   -mhitachi -m4a-nofpu -flto=auto -ffat-lto-objects -std=c99 -Wall -Wextra \
-	   -Wno-implicit-function-declaration
+AR=$(TOOLCHAIN_PREFIX)ar
+CFLAGS=-c -ffunction-sections -fdata-sections -I ../../include \
+	   -Os -mhitachi -m4a-nofpu -mb -Wall -Wextra
 ARFLAGS=rs
 SOURCES=$(wildcard syscalls/*.S) crt0.S
 OBJECTS=$(SOURCES:.S=.o)

@@ -4,20 +4,28 @@ project(CBASIC LANGUAGES ASM C)
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
   set(CB_BUILD_TYPE "fx")
   set(CB_VERSION "02.50.0500")
+  set(LIBS -lm -lgcc -lfx)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50 OR
        "${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
   set(CB_BUILD_TYPE "cg")
   set(CB_VERSION "01.50.0100")
+  set(LIBS -lc -lm -lgcc -lfxcg)
 endif()
 project(CBASIC VERSION ${CB_VERSION})
-set(CB_SOURCE_BASE "${CMAKE_CURRENT_SOURCE_DIR}/src-${CB_BUILD_TYPE}")
-file(GLOB_RECURSE SOURCES "${CB_SOURCE_BASE}/src/*.[c|s]")
-file(GLOB_RECURSE COMMONS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.[c|s]")
-list(APPEND SOURCES ${COMMONS})
-
 math(EXPR BUILD "${CBASIC_VERSION_PATCH}/100")
 set(CB_VERSION_VALUE "${CBASIC_VERSION_MAJOR}${CBASIC_VERSION_MINOR}")
 set(CB_VERSION_STRING "${CBASIC_VERSION_MAJOR}.${CBASIC_VERSION_MINOR}")
+
+set(CB_SOURCE_BASE "${CMAKE_CURRENT_SOURCE_DIR}/src-${CB_BUILD_TYPE}")
+set(CB_LINKER_BASE "${CMAKE_CURRENT_SOURCE_DIR}/linker")
+set(LINKER "${CB_LINKER_BASE}/${CB_BUILD_TYPE}.ld")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "FastLoad")
+  set(LINKER "${CB_LINKER_BASE}/fastload.ld")
+endif()
+
+file(GLOB_RECURSE SOURCES "${CB_SOURCE_BASE}/src/*.[c|s]")
+file(GLOB_RECURSE COMMONS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.[c|s]")
+list(APPEND SOURCES ${COMMONS})
 
 find_package(Git REQUIRED)
 execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
@@ -52,30 +60,14 @@ set(INCLUDE_DIRS
 include_directories(CBASIC PRIVATE ${INCLUDE_DIRS})
 
 set(COMPILE_OPTS
-    -nostdlib -I ${CB_SOURCE_BASE}/include
+    -I ${CB_SOURCE_BASE}/include
     -Wall -Wextra -Os -g -flto=auto -mpretend-cmove)
 target_compile_options(CBASIC PRIVATE ${COMPILE_OPTS})
 
 set(LINK_OPTS
-    -nostdlib -L ${CB_SOURCE_BASE}/lib
+    -L ${CMAKE_CURRENT_SOURCE_DIR}/lib -T ${LINKER}
     -Wl,-print-memory-usage -Wl,-Map=map -Wl,-gc-sections)
-if("${CB_BUILD_TYPE}" STREQUAL fx)
-  list(APPEND LINK_OPTS -T ${CB_SOURCE_BASE}/fx9860.ld)
-elseif("${CB_BUILD_TYPE}" STREQUAL cg)
-  if("${CMAKE_BUILD_TYPE}" STREQUAL "FastLoad")
-    list(APPEND LINK_OPTS -T ${CB_SOURCE_BASE}/prizm_fastload.ld)
-  else()
-    list(APPEND LINK_OPTS -T ${CB_SOURCE_BASE}/prizm.ld)
-  endif()
-endif()
 target_link_options(CBASIC PRIVATE ${LINK_OPTS})
-
-set(LIBS -lm -lgcc)
-if("${CB_BUILD_TYPE}" STREQUAL fx)
-  list(APPEND LIBS -lfx)
-elseif("${CB_BUILD_TYPE}" STREQUAL cg)
-  list(APPEND LIBS -lc -lfxcg)
-endif()
 target_link_libraries(CBASIC PRIVATE ${LIBS})
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)

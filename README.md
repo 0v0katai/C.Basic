@@ -45,7 +45,7 @@ fxsdk build-fx && fxlink -sw CBASIC.g1a
 
 ```bash
 # Compile libc and libfxcg (optional)
-make -C src-cg/lib
+make -C lib
 
 # Compile and send to fx-CG via UDisk2
 fxsdk build-cg -s

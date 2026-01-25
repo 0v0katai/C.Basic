@@ -12,8 +12,8 @@ _此列表为适用机型的摘要，点击[此处](https://cbasic.fandom.com/wi
 
 版本 | 机型
 --- | ---
-FX版 | fx-9750G III, fx-9860, Graph 35+E II/75/85/95
-CG版 | fx-CG10/20/50, Graph 90+E
+FX  | fx-9750G III, fx-9860, Graph 35+E II/75/85/95
+CG  | fx-CG10/20/50, Graph 90+E
 
 ## 特色
 
@@ -31,6 +31,8 @@ CG版 | fx-CG10/20/50, Graph 90+E
 
 在编译C.Basic前，你必须安装完整gint/fxSDK编译工具。
 
+### FX版本
+
 ```bash
 # 编译插件，然后使用Cahute传送插件至fx-9860机型（除G-III机型）
 fxsdk build-fx -s
@@ -40,11 +42,11 @@ fxsdk build-fx
 fxlink -sw ./CBASIC.g1a
 ```
 
-### CG Edition
+### CG版本
 
 ```bash
 # 编译libc和libfxcg库（可选）
-make -C src-cg/lib
+make -C lib
 
 # 编译插件，然后使用UDisk2传送插件至fx-CG机型
 fxsdk build-cg -s

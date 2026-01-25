@@ -1,5 +1,9 @@
 
-all: lib/libmpm.a lib/libfxcg.a
+all: rebuild lib/libmpm.a lib/libfxcg.a
+
+rebuild:
+	rm -rf ../build-cg
+	rm -rf ../build-cg-push
 
 lib/libmpm.a: libmpm/libmpm.a
 	mv libmpm/libmpm.a .
