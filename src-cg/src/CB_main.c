@@ -47,6 +47,7 @@ typedef struct{	//
 	int execptr;
 }beFiles;
 
+bool exit_addin = false;
 
 //****************************************************************************
 void main() {
@@ -115,7 +116,7 @@ void main() {
 
 	memset( befiles[0].sname, 0, sizeof(beFiles)*(BE_MAX) );
 
-	while (1) {
+	while (!exit_addin) {
 		EnableColor( 1 );
 		CB_BackPict=0;				// back image
 		CB_ColorIndex=-1;			// current color index reset
@@ -161,6 +162,10 @@ void main() {
 		memset( sname, 0,12 );
 		SetShortName( sname, filename) ; 
 		switch ( key ) {
+			case 30068:
+				exit_addin = true;
+				SaveFavorites();
+				break;
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 				ForceDebugMode=1;

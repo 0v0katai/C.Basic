@@ -1036,7 +1036,8 @@ void EnableDisplayStatusArea(){
     EnableStatusArea(0);	// enable StatusArea
 	StatusArea_SetGlyph( 0 );
 	if ( DebugMode >=1 ) // debug mode
-		SysCalljmp( 3,7,6,7,0x1D75);	// backcolor of status line to check color (by Colon)
+		DefineStatusLineBackColor(3, 7);
+		// SysCalljmp( 3,7,6,7,0x1D75);	// backcolor of status line to check color (by Colon)
 	DisplayStatusArea();
 }
 void EnableDisplayStatusArea2(){
@@ -1059,7 +1060,7 @@ void SetStatusMessage_( char*msg, char short_color ){
 	buf[0]='\0';
 	strcpy( buf, spc);
 	strcat( buf, msg);
-	DefineStatusMessage( buf, 1, short_color, 0 );
+	DefineStatusMessage2( buf, 1, short_color, 0);
 	DisplayStatusArea();
 }
 //

@@ -443,11 +443,11 @@ int CB_KeyCodeCnvt( unsigned int key ) {			// CasioBasic Getkey SDK compatible
 
 int GetKey_DisableMenu( int *key ) {
 	int r;
-//	DisableGetkeyToMainFunctionReturn(); 
-	SetGetkeyToMainFunctionReturnFlag( 0 );	// disabled
+	DisableGetkeyToMainFunctionReturn();
+	// SetGetkeyToMainFunctionReturnFlag( 0 );	// disabled
 	r=GetKey(key);
-//	EnableGetkeyToMainFunctionReturn(); 
-	SetGetkeyToMainFunctionReturnFlag( 1 );	// enabled
+	EnableGetkeyToMainFunctionReturn();
+	// SetGetkeyToMainFunctionReturnFlag( 1 );	// enabled
 	return r;
 }
 int GetKey_DisableMenu_pushpop( int *key ) {

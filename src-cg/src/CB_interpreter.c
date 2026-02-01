@@ -3076,7 +3076,8 @@ int CB_interpreter( char *SRC ) {
 	DisplayStatusArea();
 //	HourGlass();
 //	Bdisp_PutDisp_DD_DrawBusy();
-	SysCalljmp( 2,5,6,7, 0x03);	// DrawHourGlass
+	DrawHourGlass(2);
+	// SysCalljmp( 2,5,6,7, 0x03);	// DrawHourGlass
 	
 	KeyRecover(); 
 	Argc = 0;	// 

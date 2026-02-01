@@ -1,22 +1,22 @@
 
-all: rebuild lib/libmpm.a lib/libfxcg.a
+all: rebuild lib/libcg.a lib/libcw.a
 
 rebuild:
 	rm -rf ../build-cg
 	rm -rf ../build-cg-push
 
-lib/libmpm.a: libmpm/libmpm.a
-	mv libmpm/libmpm.a .
+lib/libcg.a: libcg/libcg.a
+	mv libcg/libcg.a .
 
-libmpm/libmpm.a:
-	make -C libmpm
+libcg/libcg.a:
+	make -C libcg
 
-lib/libfxcg.a: libfxcg/libfxcg.a
-	mv libfxcg/libfxcg.a .
+lib/libcw.a: libcw/libcw.a
+	mv libcw/libcw.a .
 
-libfxcg/libfxcg.a:
-	make -C libfxcg
+libcw/libcw.a:
+	make -C libcw
 
 clean:
-	make -C libmpm clean
-	make -C libfxcg clean
+	make -C libcg clean
+	make -C libcw clean

@@ -6,7 +6,7 @@
 
 #define NOTFOUND(name) \
   int name() { \
-    return -1; \
+    return 0; \
   }
 
 #define KEY_CTRL_PREVTAB    30075
@@ -94,7 +94,8 @@ CAST(0x8010def0, Timer_Deinstall)
 CAST(0x8010de28, Timer_Install)
 CAST(0x8010df72, Timer_Start)
 CAST(0x8010dfce, Timer_Stop)
-CAST(0x80331aba, DefineStatusMessage)
+CAST(0x8007c0d6, DefineStatusMessage)
+CAST(0x80331aba, DefineStatusMessage2)
 CAST(0x8007c058, DefineStatusAreaFlags)
 CAST(0x80331ce0, DisplayStatusArea)
 CAST(0x8007c032, EnableStatusArea)
@@ -185,6 +186,10 @@ CAST(0x8030a724, Serial_ClearTransmitBuffer)
 CAST(0x8030a6ea, Serial_GetFreeTransmitSpace)
 CAST(0x8030a6d6, Serial_GetReceivedBytesAvailable)
 CAST(0x8030a4aa, Serial_ReadOneByte)
+CAST(0x8005af26, DrawHourGlass)
+CAST(0x80331a4c, DefineStatusLineBackColor)
+CAST(0x80340b58, EnableGetkeyToMainFunctionReturn)
+CAST(0x80340b60, DisableGetkeyToMainFunctionReturn)
 
 NOTFOUND(IsCG10)
 NOTFOUND(GetGBGlyphPtr)
@@ -194,4 +199,6 @@ NOTFOUND(GetFKeyPtr)
 NOTFOUND(FKey_Display)
 NOTFOUND(MsgBoxPop)
 NOTFOUND(MsgBoxPush)
-
+NOTFOUND(TakeScreenshot)
+NOTFOUND(OpenFileDialog)
+NOTFOUND(GlibGetOSVersionInfo)

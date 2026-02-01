@@ -2,15 +2,16 @@ TOOLCHAIN_PREFIX=sh-elf-
 CC=$(TOOLCHAIN_PREFIX)gcc
 AS=$(TOOLCHAIN_PREFIX)as
 AR=$(TOOLCHAIN_PREFIX)ar
-CFLAGS=-c -ffunction-sections -fdata-sections -I ../../include \
-	   -Os -mhitachi -m4a-nofpu -mb -Wall -Wextra
+CFLAGS=-c -ffunction-sections -fdata-sections \
+       -Os -mhitachi -m4a-nofpu -mb -Wall -Wextra \
+	   -Wno-int-conversion
 ARFLAGS=rs
-SOURCES=$(wildcard syscalls/*.S) crt0.S
-OBJECTS=$(SOURCES:.S=.o)
-LIBRARY=libfxcg.a
+SOURCES=crt0.S syscalls.c
+OBJECTS=crt0.o syscalls.o
+LIBRARY=libcw.a
 
 all: $(SOURCES) $(LIBRARY)
-	
+
 $(LIBRARY): $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $(OBJECTS) 
 

@@ -289,6 +289,8 @@ int KillTimer(int ID);
 void Set_Timer_id();
 
 void RTC_GetDateTime( unsigned char timestr[ 8 ] );
+void EnableGetkeyToMainFunctionReturn(void);
+void DisableGetkeyToMainFunctionReturn(void);
 unsigned int SetGetkeyToMainFunctionReturnFlag( unsigned int enabled );
 
 
@@ -329,3 +331,8 @@ int MCS_GetState( int*maxspace, int*currentload, int*remainingspace );
 //
 int Bdisp_FkeyColor( int p1, short p2);
 int EnableColor( int );
+
+void TakeScreenshot();
+int OpenFileDialog(unsigned short keycode, unsigned short* buffer, int length);
+void DrawHourGlass(int Bitmap_no);
+void DefineStatusLineBackColor(int color1, int color2);

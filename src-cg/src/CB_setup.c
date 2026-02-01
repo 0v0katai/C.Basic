@@ -95,8 +95,8 @@ int CB_Version() {	// Version
 	return VERSION;
 }
 int OS_VersionMinor() {
-	int OS1,OS2,OS3,OS4;
-	SysCalljmp( 0, 0, (int)&OS3, 0, 0x002B);	// GlibGetOSVersionInfo
+	int OS3;
+	GlibGetOSVersionInfo(NULL, NULL, &OS3, NULL);
 	return (OS3>>28)*1000 + ((OS3>>24)&0xF)*100 + ((OS3>>20)&0xF)*10 + ((OS3>>16)&0xF);
 }
 

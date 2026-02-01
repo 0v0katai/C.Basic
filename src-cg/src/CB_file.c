@@ -125,6 +125,7 @@ unsigned int SelectFile (char *filename)
 		}
 		
 		key = Explorer( size, folder ) ;
+		if ( key == 30068 ) break;
 		if ( key == FileCMD_NEW  ) break ;	// new file
 		if ( key == FileCMD_MKDIR ) break ;	// Make Directory
 		if ( key == FileCMD_DELDIR ) break ;	// Delete Directory
@@ -850,6 +851,10 @@ unsigned int Explorer( int size, char *folder )
 		}
 
 		switch ( key ) {
+			case 30068:
+				return key;
+			case KEY_CTRL_CATALOG:
+				goto catalog;
 			case KEY_CTRL_ALPHA:
 				if ( alphastatus ) { 
 					alphastatus = 0;
@@ -1118,6 +1123,7 @@ unsigned int Explorer( int size, char *folder )
 							cont = 0 ;
 							break;
 					case KEY_CTRL_SETUP:
+						catalog:
 							i = StorageMode ;
 							selectSetup=SetupG(selectSetup, 0);
 							miniflag=(EditFontSize & 0x07);
@@ -2332,9 +2338,7 @@ char * LoadCapture( int pictNo ){
 int BG_OpenFileDialog( char *buffer ) {
 	FONTCHARACTER filename[FONTCHARACTER_MAX];
 	char fname[128];
-	int r;
-//	r = OpenFileDialog( 0x756B, filename, 0x10A*2 );
-	r = SysCalljmp( 0x756B, (int)filename, 0x10A*2, 0, 0x17E9);	// OpenFileDialog(
+	int r = OpenFileDialog( 0x756B, filename, 0x10A*2 );
 	FontToChar(filename, fname);
 	if ( fname[7]=='*' ) return 0;
 	strcpy( buffer, fname+7);
@@ -4231,7 +4235,7 @@ void WaitKeyEXE(){
 
 //--------------------------------------------------------------
 void CB_StatusDisp_Run(){
-	if ( ( CB_StatusDisp ) && (SysCalljmp(1,0,0,0,0x2B7)==0 ) ) {
+	if ( ( CB_StatusDisp ) && ( EnableStatusArea(1) == 0 ) ) {
 		StatusArea_Run();
 //		EnableDisplayStatusArea();
 	}

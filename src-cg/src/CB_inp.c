@@ -674,14 +674,15 @@ int SelectChar( int *ContinuousSelect ) {
 	int selJIS;
 	
 	int StatusDisp = CB_StatusDisp;						// Save Status Area 
-	int	StatusOS   = SysCalljmp(1,0,0,0,0x2B7);
+	int	StatusOS   = EnableStatusArea(1);
 	int StFlag;
 	char StCol[2];
 	char StInfo[12];
 	char StStr[64]="";
 	char *StStrPtr;
 	StFlag = DefineStatusAreaFlags(2, 0, &StCol[0], &StCol[1]);
-	StStrPtr = (char *)SysCalljmp( 1, 0, (int)&StInfo[0], 0, 0x2B9);
+	StStrPtr = DefineStatusMessage(1, NULL, &StInfo[0]);
+	// SysCalljmp( 1, 0, (int)&StInfo[0], 0, 0x2B9);
 	strncpy( StStr, StStrPtr, 63 );
 
 	*ContinuousSelect=(*ContinuousSelect)&0xFF;
@@ -1175,7 +1176,8 @@ int SelectChar( int *ContinuousSelect ) {
 //	}
 
 	DefineStatusAreaFlags( 3, StFlag, &StCol[0], &StCol[1]);			// Restore Status Area 
-	SysCalljmp(2, (int)&StStr[0], (int)&StInfo[0], 0, 0x2B9);
+	DefineStatusMessage(2, &StStr[0], &StInfo[0]);
+	// SysCalljmp(2, (int)&StStr[0], (int)&StInfo[0], 0, 0x2B9);
 
 	if ( StatusOS ) {
 		CB_SetStatusDisp( 0 );
@@ -4376,7 +4378,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 	int ClipEndPtr   = -1 ;
 	int H,S,V,L;
 	int StatusDisp = CB_StatusDisp;
-	int	StatusOS   = SysCalljmp(1,0,0,0,0x2B7);
+	int	StatusOS   = EnableStatusArea(1);
 	int selectStr=0;
 	char *string;
 	
@@ -4859,7 +4861,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 //							Cursor_SetFlashOff();		// cursor flashing off
 //							break;
 					case KEY_CTRL_CAPTURE:
-							SysCalljmp( 4,5,6,7,0x17E6);	// CAPTURE
+							TakeScreenshot();	// CAPTURE
 							break;
 					default:
 							break;

@@ -1,30 +1,27 @@
 cmake_minimum_required(VERSION 3.15)
 project(CBASIC LANGUAGES ASM C)
 
-if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
-  set(CB_BUILD_TYPE "fx")
+string(TOLOWER "${FXSDK_PLATFORM}" CB_PLATFORM)
+if("${CB_PLATFORM}" STREQUAL fx)
   set(CB_VERSION "02.50.0500")
-  set(LIBS -lm -lgcc -lfx)
-elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50 OR
-       "${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
-  set(CB_BUILD_TYPE "cg")
+elseif("${CB_PLATFORM}" STREQUAL cg)
   set(CB_VERSION "01.50.0100")
-  set(LIBS -lc -lm -lgcc -lfxcg)
+  set(LIBS "-lc")
 endif()
 project(CBASIC VERSION ${CB_VERSION})
 math(EXPR BUILD "${CBASIC_VERSION_PATCH}/100")
 set(CB_VERSION_VALUE "${CBASIC_VERSION_MAJOR}${CBASIC_VERSION_MINOR}")
 set(CB_VERSION_STRING "${CBASIC_VERSION_MAJOR}.${CBASIC_VERSION_MINOR}")
 
-set(CB_SOURCE_BASE "${CMAKE_CURRENT_SOURCE_DIR}/src-${CB_BUILD_TYPE}")
+set(CB_SOURCE_BASE "${CMAKE_CURRENT_SOURCE_DIR}/src-${CB_PLATFORM}")
 set(CB_LINKER_BASE "${CMAKE_CURRENT_SOURCE_DIR}/linker")
-set(LINKER "${CB_LINKER_BASE}/${CB_BUILD_TYPE}.ld")
+set(LINKER "${CB_LINKER_BASE}/${CB_PLATFORM}.ld")
 if("${CMAKE_BUILD_TYPE}" STREQUAL "FastLoad")
   set(LINKER "${CB_LINKER_BASE}/fastload.ld")
 endif()
 
-file(GLOB_RECURSE SOURCES "${CB_SOURCE_BASE}/src/*.[c|s]")
-file(GLOB_RECURSE COMMONS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.[c|s]")
+file(GLOB_RECURSE SOURCES "${CB_SOURCE_BASE}/src/*.[c|S]")
+file(GLOB_RECURSE COMMONS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.[c|S]")
 list(APPEND SOURCES ${COMMONS})
 
 find_package(Git REQUIRED)
@@ -68,6 +65,8 @@ set(LINK_OPTS
     -L ${CMAKE_CURRENT_SOURCE_DIR}/lib -T ${LINKER}
     -Wl,-print-memory-usage -Wl,-Map=map -Wl,-gc-sections)
 target_link_options(CBASIC PRIVATE ${LINK_OPTS})
+
+list(APPEND LIBS "-lm" "-lgcc" "-l${CB_PLATFORM}")
 target_link_libraries(CBASIC PRIVATE ${LIBS})
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)

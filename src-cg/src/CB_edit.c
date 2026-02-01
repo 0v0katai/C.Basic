@@ -1730,6 +1730,8 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 			}
 		}
 		switch (key) {
+			case KEY_CTRL_CATALOG:
+				goto catalog;
 			case KEY_CTRL_NOP:
 //					if ( SearchMode ) break;;
 					ClipStartPtr = -1 ;		// ClipMode cancel+
@@ -2671,9 +2673,10 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 							break;
 							
 					case KEY_CTRL_CAPTURE:
-							SysCalljmp( 4,5,6,7,0x17E6);	// CAPTURE
+							TakeScreenshot();
 							break;
 					case KEY_CTRL_CATALOG:
+						catalog:
 							key=CB_Catalog();
 							break;
 					default:
