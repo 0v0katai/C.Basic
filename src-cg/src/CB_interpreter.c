@@ -194,7 +194,7 @@ int CB_interpreter_sub( char *SRC ) {
 //	if ( 0x16A000 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
 //	if ( 0x180000 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
 //	if ( 0x171C00 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
-	if ( 0x172C00 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
+	// if ( 0x172C00 > ( (int)&cont & 0xFFFFFF ) ) { CB_Error(StackERR); return -1; } //  stack error
 	
 	ClrCahche();
 	
