@@ -165,7 +165,8 @@ unsigned int SelectFile (char *filename)
 //--------------------------------------------------------------
 void ToLower( char *str ){
 	for (int i = 0; str[i] != '\0'; i++)
-		str[i] = tolower((uint8_t)str[i]);
+		if (str[i] >= 'A' && str[i] <= 'Z')
+			str[i] |= 0x20;
 }
 
 void GetExtName(char *sname, char *ext) {
