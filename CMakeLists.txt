@@ -7,6 +7,7 @@ if("${CB_PLATFORM}" STREQUAL fx)
 elseif("${CB_PLATFORM}" STREQUAL cg)
   set(CB_VERSION "01.50.0100")
   set(LIBS "-lc")
+#  set(MPM 1)
 endif()
 project(CBASIC VERSION ${CB_VERSION})
 math(EXPR BUILD "${CBASIC_VERSION_PATCH}/100")
@@ -66,15 +67,27 @@ set(LINK_OPTS
     -Wl,-print-memory-usage -Wl,-Map=map -Wl,-gc-sections)
 target_link_options(CBASIC PRIVATE ${LINK_OPTS})
 
-list(APPEND LIBS "-lm" "-lgcc" "-l${CB_PLATFORM}")
+list(APPEND LIBS "-lm" "-lgcc")
+if(MPM)
+  list(APPEND LIBS "-lcw")
+else()
+  list(APPEND LIBS "-l${CB_PLATFORM}")
+endif()
 target_link_libraries(CBASIC PRIVATE ${LIBS})
 
 if("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G)
   generate_g1a(TARGET CBASIC VERSION ${CB_VERSION} OUTPUT "CBASIC.g1a"
     NAME "CBASIC" ICON assets-fx/icon.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
-  generate_g3a(TARGET CBASIC VERSION ${CB_VERSION} OUTPUT "CBCG${CB_VERSION_VALUE}.g3a"
-    NAME "CBCG${CB_VERSION_VALUE}" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
+  if(MPM)
+    set(PLATFORM "CW")
+  else()
+    set(PLATFORM "CG")
+  endif()
+  generate_g3a(TARGET CBASIC VERSION ${CB_VERSION_INTERNAL}
+    OUTPUT "CB${PLATFORM}${CB_VERSION_VALUE}.g3a"
+    NAME "CB${PLATFORM}${CB_VERSION_VALUE}"
+    ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
   generate_g3a(TARGET CBASIC VERSION ${CB_VERSION} OUTPUT "CBCG${CB_VERSION_VALUE}-fx.g3a"
     NAME "CBCG${CB_VERSION_VALUE}-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
