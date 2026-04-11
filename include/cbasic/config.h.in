@@ -4,6 +4,7 @@
 #define VERSION @CB_VERSION_VALUE@
 #define VERSTR "v@CB_VERSION_STRING@" "\xE6\x41" "@CBASIC_VERSION_PATCH@"
 #define COMMIT_ID "@COMMIT_ID_SHORT@"
+#define PLATFORM "@PLATFORM@"
 #cmakedefine01 MPM
 
 #endif

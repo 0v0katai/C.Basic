@@ -63,11 +63,11 @@ void VerDispSub() {
 	int freearea;
 	char buffer[32];
 	locate( 3, 2 ); Prints( (unsigned char*)"C.Basic" );
-	PrintMinix3(10*6+2, 1*8+2, (unsigned char*)"CG Edition", MINI_OVER);
-	PrintMinix3( 8*6  , 2*8+2, (unsigned char*)VERSTR " (" COMMIT_ID ")", MINI_OVER);
-	PrintMinix3( 2*6+2, 3*8+2, (unsigned char*)"Copyright \xE5\x9E 2017-2025", MINI_OVER);
-	PrintMinix3( 2*6+2, 4*8+2, (unsigned char*)"Sentaro21 & CalcLoverHK", MINI_OVER);
-	PrintMinix3( 2*6+2, 5*8+2, (unsigned char*)"Licensed under GPLv2+.", MINI_OVER);
+	PrintMinix3(10*6+2, 1*8+2, (unsigned char*)PLATFORM " Edition", MINI_OVER);
+	PrintMinix3( 2*6+2, 2*8+2, (unsigned char*)VERSTR " (" COMMIT_ID ")", MINI_OVER);
+	PrintMinix3( 5*6+2, 3*8+2, (unsigned char*)"\xE5\x9E 2017-2026 Sentaro21,", MINI_OVER);
+	PrintMinix3( 8*6+2, 4*8+2, (unsigned char*)"CalcLoverHK, et al.", MINI_OVER);
+	PrintMinix3( 2*6+2, 5*8+2, (unsigned char*)"Released under GPLv2+.", MINI_OVER);
 
 //	if ( ( UseHiddenRAM ) && ( IsHiddenRAM ) ) {
 		freearea = HiddenRAM_MatTopPtr - HiddenRAM_ProgNextPtr ;
