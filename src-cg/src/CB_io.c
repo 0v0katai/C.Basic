@@ -983,7 +983,7 @@ void * HiddenRAM_mallocProg( size_t size ){
 void * HiddenRAM_mallocMat( size_t size ){
 	char * ptr;
 	ptr = HiddenRAM_MatTopPtr;
-	ptr -= ( (size+15) & 0xFFFFFFF0 );	// 16byte align
+	ptr -= ( (size+7) & 0xFFFFFFF8 );	// 8byte align
 	if ( ptr < HiddenRAM_ProgNextPtr ) return 0;
 	HiddenRAM_MatTopPtr = ptr;
 	return ptr;
