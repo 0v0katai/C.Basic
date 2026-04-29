@@ -54,7 +54,6 @@ void CopyMatrix( int reg2, int reg ) ;	// reg -> reg2
 
 void DeleteMatrix( int reg ) ;
 void InitMatIntSub( int reg, int value );
-void NumToHex( char *buffer, unsigned int n, int digit) ;
 void EditMatrix(int reg, int ans );		// ----------- Edit Matrix
 int SetMatrix(int select);		// ----------- Set Matrix
 
@@ -138,8 +137,8 @@ int CB_SysCall( char *SRC ) ;
 int CB_VarPtr( char *SRC ) ;
 int CB_ProgPtr( char *SRC ) ; //	ProgPtr(
 
-void NumToBin( char *buffer, unsigned int n, int digit) ;
-void NumToHex( char *buffer, unsigned int n, int digit) ;
+void NumToBin( char *buffer, int n, int digit) ;
+void NumToHex( char *buffer, int n, int digit) ;
 
 double CB_DotP( char *SRC );		// DotP(Vct A,Vct B)
 int CB_DotPInt( char *SRC );		// DotP(Vct A,Vct B)

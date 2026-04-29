@@ -691,7 +691,7 @@ void MatDotEditCursorSetFlashMode(int set) {	// 1:on  0:off
 }
 
 //-----------------------------------------------------------------------------
-void NumToBin( char *buffer, unsigned int n, int digit) {
+void NumToBin( char *buffer, int n, int digit) {
 	unsigned int i,j,k=pow(2,(digit-1));
 	char bins[]="01";
 	n &= (k*2-1);
@@ -704,7 +704,7 @@ void NumToBin( char *buffer, unsigned int n, int digit) {
 	buffer[digit]='\0';
 }
 
-void NumToHex( char *buffer, unsigned int n, int digit) {
+void NumToHex( char *buffer, int n, int digit) {
 	unsigned int i,j,k=pow(16,(digit-1));
 	char hexs[]="0123456789ABCDEF";
 	n &= (k*16-1);

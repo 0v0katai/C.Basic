@@ -735,66 +735,40 @@ void MatDotEditCursorSetFlashMode(int set) {	// 1:on  0:off
 }
 
 //-----------------------------------------------------------------------------
-void NumToBin( char *buffer, unsigned int n, int digit) {
-	unsigned int i,j,k=pow(2,(digit-1));
-	char bins[]="01";
-	n &= (k*2-1);
-	for (i=0;i<digit;i++){
-		j=n/k;
-		buffer[i]=bins[j];
-		n=n-k*j;
-		k/=2;
-	}
-	buffer[digit]='\0';
+void NumToBin( char *buffer, int n, int digit) {
+	sprintf(buffer, "%0*b", digit, n);
 }
 
-void NumToHex( char *buffer, unsigned int n, int digit) {
-	unsigned int i,j,k=pow(16,(digit-1));
-	char hexs[]="0123456789ABCDEF";
-	n &= (k*16-1);
-	for (i=0;i<digit;i++){
-		j=n/k;
-		buffer[i]=hexs[j];
-		n=n-k*j;
-		k/=16;
-	}
-	buffer[digit]='\0';
+void NumToHex( char *buffer, int n, int digit) {
+	sprintf(buffer, "%0*X", digit, n & 0xFFFFFFFF >> (32 - (digit << 2)));
 }
-void DNumToHex( char *buffer, double x, int digit) {
-	char buffer2[20];
-	unsigned int i;
-	unsigned int n[2];
-	unsigned char *dptr;
-	unsigned char *iptr;
-	dptr=(unsigned char *)(&x);
-	iptr=(unsigned char *)(&n);
-	for (i=0; i<8; i++ ) iptr[i]=dptr[i];
-	NumToHex( buffer2, n[0], 8);
-	for (i=0; i<8; i++ )  buffer[i]=buffer2[i];
-	NumToHex( buffer2, n[1], 8);
-	for (i=0; i<8; i++ ) buffer[i+8]=buffer2[i];
-	buffer[digit]='\0';
+void DNumToHex(char *buffer, double x) {
+	uint64_t hex;
+	memcpy(&hex, &x, sizeof(double));
+	sprintf(buffer, "%016llX", hex);
 }
 
 void MatNumToExpBuf( complex value, int bit ){	// value -> ExpBuffer
 	int eng=ENG;
 	ExpBuffer[0]='0';
 	ExpBuffer[1]='x';
-	if ( bit== 1 ) {	NumToBin(ExpBuffer+2, value.real, 8); 	ExpBuffer[1]='b';
-	} else 
-	if ( bit== 2 ) {	NumToBin(ExpBuffer+2, value.real, 16);	ExpBuffer[1]='b';
-	} else 
-	if ( bit== 8 ) {	NumToHex(ExpBuffer+2, value.real, 2);
-	} else 
-	if ( bit==16 ) {	NumToHex(ExpBuffer+2, value.real, 4);
-	} else 
-	if ( bit==32 ) {	NumToHex(ExpBuffer+2, value.real, 8);
-	} else 
-	if ( bit==64 ) {	DNumToHex(ExpBuffer+2, value.real, 16);
-	} else { 
-		if (ENG==3) ENG=0;
-		Cplx_sprintGR1(ExpBuffer, value, 63, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
-		ENG=eng;
+	switch (bit) {
+		case 1:
+		case 2:
+			sprintf(ExpBuffer + 1, "b%0*b", 4 << bit, (int)value.real);
+			break;
+		case 8:
+		case 16:
+		case 32:
+			sprintf(ExpBuffer + 2, "%0*X", bit >> 2, (int)value.real);
+			break;
+		case 64:
+			DNumToHex(ExpBuffer + 2, value.real);
+			break;
+		default:
+			if (ENG==3) ENG=0;
+			Cplx_sprintGR1(ExpBuffer, value, 63, LEFT_ALIGN, CB_Round.MODE, CB_Round.DIGIT );
+			ENG=eng;
 	}
 }
 
@@ -1395,7 +1369,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 							} else 
 							if ( bit==32 ) {	NumToHex(buffer, value.real, 8);	i=1;
 							} else 
-							if ( bit==64 ) {	DNumToHex(buffer, value.real, 16);	i=1;
+							if ( bit==64 ) {	DNumToHex(buffer, value.real);	i=1;
 							} else { 	sprintG(buffer, value.real, 4,RIGHT_ALIGN);	i=3-adjX;
 							}
 							ENG=bk_ENG;
