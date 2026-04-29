@@ -1923,27 +1923,14 @@ int CB_EvalToStr( char *SRC ){		// ToStr( n
 }
 
 int CB_Hex( char *SRC ){		// Hex(
-	int n,tmp;
-	int value = CB_EvalInt( SRC );
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-//	sprintf(CB_CurrentStr, "%X",value);
-	n=8;
-	tmp=value;
-	if (value) { while ( (tmp&0xF0000000)==0 ) { tmp=tmp<<4; n--; } } else n=1;
-	if ( n<1 ) n=1;
-	NumToHex( CB_CurrentStr, (unsigned int)value, n);
+	sprintf(CB_CurrentStr, "%X", CB_EvalInt(SRC));
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
 int CB_Bin( char *SRC ){		// Bin(
-	int n,tmp;
-	int value = CB_EvalInt( SRC );
 	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	n=32;
-	tmp=value;
-	if (value) { while ( (tmp&0x80000000)==0 ) { tmp=tmp<<1; n--; } } else n=1;
-	if ( n<1 ) n=1;
-	NumToBin( CB_CurrentStr, (unsigned int)value, n);
+	sprintf(CB_CurrentStr, "%b", CB_EvalInt(SRC));
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 	return CB_StrBufferMax-1;
 }
@@ -2220,38 +2207,25 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89",","[,n]) -> MatAns[["12
 void StrDMSsub( char *buffer, double a ) {	// 
 	int degree, minute;
 	double second;
-	int i=0, coeff=1;
-	bool frac;
 
-	if (a > INT_MAX)
-		a = INT_MAX;
-	if (a < INT_MIN)
-		a = INT_MIN;
-	if (a < 0) {
-		coeff = -1;
-		a = -a;
-	}
-	frac = (a < 1);
+	if (a > INT_MAX) a = INT_MAX;
+	else if (a < INT_MIN) a = INT_MIN;
+	bool minus = a < 0;
+	a = fabs(a);
+
 	degree = (int)a;
 	minute = (int)((a - degree) * 60.);
 	second = ((a - degree) * 60. - minute) * 60.;
 
-	sprintf(buffer, "%d\x9C%02d\xE5\x96%05.2f", degree * coeff, minute, second);
-	if (coeff == -1) {
-		if (frac)
-			memmove(buffer+1, buffer, strlen(buffer) + 1);
-		buffer[0] = 0x87;
-		i++;
-	}
-
-	i += frac ? 1 : floor(log10(a)) + 1;
-
-	if (buffer[i+9] == '0')
-		i -= buffer[i+8] == '0' ? 3 : 1;
-
-	buffer[i+10] = 0xE5;
-	buffer[i+11] = 0x98;
-	buffer[i+12] = '\0';
+	int len = sprintf(buffer, "%s%d\x9C%02d\xE5\x96%05.2f",
+		minus ? "\x87" : "", degree, minute, second);
+	char *p = &buffer[len];
+	if (p[-1] == '0') p--;
+	if (p[-1] == '0') p--;
+	if (p[-1] == '.') p--;
+	p[0] = '\xE5';
+	p[1] = '\x98';
+	p[2] = '\0';
 }
 /*
 int CB_StrDMS( char *SRC ) {
