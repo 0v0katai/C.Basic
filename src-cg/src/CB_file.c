@@ -1181,18 +1181,16 @@ unsigned int Explorer( int size, char *folder )
 							goto textmodejp;
 					case KEY_CTRL_CATALOG:
 //							StatusArea_Run_sub( "== SEARCH MODE ==", CB_INTDefault, CB_G1MorG3MDefault );
-							Bdisp_AllClr_VRAM3(0,191);
+							PopUpWin(6);
 							CB_ColorIndex=0x001F;		// blue
-							CB_Prints( 1, 1, (unsigned char*)"== File mode Help ===");
+							CB_Prints( 5, 2, (unsigned char*)"Explorer Help");
 							CB_ColorIndex=0x0000;		// black
-							locate(1,2); Prints((unsigned char*)"[OPTN]:Favorite");
-							locate(1,3); Prints((unsigned char*)"[VARS]:Variable list");
-							locate(1,4); Prints((unsigned char*)"[ \x90\xE5\xC2 ]:Input ~");
-							locate(1,5); Prints((unsigned char*)"[ ^  ]:Input '");
-							locate(1,6); Prints((unsigned char*)"[(-) ]:Input @");
-							locate(1,7); Prints((unsigned char*)"[\xE6\xFB\x31\x30\xE5\xDD]:\x22 or FolderTop");
-							if ( IsCG20 ) { locate(1,7); Prints((unsigned char*)"[EXP "); }
-							locate(5,8); Prints((unsigned char*)"Press:[EXIT]");
+							PrintMinix3(2*6+2, 2*8+3, (unsigned char*)"[OPTN]: Add to favorite", MINI_OVER);
+							PrintMinix3(2*6+2, 3*8+3, (unsigned char*)"[VARS]: Variable editor", MINI_OVER);
+							PrintMinix3(2*6+2, 4*8+3, (unsigned char*)"[\xE6\xFB\x31\x30\xE5\xDD]: Jump to top folder", MINI_OVER);
+							if (IsCG20) PrintMinix3(2*6+2, 4*8+3, (unsigned char*)"[EXP]:  ", MINI_OVER);
+							PrintMinix3(2*6+2, 5*8+3, (unsigned char*)"[\x90\xE5\xC2] [^] [(-)]: Input ~ ' @", MINI_OVER);
+							PrintMinix3(7*6+2, 6*8+3, (unsigned char*)"Press: [EXIT]", MINI_OVER);
 							ExitKey();
 							break;
 							
