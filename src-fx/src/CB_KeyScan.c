@@ -27,9 +27,9 @@
 
 #include "CB.h"
 
-void delay( int wait ){
-int i;
-  for (i=0;i<wait;i++){};
+static void delay() {
+	for (int i = 0; i < 10; i++)
+		__asm__("nop");
 }
 
 //
@@ -44,35 +44,34 @@ int CheckKeyRow( int row ){
   char cmask;
   char PORTBtmp = *PORTB;
   char PORTMtmp = *PORTM;
-  int  wait=0+(IsSH3==2)*10;	// 9860G or Slim
 
   smask = 0x0003 << ((row%8)*2);
   cmask = ~( 1 << (row%8) );
   if (row<8){
 // configure port B as input, except for the "row to check"-bit, which has to be an output.
-        *PORTB_CTRL = 0xAAAA ^ smask;    
+        *PORTB_CTRL = 0xAAAA ^ smask;
 // configure port M as input; port M is inactive with row < 8
-        *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;  
-        delay(wait);
+        *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
+        delay();
         *PORTB = cmask;    // set the "row to check"-bit to 0 on port B
         *PORTM = (*PORTM & 0xF0 ) | 0x0F;    // port M is inactive with row < 8
   }else{
         *PORTB_CTRL = 0xAAAA;  // configure port B as input; port B is inactive with row >= 8
 // configure port M as input, except for the "row to check"-bit, which has to be an output.
-        *PORTM_CTRL = ((*PORTM_CTRL & 0xFF00 ) | 0x00AA)  ^ smask;  
-        delay(wait);
+        *PORTM_CTRL = ((*PORTM_CTRL & 0xFF00 ) | 0x00AA)  ^ smask;
+        delay();
         *PORTB = 0xFF;    // port B is inactive with row >= 8 (all to 1)
         *PORTM = (*PORTM & 0xF0 ) | cmask;  // set the "row to check"-bit to 0
   };
-  delay(wait);
+  delay();
   result = ~(*PORTA);   // a pressed key in the row-to-check draws the corresponding bit to 0
-  delay(wait);
-//  *PORTB_CTRL = 0xAAAA;  
+  delay();
+//  *PORTB_CTRL = 0xAAAA;
 //  *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
-//  delay(wait);
+//  delay();
   *PORTB_CTRL = 0x5555;
   *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x0055;
-  delay(wait);
+  delay();
   *PORTB = PORTBtmp;
   *PORTM = PORTMtmp;
   return result;
