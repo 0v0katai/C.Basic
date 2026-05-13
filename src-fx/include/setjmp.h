@@ -28,11 +28,11 @@ typedef int jmp_buf_a[54];
 #ifdef __cplusplus
 extern "C" {
 #endif
-__attribute__((renesas)) extern int setjmp(jmp_buf);
-__attribute__((renesas)) extern void longjmp(jmp_buf, int);
+extern int setjmp(jmp_buf);
+extern void longjmp(jmp_buf, int);
 #ifdef _SH4
-__attribute__((renesas)) extern int setjmp_a(jmp_buf);
-__attribute__((renesas)) extern void longjmp_a(jmp_buf, int);
+extern int setjmp_a(jmp_buf);
+extern void longjmp_a(jmp_buf, int);
 #endif
 
 extern volatile int _errno;

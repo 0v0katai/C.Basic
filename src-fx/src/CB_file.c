@@ -509,6 +509,7 @@ void FavoritesUpDown( int *index, int updw ) {	// up:-1	down:1
 //--------------------------------------------------------------
 
 static const unsigned short sd_card_id[] = {'\\','\\','c','r','d','0',0};
+static const unsigned short smem_id[] = {'\\','\\','f','l','s','0',0};
 
 int get_current_media_free() {
     int free_bytes[2];
@@ -533,8 +534,13 @@ int get_current_media_free() {
 		/* `Bfile_GetMediaFree` is broken for SD card, so we go for the syscall approach here. */
 		if (Bfile_GetMediaFree_OS(sd_card_id, free_bytes) != 0)
 			Abort();
-	} else if (Bfile_GetMediaFree(media_type, free_bytes) != 0)
-        Abort();
+	} else if (media_type == DEVICE_STORAGE) {
+		if (Bfile_GetMediaFree_OS(smem_id, free_bytes) != 0)
+			Abort();
+	} else {
+		int maxspace,currentload;
+		MCS_GetState( &maxspace, &currentload, &free_bytes[0] );
+	}
 
 	if (media_type == DEVICE_MAIN_MEMORY)
 		return free_bytes[0];
@@ -2807,38 +2813,36 @@ void CopyFavoritesToFiles(){
 	}
 }
 
-int SaveConfigWriteFile( unsigned char *buffer, const unsigned char *fname, int size ) {
-	int state,handle;
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle >= 0) {		// Already Exists
-		Bfile_CloseFile(handle);
+int SaveConfigWriteFileSub( unsigned char *buffer, unsigned char *dir, unsigned char *basname, int size ) {
+	int state=MCSPutVar2((unsigned char*)dir, (unsigned char*)basname, size, buffer);
+	switch ( state ) {
+		case 0:
+			break;
+		case 37:									//  file already exists
+			MCSDelVar2( dir, basname);
+			state=MCSPutVar2( dir, basname, size, buffer);
+			break;	
+		case 64:									//  dir not exists
+ 			state=MCS_CreateDirectory( dir );
+			if (state != 0  ) { ErrorMSG("MKDIR error",state); return -1; }
+			state=MCSPutVar2( dir, basname, size, buffer);
+			break;
 	}
-	if (handle==IML_FILEERR_ENTRYNOTFOUND) {
-		handle=Bfile_CreateMainMemory(fname);
-		if (handle<0) {ErrorMSG("Create Error",handle); return handle; }
-		state=Bfile_CloseFile(handle);
-		if (state<0)  {ErrorMSG("Close Error",state); return handle; }
-	}
-	if (handle<0) {ErrorMSG("Open Error",handle); return handle; }
-
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle<0) {ErrorMSG("Open Error",handle); return handle; }
-	state=Bfile_WriteFile(handle,buffer,size);
-	if (state<0)  {ErrorMSG("Write Error",state); return state; }
-	state=Bfile_CloseFile(handle);
-	if (state<0)  {ErrorMSG("Close Error",state); return state; }
+	if (state != 0  ) { ErrorMSG("Save error",state); return -1; }
 	return state;
 }
+
+int SaveConfigWriteFile( unsigned char *buffer, const unsigned char *fname, int size ) {
+	return SaveConfigWriteFileSub( buffer, (unsigned char *)"@CBASIC", (unsigned char *)fname, size );
+}
+
 int LoadConfigReadFile( unsigned char *buffer, const unsigned char *fname, int size ) {
-	int state,handle;
-	handle=Bfile_OpenMainMemory(fname);
-	if (handle<0)  { // Open Error
+	int handle,state,x;
+	state=MCSGetDlen2( (unsigned char*)"@CBASIC", (unsigned char*)fname, &x);
+	if ( (state!=0) || ( size!=x ) ) {
 		return -1;
 	}
-	state=Bfile_ReadFile(handle, buffer, size, 0);
-	if (state<0)  {ErrorMSG("Read Error",state); return -1;}
-	state=Bfile_CloseFile(handle);
-	if (state<0)  {ErrorMSG("Close Error",state); return -1;}
+	MCSGetData1(0, x, buffer);
 	return 0;
 }
 
@@ -3172,7 +3176,7 @@ void LoadConfig1(){
 		DisableDebugMode =buffer[1078];
 
 	} else {
-		Bfile_DeleteMainMemory(fname);
+		MCSDelVar2((unsigned char*)"@CBASIC",(unsigned char*)fname);
 	}
 }
 
@@ -3217,7 +3221,7 @@ void LoadConfig2(){
 		for ( i= 6; i<  6+58 ; i++ ) REG[i-6].imag =bufdbl[i];	//
 
 	} else {
-		Bfile_DeleteMainMemory(fname);
+		MCSDelVar2((unsigned char*)"@CBASIC",(unsigned char*)fname);
 	}
 }
 

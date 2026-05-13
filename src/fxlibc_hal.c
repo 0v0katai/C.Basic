@@ -1,11 +1,25 @@
 #include "casiowin.h"
-#include <unistd.h>
 
-size_t write(int fd, void const *buf, size_t count)
+typedef int32_t off_t;
+typedef int32_t ssize_t;
+
+ssize_t write(int fd, void const *buf, size_t count);
+ssize_t read(int fd, void *buf, size_t nbytes);
+off_t lseek(int fd, off_t offset, int whence);
+
+ssize_t write(int fd, void const *buf, size_t count)
 {
     (void)fd;
     (void)buf;
     (void)count;
+    return -1;
+}
+
+ssize_t read(int fd, void *buf, size_t nbytes)
+{
+    (void)fd;
+    (void)buf;
+    (void)nbytes;
     return -1;
 }
 

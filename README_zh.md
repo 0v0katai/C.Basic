@@ -45,9 +45,6 @@ fxlink -sw ./CBASIC.g1a
 ### CG版本
 
 ```bash
-# 编译libc和libfxcg库（可选）
-make -C lib
-
 # 编译插件，然后使用UDisk2传送插件至fx-CG机型
 fxsdk build-cg -s
 

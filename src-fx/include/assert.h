@@ -32,7 +32,7 @@
 #endif
 #ifdef __cplusplus
 extern "C" {
-__attribute__((renesas)) void abort(void);
+void abort(void);
 }
 #endif
 

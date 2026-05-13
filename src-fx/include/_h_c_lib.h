@@ -20,8 +20,8 @@
 #ifdef __cplusplus
 extern "C"{
 #endif
-__attribute__((renesas)) extern void _CALL_INIT(void); /* for global class object initial processing */
-__attribute__((renesas)) extern void _CALL_END(void);  /* for global class object post-processing */
+extern void _CALL_INIT(void); /* for global class object initial processing */
+extern void _CALL_END(void);  /* for global class object post-processing */
 #ifdef __cplusplus
 }
 #endif /* #ifdef __cplusplus */

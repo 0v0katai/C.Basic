@@ -17,6 +17,7 @@
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
 #include "CB.h"
+#include <fxlibc/printf.h>
 
 #define BE_MAX 16
 
@@ -37,6 +38,7 @@ int main()
 	char sname[13];
 	beFiles befiles[BE_MAX];
 
+	__printf_enable_fp();
 	HeapRAM = (char *)malloc( MAXHEAP );		// 47KB C.Basic area (program & Mat)
 	if ( HeapRAM == NULL )  { Abort(); }
 

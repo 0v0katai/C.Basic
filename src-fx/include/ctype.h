@@ -21,21 +21,21 @@
 extern "C" {
 #endif
 
-__attribute__((renesas)) extern unsigned char _ctype[];
+extern unsigned char _ctype[];
 
-__attribute__((renesas)) extern int isalnum(int);
-__attribute__((renesas)) extern int isalpha(int);
-__attribute__((renesas)) extern int iscntrl(int);
-__attribute__((renesas)) extern int isdigit(int);
-__attribute__((renesas)) extern int isgraph(int);
-__attribute__((renesas)) extern int islower(int);
-__attribute__((renesas)) extern int isprint(int);
-__attribute__((renesas)) extern int ispunct(int);
-__attribute__((renesas)) extern int isspace(int);
-__attribute__((renesas)) extern int isupper(int);
-__attribute__((renesas)) extern int isxdigit(int);
-__attribute__((renesas)) extern int tolower(int);
-__attribute__((renesas)) extern int toupper(int);
+extern int isalnum(int);
+extern int isalpha(int);
+extern int iscntrl(int);
+extern int isdigit(int);
+extern int isgraph(int);
+extern int islower(int);
+extern int isprint(int);
+extern int ispunct(int);
+extern int isspace(int);
+extern int isupper(int);
+extern int isxdigit(int);
+extern int tolower(int);
+extern int toupper(int);
 #ifdef __cplusplus
 }
 #endif

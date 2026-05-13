@@ -225,78 +225,63 @@ int CB_Getkey() {			// CasioBasic Getkey compatible
 	return code;
 }
 
-int Bkey_GetKeyWait_sub( int kcode1, int kcode2 ) {		//
-	int flag0 = 0;
+int Bkey_GetKeyWait_sub(int kcode1, int kcode2) {
+	int rc1 = 0, rc2 = 0, flag0 = 0;
 	short unused = 0;
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 1 ) && (kcode2 == 1 ) ) flag0=1; // [AC] is down
-	}
+	if (Bkey_GetKeyWait(&rc1, &rc2,
+		KEYWAIT_HALTOFF_TIMEROFF,
+		0, 1, &unused) == KEYREP_KEYEVENT)
+		flag0 = rc1 == kcode1 && rc2 == kcode2;
 	return flag0;
 }
 
 int KeyCheckAC() {		// [AC]
-	if (IsSH3 ) return IsKeyDown(KEY_CTRL_AC);
+	if (IsSH3) return KeyScanDownAC();
 	return Bkey_GetKeyWait_sub( 1, 1 ); // [AC] is down
 }
 int KeyCheckEXE() {		// [EXE]
-//	if (IsSH3 ) return IsKeyDown(KEY_CTRL_EXE);
 	return Bkey_GetKeyWait_sub( 3, 2 ); // [EXE] is down
 }
 int KeyCheckEXIT() {		// [EXIT]
-//	if (IsSH3 ) return IsKeyDown(KEY_CTRL_EXIT);
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 7, 3 );
 	return Bkey_GetKeyWait_sub( 4, 8 ); // [EXIT] is down
 }
 int KeyCheckSHIFT() {		// [SHIFT]
-	if (IsSH3 ) return IsKeyDown(KEY_CTRL_SHIFT);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 5, 10 ); // [SHIFT] is down by slim
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 5, 10 ); // [SHIFT] is down by slim
 	return Bkey_GetKeyWait_sub( 7, 9 ); // [SHIFT] is down
 }
 int KeyCheckCHAR3() {		// [3]
-	if (IsSH3 ) return IsKeyDown(KEY_CHAR_3);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 5, 3 ); // [3] is down by slim
-//	return Bkey_GetKeyWait_sub( 5, 3 ); // [3] is down
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 3, 4 ); // [3] is down by slim
 	return KeyScanDown(KEYSC_3); // [3] is down
 }
 int KeyCheckCHAR4() {		// [4]
-	if (IsSH3 ) return IsKeyDown(KEY_CHAR_4);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 4 ); // [4] is down by slim
-//	return Bkey_GetKeyWait_sub( 7, 4 ); // [4] is down
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 4, 6 ); // [4] is down by slim
 	return KeyScanDown(KEYSC_4); // [4] is down
 }
 int KeyCheckCHAR5() {		// [3]
-	if (IsSH3 ) return IsKeyDown(KEY_CHAR_5);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 6, 4 ); // [5] is down by slim
-//	return Bkey_GetKeyWait_sub( 6, 4 ); // [5] is down
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 4, 5 ); // [5] is down by slim
 	return KeyScanDown(KEYSC_5); // [5] is down
 }
 int KeyCheckCHAR6() {		// [6]
-	if (IsSH3 ) return IsKeyDown(KEY_CHAR_6);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 5, 4 ); // [6] is down by slim
-//	return Bkey_GetKeyWait_sub( 5, 4 ); // [6] is down
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 4, 4 ); // [6] is down by slim
 	return KeyScanDown(KEYSC_6); // [6] is down
 }
 int KeyCheckF1() {		// [F1]
-	if (IsSH3 ) return IsKeyDown(KEY_CTRL_F1);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
 	return Bkey_GetKeyWait_sub( 7, 10 ); // [F1] is down
 }
 int KeyCheckDEL() {		// [DEL]
-	if (IsSH3 ) return IsKeyDown(KEY_CTRL_DEL);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 5, 3 ); // [DEL] is down by slim
 	return Bkey_GetKeyWait_sub( 4, 5 ); // [DEL] is down
 }
 int KeyCheckPMINUS() {		// [(-)]
-	if (IsSH3 ) return IsKeyDown(KEY_CHAR_PMINUS);
-//	if ( IsSH3==2 ) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
+	if (IsSH3==2) return Bkey_GetKeyWait_sub( 2, 3 ); // [(-)] is down by slim
 	return CheckKeyRow7305(1) & 0x08; // [(-)] is down
-//	return Bkey_GetKeyWait_sub( 4, 2 ); // [(-)] is down
 }
 
 void KeyRecover() {
 //	CB_Getkey();
-	if ( IsSH3 ) 
-		IsKeyDown( KEY_CTRL_AC );		//SH3
-	else	KeyCheckAC();				//SH4
+	KeyCheckAC();
 //	KeyCheckAC();
 //	KeyCheckEXE();
 //	KeyCheckEXIT();
