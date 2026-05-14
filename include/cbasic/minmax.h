@@ -5,32 +5,21 @@
 extern "C" {
 #endif
 
-#define min(x, y) ({ \
-    __typeof__ (x) _x = (x); \
-    __typeof__ (y) _y = (y); \
-    (_x < _y) ? (_x) : (_y); \
-})
+#define GET_FIRST(first, ...) first
 
-#define max(x, y) ({ \
-    __typeof__ (x) _x = (x); \
-    __typeof__ (y) _y = (y); \
-    (_x > _y) ? (_x) : (_y); \
-})
+#define OP(op, ...) _Generic((GET_FIRST(__VA_ARGS__)), \
+    double:  op##_dbl(sizeof((double[]){__VA_ARGS__}) / sizeof(double), (double[]){__VA_ARGS__}), \
+    float:   op##_dbl(sizeof((double[]){__VA_ARGS__}) / sizeof(double), (double[]){__VA_ARGS__}), \
+    default: op##_int(sizeof((int[]){__VA_ARGS__}) / sizeof(int), (int[]){__VA_ARGS__}) \
+)
 
-int va_min_int(int count, int first, ...);
-int va_max_int(int count, int first, ...);
-double va_min_double(int count, double first, ...);
-double va_max_double(int count, double first, ...);
+#define min(...) OP(min, __VA_ARGS__)
+#define max(...) OP(max, __VA_ARGS__)
 
-#define va_min(count, first, ...) \
-    _Generic((first), double : va_min_double, \
-                      float  : va_min_double, \
-                      default: va_min_int)(count, first, __VA_ARGS__)
-
-#define va_max(count, first, ...) \
-    _Generic((first), double : va_max_double, \
-                      float  : va_max_double, \
-                      default: va_max_int)(count, first, __VA_ARGS__)
+double min_dbl(int count, const double arr[]);
+double max_dbl(int count, const double arr[]);
+int min_int(int count, const int arr[]);
+int max_int(int count, const int arr[]);
 
 #ifdef __cplusplus
 }
