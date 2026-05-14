@@ -2801,7 +2801,8 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						break;
 					case SETUP_UseHidnRam: // Hidden RAM
 						if ( limit ) break;
-						if ( IsHiddenRAM ) UseHiddenRAM = 1 ; // on
+						if (!IsHiddenRAM) break;
+						UseHiddenRAM = 1 ; // on
 						if ( YesNo("Initialize Ok?")==0 ) break;
 						ExtendList=(6-1);
 						HiddenRAM_MatAryClear();
