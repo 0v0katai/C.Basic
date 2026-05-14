@@ -18,6 +18,7 @@
  * ************************************************************************** */
 
 /* ANK means "Alpha, Numeric and Katakana" in JIS encoding system. */
+#include <stdbool.h>
 
 /* External font flag. */
 #define FLAG_EXT_FONT 0x100

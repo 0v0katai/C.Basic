@@ -1,4 +1,7 @@
+#include <stddef.h>
+
 #include "fx9860.h"
+#include "fxcg/file.h"
 
 #define VRAMSIZE 0x28800
 #define VRAMSIZE_FX 1024

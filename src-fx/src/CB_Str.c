@@ -1726,32 +1726,6 @@ int CB_EvalToStr( char *SRC ){		// ToStr( n
 	return CB_StrBufferMax-1;
 }
 
-int CB_Hex( char *SRC ){		// Hex(
-	int n,tmp;
-	int value = CB_EvalInt( SRC );
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-//	sprintf(CB_CurrentStr, "%X",value);
-	n=8;
-	tmp=value;
-	if (value) { while ( (tmp&0xF0000000)==0 ) { tmp=tmp<<4; n--; } } else n=1;
-	if ( n<1 ) n=1;
-	NumToHex( CB_CurrentStr, (unsigned int)value, n);
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	return CB_StrBufferMax-1;
-}
-int CB_Bin( char *SRC ){		// Bin(
-	int n,tmp;
-	int value = CB_EvalInt( SRC );
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	n=32;
-	tmp=value;
-	if (value) { while ( (tmp&0x80000000)==0 ) { tmp=tmp<<1; n--; } } else n=1;
-	if ( n<1 ) n=1;
-	NumToBin( CB_CurrentStr, (unsigned int)value, n);
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	return CB_StrBufferMax-1;
-}
-
 int CB_StrBase( char *SRC ){		// StrBase( Str1,base1,base2 )->str2
 	int n;
 	int maxoplen;
@@ -2019,85 +1993,6 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89",","[,n]) -> MatAns[["12
 	return CB_StrBufferMax-1;
 }
 
-//----------------------------------------------------------------------------------------------
-void StrDMSsub( char *buffer, double a ) {	// 
-	int degree, minute;
-	double second;
-	int i=0, coeff=1;
-	bool frac;
-
-	if (a > INT_MAX)
-		a = INT_MAX;
-	if (a < INT_MIN)
-		a = INT_MIN;
-	if (a < 0) {
-		coeff = -1;
-		a = -a;
-	}
-	frac = (a < 1);
-	degree = (int)a;
-	minute = (int)((a - degree) * 60.);
-	second = ((a - degree) * 60. - minute) * 60.;
-
-	sprintf(buffer, "%d\x9C%02d\xE5\x96%05.2f", degree * coeff, minute, second);
-	if (coeff == -1) {
-		if (frac)
-			memmove(buffer+1, buffer, strlen(buffer) + 1);
-		buffer[0] = 0x87;
-		i++;
-	}
-
-	i += frac ? 1 : floor(log10(a)) + 1;
-
-	if (buffer[i+9] == '0')
-		i -= buffer[i+8] == '0' ? 3 : 1;
-
-	buffer[i+10] = 0xE5;
-	buffer[i+11] = 0x98;
-	buffer[i+12] = '\0';
-}
-/*
-int CB_StrDMS( char *SRC ) {
-	double a,b,c,d;
-	int i=0,j=3,f=1;
-	
-	if (CB_INT==1)	a = CBint_CurrentValue ;
-	else		a = CB_CurrentValue.real    ;
-
-	if ( a<0 ) { f=-1; a=-a; }
-	b=floor(a);
-	b=(a-b)*60.;
-	c=floor(b);
-	d=(b-c)*60.;
-	
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-
-	sprintf3(CB_CurrentStr, "%d %02d  %05.2f", (int)a*f, (int)c, d);
-
-	i=floor(log10(a));
-	if ( i<0 ) i=0;
-	if ( f<0 ) i++;
-
-	if ( CB_CurrentStr[0] == '-' ) CB_CurrentStr[0]=0x87;	// (-)
-
-	CB_CurrentStr[i+1]=0x9C;
-	
-	CB_CurrentStr[i+4]=0xE5;
-	CB_CurrentStr[i+5]=0x96;
-
-	if ( CB_CurrentStr[i+10] == '0' ) {
-		j--;
-		if ( CB_CurrentStr[i+9] == '0' ) j-=2;
-	}
-
-	CB_CurrentStr[ 8+i+j]=0xE5;
-	CB_CurrentStr[ 9+i+j]=0x98;
-	CB_CurrentStr[10+i+j]='\0';
-
-	CB_StrPrints(SRC, 23-(10+i+j) );
-	return 1;
-}
-*/
 int DateToStr( char *buffer) {	// "2017/01/17 TUE"
 	int a, y1,y2,y3,y4, m1,m2, d1,d2;
 	char weekStr[7][4]={"SAT","SUN","MON","TUE","WED","THU","FRI"};

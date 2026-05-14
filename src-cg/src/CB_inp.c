@@ -498,8 +498,8 @@ void Cplx_sprintGR2( char* buffer, char* buffer2, complex num, int width, int al
 		} else {		// real + imag
 			StrDMSsub( buffer,  a ) ;
 			StrDMSsub( buffer3, fabs(b) ) ;
-			sprintf(buffer2, "%s%s\x7F\x50",
-				b >= 0 ? "+" : "-", buffer3);
+			sprintf(buffer2, "%c%s\x7F\x50",
+				b >= 0 ? '+' : '-', buffer3);
 			w=100;
 		}
 		goto GR2j;

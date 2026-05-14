@@ -1922,19 +1922,6 @@ int CB_EvalToStr( char *SRC ){		// ToStr( n
 	return CB_StrBufferMax-1;
 }
 
-int CB_Hex( char *SRC ){		// Hex(
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	sprintf(CB_CurrentStr, "%X", CB_EvalInt(SRC));
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	return CB_StrBufferMax-1;
-}
-int CB_Bin( char *SRC ){		// Bin(
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	sprintf(CB_CurrentStr, "%b", CB_EvalInt(SRC));
-	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
-	return CB_StrBufferMax-1;
-}
-
 int CB_StrBase( char *SRC ){		// StrBase( Str1,base1,base2 )->str2
 	int n;
 	int maxoplen;
@@ -2203,72 +2190,6 @@ int CB_StrSplit( char *SRC ) {	// StrStip( "123,4567,89",","[,n]) -> MatAns[["12
 	return CB_StrBufferMax-1;
 }
 
-//----------------------------------------------------------------------------------------------
-void StrDMSsub( char *buffer, double a ) {	// 
-	int degree, minute;
-	double second;
-
-	if (a > INT_MAX) a = INT_MAX;
-	else if (a < INT_MIN) a = INT_MIN;
-	bool minus = a < 0;
-	a = fabs(a);
-
-	degree = (int)a;
-	minute = (int)((a - degree) * 60.);
-	second = ((a - degree) * 60. - minute) * 60.;
-
-	int len = sprintf(buffer, "%s%d\x9C%02d\xE5\x96%05.2f",
-		minus ? "\x87" : "", degree, minute, second);
-	char *p = &buffer[len];
-	if (p[-1] == '0') p--;
-	if (p[-1] == '0') p--;
-	if (p[-1] == '.') p--;
-	p[0] = '\xE5';
-	p[1] = '\x98';
-	p[2] = '\0';
-}
-/*
-int CB_StrDMS( char *SRC ) {
-	double a,b,c,d;
-	int i=0,j=3,f=1;
-	
-	if (CB_INT==1)	a = CBint_CurrentValue ;
-	else		a = CB_CurrentValue.real    ;
-
-	if ( a<0 ) { f=-1; a=-a; }
-	b=floor(a);
-	b=(a-b)*60.;
-	c=floor(b);
-	d=(b-c)*60.;
-	
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-
-	sprintf(CB_CurrentStr, "%d %02d  %05.2f", (int)a*f, (int)c, d);
-
-	i=floor(log10(a));
-	if ( i<0 ) i=0;
-	if ( f<0 ) i++;
-
-	if ( CB_CurrentStr[0] == '-' ) CB_CurrentStr[0]=0x87;	// (-)
-
-	CB_CurrentStr[i+1]=0x9C;
-	
-	CB_CurrentStr[i+4]=0xE5;
-	CB_CurrentStr[i+5]=0x96;
-
-	if ( CB_CurrentStr[i+10] == '0' ) {
-		j--;
-		if ( CB_CurrentStr[i+9] == '0' ) j-=2;
-	}
-
-	CB_CurrentStr[ 8+i+j]=0xE5;
-	CB_CurrentStr[ 9+i+j]=0x98;
-	CB_CurrentStr[10+i+j]='\0';
-
-	CB_StrPrints(SRC, 23-(10+i+j) );
-	return 1;
-}
-*/
 int DateToStr( char *buffer) {	// "2017/01/17 TUE"
 	int a, y1,y2,y3,y4, m1,m2, d1,d2;
 	char weekStr[7][4]={"SAT","SUN","MON","TUE","WED","THU","FRI"};

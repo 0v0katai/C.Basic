@@ -734,20 +734,6 @@ void MatDotEditCursorSetFlashMode(int set) {	// 1:on  0:off
 	}
 }
 
-//-----------------------------------------------------------------------------
-void NumToBin( char *buffer, int n, int digit) {
-	sprintf(buffer, "%0*b", digit, n);
-}
-
-void NumToHex( char *buffer, int n, int digit) {
-	sprintf(buffer, "%0*X", digit, n & 0xFFFFFFFF >> (32 - (digit << 2)));
-}
-void DNumToHex(char *buffer, double x) {
-	uint64_t hex;
-	memcpy(&hex, &x, sizeof(double));
-	sprintf(buffer, "%016llX", hex);
-}
-
 void MatNumToExpBuf( complex value, int bit ){	// value -> ExpBuffer
 	int eng=ENG;
 	ExpBuffer[0]='0';

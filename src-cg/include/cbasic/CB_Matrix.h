@@ -142,6 +142,7 @@ int CB_ProgPtr( char *SRC ) ; //	ProgPtr(
 
 void NumToBin( char *buffer, int n, int digit) ;
 void NumToHex( char *buffer, int n, int digit) ;
+void DNumToHex(char *buffer, double x);
 
 double CB_DotP( char *SRC );		// DotP(Vct A,Vct B)
 int CB_DotPInt( char *SRC );		// DotP(Vct A,Vct B)

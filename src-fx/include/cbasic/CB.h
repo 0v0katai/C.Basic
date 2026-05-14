@@ -48,10 +48,6 @@ typedef struct  {
 	double imag;
 } complex;
 
-typedef char bool;
-#define false 0
-#define true 1
-
 #include "CB_complex.h"
 #include "CB_interpreter.h"
 #include "KeyScan.h"
