@@ -15,7 +15,7 @@
 #include "CB_MonochromeLib.h"
 #include <stdlib.h>
 #include "fxlib.h"
-#include "mathf.h"
+#include <math.h>
 
 #include "fx_syscall.h"
 extern  char *TVRAM;

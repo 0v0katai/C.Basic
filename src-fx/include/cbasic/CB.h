@@ -25,23 +25,17 @@
 #include <math.h>
 #include <timer.h>
 
-#include "openlibm_math.h"
-#include "_h_c_lib.h"
 #include "assert.h"
 #include "endian.h"
-#include "ensigdsp.h"
 #include "errno.h"
 #include "float.h"
 #include "limits.h"
-#include "machine.h"
 #include "setjmp.h"
-#include "smachine.h"
 #include "stdarg.h"
 #include "stddef.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "umachine.h"
 
 typedef struct  {
 	double real;
