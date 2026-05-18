@@ -170,10 +170,6 @@ void MatOprandInt1( char *SRC, int reg, int *dimA, int *dimB ){ 	// base:0  0-  
 	if ( SRC[ExecPtr] == ']' ) ExecPtr++ ;	// 
 }
 
-int rand2() {
-	return ((rand() % 2) << 30) + (rand() << 15) + rand();
-}
-
 void _div_check_int(int div) {
 	if (div == 0)
 		CB_Error(DivisionByZeroERR);
@@ -297,7 +293,7 @@ int flogabint(int x, int y) {	// flogab(x,y)
 	return flogab(x,y);
 }
 int frandIntint(int x, int y) {
-	return rand2() % (abs(y-x)+1) + min(x,y);
+	return rand() % (abs(y-x)+1) + min(x,y);
 }
 
 int fMODint(int x, int y) {
