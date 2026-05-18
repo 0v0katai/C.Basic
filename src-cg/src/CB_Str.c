@@ -546,7 +546,7 @@ void OpcodeStringToAsciiString(char *buffer, char *SRC, int Maxlen ) {	// Opcode
 		} else CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
 		len = strlen( (char*)tmpbuf ) ;
 		i=0;
-		if ( ptr+len-1 > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr+len-1 > Maxlen ) { CB_Error(StringTooLong); break; }	// String too Long error
 		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
 	}
 	buffer[ptr]='\0' ;
@@ -565,7 +565,7 @@ void OpcodeStringToAsciiString_noESC(char *buffer, char *SRC, int Maxlen ) {	// 
 		} else CB_OpcodeToStr( c, tmpbuf ) ;	// SYSCALL
 		len = strlen( (char*)tmpbuf ) ;
 		i=0;
-		if ( ptr+len-1 > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr+len-1 > Maxlen ) { CB_Error(StringTooLong); break; }	// String too Long error
 		while ( i < len ) buffer[ptr++]=tmpbuf[i++] ;
 	}
 	buffer[ptr]='\0' ;
@@ -622,7 +622,7 @@ int CB_GetQuotOpcode(char *SRC, char *buffer, int Maxlen) {
 				break;
 		}
 	  next:
-		if ( ptr > Maxlen ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr > Maxlen ) { CB_Error(StringTooLong); break; }	// String too Long error
 	}
 	return ptr;
 }
@@ -820,7 +820,7 @@ int CB_IsStr_noYFn( char *SRC, int execptr ) {
 
 int CB_IsStr( char *SRC, int execptr ) {
 	int c=SRC[execptr],extmp,f;
-	if ( c == 0x22 ) {	// String
+	if ( c == '"' ) {	// String
 		return 1;
 	} else
 	if ( c=='$' ) {	// Mat String
@@ -1969,153 +1969,6 @@ int CB_StrRepl( char *SRC ){	// StrRepl( Str1,Str2,Str3[,n])->str4
 	StrRepl( CB_CurrentStr, buffer, srcstr, repstr, sptr, CB_StrBufferMax-1 );
 	return CB_StrBufferMax-1;
 }
-
-int CB_Sprintf( char *SRC ) {	// Ssprintf( "%4.4f %d %d", -1.2345,%123,%A)
-	int maxoplen;
-	int i,c;
-	int type[3]={-1,-1,-1};	// 0:dbl  1:int  2:str
-	double dblval[3]={0,0,0};
-	int    intval[3]={0,0,0};
-	char  *strval[3]={0,0,0};
-	char *buffer;
-
-	buffer = CB_GetOpStr( SRC, &maxoplen );
-	if ( ErrorNo ) return 0 ;  // error
-	if ( SRC[ExecPtr] != ',' ) { CB_Error(SyntaxERR); return 0; }  // Syntax error
-	ExecPtr++;
-
-	i=0;
-	do {
-		c=CB_IsStr( SRC, ExecPtr );
-		if ( c ) {	// string
-			strval[i]=CB_GetOpStr( SRC, &maxoplen ) ;		// String -> buffer	return 
-			type[i]=2;
-		} else {	// expression
-			c=SRC[ExecPtr];
-			if (CB_INT==1) { 
-				if ( c=='#' ) { type[i]=0; dblval[i]=CB_EvalDbl( SRC ); }
-				else {
-				if ( c=='%' ) ExecPtr++;
-				type[i]=1; intval[i]=CB_EvalInt( SRC );
-				}
-			} else	{
-				if ( c=='%' ) { ExecPtr++; type[i]=1; intval[i]=CB_EvalInt( SRC ); }
-				else {
-				if ( c=='#' ) ExecPtr++;
-				type[i]=0; dblval[i]=CB_EvalDbl( SRC );
-				}
-			}
-		}
-		c=SRC[ExecPtr];
-		if ( c != ',' ) break;
-		 ExecPtr++;
-		i++;
-	} while ( i<3 );
-
-	if ( c == ')' ) ExecPtr++;	
-	CB_CurrentStr=NewStrBuffer(); if ( ErrorNo ) return 0;  // error
-	
-	switch ( type[0] ) {
-		case 0:			// dbl
-			switch ( type[1] ) {
-				case 0:		// dbl
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],dblval[1]); break;
-					} break;
-				case 1:		// int
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1]); break;
-					} break;
-				case 2:		// str
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, dblval[0],intval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, dblval[0],strval[1]); break;
-					} break;
-				default:         i=sprintf( CB_CurrentStr, buffer, dblval[0]); break;
-			} break;
-		case 1:			// int
-			switch ( type[1] ) {
-				case 0:		// dbl
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, intval[0],dblval[1]); break;
-					} break;
-				case 1:		// int
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, intval[0],intval[1]); break;
-					} break;
-				case 2:		// str
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, intval[0],strval[1]); break;
-					} break;
-				default:         i=sprintf( CB_CurrentStr, buffer, intval[0]); break;
-			} break;
-		case 2:			// str
-			switch ( type[1] ) {
-				case 0:		// dbl
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, strval[0],dblval[1]); break;
-					} break;
-				case 1:		// int
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, strval[0],intval[1]); break;
-					} break;
-				case 2:		// str
-					switch ( type[2] ) {
-						case 0:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],dblval[2]); break;
-						case 1:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],intval[2]); break;
-						case 2:  i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1],strval[2]); break;
-						default: i=sprintf( CB_CurrentStr, buffer, strval[0],strval[1]); break;
-					} break;
-				default:         i=sprintf( CB_CurrentStr, buffer, strval[0]); break;
-			} break;
-		default: i=0; break;
-	}
-	if ( i==0 ) { CB_Error(ArgumentERR); return 0; }	// Argument error
-
-	i=-1;
-	while ( i < CB_StrBufferMax ) {
-		c=CB_CurrentStr[++i];
-		if ( c == 0 ) break;
-		switch ( c ) {
-			case '-':
-				CB_CurrentStr[i]=0x87;	// (-)
-				break;
-//			case '+':
-//				CB_CurrentStr[i]=0x89;	// (+)
-//				break;
-//			case 'E':
-//			case 'e':
-//				CB_CurrentStr[i]=0x0F;	// (exp)
-//				break;
-		}
-	}
-
-	return CB_StrBufferMax-1;
-}
-
 
 //----------------------------------------------------------------------------------------------
 

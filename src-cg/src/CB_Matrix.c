@@ -2280,7 +2280,7 @@ int MatGetOpcode(char *SRC, char *buffer, int Maxlen ) {
 			if ( IsGBCode2(c,SRC[ExecPtr]) ) goto next2;	// GB code
 		} else buffer[ptr++] = c & 0xFF;
 
-		if ( ptr > Maxlen-2 ) { CB_Error(StringTooLongERR); break; }	// String too Long error
+		if ( ptr > Maxlen-2 ) { CB_Error(StringTooLong); break; }	// String too Long error
 	}
 	buffer[ptr]='\0' ;
 	return ptr;

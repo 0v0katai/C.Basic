@@ -48,7 +48,7 @@ extern int ErrorNo;
 #define DivisionByZeroERR 40
 #define UndefinedLabelERR 41
 #define NotEnoughMemoryERR 42
-#define StringTooLongERR 43
+#define StringTooLong 43
 #define NoMatrixArrayERR 44
 #define ArraySizeERR 45
 #define NotfoundProgERR 46

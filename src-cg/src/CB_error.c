@@ -218,7 +218,7 @@ void CB_ErrMsg(int ErrNo) {
 		case NotEnoughMemoryERR:		// 42
 			ERROR("Not Enough Memory");
 			break;
-		case StringTooLongERR:			// 43
+		case StringTooLong:			// 43
 			ERROR("String Too Long");
 			break;
 		case NoMatrixArrayERR:			// 44
