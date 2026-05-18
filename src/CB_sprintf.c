@@ -45,6 +45,8 @@ int CB_Sprintf(char *SRC) {
         } else if (strchr("aAeEfFgG", fmt_c)) {
             if (CB_INT == 0) syntax_skip('#');
             n = snprintf(&buffer[idx], sizeof(buffer) - idx, fmt_part, CB_EvalDbl(SRC));
+            char *exp_char = strpbrk(&buffer[idx], "eE");
+            if (exp_char) *exp_char = 0x0F;
         } else {
             syntax_skip('%');
             n = snprintf(&buffer[idx], sizeof(buffer) - idx, fmt_part, CB_EvalInt(SRC));
@@ -65,17 +67,8 @@ int CB_Sprintf(char *SRC) {
     if (ErrorNo) return 0;
     memcpy(CB_CurrentStr, buffer, sizeof(buffer));
 
-    for (char *p = CB_CurrentStr; *p; p++) {
-        switch (*p) {
-            case '-':
-                *p = 0x87;
-                break;
-            case 'E':
-            case 'e':
-                *p = 0x0F;
-                break;
-        }
-    }
+    for (char *p = CB_CurrentStr; *p; p++)
+        if (*p == '-') *p = 0x87;
 
     return CB_StrBufferMax-1;
 }
