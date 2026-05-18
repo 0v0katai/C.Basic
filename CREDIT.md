@@ -40,6 +40,23 @@ Copyright © 2013 弦木考忘. All rights reserved.
 
 </details>
 
+## Status and function key icons design
+
+[Blog comment](https://egadget.blog.fc2.com/blog-entry-685.html#comment6358)  
+Custom icons for the status bar and function key menu.
+
+<details><summary>License</summary>
+
+Copyright © 2026 Sentaro21. All rights reserved.
+
+The original icons were designed by Colon @ e-Gadget, and the rights of them are fully transferred to Sentaro21.
+
+Quote (in Japanese):
+
+> 私の作ったファンクションキーメニューのアイコンの権利はsentaro様に完全に譲渡するということで構いません。また、C.Basicのステータスバーのアイコンについても同様です。
+
+</details>
+
 ## e-Gadget
 
 [Blog homepage](https://egadget.blog.fc2.com)  
@@ -67,7 +84,7 @@ Copyright © 2011 Simon Lothar. All rights reserved.
 
 ## gint/fxSDK
 
-[Homepage](https://git.planet-casio.com/Lephenixnoir/fxsdk)  
+[Repository](https://git.planet-casio.com/Lephenixnoir/fxsdk)  
 Community SDK for creating fx-9860 and fx-CG add-ins.
 
 <details><summary>License</summary>
@@ -84,7 +101,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 ## WSC and FVM
 
-[GitHub page](https://github.com/merrymercy/WSC-and-FVM)  
+[Repository](https://github.com/merrymercy/WSC-and-FVM)  
 Main inspiration of the principles of C.Basic and the foundation of the file manager.
 
 <details><summary>License</summary>
@@ -138,7 +155,7 @@ Adapted from the HP41 INTDIFFEQ module by [Jean-Marc Baillard](https://hp41progr
 ## Ptune2
 
 [Homepage](https://pm.matrix.jp/ftune2e.html)  
-[Git page](https://git.planet-casio.com/CalcLoverHK/Ftune-Ptune)
+[Repository](https://git.planet-casio.com/CalcLoverHK/Ftune-Ptune)  
 Overclocking add-in for fx-CG10/20.
 
 <details><summary>License</summary>
