@@ -25,4 +25,5 @@
 #include "CB_MonochromeLib.h"
 #include "MonochromeLib.h"
 #include "minmax.h"
+#include "keysc.h"
 #include "config.h"

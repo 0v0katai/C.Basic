@@ -27,6 +27,7 @@ extern char * HiddenRAM_End ;			// Hidden RAM END
 extern char * HiddenRAM_ProgNextPtr;	// Hidden RAM Prog next ptr
 extern char * HiddenRAM_MatTopPtr;		// Hidden RAM Mat top ptr
 
+#define IsSH3 0
 extern char IsCG20;	//	1:CG10/20   0:CG50
 
 #define FKeyNo1	0

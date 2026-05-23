@@ -44,6 +44,7 @@ int main()
 
 	Emu_check();
 	CPU_check();
+	iokbd_row = IsSH3 ? iokbd_7705 : iokbd_7305;
 	if ( HiddenRAM() == NULL ) {	;	// Check HiddenRAM
 		ExtendList   = 0;
 		UseHiddenRAM = 0;

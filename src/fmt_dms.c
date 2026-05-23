@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "CB.h"
 

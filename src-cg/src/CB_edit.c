@@ -1632,10 +1632,10 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 
 		if ( run != 1 ) {
 			if ( SearchMode == 3 ) {	//  replace all mode
-				if ( KeyScanDownAC() == 0 ) {
+				if ( keydown(KEY_AC) == 0 ) {
 					PutKey( KEY_CTRL_F2, 1 );
 				} else { 
-					while ( KeyScanDownAC() );
+					while ( keydown(KEY_AC) );
 					KeyRecover();
 					PutKey( KEY_CTRL_NOP, 1 );
 					SearchMode = 2;
@@ -1724,8 +1724,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 		UpdateLineNum=0;
 		
 		if ( alphastatus == 1 ) {
-			if ( KeyCheckPMINUS() ) {
-//			if ( CheckKeyRow7305(1) & 0x08 ) {
+			if ( keydown(KEY_PMINUS) ) {
 				key = '%';
 			}
 		}
@@ -1971,7 +1970,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( YesNo2( "Not Display mode", "Replace All Ok?") == 0 ) break;
 						locate (11,8); Prints((unsigned char*)"[AC]:Stop" );	//  replace all mode not display
 						Bdisp_PutDisp_DD_stripe( 192, 192+23);
-						while ( KeyScanDownAC() == 0 ) {
+						while ( keydown(KEY_AC) == 0 ) {
 							i = strlenOp(searchbuf);
 							csrPtr+=i;
 							EditCutDel( filebase, searchbuf, &csrPtr, csrPtr-i, csrPtr, 1, &Undo );	// delete
@@ -1980,7 +1979,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
 							if ( i==0 ) { SearchMode=0; break; }
 						}
-						while ( KeyScanDownAC() );
+						while ( keydown(KEY_AC) );
 						KeyRecover(); 
 						offset   = csrPtr;
 						offset_y = 0;
@@ -2310,8 +2309,8 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 				CB_ColorIndex=-1;					// current color index reset
 //				if ( (dumpflg==2) ) MiniCursorSetFlashMode( 1 );		// mini cursor flashing on
 				GetKey_DisableMenuCatalog(&key);
-				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
-				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
+				if ( key==0 ) if ( keydown(KEY_6) ) key=KEY_CHAR_6;
+				if ( key==0 ) if ( keydown(KEY_3) ) key=KEY_CHAR_3;
 				KeyRecover();
 //				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				switch (key) {

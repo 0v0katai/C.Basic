@@ -396,7 +396,7 @@ int CB_MandelInt( int N, int c, int d, int k, int multi ){
 		tmpa=a;
 		a=(a*a-b*b)/multi+c;
 		b=(tmpa*b)/multi2 +d;
-		if ( KeyScanDownAC() ) break;
+		if ( keydown(KEY_AC) ) break;
 	}
 	return i;
 }
@@ -407,7 +407,7 @@ int CB_MandelInt2( int N, int c, int d, int k, int multi ){
 		tmpa=a;
 		a=(a*a-b*b)/multi+c;
 		b=(tmpa*b)/multi2 +d;
-		if ( KeyScanDownAC() ) break;
+		if ( keydown(KEY_AC) ) break;
 	}
 	return i;
 }
@@ -420,7 +420,7 @@ int CB_MandelDbl( int N, double c, double d, double k){
 		tmpa=a;
 		a=(a*a-b*b)+c;
 		b=(2*tmpa*b)+d;
-		if ( KeyScanDownAC() ) break;
+		if ( keydown(KEY_AC) ) break;
 	}
 	return i;
 }

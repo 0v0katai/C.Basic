@@ -115,7 +115,7 @@ double Integral_Kronrod( char *SRC, int execptr, double A, double B, double tol 
 			D += Kronrod[1]*J;						//			J*Mat A[1]+D->D
 			H += G;									//			G+H->H
 			n--;									//			N-1->N
-			if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; goto exit; }	// [AC] break?
+			if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; goto exit; }	// [AC] break?
 		} while(n>0);								//		LpWhile N>0
 		D *= G;										//		G*D->D
 		E *= G;										//		G*E->E

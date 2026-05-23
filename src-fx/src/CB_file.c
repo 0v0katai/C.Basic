@@ -866,7 +866,7 @@ unsigned int Explorer( int size, char *folder )
 		if ( ContinuousSelect ) ContinuousSelect=0; else GetKey(&key); // [MENU]-to-Main
 		Cursor_SetFlashMode(0); 		// cursor flashing off
 		
-		if ( KeyCheckPMINUS() ) {
+		if ( keydown(KEY_PMINUS) ) {
 			key = '@';
 		}
 
@@ -3919,14 +3919,14 @@ void Emu_check() {
 }
 
 void WaitKeyAC(){
-	while ( KeyScanDown(KEYSC_AC) ) ;
+	while ( keydown(KEY_AC) ) ;
 }
 void WaitKeyEXIT(){
-	while ( KeyScanDown(KEYSC_EXIT) ) ;
+	while ( keydown(KEY_EXIT) ) ;
 }
 void WaitKeyF1(){
-	while ( KeyScanDown(KEYSC_F1) ) ;
+	while ( keydown(KEY_F1) ) ;
 }
 void WaitKeyEXE(){
-	while ( KeyScanDown(KEYSC_EXE) ) ;
+	while ( keydown(KEY_EXE) ) ;
 }

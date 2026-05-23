@@ -38,178 +38,21 @@
 
 //----------------------------------------------------------------------------------------------
 
-
-
-int CheckKeyRow7305( int row ){
-	volatile short *KEYPORT = (void *)0xA44B0000;
-	short result=KEYPORT[row>>1];
-	if ( row & 1 ) result/=0x100;
-	return result & 0xFF ;
-}
-
-int KeyScanDown(int keyscan_code){
-	int row,col,rowdata;
-	row = keyscan_code & 0x0F;
-	col = keyscan_code >> 4;
-
-	return ( CheckKeyRow7305(row) & col ) ;		//SH4A
-}
-
-int KeyScanDownAC(){
-	int result=0;
-	int n,s,t;
-	n=Waitcount;
-	if ( n<=0 ) return KeyScanDown(KEYSC_AC) ; 
-	if ( n>1  ) n*=BREAKCOUNT;
-	while ( n ) {
-		HourGlass();
-		result = KeyScanDown(KEYSC_AC);
-		if ( result ) break;
-		n--;
-	}
-	return result;
-}
-
 //----------------------------------------------------------------------------------------------
-char Getkey_shift=0;
-short  Recent_rowcode=0;
-short  Recent_code=0;
-
-
-int CB_Getkey() {			// CasioBasic Getkey compatible
-	int key;
-	int i,row,c;
-	int code=0;
-	row=1;
-	
-	if ( Recent_code ) {
-		if ( KeyScanDown(Recent_rowcode) ) return Recent_code ;
-		else {
-			Recent_rowcode=0;
-			Recent_code=0;
-		}
-	}
-
-	for ( row=1; row<10; row++) {
-		c=CheckKeyRow7305(row);
-		if ( c & 0x40 ) { code=70+row; break; }	//
-		if ( c & 0x20 ) { code=60+row; break; }	//
-		if ( c & 0x10 ) { code=50+row; break; }	//
-		if ( c & 0x08 ) { code=40+row; break; }	//
-		if ( c & 0x04 ) { code=30+row; break; }	//
-		if ( c & 0x02 ) { code=20+row; break; }	//
-	}
-	
-	Recent_rowcode=(c<<4)+row;
-	Recent_code   =code;
-	
-	if ( KeyScanDown(KEYSC_AC) ) code=34;
-
-	return code;
-}
-
-int KeyCheckAC() {		// [AC]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 1 ) && (kcode2 == 1 ) ) flag0=1; // [AC] is down
-	}
-	return flag0;
-}
-int KeyCheckEXE() {		// [EXE]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 3 ) && (kcode2 == 2 ) ) flag0=1; // [EXE] is down
-	}
-	return flag0;
-}
-int KeyCheckEXIT() {		// [EXIT]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 4 ) && (kcode2 == 8 ) ) flag0=1; // [EXIT] is down
-	}
-	return flag0;
-}
-int KeyCheckSHIFT() {		// [SHIFT]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 7 ) && (kcode2 == 9 ) ) flag0=1; // [SHIFT] is down
-	}
-	return flag0;
-}
-int KeyCheckCHAR4() {		// [4]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 7 ) && (kcode2 == 4 ) ) flag0=1; // [4] is down
-	}
-	return flag0;
-}
-int KeyCheckCHAR3() {		// [3]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 5 ) && (kcode2 == 3 ) ) flag0=1; // [3] is down
-	}
-	return flag0;
-}
-int KeyCheckCHAR6() {		// [6]
-	int kcode1 = 0, kcode2 = 0, flag0 = 0;
-	unsigned short unused = 0;
-
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 5 ) && (kcode2 == 4 ) ) flag0=1; // [6] is down
-	}
-	return flag0;
-}
-
-int Bkey_GetKeyWait_sub( int kcode1, int kcode2 ) {		//
-	int flag0 = 0;
-	unsigned short unused = 0;
-	if ( Bkey_GetKeyWait(&kcode1,&kcode2,KEYWAIT_HALTOFF_TIMEROFF,0,1,&unused ) == KEYREP_KEYEVENT ) {
-		if ( ( kcode1 == 1 ) && (kcode2 == 1 ) ) flag0=1; // [AC] is down
-	}
-	return flag0;
-}
-
-int KeyCheckF1() {		// [F1]
-	return Bkey_GetKeyWait_sub( 7, 10 ); // [F1] is down
-}
-//int KeyCheckDEL() {		// [DEL]
-//	return Bkey_GetKeyWait_sub( 4, 5 ); // [DEL] is down
-//}
-int KeyCheckPMINUS() {		// [(-)]
-	return CheckKeyRow7305(1) & 0x08; // [(-)] is down
-//	return Bkey_GetKeyWait_sub( 4, 2 ); // [(-)] is down
-}
+char Getkey_shift = 0;
+uint8_t  Recent_code = 0;
 
 void KeyRecover() {
 //	CB_Getkey();
 //	KeyCheckAC();				//SH4
 //	KeyCheckEXE();
 //	KeyCheckEXIT();
-	KeyCheckSHIFT();
-	KeyCheckCHAR4();
+	keydown(KEY_SHIFT);
+    keydown(KEY_4);
 	Keyboard_ClrBuffer();
 	Getkey_shift=0;
 	Recent_code=0;
 //	Sleep(10);
-}
-
-int CB_Getkey0() {			// CasioBasic Getkey 
-	int key=0;
-//	key=CB_Getkey();
-	KeyRecover();
-	return key;
 }
 
 int CB_KeyCodeCnvt( unsigned int key ) {			// CasioBasic Getkey SDK compatible

@@ -4005,7 +4005,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 					Fkey_Icon( FKeyNo6, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 				}
 				GetKey_DisableMenu(&key);
-				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
+				if ( key==0 ) if ( keydown(KEY_3) ) key=KEY_CHAR_3;
 				switch (key) {
 					case KEY_CTRL_QUIT:
 						goto inpexit;

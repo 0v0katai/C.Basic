@@ -847,7 +847,7 @@ unsigned int Explorer( int size, char *folder )
 //		EnableColor( 1 );	// full color mode 
 		Cursor_SetFlashOff(); 			// cursor flashing off
 
-		if ( KeyCheckPMINUS() ) {
+		if ( keydown(KEY_PMINUS) ) {
 			key = '@';
 		}
 
@@ -4220,16 +4220,16 @@ int CB_BatteryStatus( char *SRC ){
 }
 
 void WaitKeyAC(){
-	if ( IsEmu==0 ) while ( KeyCheckAC() ) ;
+	if ( IsEmu==0 ) while ( keydown(KEY_AC) ) ;
 }
 void WaitKeyEXIT(){
-	if ( IsEmu==0 ) while ( KeyCheckEXIT() ) ;
+	if ( IsEmu==0 ) while ( keydown(KEY_EXIT) ) ;
 }
 void WaitKeyF1(){
-	if ( IsEmu==0 ) while ( KeyCheckF1() ) ;
+	if ( IsEmu==0 ) while ( keydown(KEY_F1) ) ;
 }
 void WaitKeyEXE(){
-	if ( IsEmu==0 ) while ( KeyCheckEXE() ) ;
+	if ( IsEmu==0 ) while ( keydown(KEY_EXE) ) ;
 }
 
 //--------------------------------------------------------------

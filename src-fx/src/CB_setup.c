@@ -981,9 +981,8 @@ int SetVar(int select){		// ----------- Set Variable
 //					Fkey_dispN( FKeyNo1, buffer );
 //				}
 				Bdisp_PutDisp_DD();
-				if (IsSH3)	while ( CheckKeyRow(8)     & (32+16) );	// [OPTN] [VARS]
-				else 		while ( CheckKeyRow7305(8) & (32+16) );	// [OPTN] [VARS]
-				break;
+		        while (keydown(KEY_OPTN) || keydown(KEY_VARS)) {}
+                break;
 
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:

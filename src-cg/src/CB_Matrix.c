@@ -1457,7 +1457,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 								Cplx_WriteMatrix( reg, selectY+base, selectX+base, InputNumC_full( 1, 7, 21, value));
 							}
 						}
-						if ( KeyCheckEXIT() == 0 ) selectX++;
+						if ( keydown(KEY_EXIT) == 0 ) selectX++;
 						if ( selectX > dimA ) { selectX = dimA;
 							if ( selectY < dimB ) { selectY++; selectX =0; }
 						}
@@ -1565,7 +1565,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 					if ( ( ElementSize != 1 ) && ( CB_G1MorG3M==3 ) ) Fkey_Icon( FKeyNo1, 976 );	//Fkey_dspRB( FKeyNo1, "Picker");
 				}
 				if ( dotedit ) GetKey_DisableMenuCatalog(&key); else GetKey_DisableCatalog( &key );
-				if ( ( ElementSize != 1 ) && ( ElementSize != 4 ) ) if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
+				if ( ( ElementSize != 1 ) && ( ElementSize != 4 ) ) if ( key==0 ) if ( keydown(KEY_6) ) key=KEY_CHAR_6;
 				MatDotEditCursorSetFlashMode( 0 );
 				switch ( key ) {			
 					case KEY_CTRL_PAGEUP:
@@ -1689,7 +1689,7 @@ void EditMatrix(int reg, int ans ){		// ----------- Edit Matrix
 					value=Cplx_ReadMatrix( reg, selectY+base, selectX+base);
 					Cplx_WriteMatrix( reg, selectY+base, selectX+base, InputNumC_Char( 1, 7, 21, value, key));
 				}
-				if ( KeyCheckEXIT() == 0 ) selectX++;
+				if ( keydown(KEY_EXIT) == 0 ) selectX++;
 				if ( selectX > dimA ) { selectX = dimA;
 					if ( selectY < dimB ) { selectY++; selectX =0; }
 				}
@@ -3955,7 +3955,7 @@ void CB_Seq( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 		Cplx_WriteMatrix( reg, m, n, data);
 		LocalDbl[fxreg][0].real += step;
 		m++;
-		if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return ; }	// [AC] break?
+		if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return ; }	// [AC] break?
 	}
 	LocalDbl[fxreg][0]=databack;
 	ExecPtr=exptr2;
@@ -4034,7 +4034,7 @@ void CB_SeqInt( char *SRC ) { //	Seq(X^2,X,1,10,1)->List 1[.B][.W][.L][.F]
 		WriteMatrixInt( reg, m, n, data);
 		LocalInt[fxreg][0]+=step;
 		m++;
-		if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return ; }	// [AC] break?
+		if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return ; }	// [AC] break?
 	}
 	LocalInt[fxreg][0]=databack;
 	ExecPtr=exptr2;
@@ -4067,7 +4067,7 @@ complex CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 			result.real += CB_EvalDbl( SRC );	//
 			LocalDbl[fxreg][0].real += step;
 			if ( breakcount == 0 ) {
-				if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return Int2Cplx(0); }	// [AC] break?
+				if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return Int2Cplx(0); }	// [AC] break?
 				breakcount = BREAKCOUNT;
 			} else breakcount--;
 		}
@@ -4077,7 +4077,7 @@ complex CB_Sigma( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 			result = Cplx_fADD( result, CB_Cplx_EvalDbl( SRC ) );	//
 			LocalDbl[fxreg][0].real += step;
 			if ( breakcount == 0 ) {
-				if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return Int2Cplx(0); }	// [AC] break?
+				if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return Int2Cplx(0); }	// [AC] break?
 				breakcount = BREAKCOUNT;
 			} else breakcount--;
 		}
@@ -4119,7 +4119,7 @@ int CB_SigmaInt( char *SRC ) { //	Sigma(X^2,X,1,10[,1])
 		result += CB_EvalInt( SRC );	//
 		LocalInt[fxreg][0]+=step;
 		if ( breakcount == 0 ) {
-			if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
+			if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
 			breakcount = BREAKCOUNT;
 		} else breakcount--;
 	}

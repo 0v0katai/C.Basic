@@ -11,10 +11,10 @@
 //0B                  DIAG     OSUPD     0B    A44B000B
 //0A                                     0A    A44B000A
 //09  F1    F2   F3   F4   F5   F6       09    A44B0009
-//08  SHIFT OPTN VARS MENU Å©  Å™        08    A44B0008
-//07  ALPHA ^2   ^    EXIT Å´   Å®       07    A44B0007
+//08  SHIFT OPTN VARS MENU ÔøΩÔøΩ  ÔøΩÔøΩ        08    A44B0008
+//07  ALPHA ^2   ^    EXIT ÔøΩÔøΩ   ÔøΩÔøΩ       07    A44B0007
 //06  XTT   log  ln   sin  cos  tan      06    A44B0006
-//05  ab/c  F<>D  (    )    ,   Å®       05    A44B0005
+//05  ab/c  F<>D  (    )    ,   ÔøΩÔøΩ       05    A44B0005
 //04  7     8    9    DEL                04    A44B0004
 //03  4     5    6    x    div           03    A44B0003
 //02  1     2    3    +    -             02    A44B0002
@@ -63,84 +63,12 @@
 #define KB_RIGHT_COL  KB_6TH_COL
 */
 
-#define KEYSC_F1 		0x409
-#define KEYSC_F2 		0x209
-#define KEYSC_F3 		0x109
-#define KEYSC_F4 		0x089
-#define KEYSC_F5		0x049
-#define KEYSC_F6 		0x029
-
-#define KEYSC_SHIFT 	0x408
-#define KEYSC_OPTN 		0x208
-#define KEYSC_VARS 		0x108
-#define KEYSC_MENU 		0x088
-#define KEYSC_LEFT 		0x048
-#define KEYSC_UP 		0x028
-
-#define KEYSC_ALPHA 	0x407
-#define KEYSC_SQUARE 	0x207
-#define KEYSC_POW 		0x107
-#define KEYSC_EXIT 		0x087
-#define KEYSC_DOWN 		0x047
-#define KEYSC_RIGHT 	0x027
-
-#define KEYSC_XTT 		0x406
-#define KEYSC_LOG 		0x206
-#define KEYSC_LN 		0x106
-#define KEYSC_SIN 		0x086
-#define KEYSC_COS 		0x046
-#define KEYSC_TAN 		0x026
-
-#define KEYSC_FRAC 		0x405
-#define KEYSC_FD 		0x205
-#define KEYSC_LPAR 		0x105
-#define KEYSC_RPAR 		0x085
-#define KEYSC_COMMA 	0x045
-#define KEYSC_STORE 	0x025
-
-#define KEYSC_7 		0x404
-#define KEYSC_8 		0x204
-#define KEYSC_9 		0x104
-#define KEYSC_DEL 		0x084
-
-#define KEYSC_4 		0x403
-#define KEYSC_5 		0x203
-#define KEYSC_6 		0x103
-#define KEYSC_MULT 		0x083
-#define KEYSC_DIV 		0x043
-
-#define KEYSC_1 		0x402
-#define KEYSC_2 		0x202
-#define KEYSC_3 		0x102
-#define KEYSC_PLUS 		0x082
-#define KEYSC_MINUS 	0x042
-
-#define KEYSC_0 		0x401
-#define KEYSC_DP 		0x201
-#define KEYSC_EXP 		0x101
-#define KEYSC_PMINUS	0x081
-#define KEYSC_EXE 		0x041
-
-#define KEYSC_AC 		0x010 // 
-
-int CheckKeyRow7305( int row );
-int KeyScanDown(int keyscan_code);
-int KeyScanDownAC();
+int iokbd_7305( int row );
 int GetKey_DisableMenu( int *key ) ;
 int GetKey_DisableMenu_pushpop( int *key ) ;
 int GetKey_DisableMenuCatalog( int *key ) ;
 int GetKey_DisableCatalog( int *key ) ;
 int CB_KeyCodeCnvt( unsigned int key ) ;			// CasioBasic Getkey SDK compatible
-
-int KeyCheckAC();
-int KeyCheckEXE();
-int KeyCheckEXIT();
-int KeyCheckSHIFT();
-int KeyCheckF1();
-int KeyCheckCHAR4();
-int KeyCheckCHAR3();
-int KeyCheckCHAR6();
-int KeyCheckPMINUS();
 
 int CB_Getkey();
 int CB_Getkey0();

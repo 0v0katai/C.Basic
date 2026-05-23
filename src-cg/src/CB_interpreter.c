@@ -237,7 +237,7 @@ int CB_interpreter_sub( char *SRC ) {
 				c=SRC[ExecPtr++];
 				while ( ( c==0x0D ) || ( c==0x20 ) ) c=SRC[ExecPtr++];
 				if  ( breakcount==0 ) {
-					if ( ( BreakCheck ) && ( KeyScanDownAC() ) ) {	// [AC] break?
+					if ( ( BreakCheck ) && ( keydown(KEY_AC) ) ) {	// [AC] break?
 						KeyRecover();
 						if ( BreakPtr == 0 ) BreakPtr=ExecPtr-1;
 					} 

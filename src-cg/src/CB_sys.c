@@ -289,7 +289,7 @@ void Bdisp_PutDisp_DD_stripe_BG( int y1, int y2 ) {
 	} else {
 		Bdisp_PutDisp_DD_stripe( y1, y2);
 	}
-	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
+	if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
 }
 
 void Bdisp_AllClr_VRAM1(){

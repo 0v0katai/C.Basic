@@ -1,122 +1,8 @@
-//
-// fx-9860G/II series KeyScan
-//
-// original source by SuperH-based fx calculators
-//
-// this modified source is written by sentaro21
-//
-
-//    06    05   04   03   02   01   00        (SH4A)
-//--------------------------------------
-//0B                  DIAG     OSUPD     0B    A44B000B
-//0A                                     0A    A44B000A
-//09  F1    F2   F3   F4   F5   F6       09    A44B0009
-//08  SHIFT OPTN VARS MENU ��  ��        08    A44B0008
-//07  ALPHA ^2   ^    EXIT ��   ��       07    A44B0007
-//06  XTT   log  ln   sin  cos  tan      06    A44B0006
-//05  ab/c  F<>D  (    )    ,   ��       05    A44B0005
-//04  7     8    9    DEL                04    A44B0004
-//03  4     5    6    x    div           03    A44B0003
-//02  1     2    3    +    -             02    A44B0002
-//01  0     .    EXP  (-)  EXE           01    A44B0001
-//00                                 AC  00    A44B0000
-//--------------------------------------
-//    06    05   04   03   02   01   00        (SH4A)
-//
-//
-
 #include "CB.h"
-
-static void delay() {
-	for (int i = 0; i < 10; i++)
-		__asm__("nop");
-}
-
-//
-int CheckKeyRow( int row ){
-  int result=0;
-  volatile short*PORTB_CTRL=(void*)0xA4000102;
-  volatile short*PORTM_CTRL=(void*)0xA4000118;
-  volatile char*PORTB=(void*)0xA4000122;
-  volatile char*PORTM=(void*)0xA4000138;
-  volatile char*PORTA=(void*)0xA4000120;
-  short smask;
-  char cmask;
-  char PORTBtmp = *PORTB;
-  char PORTMtmp = *PORTM;
-
-  smask = 0x0003 << ((row%8)*2);
-  cmask = ~( 1 << (row%8) );
-  if (row<8){
-// configure port B as input, except for the "row to check"-bit, which has to be an output.
-        *PORTB_CTRL = 0xAAAA ^ smask;
-// configure port M as input; port M is inactive with row < 8
-        *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
-        delay();
-        *PORTB = cmask;    // set the "row to check"-bit to 0 on port B
-        *PORTM = (*PORTM & 0xF0 ) | 0x0F;    // port M is inactive with row < 8
-  }else{
-        *PORTB_CTRL = 0xAAAA;  // configure port B as input; port B is inactive with row >= 8
-// configure port M as input, except for the "row to check"-bit, which has to be an output.
-        *PORTM_CTRL = ((*PORTM_CTRL & 0xFF00 ) | 0x00AA)  ^ smask;
-        delay();
-        *PORTB = 0xFF;    // port B is inactive with row >= 8 (all to 1)
-        *PORTM = (*PORTM & 0xF0 ) | cmask;  // set the "row to check"-bit to 0
-  };
-  delay();
-  result = ~(*PORTA);   // a pressed key in the row-to-check draws the corresponding bit to 0
-  delay();
-//  *PORTB_CTRL = 0xAAAA;
-//  *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x00AA;
-//  delay();
-  *PORTB_CTRL = 0x5555;
-  *PORTM_CTRL = (*PORTM_CTRL & 0xFF00 ) | 0x0055;
-  delay();
-  *PORTB = PORTBtmp;
-  *PORTM = PORTMtmp;
-  return result;
-}
-
-
-int CheckKeyRow7305( int row ){
-	volatile short*KEYPORT=(void*)0xA44B0000;
-	short result=KEYPORT[row>>1];
-	if ( row & 1 ) result/=0x100;
-	return result & 0xFF ;
-}
-
-
-int KeyScanDown(int keyscan_code){
-	int row,col,rowdata;
-	row = keyscan_code & 0x0F;
-	col = keyscan_code >> 4;
-
-	if ( IsSH3 ) {
-		return ( CheckKeyRow(row) & col ) ;			//SH3
-	}
-	else {
-		return ( CheckKeyRow7305(row) & col ) ;		//SH4A
-	}
-}
-int KeyScanDownAC(){
-	int result=0;
-	int n,s,t;
-	n=Waitcount;
-	if ( n<=0 ) return KeyScanDown(KEYSC_AC) ;
-	if ( n>1  ) n*=BREAKCOUNT;
-	if ( IsSH3==0 ) n*=5;	// SH4 adjust
-	while ( n ) {
-		result = KeyScanDown(KEYSC_AC);
-		if ( result ) break;
-		n--;
-	}
-	return result;
-}
 
 //----------------------------------------------------------------------------------------------
 char Getkey_shift=0;
-short  Recent_rowcode=0;
-short  Recent_code=0;
+uint8_t Recent_code = 0;
 
 int BackLight( int n ){		// 0:off  1:on   2:xor
 	volatile unsigned char *adrs;
@@ -151,153 +37,18 @@ int BackLight( int n ){		// 0:off  1:on   2:xor
 	if ( (*adrs) && (~bit) ) return 1; else return 0;
 }
 
-int KeyConvert2Slim( int code ) {
-	int row=code%10;
-	int col=code/10;
-	const unsigned char keyrow_slim_table[9][6]={
-		{KEYS_MENU,	KEYS_XTT,	KEYS_SHIFT,	KEYS_ALPHA,	0,			0			},
-		{KEYS_F1,	KEYS_LOG,	KEYS_SQUARE,KEYS_POW,	KEYS_LEFT,	KEYS_UP	 	},
-		{KEYS_F2,	KEYS_LN,	KEYS_COMMA,	KEYS_OPTN,	KEYS_DOWN,	KEYS_RIGHT	},
-		{KEYS_F3,	KEYS_SIN,	KEYS_STORE,	KEYS_VARS,	11,			21			},
-		{KEYS_F4,	KEYS_COS,	KEYS_7,		KEYS_4,		KEYS_1,		KEYS_0		},
-		{KEYS_F5,	KEYS_TAN,	KEYS_8,		KEYS_5,		KEYS_2,		KEYS_DP	 	},
-		{KEYS_F6,	KEYS_FRAC,	KEYS_9,		KEYS_6,		KEYS_3,		KEYS_EXP	},
-		{KEYS_EXIT,	KEYS_FD,	KEYS_DEL,	KEYS_MULT,	KEYS_PLUS,	KEYS_PMINUS },
-		{0,			KEYS_LPAR,	KEYS_RPAR,	KEYS_DIV,	KEYS_EXE,	KEYS_MINUS  }
-	};
-	return keyrow_slim_table[9-row][7-col];
-}
-
-
-int CB_Getkey() {			// CasioBasic Getkey compatible
-	unsigned int key;
-	int i,row,c;
-	int code=0;
-	row=1;
-	
-	if ( Recent_code ) {
-		if ( KeyScanDown(Recent_rowcode) ) return Recent_code ;
-		else {
-			Recent_rowcode=0;
-			Recent_code=0;
-		}
-	}
-
-	for ( row=1; row<10; row++) {
-		c = IsSH3 ? CheckKeyRow(row) : CheckKeyRow7305(row);
-		if ( c & 0x40 ) { code=70+row; break; }	//
-		if ( c & 0x20 ) { code=60+row; break; }	//
-		if ( c & 0x10 ) { code=50+row; break; }	//
-		if ( c & 0x08 ) { code=40+row; break; }	//
-		if ( c & 0x04 ) { code=30+row; break; }	//
-		if ( c & 0x02 ) { code=20+row; break; }	//
-	}
-	
-	if ( (IsSH3==2)&&(code!=0) ) {	// slim
-		code = KeyConvert2Slim( code );
-	}
-	
-	Recent_rowcode=(c<<4)+row;
-	Recent_code   =code;
-	
-	if ( KeyScanDown(KEYSC_AC) ) code=34;
-	
-//	if (SH3) {		//SH3
-//		KeyCheckAC();
-//		IsKeyDown( KEY_CTRL_AC );
-//	}
-//	Keyboard_ClrBuffer();
-
-	if ( ( code ) && ( Getkey_shift ) ) {
-		Getkey_shift=0;
-		if ( code == 68 ) {	// 68
-			Keyboard_ClrBuffer();
-			if ( IsSH3 == 0 ) BackLight(2);	// SH4 only
-		}
-//		if ( code == 34 ) {	// AC
-//			PutKey( KEY_CTRL_SHIFT,1);	GetKey(&key);
-//			PutKey( KEY_CTRL_AC,1);		GetKey(&key);
-//			code=0;
-//		}
-	}
-	if ( code == 78 ) // shift
-		Getkey_shift=1;
-	return code;
-}
-
-int Bkey_GetKeyWait_sub(int kcode1, int kcode2) {
-	int rc1 = 0, rc2 = 0, flag0 = 0;
-	short unused = 0;
-	if (Bkey_GetKeyWait(&rc1, &rc2,
-		KEYWAIT_HALTOFF_TIMEROFF,
-		0, 1, &unused) == KEYREP_KEYEVENT)
-		flag0 = rc1 == kcode1 && rc2 == kcode2;
-	return flag0;
-}
-
-int KeyCheckAC() {		// [AC]
-	if (IsSH3) return KeyScanDownAC();
-	return Bkey_GetKeyWait_sub( 1, 1 ); // [AC] is down
-}
-int KeyCheckEXE() {		// [EXE]
-	return Bkey_GetKeyWait_sub( 3, 2 ); // [EXE] is down
-}
-int KeyCheckEXIT() {		// [EXIT]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 7, 3 );
-	return Bkey_GetKeyWait_sub( 4, 8 ); // [EXIT] is down
-}
-int KeyCheckSHIFT() {		// [SHIFT]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 5, 10 ); // [SHIFT] is down by slim
-	return Bkey_GetKeyWait_sub( 7, 9 ); // [SHIFT] is down
-}
-int KeyCheckCHAR3() {		// [3]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 3, 4 ); // [3] is down by slim
-	return KeyScanDown(KEYSC_3); // [3] is down
-}
-int KeyCheckCHAR4() {		// [4]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 4, 6 ); // [4] is down by slim
-	return KeyScanDown(KEYSC_4); // [4] is down
-}
-int KeyCheckCHAR5() {		// [3]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 4, 5 ); // [5] is down by slim
-	return KeyScanDown(KEYSC_5); // [5] is down
-}
-int KeyCheckCHAR6() {		// [6]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 4, 4 ); // [6] is down by slim
-	return KeyScanDown(KEYSC_6); // [6] is down
-}
-int KeyCheckF1() {		// [F1]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 7, 9 ); // [F1] is down by slim
-	return Bkey_GetKeyWait_sub( 7, 10 ); // [F1] is down
-}
-int KeyCheckDEL() {		// [DEL]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 5, 3 ); // [DEL] is down by slim
-	return Bkey_GetKeyWait_sub( 4, 5 ); // [DEL] is down
-}
-int KeyCheckPMINUS() {		// [(-)]
-	if (IsSH3==2) return Bkey_GetKeyWait_sub( 2, 3 ); // [(-)] is down by slim
-	return CheckKeyRow7305(1) & 0x08; // [(-)] is down
-}
-
 void KeyRecover() {
 //	CB_Getkey();
-	KeyCheckAC();
+	keydown(KEY_AC);
 //	KeyCheckAC();
 //	KeyCheckEXE();
 //	KeyCheckEXIT();
-	KeyCheckSHIFT();
-	KeyCheckCHAR4();
+	keydown(KEY_SHIFT);
+	keydown(KEY_4);
 	Keyboard_ClrBuffer();
-	Getkey_shift=0;
-	Recent_code=0;
+	Getkey_shift = 0;
+	Recent_code = 0;
 //	Sleep(10);
-}
-
-int CB_Getkey0() {			// CasioBasic Getkey 
-	int key=0;
-//	key=CB_Getkey();
-	KeyRecover();
-	return key;
 }
 
 int CB_KeyCodeCnvt( unsigned int key ) {			// CasioBasic Getkey SDK compatible
@@ -542,7 +293,7 @@ int CB_Getkey1(int sdkcode) {			// CasioBasic Getkey SDK compatible
 	t=RTC_GetTicks()-CB_TicksStart;					// halt ticks count
 	th=(int)GetTicks32768()-CB_HiTicksStart;		// halt ticks count
 	GetKey_DisableMenu(&key);
-	if ( TimeDsp && 0x02 ) {
+	if ( TimeDsp & 0x02 ) {
 		CB_TicksStart=RTC_GetTicks();				// reset ticks count
 		CB_HiTicksStart=(int)GetTicks32768();		// reset ticks count
 	} else  {

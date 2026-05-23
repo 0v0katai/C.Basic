@@ -1305,7 +1305,7 @@ int CB_Ticks( char *SRC ) {
 			if ( high ) {
 				if ( n<0 ) n=-n;  else Hitickstmp=CB_RTC_GetTicks(high);
 				do {
-					if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
+					if ( keydown(KEY_AC) ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
 					t=CB_RTC_GetTicks(high);
 				} while ( abs( t-Hitickstmp ) < n ) ;
 				Hitickstmp=CB_RTC_GetTicks(high);
@@ -1313,7 +1313,7 @@ int CB_Ticks( char *SRC ) {
 			} else {
 				if ( n<0 ) n=-n;  else tickstmp=CB_RTC_GetTicks(high);
 				do {
-					if ( KeyScanDownAC() ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
+					if ( keydown(KEY_AC) ) { KeyRecover(); if ( BreakCheck ) BreakPtr=ExecPtr; return t; }	// [AC] break?
 					t=CB_RTC_GetTicks(high);
 				} while ( abs( t-tickstmp ) < n ) ;
 				tickstmp=CB_RTC_GetTicks(high);
@@ -1348,21 +1348,12 @@ int CB_Getkey3( char *SRC ) {
 	return key;
 }
 
-int CB_KeyRowSub(int row){
-	if ( IsSH3 ) {
-		return ( CheckKeyRow(row) ) ;			//SH3
-	}
-	else {
-		return ( CheckKeyRow7305(row) ) ;		//SH4A
-	}
-}
-
 int CB_KeyRow( char *SRC ) {		// Row Keyscan
 	int row;
 	row = CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
-	return CB_KeyRowSub(row) ;
+	return iokbd_row(row);
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1381,16 +1372,16 @@ int CB_GetkeyM() {	//	Getkey multi  -> list { }
 	char rowdata[10];
 	char result[55];
 	int i,j,a,b,c=0,code;
-	for(i=1; i<=9; i++) rowdata[i]=CB_KeyRowSub(i);
+	for(i=1; i<=9; i++) rowdata[i]=iokbd_row(i);
 	b=128;
 	for(j=6; j>=1; j--) {
 		b>>=1;
 		for(i=9; i>=1; i--) {
 			if ( rowdata[i] & b ) {
 				code = i+(j+1)*10;
-				if ( IsSH3==2 ) {	// slim
-					code = KeyConvert2Slim( code );
-				}
+				// if ( IsSH3==2 ) {	// slim FIXME
+				// 	code = KeyConvert2Slim( code );
+				// }
 				result[c++] = code;
 			}
 		}

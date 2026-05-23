@@ -62,6 +62,7 @@ typedef struct  {
 #include "CB_Help.h"
 #include "config.h"
 #include "minmax.h"
+#include "keysc.h"
 #include "CB_error.h"
 #include "fx_syscall.h"
 #include "fxCG_Registers.h"

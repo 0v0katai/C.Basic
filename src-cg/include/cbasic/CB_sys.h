@@ -9,7 +9,6 @@
 int OS_Version();	// 03.10.0010 -> 0310
 
 //----------------------------------------------------------------------------- std
-#define RAND_MAX 65535
 #define KEY_CTRL_FORMAT    30101
 unsigned char ColorIndexDialog0( unsigned char initial_index );
 

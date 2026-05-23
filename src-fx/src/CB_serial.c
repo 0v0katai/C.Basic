@@ -15,8 +15,8 @@ int send_data( unsigned char *buffer, int n ){
 	while ( n>i ) {
 	  loop:
 		while ( Serial_GetFreeTransmitSpace() < 128 ) {
-			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
-			if ( serial_exitflag ) if ( KeyScanDown(KEYSC_EXIT) ) return -9;	// [EXIT]
+			if ( BreakCheck ) if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
+			if ( serial_exitflag ) if ( keydown(KEY_EXIT) ) return -9;	// [EXIT]
 		}
 		r=Serial_BufferedTransmitOneByte( buffer[0] );
 		if ( r==2 ) goto loop;	// no space is available in the serial interrupt transmit buffer (256 bytes max)
@@ -40,8 +40,8 @@ int receive_data( unsigned char *buffer, int n ){
 	while ( n>i ) {
 	  loop:
 		while ( Serial_GetReceivedBytesAvailable() < 1 ) {
-			if ( BreakCheck ) if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
-			if ( serial_exitflag ) if ( KeyScanDown(KEYSC_EXIT) ) return -9;	// [EXIT]
+			if ( BreakCheck ) if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return 0; }	// [AC] break?
+			if ( serial_exitflag ) if ( keydown(KEY_EXIT) ) return -9;	// [EXIT]
 		}
 		r=Serial_ReadOneByte( buffer );
 		if ( r==1 ) goto loop;	// no byte is available
@@ -401,7 +401,7 @@ int PortCR = P7305_SERIAL_DIRECT_PORTCR;
 //	iresult = 5000000 / iDelay;
 //	iresult = 500;
 	micro >>=1;
-	while ( (time-- > 0 ) && (KeyScanDown(KEYSC_AC)==0) ) {
+	while ( (time-- > 0 ) && (keydown(KEY_AC)==0) ) {
 		CMT_Delay_micros( micro );
 //		for ( i=0; i<waitcount; i++ ) WaitTimer32768() ;
 		*(unsigned char*)SerialPortDR = *(unsigned char*)SerialPortDR & (~SerialPortOut);

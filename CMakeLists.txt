@@ -46,6 +46,8 @@ execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
                 OUTPUT_VARIABLE COMMIT_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(SUBSTRING ${COMMIT_ID} 0 7 COMMIT_ID_SHORT)
 
+find_package(Gint 2.11 REQUIRED)
+
 include(GenerateG1A)
 include(GenerateG3A)
 include(GenerateHH2Bin)
@@ -74,8 +76,14 @@ set(INCLUDE_DIRS
 include_directories(CBASIC PRIVATE ${INCLUDE_DIRS})
 
 set(COMPILE_OPTS
-    -I ${CB_SOURCE_BASE}/include
-    -Wall -Wextra -Os -g -flto=auto -mpretend-cmove)
+    -I ${CB_SOURCE_BASE}/include -Wall -Wextra -Os -g
+    -flto=auto -mpretend-cmove -fstrict-volatile-bitfields
+    -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable
+    -Wno-unused-value -Wno-unused-label -Wno-sign-compare -Wno-misleading-indentation
+    -Wno-discarded-qualifiers -Wno-return-type -Wno-parentheses -Wno-overflow -Wno-type-limits
+    -Wno-char-subscripts -Wno-implicit-fallthrough -Wno-dangling-else -Wno-address
+    -Wno-switch -Wno-shift-negative-value -Wno-sequence-point -Wno-pointer-compare
+    -Wno-return-local-addr)
 target_compile_options(CBASIC PRIVATE ${COMPILE_OPTS})
 
 set(LINK_OPTS

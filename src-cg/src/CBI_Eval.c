@@ -1266,7 +1266,7 @@ int CB_Ticks( char *SRC ) {
 			if ( high ) {
 				if ( n<0 ) n=-n;  else Hitickstmp=CB_RTC_GetTicks(high);
 				do {
-					if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return t; }	// [AC] break?
+					if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return t; }	// [AC] break?
 					t=CB_RTC_GetTicks(high);
 				} while ( abs( t-Hitickstmp ) < n ) ;
 				Hitickstmp=CB_RTC_GetTicks(high);
@@ -1274,7 +1274,7 @@ int CB_Ticks( char *SRC ) {
 			} else {
 				if ( n<0 ) n=-n;  else tickstmp=CB_RTC_GetTicks(high);
 				do {
-					if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; return t; }	// [AC] break?
+					if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; return t; }	// [AC] break?
 					t=CB_RTC_GetTicks(high);
 				} while ( abs( t-tickstmp ) < n ) ;
 				tickstmp=CB_RTC_GetTicks(high);
@@ -1311,10 +1311,10 @@ int CB_Getkey3( char *SRC ) {
 
 int CB_KeyRowSub(int row){
 //	if ( IsCG20 ) {
-//		return ( CheckKeyRow(row) ) ;			//SH3
+//		return ( iokbd_7705(row) ) ;			//SH3
 //	}
 //	else {
-		return ( CheckKeyRow7305(row) ) ;		//SH4A
+		return ( iokbd_7305(row) ) ;		//SH4A
 //	}
 }
 

@@ -83,7 +83,7 @@ void CB_ML_DispVRAM( char*SRC ){	// ML_DispVRAM
 		ML_display_vram_35e2();
 	else
 		ML_display_vram();
-	if ( BreakCheck )if ( KeyScanDownAC() ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
+	if ( BreakCheck )if ( keydown(KEY_AC) ) { KeyRecover(); BreakPtr=ExecPtr; }	// [AC] break?
 
 }
 int CB_ML_SetContrast( char *SRC ) { // ML_Contrast

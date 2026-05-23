@@ -1229,10 +1229,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 
 		if ( run != 1 ) {
 			if ( SearchMode == 3 ) {	//  replace all mode
-				if ( KeyScanDownAC() == 0 ) {
+				if ( keydown(KEY_AC) == 0 ) {
 					PutKey( KEY_CTRL_F2, 1 );
 				} else { 
-					while ( KeyScanDownAC() );
+					while ( keydown(KEY_AC) );
 					KeyRecover();
 					PutKey( KEY_CTRL_NOP, 1 );
 					SearchMode = 2;
@@ -1323,12 +1323,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 		UpdateLineNum=0;
 		
 		if ( alphastatus == 1 ) {
-			if ( KeyCheckDEL() ) {
+			if ( keydown(KEY_DEL) ) {
 				key=30045;		// KEY_CTRL_UNDO:
 				alphastatus = 0;
 				alphalock = 0 ; 
 			} else 
-			if ( KeyCheckPMINUS() ) {
+			if ( keydown(KEY_PMINUS) ) {
 				key = '%';
 			}
 		}
@@ -1573,7 +1573,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 						if ( YesNo2( "Not Display mode", "Replace All Ok?") == 0 ) break;
 						locate (11,8); Print((unsigned char*)"[AC]:Stop" );	//  replace all mode not display
 						Bdisp_PutDisp_DD;
-						while ( KeyScanDownAC() == 0 ) {
+						while ( keydown(KEY_AC) == 0 ) {
 							i = strlenOp(searchbuf);
 							csrPtr+=i;
 							EditCutDel( filebase, &csrPtr, csrPtr-i, csrPtr, 1, &Undo );	// delete
@@ -1582,7 +1582,7 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							i = SearchOpcodeEdit( SrcBase, searchbuf, &csrPtr, 0 );
 							if ( i==0 ) { SearchMode=0; break; }
 						}
-						while ( KeyScanDownAC() );
+						while ( keydown(KEY_AC) );
 						KeyRecover(); 
 						offset   = csrPtr;
 						offset_y = 0;
@@ -1903,10 +1903,10 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				} else	locate(cx,cy);
 
 				GetKey_DisableMenu(&key);
-				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
+				if ( key==0 ) if ( keydown(KEY_3) ) key=KEY_CHAR_3;
 //				if ( key==0 ) if ( KeyCheckCHAR4() ) key=KEY_CHAR_4;
-				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
-				if ( key==0 ) if ( KeyCheckCHAR5() ) key=KEY_CHAR_5;
+				if ( key==0 ) if ( keydown(KEY_6) ) key=KEY_CHAR_6;
+				if ( key==0 ) if ( keydown(KEY_5) ) key=KEY_CHAR_5;
 				KeyRecover();
 				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				switch (key) {

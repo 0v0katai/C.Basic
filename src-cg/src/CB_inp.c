@@ -4503,8 +4503,7 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 		CB_BackColorIndex=backcolor;	// current color index reset
 		
 		if ( alphastatus == 1 ) {
-			if ( KeyCheckPMINUS() ) {
-//			if ( CheckKeyRow7305(1) & 0x08 ) {
+			if ( keydown(KEY_PMINUS) ) {
 				key = '%';
 			}
 		}
@@ -4699,8 +4698,8 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 //				MiniCursorSetFlashMode( 1 );		// mini cursor flashing on
 				if ( displaystatus ) GetKey_DisableMenuCatalog(&key);
 				else GetKey_DisableMenu_pushpop(&key);
-				if ( key==0 ) if ( KeyCheckCHAR6() ) key=KEY_CHAR_6;
-				if ( key==0 ) if ( KeyCheckCHAR3() ) key=KEY_CHAR_3;
+				if ( key==0 ) if ( keydown(KEY_6) ) key=KEY_CHAR_6;
+				if ( key==0 ) if ( keydown(KEY_3) ) key=KEY_CHAR_3;
 //				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				KeyRecover();
 				switch (key) {

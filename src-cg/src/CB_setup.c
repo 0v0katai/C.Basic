@@ -1071,24 +1071,23 @@ int SetVar(int select){		// ----------- Set Variable
 		FkeyClear( FKeyNo6 );
 		CB_G1MorG3M=3;
 		switch (key) {
-
-//			case KEY_CTRL_SHIFT:
-			case KEY_CTRL_OPTN:
-				miniflag=1;
-				goto VARjp;
-			case KEY_CTRL_VARS:
-				miniflag=0;
-//				if ( small == 58  ) {	// extended variable
-				  VARjp:
-					FkeyClearAll();
-					sprintf(buffer,"Alias Var:%2d      Extended Var(_):%2d",IsExtVar-57, AliasVarMAX+1 );
-//					CB_PrintMini( 16*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OVER);
-					PrintMinix3(0*6+2, 7*8+1, (unsigned char*)buffer, MINI_OVER );
-//					Fkey_dispN( FKeyNo1, buffer );
-//				}
-				Bdisp_PutDisp_DD();
-				while ( CheckKeyRow7305(8) & (32+16) );	// [OPTN] [VARS]
-				break;
+		    //			case KEY_CTRL_SHIFT:
+		    case KEY_CTRL_OPTN:
+		        miniflag=1;
+		        goto VARjp;
+		    case KEY_CTRL_VARS:
+		        miniflag=0;
+		        //				if ( small == 58  ) {	// extended variable
+		        VARjp:
+                  FkeyClearAll();
+		        sprintf(buffer,"Alias Var:%2d      Extended Var(_):%2d",IsExtVar-57, AliasVarMAX+1 );
+		        //					CB_PrintMini( 16*18+6, (cnt-scrl)*24-18,(unsigned char*)buffer,MINI_OVER);
+		        PrintMinix3(0*6+2, 7*8+1, (unsigned char*)buffer, MINI_OVER );
+		        //					Fkey_dispN( FKeyNo1, buffer );
+		        //				}
+		        Bdisp_PutDisp_DD();
+		        while (keydown(KEY_OPTN) || keydown(KEY_VARS)) {}
+                break;
 
 			case KEY_CTRL_EXIT:
 			case KEY_CTRL_EXE:

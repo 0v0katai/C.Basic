@@ -216,7 +216,7 @@ int WaitKeyPressed( void );
 void WaitFor( unsigned int );
 void Wait( void );
 int HexFilter( int );
-int CheckKeyRow( int );
+int iokbd_7705( int );
 int PRGM_GetKey();
 
 #endif
