@@ -45,16 +45,34 @@ int keydown(int key) {
     return iokbd_row(row) & col;
 }
 
-/* Precedence: row 0 to 9, high-to-low bit */
-int getkey_clz() {
-    for (int row = 0; row < 10; row++) {
-        int c = iokbd_row(row);
-        if (c) {
-            if (c == 0x01 && row == 0) return KEY_AC;
-            int bit_pos = 32 - __builtin_clz(c);
-            return IsSH3 == 2 ? SLIM_KEYMAP[72 - bit_pos * 9 - row] : bit_pos * 10 + row;
+static int getkey_value(int lsb, int row) {
+    return IsSH3 == 2 ? SLIM_KEYMAP[72 - lsb * 9 - row] : lsb * 10 + row;
+}
+
+int getkey_all(uint8_t *scan) {
+    int count = 0;
+    uint8_t row_data[10];
+    for (int row = 0; row < 10; row++)
+        row_data[row] = iokbd_row(row);
+    if (row_data[0] == 0x01) scan[count++] = KEY_AC;
+    for (int i = 1; i < 10; i++) {
+        while (row_data[i]) {
+            int lsb = __builtin_ffs(row_data[i]);
+            if (lsb) scan[count++] = getkey_value(lsb, i);
+            row_data[i] &= ~(1 << (lsb - 1));
         }
     }
+    return count;
+}
 
+/* Precedence: row 0 to 9, LSB */
+int getkey_lsb() {
+    for (int row = 0; row < 10; row++) {
+        int c = iokbd_row(row);
+        if (c == 0x01 && row == 0) return KEY_AC;
+        int lsb = __builtin_ffs(c);
+        if (lsb == 0) continue;
+        return getkey_value(lsb, row);
+    }
     return 0;
 }

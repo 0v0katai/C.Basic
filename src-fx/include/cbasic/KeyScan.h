@@ -89,7 +89,8 @@ int CB_Getkey();
 int CB_Getkey0();
 int CB_Getkey1(int sdkcode);
 int CB_Getkey2(int sdkcode);
-int CB_GetkeyN( int n, int disableCatalog, int sdkcode) ;			// CasioBasic Getkey 
+int CB_GetkeyN( int n, int disableCatalog, int sdkcode) ;			// CasioBasic Getkey
+int CB_GetkeyM();
 
 int BackLight( int n );			// 0:off  1:on   2:xor
 void KeyRecover();

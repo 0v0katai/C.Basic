@@ -1309,59 +1309,15 @@ int CB_Getkey3( char *SRC ) {
 	return key;
 }
 
-int CB_KeyRowSub(int row){
-//	if ( IsCG20 ) {
-//		return ( iokbd_7705(row) ) ;			//SH3
-//	}
-//	else {
-		return ( iokbd_7305(row) ) ;		//SH4A
-//	}
-}
-
 int CB_KeyRow( char *SRC ) {		// Row Keyscan
 	int row;
 	row = CB_EvalInt( SRC );
 	if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 
-	return CB_KeyRowSub(row) ;
+	return iokbd_row(row) ;
 }
 
 //----------------------------------------------------------------------------------------------
-int CB_GetkeyM() {	//	Getkey multi  -> list { }
-	//				   6  5  4  3  2  1
-//	char keycode9[]={ 79,69,59,49,39,29};
-//	char keycode8[]={ 78,68,58,48,38,28};
-//	char keycode7[]={ 77,67,57,47,37,27};
-//	char keycode6[]={ 76,66,56,46,36,26};
-//	char keycode5[]={ 75,65,55,45,35,25};
-//	char keycode4[]={ 74,64,54,44,34};
-//	char keycode3[]={ 73,63,53,43,33};
-//	char keycode2[]={ 72,62,52,42,32};
-//	char keycode1[]={ 71,61,51,41,31};
-	char rowdata[10];
-	char result[55];
-	int i,j,a,b,c=0;
-	for(i=1; i<=9; i++) rowdata[i]=CB_KeyRowSub(i);
-	b=128;
-	for(j=6; j>=1; j--) {
-		b>>=1;
-		for(i=9; i>=1; i--) {
-			if ( rowdata[i] & b ) result[c++] = i+(j+1)*10;
-		}
-	}
-
-	dspflag=4;	// List ans
-	if ( c==0 ) {
-		c=1;
-		result[0]=0;
-	}
-	
-	NewMatListAns( c, 1, 1, 8 );		// List Ans[c].b
-	for (i=0; i<c; i++) {
-		WriteMatrix( CB_MatListAnsreg, i+1, 1, result[i] ) ;	//
-	}
-	return 1;
-}
 
 int CB_GetkeyEntry( char *SRC ) {	// CB_GetKey entry
 	int c = SRC[ExecPtr],d;
@@ -1372,7 +1328,7 @@ int CB_GetkeyEntry( char *SRC ) {	// CB_GetKey entry
 		switch ( c ) {
 			case 'M':
 			case 'm':
-				result=CB_GetkeyM() ; 
+				result=CB_GetkeyM() ;
 				break;
 			case '3':
 				result=CB_Getkey3( SRC ) ; 

@@ -1,13 +1,20 @@
-#include "CB_io.h"
-#include "keysc.h"
+#include "CB.h"
 
-void Keyboard_ClrBuffer();
-int BackLight(int n);
+int CB_GetkeyM() {
+    uint8_t key_data[55] = {0};
+    int c = max(1, getkey_all(key_data));
+
+    dspflag = 4;
+    NewMatListAns(c, 1, 1, 8);      // List Ans[c].b
+    for (int i = 0; i < c; i++)
+        WriteMatrix(CB_MatListAnsreg, i + 1, 1, key_data[i]);
+    return 1;
+}
 
 int CB_Getkey() {
     if (Recent_code && keydown(Recent_code)) return Recent_code;
 
-    int code = getkey_clz();
+    int code = getkey_lsb();
     Recent_code = code;
 
     if (code && Getkey_shift) {

@@ -88,7 +88,8 @@ int iokbd_7305(int row);
 extern int (* iokbd_row)(int);
 
 int keydown(int key);
-int getkey_clz();
+int getkey_all(uint8_t *scan);
+int getkey_lsb();
 
 extern uint8_t Recent_code;
 extern char Getkey_shift;
