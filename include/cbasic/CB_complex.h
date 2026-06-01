@@ -1,4 +1,29 @@
-//----------------------------------------------------------------------------- complex
+/* *****************************************************************************
+ * CB_complex.h -- Header for complex arithmetic library
+ * Copyright (C) 2015-2026 Sentaro21 <sentaro21@pm.matrix.jp>
+ *
+ * This file is part of C.Basic.
+ * C.Basic is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2.0 of the License,
+ * or (at your option) any later version.
+ *
+ * C.Basic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
+ * ************************************************************************** */
+
+#ifndef CBASIC_EVAL_CPLX_H
+#define CBASIC_EVAL_CPLX_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
 	double real;
 	double imag;
@@ -83,7 +108,7 @@ complex Cplx_fOR_logic( complex x, complex y ) ;	// x || y
 complex Cplx_fXOR_logic( complex x, complex y ) ;	// (x!=0) ^ (y!=0)
 complex Cplx_fNot_logic( complex x ) ;				// x == 0
 complex Cplx_fcmpEQ( complex x, complex y ) ;	// x = y
-complex Cplx_fcmpEQ_0( complex z ) ;	//  z == 0 
+complex Cplx_fcmpEQ_0( complex z ) ;	//  z == 0
 complex Cplx_fcmpGT( complex x, complex y ) ;	// x > y
 complex Cplx_fcmpLT( complex x, complex y ) ;	// x < y
 complex Cplx_fcmpNE( complex x, complex y ) ;	// x != y
@@ -149,10 +174,10 @@ complex Cplx_ListEvalsub11(char *SRC) ;
 complex Cplx_ListEvalsub12(char *SRC) ;
 complex Cplx_ListEvalsub13(char *SRC) ;
 complex Cplx_ListEvalsub14(char *SRC) ;
-complex Cplx_NoListEvalsubTop(char *SRC) ;	//  
+complex Cplx_NoListEvalsubTop(char *SRC) ;	//
 complex Cplx_ListEvalsubTop(char *SRC) ;
-int Cplx_ListEvalsub1Ans(char *SRC) ;	//  
-int Cplx_ListEvalsubTopAns(char *SRC) ;	//  
+int Cplx_ListEvalsub1Ans(char *SRC) ;	//
+int Cplx_ListEvalsubTopAns(char *SRC) ;	//
 
 complex CB_Sigma( char *SRC ) ; //	Sigma(X^2,X,1.10)
 
@@ -187,7 +212,6 @@ complex InputNumC_replay_mini(int x, int y, int width, complex defaultNum, int m
 complex InputNumC_CB(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) ;		//  Basic Input
 complex InputNumC_CB1(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum) ;		//  Basic Input 1
 complex InputNumC_CB2(int x, int y, int width, int MaxStrlen, char* SPC, int REV, complex defaultNum, int miniflag, int dispzero) ;		//  Basic Input 2
-
 //-----------------------------------------------------------------------------
 
 complex Cplx_ReadMatrix( int reg, int dimA, int dimB);				// 0-
@@ -198,12 +222,18 @@ complex CB_Sum( char *SRC ) ;	// Sum( List 1 )
 complex CB_Prod( char *SRC ) ;	// Prod( List 1 )
 complex CB_MinMax( char *SRC, int flag) ;	// Min( List 1 )	flag  0:min  1:max
 complex CB_Mean( char *SRC ) ;	// Mean( List 1 )
-complex Cplx_CB_MatDet( char *SRC ) ;	// Det Mat A	
-
+complex Cplx_CB_MatDet( char *SRC ) ;	// Det Mat A
+complex CBC_gcd(char *SRC);
+complex CBC_lcm(char *SRC);
 
 complex Cplx_CB_DotP( char *SRC );		// DotP(Vct A,Vct B)
 void  Cplx_CB_CrossP( char *SRC );	// CrossP(Vct A,Vct B)
 complex Cplx_CB_AngleV( char *SRC );	// Angle(Vct A,Vct B)
 void  Cplx_CB_UnitV( char *SRC );		// UnitV(Vct A)
 complex Cplx_CB_NormV( char *SRC );		// Norm(Vct A)
-	
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CBASIC_EVAL_CPLX_H */

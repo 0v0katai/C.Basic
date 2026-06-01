@@ -289,7 +289,7 @@ double ListEvalsub1(char *SRC) {	// 1st Priority
 					resultreg=CB_MatListAnsreg;
 					if ( SRC[ExecPtr] != ',' ) CB_Error(SyntaxERR) ; // Syntax error 
 					ExecPtr++;
-					result = EvalFxDbl2( &CB_gcd_float, &resultflag, &resultreg, result, ListEvalsubTop( SRC ) ) ;
+					result = EvalFxDbl2( &CB_gcd_dbl, &resultflag, &resultreg, result, ListEvalsubTop( SRC ) ) ;
 					if ( SRC[ExecPtr] == ')' ) ExecPtr++;
 					return result ;
 						

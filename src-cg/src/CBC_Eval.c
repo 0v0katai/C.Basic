@@ -537,7 +537,7 @@ complex Cplx_fRanBin( complex n, complex p) {	// RanBin#
 }
 complex Cplx_fGCD( complex x, complex y ) {	// GCD(x,y)
 	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
-	return Dbl2Cplx( CB_gcd_float(x.real, y.real) );
+	return Dbl2Cplx( CB_gcd_dbl(x.real, y.real) );
 }
 complex Cplx_fLCM( complex x, complex y ) {	// LCM(x,y)
 	if ( (x.imag!=0)||(y.imag!=0) ) { CB_Error(NonRealERR); return Int2Cplx(0); }	// Input value must be a real number
@@ -760,12 +760,10 @@ complex Cplx_Evalsub1(char *SRC) {	// 1st Priority
 					return Cplx_fMOD(tmp,tmp2);
 
 				case 0x3C :				// GCD(a,b)
-					Cplx_Get2Eval( SRC, &tmp, &tmp2);
-					return Cplx_fGCD(tmp,tmp2);
+					return CBC_gcd(SRC);
 
 				case 0x3D :				// LCM(a,b)
-					Cplx_Get2Eval( SRC, &tmp, &tmp2);
-					return Cplx_fLCM(tmp,tmp2);
+					return CBC_lcm(SRC);
 
 				case 0xFFFFFF85 :		// logab(a,b)
 					Cplx_Get2Eval( SRC, &tmp, &tmp2);

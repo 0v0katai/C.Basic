@@ -572,12 +572,10 @@ int EvalIntsub1(char *SRC) {	// 1st Priority
 					return fMODint(tmp,tmp2);
 					
 				case 0x3C :				// GCD(a,b)
-					Get2EvalInt( SRC, &tmp, &tmp2);
-					return CB_gcd_int(tmp,tmp2);
+					return CBI_gcd(SRC);
 
 				case 0x3D :				// LCM(a,b)
-					Get2EvalInt( SRC, &tmp, &tmp2);
-					return fLCMint(tmp,tmp2);
+					return CBI_lcm(SRC);
 					
 				case 0xFFFFFF85 :		// logab(a,b)
 					Get2EvalInt( SRC, &tmp, &tmp2);

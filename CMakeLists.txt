@@ -50,7 +50,6 @@ find_package(Gint 2.11 REQUIRED)
 
 include(GenerateG1A)
 include(GenerateG3A)
-include(GenerateHH2Bin)
 include(Fxconv)
 
 set(ASSETS
@@ -110,6 +109,4 @@ elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCG50)
 elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fx9860G_G3A)
   generate_g3a(TARGET CBASIC VERSION ${CB_VERSION_INTERNAL} OUTPUT "CBCG${CB_VERSION_VALUE}-fx.g3a"
     NAME "CBCG${CB_VERSION_VALUE}-fx" ICONS assets-cg/icon-uns.png assets-cg/icon-sel.png)
-elseif("${FXSDK_PLATFORM_LONG}" STREQUAL fxCP)
-  generate_hh2_bin(TARGET CBASIC VERSION ${CB_VERSION_INTERNAL} OUTPUT "CBASIC-hh2.bin")
 endif()

@@ -1006,16 +1006,16 @@ double fRanBin( double n, double p) {	// RanBin#
 	for ( i=0; i<n; i++ ) if ( rand() <= r ) m++;
 	return m;
 }
-static double gcd_float(double x, double y) {	// GCD(x,y)
+static double gcd_dbl(double x, double y) {	// GCD(x,y)
 	if (y == 0)
 		return x;
-	return gcd_float(y, fmod(x,y)); 
+	return gcd_dbl(y, fmod(x,y)); 
 }
-double CB_gcd_float(double x, double y) {
-	return fabs(gcd_float(x,y));
+double CB_gcd_dbl(double x, double y) {
+	return fabs(gcd_dbl(x,y));
 }
 double fLCM(double x, double y) {	// LCM(x,y)
-	return fabs(fDIV(x*y,CB_gcd_float(x,y) + (y == 0)));
+	return fabs(fDIV(x*y,CB_gcd_dbl(x,y) + (y == 0)));
 }
 
 double fnot( double x ) {
@@ -1268,12 +1268,10 @@ double Evalsub1(char *SRC) {	// 1st Priority
 					return fMOD(tmp,tmp2);
 					
 				case 0x3C :				// GCD(a,b)
-					Get2Eval( SRC, &tmp, &tmp2);
-					return gcd_float(tmp,tmp2);
+					return CBD_gcd(SRC);
 
 				case 0x3D :				// LCM(a,b)
-					Get2Eval( SRC, &tmp, &tmp2);
-					return fLCM(tmp,tmp2);
+					return CBD_lcm(SRC);
 					
 				case 0xFFFFFF85 :		// logab(a,b)
 					Get2Eval( SRC, &tmp, &tmp2);

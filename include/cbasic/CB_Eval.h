@@ -1,6 +1,6 @@
 /* *****************************************************************************
  * CB_Eval.h -- Header for double arithmetic library
- * Copyright (C) 2015-2025 Sentaro21 <sentaro21@pm.matrix.jp>
+ * Copyright (C) 2015-2026 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
  * C.Basic is free software; you can redistribute it and/or modify it
@@ -16,12 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
-//-----------------------------------------------------------------------------
-// Casio Basic Gloval variable
-//-----------------------------------------------------------------------------
+
+#ifndef CBASIC_EVAL_H
+#define CBASIC_EVAL_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ExpMax 255
 extern char ExpBuffer[];
-//-----------------------------------------------------------------------------
+
 double CheckMathERR(double result);
 void _div_check(double div);
 void _div_check_int(int div);
@@ -98,7 +103,9 @@ double fMOD( double x, double y ) ;	// fMOD(x,y)
 double fIDIV( double x, double y ) ;	// (int)x / (int)y
 double flogab( double x, double y ) ;	// flogab(x,y)
 double frand() ;
-double CB_gcd_float( double x, double y ) ;	// GCD(x,y)
+double CB_gcd_dbl( double x, double y ) ;	// GCD(x,y)
+double CBD_gcd(char *SRC) ;	// GCD(a,b,c,...)
+double CBD_lcm(char *SRC) ;	// LCM(a,b,c,...)
 double fLCM( double x, double y ) ;	// LCM(x,y)
 double fRanNorm( double sd, double mean) ;	// RanNorm#
 double fRanBin( double n, double p) ;	// RanBin#
@@ -132,20 +139,15 @@ double Evalsub14(char *SRC);
 double EvalsubTop(char *SRC);
 double CB_EvalDbl( char *SRC ) ;
 int RegVar( int c ) ;
-int MatRegVar( char *SRC ) ;	// 
+int MatRegVar( char *SRC ) ;	//
 int RegVarVct( int c ) ;
-int VctRegVar( char *SRC ) ;	// 
+int VctRegVar( char *SRC ) ;	//
 int SearchListname( char *SRC ) ;
 int ListRegVar( char *SRC ) ;	// return reg no
 int Get2Eval( char *SRC, double *tmp, double *tmp2);
 int RegVarAliasEx( char *SRC ) ;
 
 int CB_IsError( char *SRC ); //	IsError (...)
-
-double CB_Integral( char *SRC );	// Integral( FX, start, end, tol )
-double CB_Differ( char *SRC );	// Differ( FX, tol )
-
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void NewMatListAns( int dimA, int dimB, int base, int element );
 void DeleteMatListAns() ;
@@ -170,22 +172,17 @@ double ListEvalsub11(char *SRC) ;
 double ListEvalsub12(char *SRC) ;
 double ListEvalsub13(char *SRC) ;
 double ListEvalsub14(char *SRC) ;
-double NoListEvalsubTop(char *SRC) ;	//  
+double NoListEvalsubTop(char *SRC) ;	//
 double ListEvalsubTop(char *SRC) ;
-int ListEvalsub1Ans(char *SRC) ;	//  
-int ListEvalsubTopAns(char *SRC) ;	//  
+int ListEvalsub1Ans(char *SRC) ;	//
+int ListEvalsubTopAns(char *SRC) ;	//
 
 int CB_SigmaInt( char *SRC ) ; //	Sigma(X^2,X,1.10)
+double DmsToDec( char *SRC, double h ) ;
 
+double CB_Integral( char *SRC );	// Integral( FX, start, end, tol )
+double CB_Differ( char *SRC );	// Differ( FX, tol )
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-double CB_Integral( char *SRC );	// Integral( FX, start, end, sci )
-double CB_Differ( char *SRC );	// Differ( FX, start, end, sci )
-
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 extern short VarListRange;
 
 void CB_VarList( char *SRC ) ;
@@ -193,4 +190,8 @@ void CB_VarRange( char *SRC ) ;
 void CB_F_Result( char *SRC ) ;
 void CB_DispF_Tbl( char *SRC ) ;
 
-int CB_Ticks( char *SRC );
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CBASIC_EVAL_H */

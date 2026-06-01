@@ -1,6 +1,6 @@
 /* *****************************************************************************
- * CB_Eval.h -- Header for integer arithmetic library
- * Copyright (C) 2015-2025 Sentaro21 <sentaro21@pm.matrix.jp>
+ * CBI_Eval.h -- Header for integer arithmetic library
+ * Copyright (C) 2015-2026 Sentaro21 <sentaro21@pm.matrix.jp>
  *
  * This file is part of C.Basic.
  * C.Basic is free software; you can redistribute it and/or modify it
@@ -16,15 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with C.Basic; if not, see <https://www.gnu.org/licenses/>.
  * ************************************************************************** */
-//-----------------------------------------------------------------------------
-// Casio Basic Gloval variable
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-// typedef struct Ev1i {
-// 	int flag;
-// 	int value;
-// };
-//-----------------------------------------------------------------------------
+
+#ifndef CBASIC_EVAL_INT_H
+#define CBASIC_EVAL_INT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int fintint( int x ) ;
 int fabsint( int x ) ;
 int fnotint( int x ) ;
@@ -66,6 +65,8 @@ int frandIntint( int x, int y ) ;
 int fMODint( int x, int y ) ;	// fMODint(x,y)
 int CB_gcd_int( int x, int y ) ;	// GCD(x,y)
 int fLCMint( int x, int y ) ;	// LCM(x,y)
+int CBI_gcd(char *SRC) ;	// GCD(a,b,c,...)
+int CBI_lcm(char *SRC) ;	// LCM(a,b,c,...)
 //-----------------------------------------------------------------------------
 int InputNumI_full(int x, int y, int width, int defaultNum) ;
 int InputNumI_Char(int x, int y, int width, int defaultNum, int code) ;
@@ -82,8 +83,6 @@ int EvalIntsub14(char *SRC);
 int EvalIntsubTop(char *SRC);
 int CB_EvalInt( char *SRC ) ;
 int Eval_atoi(char *SRC, int c ) ;
-
-int EvalInt(char *SRC) ;		// Eval temp
 
 unsigned int GetTicks32768();
 void CB_StoreTicks( char *SRC, int value ) ;
@@ -107,8 +106,25 @@ int ListEvalIntsub11(char *SRC) ;
 int ListEvalIntsub12(char *SRC) ;
 int ListEvalIntsub13(char *SRC) ;
 int ListEvalIntsub14(char *SRC) ;
-int NoListEvalIntsubTop(char *SRC) ;	//  
+int NoListEvalIntsubTop(char *SRC) ;	//
 int ListEvalIntsubTop(char *SRC) ;
-int ListEvalIntsub1Ans(char *SRC) ;	//  
-int ListEvalIntsubTopAns(char *SRC) ;	//  
+int ListEvalIntsub1Ans(char *SRC) ;	//
+int ListEvalIntsubTopAns(char *SRC) ;	//
 
+int CB_BatteryStatus( char *SRC );
+int CB_Ticks(char *SRC);
+
+unsigned short rgb( int r, int g, int b);	//  r:0~255  g:0~255  b:0~255  ->color code
+unsigned short hsv( int H, int S, int V);	//  h:0~359  s:0~255  v:0~255  ->color code
+unsigned short hsl( int H, int S, int L);	//  h:0~359  s:0~255  l:0~255  ->color code
+int CB_GetRGB( char *SRC, int mode );	// GetRGB/HSV/HsL() -> ListAns
+void hsv2rgb( int h, int s, int v, int *r, int *g, int *b );	//  h:0~359  s:0~255  v:0~255  ->RGB(0~255)
+void hsl2rgb( int h, int s, int v, int *r, int *g, int *b );	//  h:0~359  s:0~255  v:0~255  ->RGB(0~255)
+void rgb2hsv( int R, int G, int B, int *H, int *S, int *V );	//  RGB(0~255) ->  H:0~359  S:0~255  V:0~255
+void rgb2hsl( int R, int G, int B, int *H, int *S, int *L );	//  RGB(0~255) ->  H:0~359  S:0~255  L:0~255
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CBASIC_EVAL_INT_H */

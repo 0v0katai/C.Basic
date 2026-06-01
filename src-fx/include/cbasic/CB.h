@@ -37,11 +37,6 @@
 #include "stdlib.h"
 #include "string.h"
 
-typedef struct  {
-	double real;
-	double imag;
-} complex;
-
 #include "CB_complex.h"
 #include "CB_interpreter.h"
 #include "KeyScan.h"
