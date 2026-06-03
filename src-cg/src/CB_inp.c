@@ -2061,9 +2061,8 @@ const short catalog_opcode[]={
 		0xF9CA,	// _Rect 
 		0xF9D8,	// _Test
 		0xF9C9,	// _Vertical
-		0xF9D4,	// _Vscroll 
-		
-		0};
+		0xF9D4,	// _Vscroll
+};
 
 
 const short catalog_opcode_ext[]={
@@ -2227,31 +2226,24 @@ const short catalog_opcode_ext[]={
 		0xF9D8,	// _Test
 		0xF9C9,	// _Vertical
 		0xF9D4,	// _Vscroll 
+};
 
-		0};
-
-
-int check_ext_opcode(int code) {	// 0:genuine	1:ext
-	int i,j,k;	
-	int	opNum=0 ;
-		while ( catalog_opcode_ext[opNum++] ) ;
-	i=0;
-	while ( i < opNum ) {
-		if ( code == catalog_opcode_ext[i++] ) return 1;
-	}
+static int check_ext_opcode(int code) {	// 0:genuine	1:ext
+	static const int opNumExt = sizeof(catalog_opcode_ext)/sizeof(short);
+	for (int i = 0; i < opNumExt; i++)
+		if (code == catalog_opcode_ext[i])
+			return 1;
 	return 0;
 }
 
 int CB_Catalog(void) {
 	short *select=&selectCATALOG;
-	short *oplist=(short *)catalog_opcode;
-	int opNum;
+	const short *oplist = catalog_opcode;
+	static const int opNum = sizeof(catalog_opcode)/sizeof(short) - 1;
 	char buffer[22];
 	char tmpbuf[18];
 	int key;
-	int i,j,k,m,y;
-	int seltop;
-	char search[10]="", *search2;
+	char search[10]="";
 	int CursorStyle;
 	int searchmode=1;
 	int csrX=0;
@@ -2261,191 +2253,145 @@ int CB_Catalog(void) {
 	CB_BackColorIndex=0xFFFF;
 	
 	Cursor_SetFlashOff(); 			// cursor flashing off
-		
-		opNum=0 ;
-		while ( oplist[opNum++] ) ;
-		opNum-=2;
-		seltop=*select;
+	int seltop = *select;
 
-		SaveDisp(SAVEDISP_PAGE1);
+	SaveDisp(SAVEDISP_PAGE1);
 
-		while (1) {
-			Bdisp_AllClr_VRAM();
-			SetAlphalock();
-			CB_ColorIndex=0x001F;	// Blue
-			CB_Prints( 1,1, (unsigned char*)"Catalog.CB");
-			CB_ColorIndex=0x0000;	// Black
-			Fkey_dispN( FKeyNo1, "INPUT");
-			Fkey_dispR( FKeyNo5, "Hist");
-			if (  (*select)<seltop ) seltop=(*select);
-			if ( ((*select)-seltop) > 5 ) seltop=(*select)-5;
-			if ( (opNum-seltop) < 5 ) seltop = opNum-5; 
-			for ( i=0; i<6; i++ ) {
-//				CB_Print(1,2+i,(unsigned char *)"                     ");
-				j=oplist[seltop+i];
-//				k=0;
-//				while ( j == 0xFFFFFFFF ) { 
-//					k++;
-//					j=oplist[seltop+i+k]; 
-//				}
-				if ( j != 0xFFFFFFFF ) {
-					CB_OpcodeToStr( j, tmpbuf ) ; // SYSCALL
-					// tmpbuf[12]='\0'; 
-					DMS_Opcode( tmpbuf, j);
-					k=0; if ( tmpbuf[0]==' ' ) k++;
-					sprintf(buffer,"%-17s",tmpbuf+k ) ;
-					if ( check_ext_opcode( j ) ) {
-						CB_ColorIndex=0x8010;	// Magenta + black
-						CB_Prints(1,2+i,(unsigned char *)buffer);
-						CB_Prints(17,2+i,(unsigned char *)"(ext)");
-//						CB_ColorIndex=0xFFE0;	// Yellow
-//						ML_rectangle( 0, (y+1)*24, 125*3+2, (y+1)*24+23, 0, 0, ML_XOR );
-					} else {
-						CB_ColorIndex=0x0000;	// Black
-						CB_Prints(1,2+i,(unsigned char *)buffer);
-					}
-				}
+	while (1) {
+		Bdisp_AllClr_VRAM();
+		SetAlphalock();
+		CB_ColorIndex = COLOR_BLUE;
+		CB_Prints( 1,1, (unsigned char*)"Catalog.CB");
+		CB_ColorIndex = COLOR_BLACK;
+		Fkey_dispN( FKeyNo1, "INPUT");
+		Fkey_dispR( FKeyNo5, "Hist");
+		if (*select < seltop) seltop = *select;
+		if (*select - seltop > 5) seltop = *select - 5;
+		if (opNum - seltop < 5) seltop = opNum - 5;
+		for (int i = 0; i < 6; i++) {
+			int op = oplist[seltop + i];
+			CB_OpcodeToStr(op, tmpbuf);
+			DMS_Opcode(tmpbuf, op);
+			sprintf(buffer,"%-17s", tmpbuf + (tmpbuf[0] == ' '));
+			if (check_ext_opcode(op)) {
+				CB_ColorIndex = 0x8010;	// Magenta + black
+				CB_Prints(1,2+i,(unsigned char *)buffer);
+				CB_Prints(17,2+i,(unsigned char *)"(ext)");
+			} else {
+				CB_ColorIndex = COLOR_BLACK;
+				CB_Prints(1,2+i,(unsigned char *)buffer);
 			}
-			CB_ColorIndex=0x0000;	// Black
-			if ( searchmode ) {
-				StatusArea_Run_sub( "== SEARCH MODE ==", CB_INTDefault, CB_G1MorG3MDefault );
-				locate(12, 1);Prints((unsigned char*)"[        ]");
-				CB_Prints(13, 1, (unsigned char*)search );	// search string
+		}
+		CB_ColorIndex = COLOR_BLACK;
+		if (searchmode) {
+			StatusArea_Run_sub( "== SEARCH MODE ==", CB_INTDefault, CB_G1MorG3MDefault );
+			locate(12, 1);Prints((unsigned char*)"[        ]");
+			CB_Prints(13, 1, (unsigned char*)search );	// search string
 //				if ( lowercase  ) Fkey_dispN_aA( FKeyNo4, "A <> a"); else Fkey_dispN_Aa( FKeyNo4, "A <> a");
 //				Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 //				Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
-			} else {
-				StatusArea_Time();
-			}
-			
+		} else {
+			StatusArea_Time();
+		}
+
 //			if ( seltop <= opNum-6 ) { locate(19,7); Print((unsigned char*)"\xE6\x93"); } // dw
 //			if ( seltop >= 1 )       { locate(19,2); Print((unsigned char*)"\xE6\x92"); } // up
-			
-			y = ((*select)-seltop) + 1 ;
-			Bdisp_AreaReverseVRAM( 0, (y+1)*24, 125*3+2, (y+1)*24+23 );	// reverse *select line 
-			Bdisp_PutDisp_DD();
 
-			if ( searchmode ) {
-				locate(13+csrX,1);
-				Cursor_SetFlashMode(1);			// cursor flashing on
-			}
-			GetKey_DisableMenu( &key );
-			switch (key) {
-					
-				case KEY_CTRL_MENU:
-				case KEY_CTRL_F5:
-					key=SelectOpcodeRecent( CMDLIST_RECENT );
-					if ( key ) return key;
-					break;
-					
-				case KEY_CTRL_QUIT:
-				case KEY_CTRL_EXIT:
-					alphastatus = 0;
-					alphalock = 0 ; 
-					Setup_SetEntry(0x14, 0x00);
-					RestoreDisp(SAVEDISP_PAGE1);
-					return 0;
-					
-				case KEY_CTRL_F1:
-				case KEY_CTRL_EXE:
-					return oplist[(*select)] & 0xFFFF;
-						
-				case KEY_CTRL_AC:
-					search[0]='\0';
-					csrX=0;
-					break;
+		int y = *select - seltop + 1;
+		Bdisp_AreaReverseVRAM(0, (y+1)*24, 125*3+2, (y+1)*24+23);	// reverse *select line
+		Bdisp_PutDisp_DD();
 
-				case KEY_CTRL_DEL:
-					if (searchmode ) {
-						if ( CursorStyle < 0x6 ) {		// insert mode
-							PrevOpcodeGB( search, &csrX );
-						}
-						DeleteOpcode1( search, 8, &csrX );
-					}
-					break;
-				
-				case KEY_CTRL_LEFT:
-					if ( searchmode ) { 
-						PrevOpcodeGB( search, &csrX ); 
-						break; 
-					}
-//					for ( i=(*select)-2; i>0; i-- ) {
-//						if ( oplist[i] == 0xFFFFFFFF ) break;
-//					}
-//					if ( i<0 ) i = 0 ;
-//					if ( i>0 ) i++ ;
-//					*select = i ;
-//					seltop = *select;
-					searchmode=1;
-					break;
-					
-				case KEY_CTRL_RIGHT:
-					if ( searchmode ) {
-						if ( search[csrX] != 0x00 )	NextOpcodeGB( search, &csrX );
-						break;
-					}
-//					for ( i=(*select)+1; i<(*select)+opNum; i++ ) {
-//						if ( oplist[i] == 0xFFFFFFFF ) break;
-//					}
-//					*select = i+1 ;
-//					if ( *select > opNum ) *select = opNum;
-//					seltop = *select;
-					searchmode=1;
-					break;
-					
-				case KEY_CTRL_UP:
-					(*select)--;
-					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)--;
-					if ( *select < 0 ) *select = opNum;
-					break;
-					
-				case KEY_CTRL_DOWN:
-					(*select)++;
-					if ( oplist[(*select)] == 0xFFFFFFFF ) (*select)++;
-					if ( *select > opNum ) *select =0;
-					break;
-					
-				default:
-					break;
-			}
-			if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
-			if ( key == ' ' ) key=0x9C;
-			if ( key == '"' ) key='_';
-			if ( ( ('A' <= key) && (key <= 'Z') ) || (key == 0x9C) || (key == '_') ) {
-				if ( CursorStyle < 0x6 ) {		// insert mode
-					i=InsertOpcode1( search, 8, csrX, key );
-				} else {					// overwrite mode
-					if ( search[csrX] != 0x00 ) DeleteOpcode1( search, 8, &csrX);
-					i=InsertOpcode1( search, 8, csrX, key );
+		if (searchmode) {
+			locate(13+csrX,1);
+			Cursor_SetFlashMode(1);			// cursor flashing on
+		}
+		GetKey_DisableMenu(&key);
+		switch (key) {
+			case KEY_CTRL_MENU:
+			case KEY_CTRL_F5:
+				key = SelectOpcodeRecent(CMDLIST_RECENT);
+				if (key) return key;
+				break;
+
+			case KEY_CTRL_QUIT:
+			case KEY_CTRL_EXIT:
+				alphastatus = 0;
+				alphalock = 0;
+				Setup_SetEntry(0x14, 0x00);
+				RestoreDisp(SAVEDISP_PAGE1);
+				return 0;
+
+			case KEY_CTRL_F1:
+			case KEY_CTRL_EXE:
+				return oplist[(*select)] & 0xFFFF;
+
+			case KEY_CTRL_AC:
+				search[0]='\0';
+				csrX=0;
+				break;
+
+			case KEY_CTRL_DEL:
+				if (searchmode) {
+					if (CursorStyle < 0x6) PrevOpcodeGB(search, &csrX);   // insert mode
+					DeleteOpcode1(search, 8, &csrX);
 				}
-				if ( i==0 ) NextOpcodeGB( search, &csrX );
-			}
-			if ( ( ( ('A' <= key) && (key <= 'Z') ) || (key == 0x9C) || (key == '_') ) && ( strlen(search) ) ) {
+				break;
+
+			case KEY_CTRL_LEFT:
+				if (searchmode) {
+					PrevOpcodeGB(search, &csrX);
+					break;
+				}
 				searchmode=1;
-				i=0;
-				j=strlen(search);
-				while ( i<opNum ) {
-						if ( oplist[i] == 0xFFFFFFFF ) i++;
-						else {
-							CB_OpcodeToStr( oplist[i] , tmpbuf ) ; // SYSCALL
-							tmpbuf[12]='\0'; 
-							m=0; if ( tmpbuf[0]==' ' ) m++;
-							k=0;
-							while ( k<=j ) {
-								if ( ToUpperC(tmpbuf[k+m]) != search[k] ) { k=(k>=j); break; }
-								k++;
-							}
-							if ( k>0 ) {
-								(*select) = i;
-								seltop = (*select);
-								break;
-							} else i++;
+				break;
+
+			case KEY_CTRL_RIGHT:
+				if (searchmode) {
+					if (search[csrX] != 0x00) NextOpcodeGB(search, &csrX);
+					break;
+				}
+				searchmode=1;
+				break;
+
+			case KEY_CTRL_UP:
+				(*select)--;
+				if (*select < 0) *select = opNum;
+				break;
+
+			case KEY_CTRL_DOWN:
+				(*select)++;
+				if (*select > opNum) *select = 0;
+				break;
+
+			default:
+				break;
+		}
+		if (key == ' ') key = 0x9C;
+		if (key == '"') key = '_';
+		if (('a' <= (key | 0x20) && (key | 0x20) <= 'z') || key == 0x9C || key == '_') {
+			if (CursorStyle >= 0x6 && search[csrX] != 0x00) // insert mode
+				DeleteOpcode1(search, 8, &csrX);
+			if (InsertOpcode1(search, 8, csrX, key) == 0)
+				NextOpcodeGB(search, &csrX);
+			if (strlen(search)) {
+				searchmode = 1;
+				int longest_match = -1;
+				for (int i = 0; i < opNum; i++) {
+					CB_OpcodeToStr(oplist[i], tmpbuf);
+					for (int j = 0; j < strlen(search); j++) {
+						if (toupper(tmpbuf[(tmpbuf[0] == ' ') + j]) != toupper(search[j]))
+							break;
+						if (j > longest_match) {
+							longest_match = j;
+							*select = i;
+							seltop = *select;
 						}
-						
+					}
 				}
 			}
 		}
 	}
+}
 
 //--------------------------------------------------------------------------
 
