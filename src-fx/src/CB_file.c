@@ -2776,7 +2776,7 @@ void ConvertToText( char *fname ){
 
 //----------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------
-#define ConfigMAX  1080
+#define ConfigMAX  1108
 #define ConfigMAX2  512
 #define ConfigMAX3  588+32
 //--------------------------------------------------------------
@@ -2960,6 +2960,10 @@ typedef struct {
 	buffer[1077]= EditFontSize;
 	buffer[1078]= DisableDebugMode;
 	buffer[1079]= 0;
+
+	bufshort[540]=CB_PMINUS_MetaOpcode;
+	bufshort[541]=CB_SHIFT_MetaOpcode;
+	bufshort[542]=CB_ALPHA_MetaOpcode;
 
 	SaveConfigWriteFile( buffer, fname, ConfigMAX ) ;
 }
@@ -3174,6 +3178,10 @@ void LoadConfig1(){
 		EditTopLine  =buffer[1076];
 		EditFontSize =buffer[1077];
 		DisableDebugMode =buffer[1078];
+
+		CB_PMINUS_MetaOpcode=bufshort[540];
+		CB_SHIFT_MetaOpcode=bufshort[541];
+		CB_ALPHA_MetaOpcode=bufshort[542];
 
 	} else {
 		MCSDelVar2((unsigned char*)"@CBASIC",(unsigned char*)fname);

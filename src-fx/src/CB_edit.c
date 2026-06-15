@@ -1329,11 +1329,17 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 				alphalock = 0 ; 
 			} else 
 			if ( keydown(KEY_PMINUS) ) {
-				key = '%';
+				key = CB_ALPHA_MetaOpcode;
 			}
 		}
 		
 		switch (key) {
+			case KEY_CHAR_PMINUS:
+				key = CB_PMINUS_MetaOpcode;
+				break;
+			case KEY_CHAR_ANS:
+				key = CB_SHIFT_MetaOpcode;
+				break;
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel
 					if ( SearchMode ) break;;

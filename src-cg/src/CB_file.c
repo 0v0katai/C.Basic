@@ -3287,6 +3287,10 @@ typedef struct {
 	bufshort[547]=CB_ColorIndexEditNum;		// Edit Numeric color (default blue)
 	bufshort[548]=CB_FavoriteColorIndex;	// Favorite Color  (default green)
 	bufshort[549]=CB_HelpFrameColorIndex;	// Help Frame Color  (default black)
+
+	bufshort[550]=CB_PMINUS_MetaOpcode;
+	bufshort[551]=CB_SHIFT_MetaOpcode;
+	bufshort[552]=CB_ALPHA_MetaOpcode;
 	
 	bufshort[1278/2]= VERSION;
 	
@@ -3516,6 +3520,10 @@ void LoadConfig1(){
 		CB_ColorIndexEditNum =bufshort[547];	// Edit Numeric color (default blue)
 		CB_FavoriteColorIndex=bufshort[548];	// Favorite Color  (default green)
 		CB_HelpFrameColorIndex=bufshort[549];	// Help Frame Color  (default black)
+
+		CB_PMINUS_MetaOpcode=bufshort[550];
+		CB_SHIFT_MetaOpcode=bufshort[551];
+		CB_ALPHA_MetaOpcode=bufshort[552];
 		
 	} else {
 		MCSDelVar2((unsigned char*)"@CBASIC",(unsigned char*)fname);

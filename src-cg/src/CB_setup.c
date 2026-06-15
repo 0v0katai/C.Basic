@@ -1849,6 +1849,31 @@ int SelectNum4( int n ) {		//
 	return n ; // ok
 }
 
+void SetMetaOpcode(char *text, uint16_t *opcode) {
+	char buffer[16];
+	PopUpWin(3);
+	FkeyClearAll();
+	sprintf(buffer,"Set %s\x87Meta", text);
+	locate( 3,3); Prints((unsigned char *)buffer);
+
+	uint16_t temp = *opcode;
+	if (temp < 0x100) {
+		buffer[0] = temp & 0xFF;
+		buffer[1] = '\0';
+	} else {
+		buffer[0] = temp >> 8 & 0xFF;
+		buffer[1] = temp & 0xFF;
+		buffer[2] = '\0';
+	}
+
+	InputStr_CB(3, 5, 16, buffer, 2, NULL, 0);
+	if (buffer[0] != '\0' && buffer[1] == '\0')
+		temp = (unsigned char)buffer[0];
+	else if (buffer[0] != '\0' && buffer[1] != '\0')
+		temp = (unsigned char)buffer[0] << 8 | (unsigned char)buffer[1];
+	*opcode = temp;
+}
+
 //--------------------------------------------------------------
 
 #define SETUP_Angle			0
@@ -1915,6 +1940,7 @@ int SelectNum4( int n ) {		//
 #define SETUP_DefaultWaitcount	61
 #define SETUP_G1MorG3M		62
 #define SETUP_Executemode	63
+#define SETUP_MetaOpcode	64
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
 
@@ -1955,7 +1981,7 @@ int SetupG(int select, int limit ){		// ----------- Setup
 	char DateStr[16];
 	char TimeStr[16];
 	int year,month,day,hour,min,sec;
-	int listmax=SETUP_Executemode;
+	int listmax=SETUP_MetaOpcode;
 	int mini;
 	int coloetmp=CB_ColorIndex;
 	unsigned short us,backcoloetmp=CB_BackColorIndex;
@@ -2322,6 +2348,9 @@ int SetupG(int select, int limit ){		// ----------- Setup
 		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
 			locate( 1,cnt-scrl); Prints((unsigned char*)"Execute mode:");		// 63
 			locate(14,cnt-scrl); Prints((unsigned char*)CBmode[CB_INTDefault]);
+		} cnt++;
+		if ( (0<(cnt-scrl))&&((cnt-scrl)<=7) ){
+			locate( 1,cnt-scrl); Prints((unsigned char*)"Meta opcode :[...]");		// 64
 		}
 		y = select-scrl;
 		Bdisp_AreaReverseVRAMx3(0, y*8, 125, y*8+7);	// reverse select line
@@ -2503,6 +2532,11 @@ int SetupG(int select, int limit ){		// ----------- Setup
 				Fkey_dispN( FKeyNo1, "DBL#");
 				Fkey_dispN( FKeyNo2, "INT%");
 				Fkey_dispN( FKeyNo3, "CPLX");
+				break;
+			case SETUP_MetaOpcode:
+				Fkey_dispR( FKeyNo1, "[(-)]");
+				Fkey_dispR( FKeyNo2, "[S]");
+				Fkey_dispR( FKeyNo3, "[A]");
 				break;
 			case SETUP_EditListChar:
 				Fkey_dispN( FKeyNo1, "List");
@@ -2904,6 +2938,9 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						CB_G1MorG3MDefault = 0 ; // auto
 						CB_G3M_TEXT = 0;
 						break;
+					case SETUP_MetaOpcode:
+						SetMetaOpcode("(-)", &CB_PMINUS_MetaOpcode);
+						break;
 					default:
 						break;
 				}
@@ -3170,6 +3207,9 @@ int SetupG(int select, int limit ){		// ----------- Setup
 						SetG1MorG3M( CB_G1MorG3M );
 						CB_G3M_TEXT = 0;
 						break;
+					case SETUP_MetaOpcode:
+						SetMetaOpcode("SHIFT", &CB_SHIFT_MetaOpcode);
+						break;
 					default:
 						break;
 				}
@@ -3297,6 +3337,9 @@ int SetupG(int select, int limit ){		// ----------- Setup
 					case SETUP_Executemode: // CB mode
 						CB_INTDefault = 2 ; // complex
 						CB_INT = CB_INTDefault;
+						break;
+					case SETUP_MetaOpcode:
+						SetMetaOpcode("ALPHA", &CB_ALPHA_MetaOpcode);
 						break;
 					default:
 						break;

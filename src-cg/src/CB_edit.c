@@ -1725,10 +1725,16 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 		
 		if ( alphastatus == 1 ) {
 			if ( keydown(KEY_PMINUS) ) {
-				key = '%';
+				key = CB_ALPHA_MetaOpcode;
 			}
 		}
 		switch (key) {
+			case KEY_CHAR_PMINUS:
+				key = CB_PMINUS_MetaOpcode;
+				break;
+			case KEY_CHAR_ANS:
+				key = CB_SHIFT_MetaOpcode;
+				break;
 			case KEY_CTRL_CATALOG:
 				goto catalog;
 			case KEY_CTRL_NOP:

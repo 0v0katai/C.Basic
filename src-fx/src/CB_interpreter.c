@@ -54,6 +54,10 @@ int    Previous_PY=-1   ;	// Plot Previous PY
 double Plot_X    =1e308 ;	// Plot Current X
 double Plot_Y    =1e308 ;	// Plot Current Y
 
+unsigned short CB_PMINUS_MetaOpcode = CB_PMINUS_MetaOpcode_Default;
+unsigned short CB_SHIFT_MetaOpcode = CB_SHIFT_MetaOpcode_Default;
+unsigned short CB_ALPHA_MetaOpcode = CB_ALPHA_MetaOpcode_Default;
+
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------

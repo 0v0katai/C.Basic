@@ -1199,6 +1199,31 @@ int SelectNum4( int n ) {		//
 	return n ; // ok
 }
 
+void SetMetaOpcode(char *text, uint16_t *opcode) {
+	char buffer[16];
+	PopUpWin(3);
+	FkeyClearAll();
+	sprintf(buffer,"Set %s\x87Meta", text);
+	locate( 3,3); Print((unsigned char *)buffer);
+
+	uint16_t temp = *opcode;
+	if (temp < 0x100) {
+		buffer[0] = temp & 0xFF;
+		buffer[1] = '\0';
+	} else {
+		buffer[0] = temp >> 8 & 0xFF;
+		buffer[1] = temp & 0xFF;
+		buffer[2] = '\0';
+	}
+
+	InputStr(3, 5, 16, buffer, 2, NULL, 0);
+	if (buffer[0] != '\0' && buffer[1] == '\0')
+		temp = (unsigned char)buffer[0];
+	else if (buffer[0] != '\0' && buffer[1] != '\0')
+		temp = (unsigned char)buffer[0] << 8 | (unsigned char)buffer[1];
+	*opcode = temp;
+}
+
 //--------------------------------------------------------------
 
 #define SETUP_Angle			0
@@ -1251,6 +1276,7 @@ int SelectNum4( int n ) {		//
 #define SETUP_RefrshCtlDD	47
 #define SETUP_DefaultWaitcount	48
 #define SETUP_Executemode	49
+#define SETUP_MetaOpcode	50
 
 const char *CBmode[]    ={"DBL#","INT%","CPLX"};
 
@@ -1267,7 +1293,8 @@ int SetupG(int select, int limit) {
         "Break Stop  :", "Exec TimeDsp:", "IfEnd Check :", "ACBreak     :", "Force Return:",
         "Key 1st time:", "Key Rep time:", "SkipUp/Down :", "Mat Dsp mode:", "Matrix base :",
         "DATE :"       , "TIME :"       , "Root Folder :", "Auto save   :", "Save as g1m :",
-        "Pict mode   :", "Storage mode:", "RefrshCtl DD:", "Wait count  :", "Execute mode:"
+        "Pict mode   :", "Storage mode:", "RefrshCtl DD:", "Wait count  :", "Execute mode:",
+    	"Meta opcode :"
     };
 
     /* Arguments */
@@ -1300,7 +1327,7 @@ int SetupG(int select, int limit) {
     char TimeStr[16];
     int year,month,day,hour,min,sec;
 	int cursor_pos = min(select, 6), scroll = max(0, select-6);
-	const int cursor_pos_max = 6, scroll_max = 43;
+	const int cursor_pos_max = 6, scroll_max = 44;
     int func_select = 0;
 
     strcpy( folderbuf, folder );	// current folder
@@ -1502,6 +1529,10 @@ int SetupG(int select, int limit) {
         			break;
         		case SETUP_Executemode:
             		Print((unsigned char*)CBmode[CB_INTDefault]);
+            		break;
+            	case SETUP_MetaOpcode:
+            		Print((unsigned char*)"[...]");
+            		break;
         	}
         }
 
@@ -1623,6 +1654,11 @@ int SetupG(int select, int limit) {
                 Fkey_dispN( FKeyNo2, "INT%");
                 Fkey_dispN( FKeyNo3, "CPLX");
                 break;
+        	case SETUP_MetaOpcode:
+        		Fkey_dispR( FKeyNo1, "[(-)]");
+        		Fkey_dispR( FKeyNo2, "[S]");
+        		Fkey_dispR( FKeyNo3, "[A]");
+        		break;
             case SETUP_EditListChar:
                 Fkey_dispN( FKeyNo1, "List");
                 Fkey_dispN( FKeyNo2, " \xE5\xB7");
@@ -1932,6 +1968,9 @@ int SetupG(int select, int limit) {
                         CB_INT = CB_INTDefault;
                         ComplexMode = 0;	// real
                         break;
+            		case SETUP_MetaOpcode:
+                		SetMetaOpcode("(-)", &CB_PMINUS_MetaOpcode);
+                		break;
                     default:
                         break;
                 }
@@ -2146,6 +2185,9 @@ int SetupG(int select, int limit) {
                         CB_INT = CB_INTDefault;
                         ComplexMode = 0;	// real
                         break;
+            		case SETUP_MetaOpcode:
+                		SetMetaOpcode("SHIFT", &CB_SHIFT_MetaOpcode);
+                		break;
                     default:
                         break;
                 }
@@ -2225,6 +2267,9 @@ int SetupG(int select, int limit) {
                         CB_INTDefault = 2 ; // complex
                         CB_INT = CB_INTDefault;
                         break;
+            		case SETUP_MetaOpcode:
+                		SetMetaOpcode("ALPHA", &CB_ALPHA_MetaOpcode);
+                		break;
                     default:
                         break;
                 }

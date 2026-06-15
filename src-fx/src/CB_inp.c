@@ -3788,7 +3788,17 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 		if ( lowercase  && ( 'A' <= key  ) && ( key <= 'Z' ) ) key+=('a'-'A');
 		
 		MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
+		if (CursorStyle == 0x3 || CursorStyle == 0x4 || CursorStyle == 0x9 || CursorStyle == 0xA)
+			if (keydown(KEY_PMINUS))
+				key = CB_ALPHA_MetaOpcode;
+
 		switch (key) {
+			case KEY_CHAR_PMINUS:
+				key = CB_PMINUS_MetaOpcode;
+				break;
+			case KEY_CHAR_ANS:
+				key = CB_SHIFT_MetaOpcode;
+				break;
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel+
 					alphalock = 0 ;

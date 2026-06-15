@@ -4450,10 +4450,16 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 		
 		if ( alphastatus == 1 ) {
 			if ( keydown(KEY_PMINUS) ) {
-				key = '%';
+				key = CB_ALPHA_MetaOpcode;
 			}
 		}
 		switch (key) {
+			case KEY_CHAR_PMINUS:
+				key = CB_PMINUS_MetaOpcode;
+				break;
+			case KEY_CHAR_ANS:
+				key = CB_SHIFT_MetaOpcode;
+				break;
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel+
 					alphalock = 0 ;

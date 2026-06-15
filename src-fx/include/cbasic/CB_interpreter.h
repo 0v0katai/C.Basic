@@ -46,6 +46,14 @@ extern char Refreshtime;	// Refresh time  n/128
 extern short DefaultWaitcount;	// wait control
 extern short Waitcount;			// current wait control
 extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
+
+#define CB_PMINUS_MetaOpcode_Default KEY_CHAR_PMINUS
+#define CB_SHIFT_MetaOpcode_Default KEY_CHAR_ANS
+#define CB_ALPHA_MetaOpcode_Default '%'
+
+extern unsigned short CB_PMINUS_MetaOpcode;
+extern unsigned short CB_SHIFT_MetaOpcode;
+extern unsigned short CB_ALPHA_MetaOpcode;
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------

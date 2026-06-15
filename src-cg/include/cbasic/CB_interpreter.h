@@ -71,6 +71,14 @@ extern short DefaultWaitcount;		// wait control
 extern short Waitcount;				// current wait control
 extern char  CommandInputMethod;	//	0:C.Basic  1:Genuine
 extern char XInputMethod;			//	0:0x90	   1:X
+
+#define CB_PMINUS_MetaOpcode_Default KEY_CHAR_PMINUS
+#define CB_SHIFT_MetaOpcode_Default KEY_CHAR_ANS
+#define CB_ALPHA_MetaOpcode_Default '%'
+
+extern unsigned short CB_PMINUS_MetaOpcode;
+extern unsigned short CB_SHIFT_MetaOpcode;
+extern unsigned short CB_ALPHA_MetaOpcode;
 //-----------------------------------------------------------------------------
 // Casio Basic Gloval variable
 //-----------------------------------------------------------------------------
@@ -451,7 +459,7 @@ extern	int AliasVarMAXLbl;
 extern	unsigned char IsExtVar;
 
 void CB_AliasVarClr();
-void CB_AliasVar( char *SRC ) ;	// AliasVar A=ƒ¿
+void CB_AliasVar( char *SRC ) ;	// AliasVar A=ï¿½ï¿½
 int GetVarName( char *SRC, int *ptr, char *name, int *len );
 void DeleteAliasVar( int i );
 
