@@ -4743,9 +4743,12 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 							MsgBoxPush( 1 );
 							locate(3,4); Prints((unsigned char*)"Hit GetKey Code");
 							KeyRecover();
-							GetKey_DisableMenu(&key);
+							int kcode1, kcode2;
+							GetKeyWait_OS(&kcode1, &kcode2,
+							KEYWAIT_HALTON_TIMEROFF,
+							0, 0, &(unsigned short){0});
 							MsgBoxPop();
-							sprintf(buf,"%d",CB_KeyCodeCnvt( key ) );
+							sprintf(buf,"%d", getkey_value(kcode1, kcode2 - 1));
 							EditPaste1( buffer, buf, &ptrX, MaxStrlen );
 						  key0:
 							key=0;

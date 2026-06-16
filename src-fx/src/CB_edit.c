@@ -2088,9 +2088,12 @@ unsigned int EditRun(int run){		// run:1 exec      run:2 edit
 							PopUpWin(1);
 							locate(3,4); Print((unsigned char*)"Hit Getkey Code");
 							KeyRecover();
-							GetKey_DisableMenu(&key);
+							int kcode1, kcode2;
+							Bkey_GetKeyWait(&kcode1, &kcode2,
+							KEYWAIT_HALTON_TIMEROFF,
+							0, 0, &(short){0});
 							MSGpop();
-							sprintf(buffer,"%d",CB_KeyCodeCnvt( key ) );
+							sprintf(buffer,"%d", getkey_value(kcode1, kcode2 - 1));
 							EditPaste( filebase, buffer, &csrPtr, &Undo );
 							key=0;
 							break;

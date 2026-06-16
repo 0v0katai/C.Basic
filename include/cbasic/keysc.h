@@ -69,6 +69,18 @@ enum {
     KEY_LIGHT  = 21,
     KEY_HELP   = 11,
 
+    /* fx-CG100 only */
+    KEY_ON          = KEY_F1,
+    KEY_HOME        = KEY_F2,
+    KEY_LTAB        = KEY_F3,
+    KEY_PGDOWN      = KEY_F4,
+    KEY_RTAB        = KEY_F5,
+    KEY_PGUP        = KEY_F6,
+    KEY_SETTINGS    = KEY_MENU,
+    KEY_OK          = KEY_EXE,
+    KEY_CATALOG     = KEY_HELP,
+    KEY_TOOLS       = KEY_OPTN,
+    KEY_SQRT        = KEY_LOG,
 };
 
 typedef volatile struct {
@@ -88,6 +100,7 @@ int iokbd_7305(int row);
 extern int (* iokbd_row)(int);
 
 int keydown(int key);
+int getkey_value(int lsb, int row);
 int getkey_all(uint8_t *scan);
 int getkey_lsb();
 

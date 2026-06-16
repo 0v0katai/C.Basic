@@ -2494,10 +2494,14 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 					case KEY_CHAR_3:
 							MsgBoxPush( 1 );
 							locate(3,4); Prints((unsigned char*)"Hit GetKey Code");
+							Bdisp_PutDisp_DD();
 							KeyRecover();
-							GetKey_DisableMenuCatalog(&key);
+							int kcode1, kcode2;
+							GetKeyWait_OS(&kcode1, &kcode2,
+								KEYWAIT_HALTON_TIMEROFF,
+								0, 0, &(unsigned short){0});
 							MsgBoxPop();
-							sprintf(buffer,"%d",CB_KeyCodeCnvt( key ) );
+							sprintf(buffer,"%d", getkey_value(kcode1, kcode2 - 1));
 							EditPaste( filebase, buffer, &csrPtr, &Undo );
 							key=0;
 							UpdateLineNum=1;
