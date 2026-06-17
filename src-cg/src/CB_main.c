@@ -92,7 +92,10 @@ void main() {
 //	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 //	HiddenRAM_MatAryInit();		// RAM Initialize
 
-	TVRAM = (char*)PictAry[0]+0x000F0000;
+	if (MPM)
+		TVRAM = (char*)0x8C600000;
+	else
+		TVRAM = (char*)PictAry[0]+0x000F0000;
 
 	GVRAM = TVRAM+0x28800;
 	memset( GVRAM, 0xFFFF, 0x28800);
