@@ -32,10 +32,6 @@ endif()
 
 set(CB_SOURCE_BASE "${CMAKE_CURRENT_SOURCE_DIR}/src-${CB_PLATFORM}")
 set(CB_LINKER_BASE "${CMAKE_CURRENT_SOURCE_DIR}/linker")
-set(LINKER "${CB_LINKER_BASE}/${CB_PLATFORM}.ld")
-if("${CMAKE_BUILD_TYPE}" STREQUAL "FastLoad")
-  set(LINKER "${CB_LINKER_BASE}/fastload.ld")
-endif()
 
 file(GLOB_RECURSE SOURCES "${CB_SOURCE_BASE}/src/*.[c|S]")
 file(GLOB_RECURSE COMMONS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.[c|S]")
@@ -84,6 +80,17 @@ set(COMPILE_OPTS
     -Wno-switch -Wno-shift-negative-value -Wno-sequence-point -Wno-pointer-compare
     -Wno-return-local-addr)
 target_compile_options(CBASIC PRIVATE ${COMPILE_OPTS})
+
+set(LINKER "${CB_LINKER_BASE}/${CB_PLATFORM}.ld")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "FastLoad")
+  if(NOT MPM)
+    set(LINKER "${CB_LINKER_BASE}/fastload.ld")
+  endif()
+#  string(TOLOWER ${PLATFORM} PLATFORM_LOWER)
+#  add_custom_command(TARGET CBASIC POST_BUILD
+#    COMMAND fxlink -pw ${CMAKE_CURRENT_SOURCE_DIR}/build-${PLATFORM_LOWER}-push/CBASIC.bin
+#    USES_TERMINAL VERBATIM)
+endif()
 
 set(LINK_OPTS
     -L ${CMAKE_CURRENT_SOURCE_DIR}/lib -T ${LINKER}

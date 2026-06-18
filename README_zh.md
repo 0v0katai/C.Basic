@@ -14,18 +14,19 @@ _此列表为适用机型的摘要，点击[此处](https://cbasic.fandom.com/wi
 --- | ---
 FX  | fx-9750G III, fx-9860, Graph 35+E II/75/85/95
 CG  | fx-CG10/20/50, Graph 90+E
+CW  | fx-CG100, fx-1AU Graph, Graph Math+
 
 ## 特色
 
 * 几乎无需任何修改，即可实现类似插件的性能
-* 可直接存取和编辑在SMEM和SD卡里的程序
+* 可直接存取和编辑在SMEM和SD卡（仅限配备SD卡槽的机型）里的程序
 * 具有主流集成开发环境特性的编辑器
   * 语法高亮
   * 缩进
   * 检查变量
   * JIT调试器
 * 承继CASIO Basic语法风格的扩展指令
-* 在fx-CG系列计算器上模拟G1M运行环境
+* 在fx-CG/CW系列计算器上模拟G1M运行环境
 
 ## 编译C.Basic
 
@@ -42,14 +43,19 @@ fxsdk build-fx
 fxlink -sw ./CBASIC.g1a
 ```
 
-### CG版本
+### CG/CW版本
+
+若需要编译CW版本，请先在CMakeList.txt里取消注释`set(MPM 1)`这一行。
 
 ```bash
-# 编译插件，然后使用UDisk2传送插件至fx-CG机型
+# 编译插件，然后使用UDisk2传送插件至fx-CG/CW机型
 fxsdk build-cg -s
 
-# 编译插件，然后传送插件至fx-CG50上的Add-in Push
+# 编译插件，然后传送插件至fx-CG50上的Add-in Push插件
 fxsdk build-cg-push -s
+
+# 编译插件，然后传送插件至fx-CG100上MPM的Add-in Push模块
+fxsdk build-cg && fxlink -pw build-cg/CBASIC.bin
 ```
 
 ## 注意事项

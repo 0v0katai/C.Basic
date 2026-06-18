@@ -2,7 +2,7 @@
 
 🌍 **English** | Français | 日本語 | [简体中文](README_zh.md)
 
-C.Basic ("c-dot-basic") is the reference implementation of CASIO Basic programming language in C.
+C.Basic ("c-dot-basic") is the reference implementation of CASIO Basic programming language written in C.
 
 In addition to speeding up your CASIO Basic programs, the add-in also lets you execute SDK functions on-the-go, without opening your PC and compile a full-fledged add-in.
 
@@ -14,18 +14,19 @@ Edition | Calculators
 ---     | ---
 FX      | fx-9750G III, fx-9860, Graph 35+E II/75/85/95
 CG      | fx-CG10/20/50, Graph 90+E
+CW      | fx-CG100, fx-1AU Graph, Graph Math+
 
 ## Features
 
 * Achieve add-in like performance with little to no modifications to existing CASIO Basic programs
-* Access and edit programs directly in SMEM and SD cards
+* Access and edit programs directly in SMEM and SD card (SD models only)
 * Robust editor with features from modern IDE:
   * Syntax highlighting
   * Indentation
   * Variable inspection
   * Just-In-Time debugging
 * Extended commands with CASIO Basic style syntax
-* Emulate G1M runtime environment in fx-CG calculators
+* Emulate G1M runtime environment in fx-CG/CW calculators
 
 ## Compiling C.Basic
 
@@ -41,14 +42,19 @@ fxsdk build-fx -s
 fxsdk build-fx && fxlink -sw CBASIC.g1a
 ```
 
-### CG Edition
+### CG/CW Edition
+
+Uncomment `set(MPM 1)` in CMakeList.txt first if you want to compile CW Edition.
 
 ```bash
-# Compile and send to fx-CG via UDisk2
+# Compile and send to fx-CG/CW via UDisk2
 fxsdk build-cg -s
 
-# Compile and load directly into Add-in Push on fx-CG50
+# Compile and load directly into Add-in Push (g3a) on fx-CG50
 fxsdk build-cg-push -s
+
+# Compile and load directly into Add-in Push (MPM) on fx-CG100
+fxsdk build-cg && fxlink -pw build-cg/CBASIC.bin
 ```
 
 ## Things to know
