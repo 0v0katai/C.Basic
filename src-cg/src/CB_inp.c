@@ -4447,18 +4447,25 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 		EditFontSize=EditFontSize_bk;
 		CB_ColorIndex=color;	// current color index reset
 		CB_BackColorIndex=backcolor;	// current color index reset
-		
-		if ( alphastatus == 1 ) {
-			if ( keydown(KEY_PMINUS) ) {
-				key = CB_ALPHA_MetaOpcode;
-			}
-		}
+
+		// if ( alphastatus == 1 ) {
+		// 	if ( keydown(KEY_PMINUS) ) {
+		// 		key = CB_ALPHA_MetaOpcode;
+		// 	}
+		// }
 		switch (key) {
+			#if !MPM
 			case KEY_CHAR_PMINUS:
+			#else
+			case 30067:
+			#endif
 				key = CB_PMINUS_MetaOpcode;
 				break;
 			case KEY_CHAR_ANS:
 				key = CB_SHIFT_MetaOpcode;
+				break;
+			case 30070:
+				key = CB_ALPHA_MetaOpcode;
 				break;
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel+

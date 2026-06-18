@@ -47,7 +47,11 @@ typedef struct{	//
 	int execptr;
 }beFiles;
 
+#if MPM
 bool exit_addin = false;
+#else
+# define exit_addin 0
+#endif
 
 //****************************************************************************
 void main() {
@@ -124,7 +128,7 @@ void main() {
 		CB_BackPict=0;				// back image
 		CB_ColorIndex=-1;			// current color index reset
 		CB_BackColorIndex=0xFFFF;	// Back color index (default White)
-		CB_FrameColor=0xFFFF;		// current frame color (default White)
+		CB_FrameColor=MPM ? 0 : 0xFFFF;		// current frame color (default black in fx-CG100, white otherwise)
 		DrawFrame( CB_FrameColor );
 
 		for (i=0; i<=ProgMax; i++) {
@@ -165,10 +169,12 @@ void main() {
 		memset( sname, 0,12 );
 		SetShortName( sname, filename) ; 
 		switch ( key ) {
-			case 30068:
+			#if MPM
+			case KEY_CTRL_QUIT:
 				exit_addin = true;
 				SaveFavorites();
 				break;
+			#endif
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 				ForceDebugMode=1;

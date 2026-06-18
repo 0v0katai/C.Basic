@@ -125,7 +125,7 @@ unsigned int SelectFile (char *filename)
 		}
 		
 		key = Explorer( size, folder ) ;
-		if ( key == 30068 ) break;
+		if (MPM && key == KEY_CTRL_QUIT) break;
 		if ( key == FileCMD_NEW  ) break ;	// new file
 		if ( key == FileCMD_MKDIR ) break ;	// Make Directory
 		if ( key == FileCMD_DELDIR ) break ;	// Delete Directory
@@ -852,10 +852,12 @@ unsigned int Explorer( int size, char *folder )
 		}
 
 		switch ( key ) {
-			case 30068:
-				return key;
+			#if MPM
+			case KEY_CTRL_MENU:
+				goto setup;
 			case KEY_CTRL_CATALOG:
-				goto catalog;
+				goto help;
+			#endif
 			case KEY_CTRL_ALPHA:
 				if ( alphastatus ) { 
 					alphastatus = 0;
@@ -870,7 +872,9 @@ unsigned int Explorer( int size, char *folder )
 				
 			case KEY_CTRL_EXIT:
 				if ( ( searchmode==0 ) && ( ( nofile ) || ( index == StartLine ) ) ) {
+					#if !MPM
 					key=KEY_CTRL_QUIT;
+					#endif
 					cont =0 ;
 					break;
 				}
@@ -1124,7 +1128,7 @@ unsigned int Explorer( int size, char *folder )
 							cont = 0 ;
 							break;
 					case KEY_CTRL_SETUP:
-						catalog:
+						setup:
 							i = StorageMode ;
 							selectSetup=SetupG(selectSetup, 0);
 							miniflag=(EditFontSize & 0x07);
@@ -1180,6 +1184,7 @@ unsigned int Explorer( int size, char *folder )
 					case KEY_CHAR_ROOT:
 							goto textmodejp;
 					case KEY_CTRL_CATALOG:
+						help:
 //							StatusArea_Run_sub( "== SEARCH MODE ==", CB_INTDefault, CB_G1MorG3MDefault );
 							PopUpWin(6);
 							CB_ColorIndex=0x001F;		// blue
