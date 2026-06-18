@@ -4461,9 +4461,6 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 			#endif
 				key = CB_PMINUS_MetaOpcode;
 				break;
-			case KEY_CHAR_ANS:
-				key = CB_SHIFT_MetaOpcode;
-				break;
 			case 30070:
 				key = CB_ALPHA_MetaOpcode;
 				break;
@@ -4662,6 +4659,9 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 //				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				KeyRecover();
 				switch (key) {
+					case KEY_CHAR_ANS:
+						key = CB_SHIFT_MetaOpcode;
+						break;
 					case KEY_CTRL_QUIT:
 							goto inpexit;
 							

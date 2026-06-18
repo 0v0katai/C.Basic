@@ -1739,9 +1739,6 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 			#endif
 				key = CB_PMINUS_MetaOpcode;
 				break;
-			case KEY_CHAR_ANS:
-				key = CB_SHIFT_MetaOpcode;
-				break;
 			case 30070:
 				key = CB_ALPHA_MetaOpcode;
 				break;
@@ -2339,6 +2336,9 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 				KeyRecover();
 //				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				switch (key) {
+					case KEY_CHAR_ANS:
+						key = CB_SHIFT_MetaOpcode;
+						break;
 					case KEY_CTRL_QUIT:
 							key = KEY_CTRL_EXIT;
 //							ClipStartPtr = -1 ;		// ClipMode cancel

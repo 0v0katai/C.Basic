@@ -3796,9 +3796,6 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 			case KEY_CHAR_PMINUS:
 				key = CB_PMINUS_MetaOpcode;
 				break;
-			case KEY_CHAR_ANS:
-				key = CB_SHIFT_MetaOpcode;
-				break;
 			case KEY_CTRL_NOP:
 					ClipStartPtr = -1 ;		// ClipMode cancel+
 					alphalock = 0 ;
@@ -3964,6 +3961,9 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 				GetKey_DisableMenu(&key);
 				if ( key==0 ) if ( keydown(KEY_3) ) key=KEY_CHAR_3;
 				switch (key) {
+					case KEY_CHAR_ANS:
+						key = CB_SHIFT_MetaOpcode;
+						break;
 					case KEY_CTRL_QUIT:
 						goto inpexit;
 						
