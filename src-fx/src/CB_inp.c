@@ -1376,12 +1376,14 @@ const short catalog_opcode[]={
 		0xF78C,	// SketchNormal
 		0xF78D,	// SketchThick
 		0xF7FB,	// Screen
+		0xF961,	// SetFont
 		0xF963,	// SetFOntMini
 		0x7F29,	// Sigma(
 		0xA1,	// sinh
 		0xB1,	// arcsinh
 		0xF7B0,	// SortA(
 		0xF7B1,	// SortB(
+		0xF943,	// Sprintf(
 		0xF74D,	// Square
 		0xF706,	// Step
 		0xF79D,	// StoCapt
@@ -1555,7 +1557,7 @@ const short catalog_opcode[]={
 		0xF9CA,	// _Rect 
 		0xF9D8,	// _Test
 		0xF9C9,	// _Vertical
-		0xF9D4,	// _Vscroll 
+		0xF9D4,	// _Vscroll
 };
 
 
@@ -1703,10 +1705,10 @@ const short catalog_opcode_ext[]={
 		0xF9CC, // _Fporgon 
 		0xF9C8,	// _Horizontal
 		0xF9D3,	// _Hscroll
-		0xF9C7,	// _Line 
-		0xF9C5,	// _Point 
+		0xF9C7,	// _Line
 		0xF9C4,	// _Pixel 
 		0xF9C6,	// _PixelTest(
+		0xF9C5,	// _Point
 		0xF9CB,	// _Polygon
 		0xF9CA,	// _Rect 
 		0xF9D8,	// _Test
@@ -1819,7 +1821,6 @@ int CB_Catalog(void) {
 			case KEY_CTRL_F1:
 			case KEY_CTRL_EXE:
 				return oplist[(*select)] & 0xFFFF;
-				break;
 
 			case KEY_CTRL_AC:
 				search[0]='\0';
@@ -1828,16 +1829,14 @@ int CB_Catalog(void) {
 
 			case KEY_CTRL_DEL:
 				if (searchmode) {
-					if (CursorStyle < 0x6) {		// insert mode
-						PrevOpcode(search, &csrX);
-					}
+					if (CursorStyle < 0x6) PrevOpcode(search, &csrX);   // insert mode
 					DeleteOpcode1(search, 8, &csrX);
 				}
 				break;
 
 			case KEY_CTRL_LEFT:
 				if (searchmode) {
-					PrevOpcode( search, &csrX );
+					PrevOpcode(search, &csrX);
 					break;
 				}
 				searchmode = 1;
