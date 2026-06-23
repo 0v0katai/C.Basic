@@ -620,6 +620,7 @@ unsigned int Explorer( int size, char *folder )
 		if ( miniflag ) { n_line=8; yk=18; } else { n_line=6; yk=24; }
 //		EnableColor( 1 );	// full color mode 
 //		DrawFrame( 0xFFFF  );
+		alphastatus = Setup_GetEntry(0x14);
 		InsertMode = Setup_GetEntry(0x15) == 02 ;	// 01:OverWrite   02:Insert
 
 		FavCount=0;
