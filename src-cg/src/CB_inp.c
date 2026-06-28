@@ -4455,6 +4455,9 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 		// }
 		switch (key) {
 			#if !MPM
+			case KEY_CTRL_CATALOG:
+				key = CB_Catalog();
+				break;
 			case KEY_CHAR_PMINUS:
 			#else
 			case 30067:
@@ -4659,6 +4662,9 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 //				MiniCursorSetFlashMode( 0 );		// mini cursor flashing off
 				KeyRecover();
 				switch (key) {
+					case KEY_CTRL_CATALOG:
+						key = CB_Catalog();
+						break;
 					case KEY_CHAR_ANS:
 						key = CB_SHIFT_MetaOpcode;
 						break;

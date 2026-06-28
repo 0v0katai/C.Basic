@@ -4048,6 +4048,9 @@ int InputStrSubC(int px, int py, int width, int ptrX, char* buffer, int MaxStrle
 							EditPaste1( buffer, buf, &ptrX, MaxStrlen );
 							key=0;
 							break;
+					case KEY_CHAR_5:
+						key = CB_Catalog();
+						break;
 					default:
 							break;
 				}
