@@ -1750,7 +1750,6 @@ int CB_Catalog(void) {
 	unsigned int key;
 	char search[10]="";
 	int CursorStyle;
-	int searchmode=1;
 	int csrX=0;
 
 	CursorStyle = Cursor_GetFlashStyle();
@@ -1782,26 +1781,23 @@ int CB_Catalog(void) {
 			if (check_ext_opcode(op))
 				CB_Print(17,2+i,(unsigned char *)"(ext)");
 		}
-		if (searchmode) {
-			locate(12, 1);Print((unsigned char*)"[        ]");
-			locate(13,1);Print( (unsigned char*)search );	// search string
+
+		locate(12, 1);Print((unsigned char*)"[        ]");
+		locate(13,1);Print( (unsigned char*)search );	// search string
 //				if ( lowercase  ) Fkey_dispN_aA( FKeyNo4, "A<>a"); else Fkey_dispN_Aa( FKeyNo4, "A<>a");
 //				Fkey_Icon( FKeyNo5, 673 );	//	Fkey_dispR( FKeyNo5, "CHAR");
 //				Fkey_Icon( FKeyNo6, 402 );	//	Fkey_DISPN( FKeyNo6, " / ");
-		}
 
 		int y = *select - seltop + 1;
 		Bdisp_AreaReverseVRAM(0, y*8, 125, y*8+7);	// reverse *select line
 
-		if (searchmode) {
-			locate(13+csrX,1);
-			Cursor_SetFlashMode(1);			// cursor flashing on
-			CursorStyle=Cursor_GetFlashStyle();
-			if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
-			if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
-			if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
-			if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
-		}
+		locate(13+csrX,1);
+		Cursor_SetFlashMode(1);			// cursor flashing on
+		CursorStyle=Cursor_GetFlashStyle();
+		if ( ( CursorStyle==0x3 ) && lowercase != 0 ) Cursor_SetFlashOn(0x4);		// lowercase  cursor
+		if ( ( CursorStyle==0x4 ) && lowercase == 0 ) Cursor_SetFlashOn(0x3);		// upperrcase cursor
+		if ( ( CursorStyle==0x9 ) && lowercase != 0 ) Cursor_SetFlashOn(0xA);		// lowercase  cursor
+		if ( ( CursorStyle==0xA ) && lowercase == 0 ) Cursor_SetFlashOn(0x9);		// upperrcase cursor
 
 		apply_alphalock();
 		// Bdisp_PutDisp_DD();
@@ -1828,26 +1824,17 @@ int CB_Catalog(void) {
 				break;
 
 			case KEY_CTRL_DEL:
-				if (searchmode) {
-					if (CursorStyle < 0x6) PrevOpcode(search, &csrX);   // insert mode
-					DeleteOpcode1(search, 8, &csrX);
-				}
+				if (CursorStyle < 0x6) PrevOpcode(search, &csrX);   // insert mode
+				DeleteOpcode1(search, 8, &csrX);
 				break;
 
 			case KEY_CTRL_LEFT:
-				if (searchmode) {
-					PrevOpcode(search, &csrX);
-					break;
-				}
-				searchmode = 1;
+				PrevOpcode(search, &csrX);
+				break;
 				break;
 
 			case KEY_CTRL_RIGHT:
-				if (searchmode) {
-					if (search[csrX] != 0x00) NextOpcode( search, &csrX );
-						break;
-				}
-				searchmode=1;
+				if (search[csrX] != 0x00) NextOpcode( search, &csrX );
 				break;
 
 			case KEY_CTRL_UP:
@@ -1871,7 +1858,6 @@ int CB_Catalog(void) {
 			if (InsertOpcode1(search, 8, csrX, key) == 0)
 				NextOpcode(search, &csrX);
 			if (strlen(search)) {
-				searchmode = 1;
 				int longest_match = -1;
 				for (int i = 0; i < opNum; i++) {
 					CB_OpcodeToStr(oplist[i], tmpbuf);
