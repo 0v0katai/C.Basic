@@ -16,7 +16,7 @@ void FKey_Display_color( int n, unsigned int *data, int color, int backcolor ){
 	if ( color>=0 ) {
 		CB_ColorIndex=color; 
 	} else {
-		CB_ColorIndex=colortable[ Bdisp_FkeyColor( 1, 0) ] ;	// get system fkey color
+		CB_ColorIndex=colortable[ MPM ? 0 : Bdisp_FkeyColor(1, 0) ] ;	// get system fkey color
 	}
 	ML_bmp_over((unsigned char *)data, n*64, 168, 64, 24, 0 );
 	CB_ColorIndex=col;
@@ -25,14 +25,57 @@ void FKey_Display_color( int n, unsigned int *data, int color, int backcolor ){
 
 //---------------------------------------------------------------------------------------------
 
+#if MPM
+void GetFKeyPtr(int IconNo, void **iresult) {
+	if (IconNo == 1198 || IconNo == 1219 ||
+		IconNo == 1226 || IconNo == 1227 ||
+		IconNo == 1229 || IconNo == 1230)
+		IconNo = 0;
+	else if (IconNo > 1230)
+		IconNo -= 6;
+	else if (IconNo > 1229)
+		IconNo -= 5;
+	else if (IconNo > 1227)
+		IconNo -= 4;
+	else if (IconNo > 1226)
+		IconNo -= 3;
+	else if (IconNo > 1219)
+		IconNo -= 2;
+	else if (IconNo > 1198)
+		IconNo -= 1;
+	*iresult = (void *)(0x8C500000 + 192 * IconNo);
+}
+
+void FKey_Display(int n, void *iresult) {
+	// uint16_t *VRAM = (uint16_t *)PictAry[0] + n * 64 + 192 * 384;
+	// const uint8_t *icon_ptr = iresult;
+	//
+	// const uint32_t fg_color = 0x0000;
+	// const uint32_t bg_color = 0xFFFF;
+	//
+	// for (int y = 0; y < 24; y++) {
+	// 	for (int b = 0; b < 8; b++) {
+	// 		uint8_t byte_data = *icon_ptr++;
+	// 		for (int bit = 0; bit < 8; bit++)
+	// 			*VRAM++ = (byte_data & (0x80 >> bit)) ? fg_color : bg_color;
+	// 	}
+	// 	VRAM += 320;
+	// }
+	FKey_Display_color(n, iresult, COLOR_BLACK, COLOR_WHITE);
+}
+#endif
+
 void Fkey_Icon(int n, int IconNo){
-	unsigned int* iresult;	
-	if ( ( IconNo==1325 ) && (OS_Version()<=300) )  { Fkey_dispN( n, "Extd"); return ; }
-	GetFKeyPtr( IconNo, &iresult);	//  
+	void *iresult;
+	if (!MPM && IconNo==1325 && OS_Version() <= 300) {
+		Fkey_dispN(n, "Extd");
+		return ;
+	}
+	GetFKeyPtr(IconNo, &iresult);
 	FKey_Display(n, iresult);
 }
 void Fkey_Icon_color(int n, int IconNo, int color, int backcolor){
-	unsigned int* iresult;	
+	void *iresult;
 	if ( 
 //		 ( ( IconNo>1248+6 ) && (OS_Version()<=104) ) ||
 //		 ( ( IconNo>1276+6 ) && (OS_Version()<=300) ) ||
@@ -106,13 +149,13 @@ void Fkey_ClearBox( int n, int rev ){	//
 }
 
 void Fkey_Clear(int n) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0, &iresult);	// 
 		FKey_Display(n, iresult);
 }
 
 void Fkey_dispN(int n,char *buf) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0476, &iresult);	//  .  		,white
 		FKey_Display(n, iresult);
 		Fkey_ClearBox( n, 0 );
@@ -121,7 +164,7 @@ void Fkey_dispN(int n,char *buf) {
 }
 /*
 void Fkey_dispN2(int n,char *buf) {
-		unsigned int* iresult;	
+		void *iresult;	
 		GetFKeyPtr(0x0476, &iresult);	//  .  		,white
 		FKey_Display(n, iresult);
 		Fkey_ClearBox( n, 0 );
@@ -130,7 +173,7 @@ void Fkey_dispN2(int n,char *buf) {
 }
 */
 void Fkey_dispRR(int n,char *buf) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0190, &iresult);	//  t		,black
 		FKey_Display(n, iresult);
 		Fkey_ClearBox( n, 1 );
@@ -142,7 +185,7 @@ void Fkey_dispRS(int n,char *buf ) {	// black select
 		PrintMiniXY(n*64+3, 7*24+4, buf, COLOR_WHITE, GetFkeyColor(n), 0, 57 );
 }
 void Fkey_dispR(int n,char *buf) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0334, &iresult);	//  t		,black/
 		FKey_Display(n, iresult);
 		Fkey_ClearBox( n, 1 );
@@ -150,7 +193,7 @@ void Fkey_dispR(int n,char *buf) {
 		Fkey_Line3( n );
 }
 void Fkey_DISPN(int n,char *buf) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0476, &iresult);	//  .  		,white
 		FKey_Display(n, iresult);
 		Fkey_ClearBox( n, 0 );
@@ -159,7 +202,7 @@ void Fkey_DISPN(int n,char *buf) {
 }
 
 void Fkey_DISPR(int n,char *buf) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0190, &iresult);	//  t		,black
 		FKey_Display(n, iresult);
 		Fkey_ClearBox( n, 1 );
@@ -204,7 +247,7 @@ void Fkey_extend( int n, char *buf, int extend, int ofset, int colorflag ){
 }
 
 void Fkey_dispN_ext(int n,char *buf, int ofset, int extend, int color, int backcolor ) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0476, &iresult);	//  .  		,white
 		FKey_Display_color(n, iresult, color, backcolor);
 		Fkey_ClearBox( n, 0 );
@@ -212,7 +255,7 @@ void Fkey_dispN_ext(int n,char *buf, int ofset, int extend, int color, int backc
 		Fkey_Line2( n+extend );
 }
 void Fkey_dispR_ext(int n,char *buf, int ofset, int extend, int color, int backcolor ) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0334, &iresult);	//  t		,black/
 		FKey_Display_color(n, iresult, color, backcolor);
 		Fkey_ClearBox( n, 1 );
@@ -221,7 +264,7 @@ void Fkey_dispR_ext(int n,char *buf, int ofset, int extend, int color, int backc
 }
 
 void Fkey_dispRR_ext(int n,char *buf, int ofset, int extend, int color, int backcolor ) {
-		unsigned int* iresult;	
+		void *iresult;
 		GetFKeyPtr(0x0190, &iresult);	//  t		,black
 		FKey_Display_color(n, iresult, color, backcolor);
 		Fkey_ClearBox( n, 1 );
@@ -234,7 +277,7 @@ void Fkey_dispRS_ext(int n,char *buf, int ofset, int extend, int color, int back
 }
 
 void Fkey_dispNInit(int n) {
-		unsigned int* iresult;
+		void *iresult;
 		GetFKeyPtr(0x005f, &iresult);	//INITIAL 	,white
 		FKey_Display(3, iresult);
 }		

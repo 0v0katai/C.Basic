@@ -39,6 +39,9 @@ void CG20_overclock(){
 	}
 }
 
+#define ALIGN_4K(addr) (((addr) + 4095) & ~4095)
+#define FKEYICON_ADDRESS 0x8C500000
+#define FKEYICON_SIZE 269184
 
 #define BE_MAX 32
 
@@ -71,7 +74,7 @@ void main() {
 
 	__printf_enable_fp();
 	Set_Timer_id();
-	
+
 	SetVeiwWindowInit();
 	for ( i=0; i<6; i++) VWinflag[i]=0;
 //	Previous_X=1e308; Previous_Y=1e308; 	// ViewWindow Previous XY init
@@ -96,9 +99,15 @@ void main() {
 //	HiddenRAM_MatAryStore();	// MatAry ptr -> HiddenRAM
 //	HiddenRAM_MatAryInit();		// RAM Initialize
 
-	if (MPM)
+	if (MPM) {
+		memset((void *)FKEYICON_ADDRESS, 0, FKEYICON_SIZE);
+		int fd = Bfile_OpenFile(u"\\\\fls0\\fkeyicon.bin", READ_SHARE);
+		if (fd >= 0) {
+			Bfile_ReadFile(fd, (void *)FKEYICON_ADDRESS, FKEYICON_SIZE, 0);
+			Bfile_CloseFile(fd);
+		}
 		TVRAM = (char*)0x8C600000;
-	else
+	} else
 		TVRAM = (char*)PictAry[0]+0x000F0000;
 
 	GVRAM = TVRAM+0x28800;

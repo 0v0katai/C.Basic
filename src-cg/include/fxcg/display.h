@@ -204,7 +204,7 @@ void RealIcon( unsigned int );
 
 //Other:
 void FKey_Display( int, void* );
-void GetFKeyPtr( int, void* );
+void GetFKeyPtr( int, void** );
 void DispInt( int, int ); //not sure what this does, doesn't seem to be documented anywhere. will test some day (gbl08ma)
 int LocalizeMessage1( int msgno, char*result );
 int SMEM_MapIconToExt( unsigned char*filename, unsigned short*foldername, unsigned int*msgno, unsigned short*iconbuffer ); // despite starting with SMEM, this is mostly a graphical function used to get icons for different file types.
