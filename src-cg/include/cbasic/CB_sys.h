@@ -3,7 +3,15 @@
 #include "fx9860.h"
 #include "fxcg/file.h"
 
-#define VRAMSIZE 0x28800
+#define ALIGN_4K(addr) (((addr) + 4095) & ~4095)
+#define FKEYICON_MPM 0x8C500000
+#define FKEYICON_SIZE 269184
+#define GB16_MPM ALIGN_4K(FKEYICON_MPM + FKEYICON_SIZE)
+#define GB16_SIZE 288992
+#define GB24_MPM ALIGN_4K(GB16_MPM + GB16_SIZE)
+#define GB24_SIZE 650232
+#define VRAM_MPM ALIGN_4K(GB24_MPM + GB24_SIZE)
+#define VRAM_SIZE 0x28800
 #define VRAMSIZE_FX 1024
 
 int OS_Version();	// 03.10.0010 -> 0310
@@ -208,11 +216,11 @@ void StatusArea_Time();
 int GetColorIndex( int color ) ;
 int GetColor2Index( int colorRGB ) ;
 
-//#define	SaveDisp(SAVEDISP_PAGE1)	memcpy(vbuf,(char*)PictAry[0],VRAMSIZE)
-//#define	RestoreDisp(SAVEDISP_PAGE1)	memcpy((char*)PictAry[0],vbuf,VRAMSIZE)
+//#define	SaveDisp(SAVEDISP_PAGE1)	memcpy(vbuf,(char*)PictAry[0],VRAM_SIZE)
+//#define	RestoreDisp(SAVEDISP_PAGE1)	memcpy((char*)PictAry[0],vbuf,VRAM_SIZE)
 
-//	memcpy(vbuf,(char*)PictAry[0],VRAMSIZE);	//	SaveDisp(SAVEDISP_PAGE1);
-//	memcpy((char*)PictAry[0],vbuf,VRAMSIZE);	//	RestoreDisp(SAVEDISP_PAGE1);
+//	memcpy(vbuf,(char*)PictAry[0],VRAM_SIZE);	//	SaveDisp(SAVEDISP_PAGE1);
+//	memcpy((char*)PictAry[0],vbuf,VRAM_SIZE);	//	RestoreDisp(SAVEDISP_PAGE1);
 
 void ProgressBar2( unsigned char*heading, int current, int max );
 void ProgressBar0( int P1, int P2, int P3, int current, int max );

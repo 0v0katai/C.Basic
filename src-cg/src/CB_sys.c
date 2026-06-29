@@ -234,10 +234,10 @@ void SaveDisp( int n ){
 //	SaveVRAM_1();
 	switch ( n ) {
 	case SAVEDISP_PAGE1:
-		memcpy( BufVRAM, PictAry[0], VRAMSIZE );
+		memcpy( BufVRAM, PictAry[0], VRAM_SIZE );
 		break;
 	case SAVEDISP_PAGE2:
-		memcpy( WorkBuf, PictAry[0], VRAMSIZE );
+		memcpy( WorkBuf, PictAry[0], VRAM_SIZE );
 		break;
 	}
 }
@@ -246,10 +246,10 @@ void RestoreDisp(int n){
 //	LoadVRAM_1();
 	switch ( n ) {
 	case SAVEDISP_PAGE1:
-		memcpy( PictAry[0], BufVRAM, VRAMSIZE );
+		memcpy( PictAry[0], BufVRAM, VRAM_SIZE );
 		break;
 	case SAVEDISP_PAGE2:
-		memcpy( PictAry[0], WorkBuf, VRAMSIZE );
+		memcpy( PictAry[0], WorkBuf, VRAM_SIZE );
 		break;
 	}
 //	unsigned short *buf=(unsigned short *)BufVRAM, *vram=(unsigned short *)PictAry[0];

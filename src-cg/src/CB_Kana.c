@@ -31,6 +31,49 @@ static unsigned char ExtAnkFontFX[96][8];			// Ext Ank font FX
 static unsigned char ExtAnkFontFXmini[96][1+7];		// Ext Ank font FX
 static unsigned char ExtKanaFontFX[128][8];			// Ext Kana & Gaiji font FX
 static unsigned char ExtKanaFontFXmini[128][1+7];	// Ext Kana & Gaiji font FX
+
+#if MPM
+void *GetGBGlyphPtr(uint16_t glyph_no, uint16_t *glyph_info) {
+	int high_byte = glyph_no >> 8;
+	int low_byte = glyph_no & 0xFF;
+	if (glyph_no < 0x8140 || 0xFFFE < glyph_no ||
+		low_byte == 0x7F || low_byte == 0xFF) {
+		if (high_byte == 0 && 0x1F < low_byte && low_byte < 0x7F) {
+			*glyph_info = 18;
+			return GetGlyphPtr(low_byte);
+		}
+	} else {
+		if (low_byte >= 0xA0 && low_byte <= 0xFE) {
+			*glyph_info = 24;
+			return (void *)(GB24_MPM + (high_byte - 0xA0) * 95 * 72
+							+ (low_byte - 0x9F) * 72
+							+ ((high_byte >> 4) - 0xA) * 72);
+		}
+	}
+	*glyph_info = 0;
+	return 0;
+}
+
+void *GetGBMiniGlyphPtr(uint16_t glyph_no, uint16_t *glyph_info) {
+	int high_byte = glyph_no >> 8;
+	int low_byte = glyph_no & 0xFF;
+	if (glyph_no < 0x8140 || 0xFFFE < glyph_no ||
+		low_byte == 0x7F || low_byte == 0xFF) {
+		if (high_byte == 0 && 0x1F < low_byte && low_byte < 0x7F)
+			return GetMiniGlyphPtr_MB(low_byte, glyph_info);
+	} else {
+		if (low_byte >= 0xA0 && low_byte <= 0xFE) {
+			*glyph_info = 16;
+			return (void *)(GB16_MPM + (high_byte - 0xA0) * 95 * 32
+							+ (low_byte - 0x9F) * 32
+							+ ((high_byte >> 4) - 0xA) * 32);
+		}
+	}
+	*glyph_info = 0;
+	return 0;
+}
+#endif
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 // Standard font 18x24  fx(6x8)

@@ -39,10 +39,6 @@ void CG20_overclock(){
 	}
 }
 
-#define ALIGN_4K(addr) (((addr) + 4095) & ~4095)
-#define FKEYICON_ADDRESS 0x8C500000
-#define FKEYICON_SIZE 269184
-
 #define BE_MAX 32
 
 typedef struct{	//
@@ -100,20 +96,35 @@ void main() {
 //	HiddenRAM_MatAryInit();		// RAM Initialize
 
 	if (MPM) {
-		memset((void *)FKEYICON_ADDRESS, 0, FKEYICON_SIZE);
+		memset((void *)FKEYICON_MPM, 0, FKEYICON_SIZE);
 		int fd = Bfile_OpenFile(u"\\\\fls0\\fkeyicon.bin", READ_SHARE);
 		if (fd >= 0) {
-			Bfile_ReadFile(fd, (void *)FKEYICON_ADDRESS, FKEYICON_SIZE, 0);
+			Bfile_ReadFile(fd, (void *)FKEYICON_MPM, FKEYICON_SIZE, 0);
 			Bfile_CloseFile(fd);
 		}
-		TVRAM = (char*)0x8C600000;
+
+		memset((void *)GB16_MPM, 0, GB16_SIZE);
+		fd = Bfile_OpenFile(u"\\\\fls0\\gb16.bin", READ_SHARE);
+		if (fd >= 0) {
+			Bfile_ReadFile(fd, (void *)GB16_MPM, GB16_SIZE, 0);
+			Bfile_CloseFile(fd);
+		}
+
+		memset((void *)GB24_MPM, 0, GB24_SIZE);
+		fd = Bfile_OpenFile(u"\\\\fls0\\gb24.bin", READ_SHARE);
+		if (fd >= 0) {
+			Bfile_ReadFile(fd, (void *)GB24_MPM, GB24_SIZE, 0);
+			Bfile_CloseFile(fd);
+		}
+
+		TVRAM = (char*)VRAM_MPM;
 	} else
 		TVRAM = (char*)PictAry[0]+0x000F0000;
 
-	GVRAM = TVRAM+0x28800;
-	memset( GVRAM, 0xFFFF, 0x28800);
+	GVRAM = TVRAM+VRAM_SIZE;
+	memset( GVRAM, 0xFFFF, VRAM_SIZE);
 	BufVRAM = (char*)GetVRAMWorkBuffer();
-	memset( BufVRAM, 0, 0x28800);
+	memset( BufVRAM, 0, VRAM_SIZE);
 
 	PictBuf = GVRAM;
 

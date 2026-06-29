@@ -994,7 +994,7 @@ unsigned char *  HiddenRAM_mallocPict( int pictNo ){
 	if ( IsCG20 ) {
 		return (unsigned char*)GVRAM+0x28800 + 1024*(pictNo-1);	// 1 bit pixel
 	} 
-	ptr = (unsigned char*)HiddenRAM_End-VRAMSIZE*(pictNo);		//	16bit pixel
+	ptr = (unsigned char*)HiddenRAM_End-VRAM_SIZE*(pictNo);		//	16bit pixel
 	return ptr;
 }
 
@@ -1085,7 +1085,7 @@ void HiddenRAM_MatAryInit(){	// HiddenRAM Initialize
 		OplistRecentFreq=(toplistrecentfreq *)((char*)(HIDDENRAM_TOP+16 -(IsEmu)));
 		OplistRecent    =(int *)OplistRecentMem;
 		InitOpcodeRecent();
-		MatAry = (matary *) (HiddenRAM_End - VRAMSIZE*(21+ExtendPict) - sizeof(matary)*MatAryMax );
+		MatAry = (matary *) (HiddenRAM_End - VRAM_SIZE*(21+ExtendPict) - sizeof(matary)*MatAryMax );
 		if ( HiddenRAM_MatAryRestore() ) return ;				// hidden RAM ready
 		HiddenRAM_MatTopPtr = (char*)MatAry;
 		HiddenRAM_MatAryStore();
