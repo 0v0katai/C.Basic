@@ -273,5 +273,7 @@ void main() {
 			if ( ProgfileAdrs[i] != NULL ) HiddenRAM_freeProg(ProgfileAdrs[0]);		// Prog memory init	
 		}	
 	}
+	if (MPM)
+		EnableStatusArea(3);
 }
 
