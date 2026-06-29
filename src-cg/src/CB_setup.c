@@ -95,9 +95,12 @@ int CB_Version() {	// Version
 	return VERSION;
 }
 int OS_VersionMinor() {
-	int OS3;
-	GlibGetOSVersionInfo(NULL, NULL, &OS3, NULL);
-	return (OS3>>28)*1000 + ((OS3>>24)&0xF)*100 + ((OS3>>20)&0xF)*10 + ((OS3>>16)&0xF);
+	// int OS3;
+	// GlibGetOSVersionInfo(NULL, NULL, &OS3, NULL);
+	// return (OS3>>28)*1000 + ((OS3>>24)&0xF)*100 + ((OS3>>20)&0xF)*10 + ((OS3>>16)&0xF);
+	extern uint16_t OSVersionMinorHex(void);
+	uint16_t minor = OSVersionMinorHex();
+	return (minor >> 12) * 1000 + (minor >> 8 & 0xF) * 100 + (minor >> 4 & 0xF) * 10 + (minor & 0xF);
 }
 
 int System( int n ) {
@@ -130,15 +133,20 @@ int System( int n ) {
 		case -2:
 			r=OS_Version();
 			break;
-		case -1:	// CG1020 / CG50
-			r=0;
-			a=(int)GetVRAMAddress();
-			if ( a == 0xA8000000 ) {
-				r=20; if ( IsCG10() ) r=10;
-			}
-			if ( a == 0xAC000000 ) {
-				r=50;
-				if ( OS_VersionMinor()/1000 == 2 ) r=90;	// Graph 90+e
+		case -1:	// Model identifier
+			if (MPM) {
+				r = 100;
+			} else {
+				r = 0;
+				a = (int)GetVRAMAddress();
+				if (a == 0xA8000000) {
+					r = 20;
+					if (IsCG10()) r = 10;
+				}
+				if (a == 0xAC000000) {
+					r = 50;
+					if (OS_VersionMinor() / 1000 == 2) r = 90;	// Graph 90+e
+				}
 			}
 			break;
 		case 0:	// Version
