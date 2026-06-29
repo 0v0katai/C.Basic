@@ -1,7 +1,13 @@
 #include <stddef.h>
+#include <stdbool.h>
 
 #include "fx9860.h"
 #include "fxcg/file.h"
+#include "config.h"
+
+#if MPM
+extern bool exit_addin;
+#endif
 
 #define ALIGN_4K(addr) (((addr) + 4095) & ~4095)
 #define FKEYICON_MPM 0x8C500000

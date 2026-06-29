@@ -125,7 +125,9 @@ unsigned int SelectFile (char *filename)
 		}
 		
 		key = Explorer( size, folder ) ;
-		if (MPM && key == KEY_CTRL_QUIT) break;
+		#if MPM
+		if (exit_addin && key == KEY_CTRL_QUIT) break;
+		#endif
 		if ( key == FileCMD_NEW  ) break ;	// new file
 		if ( key == FileCMD_MKDIR ) break ;	// Make Directory
 		if ( key == FileCMD_DELDIR ) break ;	// Delete Directory
@@ -873,9 +875,7 @@ unsigned int Explorer( int size, char *folder )
 				
 			case KEY_CTRL_EXIT:
 				if ( ( searchmode==0 ) && ( ( nofile ) || ( index == StartLine ) ) ) {
-					#if !MPM
 					key=KEY_CTRL_QUIT;
-					#endif
 					cont =0 ;
 					break;
 				}
@@ -1124,6 +1124,9 @@ unsigned int Explorer( int size, char *folder )
 							key = 0;
 							break;
 					case KEY_CTRL_QUIT:
+						#if MPM
+						exit_addin = true;
+						#endif
 						update:
 							FileListUpdate = 1 ; // 
 							cont = 0 ;

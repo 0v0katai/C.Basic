@@ -189,12 +189,6 @@ void main() {
 		memset( sname, 0,12 );
 		SetShortName( sname, filename) ; 
 		switch ( key ) {
-			#if MPM
-			case KEY_CTRL_QUIT:
-				exit_addin = true;
-				SaveFavorites();
-				break;
-			#endif
 			case FileCMD_DebugRUN:
 				DebugMode=9; // debug mode start
 				ForceDebugMode=1;
