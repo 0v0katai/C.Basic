@@ -2119,6 +2119,7 @@ int CB_Disp( char *SRC ){		// Disp "A=",A
 	
 	CB_ChangeTextMode( SRC );	// Select Text Mode
 	if ( SRC[ExecPtr] == '!' ) { ExecPtr++; extAnkfont=0; }		// Force OS Font
+	EnableDisableGB( SRC );
 	loop:
 		if ( CursorX >1 ) Scrl_Y();
 		buffer2[0]='\0';
