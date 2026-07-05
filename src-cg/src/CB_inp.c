@@ -1,8 +1,6 @@
-
-
 #include "prizm.h"
 #include "CB.h"
-
+#include "PYtoGB.h"
 #include "JIStoGB.h"
 
 /*
@@ -659,6 +657,9 @@ int SelectChar( int *ContinuousSelect ) {
 	int scrl=((*ContinuousSelect)>>8)&0xFF;
 	int key;
 	char tmpbuf[18],buf[32];
+	char GB_search_buf[7]={0};
+	int GB_search_ptr = 0;
+	int GB_search_mode = ((*ContinuousSelect)>>24)&0xFF;
 	int opcode;
 	int opNum=0, n ,i, H,L;
 	int mini=((*ContinuousSelect)>>16)&0xFF;	// 0x10 GB font select mode 
@@ -668,7 +669,7 @@ int SelectChar( int *ContinuousSelect ) {
 	short CharBuf[96];
 	char *extchar[]={"  ","ext A","ext G","ex AG","ext K","ex AK","ex GK","A G K"};
 	char *Extchar[]={"  ","Ext A","Ext G","Ex AG","Ext K","Ex AK","Ex GK","A G K"};
-	char *GBorJIS[]={" GB code ","JIS code "};
+	char *GBorJIS[]={"GB code","JIS code"};
 	char buf1[64],buf2[64];
 	int GBtopptr,GBendptr,ofst;
 	int selJIS;
@@ -686,6 +687,7 @@ int SelectChar( int *ContinuousSelect ) {
 	strncpy( StStr, StStrPtr, 63 );
 
 	*ContinuousSelect=(*ContinuousSelect)&0xFF;
+	if (*ContinuousSelect) SetAlphaStatus(1, 0);
 	CB_Round.ExpTYPE=0;	//
 	if ( ( selectGB ) && ( GBcode==0 ) ) { selectGB=0; CharPtr=0; }
 	
@@ -748,15 +750,15 @@ int SelectChar( int *ContinuousSelect ) {
 				case 2:
 				case 1:
 					if ( *ContinuousSelect ) {
-						sprintf( buf, "===Continuous Select=%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
+						sprintf( buf, "Cont Select %s 0x%2X**", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
 						CB_PrintMinix3( 1,1, (unsigned char*)buf, MINI_REV  );
 					} else {
-						sprintf( buf, "===Character Select==%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
+						sprintf( buf, "Char Select %s 0x%2X**", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
 						CB_PrintMinix3( 1,1, (unsigned char*)buf, MINI_OVER  );
 					}
 					break;
 				default:
-					sprintf( buf, "==%s0x%2X** ==", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
+					sprintf( buf, "%s 0x%2X**", GBorJIS[selJIS], (GBbaseptr[selJIS]>>8) +ofst );
 					locate(1,1);
 					if ( *ContinuousSelect ) {
 					    PrintRevs((unsigned char*)buf);
@@ -877,12 +879,18 @@ int SelectChar( int *ContinuousSelect ) {
 		CB_ColorIndex=COLOR_BLACK;
 		
 		if ( selectGB ) {
-			Fkey_Icon( FKeyNo1, 1032 );	//	Fkey_dispN( FKeyNo1, "|<<");
-			Fkey_Icon( FKeyNo2, 1033 );	//	Fkey_dispN( FKeyNo2, " <<");
-			Fkey_dispN( FKeyNo3, "\xE6\x9A");	//	Fkey_DISPN( FKeyNo4, " <");
-			Fkey_dispN( FKeyNo4, "\xE6\x9B");	//	Fkey_DISPN( FKeyNo4, " >");
-			Fkey_Icon( FKeyNo5, 1035 );	//	Fkey_dispN( FKeyNo5, " >>");
-			Fkey_Icon( FKeyNo6, 1036 );	//	Fkey_dispN( FKeyNo5, " >>|");
+			if (selectGB == 1 || selectGB == 2) {
+				if (GB_search_mode)
+					Fkey_dispRS(FKeyNo1, "Pinyin");
+				else
+					Fkey_dispN(FKeyNo1, "Pinyin");
+				CB_Prints(16, 1, (unsigned char*)"[    ]");
+				CB_PrintMinix3(96, 1, (unsigned char*)GB_search_buf, MINI_OVER);
+			}
+			Fkey_Icon( FKeyNo2, 1033 );
+			Fkey_dispN( FKeyNo3, "\xE6\x9A");
+			Fkey_dispN( FKeyNo5, "\xE6\x9B");
+			Fkey_Icon( FKeyNo6, 1035 );
 		} else {
 			Fkey_Icon( FKeyNo1, 120 );	//	Fkey_dispN( FKeyNo1, "MATH");
 			Fkey_Icon( FKeyNo2, 308 );	//	Fkey_dispN( FKeyNo2, "SYBL");
@@ -931,16 +939,15 @@ int SelectChar( int *ContinuousSelect ) {
 
 //		StatusArea_Time();
 		switch ( selectGB ) {
-			case 1:
-			case 2:
-				StatusArea_Run_sub( "GB select  [0]:Help", CB_INT, CB_G1MorG3M );
+			case 1: case 2:
+				sprintf(buf, "%-11s[.]:Help", GB_search_mode ? "Pinyin" : "GB code");
+				StatusArea_Run_sub( buf, CB_INT, CB_G1MorG3M );
 				break;
-			case 0x11:
-			case 0x12:
-				StatusArea_Run_sub( "JIS select [0]:Help", CB_INT, CB_G1MorG3M );
+			case 0x11: case 0x12:
+				StatusArea_Run_sub( "JIS select [.]:Help", CB_INT, CB_G1MorG3M );
 				break;
 			default:
-				StatusArea_Run_sub( "Normal     [0]:Help", CB_INT, CB_G1MorG3M );
+				StatusArea_Run_sub( "Normal     [.]:Help", CB_INT, CB_G1MorG3M );
 				break;
 		}
 		EnableDisplayStatusArea();
@@ -963,9 +970,22 @@ int SelectChar( int *ContinuousSelect ) {
 			case KEY_CHAR_CR:
 				cont=0;
 				break;
+
+			case KEY_CTRL_DEL:
+				if (selectGB == 1 || selectGB == 2) {
+					if (GB_search_ptr) GB_search_ptr--;
+					GB_search_buf[GB_search_ptr] = 0;
+				}
+				break;
+
 			case KEY_CTRL_F1:	// CharMATH
 				if ( selectGB ) {
-					GBbaseptr[selJIS] = GBtopptr;
+					if (selectGB == 1 || selectGB == 2) {
+						GB_search_mode = !GB_search_mode;
+						SetAlphaStatus(1, 0);
+						memset(GB_search_buf, 0, sizeof(GB_search_buf));
+						GB_search_ptr = 0;
+					}
 				} else {
 					if (oplist==CharMATH) *ContinuousSelect=1-*ContinuousSelect;
 					oplist=(unsigned short *)CharMATH;
@@ -992,18 +1012,14 @@ int SelectChar( int *ContinuousSelect ) {
 				}
 				break;
 			case KEY_CTRL_F4:	// Charabr
-				if ( selectGB ) {
-					GBbaseptr[selJIS] += 0x100;
-					if ( GBbaseptr[selJIS] > GBendptr ) GBbaseptr[selJIS] = GBendptr;
-					if ( ( selJIS ) && ( 0xAC00<=GBbaseptr[selJIS] ) && ( GBbaseptr[selJIS]<0xB000 ) ) GBbaseptr[selJIS]=0xB000;
-				} else {
+				if ( !selectGB ) {
 					if (oplist==Charabr) *ContinuousSelect=1-*ContinuousSelect;
 					oplist=(unsigned short *)Charabr;
 				}
 				break;
 			case KEY_CTRL_F5:	// CharABC
 				if ( selectGB ) {
-					GBbaseptr[selJIS] += 0x1000;
+					GBbaseptr[selJIS] += 0x100;
 					if ( GBbaseptr[selJIS] > GBendptr ) GBbaseptr[selJIS] = GBendptr;
 					if ( ( selJIS ) && ( 0xAC00<=GBbaseptr[selJIS] ) && ( GBbaseptr[selJIS]<0xB000 ) ) GBbaseptr[selJIS]=0xB000;
 				} else {
@@ -1013,7 +1029,9 @@ int SelectChar( int *ContinuousSelect ) {
 				break;
 			case KEY_CTRL_F6:	// CharKANA
 				if ( selectGB ) {
-					GBbaseptr[selJIS] = GBendptr;
+					GBbaseptr[selJIS] += 0x1000;
+					if ( GBbaseptr[selJIS] > GBendptr ) GBbaseptr[selJIS] = GBendptr;
+					if ( ( selJIS ) && ( 0xAC00<=GBbaseptr[selJIS] ) && ( GBbaseptr[selJIS]<0xB000 ) ) GBbaseptr[selJIS]=0xB000;
 				} else {
 					if (oplist==CharKANA) { *ContinuousSelect=1-*ContinuousSelect; break; }
 					oplist=(unsigned short *)CharKANA;
@@ -1101,9 +1119,8 @@ int SelectChar( int *ContinuousSelect ) {
 				*ContinuousSelect=1-*ContinuousSelect;
 				break;
 				
-			case KEY_CHAR_0:
-			case KEY_CHAR_IMGNRY:
-			case KEY_CHAR_Z:
+			case '.': case ' ':
+			case KEY_CTRL_CATALOG:
 				Bdisp_AllClr_VRAM3(0,191);
 				CB_ColorIndex=0x001F;		// blue
 				CB_Prints( 1, 1, (unsigned char*)"==Char Select Help ==");
@@ -1152,13 +1169,59 @@ int SelectChar( int *ContinuousSelect ) {
 				locate(5,7);    Prints((unsigned char*)"Press:[EXIT]");
 				ExitKey();
 				break;
-		
+
 			default:
 				break;
 		}
+
+		if (selectGB == 1 || selectGB == 2) {
+			if (GB_search_mode) {
+				if (GB_search_ptr < 6 && key >= 'A' && key <= 'Z') {
+					GB_search_buf[GB_search_ptr++] = key | 0x20;
+					int temp = -1;
+					for (int i = 0; i < PYtoGB_SIZE; i++) {
+						if (memcmp(PYtoGB[i].syllable, GB_search_buf, GB_search_ptr) == 0) {
+							temp = PYtoGB[i].GB_code;
+							break;
+						}
+					}
+					if (temp != -1) {
+						GBbaseptr[selJIS] = temp & 0xFF00;
+						CharPtr = (((temp & 0xF0) >> 4) - 0xA) * 19 + (temp & 0xF);
+					}
+				}
+			} else {
+				switch (key) {
+					case 'M': case 'N': case 'O':
+						key = '7' + key - 'M';
+						break;
+					case 'P': case 'Q': case 'R':
+						key = '4' + key - 'P';
+						break;
+					case 'U': case 'V': case 'W':
+						key = '1' + key - 'U';
+						break;
+					case 'Z':
+						key = '0';
+						break;
+				}
+				if (GB_search_ptr < 4 && (key >= 'A' && key <= 'E' ||
+					key == 'F' && (!(GB_search_ptr % 2) || GB_search_buf[GB_search_ptr - 1] != 'F') ||
+					key >= '0' && key <= '9' && GB_search_ptr % 2)) {
+					GB_search_buf[GB_search_ptr++] = key;
+					snprintf(tmpbuf, 2, "%c%c", GB_search_buf[0], max(GB_search_buf[1], '0'));
+					GBbaseptr[selJIS] = strtol(tmpbuf, NULL, 16) << 8;
+					if (GB_search_ptr > 2) {
+						snprintf(tmpbuf, 2, "%c%c", max(GB_search_buf[2], 'A'), max(GB_search_buf[3], '0'));
+						int temp = strtol(tmpbuf, NULL, 16);
+						CharPtr = ((temp >> 4) - 0xA) * 19 + (temp & 0xF);
+					}
+				}
+			}
+		}
 	}
 
-	*ContinuousSelect += (scrl<<8) + (mini<<16);
+	*ContinuousSelect += (scrl<<8) + (mini<<16) + (GB_search_mode<<24);
   exit:
   
 //	CB_SetStatusDisp( StatusDisp );
