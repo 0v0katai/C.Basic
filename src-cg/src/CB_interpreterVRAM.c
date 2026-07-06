@@ -2431,11 +2431,18 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 	int tmp;
 	int colortmp=CB_ColorIndex;				// current color index
 	int fx=0;
+	int stdfont = 0;
 	int bk_GBcode=GBcode;
 	
 	if ( CB_G1MorG3M == 1 ) { fx=1; }	// fx mode
 	if ( SRC[ExecPtr] == '@' ) { ExecPtr++; fx=1; }	// fx mode
-	if ( fx==0 ) EnableDisableGB( SRC );	// GB mode enable ##    GB mode disable %%
+	if ( fx==0 ) {
+		if (SRC[ExecPtr] == '!') {
+			ExecPtr++;
+			stdfont=1;
+		}
+		EnableDisableGB(SRC);
+	}
 	c=CB_IsStr( SRC, ExecPtr );
 	if ( c ) {	// string
 		CB_GetLocateStr( SRC, buffer, 256-1 );		// String -> buffer	return 
@@ -2526,19 +2533,28 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 
 		} else {
 			ML_rectangle_CG( 35, 46, 349, 169, 0, 0, 1, CB_BackColorIndex, CB_BackColorIndex );
-			n=scrl+6; if (n>=listmax+1) n=listmax+1;
+			n=scrl+6-stdfont*2; if (n>=listmax+1) n=listmax+1;
 			y=0;
 			CB_ColorIndex=-1;
 			for ( i=scrl; i<n; i++) {
-				sprintf(buffer, "%d:%s", i+1, &BranchName[i][0]) ;
-				CB_PrintMini_wx( 39, y*20+51, (unsigned char*)buffer, MINI_OVER + 0x100, 332 ); // extflag	with width limit
+				sprintf(buffer, "%d:%s", i+1, &BranchName[i][0]);
+				if (stdfont)
+					CB_PrintMode(39, y*26+51, (unsigned char*)buffer, MINI_OVER | 0x100, 314);
+				else
+					CB_PrintMini_wx( 39, y*20+51, (unsigned char*)buffer, MINI_OVER | 0x100, 332);
 				y++;
 			}
 			CB_ColorIndex=0xF81F;	// Magenta
-			if ( scrl > 0 )         CB_PrintMini( 333,  51, (unsigned char*)"\xE6\x92", MINI_OVER );
-			if ( listmax > scrl+5 ) CB_PrintMini( 333, 149, (unsigned char*)"\xE6\x93", MINI_OVER );
 			y = select-scrl+1;
-			Bdisp_AreaReverseVRAM( 39, y*20+54, 345, y*20+54+17 );	// reverse select line 
+			if (stdfont) {
+				if (scrl > 0) CB_PrintXY(328, 51, (unsigned char*)"\xE6\x92", 0);
+				if (listmax > scrl+3) CB_PrintXY(328, 129, (unsigned char*)"\xE6\x93", 0);
+				Bdisp_AreaReverseVRAM(39, y*26+47, 345, y*26+72);
+			} else {
+				if (scrl > 0) CB_PrintMini(333,  51, (unsigned char*)"\xE6\x92", MINI_OVER);
+				if (listmax > scrl+5) CB_PrintMini(333, 149, (unsigned char*)"\xE6\x93", MINI_OVER);
+				Bdisp_AreaReverseVRAM(39, y*20+54, 345, y*20+54+17);
+			}
 		}
 		
 		if ( CB_StatusDisp ) {
@@ -2559,15 +2575,15 @@ void CB_Menu( char *SRC, int *StackGotoAdrs) {		// Menu "title name","Branch nam
 		
 			case KEY_CTRL_UP:
 				select-=1;
-				if ( select < 0 ) {select=(listmax); scrl=select-5;}
+				if ( select < 0 ) {select=(listmax); scrl=select-5+stdfont*2;}
 				if ( select < scrl ) scrl-=1;
 				if ( scrl < 0 ) scrl=0;
 				break;
 			case KEY_CTRL_DOWN:
 				select+=1;
 				if ( select > (listmax) ) {select=0; scrl=0;}
-				if ((select - scrl) > 5 ) scrl+=1;
-				if ( scrl > (listmax) ) scrl=(listmax)-5;
+				if ((select - scrl) > 5-stdfont*2 ) scrl+=1;
+				if ( scrl > (listmax) ) scrl=(listmax)-5+stdfont*2;
 				break;
 			case KEY_CHAR_1:
 				select=0;
