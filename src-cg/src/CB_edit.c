@@ -1401,7 +1401,7 @@ int EditRun(int run){		// run:1 exec      run:2 edit
  	unsigned short color=0x0000;
  	unsigned short *vram;
  	unsigned short linebuf[384];
-	int alllinenum=AllLineNum( SrcBase );
+	int alllinenum;
 	int Is1st=1;
 	int H,S,V,L;
 	int help_code=0;
@@ -1533,21 +1533,16 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 						break;
 			}
 			// StatusArea_Edit(buffer, ProgfileMax[ProgNo]-SrcSize(filebase) );
-			if (MPM) {
-				strncpy(buffer3,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
-				buffer3[8]='\0';
-				sprintf(buffer2, "%-12s L:%d", buffer3, CurrentLineNum);
-				StatusArea_Run_sub( buffer2, CB_INT, CB_G1MorG3M );
-			} else {
-				if ( DebugScreen == 0 )	StatusArea_Run();
+			if ( DebugScreen == 0 )	StatusArea_Run();
 
-				EnableDisplayStatusArea();
-				sprintf(buffer3, "%4d/%d", CurrentLineNum, alllinenum);
+			EnableDisplayStatusArea();
+			sprintf(buffer3, "%4d/%d", CurrentLineNum, alllinenum);
+			if (!MPM) {
 				CB_ColorIndex=0xFFFE;	//
 				CB_PrintMini_Fix10( 385-10*8, -20, (unsigned char *)buffer3, MINI_OR); 	// display current line number
-				CB_ColorIndex=CB_ColorIndexEditLine;	//
-				CB_PrintMini_Fix10( 384-10*8, -21, (unsigned char *)buffer3, MINI_OR); 	// display current line number
 			}
+			CB_ColorIndex=CB_ColorIndexEditLine;	//
+			CB_PrintMini_Fix10( 384-10*8, -21, (unsigned char *)buffer3, MINI_OR); 	// display current line number
 		}
 		vram=(unsigned short *)PictAry[0]+384*192; for ( i=0; i<384; i++ ) linebuf[i]=vram[i];
 		
@@ -2311,24 +2306,18 @@ int EditRun(int run){		// run:1 exec      run:2 edit
 //				Setup_SetEntry(0x14,01);	// SHIFT
 
 				EnableDisplayStatusArea();
-				CB_ColorIndex=0xFFFE;	// 
 
 				i=ProgfileMax[ProgNo]-SrcSize(filebase);
 //				if ( i>9999 ) 	sprintf(buffer3, "%dk",  i/1024 );
 //				else 			sprintf(buffer3, "%d",  i );
-
-				if (MPM) {
-					strncpy(buffer3,(const char*)ProgfileAdrs[ProgNo]+0x3C,8);
-					buffer3[8]='\0';
-					sprintf(buffer2, "%-12s %5d free", buffer3, i);
-					StatusArea_Run_sub( buffer2, CB_INT, CB_G1MorG3M );
-				} else {
-					sprintf(buffer3, "%5d free",  i );
+				sprintf(buffer3, "%5d free",  i );
+				if (!MPM) {
+					CB_ColorIndex=0xFFFE;	//
 					CB_PrintMini_Fix10( 385-10*8-15, -20, (unsigned char *)buffer3, MINI_OR); 	// display current line number
-					CB_ColorIndex=CB_ColorIndexEditLine;	//
-					CB_PrintMini_Fix10( 384-10*8-15, -21, (unsigned char *)buffer3, MINI_OR); 	// display current line number
-					CB_ColorIndex=-1;					// current color index reset
 				}
+				CB_ColorIndex=CB_ColorIndexEditLine;	//
+				CB_PrintMini_Fix10( 384-10*8-15, -21, (unsigned char *)buffer3, MINI_OR); 	// display current line number
+				CB_ColorIndex=-1;					// current color index reset
 //				if ( (dumpflg==2) ) MiniCursorSetFlashMode( 1 );		// mini cursor flashing on
 				GetKey_DisableMenuCatalog(&key);
 				if ( key==0 ) if ( keydown(KEY_6) ) key=KEY_CHAR_6;
