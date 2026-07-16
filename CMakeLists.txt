@@ -33,9 +33,9 @@ endif()
 set(CB_SOURCE_BASE "${CMAKE_CURRENT_SOURCE_DIR}/src-${CB_PLATFORM}")
 set(CB_LINKER_BASE "${CMAKE_CURRENT_SOURCE_DIR}/linker")
 
-file(GLOB_RECURSE SOURCES "${CB_SOURCE_BASE}/src/*.[c|S]")
-file(GLOB_RECURSE COMMONS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.[c|S]")
-list(APPEND SOURCES ${COMMONS})
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+  "${CB_SOURCE_BASE}/src/*.[c|S]"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.[c|S]")
 
 find_package(Git REQUIRED)
 execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
@@ -99,9 +99,9 @@ target_link_options(CBASIC PRIVATE ${LINK_OPTS})
 
 list(APPEND LIBS "-lc" "-lm" "-lgcc")
 if(MPM)
-  list(APPEND LIBS "-lcw")
+  list(APPEND LIBS "-lsyscall-cw")
 else()
-  list(APPEND LIBS "-l${CB_PLATFORM}")
+  list(APPEND LIBS "-lsyscall-${CB_PLATFORM}")
 endif()
 target_link_libraries(CBASIC PRIVATE ${LIBS})
 

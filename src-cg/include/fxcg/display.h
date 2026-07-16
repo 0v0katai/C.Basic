@@ -181,8 +181,8 @@ void ProgressBar2(unsigned char *heading, int current, int max);
 #define SAF_GLYPH                               0x0200
 int DefineStatusAreaFlags( int, int, void*, void* );
 void DefineStatusGlyph( int, void* );
-char *DefineStatusMessage( int mode, void*P2, void*P3 );
-void DefineStatusMessage2( char*P1, short P2, char color_idx, char P4 );
+char *DefineStatusMessage_02B9( int mode, void*P2, void*P3 );
+void DefineStatusMessage( char*P1, short P2, char color_idx, char P4 );
 void DisplayStatusArea( void );
 void DrawHeaderLine( void );
 int EnableStatusArea( int );

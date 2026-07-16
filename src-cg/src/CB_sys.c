@@ -1057,7 +1057,7 @@ void SetStatusMessage_( char*msg, char short_color ){
 //	DefineStatusMessage( msg, 1, short_color, 7 );
 	char buf[64];
 	sprintf(buf, "%*s%s", MPM ? 37 : 21, "", msg);
-	DefineStatusMessage2( buf, 1, short_color, 0);
+	DefineStatusMessage( buf, 1, short_color, 0);
 	DisplayStatusArea();
 }
 //

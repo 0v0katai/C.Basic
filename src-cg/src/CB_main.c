@@ -68,6 +68,17 @@ void main() {
 	
 	WorkBuf = (char*)wbuf;
 
+	// if (MPM) {
+	// 	static const uint8_t OS_check[] = {20, 21};
+	// 	for (int i = 0; i < sizeof(OS_check); i++) {
+	// 		if (OS_Version() / 10 == OS_check[i]) {
+	// 			extern void CASIOWIN_SetAPI(int);
+	// 			CASIOWIN_SetAPI(i);
+	// 			break;
+	// 		}
+	// 	}
+	// }
+
 	__printf_enable_fp();
 	Set_Timer_id();
 
