@@ -676,15 +676,15 @@ int SelectChar( int *ContinuousSelect ) {
 	
 	int StatusDisp = CB_StatusDisp;						// Save Status Area 
 	int	StatusOS   = EnableStatusArea(1);
-	int StFlag;
-	char StCol[2];
-	char StInfo[12];
-	char StStr[64]="";
-	char *StStrPtr;
-	StFlag = DefineStatusAreaFlags(2, 0, &StCol[0], &StCol[1]);
-	StStrPtr = DefineStatusMessage(1, NULL, &StInfo[0]);
+	// int StFlag;
+	// char StCol[2];
+	// char StInfo[12];
+	// char StStr[64]="";
+	// char *StStrPtr;
+	// StFlag = DefineStatusAreaFlags(2, 0, &StCol[0], &StCol[1]);
+	// StStrPtr = DefineStatusMessage_02B9(1, NULL, StInfo);
 	// SysCalljmp( 1, 0, (int)&StInfo[0], 0, 0x2B9);
-	strncpy( StStr, StStrPtr, 63 );
+	// strncpy( StStr, StStrPtr, 63 );
 
 	*ContinuousSelect=(*ContinuousSelect)&0xFF;
 	if (*ContinuousSelect) SetAlphaStatus(1, 0);
@@ -1238,8 +1238,8 @@ int SelectChar( int *ContinuousSelect ) {
 //		EnableStatusArea(3);	// disable StatusArea
 //	}
 
-	DefineStatusAreaFlags( 3, StFlag, &StCol[0], &StCol[1]);			// Restore Status Area 
-	DefineStatusMessage(2, &StStr[0], &StInfo[0]);
+	// DefineStatusAreaFlags( 3, StFlag, &StCol[0], &StCol[1]);			// Restore Status Area
+	// DefineStatusMessage_02B9(2, StStr, StInfo);
 	// SysCalljmp(2, (int)&StStr[0], (int)&StInfo[0], 0, 0x2B9);
 
 	if ( StatusOS ) {
