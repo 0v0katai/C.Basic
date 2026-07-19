@@ -72,8 +72,8 @@ int CB_KeyCodeCnvt( unsigned int key ) ;			// CasioBasic Getkey SDK compatible
 
 int CB_Getkey();
 int CB_Getkey0();
-int CB_Getkey1(int sdkcode);
-int CB_Getkey2(int sdkcode);
+int CB_Getkey1();
+int CB_Getkey2();
 int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) ;			// CasioBasic Getkey
 int CB_GetkeyM();
 

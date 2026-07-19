@@ -59,15 +59,14 @@ int GetKey_DisableMenu( unsigned int *key ) {
 	return r;
 }
 
-int CB_Getkey1(int sdkcode) {			// CasioBasic Getkey SDK compatible
-	unsigned int key;
-	int code;
+int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	int t,th;
 	Getkey_shift=0;
 	Recent_code=0;
 	t=RTC_GetTicks()-CB_TicksStart;					// halt ticks count
 	th=(int)GetTicks32768()-CB_HiTicksStart;		// halt ticks count
 	int kcode1, kcode2;
+	Bdisp_PutDisp_DD();
 	Bkey_GetKeyWait(&kcode1, &kcode2,
 		KEYWAIT_HALTON_TIMEROFF,
 		0, 0, &(short){0});
@@ -81,9 +80,9 @@ int CB_Getkey1(int sdkcode) {			// CasioBasic Getkey SDK compatible
 	return getkey_value(kcode1, kcode2 - 1);
 }
 
-int CB_Getkey2(int sdkcode) {			// CasioBasic Getkey SDK compatible with buffer clear
+int CB_Getkey2() {			// CasioBasic Getkey SDK compatible with buffer clear
 	KeyRecover();
-	return CB_Getkey1(sdkcode) ;
+	return CB_Getkey1() ;
 }
 
 

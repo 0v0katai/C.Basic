@@ -86,7 +86,7 @@ int GetKey_DisableCatalog( int *key ) {
 	return r;
 }
 
-int CB_Getkey1(int sdkcode) {			// CasioBasic Getkey SDK compatible
+int CB_Getkey1() {			// CasioBasic Getkey SDK compatible
 	int t,th;
 	// Getkey_shift=0;
 	// Recent_code=0;
@@ -107,9 +107,9 @@ int CB_Getkey1(int sdkcode) {			// CasioBasic Getkey SDK compatible
 	return getkey_value(row, col - 1);
 }
 
-int CB_Getkey2(int sdkcode) {			// CasioBasic Getkey SDK compatible with buffer clear
+int CB_Getkey2() {			// CasioBasic Getkey SDK compatible with buffer clear
 	KeyRecover();
-	return CB_Getkey1(sdkcode) ;
+	return CB_Getkey1() ;
 }
 
 
@@ -123,8 +123,8 @@ int CB_GetkeyN( int n, int disableCatalog, int sdkcode ) {			// CasioBasic Getke
 		case 2:
 			CB_StatusDisp_Run();
 			// if ( disableCatalog ) Bkey_SetFlag( 0x80 );		// disable Catalog function
-			if ( n==1 ) key=CB_Getkey1(sdkcode);
-			else		key=CB_Getkey2(sdkcode);
+			if ( n==1 ) key=CB_Getkey1();
+			else		key=CB_Getkey2();
 			// if ( disableCatalog ) Bkey_ClrFlag( 0x80 ) ;	// enable Catalog function
 			DrawFrame( CB_FrameColor );
 			break;
