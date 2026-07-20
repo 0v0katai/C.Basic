@@ -3,7 +3,7 @@ ENTRY(initialize)
 MEMORY
 {
         rom  : o = 0x00300200, l = 512k
-        ram  : o = 0x08100000, l = 64k  /* pretty safe guess */
+        ram  : o = 0x08100000, l = 8k  /* pretty safe guess */
 }
 SECTIONS
 {

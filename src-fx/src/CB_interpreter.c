@@ -81,7 +81,7 @@ double	*traceAry;		// Graph array X
 char *GraphY;
 char *GraphX;
 
-unsigned char *PictAry[PictMax+1];		// Pict array ptr
+unsigned char **PictAry;		// Pict array ptr
 char BG_Pict_No=0;
 
 //----------------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ int CursorY=1;	// text cursor X
 char GosubNestN=0;		// Gosub Nesting lebel (for subroutin)
 char ProgEntryN=0;		// Basic Program ptr (for subroutin)
 char ProgNo=0;			// current Prog No
-char *ProgfileAdrs[ProgMax+1];
+char **ProgfileAdrs;
 int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 char  ProgfileMode[ProgMax+1];	// g1m : 0    text : 1

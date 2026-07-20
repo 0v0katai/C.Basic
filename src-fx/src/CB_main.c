@@ -39,8 +39,10 @@ int main()
 	beFiles befiles[BE_MAX];
 
 	__printf_enable_fp();
-	HeapRAM = (char *)malloc( MAXHEAP );		// 47KB C.Basic area (program & Mat)
-	if ( HeapRAM == NULL )  { Abort(); }
+	HeapRAM = malloc( MAXHEAP );	// 47KB C.Basic area (program & Mat)
+	ProgfileAdrs = malloc( sizeof(char *) * (ProgMax + 1) );
+	PictAry = malloc( sizeof(char *) * (PictMax + 1) );
+	if ( HeapRAM == NULL || ProgfileAdrs == NULL || PictAry == NULL )  { Abort(); }
 
 	Emu_check();
 	CPU_check();

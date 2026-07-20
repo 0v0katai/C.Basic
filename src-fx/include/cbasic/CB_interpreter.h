@@ -135,7 +135,7 @@ extern char *GraphX;
 #define const_qPI 0.78539816339744831
 
 #define PictMax 99
-extern unsigned char *PictAry[PictMax+1];		// Pict array ptr
+extern unsigned char **PictAry;		// Pict array ptr
 
 extern char BG_Pict_No;
 
@@ -203,7 +203,7 @@ extern complex CB_CurrentValue;	// Ans
 #define ProgMax 40
 extern char ProgEntryN;		// how many subroutin
 extern char ProgNo;			// current Prog No
-extern char *ProgfileAdrs[ProgMax+1];
+extern char **ProgfileAdrs;
 extern int   ProgfileMax[ProgMax+1] ;	// Max edit filesize 
 extern char  ProgfileEdit[ProgMax+1];	// no change : 0     edited : 1
 extern char  ProgfileMode[ProgMax+1];	// g1m : 0    text : 1
