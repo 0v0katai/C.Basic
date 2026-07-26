@@ -30,8 +30,6 @@ extern char  CB_fx5800P ;		// fx-5800P mode
 extern char  CB_HelpOn;			// Help function
 extern char  CB_EditIndent;		// indent function  0:Non  1~4:indent space
 
-extern int StackPtr;
-
 //------------------------------------------------------------------------------
 void VerDispSub( int flag ) ;
 void VerDisp( int flag ) ;
@@ -54,6 +52,7 @@ int SetVarChar( char *buffer, int c ) ;
 int SetVarCharMat( char *buffer, int c ) ;
 int SetVarCharVct( char *buffer, int c ) ;
 #define SetVarCharVct SetVarCharMat
+#define GetStackPtr() __builtin_frame_address(0)
 
 int SelectNum1( char*msg, int n ,int min, int max, unsigned int *key) ;		// 
 void FkeyS_L_();

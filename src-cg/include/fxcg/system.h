@@ -18,7 +18,7 @@ void PowerOff(int displayLogo);
 void Restart();
 void SpecialMatrixcodeProcessing(int*col, int*row);
 void TestMode(int);
-void*GetStackPtr(void);
+#define GetStackPtr() __builtin_frame_address(0)
 
 void SetSetupSetting(unsigned int SystemParameterNo, unsigned char SystemParameterValue);
 unsigned char GetSetupSetting(unsigned int SystemParameterNo);

@@ -155,7 +155,6 @@ int CB_interpreter_sub( char *SRC ) {
 	complex	localvarDbl[ArgcMAX];	//	local var
 	int		localvarInt[ArgcMAX];	//	local var
 
-	StackPtr = (int)&cont;
 	c = (int)&cont & 0xFFFF;
 	if ( Is35E2*0xA000+0x400 > c ) { CB_Error(StackERR); return -1; } //  stack error
 	

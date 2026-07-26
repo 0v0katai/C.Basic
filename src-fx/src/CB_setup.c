@@ -45,8 +45,6 @@ int selectSetup=0;
 int selectVar=0;
 int selectMatrix=0;
 
-int StackPtr;
-
 const char VerMSG[] = "C.Basic " VERSTR;
 
 //---------------------------------------------------------------------------------------------
@@ -158,8 +156,8 @@ int CB_System(char *SRC) {
 			return (int)ClipBuffer;
 		case 12:
 			return (int)files;
-		case 999:
-			return StackPtr;
+		case 100:
+			return (int)GetStackPtr();
 		case 1000:	
 			return (int)HiddenRAM_Top;
 		case 1001:
